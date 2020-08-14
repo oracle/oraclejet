@@ -36,7 +36,8 @@ function getTypeGenerator(buildOptions) {
                         try {
                             let generatedContent = view.render("container.tmpl", data);
                             generatedContent = generatedContent.replace(_REGEX_BLANK_LINES, "");
-                            content += `\n// Custom Element interfaces\n`;
+                            content = content.replace(_REGEX_BLANK_LINES, "");
+                            content += `// Custom Element interfaces\n`;
                             content += `${generatedContent}`;
                             fs.writeFileSync(exportsFile, exportContent);
                         }

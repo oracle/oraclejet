@@ -721,7 +721,7 @@ var __oj_message_metadata =
  * @ojcancelable
  * @ojbubbles
  * @property {!Element} element target of animation
- * @property {"open"|"close"} action The action that is starting the animation.
+ * @property {"open"|"close"} action The action that triggers the animation.<br><br>
  *            Suggested values are:
  *                    <ul>
  *                      <li>"open" - when a message is opened</li>
@@ -771,7 +771,7 @@ var __oj_message_metadata =
  * @ojbubbles
  *
  * @property {!Element} element target of animation
- * @property {"open"|"close"} action The action that is ending the animation.
+ * @property {"open"|"close"} action The action that triggered the animation.<br><br>
  *            The number of actions can vary from component to component.
  *            Suggested values are:
  *                    <ul>

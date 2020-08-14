@@ -389,8 +389,12 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
  * like aria-valuenow, aria-valuemax, aria-valuemin and aria-valuetext.
  * </p>
  * <p>
- * If there is no oj-label for the oj-input-number, add aria-label on oj-input-number
- * to make it accessible.
+ * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-input-number component.
+ * For accessibility, you should associate an oj-label element with the oj-input-number component
+ * by putting an <code>id</code> on the oj-input-number element, and then setting the
+ * <code>for</code> attribute on the oj-label to be the component's id.
+ * </p>
+ * <p>
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -401,7 +405,8 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the oj-label to the oj-input-number component.
+ * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the
+ * application developer to associate the oj-label to the oj-input-number component.
  * For accessibility, you should associate a oj-label element with the oj-input-number component
  * by putting an <code class="prettyprint">id</code> on the oj-input-number element, and then setting the
  * <code class="prettyprint">for</code> attribute on the oj-label to be the component's id.
@@ -721,6 +726,24 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          * intervention, the component performs various tasks based on the current state it is in. </br>
          * When initialized with no options, the default options for the current locale are assumed. </br>
          *
+         * <p>
+         * The hint exposed by the converter is shown inline by default in the Redwood theme when
+         * the field has focus.
+         * In the Alta theme, converter hints are shown in a notewindow on focus,
+         * or as determined by the
+         * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+         * attribute.
+         * In either theme, you can turn off showing converter hints by using the
+         * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+         * attribute.
+         * </p>
+         * <p>
+         * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+         * help.instruction shows; if no help.instruction then validator hints show;
+         * if none, then help-hints.definition shows; if none, then converter hint shows.
+         * help-hints.source always shows along with the other help or hint.
+         * </p>
+         *
          * <h4>Steps Performed Always</h4>
          * <ul>
          * <li>Any cached converter instance is cleared and new converter created. The converter hint is
@@ -992,10 +1015,18 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
          * If you want to prevent the user from interacting with the element, use the disabled property instead.
          * <p>
-         * The oj-form-layout provides its readonly attribute value and the form components
-         * consume it if it is not already set explicitly.
-         * For example, if oj-form-layout is set to readonly='true',
-         * all the form components it contains will be readonly='true' by default.
+         * The default value for readonly is false. However, if the form component is a descendent of
+         * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+         * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+         * The <code class="prettyprint">oj-form-layout</code> uses the
+         * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+         * <code class="prettyprint">provide</code> property to provide its
+         * <code class="prettyprint">readonly</code>
+         * attribute value to be consumed by descendent components.
+         * The form components are configured to consume the readonly property if an ancestor provides it and
+         * it is not explicitly set.
+         * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+         * not have its readonly attribute set, the form component's readonly will be true.
          * </p>
          * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
          * &lt;oj-input-number readonly>&lt;/oj-input-number>
@@ -1058,13 +1089,20 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          * </ul>
          *
          * </p>
-         *
+         * <p>
          * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
          * This is the default.
-         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-         * input's label will render a required icon. Additionally a required validator -
+         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+         * </p>
+         * <p>
+         * Additionally a required validator -
          * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
          * An explicit required validator can be set by page authors using the validators attribute.
+         * </p>
+         * <p>
+         * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+         * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+         * </p>
          *
          * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
          * &lt;oj-input-number required>&lt;/oj-input-number><br/>
@@ -1205,9 +1243,18 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
          * runs all of them.
          * </p>
          * <p>
-         * Hints exposed by validators are shown in the notewindow by default, or as determined by the
+         * Hints exposed by validators are shown inline by default in the Redwood theme when
+         * the field has focus.
+         * In the Alta theme, validator hints are shown in a notewindow on focus,
+         * or as determined by the
          * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
          * attribute.
+         * </p>
+         * <p>
+         * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+         * help.instruction shows; if no help.instruction then validator hints show;
+         * if none, then help-hints.definition shows; if none, then converter hint shows.
+         * help-hints.source always shows along with the other help or hint.
          * </p>
          *
          * <p>
@@ -3507,8 +3554,8 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
        *     <tr>
        *       <td>Input</td>
        *       <td><kbd>Tap</kbd></td>
-       *       <td>Set focus to the input. If hints, help.instruction or messages exists in a notewindow,
-       *       pop up the notewindow.</td>
+       *       <td>Set focus to the input. Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
        *     </tr>
        *     <tr>
        *       <td>Elsewhere on Page</td>
@@ -3540,8 +3587,8 @@ Logger:false, Promise:false, Components:false, ThemeUtils:false */
        *     </tr>
        *     <tr>
        *       <td><kbd>Tab In</kbd></td>
-       *       <td>Set focus to input. If hints, help.instruction or messages exist in a notewindow,
-       *       pop up the notewindow.</td>
+       *       <td>Set focus to input. Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
        *     </tr>
        *     <tr>
        *       <td><kbd>UpArrow</kbd></td>

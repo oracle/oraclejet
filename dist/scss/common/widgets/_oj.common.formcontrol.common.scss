@@ -267,7 +267,11 @@
     .oj-text-field.oj-warning .oj-text-field-container {
       border-color: $borderColorWarning; 
     }
-
+    //Styling for disabled state
+    .oj-text-field.oj-disabled .oj-text-field-container {    
+      background-color: $formControlBgColorDisabled;
+      border-color: $formControlBorderColorDisabled;
+    }
     .oj-text-field-label-inside.oj-text-field .oj-text-field-container {
       min-height: $formControlInsideInputHeight; 
     }
@@ -352,6 +356,68 @@
       height: 100%;
     }
 
+    // start/end icon styles
+
+    // Center the content vertically for label inside.
+    .oj-text-field.oj-text-field-label-inside .oj-text-field-start,
+    .oj-text-field.oj-text-field-label-inside .oj-text-field-end {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .oj-text-field .oj-text-field-start .oj-text-field-start-end-icon {
+      @include oj-ltr() {
+        margin-left: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        margin-right: $formControlPaddingHorizontal;
+      }
+    }
+    .oj-text-field .oj-text-field-end .oj-text-field-start-end-icon {
+      @include oj-ltr() {
+        margin-right: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        margin-left: $formControlPaddingHorizontal;
+      }
+    }
+    .oj-text-field .oj-text-field-start .oj-button,
+    .oj-text-field .oj-text-field-end .oj-button {
+      margin-bottom: 0;
+    }
+    // the margin is opposite for read only
+    .oj-text-field.oj-read-only .oj-text-field-start .oj-text-field-start-end-icon {
+      @include oj-ltr() {
+        margin-left: 0;
+        margin-right:$formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        margin-right: 0;
+        margin-left: $formControlPaddingHorizontal;
+      }
+    }
+    .oj-text-field .oj-text-field-end .oj-text-field-start-end-icon {
+      @include oj-ltr() {
+        margin-right: 0;
+        margin-left: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        margin-left: 0;
+        margin-right: $formControlPaddingHorizontal;
+      }
+    }
+    // In read only (not inline labels), the slot container needs to match the min-height of the read only
+    // text element, or things don't line up vertically.
+    .oj-text-field.oj-read-only:not(.oj-text-field-label-inline) .oj-text-field-start,
+    .oj-text-field.oj-read-only:not(.oj-text-field-label-inline) .oj-text-field-end {
+      min-height:  $formControlInputHeight;
+    }
+
+    .oj-text-field.oj-disabled .oj-text-field-start .oj-text-field-start-end-icon {
+      color: $iconColorDisabled;
+    }
+      
     .oj-text-field-counter {
       align-items: center;
       justify-content: center;

@@ -12,16 +12,21 @@ import { VComponent } from 'ojs/ojvcomponent';
 declare class ListItemLayoutProps {
     selector?: VComponent.Slot;
     leading?: VComponent.Slot;
+    overline?: VComponent.Slot;
     children?: VComponent.VNode[];
     secondary?: VComponent.Slot;
     tertiary?: VComponent.Slot;
+    link?: VComponent.Slot;
     metadata?: VComponent.Slot;
+    trailing?: VComponent.Slot;
+    action?: VComponent.Slot;
 }
 export declare class ListItemLayout extends VComponent<ListItemLayoutProps> {
+    private _hasContent;
+    private _getWrappedSlotContent;
     protected render(): any;
     protected _vprops?: VListItemLayoutProps;
 }
-
 // Custom Element interfaces
 export interface ListItemLayoutElement extends JetElement<ListItemLayoutElementSettableProperties> {
   addEventListener<T extends keyof ListItemLayoutElementEventMap>(type: T, listener: (this: HTMLElement, ev: ListItemLayoutElementEventMap[T]) => any, useCapture?: boolean): void;
@@ -39,6 +44,10 @@ export interface ListItemLayoutElementSettableProperties extends JetSettableProp
 export interface ListItemLayoutElementSettablePropertiesLenient extends Partial<ListItemLayoutElementSettableProperties> {
   [key: string]: any;
 }
+export declare type ojListItemLayout = ListItemLayoutElement;
+export declare type ojListItemLayoutEventMap = ListItemLayoutElementEventMap;
+export declare type ojListItemLayoutSettableProperties = ListItemLayoutElementSettableProperties;
+export declare type ojListItemLayoutSettablePropertiesLenient = ListItemLayoutElementSettablePropertiesLenient;
 export interface ListItemLayoutProperties extends Partial<ListItemLayoutElementSettableProperties>, GlobalAttributes {}
 export interface VListItemLayoutProps extends ListItemLayoutProps, GlobalAttributes {}
 declare global {

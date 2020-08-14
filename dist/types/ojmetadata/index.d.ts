@@ -90,6 +90,7 @@ export type ComponentMetadataProperties = {
     help?: string;
     maximum?: number | string;
     minimum?: number | string;
+    minCapabilities?: MinCapabilities;
     pattern?: string;
     placeholder?: string;
     propertyEditorValues?: {
@@ -124,6 +125,10 @@ export type EventDetailItem = {
     eventGroup?: string;
 };
 // tslint:disable-next-line interface-over-type-literal
+export type FilterCapabilities = {
+    textFilter: boolean;
+};
+// tslint:disable-next-line interface-over-type-literal
 export type Icon = {
     iconPath?: string;
     selectedIconPath?: string;
@@ -135,6 +140,10 @@ export type MethodParam = {
     name: string;
     status?: Status[];
     type: string;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type MinCapabilities = {
+    filter?: FilterCapabilities;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type Paths = {

@@ -467,6 +467,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             this.callback = callback;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.postRender = () => {
+                this.vnodesCache = this.newVnodesCache;
+                this.newVnodesCache = new Map();
                 const itemsRoot = this.root.lastElementChild;
                 if (itemsRoot) {
                     const busyContext = Context.getContext(itemsRoot).getBusyContext();
@@ -490,6 +492,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             };
             this.newItemsTracker = new Set();
             this.vnodesCache = new Map();
+            this.newVnodesCache = new Map();
         }
         handleFetchSuccess(result) {
             if (result != null) {
@@ -502,6 +505,12 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 this.vnodesCache.delete(key);
             }.bind(this));
             super.handleItemsUpdated(detail);
+        }
+        handleItemsRemoved(detail) {
+            detail.keys.forEach(function (key) {
+                this.vnodesCache.delete(key);
+            }.bind(this));
+            super.handleItemsRemoved(detail);
         }
         handleModelRefresh() {
             this.vnodesCache.clear();
@@ -520,12 +529,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         renderItem(key, index, data) {
             const node = this.vnodesCache.get(key);
             if (node) {
-                if (node.index === index) {
-                    return node.vnodes;
-                }
-                else {
-                    this.vnodesCache.clear();
-                }
+                this.newVnodesCache.set(key, { vnodes: node.vnodes });
+                return node.vnodes;
             }
             const renderer = this.callback.getItemRenderer();
             const vnodes = renderer({ data: data, key: key });
@@ -538,13 +543,14 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 }
             }
             let prunedVnodes = [vnode];
-            this.vnodesCache.set(key, { index: index, vnodes: prunedVnodes });
+            this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
         decorateItem(vnodes, key, index, initialFetch, visible) {
             let vnode = vnodes[0];
             let contentRoot = vnode._node;
             if (contentRoot != null) {
+                vnode.key = key;
                 contentRoot.key = key;
                 contentRoot.setAttribute('key', JSON.stringify(key));
                 contentRoot.setAttribute('role', 'listitem');
@@ -583,6 +589,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             this.callback = callback;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.postRender = () => {
+                this.vnodesCache = this.newVnodesCache;
+                this.newVnodesCache = new Map();
                 const itemsRoot = this.root.lastElementChild;
                 if (itemsRoot) {
                     const busyContext = Context.getContext(itemsRoot).getBusyContext();
@@ -596,6 +604,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             };
             this.newItemsTracker = new Set();
             this.vnodesCache = new Map();
+            this.newVnodesCache = new Map();
         }
         handleFetchSuccess(result) {
             if (result != null) {
@@ -608,6 +617,12 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 this.vnodesCache.delete(key);
             }.bind(this));
             super.handleItemsUpdated(detail);
+        }
+        handleItemsRemoved(detail) {
+            detail.keys.forEach(function (key) {
+                this.vnodesCache.delete(key);
+            }.bind(this));
+            super.handleItemsRemoved(detail);
         }
         handleModelRefresh() {
             this.vnodesCache.clear();
@@ -627,12 +642,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             let key = metadata.key;
             const node = this.vnodesCache.get(key);
             if (node) {
-                if (node.index === index) {
-                    return node.vnodes;
-                }
-                else {
-                    this.vnodesCache.clear();
-                }
+                this.newVnodesCache.set(key, { vnodes: node.vnodes });
+                return node.vnodes;
             }
             let renderer;
             let vnodes;
@@ -658,13 +669,14 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 }
             }
             let prunedVnodes = [vnode];
-            this.vnodesCache.set(key, { index: index, vnodes: prunedVnodes });
+            this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
         decorateItem(vnodes, metadata, index, initialFetch, visible) {
             let vnode = vnodes[0];
             let contentRoot = vnode._node;
             if (contentRoot != null) {
+                vnode.key = metadata.key;
                 contentRoot.key = metadata.key;
                 contentRoot.setAttribute('key', JSON.stringify(metadata.key));
                 contentRoot.setAttribute('role', 'listitem');

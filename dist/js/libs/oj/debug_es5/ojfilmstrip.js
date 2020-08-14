@@ -1654,7 +1654,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       pageInfoElem.uniqueId();
       pageInfoElem.addClass('oj-helper-hidden-accessible oj-filmstrip-liveregion');
       pageInfoElem.attr({
-        role: 'region',
         'aria-live': 'polite',
         'aria-atomic': 'true'
       });
@@ -1681,7 +1680,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var pageInfoElem = this._pageInfoElem;
 
       if (pageInfoElem) {
-        pageInfoElem.attr('aria-label', pageInfo);
+        pageInfoElem.text(pageInfo);
       }
     },
 

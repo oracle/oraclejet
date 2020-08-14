@@ -86,6 +86,12 @@
     // difference in dom structure
     .oj-select-choice .oj-text-field-middle {
       height: auto;
+      // TODO: Clean this up to use end slot when it is available (JET-15324)
+      // JET-37393 - regression for oj-select-one in ojet 9.0.0 rc2 release
+      // when having text element inside a flex box and if that text is styled for truncating
+      // text when it overflows, by default it causes the flex-box to grow beyond the
+      // available width. So we need this to allow the flex-box to shrink.
+      min-width: 0;
     }
 
     /* Styling for readonly mode */

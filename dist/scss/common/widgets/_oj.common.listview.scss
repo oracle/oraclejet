@@ -322,7 +322,12 @@
         /* Styling for item when display mode is card */
         .oj-listview-card {
             margin-top: oj-shorthand-property-value-top($listViewCardMargin);
-            margin-right: oj-shorthand-property-value-top($listViewCardMargin);
+            @include oj-rtl() {
+                margin-left: oj-shorthand-property-value-top($listViewCardMargin);
+            }
+            @include oj-ltr() {
+                margin-right: oj-shorthand-property-value-top($listViewCardMargin);
+            }
         }
 
         /* Styling for group item when display mode is card */

@@ -108,7 +108,6 @@
     .oj-listbox-result-label {
       line-height: 2rem;
       margin: 0;
-      cursor: pointer;
       min-height: 2rem;
       word-wrap: break-word;
       -webkit-touch-callout: none;
@@ -547,7 +546,7 @@
      * Applied to the matching text in the dropdown options
      */
     .oj-listbox-highlighter {
-      font-weight: bold;
+      @extend .oj-highlighttext-highlighter;
     }
 
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-listbox-input {

@@ -94,6 +94,19 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
    */
 
   /**
+   * <p>The <code class="prettyprint">overline</code> slot is for adding a overline text above the default text.</p>
+   *
+   * @ojslot overline
+   * @memberof oj.ojListItemLayout
+   * @ojtsexample
+   * &lt;oj-list-item-layout>
+   *    &lt;div slot="overline">
+   *       &lt;oj-bind-text value="overline"></oj-bind-text>
+   *    &lt;/div>
+   * &lt;/oj-list-item-layout>
+   */
+
+  /**
    * <p>The <code class="prettyprint">leading</code> slot is used for adding a leading visual
    * next to the selector. Start slot can be an image, avatar or initials.</p>
    *
@@ -143,6 +156,32 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
    * &lt;oj-list-item-layout>
    *    &lt;div slot="metadata">
    *       &lt;oj-bind-text value="metadata"></oj-bind-text>
+   *    &lt;/div>
+   * &lt;/oj-list-item-layout>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">trailing</code> slot is used for adding a trailing visual.</p>
+   * @ojslot trailing
+   * @memberof oj.ojListItemLayout
+   * @ojtsexample
+   * &lt;oj-list-item-layout>
+   *    &lt;oj-avatar slot='trailing' role="img" size="xs" initials='[[item.data.initials]]'
+   *                  src="[[item.data.image]]" :aria-label="[['Avatar of ' + item.data.name]]"
+   *                  :title="[['Avatar of ' + item.data.name]]">
+   *    &lt;/oj-avatar>
+   * &lt;/oj-list-item-layout>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">action</code> slot for adding either one primary action or one or more secondary actions.
+   *
+   * @ojslot action
+   * @memberof oj.ojListItemLayout
+   * @ojtsexample
+   * &lt;oj-list-item-layout>
+   *    &lt;div slot="action">
+   *       &lt;oj-button>Edit</oj-button>
    *    &lt;/div>
    * &lt;/oj-list-item-layout>
    */
@@ -213,46 +252,52 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
     var _super = _createSuper(ListItemLayout);
 
     function ListItemLayout() {
+      var _this;
+
       _classCallCheck(this, ListItemLayout);
 
-      return _super.apply(this, arguments);
+      _this = _super.apply(this, arguments);
+
+      _this._hasContent = function (slotContent) {
+        return slotContent && slotContent.length > 0;
+      };
+
+      return _this;
     }
 
     _createClass(ListItemLayout, [{
+      key: "_getWrappedSlotContent",
+      value: function _getWrappedSlotContent(slotContent, wrapperClasses) {
+        if (this._hasContent(slotContent)) {
+          if (wrapperClasses && wrapperClasses.length > 0) return ojvcomponent.h("div", {
+            class: wrapperClasses
+          }, slotContent);else return ojvcomponent.h("div", null, slotContent);
+        }
+
+        return null;
+      }
+    }, {
       key: "render",
       value: function render() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
 
-        var selectorSlot = (_b = (_a = this.props).selector) === null || _b === void 0 ? void 0 : _b.call(_a);
-        var leadingSlot = (_d = (_c = this.props).leading) === null || _d === void 0 ? void 0 : _d.call(_c);
-        var defaultSlot = this.props.children;
-        var secondarySlot = (_f = (_e = this.props).secondary) === null || _f === void 0 ? void 0 : _f.call(_e);
-        var tertiarySlot = (_h = (_g = this.props).tertiary) === null || _h === void 0 ? void 0 : _h.call(_g);
-        var metadataSlot = (_k = (_j = this.props).metadata) === null || _k === void 0 ? void 0 : _k.call(_j);
-        var hasSelector = (selectorSlot === null || selectorSlot === void 0 ? void 0 : selectorSlot.length) > 0;
-        var hasLeading = (leadingSlot === null || leadingSlot === void 0 ? void 0 : leadingSlot.length) > 0;
-        var tertiaryClass = {
-          'oj-listitemlayout-tertiary-padding': (secondarySlot === null || secondarySlot === void 0 ? void 0 : secondarySlot.length) > 0 && (tertiarySlot === null || tertiarySlot === void 0 ? void 0 : tertiarySlot.length) > 0
-        };
+        var tertiaryClass = '';
+        if (this._hasContent((_b = (_a = this.props).secondary) === null || _b === void 0 ? void 0 : _b.call(_a)) && this._hasContent((_d = (_c = this.props).tertiary) === null || _d === void 0 ? void 0 : _d.call(_c))) tertiaryClass = 'oj-listitemlayout-tertiary';
+        var leadingClass = '';
+        if (!this._hasContent((_f = (_e = this.props).selector) === null || _f === void 0 ? void 0 : _f.call(_e)) && this._hasContent((_h = (_g = this.props).leading) === null || _h === void 0 ? void 0 : _h.call(_g))) leadingClass = 'oj-listitemlayout-horizontal-padding';
+        var textSlotsClass = '';
+        if (!this._hasContent((_k = (_j = this.props).selector) === null || _k === void 0 ? void 0 : _k.call(_j))) textSlotsClass = 'oj-listitemlayout-textslots oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding';else if (this._hasContent((_m = (_l = this.props).selector) === null || _m === void 0 ? void 0 : _m.call(_l))) {
+          if (this._hasContent((_p = (_o = this.props).leading) === null || _p === void 0 ? void 0 : _p.call(_o))) textSlotsClass = 'oj-listitemlayout-textslots oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding';else textSlotsClass = 'oj-listitemlayout-textslots oj-listitemlayout-vertical-padding';
+        } else textSlotsClass = 'oj-listitemlayout-textslots';
         return ojvcomponent.h("oj-list-item-layout", null, ojvcomponent.h("div", {
           class: 'oj-listitemlayout'
-        }, hasSelector ? ojvcomponent.h("div", null, ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-selector'
-        }, selectorSlot)) : null, ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-content'
-        }, hasLeading ? ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-leading'
         }, ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-avatar'
-        }, leadingSlot)) : null, ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-textslots'
-        }, ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-main'
-        }, (defaultSlot === null || defaultSlot === void 0 ? void 0 : defaultSlot.length) > 0 ? ojvcomponent.h("div", null, defaultSlot) : null, (secondarySlot === null || secondarySlot === void 0 ? void 0 : secondarySlot.length) > 0 ? ojvcomponent.h("div", null, secondarySlot) : null, (tertiarySlot === null || tertiarySlot === void 0 ? void 0 : tertiarySlot.length) > 0 ? ojvcomponent.h("div", {
-          class: tertiaryClass
-        }, tertiarySlot) : null), (metadataSlot === null || metadataSlot === void 0 ? void 0 : metadataSlot.length) > 0 ? ojvcomponent.h("div", {
-          class: 'oj-listitemlayout-meta'
-        }, metadataSlot) : null))));
+          class: 'oj-listitemlayout-allslots'
+        }, this._hasContent((_r = (_q = this.props).selector) === null || _r === void 0 ? void 0 : _r.call(_q)) ? ojvcomponent.h("div", null, this._getWrappedSlotContent((_t = (_s = this.props).selector) === null || _t === void 0 ? void 0 : _t.call(_s), 'oj-listitemlayout-selector')) : null, this._hasContent((_v = (_u = this.props).leading) === null || _v === void 0 ? void 0 : _v.call(_u)) ? ojvcomponent.h("div", {
+          class: leadingClass
+        }, this._getWrappedSlotContent((_x = (_w = this.props).leading) === null || _x === void 0 ? void 0 : _x.call(_w), 'oj-listitemlayout-image oj-listitemlayout-vertical-padding')) : null, ojvcomponent.h("div", {
+          class: textSlotsClass
+        }, this._getWrappedSlotContent((_z = (_y = this.props).overline) === null || _z === void 0 ? void 0 : _z.call(_y)), this._getWrappedSlotContent(this.props.children), this._getWrappedSlotContent((_1 = (_0 = this.props).secondary) === null || _1 === void 0 ? void 0 : _1.call(_0)), this._getWrappedSlotContent((_3 = (_2 = this.props).tertiary) === null || _3 === void 0 ? void 0 : _3.call(_2), tertiaryClass)), this._getWrappedSlotContent((_5 = (_4 = this.props).metadata) === null || _5 === void 0 ? void 0 : _5.call(_4), 'oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding'), this._getWrappedSlotContent((_7 = (_6 = this.props).trailing) === null || _7 === void 0 ? void 0 : _7.call(_6), 'oj-listitemlayout-image oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding'), this._getWrappedSlotContent((_9 = (_8 = this.props).action) === null || _9 === void 0 ? void 0 : _9.call(_8), 'oj-listitemlayout-action  oj-clickthrough-disabled oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding'))));
       }
     }]);
 
@@ -266,10 +311,14 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
     "slots": {
       "selector": {},
       "leading": {},
+      "overline": {},
       "": {},
       "secondary": {},
       "tertiary": {},
-      "metadata": {}
+      "link": {},
+      "metadata": {},
+      "trailing": {},
+      "action": {}
     }
   };
   exports.ListItemLayout = __decorate([ojvcomponent.customElement('oj-list-item-layout')], exports.ListItemLayout);

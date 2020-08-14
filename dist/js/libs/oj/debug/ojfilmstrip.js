@@ -1581,7 +1581,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         var pageInfoElem = $(document.createElement('div'));
         pageInfoElem.uniqueId();
         pageInfoElem.addClass('oj-helper-hidden-accessible oj-filmstrip-liveregion');
-        pageInfoElem.attr({ role: 'region', 'aria-live': 'polite', 'aria-atomic': 'true' });
+        pageInfoElem.attr({ 'aria-live': 'polite', 'aria-atomic': 'true' });
         return pageInfoElem;
       },
 
@@ -1600,7 +1600,7 @@ oj.FilmStripPagingModel.prototype.totalSizeConfidence = function () {
                                         { pageIndex: pageIndex + 1, pageCount: pageCount }));
         var pageInfoElem = this._pageInfoElem;
         if (pageInfoElem) {
-          pageInfoElem.attr('aria-label', pageInfo);
+          pageInfoElem.text(pageInfo);
         }
       },
 

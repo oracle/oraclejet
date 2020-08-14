@@ -8,4 +8,4 @@
 
 export { WaterfallLayout } from './ojwaterfalllayout';
 
-export { WaterfallLayoutElementEventMap, WaterfallLayoutElementSettableProperties, WaterfallLayoutElementSettablePropertiesLenient, WaterfallLayoutElement, VProps, WaterfallLayoutProperties } from './ojwaterfalllayout';
+export { WaterfallLayoutElementEventMap, WaterfallLayoutElementSettableProperties, WaterfallLayoutElementSettablePropertiesLenient, WaterfallLayoutElement, VProps, WaterfallLayoutProperties, ojWaterfallLayoutEventMap, ojWaterfallLayoutSettableProperties, ojWaterfallLayoutSettablePropertiesLenient, ojWaterfallLayout } from './ojwaterfalllayout';

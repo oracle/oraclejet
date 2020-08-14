@@ -5062,7 +5062,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {string} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {string} action the action that triggers the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
        * @property {Element} element the target of animation.
        * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
        */
@@ -5075,7 +5075,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {string} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {string} action the action that triggered the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
        * @property {Element} element the target of animation.
        */
       animateEnd: null,
@@ -6688,7 +6688,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name animateStart
    * @memberof oj.ojTabBar
    * @instance
-   * @property {string} action the action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {string} action the action that triggers the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
    * @property {Element} element the target of animation.
    * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
    */
@@ -6701,7 +6701,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name animateEnd
    * @memberof oj.ojTabBar
    * @instance
-   * @property {string} action the action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {string} action the action that triggered the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
    * @property {Element} element the target of animation.
    */
 

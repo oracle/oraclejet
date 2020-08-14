@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ts = require("typescript");
 const fs = require("fs");
 const path = require("path");
+const DecoratorUtils_1 = require("./utils/DecoratorUtils");
 const _VCOMPONENT_EXPORTS = new Set(['VComponent', 'customElement', 'dynamicDefault', 'method', 'rootProperty', '_writeback', 'event']);
 const _DEFAULT_SLOT_PROP = 'children';
 const _METADATA_TAG = 'ojmetadata';
@@ -85,7 +86,7 @@ function genVComponentMetadata(classNode) {
             }
         }
     }
-    const decorator = getDecorator(classNode, _VEXPORT_TO_ALIAS.customElement);
+    const decorator = DecoratorUtils_1.getDecorator(classNode, _VEXPORT_TO_ALIAS.customElement);
     if (decorator && !_VCOMP_CLASS_NAME) {
         throw new Error(`${_FILE_NAME}: A @customElement decorator was found on class ${classNode.name.getText()} that is not extending VComponent.`);
     }
@@ -138,7 +139,7 @@ function genPropsMetadata(propsNode, rtMeta, fullMeta) {
         const propDeclaration = memberSymbol.valueDeclaration;
         const prop = memberKey;
         if (!isGenericTypeParameter(memberSymbol)) {
-            const decorators = getDecorators(propDeclaration);
+            const decorators = DecoratorUtils_1.getDecorators(propDeclaration);
             if (decorators[_VEXPORT_TO_ALIAS.rootProperty]) {
                 genControlledRootPropMetadata(prop, rtMeta);
             }
@@ -212,11 +213,7 @@ function genMethodsMetadata(members, rtMeta, fullMeta) {
         }
     };
     members.forEach(member => {
-        var _a;
-        if ((_a = member.decorators) === null || _a === void 0 ? void 0 : _a.some((decorator) => {
-            const decoratorExpr = decorator.expression;
-            return ts.isCallExpression(decoratorExpr) && decoratorExpr.expression.getText() === _VEXPORT_TO_ALIAS.method;
-        })) {
+        if (DecoratorUtils_1.getDecorator(member, _VEXPORT_TO_ALIAS.method)) {
             const methodName = member.name.getText();
             if (!rtMeta.methods) {
                 rtMeta.methods = {};
@@ -257,7 +254,7 @@ function genEventMetadata(memberKey, propDeclaration, decorators, rtMeta, fullMe
     const rtEventMeta = {};
     const eventDecorator = decorators[_VEXPORT_TO_ALIAS.event];
     if (eventDecorator) {
-        rtEventMeta.bubbles = getDecoratorParamValue(eventDecorator, 'bubbles') === true;
+        rtEventMeta.bubbles = DecoratorUtils_1.getDecoratorParamValue(eventDecorator, 'bubbles') === true;
     }
     switch (typeName) {
         case `${_VEXPORT_TO_ALIAS.VComponent}.${_CANCELABLE_ACTION}`:
@@ -336,7 +333,7 @@ function getMetadataForProp(memberSymbol, propDeclaration, decorators, includeDt
     const writebackDecorator = decorators[_VEXPORT_TO_ALIAS._writeback];
     if (writebackDecorator) {
         md.writeback = true;
-        md.readOnly = getDecoratorParamValue(writebackDecorator, 'readOnly') === true;
+        md.readOnly = DecoratorUtils_1.getDecoratorParamValue(writebackDecorator, 'readOnly') === true;
     }
     return md;
 }
@@ -794,38 +791,6 @@ function writeMetaFiles(fullMeta, elementName) {
         fs.mkdirSync(dtDir, { recursive: true });
     }
     fs.writeFileSync(`${dtDir}/${elementName}.json`, JSON.stringify(fullMeta, null, 2));
-}
-function getDecorator(node, name) {
-    var _a;
-    return (_a = node.decorators) === null || _a === void 0 ? void 0 : _a.find((decorator) => {
-        const decoratorExpr = decorator.expression;
-        return ts.isCallExpression(decoratorExpr) &&
-            decoratorExpr.expression.getText() === name;
-    });
-}
-function getDecorators(node) {
-    const decoratorMap = {};
-    if (node.decorators) {
-        node.decorators.forEach(decorator => {
-            const decoratorExpr = decorator.expression;
-            if (ts.isCallExpression(decoratorExpr)) {
-                decoratorMap[decoratorExpr.expression.getText()] = decorator;
-            }
-        });
-    }
-    return decoratorMap;
-}
-function getDecoratorParamValue(decorator, paramName) {
-    const args = decorator.expression['arguments'];
-    let param = null;
-    args === null || args === void 0 ? void 0 : args.forEach(arg => {
-        if (!param) {
-            const mapSymbol = arg.symbol;
-            const paramSymbol = mapSymbol.members.has(paramName);
-            param = paramSymbol === null || paramSymbol === void 0 ? void 0 : paramSymbol.valueOf();
-        }
-    });
-    return param;
 }
 function parseStringValueToJson(memberName, type, value) {
     try {

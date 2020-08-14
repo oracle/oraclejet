@@ -651,7 +651,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           selectionMode: 'single',
           selection: self._palInitSelected,
           rootAttributes: {
-            style: 'height:100%;width:100%'
+            class: 'oj-colorpalette-listview-full'
           }
         }).attr('data-oj-internal', ''); // for use in automation api
 

@@ -1376,39 +1376,46 @@ TemplateHandler.prototype.processTemplates = function (dataProperty, data, templ
  */
 TemplateHandler.prototype.release = function (dataProperty) {
   // Remove data provider template event listeners
-  var clearListeners = function (prop) {
-    var valueMap = this._templateNodeData[prop];
-    if (valueMap) {
-      valueMap.forEach(function (value) {
-        if (value.node) {
-          value.node.dispose();
-        }
-      });
-      // eslint-disable-next-line new-cap
-      this._templateNodeData[prop] = new ojMap();
-    }
-  }.bind(this);
+    var properties;
 
-  if (dataProperty) {
-    clearListeners(dataProperty);
-    this.clear(dataProperty);
-  } else {
-    var dataProperties = Object.keys(this._templateNodeData);
-    for (var i = 0; i < dataProperties.length; i++) {
-      clearListeners(dataProperties[i]);
+    if (dataProperty) {
+      var derivedTemplates = this._configMap[dataProperty].derivedTemplates;
+      properties = derivedTemplates ? [dataProperty].concat(derivedTemplates) : [dataProperty];
+    } else {
+      properties = Object.keys(this._templateNodeData);
     }
-    this.clear();
-  }
+
+    for (var i = 0; i < properties.length; i++) {
+      var valueMap = this._templateNodeData[properties[i]];
+      if (valueMap) {
+        valueMap.forEach(function (value) {
+          if (value.node) {
+            value.node.dispose();
+          }
+        });
+        // eslint-disable-next-line new-cap
+        this._templateNodeData[properties[i]] = new ojMap();
+      }
+    }
+  this.clear(dataProperty);
 };
 
 // todo: function description
 TemplateHandler.prototype.clear = function (dataProperty, isReset) {
-  if (dataProperty && isReset) {
-    // eslint-disable-next-line new-cap
-    this._templateNodeData[dataProperty] = this._templateNodeData[dataProperty] || new ojMap();
-  } else if (dataProperty) {
-    this._templateResults[dataProperty] = null;
-    this._componentResults[dataProperty] = null;
+  if (dataProperty) {
+    var derivedTemplates = this._configMap[dataProperty].derivedTemplates;
+    var properties = derivedTemplates ? [dataProperty].concat(derivedTemplates) : [dataProperty];
+    var value;
+    for (var i = 0; i < properties.length; i++) {
+      value = properties[i];
+      if (isReset) {
+        // eslint-disable-next-line new-cap
+        this._templateNodeData[value] = this._templateNodeData[value] || new ojMap();
+      } else {
+        this._templateResults[value] = null;
+        this._componentResults[value] = null;
+      }
+    }
   } else {
     this._templateResults = {};
     this._componentResults = {};

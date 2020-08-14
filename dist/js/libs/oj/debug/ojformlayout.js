@@ -103,7 +103,7 @@ var __oj_form_layout_metadata =
  * <p>The oj-form-layout element is used to layout groups of label/value pairs in an organized layout that
  * can be optimized for multiple display sizes via attribute value settings.  The following describes how child
  * elements are handled:<br><br>
- * - The following JET components have a label-hint attribute that allows them to be treated as a
+ * - The following JET components have a <code class="prettyprint">label-hint</code> attribute that allows them to be treated as a
  * label/value pair with an oj-label element dynamically created from the label-hint and help-hints:<br>
  * oj-checkboxset, oj-color-palette, oj-color-spectrum, oj-input-date, oj-input-date-time, oj-input-time,
  * oj-input-number, oj-input-text, oj-text-area, oj-input-password, oj-combobox-one, oj-combobox-many,
@@ -353,10 +353,17 @@ var __oj_form_layout_metadata =
  * @default false
  * @desc Specifies whether the form is readonly. A readonly form has no reserved rows for user assistance text.
  * <p>
- * The oj-form-layout provides its readonly attribute value and the form components
- * consume it if it is not already set explicitly.
- * For example, if oj-form-layout is set to readonly='true',
- * all the form components it contains will be readonly='true' by default.
+ * The oj-form-layout component uses the
+ * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+ * <code class="prettyprint">provide</code> property to provide its
+ * <code class="prettyprint">readonly</code>
+ * property to any descendent components that are
+ * configured to consume it.
+ * The form components and the oj-form-layout are configured to consume the readonly property
+ * if it is not explicitly set.
+ * For example, if the oj-form-layout's readonly attribute is set to true,
+ * and a descendent form component does
+ * not have its readonly attribute set, the form component's readonly will be true.
  * </p>
  */
 
@@ -376,28 +383,22 @@ var __oj_form_layout_metadata =
  * a popup for the messages, and a required icon to indicate Required.
  * @default "efficient"
  *
- * @desc <p>Specifies the density of the form component's user assistance presentation.
+ * @desc <p>Specifies the density of the form layout's user assistance presentation.
  * It can be shown inline with reserved rows to prevent reflow if
  * a user assistance text shows up, inline without reserved rows,
  * or it can be shown compactly in a popup instead.</p>
  * <p>
- * The oj-form-layout provides its user-assistance-density attribute value or its default
- * value and the form components consumes it if it is not already set explicitly.
- * For example, if oj-form-layout is set or defaults to
- * user-assistance-density='efficient', all the
- * form components it contains will be user-assistance-density='efficient' by default.
- * This is why when a form component is inside an oj-form-layout component
- * the form component's user-assistance-density is 'efficient',
- * and when a form component is not inside an oj-form-layout
- * component, the form component's user-assistance-density is 'reflow'.
- * </p>
- * <p>
- * A form component can explicitly
- * set its own user-assistance-density attribute which will take
- * precedence over the oj-form-layout's.
+ * The oj-form-layout component uses the
+ * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+ * <code class="prettyprint">provide</code> property to provide its
+ * user-assistance-density property to any descendent components that are
+ * configured to consume it.
+ * The form components and the oj-form-layout are configured to consume the
+ * user-assistance-density property if it is not explicitly set.
+ * For example, oj-form-layout's user-assistance-density defaults to 'efficient', so all its
+ * oj-form-layout and form control descendents will have user-assistance-density='efficient' by default.
  * </p>
  *
- * <p>This attribute is ignored in the Alta theme.</p>
  */
 
 /**
@@ -1311,8 +1312,20 @@ function ojFormLayout(context) {
     ojLabel.showRequired = showRequiredOnLabel;
   }
 
+  // Determine whether we should skip non-element nodes
+  function _skipNonElementNodes() {
+    // If direction is column or max-columns is 1, we don't need to move non-element nodes
+    // because we are wrapping every element in its own oj-flex div, so the order
+    // of the nodes will always remain the same.
+    return (element.direction === 'column' || element.maxColumns === 1);
+  }
+
   // Move all non-element nodes preceding elem into ojFlex
   function _movePrecedingNonElementNodes(ojFlex, elem) {
+    if (_skipNonElementNodes()) {
+      return;
+    }
+
     var firstNode;
 
     // Find the first of all non-element nodes preceding elem
@@ -1333,6 +1346,10 @@ function ojFormLayout(context) {
   // Move all non-element nodes succeeding ojFlex into ojFlex
   // Stop if an oj-bind-* comment node is encountered.
   function _moveSucceedingNonElementNodes(ojFlex) {
+    if (_skipNonElementNodes()) {
+      return;
+    }
+
     while (ojFlex.nextSibling) {
       var sibling = ojFlex.nextSibling;
       if (sibling.nodeType === 1) {
@@ -1902,7 +1919,7 @@ ojFormLayout.getDynamicDefaults = function () {
           },
           userAssistanceDensity: {
             binding: {
-              provide: [{ name: 'containerUserAssistanceDensity' },
+              provide: [{ name: 'containerUserAssistanceDensity', default: 'efficient' },
               { name: 'userAssistanceDensity', default: 'efficient' }],
               consume: { name: 'containerUserAssistanceDensity' }
             }

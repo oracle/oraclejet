@@ -76,18 +76,6 @@
       max-width: 100%;
     }
 
-    // start/end icon styles
-    .oj-inputtext-start,
-    .oj-inputtext-end {
-      min-height: $formControlInsideInputHeight;
-      min-width: $formControlInsideInputHeight;
-      margin: unset;
-    }
-    .oj-inputtext .oj-text-field-middle {
-      width: 100%;
-      flex: auto;
-    }
-
     // clear icon styles    
     .oj-inputtext .oj-inputtext-clear-icon-btn {
       display: inline-flex;

@@ -24,17 +24,16 @@ export declare class ProgressBar extends VComponent<Props> {
     private _renderIndeterminateBar;
     protected _vprops?: VProps;
 }
-
 // Custom Element interfaces
 export interface ProgressBarElement extends JetElement<ProgressBarElementSettableProperties> {
   /**
    * The maximum allowed value.
    */
-  max?: number;
+  max?: Props['max'];
   /**
    * The value of the Progress Bar.
    */
-  value?: number;
+  value?: Props['value'];
   addEventListener<T extends keyof ProgressBarElementEventMap>(type: T, listener: (this: HTMLElement, ev: ProgressBarElementEventMap[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof ProgressBarElementSettableProperties>(property: T): ProgressBarElement[T];
@@ -57,15 +56,19 @@ export interface ProgressBarElementSettableProperties extends JetSettablePropert
   /**
    * The maximum allowed value.
    */
-  max?: number;
+  max?: Props['max'];
   /**
    * The value of the Progress Bar.
    */
-  value?: number;
+  value?: Props['value'];
 }
 export interface ProgressBarElementSettablePropertiesLenient extends Partial<ProgressBarElementSettableProperties> {
   [key: string]: any;
 }
+export declare type ojProgressBar = ProgressBarElement;
+export declare type ojProgressBarEventMap = ProgressBarElementEventMap;
+export declare type ojProgressBarSettableProperties = ProgressBarElementSettableProperties;
+export declare type ojProgressBarSettablePropertiesLenient = ProgressBarElementSettablePropertiesLenient;
 export interface ProgressBarProperties extends Partial<ProgressBarElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

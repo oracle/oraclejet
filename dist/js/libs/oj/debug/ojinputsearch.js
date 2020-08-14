@@ -1,4 +1,4 @@
-define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, DomUtils, ojlistdataproviderview, $, oj, Context, Logger, ThemeUtils, TimerUtils, ojvcomponent, ojpopupcore) { 'use strict';
+define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, DomUtils, ojlistdataproviderview, $, oj, Context, Logger, ThemeUtils, TimerUtils, ojhighlighttext, ojvcomponent, ojpopupcore) { 'use strict';
 
     $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
@@ -260,8 +260,9 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
      * <p>By default, the component will attempt to render a 'label' data field as text.</p>
      *
      * <p>This text will be rendered for the selected value of the component.  It will also be
-     * rendered for each suggestion in the dropdown.  When rendered for the dropdown suggestions,
-     * default matching search term highlighting will still be applied.</p>
+     * rendered for each suggestion in the dropdown if no suggestionItemTemplate is provided.
+     * When rendered for the dropdown suggestions, default matching search term highlighting
+     * will still be applied.</p>
      *
      * @example <caption>Initialize the InputSearch with the <code class="prettyprint">suggestion-item-text</code> attribute specified:</caption>
      * &lt;oj-input-search suggestion-item-text="DisplayName">&lt;/oj-input-search>
@@ -311,6 +312,56 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
      *   {target:"Type", value:"<K, D>", for:"genericTypeParameters" },
      *   {target: "Type", value: "null | CommonTypes.ItemContext<K, D>", for: "itemContext"}
      * ]
+     */
+
+
+     // Slots:
+
+
+    /**
+     * <p>The <code class="prettyprint">suggestionItemTemplate</code> slot is used to specify the
+     * template for rendering each suggestion in the dropdown list.
+     * The slot must be a &lt;template> element.
+     * <p>When the template is executed for each suggestion, it will have access to the binding context
+     * containing the following properties:</p>
+     * <ul>
+     *   <li>$current - an object that contains information for the current suggestion. (See the table
+     * below for a list of properties available on $current)</li>
+     *  <li>alias - if the data-oj-as attribute was specified on the template, the value will be used
+     * to provide an application-named alias for $current.</li>
+     * </ul>
+     * <p>If no <code class="prettyprint">suggestionItemTemplate</code> is specified, the component
+     * will render based on the value of the <code class="prettyprint">suggestionItemText</code>
+     * property.</p>
+     *
+     *
+     * @ojslot suggestionItemTemplate
+     * @ojmaxitems 1
+     * @memberof oj.ojInputSearch
+     * @since 9.1.0
+     * @ojslotitemprops oj.ojInputSearch.SuggestionItemTemplateContext
+     *
+     * @example <caption>Initialize the Input Search with an inline suggestionItemTemplate specified:</caption>
+     * &lt;oj-input-search>
+     *   &lt;template slot='suggestionItemTemplate'>
+     *     &lt;div>&lt;oj-highlight-text text='[[$current.data.name]]'
+     *       match-text='[[$current.searchText]]'>&lt;/oj-highlight-text>&lt;/div>
+     *   &lt;template>
+     * &lt;/oj-input-search>
+     */
+
+    /**
+     * @typedef {Object}oj.ojInputSearch.SuggestionItemTemplateContext
+     * @property {Object} data The data for the current suggestion
+     * @property {number} index The zero-based index of the current suggestion
+     * @property {any} key The key of the current suggestion
+     * @property {Object} metadata The metadata for the current suggestion
+     * @property {string} searchText The search text entered by the user
+     * @ojsignature [{target: "Type", value: "D", for: "data",
+     *                jsdocOverride:true},
+     *               {target:"Type", value:"K", for: "key", jsdocOverride:true},
+     *               {target:"Type", value:"oj.ItemMetadata<K>", for: "metadata", jsdocOverride:true},
+     *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
      */
 
 
@@ -407,6 +458,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
     class Props {
         constructor() {
             this.focus = false;
+            this.index = -1;
             this.labelId = '';
             this.searchText = null;
             this.suggestionItemText = 'label';
@@ -415,7 +467,6 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
     class InputSearchSuggestion extends ojvcomponent.VComponent {
         constructor(props) {
             super(props);
-            this._HIGHLIGHT_TOKEN = '__@@__';
             this._fireSuggestionActionEvent = (text, itemContext) => {
                 var _a, _b;
                 (_b = (_a = this.props).onOjSuggestionAction) === null || _b === void 0 ? void 0 : _b.call(_a, { text: text, itemContext: itemContext });
@@ -440,16 +491,30 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
         }
         render() {
             const props = this.props;
-            const state = this.state;
             const rootClasses = {
                 'oj-listbox-result': true,
                 'oj-listbox-result-selectable': true,
-                'oj-hover': state.hover,
+                'oj-hover': this.state.hover,
                 'oj-focus': props.focus
             };
-            const nodes = this._highlighter(state.formattedText, props.searchText);
+            const content = this._renderContent();
             return (ojvcomponent.h("li", { role: 'presentation', class: rootClasses, onClick: this._handleClick, onMouseenter: this._handleMouseenter, onMouseleave: this._handleMouseleave },
-                ojvcomponent.h("div", { id: props.labelId, class: 'oj-listbox-result-label', role: 'option' }, nodes)));
+                ojvcomponent.h("div", { id: props.labelId, class: 'oj-listbox-result-label', role: 'option' }, content)));
+        }
+        _renderContent() {
+            var _a;
+            const props = this.props;
+            const renderer = props.suggestionItemTemplate;
+            if (renderer) {
+                return renderer({
+                    data: props.suggestionItemContext.data,
+                    key: props.suggestionItemContext.key,
+                    metadata: props.suggestionItemContext.metadata,
+                    index: props.index,
+                    searchText: props.searchText
+                });
+            }
+            return (ojvcomponent.h(ojhighlighttext.HighlightText, { "data-oj-internal": true, "data-oj-binding-provider": 'none', text: this.state.formattedText, matchText: (_a = props.searchText) !== null && _a !== void 0 ? _a : '' }));
         }
         static _formatItemText(suggestionItemText, suggestionItemContext) {
             var _a;
@@ -466,19 +531,6 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                 }
             }
             return formatted || '';
-        }
-        _escapeRegExp(string) {
-            return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
-        }
-        _highlighter(unhighlightedText, searchText) {
-            if ((searchText === null || searchText === void 0 ? void 0 : searchText.length) > 0) {
-                const escapedSearchText = this._escapeRegExp(searchText);
-                const highlightedText = unhighlightedText.replace(new RegExp(escapedSearchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
-                const tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
-                const nodes = tokens.map((current, index) => index % 2 == 0 ? current : ojvcomponent.h("span", { class: 'oj-listbox-highlighter' }, current));
-                return ojvcomponent.h("span", null, nodes);
-            }
-            return ojvcomponent.h("span", null, unhighlightedText);
         }
         _handleMouseenter(event) {
             if (!DomUtils.recentTouchEnd()) {
@@ -662,6 +714,9 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
             var _a, _b;
             if ((oldState.focus && !this.state.focus) || this.state.valueSubmitted) {
                 this._updateProperty('value', this.state.displayValue);
+                if (oldState.focus && !this.state.focus && oldState.filterText !== this.state.displayValue) {
+                    this.updateState({ filterText: this.state.displayValue });
+                }
                 if (this.state.valueSubmitted) {
                     (_b = (_a = this.props).onOjValueAction) === null || _b === void 0 ? void 0 : _b.call(_a, {
                         value: this.state.displayValue,
@@ -717,6 +772,9 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                 else {
                     this.updateState({ activeDescendantId: null });
                 }
+                if (!this._resolveFetchBusyState && this.state.labelIds.length === 0) {
+                    this.updateState({ dropdownOpen: false });
+                }
             }
             const scrollFocusedSuggestionIntoView = this.state.scrollFocusedSuggestionIntoView;
             if (scrollFocusedSuggestionIntoView) {
@@ -767,7 +825,21 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                 });
             }
         }
+        focus() {
+            var _a;
+            (_a = this._inputElem) === null || _a === void 0 ? void 0 : _a.focus();
+        }
+        blur() {
+            var _a;
+            (_a = this._inputElem) === null || _a === void 0 ? void 0 : _a.blur();
+        }
+        _handleFocus(event) {
+            var _a;
+            (_a = this._rootElem) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
+        }
         _handleBlur(event) {
+            var _a;
+            (_a = this._rootElem) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
         }
         _handleKeydown(event) {
             var _a;
@@ -798,10 +870,12 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                     });
                     break;
                 case this._KEYS.ESC:
-                    this.updateState({
-                        dropdownOpen: false
-                    });
-                    event.preventDefault();
+                    if (this.state.dropdownOpen) {
+                        this.updateState({
+                            dropdownOpen: false
+                        });
+                        event.preventDefault();
+                    }
                     break;
                 case this._KEYS.UP:
                 case this._KEYS.DOWN:
@@ -893,7 +967,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                 ojvcomponent.h("div", { role: 'presentation', class: 'oj-text-field-container', id: this._getInputContainerId(), ref: this._setInputContainerElem },
                     ojvcomponent.h("span", { class: iconClasses, role: 'presentation' }),
                     ojvcomponent.h("div", { class: 'oj-text-field-middle', role: this._dataProvider ? 'combobox' : null, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
-                        ojvcomponent.h("input", { type: inputType, ref: this._setInputElem, value: displayValue, class: inputClasses, placeholder: props.placeholder, autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false', autofocus: 'false', "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onBlur: this._handleBlur, onInput: this._handleInput, onCompositionstart: this._handleCompositionstart, onCompositionend: this._handleCompositionend, onKeydown: this._handleKeydown }))),
+                        ojvcomponent.h("input", { type: inputType, ref: this._setInputElem, value: displayValue, class: inputClasses, placeholder: props.placeholder, autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false', autofocus: 'false', "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onFocus: this._handleFocus, onBlur: this._handleBlur, onInput: this._handleInput, onCompositionstart: this._handleCompositionstart, onCompositionend: this._handleCompositionend, onKeydown: this._handleKeydown }))),
                 dropdown));
         }
         _renderDropdown() {
@@ -1035,7 +1109,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
                 let suggestions = [];
                 for (let i = 0; i < state.fetchedData.length; i++) {
                     const focused = i === state.focusedSuggestionIndex;
-                    const suggestion = (ojvcomponent.h(InputSearchSuggestion, { ref: this._setRenderedSuggestion.bind(this, i), labelId: state.labelIds[i], focus: focused, searchText: searchText, suggestionItemContext: state.fetchedData[i], suggestionItemText: this.props.suggestionItemText, onOjSuggestionAction: this._handleSuggestionAction }));
+                    const suggestion = (ojvcomponent.h(InputSearchSuggestion, { ref: this._setRenderedSuggestion.bind(this, i), labelId: state.labelIds[i], focus: focused, index: i, searchText: searchText, suggestionItemContext: state.fetchedData[i], suggestionItemText: this.props.suggestionItemText, suggestionItemTemplate: this.props.suggestionItemTemplate, onOjSuggestionAction: this._handleSuggestionAction }));
                     suggestions.push(suggestion);
                 }
                 return (ojvcomponent.h("ul", { role: 'listbox', id: this._getListboxId(), class: 'oj-listbox-results oj-inputsearch-results' }, suggestions));
@@ -1093,7 +1167,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
             }
         }
     };
-    exports.InputSearch.metadata = { "extension": { "_DEFAULTS": Props$1, "_ROOT_PROPS_MAP": { "aria-label": true } }, "properties": { "suggestions": { "type": "object|null", "value": null }, "suggestionItemText": { "type": "string|function", "value": "label" }, "placeholder": { "type": "string", "value": "" }, "rawValue": { "type": "string|null", "value": null, "writeback": true, "readOnly": true }, "value": { "type": "string|null", "value": null, "writeback": true, "readOnly": false } }, "events": { "ojValueAction": { "bubbles": false } } };
+    exports.InputSearch.metadata = { "extension": { "_DEFAULTS": Props$1, "_ROOT_PROPS_MAP": { "aria-label": true } }, "properties": { "suggestions": { "type": "object|null", "value": null }, "suggestionItemText": { "type": "string|function", "value": "label" }, "placeholder": { "type": "string", "value": "" }, "rawValue": { "type": "string|null", "value": null, "writeback": true, "readOnly": true }, "value": { "type": "string|null", "value": null, "writeback": true, "readOnly": false } }, "events": { "ojValueAction": { "bubbles": false } }, "slots": { "suggestionItemTemplate": {} }, "methods": { "focus": {}, "blur": {} } };
     __decorate$1([
         ojvcomponent.listener()
     ], exports.InputSearch.prototype, "_handleMouseenter", null);
@@ -1115,6 +1189,9 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
     __decorate$1([
         ojvcomponent.listener()
     ], exports.InputSearch.prototype, "_handleInput", null);
+    __decorate$1([
+        ojvcomponent.listener()
+    ], exports.InputSearch.prototype, "_handleFocus", null);
     __decorate$1([
         ojvcomponent.listener()
     ], exports.InputSearch.prototype, "_handleBlur", null);

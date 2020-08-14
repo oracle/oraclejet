@@ -160,6 +160,12 @@ export class DataProviderRefreshEvent implements Event {
     type: string;
     constructor();
 }
+export interface DedupCapability {
+    type: 'global' | 'none' | 'iterator';
+}
+export interface EventFilteringCapability {
+    type: 'global' | 'none' | 'iterator';
+}
 export interface FetchAttribute {
     attributes?: Array<string | FetchAttribute>;
     name: string;
@@ -203,6 +209,7 @@ export interface FetchByOffsetResults<K, D> {
 }
 export interface FetchCapability {
     attributeFilter?: AttributeFilterCapability;
+    caching?: 'all' | 'none' | 'visitedByCurrentIterator';
 }
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;

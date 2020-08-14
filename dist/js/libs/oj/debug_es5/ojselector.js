@@ -167,6 +167,10 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
           'oj-selected': isSelected,
           'oj-component-icon': true
         };
+        var ariaLabelledby = this.props['aria-labelledby'] || null;
+        var ariaLabel = this.props['aria-label'] || Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
+          rowKey: rowKey
+        });
         return ojvcomponent.h("oj-selector", {
           class: 'oj-selector'
         }, ojvcomponent.h("span", {
@@ -174,9 +178,8 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
         }, ojvcomponent.h("input", {
           type: 'checkbox',
           class: 'oj-selectorbox oj-clickthrough-disabled',
-          "aria-label": Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
-            rowKey: rowKey
-          }),
+          "aria-label": ariaLabel,
+          "aria-labelledby": ariaLabelledby,
           checked: isSelected,
           onClick: this._checkboxListener
         })));
@@ -230,7 +233,11 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
 
   exports.Selector.metadata = {
     "extension": {
-      "_DEFAULTS": Props
+      "_DEFAULTS": Props,
+      "_ROOT_PROPS_MAP": {
+        "aria-label": true,
+        "aria-labelledby": true
+      }
     },
     "properties": {
       "rowKey": {

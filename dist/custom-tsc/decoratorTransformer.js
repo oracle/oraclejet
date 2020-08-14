@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ts = require("typescript");
+const DecoratorUtils_1 = require("./utils/DecoratorUtils");
 const _DT_DECORATORS = new Set([
     "method",
     "rootProperty",
@@ -39,11 +40,7 @@ function decoratorTransformer(buildOptions) {
 exports.default = decoratorTransformer;
 function removeDtDecorators(node) {
     return node.decorators.filter(decorator => {
-        const decoratorExpr = decorator.expression;
-        if (ts.isCallExpression(decoratorExpr)) {
-            const decoratorName = _ALIAS_TO_EXPORT[decoratorExpr.expression.getText()];
-            return !_DT_DECORATORS.has(decoratorName);
-        }
-        return true;
+        const decoratorName = _ALIAS_TO_EXPORT[DecoratorUtils_1.getDecoratorName(decorator)];
+        return !_DT_DECORATORS.has(decoratorName);
     });
 }

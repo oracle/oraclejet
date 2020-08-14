@@ -829,7 +829,14 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria,
   // save most recent filterCriteria so we know whether we need to apply highlighting
   this._latestFilterCriteria = filterCriteria;
 
-  this._dataProvider.setFilterCriterion(filterCriteria);
+  // JET-37502 - REPEATED FETCHES / CONTAINSKEY CALLS COME IN FROM JET WHEN SEARCHING FOR TEXT WHEN
+  // SELECT-SINGLE DROPDOWN IS OPEN
+  // Initially clear both selected and currentRow so that the collection doesn't try to validate
+  // and scroll to a row that isn't in the filtered data set.  We'll set both in _configureResults,
+  // after the collection has rendered the filtered data.
+  // Clear these before calling setFilterCriterion on data provider below, so that collection is
+  // updated before the data provider refresh event is fired.
+  this._clearSelection();
 
   // ignore selection changed events during listView initialization
   this._duringListViewInitialization = true;
@@ -859,28 +866,29 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria,
   var collectionContext = this._collectionContext;
   collectionContext.data = this._dataProvider;
   collectionContext.searchText = searchText;
-  var selectedKeys = [];
-  if (!LovUtils.isValueForPlaceholder(selectedValue)) {
-    selectedKeys.push(selectedValue);
-  }
-  // Only set the selected and do not set the currentRow.rowKey here
-  // It should be set only if the row is present, it will be set in
-  // the _configureResults after the data is fetched by the
-  // collection and the presence of the rowKey is verified.
-  collectionContext.selected = new ojkeyset.KeySetImpl(selectedKeys);
 
-  // JET-34871 - FILTERING DANGLING BUSY STATE
-  // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
-  // orphaned busy states
-  if (collectionContext.renderError) {
-    var contextRenderError = collectionContext.renderError;
-    this._clearContextRenderPromiseFunctions(collectionContext);
-    contextRenderError('LovDropdown.renderResults: rejecting earlier promise');
-  }
-  collectionContext.renderDone = renderPromiseResolve;
-  collectionContext.renderError = renderPromiseReject;
+  // JET-37502 - REPEATED FETCHES / CONTAINSKEY CALLS COME IN FROM JET WHEN SEARCHING FOR TEXT WHEN
+  // SELECT-SINGLE DROPDOWN IS OPEN
+  // before rendering, let the _clearSelection() call above process, which may
+  // happen asynchronously when a collectionTemplate is specified because it relies on
+  // ko observables under the covers
+  var containerBusyContext = Context.getContext(this._containerElem[0]).getBusyContext();
+  containerBusyContext.whenReady().then(function () {
+    // JET-34871 - FILTERING DANGLING BUSY STATE
+    // if there is an existing, unresolved renderPromise, reject it now so that we don't end up with
+    // orphaned busy states
+    if (collectionContext.renderError) {
+      var contextRenderError = collectionContext.renderError;
+      this._clearContextRenderPromiseFunctions(collectionContext);
+      contextRenderError('LovDropdown.renderResults: rejecting earlier promise');
+    }
+    collectionContext.renderDone = renderPromiseResolve;
+    collectionContext.renderError = renderPromiseReject;
 
-  this._collectionRendererFunc(collectionContext);
+    this._dataProvider.setFilterCriterion(filterCriteria);
+
+    this._collectionRendererFunc(collectionContext);
+  }.bind(this));
 
   var afterRetPromiseFunc = function () {
     // ignore old responses
@@ -961,8 +969,8 @@ LovDropdown.prototype._configureResults = function (searchText, selectedValue, i
   // Now that we know that we have results to show, we need to make sure that the dropdown is being shown
   this._containerElem.removeClass(this._NO_RESULTS_FOUND_CLASSNAME);
 
-  // If it is the initial fetch selection would have been already done
-  // during initialization, so only update currentRow if needed.
+  // If it is the initial fetch, set both selection and currentRow, because both were cleared
+  // initially.
   if (initial) {
     // if there is a selected value, then the collection would have
     // filtered the data using the display text initially. Set the current row only if the
@@ -971,6 +979,7 @@ LovDropdown.prototype._configureResults = function (searchText, selectedValue, i
     //       the fetched data.
     if (selectedValue != null && this._resultsCount.count > 0) {
       this._setCollectionCurrentRow({ rowKey: selectedValue });
+      this._setCollectionSelectedKeySet(selectedValue);
       return busyContext.whenReady();
     }
     // In case if there is no selected value, or filtered data is empty
@@ -1877,9 +1886,7 @@ LovDropdown.prototype._createValueItemFromItem = function (item) {
   return {
     key: item.metadata.key,
     data: item.data,
-    metadata: {
-      key: item.metadata.key
-    }
+    metadata: item.metadata
   };
 };
 
@@ -1905,7 +1912,7 @@ LovDropdown.prototype._setCollectionSelectedKeySet = function (rowKey) {
 
   if (this._collectionTemplateContext != null) {
     this._collectionTemplateContext.selected = selected;
-  } else if (this._collectionTemplate == null) {
+  } else if (this._collectionTemplate == null && this._resultsElem) {
     // If no collection template is present, that means default
     // list view is being used, set the property using this._resultsElem
     this._resultsElem[0].setProperty('selected', selected);
@@ -1933,7 +1940,7 @@ LovDropdown.prototype._setCollectionCurrentRow = function (currentRow) {
     // rowKey property
     this._addListenerForRowKeyProperty(currentRow);
     this._collectionTemplateContext.currentRow = currentRow;
-  } else if (this._collectionTemplate == null) {
+  } else if (this._collectionTemplate == null && this._resultsElem) {
     // If no collection template is present, that means default
     // list view is being used, set the property using this._resultsElem
     this._resultsElem[0].setProperty('currentItem', currentRow.rowKey);
@@ -2735,6 +2742,7 @@ AbstractLovBase.prototype._fetchFromDataProvider = function (term, initial) {
  * Apply this class to the collection element (e.g. an &lt;oj-list-view>) in the collectionTemplate.
  * @ojstyleclass oj-select-results
  * @ojdisplayname Collection Element
+ * @ojstyleselector oj-select-single oj-table, oj-select-single oj-list-view
  * @memberof oj.ojSelectSingle
  */
 /**
@@ -2923,6 +2931,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
      * @type {null | oj.DataProvider}
      * @default null
      * @ojsignature {target: "Type", value: "oj.DataProvider<V, D>", jsdocOverride: true}
+     * @ojmincapabilities {filter: {textFilter: true}}
      * @memberof oj.ojSelectSingle
      *
      * @example <caption>Initialize the Select with the <code class="prettyprint">data</code> specified:</caption>
@@ -3016,7 +3025,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
      *
      * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user and the
      * input's label will render a required icon. A required validator -
      * {@link oj.RequiredValidator} - is implicitly used.
      *
@@ -3064,10 +3073,18 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     /**
      * Dictates element's readonly state.
      * <p>
-     * The oj-form-layout provides its readonly attribute value and the form components
-     * consume it if it is not already set explicitly.
-     * For example, if oj-form-layout is set to readonly='true',
-     * all the form components it contains will be readonly='true' by default.
+     * The default value for readonly is false. However, if the form component is a descendent of
+     * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+     * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+     * The <code class="prettyprint">oj-form-layout</code> uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">readonly</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the readonly property if an ancestor provides it and
+     * it is not explicitly set.
+     * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+     * not have its readonly attribute set, the form component's readonly will be true.
      * </p>
      * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
@@ -4890,23 +4907,72 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    */
   _setOptions: function (options, flags) {
     // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
-    // create a temporary object for individual _setOption calls to store things, so that we can
-    // process them in a particular order, if necessary
-    this._processSetOptions = {};
+    // Create a temporary object for individual _setOption calls to store things, so that we can
+    // process them in a particular order, if necessary.
+    // Push an object for this _setOptions call.  There may be nested _setOptions calls if
+    // 'labelEdge' is being set, because it in turn may set 'labelledBy'.  If we used a single
+    // object, not an array of objects, then the nested call would clear the single object, and
+    // when the outer call tries to access it below, it will be null.
+    if (!this._processSetOptions) {
+      this._processSetOptions = [];
+    }
+    this._processSetOptions.push({});
 
-    this._super(options, flags);
+    // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
+    // if setting both data and value at the same time, defer setting the value until after the
+    // has been set
+    var resolveBusyState;
+    var needToUpdateValueItem = false;
+    // eslint-disable-next-line no-prototype-builtins
+    var hasData = options.hasOwnProperty('data');
+    // eslint-disable-next-line no-prototype-builtins
+    var hasValue = options.hasOwnProperty('value');
+    // eslint-disable-next-line no-prototype-builtins
+    var hasValueItem = options.hasOwnProperty('valueItem');
+    if (hasData) {
+      if (hasValue) {
+        this._deferSettingValue = true;
+        // maintain a busy state until we've at least started to process all changes
+        resolveBusyState = LovUtils.addBusyState(this.OuterWrapper, 'Defer setting value');
+      } else if (!hasValueItem) {
+        // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
+        // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
+        // if setting new data and the current valueItem was set internally, then it needs to be
+        // updated for the new data
+        needToUpdateValueItem = this._valueItemSetInternally;
+      }
+    }
 
-    var processSetOptions = this._processSetOptions;
-    this._processSetOptions = null;
+    try {
+      this._super(options, flags);
 
-    if (processSetOptions) {
+      // grab the latest processSetOptions object and remove it from the array
+      var processSetOptions = this._processSetOptions.pop();
+
       // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
       // if we need to refresh, do that before setting a new value
       if (processSetOptions.forRefresh) {
         processSetOptions.forRefresh();
       }
+
+      // turn off the flag now, after setting the new data but before processing the new value,
+      // only if we set the flag during this call to _setOptions
+      if (resolveBusyState) {
+        this._deferSettingValue = false;
+      }
+
       if (processSetOptions.value) {
         processSetOptions.value();
+      } else if (needToUpdateValueItem) {
+        // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
+        // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
+        // if setting new data and the current valueItem was set internally, then it needs to be
+        // updated for the new data, which will happen when we re-set the existing value
+        this._setOption('value', this.options.value);
+      }
+    } finally {
+      if (resolveBusyState) {
+        resolveBusyState();
       }
     }
   },
@@ -4922,8 +4988,15 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     this._super(key, value, flags);
 
+    var processSetOptions;
+    if (this._processSetOptions && this._processSetOptions.length > 0) {
+      // use the last processSetOptions object, which is the one for the current _setOptions call
+      processSetOptions = this._processSetOptions[this._processSetOptions.length - 1];
+    }
+
     //  - need to be able to specify the initial value of select components bound to dprv
     if (key === 'valueItem') {
+      this._valueItemSetInternally = false;
       this._syncValueWithValueItem(value, this.options.value);
     } else if (key === 'value') {
       // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
@@ -4943,8 +5016,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         // need to update display value again after valueItem is set correctly
         this._SetDisplayValue();
       }.bind(this);
-      if (this._processSetOptions) {
-        this._processSetOptions.value = processSetOptionValue;
+      if (processSetOptions) {
+        processSetOptions.value = processSetOptionValue;
       } else {
         processSetOptionValue();
       }
@@ -4955,8 +5028,8 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       var processSetOptionForRefresh = function () {
         this.refresh();
       }.bind(this);
-      if (this._processSetOptions) {
-        this._processSetOptions.forRefresh = processSetOptionForRefresh;
+      if (processSetOptions) {
+        processSetOptions.forRefresh = processSetOptionForRefresh;
       } else {
         processSetOptionForRefresh();
       }
@@ -5080,6 +5153,13 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    */
   // eslint-disable-next-line no-unused-vars
   _SetDisplayValue: function (displayValue) {
+    // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
+    // if setting both data and value at the same time, defer setting the value until after the
+    // has been set
+    if (this._deferSettingValue) {
+      return;
+    }
+
     // JET-34351 - OJ-SELECT-SINGLE DOES NOT SHOW VALUE IF OPTIONS ARE UPDATED ASYNC
     // while calling superclass refresh, defer handling any _SetDisplayValue calls until after
     // we've setup again
@@ -5407,10 +5487,21 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    */
   _initSelectedValue: function (valueItem) {
     //  - need to be able to specify the initial value of select components bound to dprv
+    // Even when _deferSettingValue is true, we're not short-circuiting in this method if either:
+    // - we have a complete value-item, or
+    // - the value represents the placeholder
+    // because in those cases we can process setting the value without having to fetch from the
+    // data provider.
     if (!this._applyValueItem(valueItem)) {
       var value = (!LovUtils.isValueItemForPlaceholder(valueItem)) ? valueItem.key :
         this.options.value;
-      this._initSelectionHelper(value, this._updateSelectedOption.bind(this));
+      // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
+      // if setting both data and value at the same time, defer setting a non-placeholder value
+      // until after the has been set
+      var isPlaceholderValue = LovUtils.isValueForPlaceholder(value);
+      if (isPlaceholderValue || !this._deferSettingValue) {
+        this._initSelectionHelper(value, this._updateSelectedOption.bind(this));
+      }
     }
   },
 
@@ -5455,6 +5546,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @private
    */
   _setValueItem: function (valueItem) {
+    this._valueItemSetInternally = true;
     var newValueItem = valueItem;
     //  - resetting value when value-item and placeholder are set throws exception
     if (valueItem && !LovUtils.isValueItemForPlaceholder(valueItem)) {
@@ -5506,6 +5598,13 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         if (readonlyElem) {
           readonlyElem.textContent = text;
         }
+      }
+      // JET-37621 - DYNAMIC FORM - SELECT SINGLE COMPONENT DOESN'T REFLECT THE VALUE UNTIL USER
+      // CLICKS OUTSIDE THE FORM
+      // if the filter field is visible, update its text, too
+      if ((!this._fullScreenPopup && this._filterInputText.style.visibility !== 'hidden') ||
+          (this._fullScreenPopup && this._abstractLovBase.isDropdownOpen())) {
+        this._setFilterFieldText(text);
       }
     }
   },

@@ -8,62 +8,71 @@
 
 @import "../../utilities/oj.utilities";
 
-  @include module-include-once("common.listitemlayout") {
-
-      // This is to prevent the flash of unstyled content before the html becomes JET components.
-      @if $initialVisibility == hidden {
-        oj-list-item-layout:not(.oj-complete) {
-          visibility: hidden;
-        }
-      }
-
-      .oj-listitemlayout{
-        display: flex;
-        box-sizing: border-box;
-        align-items: center;
-        min-height: $collectionRowHeight;
-        padding: 0 $panelPadding;
-      }
-  
-      .oj-listitemlayout-selector,
-      .oj-listitemlayout-avatar{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-  
-      .oj-listitemlayout-content {
-        padding: $panelPadding 0;
-        display: flex;
-        flex:auto;
-        align-items: center;
-      }
-      
-      .oj-listitemlayout-textslots {
-        display: flex;
-        flex:auto;
-      }
-  
-      .oj-listitemlayout-leading {
-        @include oj-ltr() {
-          padding-right: $panelPadding;
-        }
-        @include oj-rtl() {
-          padding-left: $panelPadding;
-        }
-      }
-  
-      .oj-listitemlayout-main {
-        flex: auto;
-      }
-      
-      .oj-listitemlayout-meta {
-        justify-self: flex-end;
-        align-self: baseline;
-      }
-
-      .oj-listitemlayout-tertiary-padding{
-        padding-top: 2px;
-      }
-        
+@include module-include-once("common.listitemlayout") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  @if $initialVisibility == hidden {
+    oj-list-item-layout:not(.oj-complete) {
+      visibility: hidden;
+    }
   }
+
+  .oj-listitemlayout {
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    min-height: $collectionRowHeight;
+    @include oj-ltr() {
+      padding-right: $panelPadding;
+    }
+    @include oj-rtl() {
+      padding-left: $panelPadding;
+    }
+  }
+
+  .oj-listitemlayout-selector,
+  .oj-listitemlayout-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .oj-listitemlayout-textslots {
+    flex: auto;
+  }
+
+  .oj-listitemlayout-allslots {
+    display: flex;
+    flex: auto;
+    align-items: center;
+  }
+
+  .oj-listitemlayout-vertical-padding {
+    padding-top: $panelPadding;
+    padding-bottom: $panelPadding;
+  }
+
+  .oj-listitemlayout-horizontal-padding {
+    @include oj-ltr() {
+      padding-left: $panelPadding;
+    }
+    @include oj-rtl() {
+      padding-right: $panelPadding;
+    }
+  }
+
+  .oj-listitemlayout-action {
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    @include oj-rtl() {
+      padding-right: $panelPadding;
+    }
+    @include oj-ltr() {
+      padding-left: $panelPadding;
+    }
+  }
+
+  .oj-listitemlayout-tertiary {
+    padding-top: 2px;
+  }
+}

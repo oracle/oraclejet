@@ -454,6 +454,7 @@ var __oj_slider_metadata =
    * <code class="prettyprint">type</code> attribute
    * is not part of the initial (4.0) release of the custom element range-slider.
    * </p>
+   * {@ojinclude "name":"validationAndMessagingDoc"}
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -483,7 +484,7 @@ var __oj_slider_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
    * </h3>
    * <p>
-   * It is up to the application developer to associate the oj-label to the oj-range-slider element.
+   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate the oj-label to the oj-range-slider element.
    * For accessibility, you should associate a oj-label element with the oj-range-slider element
    * by putting an <code class="prettyprint">id</code> on the oj-range-slider element, and then setting the
    * <code class="prettyprint">for</code> attribute on the oj-label to be the range-slider element's id.
@@ -596,6 +597,7 @@ var __oj_slider_metadata =
    * <code class="prettyprint">type</code> attribute
    * is not part of the initial (4.0) release of the custom element slider.
    * </p>
+   * {@ojinclude "name":"validationAndMessagingDoc"}
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -625,7 +627,7 @@ var __oj_slider_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
    * </h3>
    * <p>
-   * It is up to the application developer to associate the oj-label to the oj-slider element.
+   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate the oj-label to the oj-slider element.
    * For accessibility, you should associate a oj-label element with the oj-slider element
    * by putting an <code class="prettyprint">id</code> on the oj-slider element, and then setting the
    * <code class="prettyprint">for</code> attribute on the oj-label to be the slider element's id.
@@ -998,10 +1000,18 @@ var __oj_slider_metadata =
        * set. When neither is set, <code class="prettyprint">readOnly </code>
        * defaults to false.
        * <p>
-       * The oj-form-layout provides its readonly attribute value and the form components
-       * consume it if it is not already set explicitly.
-       * For example, if oj-form-layout is set to readonly='true',
-       * all the form components it contains will be readonly='true' by default.
+       * The default value for readonly is false. However, if the form component is a descendent of
+       * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+       * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+       * The <code class="prettyprint">oj-form-layout</code> uses the
+       * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+       * <code class="prettyprint">provide</code> property to provide its
+       * <code class="prettyprint">readonly</code>
+       * attribute value to be consumed by descendent components.
+       * The form components are configured to consume the readonly property if an ancestor provides it and
+       * it is not explicitly set.
+       * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+       * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
        * @example <caption>Initialize component with <code class="prettyprint">readOnly</code>
        * attribute:</caption>

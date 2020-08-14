@@ -1120,7 +1120,10 @@ var PagingDataProviderView = /*#__PURE__*/function () {
       var updateMutationsIndices = self._mutationEventQueue.filter(function (item) {
         return !item.detail.add && !item.detail.remove && item.detail.update;
       }).map(function (item) {
-        return item.detail.update.indexes;
+        // indexes from events are global, so we need to update them to local
+        return item.detail.update.indexes.map(function (x) {
+          return x - self._pageSize * self._currentPage;
+        });
       }); // flatten array so we can check for duplicates
 
 
@@ -1170,8 +1173,8 @@ var PagingDataProviderView = /*#__PURE__*/function () {
 
       if (updateItems.length > 0) {
         updateItems.forEach(function (item) {
-          updateMetadataArray.push(previousPageData[item.index].item.metadata);
-          updateDataArray.push(previousPageData[item.index].item.data);
+          updateMetadataArray.push(updatedPageData[item.index].item.metadata);
+          updateDataArray.push(updatedPageData[item.index].item.data);
           updateIndexArray.push(item.index);
         });
         updateMetadataArray.map(function (metadata) {

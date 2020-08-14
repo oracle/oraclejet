@@ -2390,16 +2390,6 @@ IteratingDataProviderContentHandler.prototype._getMaxIndexForInsert = function (
 
   if (this._isLoadMoreOnScroll() && this.hasMoreToFetch()) {
     max = $(this.m_root).children('li.' + this.m_widget.getItemElementStyleClass()).length;
-
-    var fetchSize = this._getFetchSize();
-
-    var min = fetchSize;
-
-    if (this.m_widget.getMinimumCountForViewport) {
-      min = Math.ceil(this.m_widget.getMinimumCountForViewport() / fetchSize) * fetchSize;
-    }
-
-    max = Math.max(max, min);
   }
 
   return max;
@@ -2416,6 +2406,7 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert = function 
 
 
   var templateEngine = this.getTemplateEngine();
+  var itemsInserted = 0;
 
   for (var i = 0; i < data.length; i++) {
     this.signalTaskStart('handling model add event for item: ' + keys[i]); // signal add item start
@@ -2439,9 +2430,18 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert = function 
 
     if (index < max) {
       this.addItem(this.m_root, index, data[i], this.getMetadata(index, keys[i], data[i]), templateEngine, this.afterRenderItemForInsertEvent.bind(this), metadata != null ? metadata[i] : null);
+      itemsInserted += 1;
     }
 
     this.signalTaskEnd(); // signal add item end
+  } // everything is outside of range, suppress empty text
+
+
+  if (data.length > 0 && itemsInserted === 0 && this.m_widget._isEmpty()) {
+    var dummyElem = document.createElement('li');
+    dummyElem.classList.add('oj-listview-temp-item');
+    dummyElem.style.display = 'none';
+    this.m_root.appendChild(dummyElem);
   }
 
   if (this.IsReady()) {
@@ -2450,6 +2450,15 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert = function 
 
 
   this.fetchEnd(false, true); // signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
+};
+
+IteratingDataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
+  IteratingDataProviderContentHandler.superclass.handleModelRemoveEvent.call(this, event);
+  var remainingItem = this.m_root.querySelector('li.' + this.m_widget.getItemElementStyleClass());
+
+  if (remainingItem == null && this.m_loadingIndicator) {
+    this.m_loadingIndicator.get(0).style.display = 'none';
+  }
 };
 /**
  * Model refresh event handler.  Called when all rows has been removed from the underlying data.

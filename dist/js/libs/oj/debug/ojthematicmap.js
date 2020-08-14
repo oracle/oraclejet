@@ -6,8 +6,8 @@
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtThematicMap', 'ojs/ojlogger'], function(oj, $, Config, Components, DvtAttributeUtils, dvt, Logger)
-{
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtThematicMap', 'ojs/ojlogger'], 
+  function(oj, $, Config, Components, DvtAttributeUtils, dvt, Logger) {
   "use strict";
 var __oj_thematic_map_metadata = 
 {
@@ -2470,16 +2470,12 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
         thisRef._loadedBasemaps[url] = true;
         thisRef._Render();
       };
-      // TODO Update to use requirejs for internal resource bundle loading after 2.2.0(?)
-      var getScript = $.getScript(Config.getResourceUrl(url), function () {
-        renderCallback();
-      });
-      // Resource bundles might not get included, but this should not stop component rendering
-      if (bRenderOnFail) {
-        getScript.fail(function () {
-          renderCallback();
-        });
-      }
+      // Builtin basemaps for ojThematicMap are not supported when the ojs/ojthematicmap module has been bundled by Webpack
+      // eslint-disable-next-line global-require
+      require(
+        /* ojWebpackError: 'Internal loading of base maps not supported when the application is bundled by Webpack' */
+        [Config.getResourceUrl(url)],
+        renderCallback, bRenderOnFail ? renderCallback : null);
     },
 
     /**

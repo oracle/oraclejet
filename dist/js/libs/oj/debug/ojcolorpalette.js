@@ -624,7 +624,7 @@ var __oj_color_palette_metadata =
             optionChange: self._onLVOptionChange.bind(self),
             selectionMode: 'single',
             selection: self._palInitSelected,
-            rootAttributes: { style: 'height:100%;width:100%' }
+            rootAttributes: { class: 'oj-colorpalette-listview-full' }
           }).attr('data-oj-internal', ''); // for use in automation api
           self._$LVWidget = self._$LV;
           return LVResolve.whenReady();

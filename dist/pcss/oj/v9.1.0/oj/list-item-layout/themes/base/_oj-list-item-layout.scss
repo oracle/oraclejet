@@ -1,0 +1,73 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.waterfalllayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.scss";
+
+  @include module-include-once("common.listitemlayout") {
+
+      // This is to prevent the flash of unstyled content before the html becomes JET components.
+      @if $initialVisibility == hidden {
+        oj-list-item-layout:not(.oj-complete) {
+          visibility: hidden;
+        }
+      }
+
+    .oj-listitemlayout{
+      display: flex;
+      box-sizing: border-box;
+      min-height: var(--oj-collection-list-min-row-height);
+      @include oj-ltr() {
+        padding-right: var(--oj-list-view-item-padding-horizontal);
+      }
+      @include oj-rtl() {
+        padding-left: var(--oj-list-view-item-padding-horizontal);
+      }
+    }
+
+    .oj-listitemlayout-selector,
+    .oj-listitemlayout-image{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .oj-listitemlayout-textslots {
+      flex:auto;
+    }
+
+    .oj-listitemlayout-allslots {
+      display: flex;
+      flex:auto;
+      align-items: center;
+    }
+  
+    .oj-listitemlayout-vertical-padding {
+      padding-top: var(--oj-collection-list-cell-padding-vertical);
+      padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+    }
+
+    .oj-listitemlayout-horizontal-padding {
+      @include oj-rtl() {
+        padding-right: var(--oj-list-view-item-padding-horizontal);
+      }
+      @include oj-ltr() {
+        padding-left: var(--oj-list-view-item-padding-horizontal);
+      }
+    }
+
+    .oj-listitemlayout-action{
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+
+    .oj-listitemlayout-tertiary{
+      padding-top: 2px;
+    }
+        
+  }

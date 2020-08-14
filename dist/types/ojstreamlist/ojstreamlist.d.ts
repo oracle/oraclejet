@@ -133,59 +133,28 @@ export declare class StreamList<K extends string | number, D> extends VComponent
     private _exitActionableMode;
     protected _vprops?: VProps<K, D>;
 }
-
 // Custom Element interfaces
 export interface StreamListElement<Key,Data> extends JetElement<StreamListElementSettableProperties<Key,Data>> {
   /**
    * Specifies the data for the component. See the Help documentation for more information.
    */
-  data?: DataProvider<Key, Data>|null;
+  data?: Props<Key,Data>['data'];
   /**
    * Specifies the key set containing the keys of the items that should be expanded.
    */
-  expanded?: KeySet.KeySet<Key>;
+  expanded?: Props<Key,Data>['expanded'];
   /**
    * Specifies how data are fetched as user scrolls towards the bottom of the list.
    */
-  scrollPolicy?: 'loadAll'|'loadMoreOnScroll';
+  scrollPolicy?: Props<Key,Data>['scrollPolicy'];
   /**
    * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
    */
-  scrollPolicyOptions: {
-  /**
-   * The number of items to fetch in each block.
-   */
-  fetchSize?: number;
-  /**
-   * The maximum total number of items to fetch.
-   */
-  maxCount?: number;
-  /**
-   * The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   */
-  scroller?: Element|null;
-    };
+  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
   /**
    * Specifies the current scroll position of the StreamList. See the Help documentation for more information.
    */
-  scrollPosition: {
-  /**
-   * The key of the item. If DataProvider is used for data and the key does not exist in the DataProvider or if the item has not been fetched yet, then the value is ignored.
-   */
-  key?: Key;
-  /**
-   * The vertical offset in pixels relative to the item identified by key.
-   */
-  offsetY?: number;
-  /**
-   * The key of the parent if tree data.
-   */
-  parentKey?: Key;
-  /**
-   * The vertical position in pixels.
-   */
-  y?: number;
-    };
+  scrollPosition: Props<Key,Data>['scrollPosition'];
   addEventListener<T extends keyof StreamListElementEventMap<Key,Data>>(type: T, listener: (this: HTMLElement, ev: StreamListElementEventMap<Key,Data>[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof StreamListElementSettableProperties<Key,Data>>(property: T): StreamListElement<Key,Data>[T];
@@ -217,57 +186,31 @@ export interface StreamListElementSettableProperties<Key,Data> extends JetSettab
   /**
    * Specifies the data for the component. See the Help documentation for more information.
    */
-  data?: DataProvider<Key, Data>|null;
+  data?: Props<Key,Data>['data'];
   /**
    * Specifies the key set containing the keys of the items that should be expanded.
    */
-  expanded?: KeySet.KeySet<Key>;
+  expanded?: Props<Key,Data>['expanded'];
   /**
    * Specifies how data are fetched as user scrolls towards the bottom of the list.
    */
-  scrollPolicy?: 'loadAll'|'loadMoreOnScroll';
+  scrollPolicy?: Props<Key,Data>['scrollPolicy'];
   /**
    * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
    */
-  scrollPolicyOptions: {
-  /**
-   * The number of items to fetch in each block.
-   */
-  fetchSize?: number;
-  /**
-   * The maximum total number of items to fetch.
-   */
-  maxCount?: number;
-  /**
-   * The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   */
-  scroller?: Element|null;
-    };
+  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
   /**
    * Specifies the current scroll position of the StreamList. See the Help documentation for more information.
    */
-  scrollPosition: {
-  /**
-   * The key of the item. If DataProvider is used for data and the key does not exist in the DataProvider or if the item has not been fetched yet, then the value is ignored.
-   */
-  key?: Key;
-  /**
-   * The vertical offset in pixels relative to the item identified by key.
-   */
-  offsetY?: number;
-  /**
-   * The key of the parent if tree data.
-   */
-  parentKey?: Key;
-  /**
-   * The vertical position in pixels.
-   */
-  y?: number;
-    };
+  scrollPosition: Props<Key,Data>['scrollPosition'];
 }
 export interface StreamListElementSettablePropertiesLenient<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
+export declare type ojStreamList<Key,Data> = StreamListElement<Key,Data>;
+export declare type ojStreamListEventMap<Key,Data> = StreamListElementEventMap<Key,Data>;
+export declare type ojStreamListSettableProperties<Key,Data> = StreamListElementSettableProperties<Key,Data>;
+export declare type ojStreamListSettablePropertiesLenient<Key,Data> = StreamListElementSettablePropertiesLenient<Key,Data>;
 export interface StreamListProperties<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

@@ -864,6 +864,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         var startIndex = this.callback.getData().startIndex;
         var positions = this.getLayout().getPositionForItems(items, isNaN(startIndex) ? 0 : startIndex);
         this.callback.setPositions(positions.positions);
+        this.callback.setContentHeight(this.getLayout().getLastItemPosition());
 
         if (this.domScroller) {
           this.domScroller.setViewportRange(positions.start, positions.end);
@@ -1142,6 +1143,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
 
         if (maxTop > 0) {
           var endPos = maxTop + 100;
+          this.callback.setContentHeight(endPos);
           var positions = columnsInfo.map(function (columnInfo) {
             return {
               left: columnInfo.left,
@@ -1257,7 +1259,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         positions: null,
         skeletonPositions: null,
         width: 0,
-        height: 0
+        height: 0,
+        contentHeight: 0
       };
       return _this9;
     }
@@ -1389,7 +1392,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
 
         return ojvcomponent.h("oj-waterfall-layout", {
-          ref: this.setRootElement
+          ref: this.setRootElement,
+          style: this._getRootElementStyle()
         }, ojvcomponent.h("div", {
           onClick: this._handleClick,
           onKeydown: this._handleKeyDown,
@@ -1400,6 +1404,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           role: 'grid'
         }, ojvcomponent.h("div", {
           role: 'row',
+          style: this._getContentDivStyle(),
           "data-oj-context": true
         }, content)));
       }
@@ -1443,7 +1448,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 var currHeight = _this10.state.height;
                 var newHeight = Math.round(entry.contentRect.height);
 
-                if (Math.abs(newHeight - currHeight) > 1) {
+                if (Math.abs(newHeight - currHeight) > 1 && newHeight !== _this10.state.contentHeight) {
                   _this10.updateState({
                     height: newHeight
                   });
@@ -1453,9 +1458,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           });
           resizeObserver.observe(root);
           this.resizeObserver = resizeObserver;
-
-          this._getScroller().addEventListener('scroll', this.scrollListener);
         }
+
+        this._getScroller().addEventListener('scroll', this.scrollListener);
       }
     }, {
       key: "updated",
@@ -1664,6 +1669,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           positions: positions,
           outOfRangeData: null
         });
+      }
+    }, {
+      key: "setContentHeight",
+      value: function setContentHeight(height) {
+        if (this.props.scrollPolicyOptions.scroller != null) {
+          this.updateState({
+            contentHeight: height
+          });
+        }
       }
     }, {
       key: "getItemRenderer",
@@ -1886,6 +1900,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       value: function _getScroller() {
         var scroller = this.props.scrollPolicyOptions.scroller;
         return scroller != null ? scroller : this.getRootElement();
+      }
+    }, {
+      key: "_getContentDivStyle",
+      value: function _getContentDivStyle() {
+        return {
+          height: this.state.contentHeight + 'px'
+        };
+      }
+    }, {
+      key: "_getRootElementStyle",
+      value: function _getRootElementStyle() {
+        return this.props.scrollPolicyOptions.scroller != null ? {
+          overflow: 'hidden'
+        } : null;
       }
     }, {
       key: "_renderInitialSkeletons",

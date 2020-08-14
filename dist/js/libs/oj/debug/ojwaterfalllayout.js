@@ -674,6 +674,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             const startIndex = this.callback.getData().startIndex;
             const positions = this.getLayout().getPositionForItems(items, isNaN(startIndex) ? 0 : startIndex);
             this.callback.setPositions(positions.positions);
+            this.callback.setContentHeight(this.getLayout().getLastItemPosition());
             if (this.domScroller) {
                 this.domScroller.setViewportRange(positions.start, positions.end);
             }
@@ -888,6 +889,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }));
             if (maxTop > 0) {
                 const endPos = maxTop + 100;
+                this.callback.setContentHeight(endPos);
                 let positions = columnsInfo.map((columnInfo) => {
                     return {
                         left: columnInfo.left,
@@ -965,7 +967,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 positions: null,
                 skeletonPositions: null,
                 width: 0,
-                height: 0
+                height: 0,
+                contentHeight: 0
             };
         }
         _handleFocusIn(event) {
@@ -1064,9 +1067,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     content = this._renderInitialSkeletons(positions.positions);
                 }
             }
-            return (ojvcomponent.h("oj-waterfall-layout", { ref: this.setRootElement },
+            return (ojvcomponent.h("oj-waterfall-layout", { ref: this.setRootElement, style: this._getRootElementStyle() },
                 ojvcomponent.h("div", { onClick: this._handleClick, onKeydown: this._handleKeyDown, onTouchstart: this._touchStartHandler, onFocusin: this._handleFocusIn, onFocusout: this._handleFocusOut, onPointerdown: this._handlePointerDown, role: 'grid' },
-                    ojvcomponent.h("div", { role: 'row', "data-oj-context": true }, content))));
+                    ojvcomponent.h("div", { role: 'row', style: this._getContentDivStyle(), "data-oj-context": true }, content))));
         }
         mounted() {
             const root = this.getRootElement();
@@ -1092,7 +1095,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                             }
                             const currHeight = this.state.height;
                             const newHeight = Math.round(entry.contentRect.height);
-                            if (Math.abs(newHeight - currHeight) > 1) {
+                            if (Math.abs(newHeight - currHeight) > 1 && newHeight !== this.state.contentHeight) {
                                 this.updateState({ height: newHeight });
                             }
                         }
@@ -1100,8 +1103,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 });
                 resizeObserver.observe(root);
                 this.resizeObserver = resizeObserver;
-                this._getScroller().addEventListener('scroll', this.scrollListener);
             }
+            this._getScroller().addEventListener('scroll', this.scrollListener);
         }
         updated(oldProps, oldState) {
             const data = this.getData();
@@ -1229,6 +1232,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
         setPositions(positions) {
             this.updateState({ positions: positions, outOfRangeData: null });
+        }
+        setContentHeight(height) {
+            if (this.props.scrollPolicyOptions.scroller != null) {
+                this.updateState({ contentHeight: height });
+            }
         }
         getItemRenderer() {
             return this.props.itemTemplate;
@@ -1392,6 +1400,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         _getScroller() {
             const scroller = this.props.scrollPolicyOptions.scroller;
             return scroller != null ? scroller : this.getRootElement();
+        }
+        _getContentDivStyle() {
+            return { height: this.state.contentHeight + 'px' };
+        }
+        _getRootElementStyle() {
+            return this.props.scrollPolicyOptions.scroller != null ? { overflow: 'hidden' } : null;
         }
         _renderInitialSkeletons(positions) {
             const scroller = this._getScroller();

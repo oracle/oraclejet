@@ -433,9 +433,9 @@ var __oj_toolbar_metadata =
         this._refreshChildren();
       } else {
         // TODO: Update this after guidance on keeping track of handlers for bind and unbind
-        this.$buttons = this.element.find(':oj-button').unbind('keydown' + this.eventNamespace).bind('keydown' + this.eventNamespace, function (event) {
+        this.$buttons = this.element.find(':oj-button').off('keydown' + this.eventNamespace).on('keydown' + this.eventNamespace, function (event) {
           self._handleKeyDown(event, $(this));
-        }).unbind('click' + this.eventNamespace).bind('click' + this.eventNamespace, function (event) {
+        }).off('click' + this.eventNamespace).on('click' + this.eventNamespace, function (event) {
           // eslint-disable-line no-unused-vars
           if (!$(this).ojButton('option', 'disabled')) {
             // Normally the button will be tabbable after the click, since (a) if we reach here, the clicked button is enabled, and
@@ -443,7 +443,7 @@ var __oj_toolbar_metadata =
             // (e.g. due to app listener), we let callee run it thru _mapToTabbable() before using, as usual.
             self._setTabStop($(this));
           }
-        }).unbind('focus' + this.eventNamespace).bind('focus' + this.eventNamespace, function (event) {
+        }).off('focus' + this.eventNamespace).on('focus' + this.eventNamespace, function (event) {
           // eslint-disable-line no-unused-vars
           self._handleFocus($(this));
         }); // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
@@ -459,7 +459,7 @@ var __oj_toolbar_metadata =
       if (!this._IsCustomElement() && this.$enabledButtons.length === 0) {
         // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
         this.$enabledButtons = this.$buttons.filter(function () {
-          return !$(this).ojButton('option', 'disabled');
+          return !$(this).ojButton('option', 'disabled') && $(this).is(':visible');
         });
 
         this._initTabindexes(this._lastTabStop == null);
@@ -480,11 +480,11 @@ var __oj_toolbar_metadata =
       this._hasInitialFocusHandler = false;
       this.topLevelChildren = elem.querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many');
       var buttons = elem.querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button');
-      this.$buttons = $(buttons).unbind('keydown' + this.eventNamespace).bind('keydown' + this.eventNamespace, function (event) {
+      this.$buttons = $(buttons).off('keydown' + this.eventNamespace).on('keydown' + this.eventNamespace, function (event) {
         var $button = $(this);
 
         self._handleKeyDown(event, $button);
-      }).unbind('click' + this.eventNamespace).bind('click' + this.eventNamespace, function (event) {
+      }).off('click' + this.eventNamespace).on('click' + this.eventNamespace, function (event) {
         // eslint-disable-line no-unused-vars
         var $button = $(this);
 
@@ -494,7 +494,7 @@ var __oj_toolbar_metadata =
           // (e.g. due to app listener), we let callee run it thru _mapToTabbable() before using, as usual.
           self._setTabStop($button);
         }
-      }).unbind('focusin' + this.eventNamespace).bind('focusin' + this.eventNamespace, function (event) {
+      }).off('focusin' + this.eventNamespace).on('focusin' + this.eventNamespace, function (event) {
         // eslint-disable-line no-unused-vars
         var $button = $(this);
 
@@ -503,11 +503,11 @@ var __oj_toolbar_metadata =
 
       if (this._IsCustomElement()) {
         this.$enabledButtons = this.$buttons.filter(function () {
-          return !$(this).hasClass('oj-disabled');
+          return !$(this).hasClass('oj-disabled') && $(this).is(':visible');
         });
       } else {
         this.$enabledButtons = this.$buttons.filter(function () {
-          return !$(this).ojButton('option', 'disabled');
+          return !$(this).ojButton('option', 'disabled') && $(this).is(':visible');
         });
       }
 
@@ -529,11 +529,11 @@ var __oj_toolbar_metadata =
         // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
         if (this._IsCustomElement()) {
           this.$enabledButtons = this.$buttons.filter(function () {
-            return !$(this).hasClass('oj-disabled');
+            return !$(this).hasClass('oj-disabled') && $(this).is(':visible');
           });
         } else {
           this.$enabledButtons = this.$buttons.filter(function () {
-            return !$(this).ojButton('option', 'disabled');
+            return !$(this).ojButton('option', 'disabled') && $(this).is(':visible');
           });
         }
 
@@ -719,16 +719,26 @@ var __oj_toolbar_metadata =
 
         case $.ui.keyCode.RIGHT:
           // right arrow
-          event.preventDefault();
-          var $enabledButtons = this.$enabledButtons;
-          var length = $enabledButtons.length;
+          event.preventDefault(); // reselect enabled buttons
+
+          if (this._IsCustomElement()) {
+            this.$enabledButtons = this.$buttons.filter(function () {
+              return !$(this).hasClass('oj-disabled') && $(this).is(':visible');
+            });
+          } else {
+            this.$enabledButtons = this.$buttons.filter(function () {
+              return !$(this).ojButton('option', 'disabled') && $(this).is(':visible');
+            });
+          }
+
+          var length = this.$enabledButtons.length;
 
           if (length < 2) {
             // nowhere to navigate to; currently focused button is the only enabled one in toolbar
             break;
           }
 
-          var oldIndex = $enabledButtons.index($button); //
+          var oldIndex = this.$enabledButtons.index($button); //
 
           var increment = event.which === $.ui.keyCode.DOWN // eslint-disable-next-line no-bitwise
           || event.which === $.ui.keyCode.RIGHT ^ this.isRtl ? 1 : -1;
@@ -742,7 +752,7 @@ var __oj_toolbar_metadata =
           // when the radio group is inside a role=toolbar, we now support up/down arrows for radios via the fall-thru above
           // (but still focus only, not select).
 
-          this._getButtonFocusElem($enabledButtons.eq(newIndex)[0]).focus();
+          this._getButtonFocusElem(this.$enabledButtons.eq(newIndex)[0]).focus();
 
           break;
 

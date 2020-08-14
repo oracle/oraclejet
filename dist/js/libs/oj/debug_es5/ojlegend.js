@@ -1102,8 +1102,9 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent, {
   },
 
   /**
-   * Returns the preferred size of the legend, given the available width and height. A re-render must be triggered
-   * by calling <code class="prettyprint">refresh</code> after invoking this function.
+   * Returns the preferred size of the legend, given the available width and height.
+   * @param {number} width The available width for the legend to render within.
+   * @param {number} height The available height for the legend to render within.
    * @ojsignature {target: "Type", value: "oj.ojLegend.PreferredSize|null", jsdocOverride: true, for: "returns"}
    * @return {Object} An object containing the preferred width and height.
    * @expose

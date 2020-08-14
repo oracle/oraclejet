@@ -73,29 +73,28 @@ export declare class FilePicker extends VComponent<Props, State> {
     private _createFileList;
     protected _vprops?: VProps;
 }
-
 // Custom Element interfaces
 export interface FilePickerElement extends JetElement<FilePickerElementSettableProperties> {
   /**
    * An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
    */
-  accept?: Array<string>|null;
+  accept?: Props['accept'];
   /**
    * Specifies the preferred facing mode for the device's media capture mechanism.
    */
-  capture?: 'environment'|'implementation'|'user';
+  capture?: Props['capture'];
   /**
    * Disables the filepicker if set to true
    */
-  disabled?: boolean;
+  disabled?: Props['disabled'];
   /**
    * The type of event to select the files.
    */
-  selectOn?: 'auto'|'click'|'clickAndDrop'|'drop';
+  selectOn?: Props['selectOn'];
   /**
    * Whether to allow single or multiple file selection.
    */
-  selectionMode?: 'multiple'|'single';
+  selectionMode?: Props['selectionMode'];
   addEventListener<T extends keyof FilePickerElementEventMap>(type: T, listener: (this: HTMLElement, ev: FilePickerElementEventMap[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof FilePickerElementSettableProperties>(property: T): FilePickerElement[T];
@@ -139,23 +138,23 @@ export interface FilePickerElementSettableProperties extends JetSettableProperti
   /**
    * An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
    */
-  accept?: Array<string>|null;
+  accept?: Props['accept'];
   /**
    * Specifies the preferred facing mode for the device's media capture mechanism.
    */
-  capture?: 'environment'|'implementation'|'user';
+  capture?: Props['capture'];
   /**
    * Disables the filepicker if set to true
    */
-  disabled?: boolean;
+  disabled?: Props['disabled'];
   /**
    * The type of event to select the files.
    */
-  selectOn?: 'auto'|'click'|'clickAndDrop'|'drop';
+  selectOn?: Props['selectOn'];
   /**
    * Whether to allow single or multiple file selection.
    */
-  selectionMode?: 'multiple'|'single';
+  selectionMode?: Props['selectionMode'];
 }
 export interface FilePickerElementSettablePropertiesLenient extends Partial<FilePickerElementSettableProperties> {
   [key: string]: any;

@@ -12,7 +12,7 @@
 export interface <?js= data.vcomponentNameWithGenerics ?> extends JetElement<<?js= settablePropertiesInterface ?>> {
 <?js
   if (data.properties){ ?>
-    <?js= this.partial('properties.tmpl', data.properties) ?>
+    <?js= this.partial('properties.tmpl', data) ?>
   <?js
   } ?>
   addEventListener<T extends keyof <?js= data.eventMapInterface ?>>(type: T, listener: (this: HTMLElement, ev: <?js= data.eventMapInterface ?>[T]) => any, useCapture?: boolean): void;
@@ -60,7 +60,7 @@ if (props){
 export interface <?js= data.settablePropertiesInterface ?> extends JetSettableProperties {
 <?js
 if (data.properties){ ?>
-  <?js= this.partial('properties.tmpl', data.properties) ?>
+  <?js= this.partial('properties.tmpl', data) ?>
 <?js
 } ?>
 }

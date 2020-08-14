@@ -13,6 +13,7 @@ $includeListboxClasses:   $includeFormControlClasses !default;
   $includeLabelClasses:             true !global;
   $includeMessagingClasses:         true !global;
   $includeFormControlCommonClasses: true !global;
+  $includeHighlightTextClasses:     true !global;
 }
 
 // import dependencies
@@ -22,6 +23,7 @@ $includeListboxClasses:   $includeFormControlClasses !default;
 @import "oj.alta.ios.popup";
 @import "oj.alta.ios.formcontrol.label";
 @import "oj.alta.ios.formcontrol.common";
+@import "oj.alta.ios.highlighttext";
 
 // ----- end dependencies ---------
 

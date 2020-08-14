@@ -597,6 +597,21 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * Optional detailed caching capability information
+ *
+ *
+ * @since 9.1.0
+ * @export
+ * @expose
+ * @memberof FetchCapability
+ * @instance
+ * @name caching
+ * @type {string}
+ * @ojsignature {target: "Type",
+ *               value: "? 'all' | 'none' | 'visitedByCurrentIterator'"}
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -1152,12 +1167,15 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @ojsignature {target: "Type",
  *               value: "interface FetchListResult<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
- * @classdesc Defines the results from the DataProvider method {@link DataProvider#fetchFirst}
+ * @classdesc Defines the results from the DataProvider method {@link DataProvider#fetchFirst}.
  */
 
 /**
- * The {@link FetchListParameters} used for the fetch call
- *
+ * The {@link FetchListParameters} used for the fetch call.
+ * In addition, the property fetchParameters is not only the parameter passed through from fetchFirst.
+ * The sortCriteria of fetchParameters is the sort criteria specified in fetchFirst parameter, it also include the implicitSort criteria specified in data provider constructor.
+ * For example, if implicitSort is set in ArrayDataProvider constructor, it will be returned as part of the sortCriteria of fetchParameters.
+ * The collection components, such as ojTable, will look at the sortCriteria to put appropriate sort icon on the UI rendered.
  *
  * @since 4.1.0
  * @export
@@ -1168,6 +1186,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @type {FetchListParameters}
  * @ojsignature {target: "Type",
  *               value: "FetchListParameters<D>"}
+ * @ojtsexample <caption>Example of retrieving sortCriteria from FetchListResult:</caption>
+ * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+ * let result = await asyncIterator.next();
+ * let sortCriteria = result.value.fetchParameters.sortCriteria;
  */
 
 /**
@@ -1482,6 +1504,438 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
 /**
  * End of jsdoc
  */
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+var DataCache = /*#__PURE__*/function () {
+  function DataCache() {
+    _classCallCheck(this, DataCache);
+
+    this._handleMutationAdd = function (eventDetail) {
+      var _a, _b;
+
+      var self = this;
+      var eventDetailBeforeKeys = eventDetail[DataCache._BEFOREKEYS];
+      var eventDetailKeys = eventDetail[DataCache._KEYS];
+      var eventDetailKeysArray = [];
+      eventDetailKeys.forEach(function (key) {
+        eventDetailKeysArray.push(key);
+      });
+      var eventDetailData = eventDetail[DataCache._DATA];
+      var eventDetailMetadata = eventDetail[DataCache._METADATA];
+      var eventDetailIndexes = eventDetail[DataCache._INDEXES];
+
+      if (eventDetailKeysArray && eventDetailKeysArray.length > 0) {
+        if (eventDetailIndexes) {
+          eventDetailKeysArray.forEach(function (key, index) {
+            self._items.splice(eventDetailIndexes[index], 0, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+          });
+        } else if (eventDetailBeforeKeys) {
+          var eventDetailBeforeKeysClone = Object.assign([], eventDetailBeforeKeys);
+          var eventDetailKeysClone = Object.assign(new Set(), eventDetail[DataCache._KEYS]);
+          var eventDetailDataClone = Object.assign([], eventDetail[DataCache._DATA]);
+          var eventDetailMetadataClone = Object.assign([], eventDetail[DataCache._METADATA]); // first find all the beforekeys which are not in our cache, are not null, and are not in the mutation event
+
+          var outOfRangeKeys = [];
+          var i, j, key, findKey, outOfRange;
+
+          for (i = 0; i < eventDetailBeforeKeys.length; i++) {
+            key = eventDetailBeforeKeys[i];
+            outOfRange = true;
+
+            if (key != null) {
+              for (j = 0; j < eventDetailKeysArray.length; j++) {
+                if (oj.Object.compareValues(eventDetailKeysArray[j], key)) {
+                  outOfRange = false;
+                  break;
+                }
+              }
+
+              if (outOfRange) {
+                for (j = 0; j < self._items.length; j++) {
+                  if (oj.Object.compareValues((_b = (_a = self._items[j]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, key)) {
+                    outOfRange = false;
+                    break;
+                  }
+                }
+              }
+            } else {
+              outOfRange = false;
+            }
+
+            if (outOfRange) {
+              outOfRangeKeys.push(key);
+            }
+          } // push all keys chained to the outOfRangeKeys to the array
+
+
+          var keysToCheck = eventDetailBeforeKeys.length;
+
+          while (keysToCheck > 0) {
+            for (i = 0; i < eventDetailBeforeKeys.length; i++) {
+              findKey = eventDetailBeforeKeys[i];
+
+              if (outOfRangeKeys.indexOf(findKey) >= 0) {
+                outOfRangeKeys.push(findKey);
+                break;
+              }
+            }
+
+            keysToCheck--;
+          } // remove all out of range keys and their chained keys
+
+
+          for (i = eventDetailBeforeKeysClone.length - 1; i >= 0; i--) {
+            if (outOfRangeKeys.indexOf(eventDetailBeforeKeysClone[i]) >= 0) {
+              delete eventDetailBeforeKeysClone[i];
+              eventDetailKeysClone.delete(eventDetailBeforeKeysClone[i]);
+              delete eventDetailDataClone[i];
+              delete eventDetailMetadataClone[i];
+            }
+          } // insert them into our cache
+
+
+          eventDetailBeforeKeysClone.forEach(function (beforeKey, beforeKeyIndex) {
+            var _a, _b;
+
+            if (beforeKey === null) {
+              self._items.push(new self.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
+            } else {
+              for (i = 0; i < self._items.length; i++) {
+                if (oj.Object.compareValues((_b = (_a = self._items[i]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, beforeKey)) {
+                  self._items.splice(i, 0, new self.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
+
+                  break;
+                }
+              }
+            }
+          });
+        } else {
+          // we don't have index or beforeKeys so we need to sort to figure out where to insert the keys.
+          // if there is no sort, then we don't know where the rows go so just push them in at the end.
+          if (self._fetchParams && self._fetchParams.sortCriteria != null) {
+            var sortCriteria = self._fetchParams.sortCriteria;
+
+            if (sortCriteria) {
+              var comparator = self._getSortComparator(sortCriteria);
+
+              var _i, currentData, currentCompare;
+
+              var insertedIndexes = [];
+              eventDetailData.forEach(function (data, index) {
+                for (_i = 0; _i < self._items.length; _i++) {
+                  currentData = self._items[_i].data;
+                  currentCompare = comparator(data, currentData);
+
+                  if (currentCompare < 0) {
+                    // found insertion point
+                    self._items.splice(_i, 0, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+
+                    insertedIndexes.push(index);
+                    break;
+                  }
+                }
+              }); // inserted all the rows we haven't inserted yet at the end
+
+              eventDetailData.forEach(function (data, index) {
+                if (insertedIndexes.indexOf(index) < 0) {
+                  self._items.push(new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                }
+              });
+            }
+          } else {
+            eventDetailData.forEach(function (data, index) {
+              self._items.push(new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+            });
+          }
+        }
+      }
+    };
+
+    this._handleMutationRemove = function (eventDetail) {
+      var self = this;
+      var eventDetailKeys = eventDetail[DataCache._KEYS];
+
+      if (eventDetailKeys && eventDetailKeys.size > 0) {
+        var i;
+        eventDetailKeys.forEach(function (key) {
+          for (i = self._items.length - 1; i >= 0; i--) {
+            if (oj.Object.compareValues(self._items[i].metadata.key, key)) {
+              self._items.splice(i, 1);
+
+              break;
+            }
+          }
+        });
+      }
+    };
+
+    this._handleMutationUpdate = function (eventDetail) {
+      var self = this;
+      var eventDetailKeys = eventDetail[DataCache._KEYS];
+      var eventDetailData = eventDetail[DataCache._DATA];
+      var eventDetailMetadata = eventDetail[DataCache._METADATA];
+
+      if (eventDetailData && eventDetailData.length > 0) {
+        var i,
+            index = 0;
+        eventDetailKeys.forEach(function (key) {
+          for (i = self._items.length - 1; i >= 0; i--) {
+            if (oj.Object.compareValues(self._items[i].metadata.key, key)) {
+              self._items.splice(i, 1, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+
+              break;
+            }
+          }
+
+          index++;
+        });
+      }
+    };
+
+    this.Item = /*#__PURE__*/function () {
+      function _class(metadata, data) {
+        _classCallCheck(this, _class);
+
+        this.metadata = metadata;
+        this.data = data;
+        this[DataCache._METADATA] = metadata;
+        this[DataCache._DATA] = data;
+      }
+
+      return _class;
+    }();
+
+    this.FetchByKeysResults = /*#__PURE__*/function () {
+      function _class2(fetchParameters, results) {
+        _classCallCheck(this, _class2);
+
+        this.fetchParameters = fetchParameters;
+        this.results = results;
+        this[DataCache._FETCHPARAMETERS] = fetchParameters;
+        this[DataCache._RESULTS] = results;
+      }
+
+      return _class2;
+    }();
+
+    this.FetchByOffsetResults = /*#__PURE__*/function () {
+      function _class3(fetchParameters, results, done) {
+        _classCallCheck(this, _class3);
+
+        this.fetchParameters = fetchParameters;
+        this.results = results;
+        this.done = done;
+        this[DataCache._FETCHPARAMETERS] = fetchParameters;
+        this[DataCache._RESULTS] = results;
+        this[DataCache._DONE] = done;
+      }
+
+      return _class3;
+    }();
+
+    this._items = [];
+  }
+
+  _createClass(DataCache, [{
+    key: "addListResult",
+    value: function addListResult(result) {
+      var self = this;
+      var items = [];
+      result.value.data.forEach(function (data, index) {
+        items.push(new self.Item(result.value.metadata[index], data));
+      });
+      this._items = this._items.concat(items);
+      this._done = result.done;
+    }
+  }, {
+    key: "getDataList",
+    value: function getDataList(params, offset) {
+      this._fetchParams = params;
+      var fetchSize = 25;
+
+      if (params.size != null) {
+        if (params.size == -1) {
+          fetchSize = this.getSize();
+        } else {
+          fetchSize = params.size;
+        }
+      }
+
+      var items = this._items.slice(offset, offset + fetchSize);
+
+      var data = [];
+      var metadata = [];
+      items.forEach(function (item) {
+        data.push(item.data);
+        metadata.push(item.metadata);
+      });
+      return {
+        fetchParameters: params,
+        data: data,
+        metadata: metadata
+      };
+    }
+  }, {
+    key: "getDataByKeys",
+    value: function getDataByKeys(params) {
+      var self = this;
+      var results = new Map();
+
+      if (params && params.keys) {
+        var i;
+        params.keys.forEach(function (key) {
+          for (i = 0; i < self._items.length; i++) {
+            if (self._items[i].metadata.key == key) {
+              results.set(key, self._items[i]);
+              break;
+            }
+          }
+        });
+      }
+
+      return new this.FetchByKeysResults(params, results);
+    }
+  }, {
+    key: "getDataByOffset",
+    value: function getDataByOffset(params) {
+      var self = this;
+      var results = [];
+      var done = true;
+
+      if (params) {
+        results = self._items.slice(params.offset, params.offset + params.size);
+      }
+
+      return new this.FetchByOffsetResults(params, results, done);
+    }
+  }, {
+    key: "processMutations",
+    value: function processMutations(detail) {
+      if (detail.remove != null) {
+        this._handleMutationRemove(detail.remove);
+      }
+
+      if (detail.add != null) {
+        this._handleMutationAdd(detail.add);
+      }
+
+      if (detail.update != null) {
+        this._handleMutationUpdate(detail.update);
+      }
+    }
+  }, {
+    key: "reset",
+    value: function reset() {
+      this._items = [];
+      this._done = false;
+    }
+  }, {
+    key: "getSize",
+    value: function getSize() {
+      return this._items.length;
+    }
+  }, {
+    key: "isDone",
+    value: function isDone() {
+      return this._done;
+    }
+  }, {
+    key: "_getSortComparator",
+    value: function _getSortComparator(sortCriteria) {
+      var self = this;
+      return function (x, y) {
+        var i, direction, attribute, comparator, xval, yval;
+
+        for (i = 0; i < sortCriteria.length; i++) {
+          direction = sortCriteria[i][DataCache._DIRECTION];
+          attribute = sortCriteria[i][DataCache._ATTRIBUTE];
+          comparator = null;
+          xval = self._getVal(x, attribute);
+          yval = self._getVal(y, attribute);
+          var compareResult = 0;
+          var strX = typeof xval === 'string' ? xval : new String(xval).toString();
+          var strY = typeof yval === 'string' ? yval : new String(yval).toString();
+
+          if (direction == 'ascending') {
+            compareResult = strX.localeCompare(strY, undefined, {
+              numeric: true,
+              sensitivity: 'base'
+            });
+          } else {
+            compareResult = strY.localeCompare(strX, undefined, {
+              numeric: true,
+              sensitivity: 'base'
+            });
+          }
+
+          if (compareResult != 0) {
+            return compareResult;
+          }
+        }
+
+        return 0;
+      };
+    }
+  }, {
+    key: "_getVal",
+    value: function _getVal(val, attr) {
+      if (typeof attr == 'string') {
+        var dotIndex = attr.indexOf('.');
+
+        if (dotIndex > 0) {
+          var startAttr = attr.substring(0, dotIndex);
+          var endAttr = attr.substring(dotIndex + 1);
+          var subObj = val[startAttr];
+
+          if (subObj) {
+            return this._getVal(subObj, endAttr);
+          }
+        }
+      }
+
+      if (typeof val[attr] == 'function') {
+        return val[attr]();
+      }
+
+      return val[attr];
+    }
+  }]);
+
+  return DataCache;
+}();
+
+DataCache._DATA = 'data';
+DataCache._METADATA = 'metadata';
+DataCache._ITEMS = 'items';
+DataCache._BEFOREKEYS = 'addBeforeKeys';
+DataCache._KEYS = 'keys';
+DataCache._INDEXES = 'indexes';
+DataCache._FROM = 'from';
+DataCache._OFFSET = 'offset';
+DataCache._REFRESH = 'refresh';
+DataCache._MUTATE = 'mutate';
+DataCache._SIZE = 'size';
+DataCache._FETCHPARAMETERS = 'fetchParameters';
+DataCache._SORTCRITERIA = 'sortCriteria';
+DataCache._DIRECTION = 'direction';
+DataCache._ATTRIBUTE = 'attribute';
+DataCache._VALUE = 'value';
+DataCache._DONE = 'done';
+DataCache._RESULTS = 'results';
+DataCache._CONTAINSPARAMETERS = 'containsParameters';
+DataCache._DEFAULT_SIZE = 25;
+DataCache._CONTAINSKEYS = 'containsKeys';
+DataCache._FETCHBYKEYS = 'fetchByKeys';
+DataCache._FETCHBYOFFSET = 'fetchByOffset';
+DataCache._FETCHFIRST = 'fetchFirst';
+DataCache._FETCHATTRIBUTES = 'attributes';
+oj['DataCache'] = DataCache;
 
 
 
@@ -3013,6 +3467,94 @@ oj.DataProvider = function () {};
 /* jslint browser: true,devel:true*/
 
 /**
+ * @export
+ * @interface DedupCapability
+ * @since 9.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface DedupCapability"}
+ * @classdesc Defines the result from the DataProvider method {@link DataProvider#getCapability} for capability "dedup"
+ */
+
+/**
+ * Dedup type information. Type of 'global' indicates that this DataProvider globally dedups keys and will always return unique keys. Type of
+ * 'iterator' indicates that this DataProvider dedups keys during fetch iteration. Type of 'none' indicates that this DataProvider does not
+ * dedup keys and may return duplicate keys.
+ *
+ *
+ * @since 9.1.0
+ * @export
+ * @expose
+ * @memberof DedupCapability
+ * @instance
+ * @name type
+ * @type {string}
+ * @ojsignature {target: "Type",
+ *               value: "'global' | 'none' | 'iterator'"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * @export
+ * @interface EventFilteringCapability
+ * @since 9.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface EventFilteringCapability"}
+ * @classdesc Defines the result from the DataProvider method {@link DataProvider#getCapability} for capability "eventFiltering"
+ */
+
+/**
+ * Mutation event filtering type information for scrolling. Note that mutation event filtering is
+ * only done on remove and update events, not on add events. The reason is because the properties which
+ * indicate the location of an added row are optional so it is not possible to guarantee that an add is
+ * not occurring inside the already iterated rowset.
+ * Type of 'global' indicates that this DataProvider globally filters mutation events. Type of
+ * 'iterator' indicates that this DataProvider filters events based on rows which have been fetched via
+ * fetch iteration. Type of 'none' indicates that this DataProvider does not filter mutation events.
+ *
+ *
+ * @since 9.1.0
+ * @export
+ * @expose
+ * @memberof EventFilteringCapability
+ * @instance
+ * @name type
+ * @type {string}
+ * @ojsignature {target: "Type",
+ *               value: "'global' | 'none' | 'iterator'"}
+ */
+
+/**
+ * End of jsdoc
+ */
+
+
+
+
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
  * @since 6.1.0
  * @export
  * @interface FetchAttribute
@@ -3770,7 +4312,8 @@ var FilterImpl = /*#__PURE__*/function () {
 
         if (op != '$and' && op != '$or') {
           if (filter['text']) {
-            filterValue = new RegExp(filter['text'], 'i');
+            // Escape special characters without change filter['text'] which is the original filter string
+            filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
           } else {
             filterValue = filter.value;
           }
@@ -4730,6 +5273,7 @@ __DataProvider.DataProviderRefreshEvent = oj.DataProviderRefreshEvent;
 __DataProvider.DataProviderMutationEvent = oj.DataProviderMutationEvent;
 __DataProvider.AttributeFilterOperator = oj.AttributeFilterOperator;
 __DataProvider.CompoundFilterOperator = oj.CompoundFilterOperator;
+__DataProvider.DataCache = oj.DataCache;
 
   ;return __DataProvider;
 });

@@ -22,7 +22,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, DomUtils, ojlistdataproviderview, $, oj, Context, Logger, ThemeUtils, TimerUtils, ojvcomponent, ojpopupcore) {
+define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojhighlighttext', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, DomUtils, ojlistdataproviderview, $, oj, Context, Logger, ThemeUtils, TimerUtils, ojhighlighttext, ojvcomponent, ojpopupcore) {
   'use strict';
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -283,8 +283,9 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
    * <p>By default, the component will attempt to render a 'label' data field as text.</p>
    *
    * <p>This text will be rendered for the selected value of the component.  It will also be
-   * rendered for each suggestion in the dropdown.  When rendered for the dropdown suggestions,
-   * default matching search term highlighting will still be applied.</p>
+   * rendered for each suggestion in the dropdown if no suggestionItemTemplate is provided.
+   * When rendered for the dropdown suggestions, default matching search term highlighting
+   * will still be applied.</p>
    *
    * @example <caption>Initialize the InputSearch with the <code class="prettyprint">suggestion-item-text</code> attribute specified:</caption>
    * &lt;oj-input-search suggestion-item-text="DisplayName">&lt;/oj-input-search>
@@ -333,6 +334,53 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
    *   {target:"Type", value:"<K, D>", for:"genericTypeParameters" },
    *   {target: "Type", value: "null | CommonTypes.ItemContext<K, D>", for: "itemContext"}
    * ]
+   */
+  // Slots:
+
+  /**
+   * <p>The <code class="prettyprint">suggestionItemTemplate</code> slot is used to specify the
+   * template for rendering each suggestion in the dropdown list.
+   * The slot must be a &lt;template> element.
+   * <p>When the template is executed for each suggestion, it will have access to the binding context
+   * containing the following properties:</p>
+   * <ul>
+   *   <li>$current - an object that contains information for the current suggestion. (See the table
+   * below for a list of properties available on $current)</li>
+   *  <li>alias - if the data-oj-as attribute was specified on the template, the value will be used
+   * to provide an application-named alias for $current.</li>
+   * </ul>
+   * <p>If no <code class="prettyprint">suggestionItemTemplate</code> is specified, the component
+   * will render based on the value of the <code class="prettyprint">suggestionItemText</code>
+   * property.</p>
+   *
+   *
+   * @ojslot suggestionItemTemplate
+   * @ojmaxitems 1
+   * @memberof oj.ojInputSearch
+   * @since 9.1.0
+   * @ojslotitemprops oj.ojInputSearch.SuggestionItemTemplateContext
+   *
+   * @example <caption>Initialize the Input Search with an inline suggestionItemTemplate specified:</caption>
+   * &lt;oj-input-search>
+   *   &lt;template slot='suggestionItemTemplate'>
+   *     &lt;div>&lt;oj-highlight-text text='[[$current.data.name]]'
+   *       match-text='[[$current.searchText]]'>&lt;/oj-highlight-text>&lt;/div>
+   *   &lt;template>
+   * &lt;/oj-input-search>
+   */
+
+  /**
+   * @typedef {Object}oj.ojInputSearch.SuggestionItemTemplateContext
+   * @property {Object} data The data for the current suggestion
+   * @property {number} index The zero-based index of the current suggestion
+   * @property {any} key The key of the current suggestion
+   * @property {Object} metadata The metadata for the current suggestion
+   * @property {string} searchText The search text entered by the user
+   * @ojsignature [{target: "Type", value: "D", for: "data",
+   *                jsdocOverride:true},
+   *               {target:"Type", value:"K", for: "key", jsdocOverride:true},
+   *               {target:"Type", value:"oj.ItemMetadata<K>", for: "metadata", jsdocOverride:true},
+   *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
    */
   // Fragments:
 
@@ -430,6 +478,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
     _classCallCheck(this, Props);
 
     this.focus = false;
+    this.index = -1;
     this.labelId = '';
     this.searchText = null;
     this.suggestionItemText = 'label';
@@ -446,7 +495,6 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
       _classCallCheck(this, InputSearchSuggestion);
 
       _this = _super.call(this, props);
-      _this._HIGHLIGHT_TOKEN = '__@@__';
 
       _this._fireSuggestionActionEvent = function (text, itemContext) {
         var _a, _b;
@@ -478,15 +526,14 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
       key: "render",
       value: function render() {
         var props = this.props;
-        var state = this.state;
         var rootClasses = {
           'oj-listbox-result': true,
           'oj-listbox-result-selectable': true,
-          'oj-hover': state.hover,
+          'oj-hover': this.state.hover,
           'oj-focus': props.focus
         };
 
-        var nodes = this._highlighter(state.formattedText, props.searchText);
+        var content = this._renderContent();
 
         return ojvcomponent.h("li", {
           role: 'presentation',
@@ -498,30 +545,32 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
           id: props.labelId,
           class: 'oj-listbox-result-label',
           role: 'option'
-        }, nodes));
+        }, content));
       }
     }, {
-      key: "_escapeRegExp",
-      value: function _escapeRegExp(string) {
-        return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
-      }
-    }, {
-      key: "_highlighter",
-      value: function _highlighter(unhighlightedText, searchText) {
-        if ((searchText === null || searchText === void 0 ? void 0 : searchText.length) > 0) {
-          var escapedSearchText = this._escapeRegExp(searchText);
+      key: "_renderContent",
+      value: function _renderContent() {
+        var _a;
 
-          var highlightedText = unhighlightedText.replace(new RegExp(escapedSearchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
-          var tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
-          var nodes = tokens.map(function (current, index) {
-            return index % 2 == 0 ? current : ojvcomponent.h("span", {
-              class: 'oj-listbox-highlighter'
-            }, current);
+        var props = this.props;
+        var renderer = props.suggestionItemTemplate;
+
+        if (renderer) {
+          return renderer({
+            data: props.suggestionItemContext.data,
+            key: props.suggestionItemContext.key,
+            metadata: props.suggestionItemContext.metadata,
+            index: props.index,
+            searchText: props.searchText
           });
-          return ojvcomponent.h("span", null, nodes);
         }
 
-        return ojvcomponent.h("span", null, unhighlightedText);
+        return ojvcomponent.h(ojhighlighttext.HighlightText, {
+          "data-oj-internal": true,
+          "data-oj-binding-provider": 'none',
+          text: this.state.formattedText,
+          matchText: (_a = props.searchText) !== null && _a !== void 0 ? _a : ''
+        });
       }
     }, {
       key: "_handleMouseenter",
@@ -777,6 +826,12 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
         if (oldState.focus && !this.state.focus || this.state.valueSubmitted) {
           this._updateProperty('value', this.state.displayValue);
 
+          if (oldState.focus && !this.state.focus && oldState.filterText !== this.state.displayValue) {
+            this.updateState({
+              filterText: this.state.displayValue
+            });
+          }
+
           if (this.state.valueSubmitted) {
             (_b = (_a = this.props).onOjValueAction) === null || _b === void 0 ? void 0 : _b.call(_a, {
               value: this.state.displayValue,
@@ -850,6 +905,12 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
           } else {
             this.updateState({
               activeDescendantId: null
+            });
+          }
+
+          if (!this._resolveFetchBusyState && this.state.labelIds.length === 0) {
+            this.updateState({
+              dropdownOpen: false
             });
           }
         }
@@ -935,8 +996,37 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
         }
       }
     }, {
+      key: "focus",
+      value: function focus() {
+        var _a;
+
+        (_a = this._inputElem) === null || _a === void 0 ? void 0 : _a.focus();
+      }
+    }, {
+      key: "blur",
+      value: function blur() {
+        var _a;
+
+        (_a = this._inputElem) === null || _a === void 0 ? void 0 : _a.blur();
+      }
+    }, {
+      key: "_handleFocus",
+      value: function _handleFocus(event) {
+        var _a;
+
+        (_a = this._rootElem) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', {
+          relatedTarget: event.relatedTarget
+        }));
+      }
+    }, {
       key: "_handleBlur",
-      value: function _handleBlur(event) {}
+      value: function _handleBlur(event) {
+        var _a;
+
+        (_a = this._rootElem) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', {
+          relatedTarget: event.relatedTarget
+        }));
+      }
     }, {
       key: "_handleKeydown",
       value: function _handleKeydown(event) {
@@ -972,10 +1062,13 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
             break;
 
           case this._KEYS.ESC:
-            this.updateState({
-              dropdownOpen: false
-            });
-            event.preventDefault();
+            if (this.state.dropdownOpen) {
+              this.updateState({
+                dropdownOpen: false
+              });
+              event.preventDefault();
+            }
+
             break;
 
           case this._KEYS.UP:
@@ -1124,6 +1217,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
           "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null,
           onFocusin: this._handleFocusin,
           onFocusout: this._handleFocusout,
+          onFocus: this._handleFocus,
           onBlur: this._handleBlur,
           onInput: this._handleInput,
           onCompositionstart: this._handleCompositionstart,
@@ -1348,9 +1442,11 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
               ref: this._setRenderedSuggestion.bind(this, i),
               labelId: state.labelIds[i],
               focus: focused,
+              index: i,
               searchText: searchText,
               suggestionItemContext: state.fetchedData[i],
               suggestionItemText: this.props.suggestionItemText,
+              suggestionItemTemplate: this.props.suggestionItemTemplate,
               onOjSuggestionAction: this._handleSuggestionAction
             });
             suggestions.push(suggestion);
@@ -1515,6 +1611,13 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
       "ojValueAction": {
         "bubbles": false
       }
+    },
+    "slots": {
+      "suggestionItemTemplate": {}
+    },
+    "methods": {
+      "focus": {},
+      "blur": {}
     }
   };
 
@@ -1531,6 +1634,8 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojlistdataproviderview', 'jquery', 'oj
   __decorate$1([ojvcomponent.listener()], exports.InputSearch.prototype, "_handleCompositionend", null);
 
   __decorate$1([ojvcomponent.listener()], exports.InputSearch.prototype, "_handleInput", null);
+
+  __decorate$1([ojvcomponent.listener()], exports.InputSearch.prototype, "_handleFocus", null);
 
   __decorate$1([ojvcomponent.listener()], exports.InputSearch.prototype, "_handleBlur", null);
 

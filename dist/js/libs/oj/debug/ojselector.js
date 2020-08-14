@@ -122,11 +122,14 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
                 'oj-selected': isSelected,
                 'oj-component-icon': true
             };
+            const ariaLabelledby = this.props['aria-labelledby'] || null;
+            const ariaLabel = this.props['aria-label'] ||
+                Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
+                    rowKey: rowKey
+                });
             return (ojvcomponent.h("oj-selector", { class: 'oj-selector' },
                 ojvcomponent.h("span", { class: spanClassName },
-                    ojvcomponent.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
-                            rowKey: rowKey
-                        }), checked: isSelected, onClick: this._checkboxListener }))));
+                    ojvcomponent.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onClick: this._checkboxListener }))));
         }
         _checkboxListener(event) {
             const { selectedKeys, rowKey, selectionMode } = this.props;
@@ -161,7 +164,7 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
             return selectionMode === 'all' ? selectedKeys.isAddAll() : selectedKeys.has(rowKey);
         }
     };
-    exports.Selector.metadata = { "extension": { "_DEFAULTS": Props }, "properties": { "rowKey": { "type": "any", "value": null }, "selectedKeys": { "type": "object|null", "value": null, "writeback": true, "readOnly": false }, "selectionMode": { "type": "string", "enumValues": ["all", "multiple", "single"], "value": "multiple" } } };
+    exports.Selector.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-label": true, "aria-labelledby": true } }, "properties": { "rowKey": { "type": "any", "value": null }, "selectedKeys": { "type": "object|null", "value": null, "writeback": true, "readOnly": false }, "selectionMode": { "type": "string", "enumValues": ["all", "multiple", "single"], "value": "multiple" } } };
     __decorate([
         ojvcomponent.listener()
     ], exports.Selector.prototype, "_checkboxListener", null);

@@ -1229,10 +1229,18 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
      * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
      * If you want to prevent the user from interacting with the element, use the disabled property instead.
      * <p>
-     * The oj-form-layout provides its readonly attribute value and the form components
-     * consume it if it is not already set explicitly.
-     * For example, if oj-form-layout is set to readonly='true',
-     * all the form components it contains will be readonly='true' by default.
+     * The default value for readonly is false. However, if the form component is a descendent of
+     * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+     * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+     * The <code class="prettyprint">oj-form-layout</code> uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">readonly</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the readonly property if an ancestor provides it and
+     * it is not explicitly set.
+     * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+     * not have its readonly attribute set, the form component's readonly will be true.
      * </p>
      * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
@@ -1295,13 +1303,20 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
      * </ul>
      *
      * </p>
-     *
+     * <p>
      * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-     * input's label will render a required icon. Additionally a required validator -
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+     * </p>
+     * <p>
+     * Additionally a required validator -
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
      * An explicit required validator can be set by page authors using the validators attribute.
+     * </p>
+     * <p>
+     * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+     * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+     * </p>
      *
      * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
      * &lt;oj-some-element required>&lt;/oj-some-element><br/>
@@ -1349,9 +1364,18 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
      * runs all of them.
      * </p>
      * <p>
-     * Hints exposed by validators are shown in the notewindow by default, or as determined by the
+     * Hints exposed by validators are shown inline by default in the Redwood theme when the
+     * field has focus.
+     * In the Alta theme, validator hints are shown in a notewindow on focus,
+     * or as determined by the
      * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
      * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
      * </p>
      *
      * <p>
@@ -2605,9 +2629,12 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
     // Otherwise, remove clear the text from the assertiveDiv.
 
     if (hiddenAriaLiveEl) {
-      var assertiveDiv = hiddenAriaLiveEl.children[1];
+      var assertiveDiv = hiddenAriaLiveEl.children[1]; // Both filteredText and proposedVal can be null
 
-      if (filteredText.length < proposedVal.length) {
+      var filteredTextLen = filteredText ? filteredText.length : 0;
+      var proposedValLen = proposedVal ? proposedVal.length : 0;
+
+      if (filteredTextLen < proposedValLen) {
         assertiveDiv.textContent = ''; // Clear it first, so we always hear this message.
 
         assertiveDiv.textContent = this.getTranslatedString(this._TEXT_FIELD_MAX_LENGTH_EXCEEDED_KEY, {
@@ -2841,8 +2868,13 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * If there is no oj-label for the oj-input-password, add aria-label on oj-input-password
- * to make it accessible.
+ * If not using the <code class="prettyprint">label-hint</code> attribute,
+ *  it is up to the application developer to associate an oj-label to the oj-input-password component.
+ * For accessibility, you should associate an oj-label element with the oj-input-password component
+ * by putting an <code>id</code> on the oj-input-password element, and then setting the
+ * <code>for</code> attribute on the oj-label to be the component's id.
+ * </p>
+ * <p>
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -2852,7 +2884,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate an oj-label to the oj-input-password component.
+ * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-input-password component.
  * For accessibility, you should associate an oj-label element with the oj-input-password component
  * by putting an <code>id</code> on the oj-input-password element, and then setting the
  * <code>for</code> attribute on the oj-label to be the component's id.
@@ -3004,6 +3036,21 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
     this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES = this._INPUT_CONTAINER_CLASS;
     return true;
   },
+
+  /**
+   * ojInputPassword extends from InputBase which creates a readonly div,
+   * so overriding it to return false prevents ojInputPassword from creating
+   * a readonly div. We do not want inputPassword to show its password in
+   * plain text.
+   * @ignore
+   * @override
+   * @protected
+   * @memberof! oj.ojInputPassword
+   * @return {boolean}
+   */
+  _UseReadonlyDiv: function _UseReadonlyDiv() {
+    return false;
+  },
   getNodeBySubId: function getNodeBySubId(locator) {
     var node = this._superApply(arguments);
 
@@ -3046,8 +3093,8 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  *    <tr>
  *       <td>Input</td>
  *       <td><kbd>Tap</kbd></td>
- *       <td>Sets focus to input. If hints, help.instruction or messages exist in a notewindow,
- *       popup the notewindow.</td>
+ *       <td>Sets focus to input. Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  *  </table>
@@ -3071,8 +3118,8 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  *       <td>Input element</td>
  *       <td><kbd>Tab In</kbd></td>
  *       <td>Set focus to the input.
- *       If hints, help.instruction or messages exist in a notewindow,
- *        pop up the notewindow.</td>
+ *       Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -3157,8 +3204,13 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * If there is no oj-label for the oj-input-text, add aria-label on oj-input-text
- * to make it accessible.
+ * If not using the <code class="prettyprint">label-hint</code> attribute,
+ *  it is up to the application developer to associate an oj-label to the oj-input-text component.
+ * For accessibility, you should associate an oj-label element with the oj-input-text component
+ * by putting an <code>id</code> on the oj-input-text element, and then setting the
+ * <code>for</code> attribute on the oj-label to be the component's id.
+ * </p>
+ * <p>
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -3168,7 +3220,7 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate an oj-label with the oj-input-text component.
+ * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label with the oj-input-text component.
  * For accessibility, you should associate an oj-label element to the oj-input-text component
  * by putting an <code>id</code> on the oj-input-text element, and then setting the
  * <code>for</code> attribute on the oj-label to be the component's id.
@@ -3291,6 +3343,19 @@ oj.__registerWidget('oj.ojInputPassword', $.oj.inputBase, {
  * @ojdisplayname Align-End
  * @memberof! oj.ojInputText
  */
+// ---------------- oj-text-field-start-end-icon --------------
+
+/**
+ * Use this class on a child div element if you want an icon to display in the start or end slot of an oj-input-text element.
+ * @ojstyleclass oj-text-field-start-end-icon
+ * @ojdisplayname Start-End Icon
+ * @ojstyleselector "oj-input-text > div"
+ * @memberof oj.ojInputText
+ * @ojtsexample
+ * &lt;oj-input-text id="myInputText" label-hint="My label">
+ *   &lt;div slot="start" :class="oj-text-field-start-end-icon oj-ux-ico-cc-card" role="img">&lt;div>
+ * &lt;/oj-input-text>
+ */
 // --------------------------------------------------- oj.ojInputText Styling end ------------------------------------------------------------
 oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
   version: '1.0.0',
@@ -3355,7 +3420,23 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
      * or one that duck types {@link oj.Converter}.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      *
-     *
+     * <p>
+     * The hint exposed by the converter is shown inline by default in the Redwood theme when
+     * the field has focus.
+     * In the Alta theme, converter hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing converter hints by using the
+     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
      * @example <caption>Initialize the component with a number converter instance:</caption>
      * &lt;oj-input-text converter="[[salaryConverter]]">&lt;/oj-input-text><br/>
      * // Initialize converter instance using currency options
@@ -3700,18 +3781,28 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
     }
 
     function processStartSlots(contentContainer, nodes) {
+      var wrapperElem = document.createElement('span');
+      var textFieldContainer = contentContainer.parentElement;
+      wrapperElem.classList.add('oj-text-field-start');
+      textFieldContainer.insertBefore(wrapperElem, contentContainer);
+      textFieldContainer.classList.add('oj-text-field-has-start-slot');
+
       for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
-        node.classList.add('oj-inputtext-start');
-        contentContainer.parentElement.insertBefore(node, contentContainer);
+        wrapperElem.appendChild(node);
       }
     }
 
     function processEndSlots(contentContainer, nodes) {
+      var wrapperElem = document.createElement('span');
+      var textFieldContainer = contentContainer.parentElement;
+      wrapperElem.classList.add('oj-text-field-end');
+      textFieldContainer.appendChild(wrapperElem);
+      textFieldContainer.classList.add('oj-text-field-has-end-slot');
+
       for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
-        node.classList.add('oj-inputtext-end');
-        contentContainer.parentElement.appendChild(node);
+        wrapperElem.appendChild(node);
       }
     }
 
@@ -3907,8 +3998,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  *    <tr>
  *       <td>Input</td>
  *       <td><kbd>Tap</kbd></td>
- *       <td>Sets focus to input. If hints, help.instruction or messages exist in a notewindow,
- *       popup the notewindow.</td>
+ *       <td>Sets focus to input. Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  *  </table>
@@ -3932,8 +4023,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  *       <td>Input</td>
  *       <td><kbd>Tab In</kbd></td>
  *       <td>Set focus to the input.
- *       If hints, help.instruction or messages exist in a notewindow,
- *        pop up the notewindow.</td>
+ *       Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -3955,37 +4046,34 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  */
 
 /**
- * <p>The <code class="prettyprint">start</code> slot is for adding a leading icon.
- * For example, an icon identifying the credit card type based on the value entered.
- * </p>
+ * <p>The <code class="prettyprint">start</code> slot is for adding html content before the input area, typically an icon.</p>
+ * <p>For example, an icon identifying the credit card type based on the value entered.</p>
  *
  * @ojslot start
- * @ignore
- * @ojshortdesc The start slot enables adding a leading icon
- * @since 8.0.0
+ * @ojshortdesc The start slot enables adding leading html content such as an icon
+ * @since 9.1.0
  * @memberof oj.ojInputText
  *
- * @example <caption>Initialize the input text with child content specified for the start slot:</caption>
+ * @ojtsexample <caption>Initialize the input text with child content specified for the start slot:</caption>
  * &lt;oj-input-text on-raw-value-changed="[[changeCreditCardTypeIcon]]">
- *   &lt;a slot="start" ::class="[[creditCardTypeIcon]]" >&lt;/a>
+ *   &lt;img slot="start" :src="[[creditCardTypeIcon]]">
  * &lt;/oj-input-text>
  */
 
 /**
- * <p>The <code class="prettyprint">end</code> slot is for adding an associated action icon.
- * For example, a magnifying glass icon for a search field can be provided in this slot.
+ * <p>The <code class="prettyprint">end</code> slot is for adding html content after the input area, typically an oj-button or and icon.
+ * For example, a magnifying glass icon button for a search field can be provided in this slot.
  * </p>
  *
  * @ojslot end
- * @ignore
- * @ojshortdesc The end slot enables adding a trailing associated action icon.
- * @since 8.0.0
+ * @ojshortdesc The end slot enables adding trailing html content such as an icon button.
+ * @since 9.1.0
  * @memberof oj.ojInputText
  *
- * @example <caption>Initialize the input text with child content specified for the end slot:</caption>
+ * @ojtsexample <caption>Initialize the input text with child content specified for the end slot:</caption>
  * &lt;oj-input-text>
  *   &lt;oj-button slot="end" on-oj-action="[[performSearch]]" display="icons" >
- *     &lt;img slot="endIcon" src="search.png"/>Search
+ *     &lt;img slot="endIcon" src="search.png">Search
  *    &lt;/oj-button>
  * &lt;/oj-input-text>
  */
@@ -4054,8 +4142,13 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * If there is no oj-label for the oj-text-area, add aria-label on oj-text-area
- * to make it accessible.
+ * If not using the <code class="prettyprint">label-hint</code> attribute,
+ *  it is up to the application developer to associate an oj-label to the oj-text-area component.
+ * For accessibility, you should associate an oj-label element with the oj-text-area component
+ * by putting an <code>id</code> on the oj-text-area element, and then setting the
+ * <code>for</code> attribute on the oj-label to be the component's id.
+ * </p>
+ * <p>
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -4065,7 +4158,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate an oj-label to the oj-text-area component.
+ * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-text-area component.
  * For accessibility, you should associate an oj-label element with the oj-text-area component
  * by putting an <code>id</code> on the oj-text-area element, and then setting the
  * <code>for</code> attribute on the oj-label to be the component's id.
@@ -4228,7 +4321,23 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
      * or one that duck types {@link oj.Converter}.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      *
-     *
+     * <p>
+     * The hint exposed by the converter is shown inline by default in the Redwood theme when
+     * the field has focus.
+     * In the Alta theme, converter hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing converter hints by using the
+     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
      * @example <caption>Initialize the component with a number converter instance:</caption>
      * &lt;oj-text-area converter="[[salaryConverter]]">&lt;/oj-text-area><br/>
      * // Initialize converter instance using currency options
@@ -4883,8 +4992,8 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
  *    <tr>
  *       <td>TextArea</td>
  *       <td><kbd>Tap</kbd></td>
- *       <td>Sets focus to textarea. If hints, help.instruction or messages exist in a notewindow,
- *       popup the notewindow.</td>
+ *       <td>Sets focus to textarea. Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  *  </table>
@@ -4908,8 +5017,8 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase, {
  *       <td>TextArea</td>
  *       <td><kbd>Tab In</kbd></td>
  *       <td>Set focus to the textarea.
- *       If hints, help.instruction or messages exist in a notewindow,
- *        pop up the notewindow.</td>
+ *       Show user assistance text. This may be inline or in a notewindow
+ * depending upon theme and property settings.</td>
  *     </tr>
  *   </tbody>
  * </table>

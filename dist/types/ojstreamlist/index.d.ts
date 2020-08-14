@@ -8,4 +8,4 @@
 
 export { StreamList } from './ojstreamlist';
 
-export { StreamListElementEventMap, StreamListElementSettableProperties, StreamListElementSettablePropertiesLenient, StreamListElement, VProps, StreamListProperties } from './ojstreamlist';
+export { StreamListElementEventMap, StreamListElementSettableProperties, StreamListElementSettablePropertiesLenient, StreamListElement, VProps, StreamListProperties, ojStreamListEventMap, ojStreamListSettableProperties, ojStreamListSettablePropertiesLenient, ojStreamList } from './ojstreamlist';

@@ -9011,7 +9011,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent, {
       data: {
         templateName: 'itemTemplate',
         templateElementName: 'oj-chart-item',
-        resultPath: '_item'
+        resultPath: '_item',
+        derivedTemplates: ['seriesTemplate', 'groupTemplate']
       }
     };
   },

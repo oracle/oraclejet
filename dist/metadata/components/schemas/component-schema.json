@@ -259,6 +259,22 @@
       "additionalProperties": false
     },
 
+    "minCapabilitiesDef": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "type": "object",
+          "properties": {
+            "textFilter": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
     "propsDef": {
       "type": "object",
 
@@ -322,6 +338,9 @@
             },
             "minimum": {
               "type": ["number", "string"]
+            },
+            "minCapabilities": {
+              "$ref": "#/definitions/minCapabilitiesDef"
             },
             "pattern": {
               "type": "string",

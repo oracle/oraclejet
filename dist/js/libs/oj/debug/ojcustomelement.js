@@ -1828,7 +1828,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  * <p>
  *   Please note that event listeners specified using this syntax can only be set during component initialization.
  *   Subsequent setAttribute calls for the event listener attributes will be ignored.
- *   There is no associated <code>on[EventName]<code> property on the JET custom element for the equivalent
+ *   There is no associated <code>on[EventName]</code> property on the JET custom element for the equivalent
  *   <code>on-[event-name]</code> attribute.
  * </p>
  * <p>

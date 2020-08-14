@@ -11302,12 +11302,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @private
      */
     // eslint-disable-next-line no-unused-vars
-    _trace: function _trace(s, level) {} //     this._emitEvent({ "obj" : {"msg" : s }}, "trace", true);
-    //   console.log(s) ;
-    //   if (level === 1) {
-    //     console.log(s) ;
-    //   }
-    // API doc for inherited methods with no JS in this file:
+    _trace: function _trace(s, level) {//     this._emitEvent({ "obj" : {"msg" : s }}, "trace", true);
+      //   console.log(s) ;
+      //   if (level === 1) {
+      //     console.log(s) ;
+      //   }
+    } // API doc for inherited methods with no JS in this file:
 
     /**
      * Removes the Tree from the DOM.  If the tree was constructed from original

@@ -1979,7 +1979,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
  */
 /**
  * The CSS style object defining the style of the label.
- * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration. The default value comes from the CSS and varies based on theme.
+ * The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
  * The default value comes from the CSS and varies based on theme.
  * @expose
  * @name labelStyle

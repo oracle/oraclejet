@@ -1995,14 +1995,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      */
 
     /**
-     * Represents hints to render help information on the label of the editable component.
-     * This is used when an oj-form-layout creates labels for its editable value component children.
-     * Also when an editable value component (inside or outside oj-form-layout) creates a label for itself (if you set labelEdge), these
-     * hints will be used to render the help information. However, please note that, help information will
-     * not be rendered if the label is created inside the input field (labelEdge ='inside').
-     *
-     * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
-     *
      * <p>
      * The helpHints object contains a definition property and a source property.
      * </p>
@@ -2048,8 +2040,30 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      */
     helpHints: {
       /**
-       * Hint for help definition text associated with the label.
-       * <p>It is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.</p>
+      * A type of user assistance text. User assistance text is used to provide
+      * guidance to help the user understand what data to enter or select. help-hints could
+      * come from a help system.
+      * <p>In the Redwood theme for clarity only one user assistance text shows to the user.
+      * The precedence rules are:
+      * <ul>
+      * <li>help.instruction shows;</li>
+      * <li>if no help.instruction, then validator hint shows;</li>
+      * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+      * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+      * <li>help-hints.source always shows along side the above.</li>
+      * </ul>
+      * </p>
+      * <p>
+      * In the Redwood theme, by default all user assistance text shows inline.
+      * For input components, it shows when the field takes focus. In other components it
+      * shows all the time. See the user-assistance-density property for other ways the user
+      * assistance text can render.
+      * </p>
+       * <p>In the Alta theme the help-hint.definition shows up when
+       * the user hovers over the help icon on the label,
+       * or tabs into the help icon, or press and holds the help icon on a mobile device.
+       * </p>
+       * <p>No formatted text is available for help definition attribute.</p>
        *
        * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
        *
@@ -2066,13 +2080,22 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
       definition: '',
 
       /**
-       * Hint for help source URL associated with the label.
-       * <p>If present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error.
+       * Help source URL associated with the component.
+       * <p>In the Redwood theme, the help-hints.source will show as a link inline to the field.
+       * For input components, it shows when the field takes focus. For other components,
+       * it shows all the time.
+       * </p>
+       * <p>In the Alta theme, the help-hints.source will show as a a help icon
+       *  next to the label. When clicked the page will navigate to the source url.
+       * </p>
+       * <p>
+       * For security reasons we only support urls with protocol 'http:' or 'https:'.
+       * If the url doesn't comply we ignore it and throw an error.
        * Pass in an encoded URL since we do not encode the URL.</p>
        *
        * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
        *
-       * @ojshortdesc Hint for help source URL associated with the label.
+       * @ojshortdesc Help source URL associated with the component.
        * @expose
        * @alias helpHints.source
        * @memberof! oj.editableValue
@@ -2129,7 +2152,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     labelHint: '',
 
     /**
-     * Specifies how the label of the component is created when the label-hint attribute is set on the component.
+     * Specifies how the label of the component is created when the <code class="prettyprint">label-hint</code> attribute is set on the component.
      * <p>The default value varies by theme, and it works well for the theme in most cases.
      * If the component is in an oj-form-layout, and the label-edge attribute on oj-form-layout is set to an explicit value,
      * the label-edge attribute on all form controls should also be set to an explict value.
@@ -2142,12 +2165,11 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * @type {string}
      * @ojsignature {target: "Type", value: "'inside'|'none'|'provided'",  jsdocOverride: true}
      * @memberof! oj.editableValue
-     * @ojvalue {string} "inside" The component creates the label using the label-hint attribute.
+     * @ojvalue {string} "inside" The component creates the label using the <code class="prettyprint">label-hint</code> attribute.
      * <p>For text input components (such as oj-input-text), the label floats over the input element but moves up on focus or when the component has a value.</p>
      * <p>For non-text input components (such as oj-checkboxset), the label is created at the top of the component and doesn't move.</p>
-     * <p>The help-hints attribute will be ignored.  No help related information will be rendered on the label.</p>
      * @ojvalue {string} "none" The component will not have a label, regardless of whether it's in an oj-form-layout or not.
-     * <p>If the component has a label-hint attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
+     * <p>If the component has a <code class="prettyprint">label-hint</code> attribute but no labelled-by, aria-label, or aria-labelledby attribute, the label-hint value will be used as the aria-label.</p>
      * <p>Note that if the component already has an external label, "none" should not be specified and "provided" should be used instead.
      * Otherwise it may end up with conflicting label information.</p>
      * @ojvalue {string} "provided" Label is provided by the parent if the parent is an oj-form-layout.
@@ -2283,21 +2305,25 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     messagesShown: undefined,
 
     /**
-     * Represents advisory information for the component, such as would be appropriate for a tooltip.
-     *
-     * <p>
-     * When help.instruction is present it is by default displayed in the notewindow, or as determined by the
-     * 'helpInstruction' property set on the <code class="prettyprint">displayOptions</code> attribute.
-     * When the <code class="prettyprint">help.instruction</code> property changes the component refreshes to
-     * display the updated information.
+     * A type of user assistance text. User assistance text is used to provide
+     * guidance to help the user understand what data to enter or select.
+     * <p> In the Redwood theme for clarity only one user assistance text shows to the user.
+     *  The precedence rules are:
+     * <ul>
+     * <li>help.instruction shows;</li>
+     * <li>if no help.instruction, then validator hint shows;</li>
+     * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+     * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+     * <li>help-hints.source always shows along side the above.</li>
+     * </ul>
      * </p>
-     *
+     * <p>In the Redwood theme, by default all user assistance text shows inline.
+     * For input components, it shows when the field takes focus. In other components
+     * it shows all the time. See the user-assistance-density property for other ways
+     * the user assistance text can render.
      * <p>
-     * JET takes the help instruction text and creates a notewindow with the text. The notewindow pops up
-     * when the field takes focus and closes when the field loses focus.
-     * </p>
-     * <p>
-     * How is help.instruction better than the html 'title' attribute?
+     *  In Alta theme, help.instruction
+     * displays in a notewindow when the field takes focus. How is help.instruction better than the html 'title' attribute?
      * The html 'title' attribute only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
      * device. So the html 'title' would only be for text that is not important enough to show all users, or
      * for text that you show the users in another way as well, like in the label.
@@ -2351,23 +2377,26 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * <p>
      * Specifies the density of the form component's user assistance presentation.
      * It can be shown inline with reserved rows to prevent reflow if
-     * a user assistance text shows up, inline without reserved rows,
+     * a user assistance text shows up, inline without reserved rows that would reflow if
+     * a user assistance text shows up,
      * or it can be shown compactly in a popup instead.</p>
      * <p>
-     * The oj-form-layout provides its user-assistance-density attribute value and its default
-     * value and the form components consume it if it is not already set explicitly.
-     * For example, if oj-form-layout is set or defaults to
-     * user-assistance-density='efficient', all the
-     * form components it contains will be user-assistance-density='efficient' by default.
-     * This is why when a form component is inside an oj-form-layout component
-     * its user-assistance-density is 'efficient', and when it is not inside an oj-form-layout
-     * component, its user-assistance-density is 'reflow'.
+     * The default value is 'reflow' when the form component is not a descendent of an oj-form-layout
+     * component. When the form component is a descendent of an oj-form-layout, the default value comes from the
+     * oj-form-layout's <code class="prettyprint">user-assistance-density</code> attribute value.
      * </p>
      * <p>
-     * A form component can explicitly
-     * set its own user-assistance-density attribute which will take precedence.
+     * The oj-form-layout component uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">user-assistance-density</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the
+     * <code class="prettyprint">user-assistance-density</code> property if an
+     * ancestor provides it and it is not explicitly set on the form component.
+     * Example, oj-form-layout defaults user-assistance-density='efficient', so all its
+     * form components descendents will have user-assistance-density='efficient' by default.
      * </p>
-     * <p>This attribute is ignored in the Alta theme.</p>
      * @ojshortdesc Specifies the density of the form component's user assistance presentation.
      * @access public
      * @expose
@@ -2588,7 +2617,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
      * @memberof oj.editableValue
      * @since 4.0.0
      * @instance
-     * @property {string} action The action that triggers the animation.</br></br>
+     * @property {string} action The action that triggered the animation.</br></br>
      *                           Supported values are:
      *                              <ul>
      *                                <li>"inline-open" - when an inline message container opens or increases in size</li>
@@ -2968,7 +2997,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    */
   _AfterCreate: function _AfterCreate() {
     var describedBy;
-    var i;
     var self = this;
 
     this._super();
@@ -2996,14 +3024,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     if (!this._IsCustomElement()) {
       this._createOjLabel();
     } else if (this.options.labelledBy) {
-      var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(this.options.labelledBy);
-
-      if (ojlabels) {
-        for (i = 0; i < ojlabels.length; i++) {
-          var ojlabel = ojlabels[i];
-          ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
-        }
-      }
+      this._labelledByUpdated(this.options.labelledBy);
     } else {
       this._setAriaLabelFromLabelHint();
     } // set describedby on the element as aria-describedby
@@ -3148,6 +3169,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
         break;
 
       case 'placeholder':
+        this._SetPlaceholder(this.options.placeholder);
+
         this._placeholderOptionChanged(flags);
 
         break;
@@ -3347,7 +3370,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     var skipSetOption = false;
     var oldValue;
     var newValue;
-    var i;
 
     switch (name) {
       case 'messagesHidden':
@@ -3376,15 +3398,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
       case 'labelledBy':
         if (value) {
-          var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(value);
-
-          if (ojlabels) {
-            for (i = 0; i < ojlabels.length; i++) {
-              var ojlabel = ojlabels[i];
-              ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
-            }
-          }
+          this._labelledByUpdated(value);
         }
+
+        break;
+
+      case 'readOnly':
+        this._addRemoveOjReadOnlyClassOnLabel(document.getElementById(this.options.labelledBy), value);
 
         break;
 
@@ -3668,9 +3688,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @protected
    */
   _ResetAllValidators: function _ResetAllValidators() {
-    // this is used in PopupConmponentMessagingStrategy.
-    this._initAsyncMessaging = null;
-
     if (this._allValidators) {
       this._allValidators.length = 0;
     }
@@ -3683,7 +3700,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
       this._updateValidatorMessagingHint();
     } else {
       // update messagingstrategy as hints associated with validators could have changed
-      this._getComponentMessaging().update(this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS));
+      this._getComponentMessaging().update(this._getValidatorHintsMC());
     }
   },
 
@@ -3700,6 +3717,32 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   },
 
   /**
+   * Sets or removes oj-read-only class on element based on readonly value.
+   *
+   *
+   * @param {HTMLElement|undefined} element
+   * @param {boolean|undefined} readonly Could be undefined in component does not have readonly
+   * option at all.
+   *
+   * @memberof oj.editableValue
+   * @instance
+   * @private
+   */
+  _addRemoveOjReadOnlyClassOnLabel: function _addRemoveOjReadOnlyClassOnLabel(element, readonly) {
+    if (element && readonly !== undefined) {
+      var readonlystyleclass = 'oj-read-only';
+
+      if (readonly) {
+        element.classList.add(readonlystyleclass);
+      } else {
+        element.classList.remove(readonlystyleclass);
+      }
+    }
+  },
+
+  /**
+   * This is used to set the aria label from the label hint, and also
+   * updates the readonly div from aria-label if specified.
    * @memberof oj.editableValue
    * @instance
    * @private
@@ -3710,6 +3753,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
       var ariaLabel = ariaLabelElem.getAttribute('aria-label');
 
+      var readonlyDiv = this._getReadonlyDiv();
+
       if (!this.options.labelledBy && this.options.labelHint && this.options.labelEdge === 'none' && (!ariaLabel || ariaLabel === this._ariaLabelFromHint) && !this._getRootElement().getAttribute('aria-labelledby')) {
         // Set aria-label if all of the followings are true:
         // 1. This is a custom element.
@@ -3719,8 +3764,6 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
         // 5. There is no aria-label attribute or the aria-label was set by us.
         // 6. There is no aria-labelledby attribute.
         ariaLabelElem.setAttribute('aria-label', this.options.labelHint); // Set on the readonly div if it exists as well.
-
-        var readonlyDiv = this._getReadonlyDiv();
 
         if (readonlyDiv) {
           readonlyDiv.setAttribute('aria-label', this.options.labelHint);
@@ -3733,11 +3776,17 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
         // if the current condition no longer need to set aria-label.
         ariaLabelElem.removeAttribute('aria-label'); // remove from the readonly div as well.
 
-        var _readonlyDiv = this._getReadonlyDiv();
-
-        if (_readonlyDiv) {
-          _readonlyDiv.removeAttribute('aria-label');
+        if (readonlyDiv) {
+          readonlyDiv.removeAttribute('aria-label');
         }
+      } else if (ariaLabel) {
+        // The app dev specified 'aria-label' explicitly.
+        if (readonlyDiv) {
+          readonlyDiv.setAttribute('aria-label', ariaLabel);
+        }
+      } else if (readonlyDiv) {
+        // No ariaLabel, so remove it from the readonly div
+        readonlyDiv.removeAttribute('aria-label');
       }
     }
   },
@@ -3800,6 +3849,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
   /**
     * Initialize async validator messaging hints, if any.
+    * This is called from the ComponentMessaging, not during component
+    * initialization.
     *
     * @memberof oj.editableValue
     * @instance
@@ -3816,7 +3867,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     if (allAsyncValidatorsWithHint.length > 0) {
       // get the sync validators hints  we are already showing so we can show it with
       // the async validators hints
-      syncValidatorHintMC = self._getMessagingContent(self._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS); // we use a counter to keep track of the busycontext
+      syncValidatorHintMC = this._getValidatorHintsMC(); // we use a counter to keep track of the busycontext
       // if we get a more recent update async validators hint requests
       // i.e., asyncValidators property is changed, and we want to ignore any previous
       // hints Promise results. See _updateValidatorMessagingHint.
@@ -3832,12 +3883,23 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     }
   },
 
+  /*
+   Called from ComponentMessaging as well.
+   * @memberof oj.editableValue
+   * @instance
+   * @private
+   */
+  _getValidatorHintsMC: function _getValidatorHintsMC() {
+    return this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
+  },
+
   /**
    * This gets all asyncValidators that have hints,
    * asynchronously updates the component messaging validator hints with BOTH
    * synchronous and async validators' hints.
    * If there are no asyncValidators with hints, it updates validator hints with sync hints.
-   * This is called when asyncValidators property changes or when validators property changes
+   * This is called when asyncValidators property changes or when validators property changes.
+   * See #_ResetAllValidators. Not called now from ResetAllValidators.
    *
    * @memberof oj.editableValue
    * @instance
@@ -3851,7 +3913,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     var currentCounter;
     var self = this; // this gets all validators with getHint (these are sync validators)
 
-    var syncValidatorHintMC = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
+    var syncValidatorHintMC = this._getValidatorHintsMC();
 
     if (allAsyncValidatorsWithHint.length > 0) {
       // we use a counter to keep track of the busycontext
@@ -4613,20 +4675,20 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   /**
    * Types of messaging content to update.
    * <ul>
-   * <li>'ALL' - builds all messaging content</li>
+   * <li>'INIT' - builds all messaging content needed for component initialization</li>
    * <li>'VALIDITY_STATE' - updates only validityState every time validation runs and there are
    * new messages or when the messages option changes.</li>
    * <li>'CONVERTER_HINT' - updates only converter hints, this is used when converter option
    * changes</li>
    * <li>'VALIDATOR_HINTS' - updates only validator hints, this is used when validators option
-   * changes</li>
+   * changes or when validator hints are first shown the the user.</li>
    * <li>'TITLE' - updates only title, when the title property changes</li>
    * </ul>
    * @private
    * @memberof oj.editableValue
    */
   _MESSAGING_CONTENT_UPDATE_TYPE: {
-    ALL: 1,
+    INIT: 1,
     VALIDITY_STATE: 2,
     CONVERTER_HINT: 3,
     VALIDATOR_HINTS: 4,
@@ -4777,14 +4839,17 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     var flags = {}; // We do not want to set valid state to PENDING if we are already showing messages, e.g., messages-custom.
 
     if (!(newValidState === _PENDING && this._determineValidFromMessagesOptions() !== _VALID)) {
-      // 'valid' is read-only
-      flags._context = {
-        originalEvent: event,
-        writeback: true,
-        internalSet: true,
-        readOnly: true
-      };
-      this.option('valid', newValidState, flags);
+      // do not set if it is already set to that
+      if (newValidState !== this.options.valid) {
+        // 'valid' is read-only
+        flags._context = {
+          originalEvent: event,
+          writeback: true,
+          internalSet: true,
+          readOnly: true
+        };
+        this.option('valid', newValidState, flags);
+      }
     }
   },
 
@@ -5066,6 +5131,19 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   },
 
   /**
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
+  _hasValidityState: function _hasValidityState() {
+    if (this._validityState) {
+      return true;
+    }
+
+    return false;
+  },
+
+  /**
    * Whether component has invalid messages.
    *
    * @return {boolean} true if invalid; false otherwise
@@ -5128,19 +5206,19 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
     var compContentElement = this._GetContentElement();
 
-    var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL); // if default placeholder is currently set then it needs to be cleared here. This is needed for
+    var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.INIT); // if default placeholder is currently set then it needs to be cleared here. This is needed for
     // the following reasons
     // i. a component is reinitialized when the locale changed, requiring the converter hint for
     // new locale to be set as placeholder.
     // ii. or a component's placeholder option or displayOptions option, could have changed
     // requiring the placeholder to be reset if it's currently set to the default.
-    //
 
 
     if (!this._customPlaceholderSet) {
       this._ClearPlaceholder();
-    } // this sets all messaging content other than async messaging content
-    // (like async validator messaging hints)
+    } // this sets all messaging content other than messaging content not needed until the user
+    // does something to see them. e.g, validator hints are shown until focus on the field.
+    // we do this to help initial render performance.
 
 
     compMessaging.activate(messagingLauncher, compContentElement, messagingContent); // Async validators hints are retrieved only when they are needed to be shown to the user.
@@ -5187,18 +5265,22 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
   },
 
   /**
+   * This is only needed when we use the
+   * deprecated display-options.converter-hint=['placeholder','notewindow'] api that is used
+   * in the Alta theme and not the Redwood theme.
    * @private
    * @memberof oj.editableValue
    * @instance
    */
   _placeholderOptionChanged: function _placeholderOptionChanged(flags) {
+    if (this._getResolvedUserAssistance() !== 'displayOptions') {
+      return;
+    }
+
     var context = flags && flags._context || {};
     var refreshMessagingOptions = //  internalMessagingSet indicates whether the current change is from the messaging module.
     // see ComponentMessaging for details
     !context.internalMessagingSet;
-    var value = this.options.placeholder;
-
-    this._SetPlaceholder(value);
 
     if (refreshMessagingOptions) {
       // if placeholder was set and it's not from messaging code, then the messaging display options
@@ -5452,7 +5534,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * Returns an array of validator hints from any validator with getHint() function.
    * @param {Array} allValidators these are from the validators option
    * and from the GetImplicitValidators function.
-   * These can be sync and/or async validators.
+   * These can be sync validators only since async validators api does not have getHint(),
+   * it has .hint property.
    * @private
    * @memberof oj.editableValue
    * @instance
@@ -5475,7 +5558,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
           validatorHints.push(vHint);
         }
       }
-    } // loop through all remaining validators to gather hints
+    } // loop through all remaining validators to gather hints.
+    // this will get sync validators only since sync validators have getHint() api
+    // and async validators have .hint property.
 
 
     for (i = 0; i < allValidators.length; i++) {
@@ -5547,15 +5632,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     * @instance
     */
   _getResolvedUserAssistance: function _getResolvedUserAssistance() {
-    if (this._defaultOptions == null) {
-      this._defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
-    } // this will return 'use' or 'ignore'. This tells us whether we should use the
+    // ThemeUtils caches the result so no need to do it here.
+    var defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults'); // this will return 'use' or 'ignore'. This tells us whether we should use the
     // user-assistance-density attribute or ignore it. If we ignore it, we will
     // use the displayOptions attribute.
 
-
-    if (this._defaultOptions) {
-      var useUserAssistanceOption = this._defaultOptions.useUserAssistanceOptionDefault;
+    if (defaultOptions) {
+      var useUserAssistanceOption = defaultOptions.useUserAssistanceOptionDefault;
       return useUserAssistanceOption === 'use' ? this.options.userAssistanceDensity : 'displayOptions';
     } // if no theme return displayOptions for bw compatibility.
 
@@ -5593,22 +5676,17 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     var messagingContent = {};
     var allValidators;
     var converter;
-    var converterHint = '';
-    var messages;
-    var validatorHints = []; // eslint-disable-next-line no-param-reassign
+    var converterHint = ''; // eslint-disable-next-line no-param-reassign
 
-    updateType = updateType || this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE; // Add validityState which includes messages, valid and severity
+    updateType = updateType || this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE; // Add validityState which includes messages, valid and severity.
+    // These are shown to the user right away on initialization if they are there.
 
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE) {
+    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE) {
       // get messages from messagesShown and messagesHidden
-      messages = this._getMessages(); // update validityState before packaging it
-
-      this._getValidityState().update(this.isValid(), messages);
-
-      messagingContent.validityState = this._getValidityState();
+      messagingContent.validityState = this._getMessagingContentValidityState();
     }
 
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT) {
+    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT) {
       converter = this._GetConverter();
 
       if (converter) {
@@ -5620,16 +5698,22 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
       }
 
       messagingContent.converterHint = converterHint;
-    }
+    } // Do not get validator hints on component initialization. Instead we get them
+    // when the user first needs them, like when they focus in the input.
+    // We do this to help initial render performance.
 
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS) {
+
+    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS) {
       // gets implicit validators and all validators from the validators option.
-      allValidators = this._GetAllValidatorsFromValidatorsOptionAndImplicit();
-      validatorHints = this._getHintsFromAllValidatorsWithGetHintFunction(allValidators) || [];
-      messagingContent.validatorHint = validatorHints;
+      allValidators = this._GetAllValidatorsFromValidatorsOptionAndImplicit(); // sync validators have getHint() function.
+      // async validators do not; they have hint property.
+      // so this will get sync validators' hints
+
+      var syncValidatorHints = this._getHintsFromAllValidatorsWithGetHintFunction(allValidators) || [];
+      messagingContent.validatorHint = syncValidatorHints;
     }
 
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE) {
+    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.INIT || updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE) {
       // For custom element components, we use help.instruction option value for the
       // messageContent title, otherwise, use the title option value.  help.instruction
       // is used by custom element components, and title is used by non-custom element components.
@@ -5649,6 +5733,27 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
     }
 
     return messagingContent;
+  },
+
+  /**
+   *
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
+  _getMessagingContentValidityState: function _getMessagingContentValidityState() {
+    var validityState;
+
+    if (!this._hasValidityState()) {
+      // this will create the validity state.
+      validityState = this._getValidityState();
+    } else {
+      // update validityState before packaging it
+      validityState = this._getValidityState();
+      validityState.update(this.isValid(), this._getMessages());
+    }
+
+    return validityState;
   },
 
   /**
@@ -6081,11 +6186,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
    * @return {boolean}
    */
   _UseReadonlyDiv: function _UseReadonlyDiv() {
-    if (this._defaultOptions == null) {
-      this._defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
-    }
-
-    return this._defaultOptions.readonlyElem === 'div';
+    // ThemeUtils caches the result so no need to do it here.
+    var defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults');
+    return defaultOptions.readonlyElem === 'div';
   },
 
   /**
@@ -6448,6 +6551,30 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
 
     return valMsgs.length === 0 ? value : undefined;
+  },
+
+  /**
+   * This is called when we have a labelledBy attribute during component initialization
+   * or the attribute updates.
+   *
+   * @param {string} labelledBy The labelledBy attribute value. Can be a space delimited value.
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
+  _labelledByUpdated: function _labelledByUpdated(labelledBy) {
+    var ojlabels = oj.EditableValueUtils._getCustomOjLabelElements(labelledBy);
+
+    if (ojlabels) {
+      for (var i = 0; i < ojlabels.length; i++) {
+        var ojlabel = ojlabels[i];
+        ojlabel.classList.add(this._GetDefaultStyleClass() + '-label');
+
+        if (this.widget().attr('data-oj-internal') === undefined && this.options.readOnly !== undefined) {
+          this._addRemoveOjReadOnlyClassOnLabel(ojlabel, this.options.readOnly);
+        }
+      }
+    }
   },
 
   /**
@@ -6825,6 +6952,45 @@ Components.setDefaultOptions({
  * The required validator is the only validator type that participates in deferred validation.
  * The required property needs to be set to true for the required validator to run.
  * </p>
+ * <p>
+ * <h3 id="user-assistance-text-section">
+ * User Assistance Text
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#user-assistance-text-section"></a>
+ * </h3>
+ * <p>
+ * User assistive text provides guidance to help the user understand what data to enter or select.
+ * </p>
+ * <p>In the Redwood theme, by default all user assistance text shows inline.
+ * For input components, it shows when the field takes focus. In other components
+ * it shows all the time. See the user-assistance-density property for other ways
+ * the user assistance text can render, like in 'compact' mode, it will render as an icon on the label
+ * which when clicked will show the user assistance text in a notewindow.
+ * <p>
+ * <p>The JET form component properties that are used for user assistance text are help.instruction,
+ * validator and converter hints, and help-hints.
+ * In the Redwood theme for clarity only one user assistance text shows to the user.
+ * The precedence rules are:
+ * <ul>
+ * <li>help.instruction shows;</li>
+ * <li>if no help.instruction, then validator hint shows;</li>
+ * <li>if no help.instruction or validator hint, then help-hints.definition shows;</li>
+ * <li>if no help.instruction, validator hint, or help-hints.definition, then converter hint shows.</li>
+ * <li>help-hints.source always shows along side the above.</li>
+ * </ul>
+ * </p>
+ * <p>In the Alta theme all the user assistance text are displayed to the user. By default
+ * help.instruction and the validator/converter hints show in a notewindow that is displayed
+ * when the field takes focus. The help-hints render as a help icon on the label and when clicked
+ * show in a notewindow. Note: If there is no label, help-hints help icon will not show.
+ * </p>
+ * <p>Sometimes a validator or converter hints shows that you do not want. To not show it,
+ *  set the display-options.validator-hint and/or display-options.converter-hint property to 'none'.
+ * </p>
+ * <p>required and placeholder properties also can be used to guide the user.
+ * In Redwood, a required field shows the word Required under the field
+ * when the field is empty and does not have focus.
+ * Placeholder is shown when the field is empty and has focus.
+ * </p>
  * @ojfragment validationAndMessagingDoc - Used in the general section of classdesc
  * @memberof oj.editableValue
  */
@@ -7139,11 +7305,15 @@ InlineHelpHintsStrategy._helpHintsChangedHandler = function (component, event) {
 InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
   // let helpSource = component.options.helpHints.source;
   var hintsHtml;
-  var helpInstruction = component.options.help.instruction;
+  var helpOptions = component.options.help;
+  var helpInstruction = helpOptions ? helpOptions.instruction : null;
 
   if (helpInstruction) {
-    var helpInstructionDom = oj.PopupMessagingStrategyUtils.buildHintHtml(document, 'oj-form-control-hint-title', helpInstruction, true, 'oj-form-control-hint');
-    hintsHtml = helpInstructionDom;
+    var helpInstructionDom = oj.PopupMessagingStrategyUtils.GetTextDom(document, helpInstruction, true); // turn it into a string
+
+    var helpInstructionDomString = helpInstructionDom ? helpInstructionDom.outerHTML : ''; // @HTMLUpdateOK
+
+    hintsHtml = helpInstructionDomString;
   }
 
   if (!hintsHtml && this.ShowValidatorHint()) {
@@ -7155,22 +7325,29 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
     // we do the same thing that we do in PopupComponentMessages
     var hints = this.GetValidatorHints();
 
-    if (hints) {
+    if (hints.length > 0) {
       hintsHtml = hints.join('<br/>');
     }
   }
 
   if (!hintsHtml) {
     // try to get help definition
-    // TODO: we need to listen for helpHints changes and update this
-    // TODO: we don't need to do that for help.instruction or validation since
-    // EditableValue is doing it. It updates only for 'title', so not everything at least.
-    // But we do not have that hook for help definition or source, but we could listen on
-    // attribute change instead. That is what the LabelStrategies do, I think.
-    var definition = component.options.helpHints.definition;
+    // We get notified of changes to help-hints in
+    // InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers
+    var helpHints = component.options.helpHints;
+    var definition = helpHints ? helpHints.definition : null;
 
     if (definition) {
       hintsHtml = definition;
+    }
+  } // try to get the converterHint
+
+
+  if (!hintsHtml && this.ShowConverterHint()) {
+    var _hints = this.GetConverterHint();
+
+    if (_hints.length > 0) {
+      hintsHtml = _hints.join('<br/>');
     }
   }
 
@@ -7196,7 +7373,7 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
 
 
   if (this.containerRoot) {
-    this.containerRoot.innerHTML = hintsHtml; // @HTMLUpdateOK
+    this.containerRoot.innerHTML = hintsHtml || ''; // @HTMLUpdateOK
   }
 
   if (this._userAssistanceDivElement) {
@@ -8815,7 +8992,10 @@ oj.InsideLabelPlaceholderStrategy.prototype._placeholderChanged = function () {
   });
 };
 /**
- * @private
+ * Returns true if the converter hint should be shown in the placeholder area.
+ * If displayOptions are to be ignored, like in Redwood theme, then this returns false.
+ * If displayOptions.converter-hint is 'none', then this returns false;
+ * @public
  * @memberof oj.InsideLabelPlaceholderStrategy
  * @param {Object} component
  * @return {boolean}
@@ -8823,9 +9003,13 @@ oj.InsideLabelPlaceholderStrategy.prototype._placeholderChanged = function () {
  */
 
 
-oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder = function (component) {
+oj.InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder = function (component) {
   var displayOptions = component.options.displayOptions;
-  if (!displayOptions) return false;
+
+  if (!displayOptions || component._getResolvedUserAssistance() !== 'displayOptions') {
+    return false;
+  }
+
   var converterHint = displayOptions.converterHint;
 
   if (converterHint instanceof Array) {
@@ -8845,7 +9029,7 @@ oj.InsideLabelPlaceholderStrategy._focusHandler = function () {
   var component = this.GetComponent();
   var placeholder;
 
-  if (oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder(component)) {
+  if (oj.InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component)) {
     var hints = this.GetConverterHint();
     placeholder = hints.length > 0 ? hints[0] : null;
   }
@@ -8877,7 +9061,7 @@ oj.InsideLabelPlaceholderStrategy._blurHandler = function (element) {
   var placeholder;
   var component = this.GetComponent();
 
-  if (oj.InsideLabelPlaceholderStrategy._showConverterHintAsPlaceholder(component)) {
+  if (oj.InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component)) {
     var hints = this.GetConverterHint();
     placeholder = hints.length > 0 ? hints[0] : null;
   }
@@ -8915,13 +9099,13 @@ oj.InsideLabelPlaceholderStrategy._blurHandler = function (element) {
  * @class oj.InsideLabelStrategy
  * @ignore
  * @ojtsignore
- * @param {Array.<string>} options an array of messaging artifacts that are
+ * @param {Array.<string>} displayOptions an array of messaging artifacts that are
  * displayed as an inside label for text fields.
  * For LabelStrategies this is always only labelEdge.
  */
-oj.InsideLabelStrategy = function (options) {
-  this.Init(options);
-  this._placeholderStrategy = new oj.InsideLabelPlaceholderStrategy(options);
+oj.InsideLabelStrategy = function (displayOptions) {
+  this.Init(displayOptions);
+  this._displayOptions = displayOptions;
 };
 /**
  * Registers the LabelStrategy constructor function with oj.ComponentMessaging.
@@ -8944,8 +9128,15 @@ oj.Object.createSubclass(oj.InsideLabelStrategy, BaseInsidelLabelStrategy, 'oj.I
 
 oj.InsideLabelStrategy.prototype.activate = function (cm) {
   oj.InsideLabelStrategy.superclass.activate.call(this, cm);
+  this._componentMessaging = cm;
+  var component = this.GetComponent();
 
-  this._placeholderStrategy.activate(cm);
+  var element = component._getRootElement();
+
+  this._placeholderChangedCallback = this._placeholderChangedHandler.bind(this);
+  element.addEventListener('placeholderChanged', this._placeholderChangedCallback);
+
+  this._activatePlaceholderStrategyIfNeeded(cm);
 
   this._CreateLabel();
 };
@@ -8958,14 +9149,19 @@ oj.InsideLabelStrategy.prototype.activate = function (cm) {
  */
 
 
-oj.InsideLabelStrategy.prototype.reactivate = function (newOptions) {
-  oj.InsideLabelStrategy.superclass.reactivate.call(this, newOptions);
+oj.InsideLabelStrategy.prototype.reactivate = function (newDisplayOptions) {
+  oj.InsideLabelStrategy.superclass.reactivate.call(this, newDisplayOptions);
 
   this._DestroyLabel();
 
   this._CreateLabel();
 
-  this._placeholderStrategy.reactivate(newOptions);
+  if (this._placeholderStrategy) {
+    this._placeholderStrategy.reactivate(newDisplayOptions);
+  } else {
+    // we haven't activated the placeholder yet, so do it now.
+    this._activatePlaceholderStrategyIfNeeded(this._componentMessaging);
+  }
 };
 /**
  * @param {Object=} content the messaging content object. If it contains validityState, then
@@ -8979,7 +9175,11 @@ oj.InsideLabelStrategy.prototype.reactivate = function (newOptions) {
 
 
 oj.InsideLabelStrategy.prototype.shouldUpdate = function (content) {
-  return this._placeholderStrategy.shouldUpdate(content);
+  if (this._placeholderStrategy) {
+    return this._placeholderStrategy.shouldUpdate(content);
+  }
+
+  return false;
 };
 /**
  * Updates component with instance using the content provided.
@@ -8991,7 +9191,9 @@ oj.InsideLabelStrategy.prototype.shouldUpdate = function (content) {
 
 
 oj.InsideLabelStrategy.prototype.update = function () {
-  this._placeholderStrategy.update();
+  if (this._placeholderStrategy) {
+    this._placeholderStrategy.update();
+  }
 };
 /**
  * Cleans up messages on the component and destroys any widgets it created.
@@ -9003,11 +9205,67 @@ oj.InsideLabelStrategy.prototype.update = function () {
 
 
 oj.InsideLabelStrategy.prototype.deactivate = function () {
-  this._placeholderStrategy.deactivate();
+  if (this._placeholderStrategy) {
+    this._placeholderStrategy.deactivate();
+
+    delete this._placeholderStrategy;
+  } // Remove event handlers
+
+
+  var component = this.GetComponent();
+
+  var element = component._getRootElement();
+
+  element.removeEventListener('placeholderChanged', this._placeholderChangedCallback);
+  delete this._placeholderChangedCallback;
 
   this._DestroyLabel();
 
   oj.InsideLabelStrategy.superclass.deactivate.call(this);
+};
+/**
+ * activate the PlaceholderStrategy if they have not already been activated.
+ *
+ * @private
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ */
+
+
+oj.InsideLabelStrategy.prototype._activatePlaceholderStrategyIfNeeded = function (cm) {
+  var _this = this;
+
+  if (this._placeholderStrategy === undefined) {
+    var createInsideLabelPlaceholderStrategy = function createInsideLabelPlaceholderStrategy() {
+      var Callback = oj.InsideLabelPlaceholderStrategy;
+      _this._placeholderStrategy = new Callback(_this._displayOptions);
+
+      _this._placeholderStrategy.activate(cm);
+    };
+
+    var component = this.GetComponent();
+    var compOptions = component.options; // If the component has a placeholder or if it uses displayOptions+
+    // has it set so that converter is shown as a placeholder.
+    // Note: the Redwood theme does not use displayOptions.
+
+    var needsInsidePlaceholder = compOptions.placeholder || component._getResolvedUserAssistance() === 'displayOptions' && oj.InsideLabelPlaceholderStrategy.ShowConverterHintAsPlaceholder(component);
+
+    if (needsInsidePlaceholder) {
+      createInsideLabelPlaceholderStrategy();
+    }
+  }
+};
+/**
+ * If placeholder has a value, then activate the sub-strategy if it isn't
+ * yet activated.
+ * @memberof oj.InsideLabelStrategy
+ * @instance
+ * @private
+ */
+
+
+oj.InsideLabelStrategy.prototype._placeholderChangedHandler = function () {
+  this._activatePlaceholderStrategyIfNeeded(this._componentMessaging);
 };
 /**
  * Gets the form component's container.
@@ -9641,7 +9899,6 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpenOrComponentHasFocus = func
   var isPopupOpen = false;
   var launcher;
   var messagingContentRoot;
-  contentToShow = this._buildPopupHtml();
   launcher = this.GetLauncher();
 
   if (launcher == null) {
@@ -9656,6 +9913,8 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpenOrComponentHasFocus = func
     isPopupOpen = messagingContentRoot.ojPopup('isOpen');
 
     if (isPopupOpen) {
+      contentToShow = this._buildPopupHtml();
+
       if (contentToShow) {
         // push new content into popup
         domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot); // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
@@ -9671,9 +9930,13 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpenOrComponentHasFocus = func
         messagingContentRoot.ojPopup('close');
       }
     }
-  } else if (isLauncherActiveElement && contentToShow) {
-    // if popup is closed but focus is on activeElement re-open it
-    this._openPopup(undefined);
+  } else if (isLauncherActiveElement) {
+    contentToShow = this._buildPopupHtml();
+
+    if (contentToShow) {
+      // if popup is closed but focus is on activeElement re-open it
+      this._openPopup(undefined);
+    }
   }
 };
 /**
@@ -10109,7 +10372,7 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
 
     titleDom.classList.add(selector);
 
-    oj.PopupMessagingStrategyUtils._appendTextDom(titleDom, oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed));
+    oj.PopupMessagingStrategyUtils._appendTextDom(titleDom, oj.PopupMessagingStrategyUtils.GetTextDom(document, hintText, htmlAllowed));
   }
 
   return titleDom ? titleDom.outerHTML : ''; // @HTMLUpdateOK
@@ -10288,8 +10551,7 @@ oj.PopupMessagingStrategyUtils.buildMessageHtml = function (document, summary, d
 
   if (detail) {
     // detail text allows html content. So scrub it before setting it.
-    var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
-
+    var detailDom = oj.PopupMessagingStrategyUtils.GetTextDom(document, detail, true);
     msgDetail = document.createElement('div');
     msgDetail.classList.add(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL);
 
@@ -10383,11 +10645,11 @@ oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity) {
  * @param {boolean=} htmlAllowed if value can have html content
  *
  * @return {Element} dom node containing the scrubbed hint
- * @private
+ * @public
  */
 
 
-oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed) {
+oj.PopupMessagingStrategyUtils.GetTextDom = function (document, value, htmlAllowed) {
   var textDom = null;
 
   if (oj.StringUtils.isString(value)) {

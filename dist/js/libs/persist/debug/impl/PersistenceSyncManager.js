@@ -197,7 +197,13 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
                     // proxy.
                     persistenceUtils.markReplayRequest(request, true);
                     logger.log("Offline Persistence Toolkit PersistenceSyncManager: Replaying request with url: " + request.url);
-                    fetch(request).then(function (response) {
+                    var fetchFunc;
+                    if (_isBrowserContext()) {
+                      fetchFunc = fetch;
+                    } else {
+                      fetchFunc = self._browserFetch;
+                    }
+                    fetchFunc(request).then(function (response) {
                       statusCode = response.status;
 
                       // fail for HTTP error codes 4xx and 5xx
@@ -528,6 +534,10 @@ define(['require', '../persistenceUtils', '../persistenceStoreManager', './defau
 
     function _getRedoUndoStorage() {
       return _getStorage('redoUndoLog');
+    };
+
+    function _isBrowserContext() {
+      return (typeof window != 'undefined') && (window != null);
     };
 
     return PersistenceSyncManager;

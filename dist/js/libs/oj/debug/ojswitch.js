@@ -228,7 +228,7 @@ var __oj_switch_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
    * </h3>
    * <p>
-   * For accessibility, you should associate a label element with the input by putting an
+   * If not using the <code class="prettyprint">label-hint</code> attribute, for accessibility, you should associate a label element with the input by putting an
    * <code class="prettyprint">id</code> on the input, and then setting the
    * <code class="prettyprint">for</code> attribute on the label to be the input's id.
    * </p>
@@ -356,10 +356,18 @@ var __oj_switch_metadata =
        * <code class="prettyprint">readOnly</code> property is used as its initial value if it exists, when the attribute is not explicitly set.
        *  When neither is set, <code class="prettyprint">readOnly </code> defaults to false.
        * <p>
-       * The oj-form-layout provides its readonly attribute value and the form components
-       * consume it if it is not already set explicitly.
-       * For example, if oj-form-layout is set to readonly='true',
-       * all the form components it contains will be readonly='true' by default.
+       * The default value for readonly is false. However, if the form component is a descendent of
+       * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+       * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+       * The <code class="prettyprint">oj-form-layout</code> uses the
+       * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+       * <code class="prettyprint">provide</code> property to provide its
+       * <code class="prettyprint">readonly</code>
+       * attribute value to be consumed by descendent components.
+       * The form components are configured to consume the readonly property if an ancestor provides it and
+       * it is not explicitly set.
+       * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+       * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
        * @example <caption>Initialize the switch with
        * <code class="prettyprint">readOnly</code> attribute:</caption>

@@ -4306,6 +4306,19 @@ oj.ComponentMessaging.prototype._getMessagingContent = function () {
   return this._messagingContent || {};
 };
 /**
+ * Useful for on-demand messaging content, like validation hints.
+ *
+ * @param {Object} content
+ * @private
+ * @memberof !oj.ComponentMessaging
+ */
+
+
+oj.ComponentMessaging.prototype._setMessagingContent = function (content) {
+  oj.Assert.assertObject(content);
+  this._messagingContent = oj.CollectionUtils.copyInto(this._messagingContent || {}, content);
+};
+/**
  * Whether the component messaging is activated.
  * @return {boolean}
  * @private
@@ -4801,6 +4814,31 @@ oj.MessagingStrategy.prototype.GetComponent = function () {
   return this._componentMessaging._getComponent();
 };
 /**
+ * This is simply a flag.
+ * Set to true when we get the validator hints from the component the first time.
+ * Then use getHasValidatorHints to check if it is true. If so we
+ * know we've already gotten the validator hints the first time and
+ * won't get them from the component again.
+ * @param {boolean} hasValidatorHints true if we have the validator hints
+ * @private
+ */
+
+
+oj.MessagingStrategy.prototype.setHasValidatorHints = function (hasValidatorHints) {
+  this._hasValidatorHints = hasValidatorHints;
+};
+/**
+ * If true, it means we have already retrieved the validator hints from the
+ * component.
+ * @private
+ * @return {boolean} true if we already have the validator hints, else false
+ */
+
+
+oj.MessagingStrategy.prototype.getHasValidatorHints = function () {
+  return this._hasValidatorHints === true;
+};
+/**
  * Generates a unique id if the element doesn't have one already assigned.
  * @param {Element} element requiring an id
  * @private
@@ -4855,27 +4893,34 @@ oj.MessagingStrategy.prototype.GetConverterHint = function () {
 
   return hints;
 };
+/**
+ * ValidatorHints are retrieved on-demand. The first time they are requested,
+ * we get them and set the mc.validatorHints.
+ * @return {string} helpInstruction or ""
+ * @private
+ */
+
 
 oj.MessagingStrategy.prototype.GetValidatorHints = function () {
-  var component = this.GetComponent(); // Async validators hints are retrieved only when they are needed to be shown to the user.
-  // So instead of calling _initAsyncValidatorMessagingHint when the component is created,
-  // it is called here when validator hints are first shown to the user.
+  if (!this.getHasValidatorHints()) {
+    this.setHasValidatorHints(true);
+    var component = this.GetComponent(); // get the sync validator hints from the component, then set the messaging content.
 
-  if (component && !component._initAsyncMessaging && component._initAsyncValidatorMessagingHint) {
-    component._initAsyncMessaging = true;
+    this._setMessagingContent(component._getValidatorHintsMC());
 
     component._initAsyncValidatorMessagingHint();
-  }
+  } // Eventually the messagingContent will have all the validatorHints, even the async ones.
+  // The async validators call componentMessaging.update(cm) when each hint Promise resolves with
+  // all the validator hints it has so far, sync/async.
+  // The first time through, before update, this will return the sync validator hints.
+  // Every time the componentMessaging.update(cm) is called after, it will have the sync hints
+  // plus any new async hints. The most common use case is to have only one validator per
+  // form component but this supports multiple and sync and async.
 
-  var hints = [];
 
   var mc = this._getMessagingContent();
 
-  var vHints = mc && mc.validatorHint || [];
-  $.each(vHints, function (index, hint) {
-    hints.push(hint);
-  });
-  return hints;
+  return mc && mc.validatorHint || [];
 };
 /**
  * Gets the short description.
@@ -5057,6 +5102,20 @@ oj.MessagingStrategy.prototype.RemoveAriaDescribedByForInlineMessaging = functio
 oj.MessagingStrategy.prototype._getMessagingContent = function () {
   if (this._componentMessaging) {
     return this._componentMessaging._getMessagingContent();
+  }
+
+  return {};
+};
+/**
+ * Gets the messagingContent stored in ComponentMessaging instance
+ * @param {Object} messaging content.
+ * @private
+ */
+
+
+oj.MessagingStrategy.prototype._setMessagingContent = function (content) {
+  if (this._componentMessaging) {
+    return this._componentMessaging._setMessagingContent(content);
   }
 
   return {};

@@ -2014,7 +2014,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
     }, {
       key: "checkViewport",
       value: function checkViewport() {
-        if (this.domScroller) {
+        if (this.domScroller && this.isReady()) {
           var fetchPromise = this.domScroller.checkViewport();
 
           if (fetchPromise != null) {

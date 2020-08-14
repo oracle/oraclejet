@@ -19,25 +19,24 @@ export declare class Avatar extends VComponent<Props> {
     protected render(): any;
     protected _vprops?: VProps;
 }
-
 // Custom Element interfaces
 export interface AvatarElement extends JetElement<AvatarElementSettableProperties> {
   /**
    * Specifies the background of the avatar.
    */
-  background?: 'neutral'|'red'|'orange'|'forest'|'green'|'teal'|'mauve'|'purple';
+  background?: Props['background'];
   /**
    * Specifies the initials of the avatar.
    */
-  initials?: string|null;
+  initials?: Props['initials'];
   /**
    * Specifies the size of the avatar.
    */
-  size?: 'xxs'|'xs'|'sm'|'md'|'lg'|'xl'|'xxl';
+  size?: Props['size'];
   /**
    * Specifies the source for the image of the avatar.
    */
-  src?: string|null;
+  src?: Props['src'];
   addEventListener<T extends keyof AvatarElementEventMap>(type: T, listener: (this: HTMLElement, ev: AvatarElementEventMap[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof AvatarElementSettableProperties>(property: T): AvatarElement[T];
@@ -66,19 +65,19 @@ export interface AvatarElementSettableProperties extends JetSettableProperties {
   /**
    * Specifies the background of the avatar.
    */
-  background?: 'neutral'|'red'|'orange'|'forest'|'green'|'teal'|'mauve'|'purple';
+  background?: Props['background'];
   /**
    * Specifies the initials of the avatar.
    */
-  initials?: string|null;
+  initials?: Props['initials'];
   /**
    * Specifies the size of the avatar.
    */
-  size?: 'xxs'|'xs'|'sm'|'md'|'lg'|'xl'|'xxl';
+  size?: Props['size'];
   /**
    * Specifies the source for the image of the avatar.
    */
-  src?: string|null;
+  src?: Props['src'];
 }
 export interface AvatarElementSettablePropertiesLenient extends Partial<AvatarElementSettableProperties> {
   [key: string]: any;

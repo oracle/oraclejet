@@ -8,4 +8,4 @@
 
 export { InputSearch } from './ojinputsearch';
 
-export { InputSearchElementEventMap, InputSearchElementSettableProperties, InputSearchElementSettablePropertiesLenient, InputSearchElement, VProps, InputSearchProperties } from './ojinputsearch';
+export { InputSearchElementEventMap, InputSearchElementSettableProperties, InputSearchElementSettablePropertiesLenient, InputSearchElement, VProps, InputSearchProperties, ojInputSearchEventMap, ojInputSearchSettableProperties, ojInputSearchSettablePropertiesLenient, ojInputSearch } from './ojinputsearch';

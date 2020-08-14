@@ -552,6 +552,9 @@
         outline: dotted 1px;
     }
 
+    .oj-hicontrast .oj-menu-item.oj-disabled > a {
+        border: dotted 1px;
+    }
 
     // menu animation defaults
     //-------------------------------------

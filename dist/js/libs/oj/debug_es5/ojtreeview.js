@@ -805,7 +805,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
        * @memberof oj.ojTreeView
        * @ojshortdesc Triggered when the default animation of a particular action has ended.
        * @instance
-       * @property {'expand'|'collapse'} action The action that started the animation. See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {'expand'|'collapse'} action The action that triggers the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
        * @property {Element} element The target of animation.
        */
       animateEnd: null,
@@ -819,7 +819,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
        * @memberof oj.ojTreeView
        * @ojshortdesc Triggered when the default animation of a particular action is about to start.
        * @instance
-       * @property {'expand'|'collapse'} action The action that starts the animation. See <a href="#animation-section">animation</a> section for a list of actions.
+       * @property {'expand'|'collapse'} action The action that triggered the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
        * @property {Element} element The target of animation.
        * @property {function():void} endCallback If the event listener calls <code class="prettyprint">event.preventDefault()</code> to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
        */

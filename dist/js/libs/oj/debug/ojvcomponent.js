@@ -12,7 +12,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * Class decorator for VComponent custom elements. Takes the tag name
      * of the custom element.
      * @param {string} tagName The custom element tag name
-     * @return {Function}
      * @name customElement
      * @function
      * @memberof! VComponent
@@ -23,7 +22,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * Property decorator for VComponent properties whose default value is determined at
      * runtime and returned via the getter method passed to the decorator.
      * @param {Function} defaultGetter The method to call to retrieve the default value
-     * @return {Function}
      * @name dynamicDefault
      * @function
      * @memberof! VComponent
@@ -36,7 +34,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * property is only updated by the component.
      * @param {object=} options The options for this decorator
      * @param {boolean} options.readOnly True if only the component can update the property
-     * @return {Function}
      * @name _writeback
      * @function
      * @memberof! VComponent
@@ -47,7 +44,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
     /**
      * Method decorator for VComponent methods that should be exposed on the custom element.
      * Non decorated VComponent methods will not be made available on the custom element.
-     * @return {Function}
      * @name method
      * @function
      * @memberof! VComponent
@@ -57,7 +53,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
     /**
      * Property decorator for VComponent properties which are not component properties,
      * but are global properties that the VComponent wishes to get updates for, e.g. tabIndex or aria-label.
-     * @return {Function}
      * @name rootProperty
      * @function
      * @memberof! VComponent
@@ -65,12 +60,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      */
 
     /**
-     * Method decorator for VComponent that binds a specified method to the component instance ('this')
+     * Method decorator for VComponent that binds a specified method to the component instance 'this'
      * and passes provided options to the addEventListener()/removeEventListener() calls, when the method is used as a listener.
-     * @param {object=} options Listener options, e.g. {passive:true}
-     * @return {Function}
+     * @param {object=} options The options for this decorator
+     * @param {boolean=} options.passive True indicates that the listener will never call preventDefault().
+     * @param {boolean=} options.capture True indicates that events of this type will be dispatched to the registered listener
+     *                                  before being dispatched to any target beneath it in the DOM tree.
      * @name listener
-     * @ojsignature {target: "Type", for: "options", value: "{capture?: boolean = false, passive?: boolean}"}
      * @function
      * @memberof! VComponent
      * @ojdecorator
@@ -80,7 +76,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * Property decorator for VComponent event callback properties to indicate they bubble.
      * @param {object=} options The options for this decorator
      * @param {boolean} options.bubbles True if only the component can update the property
-     * @return {Function}
      * @name event
      * @function
      * @memberof! VComponent
@@ -109,7 +104,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * @since 9.0.0
      * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
      * @ojmodule ojvcomponent
-     * @classdesc The VComponent base class provides a mechanism for defining JET
+     * @classdesc <p>
+     * <b>Note: the VComponent API is currently in Experimental status.</b>
+     * The APIs discussed in this documentation are subject to change.  More specifically,
+     * VComponent authors may be required to make changes to their component implementations
+     * when upgrading to future versions of JET.
+     * </p>
+     * <p>
+     * The VComponent base class provides a mechanism for defining JET
      * <a href="CompositeOverview.html">Custom Components</a>.
      * Like the JET <a href="ComponentTypeOverview.html#corecomponents">Core Components</a>
      * and composite components, VComponent-based components
@@ -117,6 +119,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      * custom elements are (essentially) indistinguishable from JET’s other component types.
      * Where VComponents differ is in the component implementation strategy: VComponents produce
      * content via virtual DOM rendering.
+     * </p>
      * <p>
      * To create a new VComponent-based custom component, the component author typically does the following:
      * <ul>
@@ -127,7 +130,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
      *   <li>Defines the public contract of the custom element.
      *   <ul>
      *     <li><b>Properties: </b>defined as members of the Props class.</li>
-     *     <li><b>Methods: </b>defined as methods of the VComponent class and marked for exposure on the custom element using the &#64;method() decorator.</li>
+     *     <li><b>Methods: </b>defined as methods of the VComponent class and marked for exposure on the custom element using the &#64;method decorator.</li>
      *     <li><b>Events: </b>defined as members of the Props class using the naming convention on[EventName] and having type
      *     <a href="#Action">Action</a> or <a href="#CancelableAction">CancelableAction</a>.</li>
      *     <li><b>Slots: </b>defined as members of the Props class having type <a href="#Slot">Slot</a>.</li>
@@ -955,7 +958,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
             return c && (c.type != null || c._text != null || c._node);
         };
         const isComponent = function isComponent(c) {
-            return (c === null || c === void 0 ? void 0 : c.mount) && (c === null || c === void 0 ? void 0 : c.patch) && (c === null || c === void 0 ? void 0 : c.unmount);
+            return (c === null || c === void 0 ? void 0 : c.mount) && (c === null || c === void 0 ? void 0 : c.patch) && (c === null || c === void 0 ? void 0 : c.notifyUnmounted) && (c === null || c === void 0 ? void 0 : c.notifyMounted);
         };
         function h(type, props, ...args) {
             let content, isSVG = false, isVComponent = false, isCustomElement;
@@ -1154,7 +1157,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
                 patchRef(vnode.ref, vcomp);
                 patchRef(vcomp._vnode.props.ref, vnode._node);
                 if (!vnode.isCustomElement) {
-                    vcomp.mounted();
+                    vcomp.notifyMounted();
                 }
             }
             else if (typeof vnode.type !== 'function') {
@@ -1196,6 +1199,23 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
                 }
             }
         }
+        function mounted(ch) {
+            if (isArray(ch)) {
+                for (let i = 0; i < ch.length; i++) {
+                    mounted(ch[i]);
+                }
+            }
+            else {
+                if (ch.isComponent) {
+                    const vcomp = ch._data;
+                    vcomp.notifyMounted();
+                }
+                else if (ch.content != null) {
+                    mounted(ch.content);
+                }
+            }
+        }
+        PetitDom.mounted = mounted;
         function unmount(ch) {
             if (isArray(ch)) {
                 for (let i = 0; i < ch.length; i++) {
@@ -1205,7 +1225,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
             else {
                 if (ch.isComponent) {
                     const vcomp = ch._data;
-                    vcomp.unmount(ch._node);
+                    vcomp.notifyUnmounted(ch._node);
                 }
                 else if (ch.content != null) {
                     unmount(ch.content);
@@ -1909,14 +1929,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
             PetitDom.patch(this._vnode, oldVnode, this._ref.parentNode, true);
             this.updated(oldProps, oldState);
         }
-        unmount(node) {
+        notifyMounted() {
+            PetitDom.mounted(this._vnode);
+            this.mounted();
+        }
+        notifyUnmounted(node) {
             PetitDom.unmount(this._vnode);
             this.unmounted();
         }
         queueRender(element, reason) {
-            var _a, _b;
-            if ((_b = (_a = this).isPatching) === null || _b === void 0 ? void 0 : _b.call(_a))
-                return;
             if (reason === 'propsUpdate') {
                 this._pendingPropsUpdate = true;
             }
@@ -2190,6 +2211,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
         }
 
         function get() {
+          // See note in below in outerGet() about accessing properties from the
+          // custom element for the VComponent-first case
           var value = this._BRIDGE._PROPS[property];
           // If the attribute has not been set, return the default value
           if (value === undefined) {

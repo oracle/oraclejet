@@ -28,7 +28,8 @@ export declare abstract class VComponent<P extends object = any, S extends objec
     protected updateState(state: ((state: Readonly<S>, props: Readonly<P>) => Partial<S>) | Partial<S>): void;
     private mount;
     private patch;
-    private unmount;
+    private notifyMounted;
+    private notifyUnmounted;
     private queueRender;
     private _renderForMount;
     private _renderForPatch;
@@ -58,7 +59,9 @@ export declare function listener(options?: {
     passive?: boolean;
 }): (target: any, key: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 export declare function dynamicDefault(defaultGetter: () => any): (target: any, propertyKey: string | Symbol) => void;
+export declare function method(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
 export declare function method(): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+export declare function rootProperty(target: any, propertyKey: string | Symbol): void;
 export declare function rootProperty(): (target: any, propertyKey: string | Symbol) => void;
 export declare function _writeback({ readOnly: boolean }?: {
     readOnly: boolean;

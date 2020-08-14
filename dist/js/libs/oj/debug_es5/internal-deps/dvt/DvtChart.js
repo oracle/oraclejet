@@ -1276,7 +1276,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var matchFound = false;
 
       for (var i = 0; i < navigables.length; i++) {
-        var id = navigables[i].id;
+        var id = navigables[i].getId();
 
         if (id instanceof DvtChartDataItem && id.equals(focusState.chartFocus.getId())) {
           this.EventManager.setFocusObj(navigables[i]);

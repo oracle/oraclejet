@@ -91,7 +91,7 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
    */
 
 
-  dvt.Overview.prototype.initDefaults = function () {
+  dvt.TimelineOverview.prototype.initDefaults = function () {
     this.Defaults = new DvtTimelineOverviewDefaults();
   };
   /**

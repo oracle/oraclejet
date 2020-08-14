@@ -14,6 +14,8 @@ declare class Props<Key> {
     rowKey?: Key | null;
     selectedKeys: KeySet<Key> | null;
     selectionMode?: 'all' | 'multiple' | 'single';
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
 }
 export declare class Selector<K> extends VComponent<Props<K>> {
     protected render(): any;
@@ -21,21 +23,20 @@ export declare class Selector<K> extends VComponent<Props<K>> {
     private _isSelected;
     protected _vprops?: VProps<K>;
 }
-
 // Custom Element interfaces
 export interface SelectorElement<Key> extends JetElement<SelectorElementSettableProperties<Key>> {
   /**
    * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
    */
-  rowKey?: Key|null;
+  rowKey?: Props<Key>['rowKey'];
   /**
    * Specifies the selectedKeys, should be hooked into the collection component.
    */
-  selectedKeys: KeySet<Key>|null;
+  selectedKeys: Props<Key>['selectedKeys'];
   /**
    * Specifies the selection mode.
    */
-  selectionMode?: 'all'|'multiple'|'single';
+  selectionMode?: Props<Key>['selectionMode'];
   addEventListener<T extends keyof SelectorElementEventMap<Key>>(type: T, listener: (this: HTMLElement, ev: SelectorElementEventMap<Key>[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof SelectorElementSettableProperties<Key>>(property: T): SelectorElement<Key>[T];
@@ -61,19 +62,23 @@ export interface SelectorElementSettableProperties<Key> extends JetSettablePrope
   /**
    * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
    */
-  rowKey?: Key|null;
+  rowKey?: Props<Key>['rowKey'];
   /**
    * Specifies the selectedKeys, should be hooked into the collection component.
    */
-  selectedKeys: KeySet<Key>|null;
+  selectedKeys: Props<Key>['selectedKeys'];
   /**
    * Specifies the selection mode.
    */
-  selectionMode?: 'all'|'multiple'|'single';
+  selectionMode?: Props<Key>['selectionMode'];
 }
 export interface SelectorElementSettablePropertiesLenient<Key> extends Partial<SelectorElementSettableProperties<Key>> {
   [key: string]: any;
 }
+export declare type ojSelector<Key> = SelectorElement<Key>;
+export declare type ojSelectorEventMap<Key> = SelectorElementEventMap<Key>;
+export declare type ojSelectorSettableProperties<Key> = SelectorElementSettableProperties<Key>;
+export declare type ojSelectorSettablePropertiesLenient<Key> = SelectorElementSettablePropertiesLenient<Key>;
 export interface SelectorProperties<Key> extends Partial<SelectorElementSettableProperties<Key>>, GlobalAttributes {}
 export interface VProps<Key> extends Props<Key>, GlobalAttributes {}
 declare global {

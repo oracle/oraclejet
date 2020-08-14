@@ -124,7 +124,9 @@ function ConveyorBeltCommon(elem, orientation, contentParent, bRtl, buttonInfo, 
   this._hiddenStyleClass = styleInfo.hiddenStyleClass;
   this._bExternalScroll = true;
   this._firstVisibleItemIndex = 0;
-  this._agentVersion = agentInfo.browserVersion; // copied basic checks from AdfAgent
+  this._agentVersion = agentInfo.browserVersion;
+  this._atStart = true;
+  this._atEnd = false; // copied basic checks from AdfAgent
 
   var navUserAgent = navigator.userAgent;
   var agentName = navUserAgent.toLowerCase();
@@ -160,13 +162,17 @@ ConveyorBeltCommon.prototype.setup = function () {
     this._createNextButton(this._nextButtonStyleClass, this._nextButtonIcon);
 
     var nextButton = this._nextButton;
-    this._buttonWidth = nextButton.offsetWidth;
-    this._buttonHeight = nextButton.offsetHeight; // hide the buttons until we know we need them
+    this._buttonWidth = Math.round($(nextButton).outerWidth(true));
+    this._buttonHeight = Math.round($(nextButton).outerHeight(true));
+  } else {
+    this._buttonWidth = 0;
+    this._buttonHeight = 0;
+  } // hide the buttons until we know we need them
 
-    this._hidePrevButton();
 
-    this._hideNextButton();
-  } // handle the mouse wheel on the whole conveyor
+  this._hidePrevButton();
+
+  this._hideNextButton(); // handle the mouse wheel on the whole conveyor
 
 
   this._mouseWheelListener = function (event) {
@@ -555,14 +561,12 @@ ConveyorBeltCommon.prototype._reinitializeInnerDom = function () {
   // save original scroll value for use in _adjustOverflowSize()
   this._origScroll = this._getCurrScroll();
 
-  this._setOverflowScroll(0);
+  this._setOverflowScroll(0); // hide the buttons until we know we need them
 
-  if (this._arrowVisibility === 'visible') {
-    // hide the buttons until we know we need them
-    this._hidePrevButton();
 
-    this._hideNextButton();
-  }
+  this._hidePrevButton();
+
+  this._hideNextButton();
 };
 /**
  * Clear cached sizes.
@@ -660,11 +664,9 @@ ConveyorBeltCommon.prototype._adjustOverflowSize = function (bInit) {
   } // hide buttons AFTER calculating sizes above, but BEFORE updating scroll position below
 
 
-  if (this._arrowVisibility === 'visible') {
-    this._hidePrevButton();
+  this._hidePrevButton();
 
-    this._hideNextButton();
-  } // refresh current scroll position AFTER calculating sizes above
+  this._hideNextButton(); // refresh current scroll position AFTER calculating sizes above
 
 
   this._setCurrScroll(bInit ? this._minScroll : this._origScroll, true);
@@ -976,6 +978,8 @@ ConveyorBeltCommon.prototype._getSizes = function () {
 
 ConveyorBeltCommon.prototype._showNextButton = function () {
   this._removeStyleClassNameFunc(this._nextButton, this._hiddenStyleClass);
+
+  this._atEnd = false;
 };
 /**
  * Show the prev button.
@@ -988,6 +992,8 @@ ConveyorBeltCommon.prototype._showNextButton = function () {
 
 ConveyorBeltCommon.prototype._showPrevButton = function () {
   this._removeStyleClassNameFunc(this._prevButton, this._hiddenStyleClass);
+
+  this._atStart = false;
 };
 /**
  * Hide the next button.
@@ -1000,6 +1006,8 @@ ConveyorBeltCommon.prototype._showPrevButton = function () {
 
 ConveyorBeltCommon.prototype._hideNextButton = function () {
   this._addStyleClassNameFunc(this._nextButton, this._hiddenStyleClass);
+
+  this._atEnd = true;
 };
 /**
  * Hide the prev button.
@@ -1012,30 +1020,8 @@ ConveyorBeltCommon.prototype._hideNextButton = function () {
 
 ConveyorBeltCommon.prototype._hidePrevButton = function () {
   this._addStyleClassNameFunc(this._prevButton, this._hiddenStyleClass);
-};
-/**
- * Determine if the next button is shown.
- * @return {boolean} true if shown, false if hidden
- * @memberof ConveyorBeltCommon
- * @instance
- * @private
- */
 
-
-ConveyorBeltCommon.prototype._isNextButtonShown = function () {
-  return !this._hasStyleClassNameFunc(this._nextButton, this._hiddenStyleClass);
-};
-/**
- * Determine if the prev button is shown.
- * @return {boolean} True if shown, false if hidden
- * @memberof ConveyorBeltCommon
- * @instance
- * @private
- */
-
-
-ConveyorBeltCommon.prototype._isPrevButtonShown = function () {
-  return !this._hasStyleClassNameFunc(this._prevButton, this._hiddenStyleClass);
+  this._atStart = true;
 };
 /**
  * Get the size of a next/prev button along the direction of conveyor orientation.
@@ -1047,7 +1033,13 @@ ConveyorBeltCommon.prototype._isPrevButtonShown = function () {
 
 
 ConveyorBeltCommon.prototype._getButtonSize = function () {
-  return this._isHorizontal() ? this._buttonWidth : this._buttonHeight;
+  var result = 0;
+
+  if (this._arrowVisibility === 'visible') {
+    result = this._isHorizontal() ? this._buttonWidth : this._buttonHeight;
+  }
+
+  return result;
 };
 /**
  * Update visibility of the next/prev buttons and adjust scroll position accordingly.
@@ -1067,14 +1059,14 @@ ConveyorBeltCommon.prototype._updateButtonVisibility = function (scroll) {
 
 
   if (scroll <= this._minScroll) {
-    if (this._isPrevButtonShown()) {
+    if (!this._atStart) {
       ovScroll -= buttonSize;
     }
 
     this._hidePrevButton();
   } else if (bNeedsScroll) {
     // if not at the start, show the prev button and allocate space for it
-    if (!this._isPrevButtonShown()) {
+    if (this._atStart) {
       ovScroll += buttonSize;
     }
 
@@ -1276,11 +1268,11 @@ ConveyorBeltCommon.prototype._handleMouseWheel = function (event) {
 
     var wheelDelta = cbcClass._getWheelDelta(event);
 
-    if (wheelDelta < 0 && this._isNextButtonShown()) {
+    if (wheelDelta < 0 && !this._atEnd) {
       bConsumeEvent = true;
 
       this._scrollNext();
-    } else if (wheelDelta > 0 && this._isPrevButtonShown()) {
+    } else if (wheelDelta > 0 && !this._atStart) {
       bConsumeEvent = true;
 
       this._scrollPrev();
@@ -1312,10 +1304,10 @@ ConveyorBeltCommon.prototype._handleTouchStart = function (event) {
     this._touchStartCoord = this._isHorizontal() ? firstTouch.pageX : firstTouch.pageY;
     this._touchStartScroll = this._getCurrScroll();
     this._touchStartNextScroll = this._calcNextScroll();
-    this._touchStartPrevScroll = this._calcPrevScroll(); // FIX : save the initial button state
+    this._touchStartPrevScroll = this._calcPrevScroll(); // FIX : save the initial at start or at end state
 
-    this._touchStartNextButtonShown = this._isNextButtonShown();
-    this._touchStartPrevButtonShown = this._isPrevButtonShown();
+    this._touchInitialNotAtEnd = !this._atEnd;
+    this._touchInitialNotAtStart = !this._atStart;
   }
 };
 /**
@@ -1339,7 +1331,7 @@ ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
 
   var bNext = bHoriz && this._bRtl ? diff > 0 : diff < 0; // determine whether the conveyor can be scrolled in the direction of the swipe
 
-  var canScrollInSwipeDirection = bNext && this._touchStartNextButtonShown || !bNext && this._touchStartPrevButtonShown; // only need to do something if we also received the touchstart and if we can
+  var canScrollInSwipeDirection = bNext && this._touchInitialNotAtEnd || !bNext && this._touchInitialNotAtStart; // only need to do something if we also received the touchstart and if we can
   // scroll in the swipe direction
 
   if (this._bTouch && canScrollInSwipeDirection) {
@@ -1355,7 +1347,7 @@ ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
       // reset the scroll position at the end of the touch
 
 
-      if (this._touchStartNextButtonShown && !this._isNextButtonShown() || this._touchStartPrevButtonShown && !this._isPrevButtonShown()) {
+      if (this._touchInitialNotAtEnd && this._atEnd || this._touchInitialNotAtStart && this._atStart) {
         this._bTouch = false;
       }
     } else {
@@ -1508,7 +1500,7 @@ ConveyorBeltCommon.prototype._calcPrevScroll = function () {
   // visible and adjust the scroll position
 
 
-  if (!this._isNextButtonShown()) {
+  if (this._atEnd) {
     scroll += this._getButtonSize();
   } // if scrolling prev and the scroll position is less than or equal to the size of the prev button,
   // just scroll to the very beginning because the prev button should get hidden
@@ -1672,10 +1664,14 @@ ConveyorBeltCommon.prototype._convertScrollLogicalToBrowser = function (scroll) 
     // So don't resolve the scroll equation for Safari version 10+
     if (this._bAgentGecko || this._bAgentSafari && this._agentVersion >= 10) {
       newScroll = -scroll;
-    } else if (this._bAgentWebkit || this._bAgentSafari && this._agentVersion < 10) {
+    } else if (this._bAgentWebkit) {
+      // in chrome offsetWidth rounding doens't work correct,
+      // Should be used getBoundingClientRect().width instead with Math.round
       var contentContainer = this._contentContainer;
       var overflowContainer = this._overflowContainer;
-      newScroll = contentContainer.offsetWidth - overflowContainer.offsetWidth - scroll;
+      newScroll = Math.round(contentContainer.getBoundingClientRect().width) - Math.round(overflowContainer.getBoundingClientRect().width) - scroll;
+    } else if (this._bAgentSafari && this._agentVersion < 10) {
+      newScroll = this._contentContainer.offsetWidth - this._overflowContainer.offsetWidth - scroll;
     }
   }
 

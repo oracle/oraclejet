@@ -8,4 +8,4 @@
 
 export { ProgressBar } from './ojprogress-bar';
 
-export { ProgressBarElementEventMap, ProgressBarElementSettableProperties, ProgressBarElementSettablePropertiesLenient, ProgressBarElement, VProps, ProgressBarProperties } from './ojprogress-bar';
+export { ProgressBarElementEventMap, ProgressBarElementSettableProperties, ProgressBarElementSettablePropertiesLenient, ProgressBarElement, VProps, ProgressBarProperties, ojProgressBarEventMap, ojProgressBarSettableProperties, ojProgressBarSettablePropertiesLenient, ojProgressBar } from './ojprogress-bar';

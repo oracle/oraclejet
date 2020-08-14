@@ -51,13 +51,13 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '9.0.0',
+  version: '9.1.0',
 
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2020-06-11_18-43-20',
+  revision: '2020-08-05_19-00-35',
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
   noConflict: function noConflict() {

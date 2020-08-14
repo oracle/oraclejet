@@ -3437,12 +3437,11 @@ var __oj_paging_control_metadata =
           pagingControlNavInput.ojInputText({
             displayOptions: displayOptions,
             userAssistanceDensity: 'compact',
-            rootAttributes: {
-              style: 'width: auto; min-width: 0;'
-            },
             converter: new NumberConverter.IntlNumberConverter(),
             validators: validatorOptions
-          }).attr('data-oj-internal', ''); // Add the optionChange listener after initializing the input component.
+          }).attr('data-oj-internal', '');
+          pagingControlNavInput[0].style.width = 'auto';
+          pagingControlNavInput[0].style.minWidth = 0; // Add the optionChange listener after initializing the input component.
           // Otherwise we get the optionChange event which causes a page change and
           // extra refresh on the associating table.
 

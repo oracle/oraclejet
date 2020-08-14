@@ -304,9 +304,6 @@ var __oj_menu_button_metadata =
  * <p>Push buttons are ordinary buttons that do not stay pressed in when clicked.
  * Push buttons are created from <code class="prettyprint">oj-button</code> elements.
  *
- * <p>Anchor-based buttons are recommended only if native anchor functionality such as href navigation is desired.  If only a click listener is needed,
- * button-based buttons are recommended.
- *
  * <h3 id="buttonsetToolbar-section">
  *   Buttonsets and Toolbars
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonsetToolbar-section"></a>
@@ -676,10 +673,6 @@ var __oj_menu_button_metadata =
          *
          * <p>By default, menu buttons have a downward pointing "dropdown" arrow for their end icon.  See the <code class="prettyprint">icons</code> option for details.
          *
-         * <p>Menu button functionality is supported for Buttons based on button or anchor tags.  (Buttons based on input tags either do not support the dropdown icon,
-         * or do not make sense for use as a menu button, or both.)  Buttons are recommended over anchors, as anchor-based buttons are intended for use when native
-         * anchor functionality such as href navigation is needed.
-         *
          * <p>See [Menu's]{@link oj.ojMenu} Accessibility section for a discussion of how <code class="prettyprint">aria-label</code> and
          * <code class="prettyprint">aria-labelledby</code> are handled for menu buttons and other menu launchers.
          *
@@ -707,7 +700,7 @@ var __oj_menu_button_metadata =
          * <p>Triggered when a button is clicked. This will be triggered by keyboard events as well as mouse/touch events.
          *
          * <p>To ensure keyboard accessibility, the only correct, supported way to react to the click of a button is to listen
-         * for this event. Click listeners and <code class="prettyprint">href</code> navigation should not be used.
+         * for this event. Click listeners should not be used.
          *
          * @expose
          * @event

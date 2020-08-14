@@ -1485,7 +1485,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             super.handleItemsUpdated(detail);
         }
         checkViewport() {
-            if (this.domScroller) {
+            if (this.domScroller && this.isReady()) {
                 let fetchPromise = this.domScroller.checkViewport();
                 if (fetchPromise != null) {
                     fetchPromise.then(function (result) {

@@ -8,4 +8,4 @@
 
 export { Selector } from './ojselector';
 
-export { SelectorElementEventMap, SelectorElementSettableProperties, SelectorElementSettablePropertiesLenient, SelectorElement, VProps, SelectorProperties } from './ojselector';
+export { SelectorElementEventMap, SelectorElementSettableProperties, SelectorElementSettablePropertiesLenient, SelectorElement, VProps, SelectorProperties, ojSelectorEventMap, ojSelectorSettableProperties, ojSelectorSettablePropertiesLenient, ojSelector } from './ojselector';

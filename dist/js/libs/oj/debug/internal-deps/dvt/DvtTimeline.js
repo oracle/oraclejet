@@ -99,7 +99,7 @@ dvt.TimelineOverview.prototype.Init = function(context, callback, callbackObj)
 /**
  * @override
  */
-dvt.Overview.prototype.initDefaults = function()
+dvt.TimelineOverview.prototype.initDefaults = function()
 {
   this.Defaults = new DvtTimelineOverviewDefaults();
 };

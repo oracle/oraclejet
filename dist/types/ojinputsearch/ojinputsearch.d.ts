@@ -10,7 +10,7 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
 import 'ojs/ojlistdataproviderview';
 import * as CommonTypes from 'ojs/ojcommontypes';
-import { DataProvider } from 'ojs/ojdataprovider';
+import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
 import { VComponent } from 'ojs/ojvcomponent';
 declare class Props<Key, Data> {
     suggestions?: DataProvider<Key, Data> | null;
@@ -20,6 +20,7 @@ declare class Props<Key, Data> {
     value?: string | null;
     'aria-label'?: string;
     onOjValueAction?: VComponent.Action<ValueDetail<Key, Data>>;
+    suggestionItemTemplate?: VComponent.Slot<SuggestionItemTemplateContext<Key, Data>>;
 }
 declare type State<Key, Data> = {
     dropdownOpen: boolean;
@@ -45,6 +46,13 @@ declare type ValueDetail<Key, Data> = {
     value?: string;
     itemContext?: CommonTypes.ItemContext<Key, Data>;
 };
+interface SuggestionItemTemplateContext<Key, Data> {
+    data: Data;
+    key: Key;
+    metadata: ItemMetadata<Key>;
+    index: number;
+    searchText?: string | null;
+}
 export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, D>> {
     private _CLASS_NAMES;
     private _KEYS;
@@ -74,6 +82,9 @@ export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, 
     private _handleCompositionstart;
     private _handleCompositionend;
     private _handleInput;
+    focus(): void;
+    blur(): void;
+    private _handleFocus;
     private _handleBlur;
     private _handleKeydown;
     private _handleMousedown;
@@ -109,29 +120,28 @@ export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, 
     private _resolveFetching;
     protected _vprops?: VProps<K, D>;
 }
-
 // Custom Element interfaces
 export interface InputSearchElement<Key,Data> extends JetElement<InputSearchElementSettableProperties<Key,Data>> {
   /**
    * A short hint that can be displayed before user selects or enters a value.
    */
-  placeholder?: string;
+  placeholder?: Props<Key,Data>['placeholder'];
   /**
    * Read-only property used for retrieving the current value from the input field in string form.
    */
-  readonly rawValue?: string|null;
+  readonly rawValue?: Props<Key,Data>['rawValue'];
   /**
    * Specifies the text string to render for a suggestion.
    */
-  suggestionItemText?: string|( (itemContext: CommonTypes.ItemContext<Key, Data>) => string );
+  suggestionItemText?: Props<Key,Data>['suggestionItemText'];
   /**
    * The suggestions data for the InputSearch.
    */
-  suggestions?: DataProvider<Key, Data>|null;
+  suggestions?: Props<Key,Data>['suggestions'];
   /**
    * The value of the element.
    */
-  value?: string|null;
+  value?: Props<Key,Data>['value'];
   addEventListener<T extends keyof InputSearchElementEventMap<Key,Data>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<Key,Data>[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof InputSearchElementSettableProperties<Key,Data>>(property: T): InputSearchElement<Key,Data>[T];
@@ -167,27 +177,31 @@ export interface InputSearchElementSettableProperties<Key,Data> extends JetSetta
   /**
    * A short hint that can be displayed before user selects or enters a value.
    */
-  placeholder?: string;
+  placeholder?: Props<Key,Data>['placeholder'];
   /**
    * Read-only property used for retrieving the current value from the input field in string form.
    */
-  readonly rawValue?: string|null;
+  readonly rawValue?: Props<Key,Data>['rawValue'];
   /**
    * Specifies the text string to render for a suggestion.
    */
-  suggestionItemText?: string|( (itemContext: CommonTypes.ItemContext<Key, Data>) => string );
+  suggestionItemText?: Props<Key,Data>['suggestionItemText'];
   /**
    * The suggestions data for the InputSearch.
    */
-  suggestions?: DataProvider<Key, Data>|null;
+  suggestions?: Props<Key,Data>['suggestions'];
   /**
    * The value of the element.
    */
-  value?: string|null;
+  value?: Props<Key,Data>['value'];
 }
 export interface InputSearchElementSettablePropertiesLenient<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
+export declare type ojInputSearch<Key,Data> = InputSearchElement<Key,Data>;
+export declare type ojInputSearchEventMap<Key,Data> = InputSearchElementEventMap<Key,Data>;
+export declare type ojInputSearchSettableProperties<Key,Data> = InputSearchElementSettableProperties<Key,Data>;
+export declare type ojInputSearchSettablePropertiesLenient<Key,Data> = InputSearchElementSettablePropertiesLenient<Key,Data>;
 export interface InputSearchProperties<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

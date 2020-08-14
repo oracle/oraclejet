@@ -8,4 +8,4 @@
 
 export { ListItemLayout } from './ojlistitemlayout';
 
-export { ListItemLayoutElementEventMap, ListItemLayoutElementSettableProperties, ListItemLayoutElementSettablePropertiesLenient, ListItemLayoutElement, VListItemLayoutProps, ListItemLayoutProperties } from './ojlistitemlayout';
+export { ListItemLayoutElementEventMap, ListItemLayoutElementSettableProperties, ListItemLayoutElementSettablePropertiesLenient, ListItemLayoutElement, VListItemLayoutProps, ListItemLayoutProperties, ojListItemLayoutEventMap, ojListItemLayoutSettableProperties, ojListItemLayoutSettablePropertiesLenient, ojListItemLayout } from './ojlistitemlayout';

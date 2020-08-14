@@ -89,7 +89,7 @@ RequiredValidator.prototype.Init = function (options) {
 /**
  * Validates value to be non-empty
  *
- * @param {Object|string|number} value that is being validated
+ * @param {any} value value that is being validated
  * @returns {void}
  * @throws {Error} when fails required-ness check
  * @ojsignature {target: "Type", for: "returns",
@@ -108,9 +108,8 @@ RequiredValidator.prototype.validate = function (value) {
   var localizedSummary;
   var summary;
   var params = {}; // checks for empty arrays and String. Objects are considered non-null.
-  // Need to specifically test for if value is 0 first if number is passed on.
 
-  if (typeof value === 'number' && value === 0 || value && value.length !== 0) {
+  if (value !== undefined && value !== null && !((typeof value === 'string' || value instanceof Array) && value.length === 0)) {
     return;
   }
 

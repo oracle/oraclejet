@@ -2159,7 +2159,7 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
          * @memberof oj.ojMasonryLayout
          * @instance
          * @ojshortdesc Event triggered when the default animation of a particular action has ended.
-         * @property {string} action The action that triggers the animation.</br></br>
+         * @property {string} action The action that triggered the animation.</br></br>
          *            Supported values are:
          *                    <ul>
          *                      <li>"insert" - when a tile is inserted</li>

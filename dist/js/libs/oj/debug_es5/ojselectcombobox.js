@@ -6,7 +6,7 @@
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighlighttext'], 
 function(oj, $, Context, ListDataProviderView, TreeDataProviderView, ThemeUtils, TimerUtils, Components, Logger)
 {
   "use strict";
@@ -1984,7 +1984,7 @@ var _ComboUtils = {
       var multiple = context.ojContext.multiple;
       var selected = _selected; // in combobox, values may be new entries
 
-      if (selected === undefined && context._classNm === 'oj-combobox') {
+      if (selected == null && context._classNm === 'oj-combobox') {
         var value = context.ojContext.options.value;
 
         if (multiple) {
@@ -3004,7 +3004,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
         self._customOptionRenderer(elem.children());
 
-        elem.children().wrapAll("<ul class='oj-listbox-result-sub'></ul>"); // @HTMLUpdateOK
+        elem.children().wrapAll("<ul class='oj-listbox-result-sub' role='group'></ul>"); // @HTMLUpdateOK
       }
     });
   },
@@ -3087,7 +3087,9 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
     this.search = search;
     this.queryCount = 0;
     this.resultsPage = 0;
-    this.context = null; // initialize the container
+    this.context = null;
+    this._ariaDescribedByAdded = []; // used to store aria-describedby ids for multi choice
+    // initialize the container
 
     this._initContainer();
 
@@ -3856,7 +3858,10 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
               if (!innerContainer.hasClass('oj-listbox-result-sub')) {
                 innerContainer.addClass('oj-listbox-result-sub');
-              }
+              } // set role
+
+
+              innerContainer.attr('role', 'group');
 
               _populate(_result, _result.children, innerContainer, depth + 1, false);
 
@@ -3867,38 +3872,39 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
             }
           };
 
-          var termHighlight = function termHighlight(highlighterSection, highlighterClass, pattern) {
+          var termHighlight = function termHighlight(highlighterSection, pattern) {
             function innerHighlight(_node, pat) {
-              var skip = 0;
+              var isHighlighterNode = $(_node).is('OJ-HIGHLIGHT-TEXT');
+              var isTextNode = _node.nodeType === 3;
 
-              if (_node.nodeType === 3) {
-                var pos = _node.data.toUpperCase().indexOf(pat);
+              if (isHighlighterNode) {
+                _node.setAttribute('match-text', pat);
+              } else if (isTextNode) {
+                var text = _node.data; // replace it with oj-highlight-text only if the text node has
+                // non-empty data
 
-                if (pos >= 0) {
-                  var spannode = document.createElement('span');
-                  spannode.className = highlighterClass; //  - issue with ojselect component when filtering certain lower case char
-                  // This is a temporary fix to avoid exceptions.
-                  // For real fix, we need to know the beginning and ending offset of the match.
+                if (text.trim() !== '') {
+                  var _ojHighlightTextElem = document.createElement('oj-highlight-text');
 
-                  var middlebit = _node.splitText(Math.min(pos, _node.data.length));
+                  _ojHighlightTextElem.setAttribute('text', text);
 
-                  middlebit.splitText(Math.min(pat.length, middlebit.data.length));
-                  var middleclone = middlebit.cloneNode(true);
-                  spannode.appendChild(middleclone); // @HTMLUpdateOK
+                  _ojHighlightTextElem.setAttribute('match-text', pat);
 
-                  middlebit.parentNode.replaceChild(spannode, middlebit);
-                  skip = 1;
+                  _ojHighlightTextElem.setAttribute('data-oj-internal', '');
+
+                  _ojHighlightTextElem.setAttribute('data-oj-binding-provider', 'none'); // replace the text node with the newly created oj-highlight-text element
+
+
+                  _node.parentNode.replaceChild(_ojHighlightTextElem, _node);
                 }
               } else if (_node.nodeType === 1 && _node.childNodes && !/(script|style)/i.test(_node.tagName)) {
                 // This function is to highlight the text appeared in the passed-in node.
                 // So recursively it checks for child nodes also.
                 // But need not to highlight the text appeared in <script> and <style> tags, so skipping them.
                 for (var h = 0; h < _node.childNodes.length; h++) {
-                  h += innerHighlight(_node.childNodes[h], pat);
+                  innerHighlight(_node.childNodes[h], pat);
                 }
               }
-
-              return skip;
             }
 
             if (highlighterSection.length && pattern && pattern.length) {
@@ -3916,7 +3922,7 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
                 highlighterSection = labelNode;
               }
 
-              termHighlight(highlighterSection, 'oj-listbox-highlighter', query.term);
+              termHighlight(highlighterSection, query.term);
             }
           };
 
@@ -5066,25 +5072,22 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
   // _AbstractOjChoice
   _normalizeHighlighterLabel: function _normalizeHighlighterLabel(item) {
     var highlighterSection;
-    var labelNode;
 
     if (item.children('div').children('oj-option').length > 0) {
       // The text may be wrapped inside another span with foreach data-bind
-      highlighterSection = item.children('div').children('oj-option').find('.oj-listbox-highlighter');
-      labelNode = item.children('div').children('oj-option')[0];
+      highlighterSection = item.children('div').children('oj-option').find('oj-highlight-text');
     } else {
-      highlighterSection = item.children('div').children('.oj-listbox-highlighter');
-      labelNode = item.children('div')[0];
+      highlighterSection = item.children('div').children('oj-highlight-text');
     }
 
     if (highlighterSection.length > 0) {
       for (var i = 0; i < highlighterSection.length; i++) {
-        // remove spans
-        $(highlighterSection[i].childNodes).unwrap();
-      } // merge back text nodes
+        var ojHighlightTextElem = highlighterSection[i];
+        var text = ojHighlightTextElem.getAttribute('text') || '';
+        var textNode = document.createTextNode(text); // replace the oj-highlight-text with the old text node
 
-
-      labelNode.normalize();
+        ojHighlightTextElem.parentElement.replaceChild(textNode, ojHighlightTextElem);
+      }
     }
   },
   // _AbstractOjChoice
@@ -7702,13 +7705,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
       }
     }
 
-    this.selection.find('.' + this._classNm + '-selected-choice').remove(); //  - screen reader does not read combobox default value
-    // this is to reset aria-describedBy on the contentElement
-    // the aria-describedBy will be updated in _addSelectedChoice
-
-    this._contentElement.attr('aria-describedBy', '');
-
+    this.selection.find('.' + this._classNm + '-selected-choice').remove();
     this.selection.find('.oj-select-default').remove();
+
+    this._updateAriaDescribedBy(null, true);
+
     $(filtered).each(function () {
       self._addSelectedChoice(this);
     }); // Storing this data so that it will be used when setting the display value.
@@ -7717,6 +7718,53 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     this.currentValue = ids;
 
     self._postprocessResults();
+  },
+
+  /**
+   * Updates the aria-describedby attribute on the content element
+   * @param {string=} idToAdd The id of the DOM element that has to be added here
+   * @param {boolean=} shouldRemoveExisting a flag to indicate if existsing ids should be removed
+   *
+   * @memberof! _AbstractMultiChoice
+   * @instance
+   * @private
+   */
+  _updateAriaDescribedBy: function _updateAriaDescribedBy(idToAdd, shouldRemoveExisting) {
+    var $contentElement = this._contentElement;
+    var $selectionElement = this.selection;
+    var currentAriaDescribedbyIds = $contentElement.attr('aria-describedby') || '';
+    var shouldUpdateAttribute = false;
+    var updatedAriaDescribedbyIds = currentAriaDescribedbyIds; // Remove first and then add
+
+    if (shouldRemoveExisting) {
+      // remove only the ids that are added by selectcombobox
+      this._ariaDescribedByAdded.forEach(function (id) {
+        updatedAriaDescribedbyIds = updatedAriaDescribedbyIds.replace(id, '');
+        shouldUpdateAttribute = true;
+      }); // trim the ids to remove leading and trailing space and remove any extra spaces
+
+
+      updatedAriaDescribedbyIds = updatedAriaDescribedbyIds.trim().replace(/\s\s+/g, ' ');
+      this._ariaDescribedByAdded = [];
+    } // Add ids after removing
+
+
+    if (idToAdd) {
+      updatedAriaDescribedbyIds = (updatedAriaDescribedbyIds + ' ' + idToAdd).trim();
+
+      this._ariaDescribedByAdded.push(idToAdd);
+
+      shouldUpdateAttribute = true;
+    } // Only update the attribute on the DOM if it is modified
+
+
+    if (shouldUpdateAttribute) {
+      $contentElement.attr('aria-describedby', updatedAriaDescribedbyIds); // for combobox we need to update it on the ul as well as input element
+
+      if (this._classNm === 'oj-combobox') {
+        $selectionElement.attr('aria-describedby', updatedAriaDescribedbyIds);
+      }
+    }
   },
   // AbstractMultiChoice
 
@@ -7924,17 +7972,9 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
       choice.find('div').addClass(this._classNm + '-selected-choice-label').text(formatted).attr('id', selectedLabelId);
       choice.find('.' + this._classNm + '-clear-entry').attr('aria-label', formatted + ' remove');
-      choice.attr('valueText', formatted); //  - screen reader does not read combobox default value
-      // update aria-describedBy with the selection label id on the contentElement
-      // so the labels for the selected items can be read out by the screen reader
+      choice.attr('valueText', formatted);
 
-      var describedById = this._contentElement.attr('aria-describedBy');
-
-      this._contentElement.attr('aria-describedBy', (describedById ? describedById + ' ' : '') + selectedLabelId);
-
-      if (this._classNm === 'oj-combobox') {
-        this.selection.attr('aria-describedBy', (describedById ? describedById + ' ' : '') + selectedLabelId);
-      }
+      this._updateAriaDescribedBy(selectedLabelId, false);
     }
 
     if (enableChoice) {
@@ -7954,7 +7994,10 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
           }
         })).dequeue();
 
-        _ComboUtils.killEvent(e);
+        _ComboUtils.killEvent(e); // stop the propagation, so focus effect is not added to the choice
+
+
+        e.stopPropagation();
       }));
     }
 
@@ -8026,26 +8069,29 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
     var valOpts; // If the component is invalid, we will not get all the values matching the displayed value
 
     if (!this.ojContext.isValid()) {
-      val = this.currentValue;
-      valOpts = this.currentItem;
+      val = this.currentValue.slice(0);
+      valOpts = this.currentItem.slice(0);
     } else {
-      valOpts = this.getValOpts();
+      valOpts = (this.getValOpts() || []).slice(0);
     }
 
     var context;
     var setValueReturn;
     var index = val.indexOf(this.id(data));
-    val.splice(index, 1);
-    context = this._syncValueOptions(this.ojContext, val, valOpts);
-    this._skipSetValueOptions = true;
-    setValueReturn = this.setVal(val, event, context);
 
-    if (setValueReturn instanceof Promise) {
-      setValueReturn.then(this._bind(function (result) {
-        this._afterUnselectSetValue(result, selected);
-      }));
-    } else {
-      this._afterUnselectSetValue(setValueReturn, selected);
+    if (index !== -1) {
+      val.splice(index, 1);
+      context = this._syncValueOptions(this.ojContext, val, valOpts);
+      this._skipSetValueOptions = true;
+      setValueReturn = this.setVal(val, event, context);
+
+      if (setValueReturn instanceof Promise) {
+        setValueReturn.then(this._bind(function (result) {
+          this._afterUnselectSetValue(result, selected);
+        }));
+      } else {
+        this._afterUnselectSetValue(setValueReturn, selected);
+      }
     }
   },
 
@@ -9566,7 +9612,23 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     * or one that duck types {@link oj.Converter}.
     * When <code class="prettyprint">converter</code> property changes due to programmatic
     * intervention, the element performs various tasks based on the current state it is in. </br>
-    *
+    * <p>
+    * The hint exposed by the converter is shown inline by default in the Redwood theme when
+    * the field has focus.
+    * In the Alta theme, converter hints are shown in a notewindow on focus,
+    * or as determined by the
+    * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * In either theme, you can turn off showing converter hints by using the
+    * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * </p>
+    * <p>
+    * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+    * help.instruction shows; if no help.instruction then validator hints show;
+    * if none, then help-hints.definition shows; if none, then converter hint shows.
+    * help-hints.source always shows along with the other help or hint.
+    * </p>
     * <h4>Steps Performed Always</h4>
     * <ul>
     * <li>Any cached converter instance is cleared and new converter created. The converter hint is
@@ -10572,13 +10634,20 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     * </ul>
     *
     * </p>
-    *
+    * <p>
     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
     * This is the default.
-    * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-    * input's label will render a required icon. Additionally a required validator -
+    * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+    * </p>
+    * <p>
+    * Additionally a required validator -
     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
     * An explicit required validator can be set by page authors using the validators attribute.
+    * </p>
+    * <p>
+    * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+    * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+    * </p>
     *
     * @expose
     * @access public
@@ -10593,10 +10662,18 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     /**
     * Dictates element's readonly state.
     * <p>
-    * The oj-form-layout provides its readonly attribute value and the form components
-    * consume it if it is not already set explicitly.
-    * For example, if oj-form-layout is set to readonly='true',
-    * all the form components it contains will be readonly='true' by default.
+    * The default value for readonly is false. However, if the form component is a descendent of
+    * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+    * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+    * The <code class="prettyprint">oj-form-layout</code> uses the
+    * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+    * <code class="prettyprint">provide</code> property to provide its
+    * <code class="prettyprint">readonly</code>
+    * attribute value to be consumed by descendent components.
+    * The form components are configured to consume the readonly property if an ancestor provides it and
+    * it is not explicitly set.
+    * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+    * not have its readonly attribute set, the form component's readonly will be true.
     * </p>
     *
     * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
@@ -10623,10 +10700,18 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     /**
     * Dictates element's readonly state.
     * <p>
-    * The oj-form-layout provides its readonly attribute value and the form components
-    * consume it if it is not already set explicitly.
-    * For example, if oj-form-layout is set to readonly='true',
-    * all the form components it contains will be readonly='true' by default.
+    * The default value for readonly is false. However, if the form component is a descendent of
+    * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+    * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+    * The <code class="prettyprint">oj-form-layout</code> uses the
+    * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+    * <code class="prettyprint">provide</code> property to provide its
+    * <code class="prettyprint">readonly</code>
+    * attribute value to be consumed by descendent components.
+    * The form components are configured to consume the readonly property if an ancestor provides it and
+    * it is not explicitly set.
+    * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+    * not have its readonly attribute set, the form component's readonly will be true.
     * </p>
     * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
     * &lt;oj-some-element readonly>&lt;/oj-some-element>
@@ -10768,9 +10853,18 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
     * runs all of them.
     * </p>
     * <p>
-    * Hints exposed by validators are shown in the notewindow by default, or as determined by the
+    * Hints exposed by validators are shown inline by default in the Redwood theme when the field
+    * has focus.
+    * In the Alta theme, validator hints are shown in a notewindow on focus,
+    * or as determined by the
     * 'validatorHint' property set on the <code class="prettyprint">display-options</code>
     * attribute.
+    * </p>
+    * <p>
+    * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+    * help.instruction shows; if no help.instruction then validator hints show;
+    * if none, then help-hints.definition shows; if none, then converter hint shows.
+    * help-hints.source always shows along with the other help or hint.
     * </p>
     *
     * <p>
@@ -12604,7 +12698,7 @@ oj.__registerWidget('oj.ojCombobox', $.oj.editableValue, {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * For accessibility, you should associate a label element with the input
+ * If not using the <code class="prettyprint">label-hint</code> attribute, for accessibility, you should associate a label element with the input
  * by putting an <code>id</code> on the input, and then setting the
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
@@ -12695,13 +12789,20 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
       * </ul>
       *
       * </p>
-      *
+      * <p>
       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
       * This is the default.
-      * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-      * input's label will render a required icon. Additionally a required validator -
+      * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+      * </p>
+      * <p>
+      * Additionally a required validator -
       * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-      * An explicit required validator can be set by page authors using the validators option.
+      * An explicit required validator can be set by page authors using the validators attribute.
+      * </p>
+      * <p>
+      * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+      * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+      * </p>
       *
       * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
       * $(".selector").ojInputSearch({required: true});<br/>
@@ -15198,13 +15299,20 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
      * </ul>
      *
      * </p>
-     *
+     * <p>
      * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-     * input's label will render a required icon. Additionally a required validator -
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+     * </p>
+     * <p>
+     * Additionally a required validator -
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
      * An explicit required validator can be set by page authors using the validators attribute.
+     * </p>
+     * <p>
+     * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+     * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+     * </p>
      *
      * @expose
      * @access public
@@ -15219,10 +15327,18 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     /**
      * Dictates element's readonly state.
      * <p>
-     * The oj-form-layout provides its readonly attribute value and the form components
-     * consume it if it is not already set explicitly.
-     * For example, if oj-form-layout is set to readonly='true',
-     * all the form components it contains will be readonly='true' by default.
+     * The default value for readonly is false. However, if the form component is a descendent of
+     * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+     * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+     * The <code class="prettyprint">oj-form-layout</code> uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">readonly</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the readonly property if an ancestor provides it and
+     * it is not explicitly set.
+     * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+     * not have its readonly attribute set, the form component's readonly will be true.
      * </p>
      * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>
@@ -15248,10 +15364,18 @@ oj.__registerWidget('oj.ojSelect', $.oj.editableValue, {
     /**
      * Dictates element's readonly state.
      * <p>
-     * The oj-form-layout provides its readonly attribute value and the form components
-     * consume it if it is not already set explicitly.
-     * For example, if oj-form-layout is set to readonly='true',
-     * all the form components it contains will be readonly='true' by default.
+     * The default value for readonly is false. However, if the form component is a descendent of
+     * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+     * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+     * The <code class="prettyprint">oj-form-layout</code> uses the
+     * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+     * <code class="prettyprint">provide</code> property to provide its
+     * <code class="prettyprint">readonly</code>
+     * attribute value to be consumed by descendent components.
+     * The form components are configured to consume the readonly property if an ancestor provides it and
+     * it is not explicitly set.
+     * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+     * not have its readonly attribute set, the form component's readonly will be true.
      * </p>
      * @example <caption>Initialize the select with <code class="prettyprint">readonly</code> attribute:</caption>
      * &lt;oj-some-element readonly>&lt;/oj-some-element>

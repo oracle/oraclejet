@@ -245,7 +245,7 @@ var __oj_checkboxset_metadata =
    * <code class="prettyprint">oj-option</code> child elements and creates the necessary dom elements for
    * the actual checkboxes.
    * </p>
-   * <p>To use an oj-oheckboxset, add one or more oj-option child elements for each checkbox desired.
+   * <p>To use an oj-checkboxset, add one or more oj-option child elements for each checkbox desired.
    * Note, if you add or remove an oj-option after the oj-checkboxset is rendered, you should call
    * refresh() on the oj-checkboxset.
    * Note, oj-optgroup is not a supported child element of oj-checkboxset.
@@ -254,14 +254,6 @@ var __oj_checkboxset_metadata =
    *  You can enable and disable an oj-checkboxset,
    *  which will enable and disable all contained checkboxes.
    * </p>
-   * <p>Use <code class="prettyprint">labelled-by</code> to associate an oj-label with
-   * the checkboxset component. Doing this also makes the checkboxset accessible.
-   * </p>
-   * <p>
-   * The oj-label element is not required. If you don't use an oj-label element,
-   * then you need to set <code class="prettyprint">aria-label</code> on the input for accessibility.
-   * </p>
-   *
    * {@ojinclude "name":"validationAndMessagingDoc"}
    *
    * <h3 id="touch-section">
@@ -286,7 +278,8 @@ var __oj_checkboxset_metadata =
    * <p>JET Checkboxset takes care of setting <code class="prettyprint">role="group"</code>
    * on the oj-checkboxset element.
    *
-   * <p>The application is responsible for applying
+   * <p>If not using the <code class="prettyprint">label-hint</code> attribute,
+   * the application is responsible for setting the
    * <code class="prettyprint">labelled-by</code>
    * to point to an <code class="prettyprint">oj-label</code> element for the oj-checkboxset.
    * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
@@ -300,7 +293,8 @@ var __oj_checkboxset_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
    * </h3>
    * <p>
-   * For accessibility, you should associate an oj-label element with the checkboxset
+   * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
+   * you should associate an oj-label element with the checkboxset
    * by putting an <code class="prettyprint">id</code> on the oj-label, and then setting the
    * <code class="prettyprint">labelled-by</code> attribute on the oj-checkboxset to be the
    * oj-label's <code class="prettyprint">id</code>.
@@ -454,10 +448,18 @@ var __oj_checkboxset_metadata =
        * A readonly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
        * If you want to prevent the user from interacting with the element, use the disabled property instead.
        * <p>
-       * The oj-form-layout provides its readonly attribute value and the form components
-       * consume it if it is not already set explicitly.
-       * For example, if oj-form-layout is set to readonly='true',
-       * all the form components it contains will be readonly='true' by default.
+       * The default value for readonly is false. However, if the form component is a descendent of
+       * <code class="prettyprint">oj-form-layout</code>, the default value for readonly could come from the
+       * <code class="prettyprint">oj-form-layout</code> component's readonly attribute.
+       * The <code class="prettyprint">oj-form-layout</code> uses the
+       * <a href="MetadataTypes.html#PropertyBinding">MetadataTypes.PropertyBinding</a>
+       * <code class="prettyprint">provide</code> property to provide its
+       * <code class="prettyprint">readonly</code>
+       * attribute value to be consumed by descendent components.
+       * The form components are configured to consume the readonly property if an ancestor provides it and
+       * it is not explicitly set.
+       * For example, if the oj-form-layout's readonly attribute is set to true, and a descendent form component does
+       * not have its readonly attribute set, the form component's readonly will be true.
        * </p>
        *
        * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
@@ -734,16 +736,20 @@ var __oj_checkboxset_metadata =
        * </ul>
        *
        * </p>
-       *
+       * <p>
        * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
        * This is the default.
-       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
-       * input's label will render a required icon. Additionally a required validator -
+       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+       * </p>
+       * <p>
+       * Additionally a required validator -
        * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
        * An explicit required validator can be set by page authors using the validators option.
-       *
-       * when the option is not set, the element's required property is used as its initial
-       * value if it exists.
+       * </p>
+       * <p>
+       * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+       * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+       * </p>
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
        * &lt;oj-checkboxset required>

@@ -1177,12 +1177,12 @@ define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
    */
 
 
-  dvt.ThematicMap.prototype.handleTouchStart = function () {} // noop: Called from HandleImmediateTouchStartInternal
-
+  dvt.ThematicMap.prototype.handleTouchStart = function () {// noop: Called from HandleImmediateTouchStartInternal
+  };
   /**
    * Handles the touch end event
    */
-  ;
+
 
   dvt.ThematicMap.prototype.handleTouchEnd = function () {
     this._clearTouchEventContent();

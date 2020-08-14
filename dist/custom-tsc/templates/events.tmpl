@@ -21,7 +21,7 @@ for (let event in events){
   if (events[event]['detail']) {
     const details = events[event]['detail'];
     for (let detail in details) {?>
-    <?js= detail ?>: <?js= details[detail]['reftype'] ?>;
+    <?js= detail ?>: <?js= details[detail]['reftype'] || details[detail]['type'] ?>;
     <?js
     }
   }?>

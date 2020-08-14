@@ -15,7 +15,11 @@ function(oj, UrlPathAdapter, Logger) {
 /* global UrlPathAdapter, Logger:false */
 // eslint-disable-next-line no-unused-vars
 var adapter = function () {
-  var _PARAM_NAME = '_ojCoreRouter';
+  // The old (8.0.0) paramter name
+  var _OLD_PARAM_NAME = '_ojCoreRouter'; // The new (9.0.0) paramter name
+
+  var _NEW_PARAM_NAME = 'ojr';
+  var _PARAM_NAME = _OLD_PARAM_NAME;
   /**
    * Parse document.location.search into
    * [[ name, value ], [ name, value ]]
@@ -130,7 +134,11 @@ var adapter = function () {
   function UrlParamAdapter() {
     // Use UrlPathAdapter with "" as the baseUrl to handle parsing states stored
     // in the query parameter
-    this._pathAdapter = new UrlPathAdapter('');
+    this._pathAdapter = new UrlPathAdapter(''); // If _OLD_PARAM_NAME isn't in querystring, then we can use _NEW_PARAM_NAME
+
+    if (getRouterParamValue() === undefined) {
+      _PARAM_NAME = _NEW_PARAM_NAME;
+    }
   }
   /**
    * Build all routes for the current router query parameter.

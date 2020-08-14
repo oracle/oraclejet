@@ -478,24 +478,36 @@ var ArrayDataProvider = /*#__PURE__*/function () {
 
   }, {
     key: "_adjustIteratorOffset",
-    value: function _adjustIteratorOffset(changes) {
+    value: function _adjustIteratorOffset(removeIndexes, addIndexes) {
       var _this = this;
 
       this._mapClientIdToOffset.forEach(function (offset, clientId) {
         var addCount = 0;
         var deleteCount = 0;
-        changes.forEach(function (change) {
-          // only count the changes below the last offset
-          if (change['index'] < offset) {
-            if (change['status'] === 'deleted') {
+
+        if (removeIndexes) {
+          removeIndexes.forEach(function (index) {
+            // only count the changes below the last offset
+            if (index < offset) {
               ++deleteCount;
-            } else if (change['status'] === 'added') {
+            }
+          });
+        }
+
+        offset -= deleteCount;
+
+        if (addIndexes) {
+          addIndexes.forEach(function (index) {
+            // only count the changes below the last offset
+            if (index < offset) {
               ++addCount;
             }
-          }
-        });
+          });
+        }
 
-        _this._mapClientIdToOffset.set(clientId, offset + addCount - deleteCount);
+        offset += addCount;
+
+        _this._mapClientIdToOffset.set(clientId, offset);
       });
     }
     /**
@@ -538,10 +550,7 @@ var ArrayDataProvider = /*#__PURE__*/function () {
               onlyDeletes = false;
               ++addCount;
             }
-          }); // Adjust the last offset for iterators
-
-          self._adjustIteratorOffset(changes);
-
+          });
           var updatedIndexes = [];
           var removeDuplicate = [];
           var operationUpdateEventDetail = null;
@@ -697,18 +706,36 @@ var ArrayDataProvider = /*#__PURE__*/function () {
           self._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
         }, null, 'arrayChange');
         data['subscribe'](function (changes) {
+          var _a, _b, _c, _d;
+
           if (self._mutationEvent) {
+            // Adjust the last offset for iterators before firing event
+            var detail = self._mutationEvent['detail'];
+
+            self._adjustIteratorOffset((_a = detail.remove) === null || _a === void 0 ? void 0 : _a.indexes, (_b = detail.add) === null || _b === void 0 ? void 0 : _b.indexes);
+
             self.dispatchEvent(self._mutationEvent);
           } else if (self._mutationRemoveEvent || self._mutationAddEvent || self._mutationUpdateEvent) {
             if (self._mutationRemoveEvent) {
+              // Adjust the last offset for iterators before firing event
+              var _detail = self._mutationRemoveEvent['detail'];
+
+              self._adjustIteratorOffset((_c = _detail.remove) === null || _c === void 0 ? void 0 : _c.indexes, null);
+
               self.dispatchEvent(self._mutationRemoveEvent);
             }
 
             if (self._mutationAddEvent) {
+              // Adjust the last offset for iterators before firing event
+              var _detail2 = self._mutationAddEvent['detail'];
+
+              self._adjustIteratorOffset(null, (_d = _detail2.add) === null || _d === void 0 ? void 0 : _d.indexes);
+
               self.dispatchEvent(self._mutationAddEvent);
             }
 
             if (self._mutationUpdateEvent) {
+              // No need to adjust offset on mutate event with update only
               self.dispatchEvent(self._mutationUpdateEvent);
             }
           } else {
@@ -725,35 +752,9 @@ var ArrayDataProvider = /*#__PURE__*/function () {
   }, {
     key: "_fireMutationEvent",
     value: function _fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail) {
-      // the keys and indexes must all be disjoint in the same mutation event. So if there are any keys/indexes which are in different mutations, then fire separate mutation events
-      var self = this;
-      var fireMutipleEvents = false;
-      var checkProps = ['keys', 'indexes'];
-      checkProps.forEach(function (prop) {
-        if (!fireMutipleEvents) {
-          fireMutipleEvents = self._hasSamePropValue(operationRemoveEventDetail, operationAddEventDetail, prop) || self._hasSamePropValue(operationRemoveEventDetail, operationUpdateEventDetail, prop) || self._hasSamePropValue(operationAddEventDetail, operationUpdateEventDetail, prop);
-        }
-      });
-
-      if (fireMutipleEvents) {
-        if (operationRemoveEventDetail) {
-          var mutationRemoveEventDetail = new this.DataProviderMutationEventDetail(this, null, operationRemoveEventDetail, null);
-          this._mutationRemoveEvent = new oj.DataProviderMutationEvent(mutationRemoveEventDetail);
-        }
-
-        if (operationAddEventDetail) {
-          var mutationAddEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, null, null);
-          this._mutationAddEvent = new oj.DataProviderMutationEvent(mutationAddEventDetail);
-        }
-
-        if (operationUpdateEventDetail) {
-          var mutationUpdateEventDetail = new this.DataProviderMutationEventDetail(this, null, null, operationUpdateEventDetail);
-          this._mutationUpdateEvent = new oj.DataProviderMutationEvent(mutationUpdateEventDetail);
-        }
-      } else {
-        var mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
-        this._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
-      }
+      // fire all mutation events together so that the collection components won't miss information
+      var mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+      this._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
     }
   }, {
     key: "_hasSamePropValue",
@@ -863,6 +864,20 @@ var ArrayDataProvider = /*#__PURE__*/function () {
   }, {
     key: "_getVal",
     value: function _getVal(val, attr) {
+      if (typeof attr == 'string') {
+        var dotIndex = attr.indexOf('.');
+
+        if (dotIndex > 0) {
+          var startAttr = attr.substring(0, dotIndex);
+          var endAttr = attr.substring(dotIndex + 1);
+          var subObj = val[startAttr];
+
+          if (subObj) {
+            return this._getVal(subObj, endAttr);
+          }
+        }
+      }
+
       if (typeof val[attr] == 'function') {
         return val[attr]();
       }
@@ -1250,6 +1265,7 @@ var ArrayDataProvider = /*#__PURE__*/function () {
         var exclusionFeature = new Set();
         exclusionFeature.add('exclusion');
         return {
+          caching: 'all',
           attributeFilter: {
             expansion: {},
             ordering: {},
@@ -1384,7 +1400,8 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *                                                  @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  of strings for multiple key attributes. Dot notation can be used to specify nested attribute (e.g. 'attr.id').
+ *                                                  Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @param {(Array.<string>)=} options.textFilterAttributes Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
  * @ojsignature [{target: "Type",

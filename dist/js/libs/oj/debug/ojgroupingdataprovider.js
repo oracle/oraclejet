@@ -72,10 +72,10 @@ class GroupingDataProvider {
                 this._parentKey = _parentKey;
                 this._dataprovider = _dataprovider;
                 this._params = _params;
+                this._parent._registerIteratorOffset(this, this._parentKey, 0);
             }
             ['next']() {
                 let self = this;
-                this._parent._registerIteratorOffset(self, self._parentKey, false);
                 return this._parent
                     ._getDataFromDataProvider(this._params, this._parentKey, false)
                     .then(function (value) {
@@ -83,7 +83,7 @@ class GroupingDataProvider {
                         self._parent._updateSectionIndex();
                     }
                     let internalOffset = self._parent._getIteratorOffset(self);
-                    let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
+                    let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset.offset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
                     return self._dataprovider.fetchByOffset(updatedParams).then(function (res) {
                         let result = res['results'];
                         let data = result.map(function (value) {
@@ -100,7 +100,7 @@ class GroupingDataProvider {
                             }
                         }
                         // update internal base offset value
-                        self._parent._updateIteratorOffset(self, internalOffset + data.length);
+                        self._parent._updateIteratorOffset(self, internalOffset.offset + data.length);
                         if (res.done) {
                             // done with fetching, clear offsets
                             self._parent._unregisterIteratorOffset(self);

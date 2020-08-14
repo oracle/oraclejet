@@ -5,12 +5,12 @@
 
 define(["./impl/arrayPersistenceStore"], function (ArrayPersistenceStore) {
   'use strict';
-  
+
   /**
    * @export
    * @class ArrayPersistenceStoreFactory
-   * @classdesc PersistenceStoreFactory that creates an in-memory array backed 
-   *            PersisteneStore instance.
+   * @classdesc PersistenceStoreFactory that creates an in-memory array backed
+   *            PersistenceStore instance.
    * @hideconstructor
    */
 

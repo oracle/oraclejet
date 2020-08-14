@@ -56,7 +56,7 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojLegendSettableProperties<K, D>>): void;
     setProperties(properties: ojLegendSettablePropertiesLenient<K, D>): void;
     getContextByNode(node: Element): ojLegend.NodeContext | null;
-    getPreferredSize(): ojLegend.PreferredSize | null;
+    getPreferredSize(width: number, height: number): ojLegend.PreferredSize | null;
 }
 export namespace ojLegend {
     interface ojDrill extends CustomEvent<{

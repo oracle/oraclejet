@@ -8,4 +8,4 @@
 
 export { ProgressCircle } from './ojprogress-circle';
 
-export { ProgressCircleElementEventMap, ProgressCircleElementSettableProperties, ProgressCircleElementSettablePropertiesLenient, ProgressCircleElement, VProps, ProgressCircleProperties } from './ojprogress-circle';
+export { ProgressCircleElementEventMap, ProgressCircleElementSettableProperties, ProgressCircleElementSettablePropertiesLenient, ProgressCircleElement, VProps, ProgressCircleProperties, ojProgressCircleEventMap, ojProgressCircleSettableProperties, ojProgressCircleSettablePropertiesLenient, ojProgressCircle } from './ojprogress-circle';

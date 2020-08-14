@@ -1351,7 +1351,7 @@ dvt.Chart.prototype.__restoreChartFocus = function(focusState) {
     var navigables = DvtChartEventUtils.getKeyboardNavigables(this);
     var matchFound = false;
     for (var i = 0; i < navigables.length; i++) {
-      var id = navigables[i].id;
+      var id = navigables[i].getId();
       if (id instanceof DvtChartDataItem && id.equals(focusState.chartFocus.getId())) {
         this.EventManager.setFocusObj(navigables[i]);
         if (focusState.chartShowingFocusEffect)

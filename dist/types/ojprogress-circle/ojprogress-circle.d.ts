@@ -27,21 +27,20 @@ export declare class ProgressCircle extends VComponent<Props> {
     private _calculateTangent;
     protected _vprops?: VProps;
 }
-
 // Custom Element interfaces
 export interface ProgressCircleElement extends JetElement<ProgressCircleElementSettableProperties> {
   /**
    * The maximum allowed value.
    */
-  max?: number;
+  max?: Props['max'];
   /**
    * Specifies the size of the progress circle.
    */
-  size?: 'sm'|'md'|'lg';
+  size?: Props['size'];
   /**
    * The value of the Progress Circle.
    */
-  value?: number;
+  value?: Props['value'];
   addEventListener<T extends keyof ProgressCircleElementEventMap>(type: T, listener: (this: HTMLElement, ev: ProgressCircleElementEventMap[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof ProgressCircleElementSettableProperties>(property: T): ProgressCircleElement[T];
@@ -67,19 +66,23 @@ export interface ProgressCircleElementSettableProperties extends JetSettableProp
   /**
    * The maximum allowed value.
    */
-  max?: number;
+  max?: Props['max'];
   /**
    * Specifies the size of the progress circle.
    */
-  size?: 'sm'|'md'|'lg';
+  size?: Props['size'];
   /**
    * The value of the Progress Circle.
    */
-  value?: number;
+  value?: Props['value'];
 }
 export interface ProgressCircleElementSettablePropertiesLenient extends Partial<ProgressCircleElementSettableProperties> {
   [key: string]: any;
 }
+export declare type ojProgressCircle = ProgressCircleElement;
+export declare type ojProgressCircleEventMap = ProgressCircleElementEventMap;
+export declare type ojProgressCircleSettableProperties = ProgressCircleElementSettableProperties;
+export declare type ojProgressCircleSettablePropertiesLenient = ProgressCircleElementSettablePropertiesLenient;
 export interface ProgressCircleProperties extends Partial<ProgressCircleElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

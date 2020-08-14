@@ -335,7 +335,7 @@
     & .oj-combobox .oj-combobox-choices,
     & .oj-combobox .oj-combobox-input,
     & .oj-searchselect-input,
-    & .oj-inputdatetime .oj-inputdatetime-input, {
+    & .oj-inputdatetime .oj-inputdatetime-input {
       font-size: #{$fontSize};
     }
   }

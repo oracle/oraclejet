@@ -32,6 +32,7 @@ declare type State = {
     skeletonPositions: any;
     width: number;
     height: number;
+    contentHeight: number;
 };
 interface ItemTemplateContext<Key, Data> {
     data: Data;
@@ -80,6 +81,7 @@ export declare class WaterfallLayout<K extends string | number, D> extends VComp
     private setSkeletonPositions;
     private getPositions;
     private setPositions;
+    private setContentHeight;
     private getItemRenderer;
     private getItemStyleClass;
     private getItemElementStyleClass;
@@ -95,6 +97,8 @@ export declare class WaterfallLayout<K extends string | number, D> extends VComp
     private _updateCurrentItem;
     private _scrollToVisible;
     private _getScroller;
+    private _getContentDivStyle;
+    private _getRootElementStyle;
     private _renderInitialSkeletons;
     private _getPositionsForSkeletons;
     private _isInViewport;
@@ -108,51 +112,24 @@ export declare class WaterfallLayout<K extends string | number, D> extends VComp
     private _renderSkeleton;
     protected _vprops?: VProps<K, D>;
 }
-
 // Custom Element interfaces
 export interface WaterfallLayoutElement<Key,Data> extends JetElement<WaterfallLayoutElementSettableProperties<Key,Data>> {
   /**
    * Specifies the data for the component. See the Help documentation for more information.
    */
-  data?: DataProvider<Key, Data>|null;
+  data?: Props<Key,Data>['data'];
   /**
    * Specifies how data are fetched as user scrolls towards the bottom of the grid.
    */
-  scrollPolicy?: 'loadAll'|'loadMoreOnScroll';
+  scrollPolicy?: Props<Key,Data>['scrollPolicy'];
   /**
    * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
    */
-  scrollPolicyOptions: {
-  /**
-   * The number of items to fetch in each block.
-   */
-  fetchSize?: number;
-  /**
-   * The maximum total number of items to fetch.
-   */
-  maxCount?: number;
-  /**
-   * The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   */
-  scroller?: Element|null;
-    };
+  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
   /**
    * Specifies the current scroll position of the WaterfallLayout. See the Help documentation for more information.
    */
-  scrollPosition: {
-  /**
-   * The key of the item. If DataProvider is used for data and the key does not exist in the DataProvider or if the item has not been fetched yet, then the value is ignored.
-   */
-  key?: Key;
-  /**
-   * The vertical offset in pixels relative to the item identified by key.
-   */
-  offsetY?: number;
-  /**
-   * The vertical position in pixels.
-   */
-  y?: number;
-    };
+  scrollPosition: Props<Key,Data>['scrollPosition'];
   addEventListener<T extends keyof WaterfallLayoutElementEventMap<Key,Data>>(type: T, listener: (this: HTMLElement, ev: WaterfallLayoutElementEventMap<Key,Data>[T]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   getProperty<T extends keyof WaterfallLayoutElementSettableProperties<Key,Data>>(property: T): WaterfallLayoutElement<Key,Data>[T];
@@ -181,49 +158,27 @@ export interface WaterfallLayoutElementSettableProperties<Key,Data> extends JetS
   /**
    * Specifies the data for the component. See the Help documentation for more information.
    */
-  data?: DataProvider<Key, Data>|null;
+  data?: Props<Key,Data>['data'];
   /**
    * Specifies how data are fetched as user scrolls towards the bottom of the grid.
    */
-  scrollPolicy?: 'loadAll'|'loadMoreOnScroll';
+  scrollPolicy?: Props<Key,Data>['scrollPolicy'];
   /**
    * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
    */
-  scrollPolicyOptions: {
-  /**
-   * The number of items to fetch in each block.
-   */
-  fetchSize?: number;
-  /**
-   * The maximum total number of items to fetch.
-   */
-  maxCount?: number;
-  /**
-   * The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   */
-  scroller?: Element|null;
-    };
+  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
   /**
    * Specifies the current scroll position of the WaterfallLayout. See the Help documentation for more information.
    */
-  scrollPosition: {
-  /**
-   * The key of the item. If DataProvider is used for data and the key does not exist in the DataProvider or if the item has not been fetched yet, then the value is ignored.
-   */
-  key?: Key;
-  /**
-   * The vertical offset in pixels relative to the item identified by key.
-   */
-  offsetY?: number;
-  /**
-   * The vertical position in pixels.
-   */
-  y?: number;
-    };
+  scrollPosition: Props<Key,Data>['scrollPosition'];
 }
 export interface WaterfallLayoutElementSettablePropertiesLenient<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
+export declare type ojWaterfallLayout<Key,Data> = WaterfallLayoutElement<Key,Data>;
+export declare type ojWaterfallLayoutEventMap<Key,Data> = WaterfallLayoutElementEventMap<Key,Data>;
+export declare type ojWaterfallLayoutSettableProperties<Key,Data> = WaterfallLayoutElementSettableProperties<Key,Data>;
+export declare type ojWaterfallLayoutSettablePropertiesLenient<Key,Data> = WaterfallLayoutElementSettablePropertiesLenient<Key,Data>;
 export interface WaterfallLayoutProperties<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

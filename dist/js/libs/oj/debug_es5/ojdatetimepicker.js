@@ -2296,12 +2296,13 @@ function formatYear(year, month) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * For accessibility, you should associate a label element with the input
- * by putting an <code>id</code> on the input, and then setting the
+ * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
+ * you should associate an oj-label element with the input component
+ * by putting an <code>id</code> on the input component, and then setting the
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
  * <p>
- * The DatePicker will decorate its associated label with required and help
+ * In the Alta theme, DatePicker will decorate its associated label with required and help
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
  */
@@ -2372,11 +2373,10 @@ function formatYear(year, month) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the label to the input element.
+ * If not using the <code>label-hint</code> attribute,
+ * it is up to the application developer to associate the label to the input element.
  * For InputDate, you should put an <code>id</code> on the element, and then set
  * the <code>for</code> attribute on the label to be the element's id.
- * If there is no oj-label for the InputDate, add aria-label on InputDate
- * to make it accessible.
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -2385,12 +2385,13 @@ function formatYear(year, month) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * For accessibility, you should associate a label element with the input
- * by putting an <code>id</code> on the input, and then setting the
+ * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
+ * you should associate an oj-label element with the input component
+ * by putting an <code>id</code> on the input component, and then setting the
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
  * <p>
- * The InputDate will decorate its associated label with required and help
+ * In the Alta theme, InputDate will decorate its associated label with required and help
  * information, if the <code>required</code> and <code>help</code> attributes are set.
  * </p>
  */
@@ -2884,7 +2885,23 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * <pre class="prettyprint"><code>inputDate.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric"});</code></pre>
      * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
-     *
+     * <p>
+     * The hint exposed by the converter is shown inline by default in the Redwood theme when
+     * the field has focus.
+     * In the Alta theme, converter hints are shown in a notewindow on focus,
+     * or as determined by the
+     * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * In either theme, you can turn off showing converter hints by using the
+     * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+     * attribute.
+     * </p>
+     * <p>
+     * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+     * help.instruction shows; if no help.instruction then validator hints show;
+     * if none, then help-hints.definition shows; if none, then converter hint shows.
+     * help-hints.source always shows along with the other help or hint.
+     * </p>
      *
      * @expose
      * @instance
@@ -7325,12 +7342,11 @@ function _getTimePickerConverter(converter, addOpts) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the label to the input element.
+ * If not using the <code>label-hint</code> attribute,
+ * it is up to the application developer to associate the label to the input element.
  * For InputTime, you should put an <code>id</code> on the element, and then set
  * the <code>for</code> attribute on the label to be the element's id.
  *
- * If there is no oj-label for the InputTime, add aria-label on InputTime
- * to make it accessible.
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -7504,7 +7520,23 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
      * A datetime converter instance or a Promise to a datetime converter instance
      * or one that duck types {@link oj.DateTimeConverter}.
      * <p>If the timezone option is provided in the converter, the Now button will highlight the current time based on the timezone specified in the converter.
-     *
+    * <p>
+    * The hint exposed by the converter is shown inline by default in the Redwood theme when
+    * the field has focus.
+    * In the Alta theme, converter hints are shown in a notewindow on focus,
+    * or as determined by the
+    * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * In either theme, you can turn off showing converter hints by using the
+    * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * </p>
+    * <p>
+    * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+    * help.instruction shows; if no help.instruction then validator hints show;
+    * if none, then help-hints.definition shows; if none, then converter hint shows.
+    * help-hints.source always shows along with the other help or hint.
+    * </p>
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @memberof! oj.ojInputTime
@@ -8104,26 +8136,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     this._processReadOnlyKeyboardEdit();
 
     return ret;
-  },
-  _validateTime: function _validateTime(isoString, actionParam, doParseValue) {
-    var valueParams;
-
-    try {
-      valueParams = __ConverterI18nUtils.IntlConverterUtils._dateTime(isoString, actionParam, doParseValue);
-    } catch (e) {
-      Logger.info('The value of the InputTime element should be an ISOString, please use a valid ISOString');
-      var date = new Date();
-      date.setHours(0);
-      date.setMinutes(0);
-      date.setSeconds(0);
-      date.setMilliseconds(0);
-
-      var defaultDate = __ConverterI18nUtils.IntlConverterUtils.dateToLocalIso(date);
-
-      valueParams = __ConverterI18nUtils.IntlConverterUtils._dateTime(defaultDate, actionParam, doParseValue);
-    }
-
-    return valueParams;
   },
   _SetConverterBusyState: function _SetConverterBusyState(type) {
     var domElem = this.element[0];
@@ -9419,23 +9431,21 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     var value = this._getValue();
 
     var date = new Date();
+    var valueDate;
 
     if (!value) {
       value = __ConverterI18nUtils.IntlConverterUtils.dateToLocalIso(date);
     }
 
-    var isovalue = this._validateTime(value, {
-      month: date.getMonth(),
-      date: date.getDate(),
-      fullYear: date.getFullYear(),
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds()
-    });
+    try {
+      value = converter.parse(value); // Convert to proper timezone
 
-    value = converter.parse(isovalue); // Convert to proper timezone
-
-    var valueDate = converterUtils._clearTime(value);
+      valueDate = converterUtils._clearTime(value);
+    } catch (e) {
+      Logger.info('The value of the InputTime element should be an ISOString, please use a valid ISOString');
+      value = __ConverterI18nUtils.IntlConverterUtils.dateToLocalIso(date);
+      valueDate = converterUtils._clearTime(value);
+    }
 
     var minDateIso = this._getIsoDateLimit(converter, 'min', valueDate);
 
@@ -9482,7 +9492,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase, {
     try {
       timePickerModel.isoValue = this._getIsoDateValue(converter);
     } catch (e) {
-      timePickerModel.isoValue = timeDefaultConverter.parse(isovalue);
+      timePickerModel.isoValue = timeDefaultConverter.parse(value);
       Logger.info('The value of the InputTime element should be an ISOString, please use a valid ISOString');
     } // set min and max values
 
@@ -11617,8 +11627,9 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
  * </h3>
  * <p>
- * For accessibility, you should associate a label element with the input
- * by putting an <code>id</code> on the input, and then setting the
+ * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
+ * you should associate an oj-label element with the input component
+ * by putting an <code>id</code> on the input component, and then setting the
  * <code>for</code> attribute on the label to be the input's id.
  * </p>
  * <p>
@@ -11690,11 +11701,9 @@ var _yearFormat = _defaultOptions.converterYear || 'numeric';
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  * <p>
- * It is up to the application developer to associate the label to the element.
+ * If not using the <code>label-hint</code> attribute, it is up to the application developer to associate the label to the element.
  * For InputDateTime, you should put an <code>id</code> on the element, and then set
  * the <code>for</code> attribute on the label to be the element's id.
- * If there is no oj-label for the InputDateTime, add aria-label on InputDateTime
- * to make it accessible.
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
@@ -11838,7 +11847,23 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * set it in this property. For example:
      * <pre class="prettyprint"><code>inputDateTime.converter = new DateTimeConverter.IntlDateTimeConverter({"day":"2-digit","month":"2-digit","year":"numeric","hour":"2-digit","minute":"2-digit"});</code></pre>
      * <p>If the timezone option is provided in the converter, the Today button will highlight the current day based on the timezone specified in the converter.
-     *
+    * <p>
+    * The hint exposed by the converter is shown inline by default in the Redwood theme when
+    * the field has focus.
+    * In the Alta theme, converter hints are shown in a notewindow on focus,
+    * or as determined by the
+    * 'converterHint' property set on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * In either theme, you can turn off showing converter hints by using the
+    * 'converterHint' property set to 'none' on the <code class="prettyprint">display-options</code>
+    * attribute.
+    * </p>
+    * <p>
+    * In the Redwood theme, only one hint shows at a time, so the precedence rules are:
+    * help.instruction shows; if no help.instruction then validator hints show;
+    * if none, then help-hints.definition shows; if none, then converter hint shows.
+    * help-hints.source always shows along with the other help or hint.
+    * </p>
      * {@ojinclude "name":"inputBaseConverterOptionDoc"}
      * @expose
      * @instance

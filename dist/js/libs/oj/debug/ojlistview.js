@@ -972,15 +972,6 @@ oj.StaticContentHandler.prototype.Destroy = function () {
 
   this.restoreContent(this.m_root, 0);
   this.unsetRootAriaProperties();
-
-  if (this.shouldUseGridRole() && this.isCardLayout() && !this.IsHierarchical()) {
-    $(this.m_root).children()
-      .first()
-      .children()
-      .unwrap()
-      .children()
-      .unwrap();
-  }
 };
 
 /**
@@ -1012,6 +1003,7 @@ oj.StaticContentHandler.prototype.RenderContent = function () {
                this.m_widget.getGroupStyleClass() + "'></ul></li>");
     var wrapped = $(this.m_root).children('li').first().get(0);
     wrapped.style.width = '100%';
+    wrapped.classList.add('oj-listview-group-container');
     root = wrapped.firstElementChild;
   }
   this.modifyContent(root, 0);
@@ -1068,6 +1060,14 @@ oj.StaticContentHandler.prototype.restoreContent = function (elem, depth) {
     itemLayoutStyleClass = this.m_widget.getItemLayoutStyleClass();
   }
 
+  var firstChild = elem.firstElementChild;
+  if (firstChild && firstChild.classList.contains('oj-listview-group-container')) {
+      $(firstChild).children()
+      .unwrap()
+      .children()
+      .unwrap();
+  }
+
   var items = elem.children;
   for (var i = 0; i < items.length; i++) {
     var item = $(items[i]);
@@ -1075,10 +1075,19 @@ oj.StaticContentHandler.prototype.restoreContent = function (elem, depth) {
     // the content, and the observable array has changed
     if (item.hasClass(itemElementStyleClass)) {
       this.unsetAriaProperties(item.get(0));
+      if (item.hasClass('oj-listview-card')) {
+        item.removeClass('oj-listview-card')
+          .removeClass('oj-listview-card-animated')
+          .removeClass('oj-card-initial-exit-animation');
+        item[0].style.opacity = 1;
+      }
       item.removeClass(itemElementStyleClass)
         .removeClass(itemStyleClass)
         .removeClass(itemLayoutStyleClass)
         .removeClass(this.m_widget.getDepthStyleClass(depth))
+        .removeClass('gridline-hidden')
+        .removeClass('oj-listview-item')
+        .removeClass('oj-listview-item-element')
         .removeClass('oj-skipfocus')
         .removeClass('oj-focus')
         .removeClass('oj-hover')
@@ -1888,9 +1897,9 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
       cards.forEach(function (card) {
         // eslint-disable-next-line no-param-reassign
         card.style.animationDelay = '0ms';
-        card.classList.remove('oj-card-initial-entrance-animation');
-        card.classList.remove('oj-card-loadmore-entrance-animation');
-        card.classList.add('oj-card-initial-exit-animation');
+        card.classList.remove('oj-actioncard-initial-entrance-animation');
+        card.classList.remove('oj-actioncard-loadmore-entrance-animation');
+        card.classList.add('oj-actioncard-initial-exit-animation');
       });
     });
   },
@@ -3640,12 +3649,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         // eslint-disable-next-line no-param-reassign
         card.style.opacity = 0;
         if (isInitial) {
-          card.classList.add('oj-card-initial-entrance-animation');
+          card.classList.add('oj-actioncard-initial-entrance-animation');
           // eslint-disable-next-line no-param-reassign
           card.style.animationDelay = delay + 'ms';
           delay = Math.min(1000, delay + increment);
         } else {
-          card.classList.add('oj-card-loadmore-entrance-animation');
+          card.classList.add('oj-actioncard-loadmore-entrance-animation');
         }
       });
     }
@@ -3682,7 +3691,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
         return validRowKeyData;
       });
     }
-    return Promise.resolve([]);
+    return Promise.resolve({ validKeys: [], validData: [] });
   },
 
   /**
@@ -3707,7 +3716,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
             resolve({ validKeys: validKeys, validData: validData });
           }, function () {
             // something bad happened, treat keys as invalid
-            resolve([]);
+            resolve({ validKeys: [], validData: [] });
           });
         });
       }
@@ -7879,13 +7888,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
    */
   _isEmpty: function () {
     // can't just use childElementCount as there could be no data content or skeletons
-    var elem = this.element[0].firstElementChild;
-    if (elem) {
-      return !(elem.classList.contains(this.getItemElementStyleClass()) ||
-        elem.classList.contains('oj-listview-group-container') ||
-        elem.classList.contains('oj-listview-temp-item'));
-    }
-    return true;
+    var root = this.element[0];
+    var item = root.querySelector('li.' + this.getItemElementStyleClass());
+    var tempItem = root.querySelector('li.oj-listview-temp-item');
+    return (item == null && tempItem == null);
   },
 
   /**
@@ -9365,20 +9371,20 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @event
      * @memberof oj.ojListView
      * @instance
-     * @property {string} action the action that starts the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
+     * @property {string} action the action that triggers the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
      * @property {Element} element the target of animation.
      * @property {function():void} endCallback if the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
      */
     animateStart: null,
     /**
-     * Triggered when the default animation of a particular action has ended.  Note this event will not be triggered if application cancelled the default animation on animateStart.
+     * Triggered when the default animation of a particular action has ended. Note this event will not be triggered if application cancelled the default animation on animateStart.
      *
      * @ojshortdesc Triggered when the default animation of a particular action has ended.
      * @expose
      * @event
      * @memberof oj.ojListView
      * @instance
-     * @property {string} action the action that started the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
+     * @property {string} action the action that triggered the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
      * @property {Element} element the target of animation.
      */
     animateEnd: null,

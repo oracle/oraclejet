@@ -8965,12 +8965,12 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
    */
 
 
-  dvt.Diagram.prototype.handleTouchStart = function () {} // noop: Called from HandleImmediateTouchStartInternal
-
+  dvt.Diagram.prototype.handleTouchStart = function () {// noop: Called from HandleImmediateTouchStartInternal
+  };
   /**
    * Handles the touch end event
    */
-  ;
+
 
   dvt.Diagram.prototype.handleTouchEnd = function () {
     this._clearTouchEventContent();

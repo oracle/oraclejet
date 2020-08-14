@@ -1,0 +1,2426 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+:root {
+/* color ramps*/
+/* --oj-palette-danger-10:        #fff8f7; */
+/* --oj-palette-danger-30:        #ffebe8; */
+/* --oj-palette-danger-40:        #ffd9d3; */
+/* --oj-palette-danger-50:        #ffc1b8; */
+/* --oj-palette-danger-70:        #ff8675; */
+/* --oj-palette-danger-90:        #ec4f3a; */
+/* --oj-palette-danger-100:       #d63b25; */
+/* --oj-palette-danger-110:       #c33522; */
+/* --oj-palette-danger-120:       #b3311f; */
+/* --oj-palette-danger-140:       #8f2719; */
+/* --oj-palette-danger-160:       #661c12; */
+
+/* --oj-palette-warning-10:       #fef9f2; */
+/* --oj-palette-warning-30:       #fceddc; */
+/* --oj-palette-warning-40:       #f9ddbc; */
+/* --oj-palette-warning-50:       #f6c792; */
+/* --oj-palette-warning-70:       #eb9632; */
+/* --oj-palette-warning-90:       #c6710e; */
+/* --oj-palette-warning-100:      #ac630c; */
+/* --oj-palette-warning-110:      #9c590b; */
+/* --oj-palette-warning-120:      #8f520a; */
+/* --oj-palette-warning-140:      #724108; */
+/* --oj-palette-warning-160:      #512f06; */
+
+/* --oj-palette-success-10:       #f4fceb; */
+/* --oj-palette-success-30:       #e4f5d3; */
+/* --oj-palette-success-40:       #cfebb3; */
+/* --oj-palette-success-50:       #b1dd88; */
+/* --oj-palette-success-70:       #7dba45; */
+/* --oj-palette-success-90:       #5e942b; */
+/* --oj-palette-success-100:      #508223; */
+/* --oj-palette-success-110:      #497620; */
+/* --oj-palette-success-120:      #436b1d; */
+/* --oj-palette-success-140:      #355617; */
+/* --oj-palette-success-160:      #263d10; */
+
+/* --oj-palette-info-10:          #f6fafc; */
+/* --oj-palette-info-30:          #e4f1f7; */
+/* --oj-palette-info-40:          #d0e5ee; */
+/* --oj-palette-info-50:          #b4d5e1; */
+/* --oj-palette-info-70:          #79b1c6; */
+/* --oj-palette-info-90:          #4190ac; */
+/* --oj-palette-info-100:         #227e9e; */
+/* --oj-palette-info-110:         #0e7297; */
+/* --oj-palette-info-120:         #00688c; */
+/* --oj-palette-info-140:         #04536f; */
+/* --oj-palette-info-160:         #063c4e; */
+
+/* --oj-palette-opacity-medium: .6; */
+/* --oj-palette-opacity-low:    .3; */
+/* --oj-palette-opacity-lowest: .1; */
+
+/* --oj-palette-neutral-rgb-0:    255, 255, 255; */
+/* --oj-palette-neutral-rgb-10:   251, 249, 248; */
+/* --oj-palette-neutral-rgb-20:   245, 244, 242; */
+/* --oj-palette-neutral-rgb-30:   241, 239, 237; */
+/* --oj-palette-neutral-rgb-40:   228, 225, 221; */
+/* --oj-palette-neutral-rgb-50:   212, 207, 202; */
+/* --oj-palette-neutral-rgb-60:   188, 182, 177; */
+/* --oj-palette-neutral-rgb-70:   174, 168, 162; */
+/* --oj-palette-neutral-rgb-80:   158, 152, 146; */
+/* --oj-palette-neutral-rgb-90:   139, 133, 128; */
+/* --oj-palette-neutral-rgb-100:  123, 117, 112; */
+/* --oj-palette-neutral-rgb-110:  111, 105, 100; */
+/* --oj-palette-neutral-rgb-120:  101, 95, 91; */
+/* --oj-palette-neutral-rgb-130:  92, 86, 81; */
+/* --oj-palette-neutral-rgb-140:  81, 76, 71; */
+/* --oj-palette-neutral-rgb-150:  71, 66, 62; */
+/* --oj-palette-neutral-rgb-160:  58, 54, 50; */
+/* --oj-palette-neutral-rgb-170:  49, 45, 42; */
+/* --oj-palette-neutral-rgb-180:  32, 30, 28; */
+/* --oj-palette-neutral-rgb-190:  22, 21, 19; */
+/* --oj-palette-neutral-rgb-200:  00, 00, 00; */
+
+/* --oj-palette-neutral-0:    rgb(var(--oj-palette-neutral-rgb-0)); */
+/* --oj-palette-neutral-10:   rgb(var(--oj-palette-neutral-rgb-10)); */
+/* --oj-palette-neutral-20:   rgb(var(--oj-palette-neutral-rgb-20)); */
+/* --oj-palette-neutral-30:   rgb(var(--oj-palette-neutral-rgb-30)); */
+/* --oj-palette-neutral-40:   rgb(var(--oj-palette-neutral-rgb-40)); */
+/* --oj-palette-neutral-50:   rgb(var(--oj-palette-neutral-rgb-50)); */
+/* --oj-palette-neutral-60:   rgb(var(--oj-palette-neutral-rgb-60)); */
+/* --oj-palette-neutral-70:   rgb(var(--oj-palette-neutral-rgb-70)); */
+/* --oj-palette-neutral-80:   rgb(var(--oj-palette-neutral-rgb-80)); */
+/* --oj-palette-neutral-90:   rgb(var(--oj-palette-neutral-rgb-90)); */
+/* --oj-palette-neutral-100:  rgb(var(--oj-palette-neutral-rgb-100)); */
+/* --oj-palette-neutral-110:  rgb(var(--oj-palette-neutral-rgb-110)); */
+/* --oj-palette-neutral-120:  rgb(var(--oj-palette-neutral-rgb-120)); */
+/* --oj-palette-neutral-130:  rgb(var(--oj-palette-neutral-rgb-130)); */
+/* --oj-palette-neutral-140:  rgb(var(--oj-palette-neutral-rgb-140)); */
+/* --oj-palette-neutral-150:  rgb(var(--oj-palette-neutral-rgb-150)); */
+/* --oj-palette-neutral-160:  rgb(var(--oj-palette-neutral-rgb-160)); */
+/* --oj-palette-neutral-170:  rgb(var(--oj-palette-neutral-rgb-170)); */
+/* --oj-palette-neutral-180:  rgb(var(--oj-palette-neutral-rgb-180)); */
+/* --oj-palette-neutral-190:  rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-palette-neutral-200:  rgb(var(--oj-palette-neutral-rgb-200)); */
+
+/* --oj-palette-brand-rgb-10:     247, 252, 243; */
+/* --oj-palette-brand-rgb-30:     229, 244, 220; */
+/* --oj-palette-brand-rgb-40:     208, 234, 193; */
+/* --oj-palette-brand-rgb-50:     189, 217, 174; */
+/* --oj-palette-brand-rgb-70:     148, 179, 130; */
+/* --oj-palette-brand-rgb-90:     111, 145, 93; */
+/* --oj-palette-brand-rgb-100:    95, 125, 79; */
+/* --oj-palette-brand-rgb-110:    87, 115, 70; */
+/* --oj-palette-brand-rgb-120:    79, 105, 63; */
+/* --oj-palette-brand-rgb-140:    61, 84, 49; */
+/* --oj-palette-brand-rgb-160:    43, 58, 33; */
+
+/* --oj-palette-brand-10:  rgb(var(--oj-palette-brand-rgb-10)); */
+/* --oj-palette-brand-30:  rgb(var(--oj-palette-brand-rgb-30)); */
+/* --oj-palette-brand-40:  rgb(var(--oj-palette-brand-rgb-40)); */
+/* --oj-palette-brand-50:  rgb(var(--oj-palette-brand-rgb-50)); */
+/* --oj-palette-brand-70:  rgb(var(--oj-palette-brand-rgb-70)); */
+/* --oj-palette-brand-90:  rgb(var(--oj-palette-brand-rgb-90)); */
+/* --oj-palette-brand-100: rgb(var(--oj-palette-brand-rgb-100)); */
+/* --oj-palette-brand-110: rgb(var(--oj-palette-brand-rgb-110)); */
+/* --oj-palette-brand-120: rgb(var(--oj-palette-brand-rgb-120)); */
+/* --oj-palette-brand-140: rgb(var(--oj-palette-brand-rgb-140)); */
+/* --oj-palette-brand-160: rgb(var(--oj-palette-brand-rgb-160)); */
+
+/* --oj-palette-dvt-1:          #195f74; */
+/* --oj-palette-dvt-2:          #32925e; */
+/* --oj-palette-dvt-3:          #f9b70e; */
+/* --oj-palette-dvt-4:          #a02591; */
+/* --oj-palette-dvt-5:          #1d9aa1; */
+/* --oj-palette-dvt-6:          #35be74; */
+/* --oj-palette-dvt-7:          #e08010; */
+/* --oj-palette-dvt-8:          #9e54c0; */
+/* --oj-palette-dvt-9:          #5dbbbe; */
+/* --oj-palette-dvt-10:         #f3e53b; */
+/* --oj-palette-dvt-11:         #c84e3c; */
+/* --oj-palette-dvt-12:         #433182; */
+}
+:root {
+/* font and text              */
+/* -------------------------- */
+
+/*-----------------------------------------------------------------------------*/
+/* To target popular system fonts consider using the following for $fontFamily
+/*    system, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif
+/*
+/* An informative article (with even more system fonts)
+/*       https:/*www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/
+/* Discussion of more abstract way of declaring the system font
+/*       https:/*lists.w3.org/Archives/Public/www-style/2015Jul/0169.html
+/*
+/* Details:
+/*   * -apple-system
+/*       targets San Francisco on Mac and ios systems that support it.
+/*       https:/*webkit.org/blog/3709/using-the-system-font-in-web-content/
+/*       http:/*furbo.org/2015/07/09/i-left-my-system-fonts-in-san-francisco/
+/*   * BlinkMacSystemFont
+/*       targets San Francisco for Chrome on Mac OS X.
+/*   * Segoe UI
+/*       targets Windows and Windows Phone.
+/*   * Helvetica Neue
+/*       targets iOS pre-iOS9 and Mac OS X pre-El Capitan.
+/*   * Arial
+/*       targets Roboto on Android
+/*       https:/*android.googlesource.com/platform/frameworks/base/+/master/data/fonts/fonts.xml
+/*       https:/*developer.android.com/about/versions/android-4.1.html   (look for 'font')
+/*   * sans-serif
+/*       is the default sans-serif fallback font.
+/*-----------------------------------------------------------------------------*/
+/* --oj-typography-font-family:                              -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; */
+
+/* root font size is only used on the html element
+/* in order to support using rem units.
+/*
+/* The browser default font size is 16px */
+/* --oj-typography-root-font-size:                            1em; */
+
+/* titles are used for headers and other important or large text */
+/* --oj-typography-heading-2xl-font-size:                     2.5rem; */
+/* --oj-typography-heading-2xl-font-weight:                   900; */
+/* --oj-typography-heading-2xl-line-height:                   1.3; */
+
+/* --oj-typography-heading-xl-font-size:                      2.25rem; */
+/* --oj-typography-heading-xl-font-weight:                    900; */
+/* --oj-typography-heading-xl-line-height:                    1.222; */
+
+/* --oj-typography-heading-lg-font-size:                      2rem; */
+/* --oj-typography-heading-lg-font-weight:                    900; */
+/* --oj-typography-heading-lg-line-height:                    1.25; */
+
+/* --oj-typography-heading-md-font-size:                      1.75rem; */
+/* --oj-typography-heading-md-font-weight:                    900; */
+/* --oj-typography-heading-md-line-height:                    1.2857; */
+
+/* --oj-typography-heading-sm-font-size:                      1.5rem; */
+/* --oj-typography-heading-sm-font-weight:                    900; */
+/* --oj-typography-heading-sm-line-height:                    1.3333; */
+
+/* --oj-typography-heading-xs-font-size:                      1.25rem; */
+/* --oj-typography-heading-xs-font-weight:                    900; */
+/* --oj-typography-heading-xs-line-height:                    1.4; */
+
+/* titles for smaller devices */
+
+/* --oj-typography-heading-2xl-font-size-sm-screen:           2.25rem; */
+/* --oj-typography-heading-2xl-line-height-sm-screen:         1.2222; */
+
+/* --oj-typography-heading-xl-font-size-sm-screen:            2rem; */
+/* --oj-typography-heading-xl-line-height-sm-screen:          1.25; */
+
+/* --oj-typography-heading-lg-font-size-sm-screen:            1.75rem; */
+/* --oj-typography-heading-lg-line-height-sm-screen:          1.2857; */
+
+/* --oj-typography-heading-md-font-size-sm-screen:            1.5rem; */
+/* --oj-typography-heading-md-line-height-sm-screen:          1.3333; */
+
+/* --oj-typography-heading-sm-font-size-sm-screen:            1.25rem; */
+/* --oj-typography-heading-sm-line-height-sm-screen:          1.4; */
+
+/* --oj-typography-heading-xs-font-size-sm-screen:            1.125rem; */
+/* --oj-typography-heading-xs-line-height-sm-screen:          1.3333; */
+
+/* subtitles are smaller than titles but may have more emphasis than body text */
+/* --oj-typography-subheading-2xl-font-size:                  2.25rem; */
+/* --oj-typography-subheading-2xl-font-weight:                bold; */
+/* --oj-typography-subheading-2xl-line-height:                1.2222; */
+
+/* --oj-typography-subheading-xl-font-size:                   2rem; */
+/* --oj-typography-subheading-xl-font-weight:                 bold; */
+/* --oj-typography-subheading-xl-line-height:                 1.25; */
+
+/* --oj-typography-subheading-lg-font-size:                   1.75rem; */
+/* --oj-typography-subheading-lg-font-weight:                 bold; */
+/* --oj-typography-subheading-lg-line-height:                 1.2857; */
+
+/* --oj-typography-subheading-md-font-size:                   1.5rem; */
+/* --oj-typography-subheading-md-font-weight:                 bold; */
+/* --oj-typography-subheading-md-line-height:                 1.3333; */
+
+/* --oj-typography-subheading-sm-font-size:                   1.25rem; */
+/* --oj-typography-subheading-sm-font-weight:                 bold; */
+/* --oj-typography-subheading-sm-line-height:                 1.4; */
+
+/* --oj-typography-subheading-xs-font-size:                   1rem; */
+/* --oj-typography-subheading-xs-font-weight:                 bold; */
+/* --oj-typography-subheading-xs-line-height:                 1.5; */
+
+/* subtitles for smaller devices */
+
+/* --oj-typography-subheading-2xl-font-size-sm-screen:        2rem; */
+/* --oj-typography-subheading-2xl-line-height-sm-screen:      1.25; */
+
+/* --oj-typography-subheading-xl-font-size-sm-screen:         1.75rem; */
+/* --oj-typography-subheading-xl-line-height-sm-screen:       1.2857; */
+
+/* --oj-typography-subheading-lg-font-size-sm-screen:         1.5rem; */
+/* --oj-typography-subheading-lg-line-height-sm-screen:       1.3333; */
+
+/* --oj-typography-subheading-md-font-size-sm-screen:         1.25rem; */
+/* --oj-typography-subheading-md-line-height-sm-screen:       1.4; */
+
+/* --oj-typography-subheading-sm-font-size-sm-screen:         1.125rem; */
+/* --oj-typography-subheading-sm-line-height-sm-screen:       1.3333; */
+
+/* --oj-typography-subheading-xs-font-size-sm-screen:         0.859rem; */
+/* --oj-typography-subheading-xs-line-height-sm-screen:       1.4545; */
+
+/* --oj-typography-body-xl-font-size:                         1.25rem; */
+/* --oj-typography-body-xl-line-height:                       1.4; */
+
+/* --oj-typography-body-lg-font-size:                         1.125rem; */
+/* --oj-typography-body-lg-line-height:                       1.3333; */
+
+/* --oj-typography-body-md-font-size:                         1rem; */
+/* --oj-typography-body-md-line-height:                       1.25; */
+
+/* --oj-typography-body-sm-font-size:                         0.859rem; */
+/* --oj-typography-body-sm-line-height:                       1.2; */
+
+/* --oj-typography-body-xs-font-size:                         0.75rem; */
+/* --oj-typography-body-xs-line-height:                       1.3333; */
+
+/* --oj-typography-body-2xs-font-size:                        0.625rem; */
+/* --oj-typography-body-2xs-line-height:                      1.2; */
+}
+:root {
+/* text colors */
+/* --oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190)); */
+/* --oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .6); */
+/* --oj-core-text-color-tertiary:     rgba(var(--oj-palette-neutral-rgb-190), .6); */
+/* --oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .3); */
+/* --oj-core-text-color-primary-contrast:     var(--oj-palette-neutral-0); */
+
+/* --oj-core-text-color-neutral:      var(--oj-palette-neutral-120); */
+/* --oj-core-text-color-danger:       var(--oj-palette-danger-120); */
+/* --oj-core-text-color-warning:      var(--oj-palette-warning-120); */
+/* --oj-core-text-color-success:      var(--oj-palette-success-120); */
+/* --oj-core-text-color-info:         var(--oj-palette-info-120); */
+
+/* text colors */
+/* --oj-core-icon-color-danger:  var(--oj-palette-danger-100); */
+/* --oj-core-icon-color-warning: var(--oj-palette-warning-100); */
+/* --oj-core-icon-color-success: var(--oj-palette-success-100); */
+/* --oj-core-icon-color-info:    var(--oj-core-text-color-primary); */
+
+/* bg colors                  */
+/* -------------------------- */
+/* --oj-core-bg-color-hover: rgba(var(--oj-palette-neutral-rgb-190), .04); */
+/* --oj-core-bg-color-active: rgba(var(--oj-palette-neutral-rgb-190), .06); */
+
+/* --oj-core-bg-color-neutral: var(--oj-palette-neutral-120); */
+/* --oj-core-bg-color-danger:  var(--oj-palette-danger-100); */
+/* --oj-core-bg-color-warning: var(--oj-palette-warning-100); */
+/* --oj-core-bg-color-success: var(--oj-palette-success-100); */
+/* --oj-core-bg-color-info:    var(--oj-palette-info-100); */
+
+/* --oj-core-bg-color-neutral-subtle: var(--oj-palette-neutral-40); */
+/* --oj-core-bg-color-danger-subtle:  var(--oj-palette-danger-40); */
+/* --oj-core-bg-color-warning-subtle: var(--oj-palette-warning-40); */
+/* --oj-core-bg-color-success-subtle: var(--oj-palette-success-40); */
+/* --oj-core-bg-color-info-subtle:    var(--oj-palette-info-40); */
+
+/* horizonatal rule           */
+/* -------------------------- */
+/* --oj-core-divider-color:                rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest)); */
+/* --oj-core-divider-margin:         0.5rem; */
+
+/* drag and drop              */
+/* -------------------------- */
+/* --oj-core-drop-target-color-1:  var(--oj-palette-brand-40); */
+/* --oj-core-drop-target-color-2:  var(--oj-palette-brand-100); */
+/* --oj-core-drop-target-line-color:  var(--oj-palette-brand-100); */
+
+/* touch target               */
+/* -------------------------- */
+/* --oj-core-touch-target-min-size:    2.25rem; */
+
+/* Cursor                     */
+/* -------------------------- */
+/* --oj-core-cursor-clickable:      pointer; */
+
+/* border-radius              */
+/* -------------------------- */
+/* --oj-core-border-radius-sm:               2px; */
+/* --oj-core-border-radius-md:               3px; */
+/* --oj-core-border-radius-lg:               4px; */
+
+/* spacing                    */
+/* -------------------------- */
+/* --oj-core-spacing-1x:                  .25rem; */
+/* --oj-core-spacing-2x:                  .5rem; */
+/* --oj-core-spacing-3x:                  .75rem; */
+/* --oj-core-spacing-4x:                  1rem; */
+/* --oj-core-spacing-5x:                  1.25rem; */
+/* --oj-core-spacing-6x:                  1.5rem; */
+/* --oj-core-spacing-7x:                  1.75rem; */
+/* --oj-core-spacing-8x:                  2rem; */
+/* --oj-core-spacing-9x:                  2.25rem; */
+/* --oj-core-spacing-10x:                 2.5rem; */
+
+/* box shadow                 */
+/* -------------------------- */
+/* --oj-core-box-shadow-hsl:     30, 8.3%, 9.4%; */
+/* --oj-core-box-shadow-sm:      0px 0px 4px 0px hsla(var(--oj-core-box-shadow-hsl),0.1),0px 1px 2px 0px hsla(var(--oj-core-box-shadow-hsl),0.2); */
+/* --oj-core-box-shadow-md:      0px 8px 20px -4px hsla(var(--oj-core-box-shadow-hsl),0.15); */
+/* --oj-core-box-shadow-lg:      0px 12px 35px -4px hsla(var(--oj-core-box-shadow-hsl),0.15); */
+
+/* overlay                    */
+/* -------------------------- */
+
+/* this is used for something like a modal dialog to overlay the
+/* rest of the screen, indicating it's not reachable */
+/* --oj-core-overlay-bg-color:   var(--oj-palette-neutral-160); */
+/* --oj-core-overlay-opacity: 0.4; */
+
+/* disabled opacity           */
+/* -------------------------- */
+/* --oj-core-opacity-disabled:               1; */
+
+/* wrapping                  */
+/* -------------------------- */
+/* --oj-core-wrappable-margin-bottom:       0px; */
+
+/* z-index                    */
+/* -------------------------- */
+/* --oj-core-z-index-default:                 1; */
+/* --oj-core-z-index-app-layout-fixed:        100; */
+/* --oj-core-z-index-off-canvas:              200; */
+/* --oj-core-z-index-resizable:               900; */
+/* --oj-core-z-index-popup:                   1000; */
+/* --oj-core-z-index-popup-tail:              1030; */
+/* --oj-core-z-index-dialog:                  1050; */
+/* --oj-core-z-index-messages:                2000; */
+}
+:root {
+/* body                       */
+/* -------------------------- */
+/* --oj-body-bg-image:                   none; */
+/* --oj-body-bg-color:                   var(--oj-palette-neutral-10); */
+/* --oj-body-text-color:                 var(--oj-core-text-color-primary); */
+/* --oj-body-touch-action:               manipulation; */
+
+/* headers                    */
+/* -------------------------- */
+/* --oj-header-text-color:                       var(--oj-core-text-color-primary); */
+/* --oj-heading-margin-bottom:                   1rem; */
+/* --oj-heading-margin-top:                      1rem; */
+/* --oj-subheading-margin-top:                   0; */
+/* --oj-subheading-margin-bottom:                0.75rem; */
+
+/* paragraph                  */
+/* -------------------------- */
+/* --oj-paragraph-margin-bottom:                1rem; */
+
+/* list                       */
+/* -------------------------- */
+/* --oj-list-margin-top:                   0.5rem; */
+/* --oj-list-nested-padding-start:         2.5rem; */
+/* --oj-list-item-line-height:             1.5; */
+
+/* --oj-list-unordered-style-type:         square; */
+
+/* link                       */
+/* -------------------------- */
+
+/* default*/
+/* --oj-link-text-decoration:              none; */
+/* --oj-link-text-decoration-hover:        underline; */
+
+/* --oj-link-text-color:                 var(--oj-palette-info-120); */
+/* --oj-link-subtle-primary-color:             var(--oj-core-text-color-primary); */
+/* --oj-link-subtle-secondary-color:           var(--oj-core-text-color-secondary); */
+
+/* active */
+/* --oj-link-text-color-active:          var(--oj-link-text-color); */
+
+/* visited */
+/* --oj-link-text-color-visited:         var(--oj-link-text-color); */
+
+/* disabled */
+/* note that --oj-core-opacity-disabled is
+/* used for a disabled link in addition to color */
+/* --oj-link-text-color-disabled:        var(--oj-core-text-color-disabled); */
+
+/* --oj-link-animation-duration:       var(--oj-animation-duration-long); */
+
+/* there are 2 classes you can add to links
+1. oj-link-embedded - these are links embedded in paragraph text.
+For embedded links use the text-decoration vars if you want
+the line close to the text, or use border-bottom-width vars
+if you want the line further from the text
+
+2. oj-link-standalone - links that are on their own, stand alone links use
+borders which are only shown on hover.
+*/
+/* --oj-link-embedded-text-decoration:              none; */
+/* --oj-link-embedded-text-decoration-hover:        none; */
+
+/* --oj-link-embedded-border-bottom-width:          1px; */
+/* --oj-link-embedded-border-bottom-width-hover:    0px; */
+}
+:root {
+/* icon                       */
+/* -------------------------- */
+/* --oj-icon-size:                       1.5rem; */
+
+/* static icons */
+/* --oj-icon-color:                      var(--oj-core-text-color-primary); */
+
+/* clickable icons */
+/* --oj-icon-color-default:              var(--oj-button-borderless-chrome-icon-color); */
+
+/* --oj-icon-color-hover:                var(--oj-button-borderless-chrome-icon-color-hover); */
+/* --oj-icon-bg-color-hover:             var(--oj-button-borderless-chrome-bg-color-hover); */
+/* --oj-icon-border-color-hover:         var(--oj-button-borderless-chrome-border-color-hover); */
+
+/* --oj-icon-color-active:               var(--oj-button-borderless-chrome-icon-color-active); */
+/* --oj-icon-bg-color-active:            var(--oj-button-borderless-chrome-bg-color-active); */
+/* --oj-icon-border-color-active:        var(--oj-button-borderless-chrome-border-color-active); */
+
+/* --oj-icon-color-disabled:             var(--oj-button-borderless-chrome-icon-color-disabled); */
+}
+:root {
+/* --oj-animation-duration-xshort:      0.1s; */
+/* --oj-animation-duration-short:       0.15s; */
+/* --oj-animation-duration-medium:      0.2s; */
+/* --oj-animation-duration-long:        0.3s; */
+/* --oj-animation-duration-xlong:       0.5s; */
+
+/* --oj-animation-ease-in-out:          cubic-bezier(0.4, 0, 0.2, 1); */
+/* --oj-animation-ease-out:             cubic-bezier(0, 0, 0.2, 1); */
+/* --oj-animation-ease-in:              cubic-bezier(0.4, 0, 1, 1); */
+
+/* --oj-animation-effect-ripple-bg-color: var(--oj-palette-neutral-160); */
+
+/* --oj-animation-skeleton-bg-start-color:  rgba(var(--oj-palette-neutral-rgb-170), 0.05); */
+/* --oj-animation-skeleton-bg-end-color: rgba(var(--oj-palette-neutral-rgb-170), 0.15); */
+}
+:root {
+/* button                     */
+/* -------------------------- */
+/* --oj-button-border-radius:        var(--oj-core-border-radius-lg); */
+/* --oj-button-cursor:               var(--oj-core-cursor-clickable); */
+
+/* --oj-button-height:                2.75rem; */
+/* --oj-button-sm-height:             2.25rem; */
+/* --oj-button-lg-height:             3.25rem; */
+/* --oj-button-font-size:              var(--oj-typography-body-sm-font-size); */
+/* --oj-button-sm-font-size:           var(--oj-typography-body-sm-font-size); */
+/* --oj-button-lg-font-size:           var(--oj-typography-body-sm-font-size); */
+
+/* --oj-button-text-to-edge-padding:      1rem; */
+/* --oj-button-sm-text-to-edge-padding:   1rem; */
+/* --oj-button-lg-text-to-edge-padding:   1.5rem; */
+
+/* --oj-button-icon-to-text-padding:       .625rem; */
+/* --oj-button-sm-icon-to-text-padding:    .5rem; */
+/* --oj-button-lg-icon-to-text-padding:    1rem; */
+
+/* --oj-button-icon-to-edge-padding:       .625rem; */
+/* --oj-button-sm-icon-to-edge-padding:    .5rem; */
+/* --oj-button-lg-icon-to-edge-padding:    1rem; */
+
+/* --oj-button-icon-only-padding:          0.375rem; */
+/* --oj-button-sm-icon-only-padding:       0.25rem; */
+/* --oj-button-lg-icon-only-padding:       0.5rem; */
+
+/* solid */
+/* --oj-button-font-weight:          600; */
+
+/* solid enabled */
+/* --oj-button-solid-chrome-bg-color:                      var(--oj-palette-neutral-170); */
+/* --oj-button-solid-chrome-border-color:                  transparent; */
+/* --oj-button-solid-chrome-text-color:                    var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-icon-color:                    var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-bg-image:                      none; */
+/* --oj-button-solid-chrome-box-shadow:                    none; */
+
+/* solid hover */
+/* --oj-button-solid-chrome-bg-color-hover:                var(--oj-palette-neutral-160); */
+/* --oj-button-solid-chrome-border-color-hover:            transparent; */
+/* --oj-button-solid-chrome-text-color-hover:              var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-icon-color-hover:              var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-bg-image-hover:                none; */
+/* --oj-button-solid-chrome-box-shadow-hover:              none; */
+
+/* solid active */
+/* --oj-button-solid-chrome-bg-color-active:               var(--oj-palette-neutral-150); */
+/* --oj-button-solid-chrome-border-color-active:           transparent; */
+/* --oj-button-solid-chrome-text-color-active:             var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-icon-color-active:             var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-bg-image-active:               none; */
+/* --oj-button-solid-chrome-box-shadow-active:             none; */
+/* --oj-button-solid-chrome-opacity-active:                1; */
+
+/* solid selected */
+/* --oj-button-solid-chrome-bg-color-selected:             var(--oj-palette-neutral-100); */
+/* --oj-button-solid-chrome-border-color-selected:         transparent; */
+/* --oj-button-solid-chrome-text-color-selected:           var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-icon-color-selected:           var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-bg-image-selected:             none; */
+/* --oj-button-solid-chrome-box-shadow-selected:           none; */
+
+/* solid selected hover */
+/* --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-icon-color-selected-hover:     var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-solid-chrome-bg-color-selected-hover:       var(--oj-palette-neutral-120); */
+/* --oj-button-solid-chrome-border-color-selected-hover:   transparent; */
+
+/* solid disabled */
+/* --oj-button-solid-chrome-bg-color-disabled:             rgba(var(--oj-palette-neutral-rgb-100), var(--oj-palette-opacity-lowest)); */
+/* --oj-button-solid-chrome-border-color-disabled:         transparent; */
+/* --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled); */
+/* --oj-button-solid-chrome-icon-color-disabled:           var(--oj-core-text-color-disabled); */
+/* --oj-button-solid-chrome-box-shadow-disabled:           none; */
+/* --oj-button-solid-chrome-opacity-disabled:              var(--oj-core-opacity-disabled); */
+
+/* solid selected disabled */
+/* --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-100), var(--oj-palette-opacity-low)); */
+/* --oj-button-solid-chrome-border-color-selected-disabled: transparent; */
+/* --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-solid-chrome-icon-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+/* borderless chrome enabled */
+/* --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-icon-color:        var(--oj-core-text-color-primary); */
+
+/* borderless chrome hover */
+/* --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/* --oj-button-borderless-chrome-border-color-hover:    transparent; */
+/* --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-icon-color-hover:      var(--oj-core-text-color-primary); */
+
+/* borderless chrome active */
+/* --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/* --oj-button-borderless-chrome-border-color-active:   transparent; */
+/* --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-icon-color-active:     var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-opacity-active:        var(--oj-core-opacity-disabled); */
+
+/* borderless chrome selected */
+/* --oj-button-borderless-chrome-bg-color-selected:     transparent; */
+/* --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-icon-color-selected:   var(--oj-core-text-color-primary); */
+
+/* borderless chrome selected hover */
+/* --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover); */
+/* --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+/* --oj-button-borderless-chrome-icon-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+/* borderless chrome disabled */
+/* --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-borderless-chrome-icon-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-borderless-chrome-opacity-disabled:      var(--oj-core-opacity-disabled); */
+
+/* borderless chrome selected disabled */
+/* --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent; */
+/* --oj-button-borderless-chrome-border-color-selected-disabled: rgba(var(--oj-palette-neutral-190), var(--oj-palette-opacity-medium)); */
+/* --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-borderless-chrome-icon-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+/* outlined enabled */
+/* --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-icon-color:            var(--oj-core-text-color-primary); */
+
+/* outlined hover */
+/* --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover); */
+/* --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-icon-color-hover:      var(--oj-core-text-color-primary); */
+
+/* outlined active */
+/* --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active); */
+/* --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-icon-color-active:     var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-opacity-active:        var(--oj-core-opacity-disabled); */
+
+/* outlined selected */
+/* --oj-button-outlined-chrome-bg-color-selected:     transparent; */
+/* --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-icon-color-selected:   var(--oj-core-text-color-primary); */
+
+/* outlined selected hover */
+/* --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover); */
+/* --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary); */
+/* --oj-button-outlined-chrome-icon-color-selected-hover:   var(--oj-core-text-color-primary); */
+
+/* outlined disabled */
+/* --oj-button-outlined-chrome-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest)); */
+/* --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-icon-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-opacity-disabled:      var(--oj-button-solid-chrome-opacity-disabled); */
+
+/* outlined selected disabled */
+/* --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent; */
+/* --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled); */
+/* --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-button-outlined-chrome-icon-color-selected-disabled:   var(--oj-core-text-color-disabled); */
+
+/* cta enabled */
+/* --oj-button-call-to-action-chrome-bg-color:                      var(--oj-palette-brand-100); */
+/* --oj-button-call-to-action-chrome-border-color:                  transparent; */
+/* --oj-button-call-to-action-chrome-text-color:                    var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-icon-color:                    var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-bg-image:                      none; */
+/* --oj-button-call-to-action-chrome-box-shadow:                    none; */
+
+/* cta hover */
+/* --oj-button-call-to-action-chrome-bg-color-hover:                var(--oj-palette-brand-110); */
+/* --oj-button-call-to-action-chrome-border-color-hover:            transparent; */
+/* --oj-button-call-to-action-chrome-text-color-hover:              var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-icon-color-hover:              var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-bg-image-hover:                none; */
+/* --oj-button-call-to-action-chrome-box-shadow-hover:              none; */
+
+/* cta active */
+/* --oj-button-call-to-action-chrome-bg-color-active:               var(--oj-palette-brand-120); */
+/* --oj-button-call-to-action-chrome-border-color-active:           transparent; */
+/* --oj-button-call-to-action-chrome-text-color-active:             var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-icon-color-active:             var(--oj-core-text-color-primary-contrast); */
+/* --oj-button-call-to-action-chrome-bg-image-active:               none; */
+/* --oj-button-call-to-action-chrome-box-shadow-active:             none; */
+/* --oj-button-call-to-action-chrome-opacity-active:                1; */
+
+/* cta disabled */
+/* --oj-button-call-to-action-chrome-bg-color-disabled:             var(--oj-palette-neutral-50); */
+/* --oj-button-call-to-action-chrome-border-color-disabled:         transparent; */
+/* --oj-button-call-to-action-chrome-text-color-disabled:           var(--oj-core-text-color-disabled); */
+/* --oj-button-call-to-action-chrome-icon-color-disabled:           var(--oj-core-text-color-disabled); */
+/* --oj-button-call-to-action-chrome-box-shadow-disabled:           none; */
+/* --oj-button-call-to-action-chrome-opacity-disabled:              var(--oj-core-opacity-disabled); */
+
+/* icon sizes for all types of buttons  */
+/* --oj-button-icon-size:         1.5rem; */
+/* --oj-button-xs-icon-size:      1rem; */
+/* --oj-button-sm-icon-size:      1.25rem; */
+/* --oj-button-lg-icon-size:      1.5rem; */
+}
+:root {
+/* buttonset                     */
+/* ----------------------------- */
+
+/* --oj-buttonset-font-weight:                                 normal; */
+/* --oj-buttonset-border-radius:                             var(--oj-button-border-radius); */
+/* --oj-buttonset-equal-width-overall-width:                 100%; */
+
+/* --oj-buttonset-internal-border-color:                     var(--oj-palette-neutral-100); */
+/* --oj-buttonset-internal-border-color-active:              var(--oj-palette-neutral-100); */
+/* --oj-buttonset-internal-border-color-selected:            var(--oj-palette-neutral-100); */
+/* --oj-buttonset-internal-border-color-selected-disabled:   var(--oj-button-solid-chrome-bg-color-disabled); */
+
+/* --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-button-outlined-chrome-border-color); */
+/* --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-buttonset-internal-border-color-selected-disabled); */
+
+/* --oj-buttonset-outlined-chrome-bg-color:              var(--oj-core-bg-color-active); */
+/* --oj-buttonset-outlined-chrome-text-color:            var(--oj-core-text-color-secondary); */
+/* --oj-buttonset-outlined-chrome-bg-color-disabled:     var(--oj-button-solid-chrome-bg-color-disabled); */
+}
+:root {
+/* toolbar                    */
+/* -------------------------- */
+
+/* --oj-toolbar-border-color: var(--oj-palette-neutral-80); */
+/* --oj-toolbar-bg-color:transparent; */
+/* --oj-toolbar-border-width:0; */
+/* added margin right for button Content spacing between the icons and to support Rtl scenrio added Margin-left, this vars will be applied for all the button-icons in the toolbar */
+/* --oj-toolbar-button-margin:.5rem; */
+/* --oj-toolbar-borderless-button-margin:.25rem; */
+/* applied to Toolbarseparator to support right and left margins */
+/* --oj-toolbar-separator-margin:.5rem; */
+}
+:root {
+/* Menu                       */
+/* -------------------------- */
+
+/* --oj-menu-bg-color:                       var(--oj-popup-bg-color); */
+/* --oj-menu-border-color:                   rgba(var(--oj-palette-neutral-rgb-160), var(--oj-palette-opacity-lowest)); */
+/* --oj-menu-padding:                        var(--oj-core-spacing-2x); */
+/* --oj-menu-border-width:                   1px; */
+/* --oj-menu-border-radius:                  var(--oj-core-border-radius-lg); */
+/* --oj-menu-font-size:                      var(--oj-typography-body-md-font-size); */
+/* --oj-menu-line-height:                    var(--oj-typography-body-md-line-height); */
+/* --oj-menu-box-shadow:                     var(--oj-core-box-shadow-md); */
+/* --oj-menu-submenu-box-shadow:             var(--oj-core-box-shadow-md); */
+/* --oj-menu-text-only-text-align:           initial; */
+
+/* --oj-menu-icon-size:                      24px; */
+/* --oj-menu-icon-to-edge-padding:           1rem; */
+/* --oj-menu-text-to-icon-padding:           1rem; */
+/* --oj-menu-text-to-edge-padding:           1rem; */
+/* --oj-menu-submenu-icon-padding:           1rem; */
+
+/* --oj-menu-divider-margin:                 var(--oj-core-spacing-2x) 0; */
+/* --oj-menu-divider-border-color:           var(--oj-menu-border-color); */
+/* --oj-menu-divider-border-width:           1px; */
+
+/* menu item */
+/* --oj-menu-item-line-height:               3rem; */
+/* --oj-menu-item-text-color:                var(--oj-core-text-color-primary); */
+/* --oj-menu-item-border-color:              transparent; */
+/* --oj-menu-item-border-width:              0; */
+/* --oj-menu-item-bg-color-focus:            var(--oj-core-bg-color-hover); */
+/* --oj-menu-item-border-color-focus:        transparent; */
+/* --oj-menu-item-text-color-disabled:       var(--oj-core-text-color-disabled); */
+/* --oj-menu-item-last-border-width:         1px; */
+/* --oj-menu-icon-color:                     var(--oj-icon-color); */
+/* --oj-menu-icon-color-disabled:            var(--oj-icon-color-disabled); */
+/* --oj-menu-icon-opacity-disabled:          var(--oj-core-opacity-disabled); */
+/* --oj-menu-submenu-icon-color:             var(--oj-menu-icon-color); */
+
+/* menu sheet */
+
+/* on smaller screens the menu displays as a sheet, aka 'action sheet',
+/* see the doc for open-options.display in the menu doc */
+/* --oj-menu-sheet-bg-color:                 var(--oj-menu-bg-color); */
+/* --oj-menu-sheet-border-radius:            12px 12px 0 0; */
+/* --oj-menu-sheet-font-size:                var(--oj-menu-font-size); */
+/* --oj-menu-sheet-line-height:              var(--oj-menu-line-height); */
+/* --oj-menu-sheet-margin-horizontal:        0px; */
+/* --oj-menu-sheet-divider-border-color:     var(--oj-menu-divider-border-color); */
+/* --oj-menu-sheet-divider-border-width:     var(--oj-menu-divider-border-width); */
+
+/* menu sheet item */
+/* --oj-menu-sheet-item-line-height:         3rem; */
+/* --oj-menu-sheet-item-group-border-radius: 0; */
+/* --oj-menu-sheet-item-cancel-font-weight:  normal; */
+/* --oj-menu-sheet-item-text-color:          var(--oj-menu-item-text-color); */
+/* --oj-menu-sheet-item-bg-color:            transparent; */
+/* --oj-menu-sheet-item-border-color:        var(--oj-menu-item-border-color); */
+/* --oj-menu-sheet-item-border-width:        var(--oj-menu-item-border-width); */
+/* --oj-menu-sheet-item-bg-color-focus:      var(--oj-menu-item-bg-color-focus); */
+/* --oj-menu-sheet-item-border-color-focus:  var(--oj-menu-item-border-color-focus); */
+/* --oj-menu-sheet-item-text-color-disabled: var(--oj-menu-item-text-color-disabled); */
+}
+:root {
+}
+:root {
+/* Label                      */
+/* -------------------------- */
+/* --oj-label-font-size:     var(--oj-typography-body-sm-font-size); */
+/* --oj-label-font-weight:   500; */
+/* --oj-label-line-height:   var(--oj-typography-body-sm-line-height); */
+
+/* --oj-label-color:         var(--oj-core-text-color-secondary); */
+/* --oj-label-margin-bottom: 0.5rem; */
+/* --oj-label-inline-gutter:       1rem; */
+
+/* --oj-label-required-char: ""; */
+/* --oj-label-required-char-font-size:  1.5rem; */
+/* --oj-label-required-icon-color: var(--oj-palette-brand-110); */
+/* --oj-label-required-icon-background-color: var(--oj-palette-brand-110); */
+/* --oj-label-required-icon-border-radius: 50%; */
+/* --oj-label-required-icon-height: 4px; */
+/* --oj-label-required-icon-width: 4px; */
+}
+:root {
+/* Text fields                */
+/* -------------------------- */
+/*   Text fields allow users to input, edit,
+/*   and select text. These variables are
+/*   used by
+/*   <oj-input-date>
+/*   <oj-input-date-time>
+/*   <oj-input-number>
+/*   <oj-input-password>
+/*   <oj-input-search>
+/*   <oj-input-text>
+/*   <oj-input-time>
+/*   <oj-combobox-many>
+/*   <oj-combobox-one>
+/*   <oj-select-single>
+/*   <oj-select-many>
+/*   <oj-select-one>          */
+/* --oj-text-field-default-max-width:    100%; */
+
+/* --oj-text-field-min-width:          0; */
+
+/* --oj-text-field-border-radius:       var(--oj-core-border-radius-lg); */
+/* --oj-text-field-border-top-width:    1px; */
+/* --oj-text-field-border-right-width:  1px; */
+/* --oj-text-field-border-bottom-width: 1px; */
+/* --oj-text-field-border-left-width:   1px; */
+
+/* --oj-text-field-padding-horizontal: var(--oj-core-spacing-3x); */
+
+/* --oj-text-field-text-align: left; */
+/* --oj-text-field-text-align-rtl: right; */
+
+/* --oj-text-field-box-shadow:          var(--oj-core-box-shadow-sm); */
+
+/* --oj-text-field-height:              2.75rem; */
+/* --oj-text-field-font-size:        var(--oj-typography-body-md-font-size); */
+/* --oj-text-field-font-size-adjust: 100%; */
+
+/* --oj-text-field-text-highlight-color: var(--oj-palette-brand-50); */
+
+/* messaging */
+/* --oj-text-field-messaging-border-top-width:    1px; */
+/* --oj-text-field-messaging-border-right-width:  1px; */
+/* --oj-text-field-messaging-border-bottom-width: 1px; */
+/* --oj-text-field-messaging-border-left-width:   1px; */
+/* --oj-text-field-border-color-invalid:          var(--oj-palette-danger-100); */
+/* --oj-text-field-border-color-warning:          var(--oj-palette-warning-100); */
+
+/* enabled */
+/* --oj-text-field-bg-color:               var(--oj-palette-neutral-0); */
+/* --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+/* --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary); */
+/* --oj-text-field-placeholder-font-style: normal; */
+/* --oj-text-field-value-color:      var(--oj-core-text-color-primary); */
+
+/* hover */
+/* --oj-text-field-bg-color-hover:           var(--oj-text-field-bg-color); */
+
+/* focus */
+/* --oj-text-field-border-color-focus: var(--oj-palette-brand-110); */
+/* --oj-text-field-border-top-width-focus:    var(--oj-text-field-border-top-width); */
+/* --oj-text-field-border-right-width-focus:  var(--oj-text-field-border-right-width); */
+/* --oj-text-field-border-bottom-width-focus: var(--oj-text-field-border-bottom-width); */
+/* --oj-text-field-border-left-width-focus:   var(--oj-text-field-border-left-width); */
+
+/* disabled */
+/* --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0), var(--oj-palette-opacity-low)); */
+/* --oj-text-field-border-color-disabled:  rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest)); */
+/* --oj-text-field-value-color-disabled:   var(--oj-core-text-color-disabled); */
+/* --oj-text-field-opacity-disabled:       var(--oj-core-opacity-disabled); */
+/* --oj-text-field-border-style-disabled:    solid; */
+
+/* readonly */
+/* --oj-text-field-value-color-read-only:  var(--oj-core-text-color-primary); */
+/* --oj-text-field-font-size-read-only:    var(--oj-typography-body-md-font-size); */
+/* --oj-text-field-font-weight-read-only:  normal; */
+/* --oj-text-field-border-color-read-only: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest)); */
+/* --oj-text-field-line-height-read-only: var(--oj-typography-body-md-line-height); */
+
+/* For quiet forms */
+/* --oj-text-field-inside-height:                  3.25rem; */
+
+/* This padding is needed to bring the text field below the label, so that the label and the text inside the text field don't overlap. */
+/* --oj-text-field-inside-padding-top:             0.875rem; */
+
+/* --oj-text-field-inside-textarea-margin-top:     1.25rem; */
+/* --oj-text-field-inside-label-color-disabled:    var(--oj-core-text-color-disabled); */
+/* --oj-text-field-inside-label-color-error:       var(--oj-palette-danger-100); */
+/* --oj-text-field-inside-label-color-warning:     var(--oj-palette-warning-100); */
+/* --oj-text-field-inside-label-color-focus:       var(--oj-palette-brand-110); */
+/* --oj-text-field-inside-label-font-size:         var(--oj-typography-body-xs-font-size); */
+/* --oj-text-field-inside-label-font-weight:       500; */
+/* --oj-text-field-inside-label-line-height:       var(--oj-typography-body-xs-line-height); */
+
+/* --oj-text-field-button-border-color: var(--oj-palette-neutral-40); */
+/* --oj-text-field-button-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-lowest)); */
+
+/* Utility width classes that can be used with text fields */
+/* --oj-text-field-sm-width: calc(var(--oj-form-layout-column-max-width)/2); */
+/* --oj-text-field-md-width: var(--oj-form-layout-column-max-width); */
+
+/* User Assistance */
+/* --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary); */
+/* --oj-user-assistance-inline-line-height: 1.333; */
+/* --oj-user-assistance-inline-font-size: var(--oj-typography-body-xs-font-size); */
+}
+
+:root {
+/* Listbox                    */
+/* -------------------------- */
+
+/* --oj-listbox-item-padding-horizontal:  1rem; */
+/* --oj-listbox-item-padding-vertical:    var(--oj-collection-list-cell-padding-vertical); */
+/* --oj-listbox-item--min-row-height:     var(--oj-collection-list-min-row-height); */
+/* --oj-listbox-indent-width:             1rem; */
+/* --oj-listbox-bg-color-hover:           var(--oj-collection-cell-bg-color-hover); */
+/* --oj-listbox-message-text-color:       var(--oj-core-text-color-secondary); */
+}
+:root {
+/* Text Area                  */
+/* -------------------------- */
+/* --oj-text-area-line-height: var(--oj-typography-body-md-line-height); */
+}
+:root {
+/* Input Number               */
+/* -------------------------- */
+/* when a button-margin is given, then the border is on the input, so we need to specify the   */
+/* border and radius that goes between the input and the buttons (input-to-button-border-*)    */
+/* We also need to specify the width and radius for the increment and decrement buttons:       */
+/* button-border-width (+focus+messaging) and the button-border-radius.  These would typically */
+/* refer to the associated button variables so we have a consistent UI.                        */
+/* --oj-input-number-input-to-button-margin: 0; */
+/* --oj-input-number-input-to-button-border-width: var(--oj-text-field-border-right-width); */
+/* --oj-input-number-input-to-button-border-width-focus: var(--oj-text-field-border-right-width-focus); */
+/* --oj-input-number-input-to-button-messaging-border-width: var(--oj-text-field-messaging-border-right-width); */
+/* --oj-input-number-input-to-button-border-radius: 0; */
+
+/* --oj-input-number-button-width: 50px; */
+/* --oj-input-number-button-border-radius: var(--oj-button-border-radius); */
+/* --oj-input-number-button-border-width: 1px; */
+
+/* --oj-input-number-buttonset-border-width: 0; */
+/* --oj-input-number-buttonset-border-width-focus: var(--oj-text-field-border-top-width-focus); */
+/* --oj-input-number-buttonset-messaging-border-width: var(--oj-text-field-messaging-border-top-width); */
+}
+:root {
+/* Inputdatetime   */
+/*-----------------*/
+
+/* applied to both the data and time picker */
+/* --oj-date-time-picker-width:                  22.5rem; */
+/* --oj-date-time-picker-padding:                0.75rem; */
+/* --oj-date-time-picker-item-border-radius:     4px; */
+
+/* date picker */
+/* --oj-date-picker-font-size:                    var(--oj-typography-body-sm-font-size); */
+/* --oj-date-picker-border-color-focus:           var(--oj-date-picker-cell-bg-color-selected); */
+
+/* --oj-date-picker-button-font-size-today:       var(--oj-button-font-size); */
+/* --oj-date-picker-button-font-size:             var(--oj-typography-body-lg-font-size); */
+/* --oj-date-picker-button-text-color:            var(--oj-core-text-color-primary); */
+/* --oj-date-picker-button-text-color-hover:      var(--oj-button-borderless-chrome-text-color-hover); */
+/* --oj-date-picker-button-text-color-active:     var(--oj-date-picker-button-text-color); */
+
+/* width and height of the cell visible box seen when you hover over or select a day */
+/* --oj-date-picker-cell-box-size:                2.25rem; */
+
+/* --oj-date-picker-cell-height:                  3rem; */
+/* --oj-date-picker-cell-bg-color-hover:          var(--oj-core-bg-color-hover); */
+/* --oj-date-picker-cell-text-color-hover:        var(--oj-core-text-color-primary); */
+/* --oj-date-picker-cell-bg-color-selected:       var(--oj-palette-brand-110); */
+/* --oj-date-picker-cell-text-color-selected:     var(--oj-core-text-color-primary-contrast); */
+/* --oj-date-picker-cell-bg-color-today:          transparent; */
+/* --oj-date-picker-cell-border-color-today:      var(--oj-palette-neutral-160); */
+
+/* --oj-date-picker-day-of-week-header-text-color:var(--oj-core-text-color-secondary); */
+
+/* --oj-date-picker-month-year-cell-box-width:    3.25rem; */
+/* --oj-date-picker-month-year-cell-box-height:   1.75rem; */
+
+/* applied when the picker is inline in the page instead of in a popup */
+/* --oj-date-picker-inline-bg-color:              var(--oj-palette-neutral-0); */
+/* --oj-date-picker-inline-border-color:          var(--oj-palette-neutral-50); */
+
+/* time picker */
+/* --oj-time-picker-item-bg-color-focus:          var(--oj-palette-neutral-10); */
+}
+:root {
+/* radioset/checkboxset       */
+/* -------------------------- */
+/* --oj-radio-checkbox-width:                     auto; */
+/* --oj-radio-checkbox-align-items:               flex-start; */
+/* --oj-radio-checkbox-row-height:                1.5rem; */
+/* --oj-radio-checkbox-row-padding:               0.34375rem; */
+/* --oj-radio-checkbox-input-size:                1rem; */
+/* --oj-radio-checkbox-border-color:              1px solid transparent; */
+
+/* --oj-radio-checkbox-input-color-unselected:    var(--oj-palette-neutral-190); */
+/* --oj-radio-checkbox-input-color-selected:      var(--oj-palette-neutral-190); */
+/* --oj-radio-checkbox-input-color-disabled:      rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low)); */
+
+/* --oj-radio-checkbox-transform-active:          scale(0.75); */
+/* --oj-radio-checkbox-transform-enabled:         scale(1); */
+/* --oj-radio-checkbox-transition-active:         transform 0.1s var(--oj-animation-ease-in-out); */
+/* --oj-radio-checkbox-transition-selected:       transform 0.15s var(--oj-animation-ease-in-out); */
+/* --oj-radio-checkbox-transition-unselected:     transform 0.3s var(--oj-animation-ease-in-out); */
+
+/* --oj-radio-checkbox-label-to-edge-padding:     0; */
+/* --oj-radio-checkbox-input-to-label-padding:    0.5rem; */
+/* --oj-radio-checkbox-input-to-edge-padding:     0; */
+/* --oj-radio-checkbox-direction-row-inline-padding: 1.75rem; */
+
+/* --oj-radio-checkbox-label-color:               var(--oj-core-text-color-primary); */
+/* --oj-radio-checkbox-label-color-selected:      var(--oj-radio-checkbox-label-color); */
+
+/* --oj-radio-checkbox-set-bg-color:              transparent; */
+/* --oj-radio-checkbox-set-border-color:          transparent; */
+/* --oj-radio-checkbox-set-border-width:          0px; */
+
+/* --oj-radio-checkbox-item-divider-color:        transparent; */
+/* --oj-radio-checkbox-item-bg-color-active:      transparent; */
+/* --oj-radio-checkbox-item-divider-color-active: transparent; */
+}
+:root {
+/* --oj-action-card-scale-size-hover: 1.02; */
+/* --oj-action-card-bg-color: var(--oj-palette-neutral-0); */
+}
+
+:root {
+/* slider                     */
+/* -------------------------- */
+
+/* --oj-slider-thumb-width:                 1.25rem; */
+/* --oj-slider-thumb-height:                1.25rem; */
+/* --oj-slider-thumb-border-radius:         0.375rem; */
+/* --oj-slider-thumb-border-width:          0.125rem; */
+
+/* --oj-slider-bar-thickness:               2px; */
+
+/* enabled */
+/* --oj-slider-thumb-bg-color:              var(--oj-palette-neutral-10); */
+/* --oj-slider-thumb-border-color:          var(--oj-palette-neutral-190); */
+/* --oj-slider-thumb-box-shadow:            none; */
+
+/* --oj-slider-bar-bg-color:                rgba(var(--oj-palette-neutral-rgb-170), 0.15); */
+/* --oj-slider-bar-value-bg-color:          var(--oj-palette-neutral-180); */
+
+/* hover */
+/* --oj-slider-thumb-bg-color-hover:        var(--oj-palette-neutral-30); */
+/* --oj-slider-thumb-box-shadow-hover:      var(--oj-slider-thumb-box-shadow); */
+
+/* active */
+/* --oj-slider-thumb-bg-color-active:       var(--oj-palette-neutral-40); */
+/* --oj-slider-thumb-border-color-active:   var(--oj-palette-neutral-190); */
+/* --oj-slider-thumb-width-active:          var(--oj-slider-thumb-width); */
+/* --oj-slider-thumb-height-active:         var(--oj-slider-thumb-height); */
+/* --oj-slider-thumb-box-shadow-active:     var(--oj-slider-thumb-box-shadow); */
+
+/* --oj-slider-bar-value-bg-color-active:   var(--oj-slider-bar-value-bg-color); */
+
+/* disabled */
+/* --oj-slider-thumb-bg-color-disabled:     var(--oj-palette-neutral-10); */
+/* --oj-slider-thumb-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+
+/* --oj-slider-bar-bg-color-disabled:       rgba(var(--oj-palette-neutral-rgb-170), 0.15); */
+/* --oj-slider-bar-value-bg-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-low)); */
+
+/* color slider, used in color spectrum component */
+/* --oj-slider-color-picker-thumb-width:         1rem; */
+/* --oj-slider-color-picker-thumb-height:        var(--oj-slider-color-picker-thumb-width); */
+/* --oj-slider-color-picker-thumb-border-radius: 1.0625rem; */
+/* --oj-slider-color-picker-thumb-border-width:  0.125rem; */
+/* --oj-slider-color-picker-thumb-border-color:  var(--oj-palette-neutral-0); */
+/* --oj-slider-color-picker-thumb-box-shadow:    1px 1px 5px 0 hsla(var(--oj-core-box-shadow-hsl),0.4); */
+
+/* --oj-slider-color-picker-bar-thickness:      1rem; */
+
+/* color slider active */
+/* --oj-slider-color-picker-thumb-width-active:  1.5rem; */
+/* --oj-slider-color-picker-thumb-height-active: var(--oj-slider-color-picker-thumb-width-active); */
+}
+:root {
+/* switch                    */
+/* -------------------------- */
+
+/* --oj-switch-track-height:                         1.25rem; */
+/* --oj-switch-track-width:                          2.25rem; */
+/* --oj-switch-track-border-radius:                  0.375rem; */
+/* --oj-switch-track-transitions:                    background-color 0.2s linear 0.1s, opacity 0.2s linear 0.1s, border-color 0.2s linear 0.1s; */
+
+/* --oj-switch-thumb-to-track-horizontal-margin:     0.125rem; */
+
+/* --oj-switch-thumb-transition-active:              height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out), width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out); */
+/* --oj-switch-thumb-transition-selected:            height var(--oj-animation-duration-medium) var(--oj-animation-ease-out), width var(--oj-animation-duration-medium) var(--oj-animation-ease-out), left var(--oj-animation-duration-medium) var(--oj-animation-ease-out); */
+/* --oj-switch-thumb-transition-deselected:          height var(--oj-animation-duration-long) var(--oj-animation-ease-out), width var(--oj-animation-duration-long) var(--oj-animation-ease-out), right var(--oj-animation-duration-long) var(--oj-animation-ease-out); */
+
+/* enabled off */
+/* --oj-switch-track-bg-color:                       var(--oj-palette-neutral-90); */
+/* --oj-switch-track-border-color:                   var(--oj-palette-neutral-90); */
+/* --oj-switch-track-border-width:                   0px; */
+
+/* --oj-switch-thumb-bg-color:                       var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-border-color:                   var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-border-width:                   1px; */
+/* --oj-switch-thumb-height:                         calc(var(--oj-switch-track-height) - 0.25rem); */
+/* --oj-switch-thumb-width:                          var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-border-radius:                  0.25rem; */
+/* --oj-switch-thumb-box-shadow:                     0px 0.125rem 0.25rem 0px hsla(var(--oj-core-box-shadow-hsl),0.1); */
+
+/* selected (on) */
+/* --oj-switch-track-bg-color-selected:              var(--oj-palette-brand-100); */
+/* --oj-switch-track-border-color-selected:          var(--oj-palette-brand-100); */
+
+/* --oj-switch-thumb-bg-color-selected:              var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-border-color-selected:          var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-box-shadow-selected:            var(--oj-switch-thumb-box-shadow); */
+/* --oj-switch-thumb-height-selected:                var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-selected:                 var(--oj-switch-thumb-width); */
+
+/* hover (off) */
+/* --oj-switch-track-bg-color-hover:                 rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-medium)); */
+/* --oj-switch-track-border-color-hover:             rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-medium)); */
+
+/* --oj-switch-thumb-bg-color-hover:                 var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-border-color-hover:             var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-height-hover:                   var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-hover:                    var(--oj-switch-thumb-width); */
+/* --oj-switch-thumb-border-width-hover:             1px; */
+
+/* selected hover (on) */
+/* --oj-switch-track-bg-color-selected-hover:        var(--oj-palette-brand-110); */
+/* --oj-switch-track-border-color-selected-hover:    var(--oj-palette-brand-110); */
+
+/* --oj-switch-thumb-bg-color-selected-hover:        var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-border-color-selected-hover:    var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-height-selected-hover:          var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-selected-hover:           var(--oj-switch-thumb-width); */
+/* --oj-switch-thumb-border-width-selected-hover:    1px; */
+
+/* active (off) */
+/* --oj-switch-track-bg-color-active:                rgba(var(--oj-palette-neutral-rgb-170), 0.68); */
+/* --oj-switch-track-border-color-active:            rgba(var(--oj-palette-neutral-rgb-170), 0.68); */
+
+/* --oj-switch-thumb-bg-color-active:                var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-border-color-active:            var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-height-active:                  var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-active:                   var(--oj-switch-thumb-width); */
+/* --oj-switch-thumb-border-width-active:            1px; */
+/* --oj-switch-thumb-border-radius-active:           0.1875rem; */
+
+/* selected active (on) */
+/* --oj-switch-track-bg-color-selected-active:       var(--oj-palette-brand-120); */
+/* --oj-switch-track-border-color-selected-active:   var(--oj-palette-brand-120); */
+
+/* --oj-switch-thumb-bg-color-selected-active:       var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-border-color-selected-active:   var(--oj-palette-neutral-10); */
+/* --oj-switch-thumb-border-width-selected-active:   1px; */
+/* --oj-switch-thumb-height-selected-active:         var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-selected-active:          var(--oj-switch-thumb-width); */
+/* --oj-switch-thumb-border-radius-selected-active:  0.1875rem; */
+
+/* readonly (off) */
+/* --oj-switch-track-bg-color-readonly:              transparent; */
+/* --oj-switch-track-border-color-readonly:          transparent; */
+/* --oj-switch-track-border-width-readonly:          0; */
+
+/* --oj-switch-thumb-bg-color-readonly:              transparent; */
+/* --oj-switch-thumb-border-color-readonly:          transparent; */
+/* --oj-switch-thumb-height-readonly:                var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-readonly:                 var(--oj-switch-thumb-width); */
+/* --oj-switch-thumb-border-width-readonly:          0; */
+
+/* selected readonly (on) */
+/* --oj-switch-track-bg-color-selected-readonly:     transparent; */
+/* --oj-switch-track-border-color-selected-readonly: transparent; */
+
+/* --oj-switch-thumb-bg-color-selected-readonly:     transparent; */
+/* --oj-switch-thumb-border-color-selected-readonly: transparent; */
+/* --oj-switch-thumb-height-selected-readonly:       var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-selected-readonly:        var(--oj-switch-thumb-width); */
+/* --oj-switch-text-color-selected-readonly:         var(--oj-core-text-color-primary); */
+
+/* disabled (off) */
+/* --oj-switch-track-bg-color-disabled:              rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-low)); */
+/* --oj-switch-track-border-color-disabled:          rgba(var(--oj-palette-neutral-rgb-90), var(--oj-palette-opacity-low)); */
+
+/* --oj-switch-thumb-bg-color-disabled:              var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-border-color-disabled:          var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-height-disabled:                var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-disabled:                 var(--oj-switch-thumb-width); */
+
+/* selected disabled (on) */
+/* --oj-switch-track-bg-color-selected-disabled:     rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-low)); */
+/* --oj-switch-track-border-color-selected-disabled: rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-low)); */
+
+/* --oj-switch-thumb-bg-color-selected-disabled:     var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-border-color-selected-disabled: var(--oj-palette-neutral-0); */
+/* --oj-switch-thumb-height-selected-disabled:       var(--oj-switch-thumb-height); */
+/* --oj-switch-thumb-width-selected-disabled:        var(--oj-switch-thumb-width); */
+}
+:root {
+/* color palette */
+/* ---------------------------- */
+/* --oj-color-palette-text-color:                         var(--oj-core-text-color-primary); */
+/* --oj-color-palette-swatch-inner-border-color:          var(--oj-palette-neutral-170); */
+/* --oj-color-palette-swatch-outer-border-color-selected: var(--oj-palette-neutral-190); */
+/* --oj-color-palette-border-radius:                      50%; */
+/* --oj-color-palette-swatch-margin:                      2px; */
+
+/* --oj-color-palette-list-swatch-sm-width:               1.25rem; */
+/* --oj-color-palette-list-swatch-sm-height:              1.25rem; */
+/* --oj-color-palette-list-swatch-lg-width:               17.125rem; */
+/* --oj-color-palette-list-swatch-lg-height:              1.375rem; */
+
+/* --oj-color-palette-grid-swatch-xs-size:                1.25rem; */
+/* --oj-color-palette-grid-swatch-sm-size:                2.125rem; */
+/* --oj-color-palette-grid-swatch-lg-size:                4.75rem; */
+/* --oj-color-palette-grid-swatch-xl-size:                4.75rem; */
+/* --oj-color-palette-grid-font-size:                     var(--oj-typography-body-xs-font-size); */
+/* --oj-color-palette-grid-line-height:                   var(--oj-typography-body-xs-line-height); */
+}
+:root {
+/* color spectrum */
+/* ---------------------------- */
+/* --oj-color-spectrum-border-color:                var(--oj-palette-neutral-50); */
+/* --oj-color-spectrum-size:                        220px; */
+/* --oj-color-spectrum-thumb-border-color:          var(--oj-slider-color-picker-thumb-border-color); */
+/* --oj-color-spectrum-thumb-border-color-disabled: var(--oj-slider-thumb-border-color-disabled); */
+/* --oj-color-spectrum-thumb-size:                  var(--oj-slider-color-picker-thumb-width); */
+/* --oj-color-spectrum-thumb-border-width:          var(--oj-slider-color-picker-thumb-border-width); */
+/* --oj-color-spectrum-thumb-box-shadow:            var(--oj-slider-color-picker-thumb-box-shadow); */
+}
+:root {
+/* Form Layout                */
+/* -------------------------- */
+/* --oj-form-layout-border-color:                          transparent; */
+/* --oj-form-layout-border-width:                          0; */
+/* --oj-form-layout-horizontal-margin:                     0px; */
+/* --oj-form-layout-margin-bottom:                         .875rem; */
+
+/* --oj-form-layout-divider-color:                         transparent; */
+/* --oj-form-layout-divider-width:                         0; */
+/* --oj-form-layout-divider-margin:                        0; */
+
+/* in some cases the form layout uses the column-count CSS property, the column-width variables apply in those cases */
+/* --oj-form-layout-start-label-column-min-width:          22rem; */
+/* --oj-form-layout-start-label-column-max-width:          37.5rem; */
+/* --oj-form-layout-column-min-width:                      18rem; */
+/* --oj-form-layout-column-max-width:                      28rem; */
+
+/* the column-gutter variable is used for all cases for the space between columns */
+/* --oj-form-layout-column-gutter:                         1.5rem; */
+
+/* the variables below apply when the label and field are on the same line */
+/* --oj-form-layout-field-inline-justify-content: flex-start; */
+/* --oj-form-layout-label-inline-text-align: right; */
+/* --oj-form-layout-label-inline-text-align-rtl: left; */
+/* --oj-form-layout-field-inline-text-align: left; */
+/* --oj-form-layout-field-inline-text-align-rtl: right; */
+/* --oj-form-layout-label-inline-gutter-padding: 1.5rem; */
+}
+:root {
+/* --oj-message-header-height:                   1.5rem; */
+/* --oj-message-category-text-color:             var(--oj-core-text-color-primary); */
+/* --oj-message-category-font-size:              var(--oj-typography-body-xs-font-size); */
+/* --oj-message-category-font-weight:            600; */
+/* --oj-message-summary-font-weight:             var(--oj-typography-subheading-xl-font-weight); */
+/* --oj-message-summary-text-color:              var(--oj-core-text-color-primary); */
+/* --oj-message-summary-font-size:               var(--oj-typography-body-lg-font-size); */
+/* --oj-message-summary-line-height:             var(--oj-typography-body-lg-line-height); */
+/* --oj-message-detail-text-color:               var(--oj-core-text-color-secondary); */
+/* --oj-message-detail-font-size:                var(--oj-typography-body-sm-font-size); */
+/* --oj-message-detail-line-height:              var(--oj-typography-body-sm-line-height); */
+/* --oj-message-time-text-color:                 var(--oj-core-text-color-secondary); */
+/* --oj-message-time-font-size:                  var(--oj-typography-body-xs-font-size); */
+/* --oj-message-close-icon-display:              block; */
+/* --oj-message-auto-timeout-close-icon-display: block; */
+
+/* The following variables apply to individual oj-message when its oj-messages parent does not
+have position specified (general inline layout). */
+/* --oj-message-general-inline-border-width: 0 0 1px 0; */
+/* --oj-message-general-inline-border-color: var(--oj-core-divider-color); */
+
+/* The following variables apply to the messages displayed inline to form components. */
+/* --oj-message-component-inline-bg-color-error:            transparent; */
+/* --oj-message-component-inline-border-color-error:        transparent; */
+/* --oj-message-component-inline-bg-color-warning:          transparent; */
+/* --oj-message-component-inline-border-color-warning:      transparent; */
+/* --oj-message-component-inline-bg-color-info:             transparent; */
+/* --oj-message-component-inline-border-color-info:         transparent; */
+/* --oj-message-component-inline-bg-color-confirmation:     transparent; */
+/* --oj-message-component-inline-border-color-confirmation: transparent; */
+/* --oj-message-component-inline-margin-top:                0; */
+/* --oj-message-component-inline-border-width:              0; */
+/* --oj-message-component-inline-border-radius:             0; */
+/* --oj-message-component-inline-padding:                   0; */
+
+/* Variables needed for theming the padding for various messaging areas */
+/* --oj-message-component-icon-to-text-padding:  0.25rem; */
+/* --oj-message-radiocheckbox-inline-margin-top:            0; */
+/* --oj-message-radiocheckbox-inline-border-top-width:      0; */
+
+/* The following variables apply to individual oj-message when its oj-messages parent has display
+type set to 'general' with position specified. */
+/* --oj-message-general-overlay-border-width:        0; */
+/* --oj-message-general-overlay-border-color:        initial; */
+/* --oj-message-general-overlay-border-radius:       none; */
+/* --oj-message-general-overlay-box-shadow:          var(--oj-core-box-shadow-md); */
+/* --oj-message-general-overlay-header-bg-color:     var(--oj-palette-neutral-10); */
+/* --oj-message-general-overlay-body-bg-color:       var(--oj-palette-neutral-10); */
+/* '--oj-message-general-overlay-separator-margin' specifies margin used for separating / spacing
+between two successive message boxes. */
+/* --oj-message-general-overlay-separator-margin:    1px; */
+
+/* The following variables apply on individual oj-message when its oj-messages parent has display
+type set to 'notification' with position specified. */
+/* --oj-message-notification-overlay-header-bg-color:  var(--oj-palette-neutral-10); */
+/* --oj-message-notification-overlay-body-bg-color:    var(--oj-palette-neutral-10); */
+/* --oj-message-notification-overlay-border-width:     0; */
+/* --oj-message-notification-overlay-border-color:     initial; */
+/* --oj-message-notification-overlay-border-radius:    var(--oj-core-border-radius-lg); */
+/* --oj-message-notification-overlay-box-shadow:       var(--oj-core-box-shadow-md); */
+/* '--oj-message-notification-overlay-separator-margin' specifies margin used for
+separating / spacing between two successive message boxes. */
+/* --oj-message-notification-overlay-separator-margin: 0.5rem; */
+}
+:root {
+/* Messages------------------ */
+/* -------------------------- */
+
+/* The following variables apply to the oj-messages parent that has display type set to 'general'
+with position specified. */
+/* Note that in case of smaller screen width (< 768px wide) the messages container stretches full
+width, and in this case the following *-width/*-max-width/*-min-width variables do not take
+effect. */
+/* --oj-messages-general-overlay-width:             60vw; */
+/* --oj-messages-general-overlay-max-width:         1536px; */
+/* --oj-messages-general-overlay-min-width:         614px; */
+/* --oj-messages-general-overlay-border-width:      0; */
+/* --oj-messages-general-overlay-border-color:      initial; */
+/* --oj-messages-general-overlay-border-radius:     var(--oj-core-border-radius-sm); */
+/* --oj-messages-general-overlay-box-shadow:        var(--oj-core-box-shadow-sm); */
+
+/* The following variables apply to the oj-messages parent that has display type set to
+'notification' with position specified. */
+/* --oj-messages-notification-overlay-width:          30vw; */
+/* --oj-messages-notification-overlay-min-width:      307px; */
+/* --oj-messages-notification-overlay-max-width:      388px; */
+/* --oj-messages-notification-overlay-border-width:   0; */
+/* --oj-messages-notification-overlay-border-color:   initial; */
+/* --oj-messages-notification-overlay-border-radius:  initial; */
+/* --oj-messages-notification-overlay-box-shadow:     initial; */
+}
+:root {
+/* collections
+/*   These variables are used by
+/*    <oj-table>
+/*    <oj-data-grid>
+/*    <oj-list-view)
+/* ---------------------------- */
+/* --oj-collection-column-width:                            6.25rem; */
+/* --oj-collection-row-height:                              2.375rem; */
+
+/* --oj-collection-bg-color:                                var(--oj-palette-neutral-0); */
+/* --oj-collection-border-color:                            rgba(var(--oj-palette-neutral-rgb-190), var(--oj-palette-opacity-lowest)); */
+/* --oj-collection-status-bg-color:                         var(--oj-palette-neutral-0); */
+
+/*  For table in list mode and listview */
+/* --oj-collection-list-min-row-height:                     3rem; */
+/* --oj-collection-list-cell-padding-vertical:              0.75rem; */
+
+/* this is for the little grabbys in touch selection, we call them selection affordances */
+/* --oj-collection-selection-affordance-border-color:       var(--oj-palette-brand-110); */
+
+/* headers */
+/* --oj-collection-header-height:                           2.25rem; */
+/* --oj-collection-column-header-justify-content:           flex-start; */
+/* --oj-collection-column-header-align-items:               center; */
+/* --oj-collection-row-header-justify-content:              flex-start; */
+/* --oj-collection-row-header-align-items:                  center; */
+/* --oj-collection-header-font-size:                        var(--oj-typography-body-xs-font-size); */
+/* --oj-collection-header-font-weight:                      normal; */
+/* --oj-collection-header-line-height:                      var(--oj-typography-body-xs-line-height); */
+
+/* enabled */
+/* --oj-collection-header-bg-color:                         var(--oj-palette-neutral-0); */
+/* --oj-collection-header-border-color:                     var(--oj-collection-cell-border-color); */
+/* --oj-collection-header-text-color:                       var(--oj-core-text-color-secondary); */
+
+/* hover */
+/* --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover); */
+
+/* selected */
+/* --oj-collection-header-bg-color-selected:                var(--oj-palette-brand-30); */
+
+/* selected but focus is not within the component */
+/* --oj-collection-header-bg-color-selected-inactive:       var(--oj-collection-header-bg-color-selected); */
+
+/* drag */
+/* --oj-collection-header-bg-color-drag:                    var(--oj-palette-brand-40); */
+/* --oj-collection-header-drag-image-border-color:          var(--oj-palette-neutral-100); */
+
+/* cells */
+/* --oj-collection-cell-align-items:                        center; */
+/* --oj-collection-cell-justify-content:                    flex-end; */
+/* --oj-collection-cell-align-text:                         right; */
+/* --oj-collection-cell-align-text-rtl:                     left; */
+/* --oj-collection-cell-font-size:                          var(--oj-typography-body-md-font-size); */
+/* --oj-collection-cell-padding:                            .5rem; */
+
+/* enabled */
+/* --oj-collection-cell-bg-color:                           var(--oj-palette-neutral-0); */
+/* --oj-collection-cell-banded-bg-color:                    var(--oj-palette-neutral-10); */
+/* --oj-collection-cell-border-color:                       rgba(var(--oj-palette-neutral-rgb-150), var(--oj-palette-opacity-lowest)); */
+/* --oj-collection-cell-text-color:                         var(--oj-core-text-color-primary); */
+
+/* hover */
+/* --oj-collection-cell-bg-color-hover:                     var(--oj-core-bg-color-hover); */
+/* --oj-collection-cell-border-color-hover:                 transparent; */
+
+/* selected */
+/* --oj-collection-cell-bg-color-selected:                  var(--oj-palette-brand-30); */
+/* --oj-collection-cell-border-color-selected:              rgba(var(--oj-palette-brand-rgb-100), var(--oj-palette-opacity-medium)); */
+
+/* selected but focus is not within the component */
+/* --oj-collection-cell-bg-color-selected-inactive:         var(--oj-collection-cell-bg-color-selected); */
+/* --oj-collection-cell-border-color-selected-inactive:     var(--oj-collection-cell-border-color-selected); */
+
+/* focus */
+/* --oj-collection-cell-border-color-focus:                 transparent; */
+/* --oj-collection-editable-cell-border-color-focus:        var(--oj-palette-brand-110); */
+
+/* read only */
+/* --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-bg-color-hover); */
+
+/* drag */
+/* --oj-collection-cell-bg-color-drag:                      var(--oj-palette-brand-40); */
+/* --oj-collection-cell-drag-image-border-color:            var(--oj-palette-neutral-40); */
+}
+:root {
+/* list view                   */
+/* -------------------------- */
+
+/* color for the drill to detail icon of an item */
+/* --oj-list-view-drill-icon-color:    var(--oj-icon-color-default); */
+
+/* position where the bottom border of an item starts */
+/* --oj-list-view-item-border-position: 0; */
+/* --oj-list-view-item-padding-horizontal: 1rem; */
+
+/* --oj-list-view-group-header-bg-color:          transparent; */
+/* --oj-list-view-group-header-bg-color-sticky:   var(--oj-palette-neutral-30); */
+/* --oj-list-view-group-header-bg-color-disabled: var(--oj-palette-neutral-20); */
+/* --oj-list-view-group-header-bg-image:          none; */
+/* --oj-list-view-group-header-font-weight:  var(--oj-typography-subheading-sm-font-weight); */
+/* --oj-list-view-group-header-font-size:    var(--oj-typography-body-md-font-size); */
+/* --oj-list-view-group-header-line-height:  var(--oj-typography-body-md-line-height); */
+/* --oj-list-view-group-header-border-width-expanded: 0; */
+/* --oj-list-view-group-header-border-width-collapsed: 0 0 1px; */
+/* --oj-list-view-group-header-opacity:      1; */
+
+/* --oj-list-view-card-width:          240px; */
+/* --oj-list-view-card-height:         auto; */
+/* --oj-list-view-card-margin-top:     var(--oj-core-spacing-4x); */
+/* --oj-list-view-card-margin-end:     var(--oj-core-spacing-4x); */
+/* --oj-list-view-card-margin-bottom:  0; */
+/* --oj-list-view-card-margin-start:   0; */
+}
+:root {
+/* table */
+/* ---------------------------- */
+/* --oj-table-cell-padding-horizontal:             1rem; //TODO revisit this variable */
+/* --oj-table-column-header-cell-hover-divider:    rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-lowest)) 1px 0px 0px inset, rgba(var(--oj-palette-neutral-rgb-170), var(--oj-palette-opacity-lowest)) -1px 0px 0px inset; */
+/* --oj-table-default-sort-icon-display:           block; */
+}
+:root {
+/* tree view */
+/* ---------------------------- */
+/* --oj-tree-view-spacer-width:                    1.5rem; */
+/* --oj-tree-view-row-height:                      2.5rem; */
+/* --oj-tree-view-text-color:                      var(--oj-core-text-color-primary); */
+
+/* --oj-tree-view-item-bg-color-hover:             var(--oj-collection-cell-bg-color-hover); */
+/* --oj-tree-view-item-bg-color-selected:          var(--oj-collection-cell-bg-color-selected); */
+/* --oj-tree-view-item-bg-color-selected-inactive: var(--oj-collection-cell-bg-color-selected-inactive); */
+}
+:root {
+/* row expander */
+/* ---------------------------- */
+/* --oj-row-expander-indent-width: 16px; */
+/* --oj-row-expander-spacer-width: 1.25rem; */
+}
+:root {
+/* indexer                    */
+/* -------------------------- */
+
+/* --oj-indexer-item-width:            1.5rem; */
+/* --oj-indexer-item-height:           1rem; */
+
+/* height of each item when indexer is in abbreviated form */
+/* --oj-indexer-abbr-item-height:      1rem; */
+
+/* --oj-indexer-font-weight:           normal; */
+/* --oj-indexer-text-color:            var(--oj-core-text-color-primary); */
+/* --oj-indexer-text-decoration:       none; */
+/* --oj-indexer-font-size:             var(--oj-typography-body-sm-font-size); */
+
+/* hover */
+/* --oj-indexer-text-decoration-hover: none; */
+
+/* disabled */
+/* --oj-indexer-text-color-disabled:   var(--oj-core-text-color-disabled); */
+}
+:root {
+/* Collapsible                */
+/* -------------------------- */
+/* --oj-collapsible-animation-duration:                    var(--oj-animation-duration-long); */
+}
+:root {
+/* paging control             */
+/* -------------------------- */
+/* --oj-paging-padding:          1rem; */
+/* --oj-paging-border-color:     var(--oj-palette-neutral-50); */
+
+/* --oj-paging-dot-size:         10px; */
+/* --oj-paging-dot-padding:      8px; */
+}
+:root {
+/* refresher                  */
+/* -------------------------- */
+/* --oj-refresher-bg-color:           var(--oj-palette-neutral-40); */
+/* --oj-refresher-animation-duration: var(--oj-animation-duration-long); */
+}
+:root {
+/* swipeactions               */
+/* -------------------------- */
+
+/* animation during for swipe actions to open and close */
+/* --oj-swipe-actions-animation-duration:   var(--oj-animation-duration-long); */
+
+/* --oj-swipe-actions-text-color:           var(--oj-core-text-color-primary-contrast); */
+/* --oj-swipe-actions-item-width:           4rem; */
+/* --oj-swipe-actions-icon-to-text-padding: var(--oj-core-spacing-3x); */
+
+/* --oj-swipe-actions-default-bg-color:     var(--oj-palette-brand-110); */
+/* --oj-swipe-actions-neutral-bg-color:     var(--oj-palette-neutral-120); */
+/* --oj-swipe-actions-attention-bg-color:   var(--oj-palette-info-100); */
+/* --oj-swipe-actions-danger-bg-color:      var(--oj-palette-danger-100); */
+}
+:root {
+/* activity stream                   */
+/* -------------------------- */
+
+/* position where the bottom border of an item starts */
+/* --oj-activity-stream-item-border-position: 0; */
+}
+:root {
+/* WaterfallLayout              */
+/* -------------------------- */
+}
+:root {
+/* stream list                */
+/* -------------------------- */
+/* --oj-stream-list-group-bg-color:        rgba(var(--oj-palette-neutral-rgb-170), .08); */
+/* --oj-stream-list-pinned-group-bg-color: var(--oj-palette-brand-30); */
+/* --oj-stream-list-group-font-size:        var(--oj-typography-body-md-font-size); */
+/* --oj-stream-list-group-font-weight:      var(--oj-typography-subheading-sm-font-weight); */
+}
+:root {
+/* --oj-panel-padding:                   var(--oj-core-spacing-2x); */
+/* --oj-panel-border-radius:             6px; */
+/* --oj-panel-bg-color:                  var(--oj-body-bg-color); */
+/* --oj-panel-border-color:              var(--oj-core-divider-color); */
+/* --oj-panel-border-color-selected:     var(--oj-palette-brand-110); */
+/* --oj-panel-border-width-selected:     2px; */
+
+/* --oj-panel-box-shadow-sm:      0px 2px 4px 0px hsla(var(--oj-core-box-shadow-hsl),0.1); */
+/* --oj-panel-box-shadow-md:      0px 18px 18px -10px hsla(var(--oj-core-box-shadow-hsl),0.2); */
+/* --oj-panel-box-shadow-lg:      0px 30px 50px -20px hsla(var(--oj-core-box-shadow-hsl),0.25); */
+}
+
+:root {
+/* Badge                     */
+/* -------------------------- */
+
+/* --oj-badge-height: 1.5rem; */
+/* --oj-badge-font-size: 0.6875rem; */
+/* --oj-badge-font-weight: 700; */
+/* --oj-badge-border-radius: 0.375rem; */
+
+/* --oj-badge-sm-height: 1rem; */
+/* --oj-badge-sm-font-size: 0.5625rem; */
+/* --oj-badge-sm-font-weight: 700; */
+/* --oj-badge-sm-border-radius: 0.25rem; */
+}
+
+:root {
+/* Avatar                     */
+/* -------------------------- */
+/* --oj-avatar-bg-color:                       transparent; */
+/* --oj-avatar-border-color:                   var(--oj-avatar-bg-color); */
+/* --oj-avatar-text-color:                     var(--oj-core-text-color-primary-contrast); */
+
+/* --oj-avatar-xxs-size:                       1.75rem; */
+/* --oj-avatar-xxs-border-width:               0; */
+/* --oj-avatar-xxs-border-radius:              0.25rem; */
+/* --oj-avatar-xxs-initials-font-size:         var(--oj-typography-body-xs-font-size); */
+/* --oj-avatar-xxs-initials-font-weight:       500; */
+
+/* --oj-avatar-xs-size:                        2.75rem; */
+/* --oj-avatar-xs-border-radius:               0.25rem; */
+/* --oj-avatar-xs-initials-font-size:          var(--oj-typography-body-md-font-size); */
+/* --oj-avatar-xs-initials-font-weight:        400; */
+
+/* --oj-avatar-sm-size:                        3.5rem; */
+/* --oj-avatar-sm-border-radius:               0.25rem; */
+/* --oj-avatar-sm-initials-font-size:          var(--oj-typography-heading-xs-font-size); */
+/* --oj-avatar-sm-initials-font-weight:        normal; */
+
+/* --oj-avatar-md-size:                        4.5rem; */
+/* --oj-avatar-md-border-radius:               0.25rem; */
+/* --oj-avatar-md-initials-font-size:          var(--oj-typography-heading-lg-font-size); */
+/* --oj-avatar-md-initials-font-weight:        lighter; */
+
+/* --oj-avatar-lg-size:                        6rem; */
+/* --oj-avatar-lg-border-radius:               0.375rem; */
+/* --oj-avatar-lg-initials-font-size:          40px; */
+/* --oj-avatar-lg-initials-font-weight:        lighter; */
+
+/* --oj-avatar-xl-size:                        9rem; */
+/* --oj-avatar-xl-border-width:                0; */
+/* --oj-avatar-xl-border-radius:               0.5rem; */
+/* --oj-avatar-xl-initials-font-size:          48px; */
+/* --oj-avatar-xl-initials-font-weight:        lighter; */
+
+/* --oj-avatar-xxl-size:                       12.25rem; */
+/* --oj-avatar-xxl-border-radius:              0.5rem; */
+/* --oj-avatar-xxl-initials-font-size:         72px; */
+/* --oj-avatar-xxl-initials-font-weight:       lighter; */
+
+/*Opacity of filter applied to darken bg color to satisfy asscessibility contrast ratio requirements*/
+/* --oj-avatar-initials-shade-opacity:          0; */
+
+/* --oj-avatar-green:                          transparent; */
+/* --oj-avatar-purple:                         transparent; */
+/* --oj-avatar-red:                            transparent; */
+/* --oj-avatar-teal:                           transparent; */
+/* --oj-avatar-orange:                         transparent; */
+/* --oj-avatar-forest:                         transparent; */
+/* --oj-avatar-mauve:                          transparent; */
+}
+:root {
+/* IconCircle                 */
+/* -------------------------- */
+/* --oj-icon-circle-bg-color:                  var(--oj-palette-neutral-160); */
+/* --oj-icon-circle-font-color:                var(--oj-palette-neutral-0); */
+
+/* --oj-icon-circle-xxs-size:                  1.75rem; */
+/* --oj-icon-circle-xs-size:                   2.75rem; */
+/* --oj-icon-circle-sm-size:                   3.5rem; */
+/* --oj-icon-circle-md-size:                   4.5rem; */
+/* --oj-icon-circle-lg-size:                   6rem; */
+/* --oj-icon-circle-xl-size:                   9rem; */
+/* --oj-icon-circle-xxl-size:                  12.25rem; */
+
+/* --oj-icon-circle-xxs-font-size:             0.75rem; */
+/* --oj-icon-circle-xs-font-size:              1rem; */
+/* --oj-icon-circle-sm-font-size:              1.5rem; */
+/* --oj-icon-circle-md-font-size:              2rem; */
+/* --oj-icon-circle-lg-font-size:              2.25rem; */
+/* --oj-icon-circle-xl-font-size:              3.5rem; */
+/* --oj-icon-circle-xxl-font-size:             4.5rem; */
+
+/* --oj-icon-circle-green:                     transparent; */
+/* --oj-icon-circle-purple:                    transparent; */
+/* --oj-icon-circle-red:                       transparent; */
+/* --oj-icon-circle-teal:                      transparent; */
+/* --oj-icon-circle-orange:                    transparent; */
+/* --oj-icon-circle-forest:                    transparent; */
+/* --oj-icon-circle-mauve:                     transparent; */
+}
+:root {
+/* ConveyorBelt               */
+/* -------------------------- */
+/* --oj-conveyor-belt-box-shadow-width: 0.25rem; */
+}
+:root {
+/* FilmStrip                  */
+/* -------------------------- */
+/* --oj-film-strip-arrow-opacity:                1; */
+/* --oj-film-strip-arrow-border-radius:          var(--oj-button-border-radius); */
+}
+:root {
+/* Popup                      */
+/* -------------------------- */
+
+/* --oj-popup-bg-color:                 var(--oj-palette-neutral-0); */
+/* --oj-popup-border-width:             1px; */
+/* --oj-popup-border-color:             var(--oj-palette-neutral-50); */
+/* --oj-popup-border-radius:            var(--oj-core-border-radius-sm); */
+/* --oj-popup-box-shadow:               var(--oj-core-box-shadow-sm); */
+/* --oj-popup-content-padding:          0.5rem; */
+
+/* --oj-popup-tail-border-color:       var(--oj-palette-neutral-50); */
+/* --oj-popup-tail-border-width:       1px; */
+/* --oj-popup-tail-bg-color:           var(--oj-palette-neutral-0); */
+/* --oj-popup-tail-box-shadow:         var(--oj-core-box-shadow-md); */
+/* --oj-popup-tail-simple-height:      10px; */
+/* --oj-popup-tail-simple-width:       10px; */
+}
+:root {
+/* Dialog */
+/*--------*/
+
+/* --oj-dialog-box-shadow:               var(--oj-core-box-shadow-sm); */
+/* --oj-dialog-border-color:             rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-lowest)); */
+/* --oj-dialog-border-radius:            6px; */
+/* --oj-dialog-border-width:             1px; */
+/* --oj-dialog-bg-color:                 var(--oj-palette-neutral-0); */
+/* --oj-dialog-close-icon-button-margin: 0 var(--oj-button-icon-only-padding); */
+
+/* --oj-dialog-header-bg-color:          transparent; */
+/* --oj-dialog-header-bg-image:          none; */
+/* --oj-dialog-header-border-color:      transparent; */
+/* --oj-dialog-header-text-color:        var(--oj-core-text-color-primary); */
+/* --oj-dialog-header-font-size:         var(--oj-typography-heading-xs-font-size); */
+/* --oj-dialog-header-line-height:       var(--oj-typography-heading-xs-line-height); */
+/* --oj-dialog-header-font-weight:       var(--oj-typography-heading-xs-font-weight); */
+/* --oj-dialog-header-padding-top:       2rem; */
+/* --oj-dialog-header-padding-side:      2rem; */
+/* --oj-dialog-header-padding-bottom:    0.75rem; */
+
+/* --oj-dialog-body-padding:             0 var(--oj-dialog-header-padding-side) 1rem var(--oj-dialog-header-padding-side); */
+/* --oj-dialog-body-text-align:          start; */
+
+/* --oj-dialog-footer-button-height:     var(--oj-button-height); */
+/* --oj-dialog-footer-button-font-weight: var(--oj-button-font-weight); */
+/* --oj-dialog-footer-divider-color:     var(--oj-palette-neutral-100); */
+/* --oj-dialog-footer-padding:           1rem var(--oj-dialog-header-padding-side) 2rem var(--oj-dialog-header-padding-side); */
+}
+:root {
+/* filePicker                 */
+/* -------------------------- */
+/* --oj-file-picker-bg-color:                  var(--oj-palette-neutral-0); */
+/* --oj-file-picker-border-color:              var(--oj-palette-neutral-190); */
+/* --oj-file-picker-border-width:              1px; */
+/* --oj-file-picker-border-radius:             8px; */
+/* --oj-file-picker-border-style:              dashed; */
+/* --oj-file-picker-primary-text-color:        var(--oj-core-text-color-primary); */
+/* --oj-file-picker-primary-text-font-size:    var(--oj-typography-subheading-sm-font-size); */
+/* --oj-file-picker-primary-text-font-weight:  var(--oj-typography-subheading-sm-font-weight); */
+/* --oj-file-picker-primary-text-line-height:  var(--oj-typography-subheading-sm-line-height); */
+/* --oj-file-picker-secondary-text-color:        var(--oj-core-text-color-secondary); */
+/* --oj-file-picker-secondary-text-font-size:    var(--oj-typography-body-sm-font-size); */
+/* --oj-file-picker-secondary-text-font-weight:  normal; */
+/* --oj-file-picker-secondary-text-line-height:  var(--oj-typography-body-sm-line-height); */
+
+/* --oj-file-picker-padding:                  24px; */
+
+/* --oj-file-picker-bg-color-hover:            var(--oj-core-bg-color-hover); */
+
+/* active */
+/* --oj-file-picker-bg-color-active:           var(--oj-core-bg-color-active); */
+
+/* --oj-file-picker-border-color-error:        var(--oj-palette-danger-70); */
+
+/* --oj-file-picker-bg-color-disabled:         rgba(var(--oj-palette-neutral-rgb-50), var(--oj-palette-opacity-low)); */
+/* --oj-file-picker-border-color-disabled:     transparent; */
+}
+:root {
+/* MasonryLayout              */
+/* -------------------------- */
+/* --oj-masonry-layout-tile-margin:   var(--oj-core-spacing-2x);  // margin around a masonryLayout tile */
+/* --oj-masonry-layout-tile-width:    10rem;                 // width of a 1x1 masonryLayout tile, not including margin */
+/* --oj-masonry-layout-tile-height:   10rem;                 // height of a 1x1 masonryLayout tile, not including margin */
+}
+:root {
+/* Navigation List            */
+/* -------------------------- */
+
+/* --oj-navigation-list-category-divider-color:             var(--oj-core-divider-color); */
+/* --oj-navigation-list-icon-only-icon-start-end-padding:   1.6875rem; */
+/* --oj-navigation-list-horizontal-icon-margin:             0; */
+/* --oj-navigation-list-horizontal-font-size:               var(--oj-typography-body-md-font-size); */
+/* --oj-navigation-list-horizontal-font-weight:             600; */
+/* --oj-navigation-list-vertical-font-size:                 var(--oj-typography-body-md-font-size); */
+/* --oj-navigation-list-vertical-font-weight:               500; */
+
+/* --oj-navigation-list-sliding-header-font-size:           var(--oj-typography-body-md-font-size); */
+/* --oj-navigation-list-sliding-header-font-weight:         var(--oj-typography-subheading-sm-font-weight); */
+/* --oj-navigation-list-sliding-header-line-height:         var(--oj-typography-body-md-line-height); */
+
+/* --oj-navigation-list-icon-to-text-padding:               0.5rem; */
+/* --oj-navigation-list-horizontal-icon-to-text-padding:    0.5rem; */
+
+/* Navigation List Item level variables */
+/* --oj-navigation-list-item-min-height:                    3rem; */
+/* --oj-navigation-list-horizontal-item-min-height:         3rem; */
+
+/* --oj-navigation-list-item-label-text-wrap:               nowrap; */
+/* --oj-navigation-list-item-border-width-top:              0; */
+/* --oj-navigation-list-item-border-width-right:            0; */
+/* --oj-navigation-list-item-border-width-bottom:           0.1875rem; */
+/* --oj-navigation-list-item-border-width-left:             0.1875rem; */
+/* --oj-navigation-list-item-start-end-padding:             1.5rem; */
+
+/* --oj-navigation-list-item-icon-only-border-width-top:    0; */
+/* --oj-navigation-list-item-icon-only-border-width-right:  0; */
+/* --oj-navigation-list-item-icon-only-border-width-bottom: 0; */
+/* --oj-navigation-list-item-icon-only-border-width-left:   0.1875rem; */
+
+/* --oj-navigation-list-horizontal-item-margin:             2rem; */
+/* --oj-navigation-list-vertical-item-margin:               0; */
+/* --oj-navigation-list-vertical-item-icon-only-margin:     0; */
+/* --oj-navigation-list-horizontal-item-icon-only-margin:   2rem; */
+
+/* --oj-navigation-list-horizontal-item-border-width:       0 0 0.1875rem 0; */
+
+/* --oj-navigation-list-horizontal-item-padding:            0; */
+/* --oj-navigation-list-horizontal-item-stacked-min-height: 2.75rem; */
+/* --oj-navigation-list-horizontal-item-stacked-padding:    0; */
+
+/* default */
+/* --oj-navigation-list-item-label-color-default:               var(--oj-core-text-color-secondary); */
+/* --oj-navigation-list-horizontal-item-label-color-default:    var(--oj-navigation-list-item-label-color-default); */
+/* --oj-navigation-list-item-icon-color-default:                var(--oj-core-text-color-secondary); */
+/* --oj-navigation-list-horizontal-item-icon-color-default:     var(--oj-core-text-color-secondary); */
+/* --oj-navigation-list-horizontal-item-divider-color:          var(--oj-core-divider-color); */
+/* --oj-navigation-list-collapsible-icon-color-default:         var(--oj-navigation-list-item-icon-color-default); */
+
+/* hover */
+/* --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary); */
+/* --oj-navigation-list-item-bg-color-hover:                    rgba(var(--oj-palette-neutral-rgb-190), 0.04); */
+/* --oj-navigation-list-item-border-color-hover:                transparent; */
+/* --oj-navigation-list-item-icon-color-hover:                  var(--oj-icon-color); */
+/* --oj-navigation-list-item-icon-only-bg-color-hover:          var(--oj-navigation-list-item-bg-color-hover); */
+
+/* selected */
+/* --oj-navigation-list-item-bg-color-selected:                 rgba(var(--oj-palette-neutral-rgb-190), 0.06); */
+/* --oj-navigation-list-horizontal-item-bg-color-selected:      transparent; */
+/* --oj-navigation-list-item-border-color-selected:             var(--oj-palette-brand-110); */
+/* --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary); */
+/* --oj-navigation-list-horizontal-item-label-color-selected:   var(--oj-core-text-color-primary); */
+/* --oj-navigation-list-item-icon-color-selected:               var(--oj-icon-color); */
+/* --oj-navigation-list-horizontal-item-icon-color-selected:    var(--oj-icon-color); */
+/* --oj-navigation-list-item-icon-only-bg-color-selected:       transparent; */
+/* --oj-navigation-list-icon-only-icon-color-selected:          var(--oj-icon-color); */
+
+/* focus */
+/* --oj-navigation-list-item-outline-color-focus:               var(--oj-palette-neutral-170); */
+
+/* disabled */
+/* --oj-navigation-list-item-label-color-disabled:              var(--oj-core-text-color-disabled); */
+/* --oj-navigation-list-icon-color-disabled:                    var(--oj-icon-color-disabled); */
+
+/* contrast default */
+/* --oj-navigation-list-item-contrast-label-color-default:      var(--oj-palette-neutral-60); */
+
+/* contrast hover */
+/* --oj-navigation-list-item-contrast-bg-color-hover:           var(--oj-palette-neutral-180); */
+/* --oj-navigation-list-item-contrast-label-color-hover:        var(--oj-palette-neutral-20); */
+
+/* contrast selected */
+/* --oj-navigation-list-item-contrast-bg-color-selected:              var(--oj-palette-neutral-180); */
+/* --oj-navigation-list-horizontal-item-contrast-bg-color-selected:   var(--oj-palette-neutral-180); */
+/* --oj-navigation-list-item-contrast-label-color-selected:           var(--oj-palette-neutral-20); */
+/* --oj-navigation-list-horizontal-item-contrast-label-color-selected: var(--oj-palette-neutral-20); */
+
+/* contrast disabled */
+/* --oj-navigation-list-item-contrast-label-color-disabled:     var(--oj-palette-neutral-110); */
+}
+:root {
+/* Tab Bar                    */
+/* -------------------------- */
+
+/* --oj-tab-bar-category-divider-color:              var(--oj-core-divider-color); */
+
+/* --oj-tab-bar-border-radius-top-left:              0; */
+/* --oj-tab-bar-border-radius-top-right:             0; */
+/* --oj-tab-bar-border-radius-bottom-left:           0; */
+/* --oj-tab-bar-border-radius-bottom-right:          0; */
+
+/* --oj-tab-bar-icon-only-icon-start-end-padding:    1.5rem; */
+
+/* --oj-tab-bar-icon-to-text-padding:                0.5rem; */
+/* --oj-tab-bar-horizontal-icon-to-text-padding:     0.5rem; */
+/* --oj-tab-bar-horizontal-item-stacked-icon-to-text-padding: 0.5rem; */
+
+/* --oj-tab-bar-horizontal-icon-margin:              0; */
+
+/* Tab Bar Item level variables */
+/* --oj-tab-bar-vertical-item-start-end-padding:     1.5rem; */
+/* --oj-tab-bar-item-label-text-wrap:                nowrap; */
+/* --oj-tab-bar-item-truncated-label-min-width:      3rem; */
+/* --oj-tab-bar-item-margin:                         2rem; */
+
+/* --oj-tab-bar-item-icon-only-border-width-top:                 0; */
+/* --oj-tab-bar-horizontal-item-icon-only-border-width-top:      0; */
+/* --oj-tab-bar-item-icon-only-border-width-right:               0; */
+/* --oj-tab-bar-horizontal-item-icon-only-border-width-right:    0; */
+/* --oj-tab-bar-item-icon-only-border-width-bottom:              0; */
+/* --oj-tab-bar-horizontal-item-icon-only-border-width-bottom:   0.1875rem; */
+/* --oj-tab-bar-item-icon-only-border-width-left:                0.1875rem; */
+/* --oj-tab-bar-horizontal-item-icon-only-border-width-left:     0; */
+
+/* --oj-tab-bar-item-icon-only-margin:                           0; */
+/* --oj-tab-bar-horizontal-item-icon-only-margin:     	          0.25rem; */
+
+/* --oj-tab-bar-item-border-width-top:                           0; */
+/* --oj-tab-bar-horizontal-item-border-width-top:                0; */
+/* --oj-tab-bar-item-border-width-right:                         0; */
+/* --oj-tab-bar-horizontal-item-border-width-right:              0; */
+/* --oj-tab-bar-item-border-width-bottom:                        0px; */
+/* --oj-tab-bar-horizontal-item-border-width-bottom:             0.1875rem; */
+/* --oj-tab-bar-item-border-width-left:                          0.1875rem; */
+/* --oj-tab-bar-horizontal-item-border-width-left:               0; */
+
+/* --oj-tab-bar-vertical-item-min-height:                        3rem; */
+/* --oj-tab-bar-horizontal-item-min-height:                      3rem; */
+/* --oj-tab-bar-horizontal-item-icon-min-height:                 3rem; */
+/* --oj-tab-bar-horizontal-item-stacked-min-height:              5rem; */
+
+/* --oj-tab-bar-item-font-size:                                  var(--oj-typography-body-md-font-size); */
+/* --oj-tab-bar-item-line-height:                                var(--oj-typography-body-md-line-height); */
+/* --oj-tab-bar-horizontal-item-font-size:                       var(--oj-typography-body-md-font-size); */
+
+/* --oj-tab-bar-horizontal-item-padding:                         	0; */
+/* --oj-tab-bar-horizontal-item-stacked-padding:                 1rem 1rem 0; */
+
+/* default */
+/* --oj-tab-bar-item-font-weight-default:           600; */
+/* --oj-tab-bar-item-border-color:                  transparent; */
+/* --oj-tab-bar-horizontal-item-border-color:       transparent; */
+/* --oj-tab-bar-item-icon-color-default:            var(--oj-core-text-color-secondary); */
+/* --oj-tab-bar-item-label-color-default:           var(--oj-core-text-color-secondary); */
+
+/* --oj-tab-bar-item-divider-color:                 var(--oj-core-divider-color); */
+/* --oj-tab-bar-horizontal-item-divider-color:      var(--oj-tab-bar-item-divider-color); */
+
+/* hover */
+/* --oj-tab-bar-item-label-color-hover:             var(--oj-core-text-color-primary); */
+/* --oj-tab-bar-horizontal-item-label-color-hover:  var(--oj-core-text-color-primary); */
+/* --oj-tab-bar-item-bg-color-hover:                transparent; */
+/* --oj-tab-bar-item-border-color-hover:            transparent; */
+/* --oj-tab-bar-horizontal-item-border-color-hover: var(--oj-tab-bar-item-border-color-hover); */
+/* --oj-tab-bar-item-icon-only-bg-color-hover:      var(--oj-tab-bar-item-bg-color-hover); */
+/* --oj-tab-bar-item-icon-color-hover:              var(--oj-button-borderless-chrome-text-color-hover); */
+
+/* active */
+/* --oj-tab-bar-item-bg-color-active:               transparent; */
+/* --oj-tab-bar-item-border-color-active:           var(--oj-palette-brand-70); */
+
+/* selected */
+/* --oj-tab-bar-item-font-weight-selected:             500; */
+/* --oj-tab-bar-item-label-color-selected:             var(--oj-core-text-color-primary); */
+/* --oj-tab-bar-horizontal-item-label-color-selected:  var(--oj-tab-bar-item-label-color-selected); */
+/* --oj-tab-bar-item-icon-color-selected:              var(--oj-icon-color); */
+/* --oj-tab-bar-horizontal-item-icon-color-selected:   var(--oj-tab-bar-item-icon-color-selected); */
+/* --oj-tab-bar-item-bg-color-selected:                transparent; */
+/* --oj-tab-bar-horizontal-item-bg-color-selected:     transparent; */
+/* --oj-tab-bar-item-border-color-selected:            var(--oj-palette-brand-110); */
+/* --oj-tab-bar-horizontal-item-border-color-selected: var(--oj-tab-bar-item-border-color-selected); */
+/* --oj-tab-bar-item-icon-only-bg-color-selected:      transparent; */
+/* --oj-tab-bar-icon-only-icon-color-selected:         var(--oj-icon-color); */
+
+/* focus */
+/* --oj-tab-bar-item-outline-color-focus:              var(--oj-palette-neutral-170); */
+
+/* disabled*/
+/* --oj-tab-bar-item-label-color-disabled:             var(--oj-core-text-color-disabled); */
+/* --oj-tab-bar-icon-color-disabled:                   var(--oj-icon-color-disabled); */
+
+/* contrast default */
+/* --oj-tab-bar-item-contrast-label-color-default:     var(--oj-palette-neutral-60); */
+
+/* contrast hover */
+/* --oj-tab-bar-item-contrast-label-color-hover:       var(--oj-palette-neutral-20); */
+/* --oj-tab-bar-item-contrast-bg-color-hover:          var(--oj-palette-neutral-180); */
+
+/* contrast selected */
+/* --oj-tab-bar-item-contrast-label-color-selected:             var(--oj-palette-neutral-20); */
+/* --oj-tab-bar-item-contrast-bg-color-selected:                transparent; */
+/* --oj-tab-bar-horizontal-item-contrast-label-color-selected:  var(--oj-palette-neutral-20); */
+/* --oj-tab-bar-horizontal-item-contrast-bg-color-selected:     transparent; */
+
+/* contrast disabled */
+/* --oj-tab-bar-item-contrast-label-color-disabled:             var(--oj-palette-neutral-110); */
+
+/* contrast active */
+/* --oj-tab-bar-item-contrast-bg-color-active:              var(--oj-palette-neutral-180); */
+}
+:root {
+/* Progress Bar                  */
+/* -------------------------- */
+/* --oj-progress-bar-value-bg-color:                var(--oj-palette-neutral-190); */
+
+/* --oj-progress-bar-height:                        6px; */
+/* --oj-progress-bar-bg-color:                      var(--oj-palette-neutral-170); */
+/* --oj-progress-bar-bg-opacity:                    0.15; */
+/* --oj-progress-bar-border-style:                  none; */
+/* --oj-progress-bar-border-color:                  var(--oj-palette-neutral-50); */
+/* --oj-progress-bar-border-radius:                 3px; */
+/* --oj-progress-bar-indeterminate-overlay-width:   25%; */
+/* --oj-progress-bar-indeterminate-animation-duration: 2s; */
+}
+:root {
+/* Progress Circle                  */
+/* -------------------------- */
+
+/* --oj-progress-circle-value-bg-color:             var(--oj-palette-neutral-190); */
+/* --oj-progress-circle-sm-size:                    1.5rem; */
+/* --oj-progress-circle-md-size:                    3rem; */
+/* --oj-progress-circle-lg-size:                    6rem; */
+/* --oj-progress-circle-sm-border-width:            2px; */
+/* --oj-progress-circle-md-border-width:            0.25rem; */
+/* --oj-progress-circle-lg-border-width:            0.375rem; */
+/* --oj-progress-circle-indeterminate-rotation-duration: 1s; */
+/* --oj-progress-circle-indeterminate-animation-length-duration: 1.5s; */
+/* --oj-progress-circle-determinate-bg-opacity:     0.15; */
+/* --oj-progress-circle-determinate-bg-color:       var(--oj-palette-neutral-170); */
+}
+
+:root {
+/* Train                      */
+/* -------------------------- */
+/* --oj-train-step-width:                       7rem; */
+/* --oj-train-padding:                          0.75rem 0 0.75rem 0; */
+/* --oj-train-label-font-size:                  var(--oj-typography-body-sm-font-size); */
+/* --oj-train-label-font-weight:                bold; */
+/* --oj-train-label-padding-top:                0.75rem; */
+/* --oj-train-label-text-wrap:                  normal; */
+/* --oj-train-button-diameter:                  1.5rem; */
+/* --oj-train-button-font-size:                 var(--oj-typography-body-xs-font-size); */
+/* --oj-train-button-icon-diameter:             var(--oj-train-button-diameter); */
+/* --oj-train-button-text-is-numeric:           1; */
+/* --oj-train-button-connector-diameter:        var(--oj-train-button-diameter); */
+/* --oj-train-button-text-display:              inherit; */
+/* --oj-train-connector-height:                 2px; */
+
+/* --oj-train-button-bg-color:                  var(--oj-palette-neutral-0); */
+/* --oj-train-button-border-color:              rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-medium)); */
+/* --oj-train-button-border-width:              2px; */
+/* --oj-train-button-text-color:                var(--oj-core-text-color-secondary); */
+/* --oj-train-label-color:                      var(--oj-core-text-color-secondary); */
+/* --oj-train-connector-bg-color:               rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low)); */
+
+/* --oj-train-connector-has-fill:               0; */
+/* --oj-train-individual-connector-padding:     0.625rem; */
+
+/* visited */
+/* --oj-train-button-bg-color-visited:          var(--oj-palette-success-110); */
+/* --oj-train-button-border-color-visited:      transparent; */
+/* --oj-train-button-text-color-visited:        var(--oj-core-text-color-primary-contrast); */
+/* --oj-train-button-animation-visited:         trainvisited var(--oj-animation-duration-medium) var(--oj-animation-ease-in-out); */
+/* --oj-train-button-text-display-visited:      inherit; */
+/* --oj-train-label-color-visited:              var(--oj-core-text-color-primary); */
+/* --oj-train-icon-display-visited:             none; */
+
+/* hover */
+/* --oj-train-button-bg-color-hover:            var(--oj-palette-neutral-0); */
+/* --oj-train-button-border-color-hover:        rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-medium)); */
+/* --oj-train-button-text-color-hover:          rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-medium)); */
+/* --oj-train-step-bg-color-hover:              var(--oj-core-bg-color-hover); */
+/* --oj-train-step-border-radius-hover:         0.5rem; */
+
+/* active */
+/* --oj-train-button-bg-color-active:           var(--oj-palette-neutral-190); */
+/* --oj-train-button-border-color-active:       var(--oj-palette-neutral-190); */
+/* --oj-train-button-text-color-active:         var(--oj-palette-neutral-0); */
+/* --oj-train-button-transform-active:          scale(0.8); */
+/* --oj-train-button-animation-active:          var(--oj-animation-duration-long) var(--oj-animation-ease-in-out); */
+/* --oj-train-label-text-decoration-active:     none; */
+/* --oj-train-label-font-weight-active:         bold; */
+/* --oj-train-step-bg-color-active:             var(--oj-core-bg-color-active); */
+
+/* selected */
+/* --oj-train-button-bg-color-selected:         var(--oj-palette-neutral-190); */
+/* --oj-train-button-border-color-selected:     var(--oj-palette-neutral-190); */
+/* --oj-train-button-text-color-selected:       var(--oj-palette-neutral-0); */
+/* --oj-train-button-transform-selected:        scale(1); */
+/* --oj-train-button-animation-selected:        var(--oj-animation-duration-long) var(--oj-animation-ease-in-out); */
+/* --oj-train-label-font-weight-selected:       bold; */
+/* --oj-train-label-color-selected:             var(--oj-core-text-color-primary); */
+/* --oj-train-continuous-connector-bg-color-selected: transparent; */
+/* --oj-train-individual-connector-bg-color-selected: rgba(var(--oj-palette-neutral-rgb-190),var(--oj-palette-opacity-low)); */
+/* --oj-train-individual-connector-padding-selected: 0px; */
+
+/* disabled */
+/* --oj-train-button-bg-color-disabled:         var(--oj-palette-neutral-0); */
+/* --oj-train-button-border-color-disabled:     rgba(var(--oj-palette-brand-rgb-160),var(--oj-palette-opacity-lowest)); */
+/* --oj-train-button-text-color-disabled:       var(--oj-train-button-border-color-disabled); */
+/* --oj-train-button-opacity-disabled:          1; */
+/* --oj-train-label-color-disabled:             var(--oj-train-button-border-color-disabled); */
+
+/* messaging */
+/* --oj-train-button-connector-bg-color:        transparent; */
+/* --oj-train-button-messaging-bg-color:        var(--oj-palette-neutral-0); */
+/* --oj-train-button-messaging-icon-animation:  messaging var(--oj-animation-duration-medium) var(--oj-animation-ease-in-out); */
+
+/* --oj-train-button-error-icon-color:          var(--oj-palette-danger-100); */
+/* --oj-train-button-warning-icon-color:        var(--oj-palette-warning-100); */
+/* --oj-train-button-info-icon-color:           var(--oj-palette-neutral-190); */
+/* --oj-train-button-confirmation-icon-color:   var(--oj-palette-success-110); */
+/* --oj-train-icon-font-size:                   unset; */
+}
+:root {
+/* tooltip                      */
+/* -------------------------- */
+/* --oj-tooltip-text-color:    var(--oj-palette-neutral-0); */
+/* --oj-tooltip-bg-color:      var(--oj-palette-neutral-170); */
+/* --oj-tooltip-font-size:     var(--oj-typography-body-xs-font-size); */
+/* --oj-tooltip-padding:       var(--oj-core-spacing-2x); */
+/* --oj-tooltip-border-radius: var(--oj-core-border-radius-lg); */
+/* --oj-tooltip-line-height:   var(--oj-typography-body-xs-line-height); */
+/* --oj-tooltip-border-color:      var(--oj-palette-neutral-170); */
+}
+:root {
+/* dvt                        */
+/* -------------------------- */
+/* --oj-dvt-category-color-1:          var(--oj-palette-dvt-1); */
+/* --oj-dvt-category-color-2:          var(--oj-palette-dvt-2); */
+/* --oj-dvt-category-color-3:          var(--oj-palette-dvt-3); */
+/* --oj-dvt-category-color-4:          var(--oj-palette-dvt-4); */
+/* --oj-dvt-category-color-5:          var(--oj-palette-dvt-5); */
+/* --oj-dvt-category-color-6:          var(--oj-palette-dvt-6); */
+/* --oj-dvt-category-color-7:          var(--oj-palette-dvt-7); */
+/* --oj-dvt-category-color-8:          var(--oj-palette-dvt-8); */
+/* --oj-dvt-category-color-9:          var(--oj-palette-dvt-9); */
+/* --oj-dvt-category-color-10:         var(--oj-palette-dvt-10); */
+/* --oj-dvt-category-color-11:         var(--oj-palette-dvt-11); */
+/* --oj-dvt-category-color-12:         var(--oj-palette-dvt-12); */
+
+/* --oj-dvt-animation-duration:               var(--oj-animation-duration-xlong); */
+
+/* --oj-dvt-datatip-bg-color:                 var(--oj-palette-neutral-0); */
+/* --oj-dvt-datatip-padding:                  .5rem; */
+/* --oj-dvt-datatip-border-radius:            2px; */
+/* --oj-dvt-datatip-border-color:             var(--oj-palette-neutral-20); */
+/* --oj-dvt-datatip-outline-border:           none; */
+/* --oj-dvt-datatip-text-color:               var(--oj-core-text-color-primary); */
+/* --oj-dvt-datatip-label-color:              var(--oj-core-text-color-secondary); */
+/* --oj-dvt-datatip-value-color:              var(--oj-core-text-color-primary); */
+/* --oj-dvt-datatip-font-size:                var(--oj-typography-body-xs-font-size); */
+/* --oj-dvt-datatip-line-height:              var(--oj-typography-body-xs-line-height); */
+
+/* --oj-dvt-item-outer-border-color-selected: var(--oj-palette-neutral-190); */
+/* --oj-dvt-item-inner-border-color-selected: var(--oj-palette-neutral-0); */
+
+/* --oj-dvt-no-data-message-color:            var(--oj-core-text-color-secondary); */
+/* --oj-dvt-no-data-message-font-size:        var(--oj-typography-body-xs-font-size); */
+
+/* --oj-dvt-marquee-color:                    rgba(var(--oj-palette-neutral-rgb-20), var(--oj-palette-opacity-lowest)); */
+/* --oj-dvt-marquee-border-color:             rgba(var(--oj-palette-neutral-rgb-190), 0.8); */
+/* outline buttons may appear on top of other graphical elements in data visualizations
+so providing a solic background to ensure the icons are legible */
+/* --oj-dvt-button-outlined-bg-color:         var(--oj-body-bg-color); */
+}
+:root {
+/* chart                      */
+/* -------------------------- */
+/* --oj-chart-axis-title-text-color:         var(--oj-core-text-color-secondary); */
+/* --oj-chart-axis-title-font-size:          var(--oj-typography-body-2xs-font-size); */
+/* --oj-chart-axis-tick-label-text-color:    var(--oj-core-text-color-secondary); */
+/* --oj-chart-axis-tick-label-font-size:     var(--oj-typography-body-2xs-font-size); */
+/* --oj-chart-animation-rising-icon-color:      var(--oj-palette-info-90); */
+/* --oj-chart-animation-falling-icon-color:    var(--oj-palette-danger-90); */
+/* --oj-chart-animation-marker-color:   var(--oj-palette-neutral-20); */
+/* --oj-chart-data-label-font-size:   var(--oj-typography-body-2xs-font-size); */
+/* --oj-chart-stack-label-font-size:   var(--oj-typography-body-2xs-font-size); */
+
+/* stock charts */
+/* --oj-chart-stock-falling-bg-color:  var(--oj-palette-dvt-11); */
+/* --oj-chart-stock-range-bg-color:    var(--oj-palette-neutral-100); */
+/* --oj-chart-stock-rising-bg-color:   var(--oj-palette-dvt-2); */
+}
+:root {
+/* diagram                    */
+/* -------------------------- */
+/* --oj-diagram-node-border-color-hover:              var(--oj-palette-neutral-120); */
+
+/* --oj-diagram-link-color:                           var(--oj-palette-neutral-120); */
+/* --oj-diagram-link-padding:                         10px; */
+/* --oj-diagram-link-border-color-hover:              var(--oj-diagram-link-color); */
+/* --oj-diagram-overview-padding:                      0px; */
+/* --oj-diagram-overview-content-padding:              10px; */
+/* --oj-diagram-overview-bg-color:                     var(--oj-palette-neutral-50); */
+/* --oj-diagram-overview-window-bg-color:              var(--oj-palette-neutral-0); */
+/* --oj-diagram-overview-window-border-color:          var(--oj-palette-neutral-170); */
+/* --oj-diagram-overview-node-bg-color:                var(--oj-palette-neutral-170); */
+/* --oj-diagram-node-label-font-size:                  var(--oj-typography-body-2xs-font-size); */
+/* --oj-diagram-link-label-font-size:                  var(--oj-typography-body-2xs-font-size); */
+}
+:root {
+/* gantt                      */
+/* -------------------------- */
+/* --oj-gantt-bg-color:                                 var(--oj-collection-bg-color); */
+/* --oj-gantt-border-color:                             var(--oj-collection-border-color); */
+/* --oj-gantt-empty-text-color:                         var(--oj-dvt-no-data-message-color); */
+/* --oj-gantt-horizontal-gridline-color:                var(--oj-collection-cell-border-color); */
+/* --oj-gantt-vertical-gridline-color:                  var(--oj-palette-neutral-100); */
+/* --oj-gantt-dependency-line-color:                    var(--oj-palette-neutral-100); */
+/* --oj-gantt-summary-bg-color:                         var(--oj-palette-neutral-160); */
+/* --oj-gantt-milestone-bg-color:                       var(--oj-palette-neutral-100); */
+/* --oj-gantt-row-bg-color:                             var(--oj-collection-cell-bg-color); */
+/* --oj-gantt-reference-object-color:                   var(--oj-palette-danger-100); */
+/* --oj-gantt-dependency-line-width:                    2; */
+
+/* --oj-gantt-task-label-color:                         var(--oj-core-text-color-primary); */
+/* --oj-gantt-task-bg-color:                            var(--oj-palette-dvt-1); */
+/* --oj-gantt-task-progress-bg-color:                   var(--oj-palette-dvt-1); */
+/* --oj-gantt-baseline-bg-color:                        var(--oj-palette-neutral-160); */
+/* --oj-gantt-baseline-bar-bg-color:                    var(--oj-palette-neutral-160); */
+/* --oj-gantt-task-border-color-selected:               var(--oj-dvt-item-outer-border-color-selected); */
+/* --oj-gantt-task-drag-image-border-color:             var(--oj-palette-neutral-180); */
+
+/* --oj-gantt-major-axis-bg-color:                      var(--oj-collection-header-bg-color); */
+/* --oj-gantt-major-axis-border-color:                  var(--oj-collection-header-border-color); */
+/* --oj-gantt-major-axis-label-color:                   var(--oj-core-text-color-secondary); */
+/* --oj-gantt-major-axis-separator-color:               var(--oj-core-divider-color); */
+/* --oj-gantt-major-axis-label-font-size:               var(--oj-typography-body-xs-font-size); */
+/* --oj-gantt-major-axis-label-font-weight:             bold; */
+
+/* --oj-gantt-minor-axis-bg-color:                      var(--oj-gantt-major-axis-bg-color); */
+/* --oj-gantt-minor-axis-border-color:                  var(--oj-gantt-major-axis-border-color); */
+/* --oj-gantt-minor-axis-label-color:                   var(--oj-core-text-color-secondary); */
+/* --oj-gantt-minor-axis-separator-color:               var(--oj-gantt-major-axis-separator-color); */
+/* --oj-gantt-minor-axis-label-font-size:               var(--oj-typography-body-xs-font-size); */
+/* --oj-gantt-minor-axis-label-font-weight:             normal; */
+}
+:root {
+/* gauge               */
+/* -------------------------- */
+/* --oj-gauge-threshold-color-1:                  var(--oj-palette-danger-120); */
+/* --oj-gauge-threshold-color-2:                  var(--oj-palette-warning-70); */
+/* --oj-gauge-threshold-color-3:                  var(--oj-palette-success-90); */
+
+/* --oj-rating-gauge-border-color-hover:          var(--oj-rating-gauge-border-color-selected); */
+/* --oj-rating-gauge-color-hover:                 var(--oj-rating-gauge-color-selected); */
+
+/* --oj-rating-gauge-border-color-unselected:     var(--oj-palette-neutral-190); */
+/* --oj-rating-gauge-color-unselected:            transparent; */
+
+/* --oj-rating-gauge-border-color-selected:       var(--oj-palette-neutral-190); */
+/* --oj-rating-gauge-color-selected:              var(--oj-palette-neutral-190); */
+
+/* --oj-rating-gauge-border-color-changed:        var(--oj-rating-gauge-border-color-selected); */
+/* --oj-rating-gauge-color-changed:               var(--oj-rating-gauge-color-selected); */
+
+/* --oj-rating-gauge-color-selected-disabled:              rgba(var(--oj-palette-neutral-rgb-190), 0.3); */
+/* --oj-rating-gauge-border-color-selected-disabled:       transparent; */
+
+/* --oj-rating-gauge-color-unselected-disabled:            rgba(var(--oj-palette-neutral-rgb-190), 0.1); */
+/* --oj-rating-gauge-border-color-unselected-disabled:     transparent; */
+}
+:root {
+/* --oj-legend-section-title-font-size:   var(--oj-typography-body-2xs-font-size); */
+/* --oj-legend-section-title-font-weight: 600; */
+/* --oj-legend-section-title-color:       var(--oj-core-text-color-primary); */
+
+/* --oj-legend-text-font-size:            var(--oj-typography-body-2xs-font-size); */
+/* --oj-legend-text-color:                var(--oj-core-text-color-primary); */
+}
+:root {
+/* n-box               */
+/* -------------------------- */
+/* --oj-n-box-cell-bg-color:            var(--oj-palette-neutral-0); */
+/* --oj-n-box-cell-bg-color-maximized:  var(--oj-palette-neutral-10); */
+/* --oj-n-box-cell-bg-color-minimized:  var(--oj-n-box-cell-bg-color); */
+/* --oj-n-box-cell-border-radius:       var(--oj-panel-border-radius); */
+/* --oj-n-box-cell-shadow:              var(--oj-panel-box-shadow-sm); */
+/* --oj-n-box-dialog-border-color:      var(--oj-palette-neutral-100); */
+/* --oj-n-box-node-bg-color:            var(--oj-palette-neutral-30); */
+/* --oj-n-box-node-border-radius:       4px; */
+}
+:root {
+/* picto chart                */
+/* -------------------------- */
+/* --oj-picto-chart-item-bg-color: rgba(var(--oj-palette-neutral-rgb-170),.15); */
+}
+:root {
+/* sunburst                   */
+/* -------------------------- */
+/* --oj-sunburst-drill-text-color:         var(--oj-link-text-color); */
+/* --oj-sunburst-node-border-color-hover:  var(--oj-palette-neutral-20); */
+/* --oj-sunburst-legend-label-color:    var(--oj-core-text-color-primary); */
+/* --oj-sunburst-label-font-size: var(--oj-typography-body-xs-font-size); */
+}
+:root {
+/* thematic map               */
+/* -------------------------- */
+/* --oj-thematic-map-bg-color:            var(--oj-palette-neutral-30); */
+/* --oj-thematic-map-border-color:        var(--oj-palette-neutral-50); */
+/* --oj-thematic-map-marker-bg-color:     var(--oj-palette-neutral-190); */
+/* --oj-thematic-map-marker-border-color: var(--oj-palette-neutral-190); */
+/* --oj-thematic-map-link-color:          var(--oj-palette-neutral-190); */
+/* --oj-thematic-map-marker-label-font-size: var(--oj-typography-body-2xs-font-size); */
+/* --oj-thematic-map-label-font-size:     var(--oj-typography-body-2xs-font-size); */
+}
+:root {
+/* timeaxis                   */
+/* -------------------------- */
+/* --oj-time-axis-bg-color:                transparent; */
+/* --oj-time-axis-border-color:            var(--oj-palette-neutral-50); */
+/* --oj-time-axis-label-color:             var(--oj-core-text-color-secondary); */
+/* --oj-time-axis-separator-color:         var(--oj-core-divider-color); */
+/* --oj-time-axis-label-font-size:         var(--oj-typography-body-xs-font-size); */
+}
+:root {
+/* timeline                   */
+/* -------------------------- */
+/* --oj-timeline-reference-object-color:                var(--oj-palette-danger-100); */
+/* --oj-timeline-border-color:                          var(--oj-palette-neutral-50); */
+
+/* --oj-timeline-item-bg-color:                         var(--oj-palette-neutral-0); */
+/* --oj-timeline-item-border-color:                     var(--oj-palette-neutral-160); */
+/* --oj-timeline-item-border-color-hover:               var(--oj-palette-brand-70); */
+/* --oj-timeline-item-border-color-selected:            var(--oj-dvt-item-outer-border-color-selected); */
+/* --oj-timeline-item-description-color:                var(--oj-core-text-color-primary); */
+/* --oj-timeline-item-title-color:                      var(--oj-core-text-color-secondary); */
+
+/* --oj-timeline-major-axis-label-color:                var(--oj-core-text-color-secondary); */
+/* --oj-timeline-major-axis-separator-color:            var(--oj-palette-neutral-100); */
+
+/* --oj-timeline-minor-axis-bg-color:                   var(--oj-palette-neutral-40); */
+/* --oj-timeline-minor-axis-border-color:               var(--oj-palette-neutral-50); */
+/* --oj-timeline-minor-axis-label-color:                var(--oj-core-text-color-primary); */
+/* --oj-timeline-minor-axis-separator-color:            var(--oj-timeline-major-axis-separator-color); */
+
+/* --oj-timeline-overview-bg-color:                     var(--oj-palette-neutral-50); */
+/* --oj-timeline-overview-label-color:                  var(--oj-core-text-color-secondary); */
+/* --oj-timeline-overview-window-bg-color:              var(--oj-palette-neutral-0); */
+/* --oj-timeline-overview-window-border-color:          var(--oj-palette-neutral-170); */
+
+/* --oj-timeline-series-bg-color:                       var(--oj-palette-neutral-20); */
+/* --oj-timeline-series-label-color:                    var(--oj-header-text-color); */
+/* --oj-timeline-series-empty-text-color:               var(--oj-dvt-no-data-message-color); */
+}
+:root {
+/* treemap                    */
+/* -------------------------- */
+/* --oj-treemap-node-border-color-hover:                var(--oj-palette-neutral-20); */
+/* --oj-treemap-node-header-bg-color:                   var(--oj-palette-neutral-20); */
+/* --oj-treemap-node-header-bg-color-selected:          var(--oj-palette-brand-40); */
+/* --oj-treemap-node-header-border-color:               var(--oj-palette-neutral-40); */
+/* --oj-treemap-node-header-border-color-hover:         var(--oj-palette-neutral-40); */
+
+/* --oj-treemap-drill-text-color:                       var(--oj-link-text-color); */
+/* --oj-treemap-legend-label-color:                     var(--oj-core-text-color-primary); */
+
+/* --oj-treemap-label-font-size:                        var(--oj-typography-body-2xs-font-size); */
+/* --oj-treemap-header-font-size:                       var(--oj-treemap-label-font-size); */
+}
+:root {
+/* Applayout                  */
+/* -------------------------- */
+/* --oj-app-layout-offcanvas-width:                   90%; */
+/* --oj-app-layout-offcanvas-max-width:               320px; */
+/* --oj-app-layout-max-width:                         1440px; */
+}
+:root {
+/* Applayout (Hybrid)         */
+/* -------------------------- */
+/* --oj-app-layout-hybrid-padding:                    1rem; */
+/* --oj-app-layout-hybrid-nav-bar-box-shadow:         none; */
+/* --oj-app-layout-hybrid-offcanvas-bg-color:         var(--oj-core-contrast-background-1-color); */
+
+/* header */
+/* --oj-app-layout-hybrid-header-title-text-color:    var(--oj-core-text-color-primary); */
+/* --oj-app-layout-hybrid-header-border-color:        var(--oj-core-divider-color); */
+/* --oj-app-layout-hybrid-header-border-bottom-width: 1px; */
+/* --oj-app-layout-hybrid-header-bg-color:            var(--oj-palette-neutral-0); */
+/* --oj-app-layout-hybrid-header-min-height:          56px; */
+/* --oj-app-layout-hybrid-header-box-shadow:          none; */
+/* --oj-app-layout-hybrid-header-title-font-size:     var(--oj-typography-body-xl-font-size); */
+/* --oj-app-layout-hybrid-header-title-font-weight:   500; */
+
+/* footer */
+/* --oj-app-layout-hybrid-footer-border-color:        var(--oj-app-layout-hybrid-header-border-color); */
+/* --oj-app-layout-hybrid-footer-border-top-width:    1px; */
+/* --oj-app-layout-hybrid-footer-bg-color:            var(--oj-app-layout-hybrid-header-bg-color); */
+/* --oj-app-layout-hybrid-footer-min-height:          48px; */
+}
+:root {
+/* Applayout (Web)            */
+/* -------------------------- */
+/* --oj-app-layout-web-padding:                       20px; */
+/* --oj-app-layout-web-offcanvas-bg-color:            var(--oj-core-contrast-background-1-color); */
+
+/* header */
+/* --oj-app-layout-web-header-bg-color:               var(--oj-palette-neutral-0); */
+/* --oj-app-layout-web-header-border-color:           var(--oj-core-divider-color); */
+/* --oj-app-layout-web-header-title-font-size:        var(--oj-typography-body-xl-font-size); */
+/* --oj-app-layout-web-header-title-font-weight:      500; */
+/* --oj-app-layout-web-header-title-text-color:       var(--oj-core-text-color-secondary); */
+/* --oj-app-layout-web-header-box-shadow:             none; */
+/* --oj-app-layout-web-header-min-height:             3.143rem; */
+
+/* footer */
+/* --oj-app-layout-web-footer-bg-color:               var(--oj-app-layout-web-header-bg-color); */
+/* --oj-app-layout-web-footer-border-color:           var(--oj-app-layout-web-header-border-color); */
+/* --oj-app-layout-web-footer-min-height:             3.571rem; */
+}
+

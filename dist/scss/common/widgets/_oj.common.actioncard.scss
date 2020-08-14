@@ -1,0 +1,119 @@
+// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.avatar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+//--------------------------------------------------------
+
+// include dependencies
+@if $includeActionCardClasses != false {
+  @include module-include-once("common.actioncard") {
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-action-card:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* Styling for card entrance animation during initial load */
+    .oj-actioncard-initial-entrance-animation {
+      animation-name: actioncard-initial-fade-in;
+      animation-duration: 0.3s;
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes actioncard-initial-fade-in {
+      0% {
+        visibility: visible;
+        opacity: 0;
+        transform: translateY(300px);
+      }
+      100% {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Styling for card exit animation when data changed */
+    .oj-actioncard-initial-exit-animation {
+      animation-name: actioncard-initial-fade-out;
+      animation-duration: 0.3s;
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes actioncard-initial-fade-out {
+      0% {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0px);
+      }
+      100% {
+        visibility: visible;
+        opacity: 0;
+        transform: translateY(300px);
+      }
+    }
+
+    /* Styling for card entrance animation during load more */
+    .oj-actioncard-loadmore-entrance-animation {
+      animation-name: actioncard-loadmore-fade-in;
+      animation-duration: 0.15s;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes actioncard-loadmore-fade-in {
+      0% {
+        visibility: visible;
+        opacity: 0;
+      }
+      100% {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+
+    .oj-actioncard {
+      display: inline-flex;
+      cursor: pointer;
+      transform: scale(1);
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: $mediumBoxShadow;
+      background-color: $actioncardBgColor;
+      border: 1px solid $panelBorderColor;
+      @include oj-border-radius($panelBorderRadius);
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .oj-actioncard:hover,
+    .oj-actioncard.oj-active {
+      transform: scale($actionCardScaleSizeHover);
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .oj-actioncard.oj-active {
+      box-shadow: $smallBoxShadow;
+    }
+
+    .oj-actioncard:hover:not(.oj-active),
+    .oj-actioncard:focus:not(.oj-active) {
+      box-shadow: $largeBoxShadow;
+    }
+
+    .oj-actioncard:not(.oj-focus-highlight):focus {
+      outline: none;
+    }
+  }
+}

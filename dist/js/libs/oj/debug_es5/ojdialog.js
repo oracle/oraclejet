@@ -1125,7 +1125,7 @@ var __oj_dialog_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
-       * @property {"open"|"close"} action The action that is starting the animation.<br><br>
+       * @property {"open"|"close"} action The action that triggers the animation.<br><br>
        *            The number of actions can vary from component to component.
        *            Suggested values are:
        *                    <ul>
@@ -1172,7 +1172,7 @@ var __oj_dialog_metadata =
        * @ojcancelable
        * @ojbubbles
        * @property {!Element} element target of animation
-       * @property {"open"|"close"} action The action that is ending the animation.<br><br>
+       * @property {"open"|"close"} action The action that triggered the animation.<br><br>
        *                   The number of actions can vary from component to component.
        *                   Suggested values are:
        *                    <ul>

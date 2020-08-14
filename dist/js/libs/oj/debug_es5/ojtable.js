@@ -13018,8 +13018,8 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
       // re-render the newly editable row
 
 
-      this._refreshRow(rowIdx, true).then(function () {
-        this._queueTask(function () {
+      this._queueTask(function () {
+        this._refreshRow(rowIdx, true).then(function () {
           // set focus on the column in the row
           this._setRowFocus(rowIdx, true, false);
 
@@ -16031,7 +16031,7 @@ Table.prototype.options = {
    * @instance
    * @ojbubbles
    * @ojcancelable
-   * @property {"add"|"remove"|"update"} action The action that starts the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {"add"|"remove"|"update"} action The action that triggers the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
    * @property {Element} element The target of animation. For row animations this will be the cell contents wrapped in a div.
    * @property {function():void} endCallback If the event listener calls event.preventDefault to cancel the default animation, it must call the endCallback function when it finishes its own animation handling and when any custom animation ends.
    */
@@ -16048,7 +16048,7 @@ Table.prototype.options = {
    * @instance
    * @ojbubbles
    * @ojcancelable
-   * @property {"add"|"remove"|"update"} action The action that started the animation.  See <a href="#animation-section">animation</a> section for a list of actions.
+   * @property {"add"|"remove"|"update"} action The action that triggered the animation.<br><br>See <a href="#animation-section">animation</a> section for a list of actions.
    * @property {Element} element The target of animation. For row animations this will be the cell contents wrapped in an HTML div element.
    */
   animateEnd: null,
@@ -19535,7 +19535,8 @@ oj.TableDndContext.prototype._hideUnselectedRows = function (tableContainerClone
     if (selectedRowIndex === -1) {
       row.style[Table.CSS_PROP._VISIBILITY] = Table.CSS_VAL._HIDDEN;
       row.style[Table.CSS_PROP._BORDER_COLOR] = Table.CSS_VAL._TRANSPARENT;
-      var cells = row.childNodes;
+
+      var cells = this.component._getTableElementsByClassName(row, Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS, true);
 
       for (j = 0; j < cells.length; j++) {
         cells[j].style[Table.CSS_PROP._BORDER_COLOR] = Table.CSS_VAL._TRANSPARENT;
@@ -19556,14 +19557,11 @@ oj.TableDndContext.prototype._hideUnselectedRows = function (tableContainerClone
   if (tableHeader != null && tableHeader.length > 0) {
     tableHeader[0].style[Table.CSS_PROP._VISIBILITY] = Table.CSS_VAL._HIDDEN;
     tableHeader[0].style[Table.CSS_PROP._BORDER_COLOR] = Table.CSS_VAL._TRANSPARENT;
-    var headerRow = tableHeader[0].childNodes[0];
 
-    if (headerRow != null) {
-      var headerCells = headerRow.childNodes;
+    var headerCells = this.component._getTableElementsByClassName(tableHeader[0], Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS, true);
 
-      for (i = 0; i < headerCells.length; i++) {
-        headerCells[i].style[Table.CSS_PROP._BORDER_COLOR] = Table.CSS_VAL._TRANSPARENT;
-      }
+    for (i = 0; i < headerCells.length; i++) {
+      headerCells[i].style[Table.CSS_PROP._BORDER_COLOR] = Table.CSS_VAL._TRANSPARENT;
     }
   }
 

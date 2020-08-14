@@ -1034,7 +1034,7 @@ var __oj_menu_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
-       * @property {"open"|"close"} action The action that is starting the animation.<br><br>
+       * @property {"open"|"close"} action The action that triggers the animation.<br><br>
        *            The number of actions can vary from element to element.
        *            Suggested values are:
        *                    <ul>
@@ -1087,7 +1087,7 @@ var __oj_menu_metadata =
        * @ojcancelable
        * @ojbubbles
        * @property {!Element} element target of animation
-       * @property {"open"|"close"} action The action that is ending the animation.<br><br>
+       * @property {"open"|"close"} action The action that triggered the animation.<br><br>
        *                   The number of actions can vary from element to element.
        *                   Suggested values are:
        *                    <ul>
@@ -1237,7 +1237,7 @@ var __oj_menu_metadata =
        * <p>Triggered when a menu item (other than the built-in <a href="#dismissal-section">"Cancel"</a> item) is selected.
        *
        * <p>To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen
-       * for this event.  Click listeners and <code class="prettyprint">href</code> navigation should not be used.
+       * for this event.  Click listeners should not be used.
        *
        * <p>To find the value of the menu item that triggered an action event, the event.target.value should be used.
        *
@@ -3139,7 +3139,10 @@ var __oj_menu_metadata =
       rootElement[0].style.maxHeight = '';
       rootElement[0].style.overflowY = '';
       rootElement.show();
-      position = this._checkBrowserVerticalScollBar(context, position);
+      // If the menu is dropdown, check if we need to re-calculate the position.
+      if (isDropDown) {
+        position = this._checkBrowserVerticalScollBar(context, position);
+      }
       // get menu height and launcher height before adjusting max height so we don't need to get it from every reposition call
       this.rootHeight = rootElement[0].offsetHeight;
       if (position.of.type === 'click') {
