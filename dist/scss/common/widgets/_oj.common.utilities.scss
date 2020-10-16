@@ -499,7 +499,34 @@
     .oj-bg-brand-30 {
       background-color: $brandColorLight3 !important;
     }
+    
 
+    .oj-line-clamp-1,
+    .oj-line-clamp-2,
+    .oj-line-clamp-3,
+    .oj-line-clamp-4 {
+      display: -webkit-box !important;
+      /* autoprefixer: ignore next */
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+    }
+     
+    .oj-line-clamp-1 {
+      -webkit-line-clamp: 1 !important;
+    }
+     
+    .oj-line-clamp-2 {
+      -webkit-line-clamp: 2 !important;
+    }
+     
+    .oj-line-clamp-3 {
+      -webkit-line-clamp: 3 !important;
+    }
+     
+    .oj-line-clamp-4 {
+      -webkit-line-clamp: 4 !important;
+    }
+  
 
   }
 }

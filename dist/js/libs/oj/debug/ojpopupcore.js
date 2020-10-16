@@ -3114,7 +3114,13 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
     if (!oj.StringUtils.isEmpty(message)) {
       var liveRegion = PopupLiveRegion._getLiveRegion();
       liveRegion.children().remove();
-      $('<div>').text(message).appendTo(liveRegion); // @HTMLUpdateOK the "messsage" comes from a
+      // JET-39406: Chrome does not read out messages inside aria-live.
+      // This inconsistency happenes may be due to the container is not getting add to the DOM long enough before the contents are changed
+      // After discuss with acc team, we decide to put a setTimeout here to resolve the issue. 20ms is the minimum delay time to make Chrome JAWS read out the content.
+      // We will need to revisit if the bug is not resolved on user side.
+      setTimeout(function () {
+        $('<div>').text(message).appendTo(liveRegion); // @HTMLUpdateOK the "messsage" comes from a
+      }, 20);
       // translated string that can be overridden by
       // an option on the ojPopup.  The jquery "text"
       // function will escape script.

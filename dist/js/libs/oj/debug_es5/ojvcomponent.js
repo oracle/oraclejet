@@ -2752,6 +2752,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojdefaultsutils', 'o
 
       VirtualElementBridge.__SetProperty(propNameFun, componentProps, property, _value);
     },
+    // Is this attribute one that gets moved off of the root element?
+    IsTransferAttribute: function IsTransferAttribute(element, attrName) {
+      var vcomp = element._vcomp;
+      var rootPropsMap = this._EXTENSION._ROOT_PROPS_MAP;
+      return vcomp && rootPropsMap && !!rootPropsMap[attrName];
+    },
+    // If this attribute has moved off of the root element, fetch it if possible.
+    // Only called if IsTransferAttribute() returns true
+    GetDescriptiveTransferAttributeValue: function GetDescriptiveTransferAttributeValue(attrName) {
+      var props = this._getVComponentProps();
+
+      return props[attrName];
+    },
     _mountCustomElement: function _mountCustomElement(element, vcomp, vprops, slotMap) {
       // Cache the slot content because custom elements don't support reslotting
       this._content = VirtualElementBridge._processSlotContent(element, slotMap); // Make a copy of the controlled props so we get a snapshot before mounting.

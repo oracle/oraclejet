@@ -218,10 +218,12 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
 
   OffcanvasUtils.tearDownPanToReveal(offcanvas); // remove touchstart listener
 
-  outerWrapper[0].removeEventListener('touchstart', outerWrapper._touchStartListener, {
-    passive: false
-  });
-  delete outerWrapper._touchStartListener;
+  if (outerWrapper != null && outerWrapper.length > 0) {
+    outerWrapper[0].removeEventListener('touchstart', outerWrapper._touchStartListener, {
+      passive: false
+    });
+    delete outerWrapper._touchStartListener;
+  }
 }; // -------------------- Styling start ----------------------------------
 
 /**

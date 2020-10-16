@@ -19912,24 +19912,11 @@ var DvtDataGridUtils = function (dataGrid) {
   this.scrollbarSize = -1;
   this.dataGrid = dataGrid;
 
-  var userAgent = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : null;
-
-  this.os = this._determineOS(userAgent);
-  this.platform = this._determinePlatform(userAgent);
+  let agentInfo = oj.AgentUtils.getAgentInfo();
+  this.os = agentInfo.os;
+  this.browser = agentInfo.browser;
+  this.engine = agentInfo.engine;
 };
-
-// Platform Constants
-DvtDataGridUtils.IE_PLATFORM = 'ie';
-DvtDataGridUtils.GECKO_PLATFORM = 'gecko';
-DvtDataGridUtils.WEBKIT_PLATFORM = 'webkit';
-DvtDataGridUtils.UNKNOWN_PLATFORM = 'unknown';
-DvtDataGridUtils.EDGE_PLATFORM = 'edge';
-
-// OS Constants
-DvtDataGridUtils.WINDOWS_OS = 'Windows';
-DvtDataGridUtils.SOLARIS_OS = 'Solaris';
-DvtDataGridUtils.MAC_OS = 'Mac';
-DvtDataGridUtils.UNKNOWN_OS = 'Unknown';
 
 /**
  * Get the maximum scrollable browser height
@@ -19958,8 +19945,8 @@ DvtDataGridUtils.prototype._getMaxDivWidthForScrolling = function () {
  */
 DvtDataGridUtils.prototype._setMaxValuesForScrolling = function () {
   // ie lets the value go forever without actual support, so we hard cap it at 1 million pixels
-  if (this.platform === DvtDataGridUtils.IE_PLATFORM ||
-      this.platform === DvtDataGridUtils.EDGE_PLATFORM) {
+  if (this.browser === oj.AgentUtils.BROWSER.IE ||
+      this.browser === oj.AgentUtils.BROWSER.EDGE) {
     this.m_maxDivHeightForScrolling = 1000000;
     this.m_maxDivWidthForScrolling = 1000000;
     return;
@@ -20010,13 +19997,11 @@ DvtDataGridUtils.prototype.getScrollbarSize = function () {
  */
 DvtDataGridUtils.prototype.isTouchDevice = function () {
   if (this.isTouch == null) {
-    var agentName = navigator.userAgent.toLowerCase();
-    if (agentName.indexOf('mobile') !== -1 || agentName.indexOf('android') !== -1) {
-      this.isTouch = true;
-    } else {
-      this.isTouch = false;
-    }
+    this.isTouch = this.os === oj.AgentUtils.OS.IOS ||
+      this.os === oj.AgentUtils.OS.ANDROID ||
+      this.os === oj.AgentUtils.OS.WINDOWSPHONE;
   }
+
   return this.isTouch;
 };
 
@@ -20144,7 +20129,7 @@ DvtDataGridUtils._getCSSClassNameIndex = function (currentClassName, className) 
  * @param {Event} event
  */
 DvtDataGridUtils.prototype.ctrlEquivalent = function (event) {
-  var isMac = (this.os === DvtDataGridUtils.MAC_OS);
+  var isMac = (this.os === oj.AgentUtils.OS.MAC);
   return (isMac ? event.metaKey : event.ctrlKey);
 };
 
@@ -20157,9 +20142,9 @@ DvtDataGridUtils.prototype.ctrlEquivalent = function (event) {
 DvtDataGridUtils.prototype.getElementScrollLeft = function (element) {
   if (this.dataGrid.getResources().isRTLMode()) {
     // see mozilla  scrollLeft property now returns negative values in rtl environment
-    if (this.platform === DvtDataGridUtils.GECKO_PLATFORM ||
-        this.platform === DvtDataGridUtils.IE_PLATFORM ||
-        this.platform === DvtDataGridUtils.EDGE_PLATFORM) {
+    if (this.browser === oj.AgentUtils.BROWSER.FIREFOX ||
+        this.browser === oj.AgentUtils.BROWSER.IE ||
+        this.browser === oj.AgentUtils.BROWSER.EDGE) {
       return Math.abs(element.scrollLeft);
     }
 
@@ -20181,12 +20166,12 @@ DvtDataGridUtils.prototype.getElementScrollLeft = function (element) {
  */
 DvtDataGridUtils.prototype.setElementScrollLeft = function (element, scrollLeft) {
   if (this.dataGrid.getResources().isRTLMode()) {
-    if (this.platform === DvtDataGridUtils.GECKO_PLATFORM) {
+    if (this.browser === oj.AgentUtils.BROWSER.FIREFOX) {
       // see mozilla  scrollLeft property now returns negative values in rtl environment
       // eslint-disable-next-line no-param-reassign
       element.scrollLeft = -scrollLeft;
-    } else if (this.platform === DvtDataGridUtils.IE_PLATFORM ||
-               this.platform === DvtDataGridUtils.EDGE_PLATFORM) {
+    } else if (this.browser === oj.AgentUtils.BROWSER.IE ||
+               this.browser === oj.AgentUtils.BROWSER.EDGE) {
       // eslint-disable-next-line no-param-reassign
       element.scrollLeft = scrollLeft;
     } else {
@@ -20203,53 +20188,6 @@ DvtDataGridUtils.prototype.setElementScrollLeft = function (element, scrollLeft)
   }
 };
 
-/**
- * Determines the operating system. This value should be cached to prevent costly calculations. This value should be
- * treated as a guess, as this code is copied from AdfAgent.guessOS().
- * @param {string|null} userAgent The lowercase user agent string, if available.
- * @return {string} The DvtDataGridUtils.***_OS constant describing the platform.
- * @private
- */
-DvtDataGridUtils.prototype._determineOS = function (userAgent) {
-  if (userAgent) {
-    if (userAgent.indexOf('win') !== -1) {
-      return DvtDataGridUtils.WINDOWS_OS;
-    } else if (userAgent.indexOf('mac') !== -1) {
-      return DvtDataGridUtils.MAC_OS;
-    } else if (userAgent.indexOf('sunos') !== -1) {
-      return DvtDataGridUtils.SOLARIS_OS;
-    }
-  }
-
-  return DvtDataGridUtils.UNKNOWN_OS;
-};
-
-/**
- * Determines the name of the platform. This value should be cached to prevent costly calculations.
- * Copied from DvtAgent (which itself is copied from AdfAgent)
- * @param {string|null} userAgent The lowercase user agent string, if available.
- * @return {string} The DvtDataGridUtils.***_PLATFORM constant describing the platform.
- * @private
- */
-DvtDataGridUtils.prototype._determinePlatform = function (userAgent) {
-  if (userAgent) {
-    if (userAgent.indexOf('opera') !== -1) { // check opera first, since it mimics other browsers
-      return DvtDataGridUtils.UNKNOWN_PLATFORM;
-    } else if (userAgent.indexOf('trident') !== -1 ||
-               userAgent.indexOf('msie') !== -1) {
-      return DvtDataGridUtils.IE_PLATFORM;
-    } else if (userAgent.indexOf('edge') !== -1) {
-      return DvtDataGridUtils.EDGE_PLATFORM;
-    } else if ((userAgent.indexOf('applewebkit') !== -1) ||
-               (userAgent.indexOf('safari') !== -1)) {
-      return DvtDataGridUtils.WEBKIT_PLATFORM;
-    } else if (userAgent.indexOf('gecko/') !== -1) {
-      return DvtDataGridUtils.GECKO_PLATFORM;
-    }
-  }
-
-  return DvtDataGridUtils.UNKNOWN_PLATFORM;
-};
 
 /**
  * Determines the what mousewheel event the browser recognizes
@@ -20340,7 +20278,7 @@ DvtDataGridUtils.prototype._isNodeEditableOrClickable = function (node, databody
     var nodeName = node.nodeName;
 
     // If the node is a text node, move up the hierarchy to only operate on elements
-    // (on at least the mobile platforms, the node may be a text node)
+    // (on at least the mobile browsers, the node may be a text node)
     if (node.nodeType === 3) { // 3 is Node.TEXT_NODE
       // eslint-disable-next-line no-param-reassign
       node = node.parentNode;
@@ -20384,7 +20322,7 @@ DvtDataGridUtils.prototype._isNodeEditableOrClickable = function (node, databody
  * @private
  */
 DvtDataGridUtils.prototype.shouldOffsetOutline = function () {
-  if (this.os === DvtDataGridUtils.MAC_OS && this.platform === DvtDataGridUtils.WEBKIT_PLATFORM) {
+  if (this.os === oj.AgentUtils.OS.MAC && this.engine === oj.AgentUtils.ENGINE.WEBKIT) {
     return true;
   }
   return false;
@@ -23748,7 +23686,14 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   _SetupResources: function () {
     // adds context menu gesture support
     this._super();
+    this.setupResources();
+  },
 
+  /**
+   * @memberof oj.ojDataGrid
+   * @private
+   */
+  setupResources: function () {
     if (this.datasource != null) {
       // sets the data source event listeners
       if (!this._isCreate) {
@@ -23774,7 +23719,15 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   _ReleaseResources: function () {
     // release context menu listeners
     this._super();
+    this.releaseResources();
+  },
 
+  /**
+   * Releases resources after creation
+   * @private
+   * @memberof oj.ojDataGrid
+   */
+  releaseResources: function () {
     // remove data source event listeners
     this.grid._removeDataSourceEventListeners();
 
@@ -23850,7 +23803,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     this._super();
 
     // unregister existing listeners
-    this._ReleaseResources();
+    this.releaseResources();
 
     this._removeAllChildren();
 
@@ -23879,7 +23832,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
     this.grid.SetResources(this.resources);
 
     // addListeners back in before rendering, including context menu
-    this._SetupResources();
+    this.setupResources();
 
     // so long as the visibility property is not 'render', overwrite it with
     // a refresh and try to refresh the grid
@@ -24146,7 +24099,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
    * @private
    */
   _removeAllChildren: function () {
-    $(this.root).children("[slot!='contextMenu']").remove();
+    $(this.root).children("[slot!='contextMenu']").not('oj-surrogate').remove();
   },
 
   //* * @inheritdoc */
@@ -24163,7 +24116,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
   _addContextMenu: function () {
     var self = this;
     var isCustomElement = self._IsCustomElement();
-    var menuContainer = this._GetContextMenu();
+    var menuContainer = this._GetContextMenu() ? this._GetContextMenu() : this._menuContainer;
 
     if (!menuContainer) {
       if (this.datasource != null) {
@@ -24180,6 +24133,7 @@ oj.__registerWidget('oj.ojDataGrid', $.oj.baseComponent, {
         this._menuItemsSetByGrid = [];
       }
 
+      this._menuContainer = menuContainer;
       menuContainer = $(menuContainer);
       var listItems = menuContainer.find('[data-oj-command]');
       var menuItemsSetByGrid = [];

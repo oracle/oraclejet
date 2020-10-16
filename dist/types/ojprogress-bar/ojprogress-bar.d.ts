@@ -65,10 +65,16 @@ export interface ProgressBarElementSettableProperties extends JetSettablePropert
 export interface ProgressBarElementSettablePropertiesLenient extends Partial<ProgressBarElementSettableProperties> {
   [key: string]: any;
 }
-export declare type ojProgressBar = ProgressBarElement;
-export declare type ojProgressBarEventMap = ProgressBarElementEventMap;
-export declare type ojProgressBarSettableProperties = ProgressBarElementSettableProperties;
-export declare type ojProgressBarSettablePropertiesLenient = ProgressBarElementSettablePropertiesLenient;
+export type ojProgressBar = ProgressBarElement
+export namespace ojProgressBar {
+  // tslint:disable-next-line interface-over-type-literal
+  type maxChanged = JetElementCustomEvent<ojProgressBar["max"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type valueChanged = JetElementCustomEvent<ojProgressBar["value"]>;
+}
+export type ojProgressBarEventMap = ProgressBarElementEventMap;
+export type ojProgressBarSettableProperties = ProgressBarElementSettableProperties;
+export type ojProgressBarSettablePropertiesLenient = ProgressBarElementSettablePropertiesLenient;
 export interface ProgressBarProperties extends Partial<ProgressBarElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

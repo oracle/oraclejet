@@ -47,6 +47,7 @@ var DomScroller = function DomScroller(element, dataprovider, options) {
   this._requestCallback = options.request;
   this._errorCallback = options.error;
   this._beforeFetchCallback = options.beforeFetch;
+  this._isOverflowCallback = options.isOverflow;
   this._handleScrollTopCallback = options.onScrollTop;
   this._localKeyValidator = options.localKeyValidator;
 
@@ -269,6 +270,10 @@ DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollT
 
 
 DomScroller.prototype.isOverflow = function () {
+  if (this._isOverflowCallback) {
+    return this._isOverflowCallback();
+  }
+
   var element = this._element;
   var diff = element.scrollHeight - (element.clientHeight + this._fetchTrigger);
 

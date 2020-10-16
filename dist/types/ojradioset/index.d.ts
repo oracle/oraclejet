@@ -12,10 +12,10 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojRadioset<K, D, V = any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>> {
     disabled: boolean;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;
@@ -108,10 +108,10 @@ export interface ojRadiosetEventMap<K, D, V = any> extends editableValueEventMap
 export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSettableProperties<V> {
     disabled: boolean;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;

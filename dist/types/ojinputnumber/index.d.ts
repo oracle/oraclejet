@@ -23,10 +23,10 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     autofocus: boolean;
     converter: Promise<Converter<number>> | Converter<number>;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -154,10 +154,10 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     autofocus: boolean;
     converter: Promise<Converter<number>> | Converter<number>;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;

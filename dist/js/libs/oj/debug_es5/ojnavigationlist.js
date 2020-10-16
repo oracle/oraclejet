@@ -4317,6 +4317,18 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *  &lt;/ul>
    * &lt;/oj-navigation-list>
    * </code></pre>
+   *
+   * <p>Example of data provider content</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-navigation-list data="[[dataProvider]]">&lt;/oj-navigation-list>
+   * </code></pre>
+   * <p>Check out the <a href="../jetCookbook.html?component=navigationbar&demo=nbUsingArrayDataProvider>demo</a>
+   *
+   * <p>The child content can be configured via inline HTML content or a DataProvider.
+   * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
+   * </p>
+   *
    * <h4 id="treeJSON-section"> JSON Tree Node Format</h4>
    * </br>
    * Each node object typically have an
@@ -7077,7 +7089,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
 /**
  * @typedef {Object} oj.ojTabBar.ItemTemplateContext
- * @property {Element} componentElement The &lt;oj-navigation-list> custom element
+ * @property {Element} componentElement The &lt;oj-tab-bar> custom element
  * @property {Object} data The data for the current item being rendered
  * @property {number} index The zero-based index of the current item
  * @property {any} key The key of the current item being rendered

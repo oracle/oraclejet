@@ -121,7 +121,7 @@
 {
   // nowrap label support
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
-  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {

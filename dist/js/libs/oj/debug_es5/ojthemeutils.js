@@ -6,7 +6,7 @@
  * @ignore
  */
 
-define(['ojs/ojlogger'], function(Logger)
+define(['ojs/ojcore-base', 'ojs/ojlogger'], function(oj, Logger)
 {
   "use strict";
 
@@ -167,7 +167,9 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
     // So save off the font family from the head
     // element to compare to what we read off our generated element.
 
-    this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+    if (typeof window !== 'undefined') {
+      this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+    }
   } // see if we already have a map for this component's option defaults
 
 
@@ -183,6 +185,10 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
   // meta element isn't visible and therefore we avoid perf issues of calling
   // getcomputedstyle
 
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
 
   var elem = document.createElement('meta');
   elem.className = selector;
@@ -244,6 +250,22 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
 
   return jsonval;
 };
+
+if (true) {
+  // Compare JET version with theme version
+  var jetVersions = oj.version.split('.');
+  var themeMap = (ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {}).jetReleaseVersion;
+  var themeVersions = (themeMap || '').replace(/^v/, '') // Remove leading 'v'
+  .split('.'); // Log error if major/minor mismatch, warning for patch mismatch
+
+  var message = "\n  Your CSS file is compatible with JET version ".concat(oj.version, ", but you are using JET version ").concat(themeMap, ".\n  Please update your CSS to match the version of JET being used.\n  ");
+
+  if (jetVersions[0] !== themeVersions[0] || jetVersions[1] !== themeVersions[1]) {
+    Logger.error(message);
+  } else if (jetVersions[2] !== themeVersions[2]) {
+    Logger.warn(message);
+  }
+}
 
 ;return ThemeUtils;
 });

@@ -36,7 +36,7 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
      *             &lt;oj-selector slot='selector' selected-keys='{{selectorSelectedItems}}' key='[[item.data.id]]'>
      *             &lt;/oj-selector>
      *             &lt;div>
-     *                &lt;oj-bind-text value="default"></oj-bind-text>
+     *                &lt;oj-bind-text value="default">&lt;/oj-bind-text>
      *             &lt;/div>
      *          &lt;/oj-list-item-layout>
      *       &lt;/li>
@@ -46,20 +46,20 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
      */
 
     /**
-     * <p>The <code class="prettyprint">default</code> slot accepts a default text. </p>
+     * <p>The <code class="prettyprint">default</code> slot accepts default text. </p>
      *
      * @ojchild Default
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div>
-     *       &lt;oj-bind-text value="default"></oj-bind-text>
+     *       &lt;oj-bind-text value="default">&lt;/oj-bind-text>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
     /**
-     * <p>The <code class="prettyprint">selector</code> slot can accept a oj-selector component and is optional.</p>
+     * <p>The <code class="prettyprint">selector</code> slot can accept an oj-selector component and is optional.</p>
      *
      * @ojslot selector
      * @memberof oj.ojListItemLayout
@@ -71,21 +71,21 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
      */
 
     /**
-     * <p>The <code class="prettyprint">overline</code> slot is for adding a overline text above the default text.</p>
+     * <p>The <code class="prettyprint">overline</code> slot is used for adding overline text above the default text.</p>
      *
      * @ojslot overline
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div slot="overline">
-     *       &lt;oj-bind-text value="overline"></oj-bind-text>
+     *       &lt;oj-bind-text value="overline">&lt;/oj-bind-text>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
     /**
      * <p>The <code class="prettyprint">leading</code> slot is used for adding a leading visual
-     * next to the selector. Start slot can be an image, avatar or initials.</p>
+     * next to the selector. Leading slot content can be a badge, image, avatar or initials.</p>
      *
      * @ojslot leading
      * @memberof oj.ojListItemLayout
@@ -99,46 +99,47 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
      */
 
     /**
-     * <p>The <code class="prettyprint">secondary</code> slot is for adding a secondary text below the default text.</p>
+     * <p>The <code class="prettyprint">secondary</code> slot is used for adding secondary text below the default text.</p>
      *
      * @ojslot secondary
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div slot="secondary">
-     *       &lt;oj-bind-text value="secondary"></oj-bind-text>
+     *       &lt;oj-bind-text value="secondary">&lt;/oj-bind-text>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
     /**
-     * <p>The <code class="prettyprint">tertiary</code> slot is for adding a tertiary text below the secondary text.</p>
+     * <p>The <code class="prettyprint">tertiary</code> slot is used for adding tertiary text below the secondary text.</p>
      *
      * @ojslot tertiary
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div slot="tertiary">
-     *       &lt;oj-bind-text value="tertiary"></oj-bind-text>
+     *       &lt;oj-bind-text value="tertiary">&lt;/oj-bind-text>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
     /**
-     * <p>The <code class="prettyprint">metadata</code> for adding extra trailing information. Examples of metadata are author, date etc.
+     * <p>The <code class="prettyprint">metadata</code> slot is used for adding extra trailing information. Examples of metadata are author, date etc.
      *
      * @ojslot metadata
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div slot="metadata">
-     *       &lt;oj-bind-text value="metadata"></oj-bind-text>
+     *       &lt;oj-bind-text value="metadata">&lt;/oj-bind-text>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
     /**
-     * <p>The <code class="prettyprint">trailing</code> slot is used for adding a trailing visual.</p>
+     * <p>The <code class="prettyprint">trailing</code> slot is used for adding a trailing visual.
+     * Trailing slot content can be a badge, image or icon.</p>
      * @ojslot trailing
      * @memberof oj.ojListItemLayout
      * @ojtsexample
@@ -151,18 +152,43 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
      */
 
     /**
-     * <p>The <code class="prettyprint">action</code> slot for adding either one primary action or one or more secondary actions.
+     * <p>The <code class="prettyprint">action</code> slot is used for adding either one primary action or one or more secondary actions.
      *
      * @ojslot action
      * @memberof oj.ojListItemLayout
      * @ojtsexample
      * &lt;oj-list-item-layout>
      *    &lt;div slot="action">
-     *       &lt;oj-button>Edit</oj-button>
+     *       &lt;oj-button>Edit&lt;/oj-button>
      *    &lt;/div>
      * &lt;/oj-list-item-layout>
      */
 
+    /**
+     * <p>The <code class="prettyprint">quaternary</code> slot is used for adding quaternary text below the tertiary text.</p>
+     *
+     * @ojslot quaternary
+     * @memberof oj.ojListItemLayout
+     * @ojtsexample
+     * &lt;oj-list-item-layout>
+     *    &lt;div slot="quaternary">
+     *       &lt;oj-bind-text value="quaternary">&lt;/oj-bind-text>
+     *    &lt;/div>
+     * &lt;/oj-list-item-layout>
+     */
+
+    /**
+     * <p>The <code class="prettyprint">navigation</code> slot is used for adding a navigation control, such as a link or button.</p>
+     *
+     * @ojslot navigation
+     * @memberof oj.ojListItemLayout
+     * @ojtsexample
+     * &lt;oj-list-item-layout>
+     *    &lt;div slot="navigation">
+     *       &lt;oj-button>navigation&lt;/oj-button>
+     *    &lt;/div>
+     * &lt;/oj-list-item-layout>
+     */
     /**
      * Sets a property or a single subproperty for complex properties and notifies the component
      * of the change, triggering a [property]Changed event.
@@ -218,7 +244,7 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
     exports.ListItemLayout = class ListItemLayout extends ojvcomponent.VComponent {
         constructor() {
             super(...arguments);
-            this._hasContent = (slotContent) => slotContent && slotContent.length > 0;
+            this._hasContent = (slotContent) => (Array.isArray(slotContent) && slotContent.length > 0) || slotContent;
         }
         _getWrappedSlotContent(slotContent, wrapperClasses) {
             if (this._hasContent(slotContent)) {
@@ -230,42 +256,50 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) { 'use 
             return null;
         }
         render() {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+            const props = this.props;
+            const hasExtra = this._hasContent((_a = props.metadata) === null || _a === void 0 ? void 0 : _a.call(props)) ||
+                this._hasContent((_b = props.action) === null || _b === void 0 ? void 0 : _b.call(props)) ||
+                this._hasContent((_c = props.trailing) === null || _c === void 0 ? void 0 : _c.call(props));
+            const hasBottom = this._hasContent((_d = props.quaternary) === null || _d === void 0 ? void 0 : _d.call(props)) || this._hasContent((_e = props.navigation) === null || _e === void 0 ? void 0 : _e.call(props));
             let tertiaryClass = '';
-            if (this._hasContent((_b = (_a = this.props).secondary) === null || _b === void 0 ? void 0 : _b.call(_a)) && this._hasContent((_d = (_c = this.props).tertiary) === null || _d === void 0 ? void 0 : _d.call(_c)))
+            if (this._hasContent((_f = props.secondary) === null || _f === void 0 ? void 0 : _f.call(props)) && this._hasContent((_g = props.tertiary) === null || _g === void 0 ? void 0 : _g.call(props)))
                 tertiaryClass = 'oj-listitemlayout-tertiary';
-            let leadingClass = '';
-            if (!this._hasContent((_f = (_e = this.props).selector) === null || _f === void 0 ? void 0 : _f.call(_e)) && this._hasContent((_h = (_g = this.props).leading) === null || _h === void 0 ? void 0 : _h.call(_g)))
-                leadingClass = 'oj-listitemlayout-horizontal-padding';
-            let textSlotsClass = '';
-            if (!this._hasContent((_k = (_j = this.props).selector) === null || _k === void 0 ? void 0 : _k.call(_j)))
-                textSlotsClass =
-                    'oj-listitemlayout-textslots oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding';
-            else if (this._hasContent((_m = (_l = this.props).selector) === null || _m === void 0 ? void 0 : _m.call(_l))) {
-                if (this._hasContent((_p = (_o = this.props).leading) === null || _p === void 0 ? void 0 : _p.call(_o)))
-                    textSlotsClass =
-                        'oj-listitemlayout-textslots oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding';
-                else
-                    textSlotsClass = 'oj-listitemlayout-textslots oj-listitemlayout-vertical-padding';
+            let leadingClass = hasBottom
+                ? 'oj-listitemlayout-leading oj-listitemlayout-vertical-padding-quaternary '
+                : 'oj-listitemlayout-leading oj-listitemlayout-vertical-padding ';
+            if (!this._hasContent((_h = props.selector) === null || _h === void 0 ? void 0 : _h.call(props)) && this._hasContent((_j = props.leading) === null || _j === void 0 ? void 0 : _j.call(props))) {
+                leadingClass = leadingClass + ' oj-listitemlayout-horizontal-padding';
             }
-            else
-                textSlotsClass = 'oj-listitemlayout-textslots';
+            let textSlotClass = hasBottom
+                ? 'oj-listitemlayout-textslots oj-listitemlayout-vertical-padding-quaternary '
+                : 'oj-listitemlayout-textslots oj-listitemlayout-vertical-padding ';
+            if (!(this._hasContent((_k = props.selector) === null || _k === void 0 ? void 0 : _k.call(props)) && !this._hasContent((_l = props.leading) === null || _l === void 0 ? void 0 : _l.call(props))))
+                textSlotClass = textSlotClass + ' oj-listitemlayout-horizontal-padding';
+            let metadataClass = hasBottom
+                ? 'oj-listitemlayout-metadata oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding-quaternary '
+                : 'oj-listitemlayout-metadata oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding';
+            let trailingClass = hasBottom
+                ? 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding-quaternary '
+                : 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-horizontal-padding oj-listitemlayout-vertical-padding ';
             return (ojvcomponent.h("oj-list-item-layout", null,
-                ojvcomponent.h("div", { class: 'oj-listitemlayout' },
-                    ojvcomponent.h("div", { class: 'oj-listitemlayout-allslots' },
-                        this._hasContent((_r = (_q = this.props).selector) === null || _r === void 0 ? void 0 : _r.call(_q)) ? (ojvcomponent.h("div", null, this._getWrappedSlotContent((_t = (_s = this.props).selector) === null || _t === void 0 ? void 0 : _t.call(_s), 'oj-listitemlayout-selector'))) : null,
-                        this._hasContent((_v = (_u = this.props).leading) === null || _v === void 0 ? void 0 : _v.call(_u)) ? (ojvcomponent.h("div", { class: leadingClass }, this._getWrappedSlotContent((_x = (_w = this.props).leading) === null || _x === void 0 ? void 0 : _x.call(_w), 'oj-listitemlayout-image oj-listitemlayout-vertical-padding'))) : null,
-                        ojvcomponent.h("div", { class: textSlotsClass },
-                            this._getWrappedSlotContent((_z = (_y = this.props).overline) === null || _z === void 0 ? void 0 : _z.call(_y)),
-                            this._getWrappedSlotContent(this.props.children),
-                            this._getWrappedSlotContent((_1 = (_0 = this.props).secondary) === null || _1 === void 0 ? void 0 : _1.call(_0)),
-                            this._getWrappedSlotContent((_3 = (_2 = this.props).tertiary) === null || _3 === void 0 ? void 0 : _3.call(_2), tertiaryClass)),
-                        this._getWrappedSlotContent((_5 = (_4 = this.props).metadata) === null || _5 === void 0 ? void 0 : _5.call(_4), 'oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding'),
-                        this._getWrappedSlotContent((_7 = (_6 = this.props).trailing) === null || _7 === void 0 ? void 0 : _7.call(_6), 'oj-listitemlayout-image oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding'),
-                        this._getWrappedSlotContent((_9 = (_8 = this.props).action) === null || _9 === void 0 ? void 0 : _9.call(_8), 'oj-listitemlayout-action  oj-clickthrough-disabled oj-listitemlayout-horizontal-padding  oj-listitemlayout-vertical-padding')))));
+                ojvcomponent.h("div", { class: 'oj-listitemlayout-grid' },
+                    this._getWrappedSlotContent((_m = props.selector) === null || _m === void 0 ? void 0 : _m.call(props), 'oj-listitemlayout-selector'),
+                    this._getWrappedSlotContent((_o = props.leading) === null || _o === void 0 ? void 0 : _o.call(props), leadingClass),
+                    ojvcomponent.h("div", { class: textSlotClass },
+                        this._getWrappedSlotContent((_p = props.overline) === null || _p === void 0 ? void 0 : _p.call(props)),
+                        this._getWrappedSlotContent(props.children),
+                        this._getWrappedSlotContent((_q = props.secondary) === null || _q === void 0 ? void 0 : _q.call(props)),
+                        this._getWrappedSlotContent((_r = props.tertiary) === null || _r === void 0 ? void 0 : _r.call(props), tertiaryClass)),
+                    hasExtra ? (ojvcomponent.h("div", { class: 'oj-listitemlayout-extra oj-listitemlayout-align' },
+                        this._getWrappedSlotContent((_s = props.metadata) === null || _s === void 0 ? void 0 : _s.call(props), metadataClass),
+                        this._getWrappedSlotContent((_t = props.trailing) === null || _t === void 0 ? void 0 : _t.call(props), trailingClass),
+                        this._getWrappedSlotContent((_u = props.action) === null || _u === void 0 ? void 0 : _u.call(props), 'oj-listitemlayout-action oj-listitemlayout-horizontal-padding oj-clickthrough-disabled'))) : null,
+                    this._getWrappedSlotContent((_v = props.quaternary) === null || _v === void 0 ? void 0 : _v.call(props), 'oj-listitemlayout-quaternary oj-listitemlayout-horizontal-padding'),
+                    this._getWrappedSlotContent((_w = props.navigation) === null || _w === void 0 ? void 0 : _w.call(props), 'oj-listitemlayout-navigation oj-clickthrough-disabled'))));
         }
     };
-    exports.ListItemLayout.metadata = { "extension": { "_DEFAULTS": ListItemLayoutProps }, "slots": { "selector": {}, "leading": {}, "overline": {}, "": {}, "secondary": {}, "tertiary": {}, "link": {}, "metadata": {}, "trailing": {}, "action": {} } };
+    exports.ListItemLayout.metadata = { "extension": { "_DEFAULTS": ListItemLayoutProps }, "slots": { "selector": {}, "leading": {}, "overline": {}, "": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };
     exports.ListItemLayout = __decorate([
         ojvcomponent.customElement('oj-list-item-layout')
     ], exports.ListItemLayout);

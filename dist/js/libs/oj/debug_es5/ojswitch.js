@@ -29,11 +29,7 @@ var __oj_switch_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -42,16 +38,10 @@ var __oj_switch_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },

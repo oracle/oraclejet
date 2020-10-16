@@ -21,8 +21,7 @@ var __oj_dialog_metadata =
         "escape",
         "icon",
         "none"
-      ],
-      "value": "icon"
+      ]
     },
     "dialogTitle": {
       "type": "string"
@@ -32,8 +31,7 @@ var __oj_dialog_metadata =
       "enumValues": [
         "none",
         "title-bar"
-      ],
-      "value": "title-bar"
+      ]
     },
     "initialVisibility": {
       "type": "string",
@@ -138,8 +136,7 @@ var __oj_dialog_metadata =
       "enumValues": [
         "none",
         "resizable"
-      ],
-      "value": "resizable"
+      ]
     },
     "translations": {
       "type": "object",
@@ -531,7 +528,6 @@ var __oj_dialog_metadata =
          * @ojshortdesc Specifies the cancel behavior of the dialog. See the Help documentation for more information.
          * @instance
          * @type {string}
-         * @default "icon"
          * @ojvalue {string} "icon" A close icon will automatically be created. The dialog will close when it has focus and user presses the escape (ESC) key.
          * @ojvalue {string} "escape" The dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not be created.
          * @ojvalue {string} "none" A close icon will not be created. No actions will be associated with the escape key.
@@ -563,7 +559,6 @@ var __oj_dialog_metadata =
          * @ojshortdesc Specifies the drag affordance. See the Help documentation for more information.
          * @instance
          * @type {string}
-         * @default "title-bar"
          * @ojvalue {string} "title-bar" The dialog will be draggable by the title bar.
          * @ojvalue {string} "none" The dialog will not be draggable.
          *
@@ -846,7 +841,6 @@ var __oj_dialog_metadata =
          * @type {string}
          * @ojvalue {string} "resizable" The dialog will be interactively resizable.
          * @ojvalue {string} "none" The dialog will not be interactively resizable.
-         * @default "resizable"
          *
          * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
          * &lt;oj-dialog resize-behavior="none" &gt;&lt;/oj-dialog&gt;

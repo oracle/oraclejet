@@ -53,12 +53,12 @@ var oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '9.1.0',
+  version: '9.2.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2020-08-05_19-00-35',
+  revision: '2020-10-07_10-26-04',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -1707,7 +1707,9 @@ oj.AgentUtils.getAgentInfo = function (userAgent) {
   var engine = oj.AgentUtils.ENGINE.UNKNOWN;
   /** @type {number} */
   var engineVersion = 0;
-  if (userAgent.indexOf('iphone') > -1 || userAgent.indexOf('ipad') > -1) {
+  if (userAgent.indexOf('iphone') > -1 || (userAgent.indexOf('ipad') > -1 ||
+    (navigator.platform === 'MacIntel' &&
+    typeof navigator.standalone !== 'undefined'))) {
     os = oj.AgentUtils.OS.IOS;
   } else if (userAgent.indexOf('mac') > -1) {
     os = oj.AgentUtils.OS.MAC;

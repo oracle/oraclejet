@@ -1988,7 +1988,7 @@ oj.AnimationUtils.animateHero = function (element, options) {
 * @ojstyleclass oj-animation-backface
 * @ojdisplayname Animation Backface
 * @ojshortdesc Apply to the child element representing the back face of a card element that can be flipped. See the Help documentation for more information.
-* @ojstyleselector div
+* @ojstyleselector *
 * @memberof oj.AnimationUtils
 */
 // --------------------------------------------------- oj.AnimationUtils Styling End -----------------------------------------------------------

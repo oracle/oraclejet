@@ -82,10 +82,20 @@ export interface AvatarElementSettableProperties extends JetSettableProperties {
 export interface AvatarElementSettablePropertiesLenient extends Partial<AvatarElementSettableProperties> {
   [key: string]: any;
 }
-export declare type ojAvatar = AvatarElement;
-export declare type ojAvatarEventMap = AvatarElementEventMap;
-export declare type ojAvatarSettableProperties = AvatarElementSettableProperties;
-export declare type ojAvatarSettablePropertiesLenient = AvatarElementSettablePropertiesLenient;
+export type ojAvatar = AvatarElement
+export namespace ojAvatar {
+  // tslint:disable-next-line interface-over-type-literal
+  type backgroundChanged = JetElementCustomEvent<ojAvatar["background"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type initialsChanged = JetElementCustomEvent<ojAvatar["initials"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type sizeChanged = JetElementCustomEvent<ojAvatar["size"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type srcChanged = JetElementCustomEvent<ojAvatar["src"]>;
+}
+export type ojAvatarEventMap = AvatarElementEventMap;
+export type ojAvatarSettableProperties = AvatarElementSettableProperties;
+export type ojAvatarSettablePropertiesLenient = AvatarElementSettablePropertiesLenient;
 export interface AvatarProperties extends Partial<AvatarElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

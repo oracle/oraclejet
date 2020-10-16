@@ -20,7 +20,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, Translations, ojvcomponent) {
+define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponent, DomUtils) {
   'use strict';
   /**
    * @license
@@ -92,7 +92,6 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
    * @memberof oj.ojSelector
    * @instance
    * @type {KeySet<K>|null}
-   * @default null
    * @ojwriteback
    */
 
@@ -149,10 +148,16 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
 
     var _super = _createSuper(Selector);
 
-    function Selector() {
+    function Selector(props) {
+      var _this;
+
       _classCallCheck(this, Selector);
 
-      return _super.apply(this, arguments);
+      _this = _super.call(this, props);
+      _this.state = {
+        focus: false
+      };
+      return _this;
     }
 
     _createClass(Selector, [{
@@ -165,6 +170,7 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
         var spanClassName = {
           'oj-selector-wrapper': true,
           'oj-selected': isSelected,
+          'oj-focus-highlight': this.state.focus && !DomUtils.recentPointer(),
           'oj-component-icon': true
         };
         var ariaLabelledby = this.props['aria-labelledby'] || null;
@@ -181,6 +187,8 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
           "aria-label": ariaLabel,
           "aria-labelledby": ariaLabelledby,
           checked: isSelected,
+          onFocusin: this._handleFocusin,
+          onFocusout: this._handleFocusout,
           onClick: this._checkboxListener
         })));
       }
@@ -193,25 +201,41 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
             selectionMode = _this$props.selectionMode;
         var newSelectedKeys;
 
-        if (event.target.checked) {
-          if (selectionMode === 'single') {
-            newSelectedKeys = selectedKeys.clear().add([rowKey]);
-          } else if (selectionMode === 'all') {
-            newSelectedKeys = selectedKeys.addAll();
+        if (selectedKeys != null) {
+          if (event.target.checked) {
+            if (selectionMode === 'single') {
+              newSelectedKeys = selectedKeys.clear().add([rowKey]);
+            } else if (selectionMode === 'all') {
+              newSelectedKeys = selectedKeys.addAll();
+            } else {
+              newSelectedKeys = selectedKeys.add([rowKey]);
+            }
           } else {
-            newSelectedKeys = selectedKeys.add([rowKey]);
+            if (selectionMode === 'all') {
+              newSelectedKeys = selectedKeys.clear();
+            } else {
+              newSelectedKeys = selectedKeys.delete([rowKey]);
+            }
           }
-        } else {
-          if (selectionMode === 'all') {
-            newSelectedKeys = selectedKeys.clear();
-          } else {
-            newSelectedKeys = selectedKeys.delete([rowKey]);
-          }
+
+          this._updateProperty('selectedKeys', newSelectedKeys, true);
         }
 
-        this._updateProperty('selectedKeys', newSelectedKeys, true);
-
         event.stopPropagation();
+      }
+    }, {
+      key: "_handleFocusin",
+      value: function _handleFocusin(event) {
+        this.updateState({
+          focus: true
+        });
+      }
+    }, {
+      key: "_handleFocusout",
+      value: function _handleFocusout(event) {
+        this.updateState({
+          focus: false
+        });
       }
     }, {
       key: "_isSelected",
@@ -259,6 +283,10 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
   };
 
   __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_checkboxListener", null);
+
+  __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_handleFocusin", null);
+
+  __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_handleFocusout", null);
 
   exports.Selector = __decorate([ojvcomponent.customElement('oj-selector')], exports.Selector);
   Object.defineProperty(exports, '__esModule', {

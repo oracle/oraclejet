@@ -2808,6 +2808,21 @@ var __oj_menu_button_metadata =
   * @ojdeprecated [{since: "9.0.0", description: "This class will be removed in the future."}]
   * @memberof! oj.ojButton
   */
+  // ---------------- oj-button-full-width --------------
+  /**
+  * Apply 100% full-width to the button.
+  * The class is applied to the Button's root element.
+  *
+  * @ojstyleclass oj-button-full-width
+  * @ojshortdesc Apply 100% full-width to the button.
+  * @ojdisplayname Full Width
+  * @ojunsupportedthemes ["Alta"]
+  * @memberof oj.ojButton
+  * @ojtsexample
+  * &lt;oj-button class="oj-button-full-width">
+  *    &lt;!--  content -->
+  * &lt;/oj-button>
+  */
   // ---------------- oj-button-primary --------------
   /**
   * Draws attention to the button, often identifying the primary action in a set of buttons. Designed for use with a push button. In some themes, this class does nothing.<br>

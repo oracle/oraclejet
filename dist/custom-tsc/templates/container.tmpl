@@ -23,22 +23,8 @@ export interface <?js= data.vcomponentNameWithGenerics ?> extends JetElement<<?j
   setProperty<T extends string>(property: T, value: JetSetPropertyType<T, <?js= data.settablePropertiesInterface ?>>): void;
   setProperties(properties: <?js= data.settablePropertiesLenientInterface ?>): void;
 }
-<?js
-if (data.events || props){?>
-export namespace <?js= data.vcomponentName ?> {
-<?js= this.partial('events.tmpl', data.events) ?>
-<?js
-if (props){
-  for (let prop of props) {?>
-  // tslint:disable-next-line interface-over-type-literal
-  type <?js= prop ?>Changed<?js= this.propsTypeParams ?> = JetElementCustomEvent<<?js= data.vcomponentNameWithGenerics ?>["<?js= prop ?>"]>;
-<?js
-  }
-}?>
-}
-<?js
-}?>
-export interface <?js= data.eventMapInterface ?> extends HTMLElementEventMap {
+<?js= this.partial('namespace.tmpl', { data, props, componentName: data.vcomponentName, componentNameWithGenerics:  data.vcomponentNameWithGenerics }) ?>
+export interface <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclaration ?> extends HTMLElementEventMap {
 <?js
 for (let event in data.events) {
   let eventPropEvent = `'${event}': ${data.vcomponentName}.${event}`;
@@ -69,10 +55,11 @@ export interface <?js= data.settablePropertiesLenientInterface ?> extends Partia
 }
 <?js
 if (data.legacyComponentName){ ?>
-export declare type <?js= data.legacyComponentNameWithGenerics ?> = <?js= data.vcomponentNameWithGenerics ?>;
-export declare type <?js= data.legacyEventMapInterface ?> = <?js= data.eventMapInterface ?>;
-export declare type <?js= data.legacySettablePropertiesInterface ?> = <?js= data.settablePropertiesInterface ?>;
-export declare type <?js= data.legacySettablePropertiesLenientInterface ?> = <?js= data.settablePropertiesLenientInterface ?>;
+export type <?js= data.legacyComponentNameWithGenerics ?> = <?js= data.vcomponentNameWithGenerics ?>
+<?js= this.partial('namespace.tmpl', { data, props, componentName: data.legacyComponentName, componentNameWithGenerics:  data.legacyComponentNameWithGenerics }) ?>
+export type <?js= data.legacyEventMapInterface ?> = <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclaration ?>;
+export type <?js= data.legacySettablePropertiesInterface ?> = <?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParamsDeclaration ?>;
+export type <?js= data.legacySettablePropertiesLenientInterface ?> = <?js= data.settablePropertiesLenientInterface ?><?js= data.propsClassTypeParamsDeclaration ?>;
 <?js
 }?>
 

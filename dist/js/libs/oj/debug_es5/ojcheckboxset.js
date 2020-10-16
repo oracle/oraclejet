@@ -28,11 +28,7 @@ var __oj_checkboxset_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -41,16 +37,10 @@ var __oj_checkboxset_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -250,6 +240,26 @@ var __oj_checkboxset_metadata =
    * refresh() on the oj-checkboxset.
    * Note, oj-optgroup is not a supported child element of oj-checkboxset.
    * </p>
+   * <p>The child content can be configured via inline HTML content or a DataProvider.
+   * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
+   * </p>
+   * <p>A JET Checkbox Set can be created with the following markup.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-checkboxset>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-checkboxset>
+   * </code></pre>
+   * <p>A JET Checkbox Set can be created with a DataProvider.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-checkboxset options="[[dataprovider]]">
+   * &lt;/oj-checkboxset>
+   * </code></pre>
+   *
    * <p>
    *  You can enable and disable an oj-checkboxset,
    *  which will enable and disable all contained checkboxes.
@@ -384,6 +394,12 @@ var __oj_checkboxset_metadata =
     version: '1.0.0',
     defaultElement: '<div>',
     widgetEventPrefix: 'oj',
+
+    /**
+     * @expose
+     * @private
+     */
+    _WRAPPER_CLASS_NAMES: 'oj-checkboxset-wrapper oj-form-control-container',
     options: {
       /**
       * <p>
@@ -1024,7 +1040,7 @@ var __oj_checkboxset_metadata =
       // RadioCheckboxUtils will set this._optionsDataProvider, this._optionsDataListener
       // and this._optionsDataArray.
 
-      oj.RadioCheckboxUtils.generateOptionsFromData.call(this); // Continue processing for the static oj-option case and set up the component itself
+      oj.RadioCheckboxUtils.generateOptionsFromData.call(this, this._WRAPPER_CLASS_NAMES); // Continue processing for the static oj-option case and set up the component itself
 
       this._processOjOptions(); // The processOjOptions renders input/label, so we need to go through and
       // get the this.$checkboxes after this is called.
@@ -1045,7 +1061,7 @@ var __oj_checkboxset_metadata =
 
       $(element.get(0).childNodes).filter(function () {
         return !(this.getAttribute && this.getAttribute('slot') === 'contextMenu');
-      }).wrapAll("<div class='oj-checkboxset-wrapper oj-form-control-container'></div>"); // @HTMLUpdateOK
+      }).wrapAll("<div class='" + this._WRAPPER_CLASS_NAMES + "'></div>"); // @HTMLUpdateOK
       // if readonly, set tabindex on the wrapper
 
       if (this.options.readOnly) {
@@ -2036,12 +2052,12 @@ var __oj_checkboxset_metadata =
           break;
 
         case 'options':
-          oj.RadioCheckboxUtils.generateOptionsFromData.call(this);
+          oj.RadioCheckboxUtils.generateOptionsFromData.call(this, this._WRAPPER_CLASS_NAMES);
           break;
 
         case 'optionsKeys':
         case 'optionRenderer':
-          oj.RadioCheckboxUtils.renderOptions.call(this);
+          oj.RadioCheckboxUtils.renderOptions.call(this, this._WRAPPER_CLASS_NAMES);
           break;
 
         default:

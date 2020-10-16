@@ -369,6 +369,9 @@ var __oj_table_metadata =
         "accessibleSortDescending": {
           "type": "string"
         },
+        "accessibleSortable": {
+          "type": "string"
+        },
         "accessibleStateSelected": {
           "type": "string"
         },
@@ -977,12 +980,12 @@ Table.prototype._createComponentBusyState = function (msg) {
 
 
 Table.prototype._clearComponentBusyState = function (busyStateResolveFunc) {
-  busyStateResolveFunc();
-
   if (this._busyStateStack) {
     var index = this._busyStateStack.indexOf(busyStateResolveFunc);
 
     if (index !== -1) {
+      busyStateResolveFunc();
+
       this._busyStateStack.splice(index, 1);
     }
   }
@@ -1303,6 +1306,12 @@ Table.prototype._draw = function () {
     }
 
     this._skipRefreshTableDimension = false;
+
+    if (this._resetAriaLabel && this._accRowIndex != null && this._accColumnIndex != null) {
+      this._updateAccStatusInfo(this._accRowIndex, this._accColumnIndex);
+    }
+
+    this._resetAriaLabel = false;
   }.bind(this));
 
   if (!this.element.is('table')) {
@@ -1865,6 +1874,8 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
     data: row[Table._CONST_DATA]
   };
 
+  var columns = this._getColumnDefs();
+
   if (rowRenderer != null || this._isDefaultRowTemplateSlotValid() && this._getSlotTemplate('rowTemplate') !== null) {
     if (rowRenderer != null) {
       var rowContent = rowRenderer(context);
@@ -1971,11 +1982,11 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
       }
     }
 
-    if (this._isDefaultSelectorEnabled()) {
+    if (columns != null && columns.length > 0 && this._isDefaultSelectorEnabled()) {
       this._createTableBodyDefaultSelector(row.key, tableBodyRow);
     }
   } else {
-    if (this._isDefaultSelectorEnabled()) {
+    if (columns != null && columns.length > 0 && this._isDefaultSelectorEnabled()) {
       this._createTableBodyDefaultSelector(row.key, tableBodyRow);
     }
 
@@ -3283,7 +3294,7 @@ Table.prototype._registerDomScroller = function () {
             indexArray[i] = rowCount + i;
           }
 
-          return this._refreshAll({
+          return this._refreshTableBody({
             isMouseWheel: result.isMouseWheel,
             data: data,
             keys: keys,
@@ -4197,6 +4208,8 @@ Table.prototype._invokeDataFetchRows = function (options) {
 
 
 Table.prototype._invokeDataSort = function (sortField, ascending, event) {
+  this._resetAriaLabel = true;
+
   var dataprovider = this._getData(); // if no data then bail
 
 
@@ -5460,22 +5473,24 @@ Table.prototype._updateAccStatusInfo = function (rowIndex, columnIndex) {
         }
       }
 
+      var column = this._getColumnDefs()[columnIndex];
+
       var sorted = $(tableHeaderColumn).data('sorted');
 
       if (sorted != null) {
-        var column = this._getColumnDefs()[columnIndex];
-
-        var sortField = column.sortProperty == null ? column.field : column.sortProperty;
-
         if (sorted === Table._COLUMN_SORT_ORDER._ASCENDING) {
           stateInfo += this.getTranslatedString('accessibleSortAscending', {
-            id: sortField
+            id: ''
           }) + ' ';
         } else {
           stateInfo += this.getTranslatedString('accessibleSortDescending', {
-            id: sortField
+            id: ''
           }) + ' ';
         }
+      } else if (column.sortable === Table._OPTION_ENABLED) {
+        stateInfo += this.getTranslatedString('accessibleSortable', {
+          id: ''
+        }) + ' ';
       }
 
       this._stateInfo.textContent = stateInfo;
@@ -5615,22 +5630,24 @@ Table.prototype._setHeaderColumnLabelledBy = function (columnIdx) {
       }
     }
 
+    var column = this._getColumnDefs()[columnIdx];
+
     var sorted = $(tableHeaderColumn).data('sorted');
 
     if (sorted != null) {
-      var column = this._getColumnDefs()[columnIdx];
-
-      var sortField = column.sortProperty == null ? column.field : column.sortProperty;
-
       if (sorted === Table._COLUMN_SORT_ORDER._ASCENDING) {
         stateInfo += this.getTranslatedString('accessibleSortAscending', {
-          id: sortField
+          id: ''
         }) + ' ';
       } else {
         stateInfo += this.getTranslatedString('accessibleSortDescending', {
-          id: sortField
+          id: ''
         }) + ' ';
       }
+    } else if (column.sortable === Table._OPTION_ENABLED) {
+      stateInfo += this.getTranslatedString('accessibleSortable', {
+        id: ''
+      }) + ' ';
     }
 
     this._stateInfo.textContent = stateInfo;
@@ -8724,8 +8741,6 @@ Table.prototype._refreshTableDimensions = function (width, height, skipRequiredC
     }
   }
 
-  this._setHeaderColumnOverflowWidths();
-
   if (this._isStatusMessageShown()) {
     this._refreshTableStatusPosition();
   }
@@ -9696,49 +9711,6 @@ Table.prototype._setColumnWidths = function (scrollBarWidth) {
 
       if (footerCell != null) {
         this._applyForcedColumnWidth(footerCell, footerWidths[i]);
-      }
-    }
-  }
-};
-/**
- * Iterate through the header columns and set widths for those
- * which have overflow so that the text displays an ellipsis
- * @private
- */
-
-
-Table.prototype._setHeaderColumnOverflowWidths = function () {
-  var columns = this._getColumnDefs();
-
-  var columnsCount = columns.length;
-
-  for (var i = 0; i < columnsCount; i++) {
-    var headerColumnCell = this._getTableHeaderColumn(i);
-
-    if (headerColumnCell != null) {
-      // if we have overflow
-      var headerColumnDiv = this._getTableElementsByClassName(headerColumnCell, Table.CSS_CLASSES._COLUMN_HEADER_CLASS);
-
-      if (headerColumnDiv.length > 0) {
-        headerColumnDiv = headerColumnDiv[0];
-
-        var headerColumnTextDiv = this._getTableElementsByClassName(headerColumnCell, Table.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
-
-        var sortContainer = this._getSortIconContainer(headerColumnCell);
-
-        var sortContainerWidth = sortContainer != null ? $(sortContainer).outerWidth(true) : 0;
-
-        if (headerColumnTextDiv.length > 0) {
-          if (headerColumnDiv.clientWidth > 0 && headerColumnTextDiv[0].clientWidth + sortContainerWidth >= headerColumnDiv.clientWidth) {
-            headerColumnTextDiv[0].style[Table.CSS_PROP._WIDTH] = '';
-            var headerColumnTextDivWidth = headerColumnTextDiv[0].clientWidth;
-            var newHeaderColumnTextDivWidth = headerColumnDiv.clientWidth; // we only want to constrain the width.
-
-            if (headerColumnTextDivWidth + sortContainerWidth >= newHeaderColumnTextDivWidth + 1) {
-              headerColumnTextDiv[0].style[Table.CSS_PROP._WIDTH] = newHeaderColumnTextDivWidth - sortContainerWidth + Table.CSS_VAL._PX;
-            }
-          }
-        }
       }
     }
   }
@@ -15856,8 +15828,11 @@ Table.prototype._updateSelector = function (selected) {
     selectors[i].selectedKeys = selected;
   }
 
-  var headerSelector = table.getElementsByClassName(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS)[0];
-  headerSelector.selectedKeys = selected;
+  var headerSelectorElements = table.getElementsByClassName(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
+
+  if (headerSelectorElements.length > 0) {
+    headerSelectorElements[0].selectedKeys = selected;
+  }
 };
 
 
@@ -18623,11 +18598,12 @@ Table.prototype._destroy = function () {
 
 
 Table.prototype._NotifyAttached = function () {
-  this._super();
+  this._super(); // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
 
-  var tableContainer = this._getTableContainer();
 
-  this._refreshTableDimensions(tableContainer.offsetWidth, tableContainer.offsetHeight);
+  if (!this._hasPendingTasks()) {
+    this._syncTableSizing();
+  }
 };
 /**
  * <p>Notifies the component that its subtree has been made visible programmatically after the component has
@@ -18641,11 +18617,12 @@ Table.prototype._NotifyAttached = function () {
 
 
 Table.prototype._NotifyShown = function () {
-  this._super();
+  this._super(); // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
 
-  var tableContainer = this._getTableContainer();
 
-  this._refreshTableDimensions(tableContainer.offsetWidth, tableContainer.offsetHeight);
+  if (!this._hasPendingTasks()) {
+    this._syncTableSizing();
+  }
 };
 /**
  * Override to do the delay connect/disconnect
@@ -19052,10 +19029,13 @@ oj.TableDndContext.prototype._cloneTableContainer = function (tableContainer) {
   var tableBodyClone = this.component._getTableElementsByTagName(tableContainerClone, Table.DOM_ELEMENT._TBODY, true)[0];
 
   if (this.component._isDefaultSelectorEnabled()) {
-    var headerSelector = this.component._getTableElementsByClassName(tableContainerClone, Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS, true)[0];
+    var headerSelectorElements = this.component._getTableElementsByClassName(tableContainerClone, Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS, true);
 
-    headerSelector.selectedKeys = this.component.options.selected.row;
-    headerSelector.selectionMode = 'all';
+    if (headerSelectorElements.length > 0) {
+      var headerSelector = headerSelectorElements[0];
+      headerSelector.selectedKeys = this.component.options.selected.row;
+      headerSelector.selectionMode = 'all';
+    }
 
     var selectors = this.component._getTableElementsByClassName(tableContainerClone, Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS, true);
 

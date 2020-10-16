@@ -31,11 +31,7 @@ var __oj_combobox_many_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -44,16 +40,10 @@ var __oj_combobox_many_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -288,11 +278,7 @@ var __oj_combobox_one_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -301,16 +287,10 @@ var __oj_combobox_one_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -555,11 +535,7 @@ var __oj_select_many_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -568,16 +544,10 @@ var __oj_select_many_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -792,11 +762,7 @@ var __oj_select_one_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -805,16 +771,10 @@ var __oj_select_one_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -5514,6 +5474,10 @@ var _AbstractOjChoice = _ComboUtils.clazz(Object, {
 
     return len > threshold;
   },
+  _hasHiddenSearchBox: function _hasHiddenSearchBox() {
+    var searchBox = this.dropdown.find('.oj-listbox-search');
+    return searchBox.attr('aria-hidden') === 'true';
+  },
   // eslint-disable-next-line no-unused-vars
   _isDataSelected: function _isDataSelected(data) {
     return false;
@@ -7615,12 +7579,6 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice, {
 
       default:
         break;
-    }
-
-    if (this._opened() && this._userTyping === false) {
-      // bring up the search box if user started typing after the drop down is already opened
-      this._userTyping = true;
-      this.close();
     } // ojselect: used by select
 
 
@@ -8520,8 +8478,25 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
   _containerKeydownHandler: function _containerKeydownHandler(e) {
     _OjMultiSelect.superclass._containerKeydownHandler.apply(this, arguments);
 
-    if (this._userTyping && !this._opened()) {
-      this.open(e);
+    if (this._userTyping) {
+      if (!this._opened()) {
+        // If the dropdown is closed, open the dropdown and
+        // show the search box with the letter typed
+        this.open(e);
+        return;
+      } // If the dropdown is already open, show the search box if not already
+      // being shown
+
+
+      if (this._hasHiddenSearchBox()) {
+        var searchText = _ComboUtils.getSearchText(e);
+
+        if (searchText) {
+          this._showSearchBox(searchText);
+
+          this._updateResults();
+        }
+      }
     }
   },
   _opening: function _opening(event, dontUpdateResults) {
@@ -8586,7 +8561,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice, {
 
     if (shouldReturnFocus) {
       _ComboUtils._focus(this, this.selection);
-    }
+    } // Always clear the search field text when closing the dropdown.
+
+
+    this.search.val('');
   },
   _clearSearch: function _clearSearch() {
     var placeholder = this._getPlaceholder();
@@ -8912,6 +8890,13 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
    * </h3>
    * <p>Description: JET Combobox One provides support for single-select, text input, and search filtering.</p>
    *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
    * <p>A JET Combobox One can be created with the following markup.</p>
    *
    * <pre class="prettyprint">
@@ -8923,6 +8908,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
    *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
    * &lt;/oj-combobox-one>
    * </code></pre>
+   *
+   * <p>A JET Combobox One can be created with a DataProvider.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-one options="[[dataprovider]]">
+   * &lt;/oj-combobox-one>
+   * </code></pre>
+   *
+   * <p>See this <a href="../jetCookbook.html?component=comboboxOne&demo=basic">demo</a> for inline options and DataProvider usage.</p>
    *
    * {@ojinclude "name":"validationAndMessagingDoc"}
    *
@@ -9111,6 +9106,13 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
    * </h3>
    * <p>Description: JET Combobox Many provides support for multi-select, text input, and search filtering.</p>
    *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
    * <p>A JET Combobox Many can be created with the following markup.</p>
    *
    * <pre class="prettyprint">
@@ -9122,6 +9124,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox, {
    *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
    * &lt;/oj-combobox-many>
    * </code></pre>
+   *
+   * <p>A JET Combobox Many can be created with a DataProvider.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-many options="[[dataprovider]]">
+   * &lt;/oj-combobox-many>
+   * </code></pre>
+   *
+   * <p>See this <a href="../jetCookbook.html?component=comboboxMany&demo=basic">demo</a> for inline options and DataProvider usage.</p>
    *
    * {@ojinclude "name":"validationAndMessagingDoc"}
    *
@@ -14008,6 +14020,13 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * </h3>
  * <p>Description: JET Select One provides support for single-select and search filtering.</p>
  *
+ * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+ * </p>
+ * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+ * </p>
+ * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+ * </p>
+ *
  * <p>A JET Select One can be created with the following markup.</p>
  *
  * <pre class="prettyprint">
@@ -14019,6 +14038,14 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
  * &lt;/oj-select-one>
  * </code></pre>
+ * <p>A JET Select One can be created with a DataProvider.</p>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-select-one options="[[dataprovider]]">
+ * &lt;/oj-select-one>
+ * </code></pre>
+ *
+ * <p>See this <a href="../jetCookbook.html?component=selectOne&demo=basic">demo</a> for inline options and DataProvider usage.</p>
  *
  * {@ojinclude "name":"validationAndMessagingDoc"}
  *
@@ -14205,6 +14232,13 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  * </h3>
  * <p>Description: JET Select Many provides support for multi-select and search filtering.</p>
  *
+ * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+ * </p>
+ * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+ * </p>
+ * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+ * </p>
+ *
  * <p>A JET Select Many can be created with the following markup.</p>
  *
  * <pre class="prettyprint">
@@ -14216,6 +14250,14 @@ oj.__registerWidget('oj.ojInputSearch', $.oj.editableValue, {
  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
  * &lt;/oj-select-many>
  * </code></pre>
+ * <p>A JET Select Many can be created with a DataProvider.</p>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-select-many options="[[dataprovider]]">
+ * &lt;/oj-select-many>
+ * </code></pre>
+ *
+ * <p>See this <a href="../jetCookbook.html?component=selectMany&demo=basic">demo</a> for inline options and DataProvider usage.</p>
  *
  * {@ojinclude "name":"validationAndMessagingDoc"}
  *

@@ -23,10 +23,10 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> extends editableValue<V, SP, SV, RV> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     addEventListener<T extends keyof ojComboboxEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: ojComboboxEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
@@ -91,10 +91,10 @@ export interface ojComboboxEventMap<V, SP extends ojComboboxSettableProperties<V
 }
 export interface ojComboboxSettableProperties<V, SV = V, RV = V> extends editableValueSettableProperties<V, SV, RV> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
 }
 export interface ojComboboxSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<ojComboboxSettableProperties<V, SV, RV>> {
@@ -408,10 +408,10 @@ export interface ojComboboxOneSettablePropertiesLenient<K, D, V = any> extends P
 }
 export interface ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> extends editableValue<V, SP, SV> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     addEventListener<T extends keyof ojSelectEventMap<V, SP, SV>>(type: T, listener: (this: HTMLElement, ev: ojSelectEventMap<V, SP, SV>[T]) => any, useCapture?: boolean): void;
@@ -480,10 +480,10 @@ export interface ojSelectEventMap<V, SP extends ojSelectSettableProperties<V, SV
 }
 export interface ojSelectSettableProperties<V, SV = V> extends editableValueSettableProperties<V, SV> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
 }

@@ -1255,6 +1255,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
       _this14._fetchFromAncestors = function (options, key, iterator, finalResults) {
         var self = _assertThisInitialized(_this14);
 
+        if (self._checkFinalResults(options, finalResults)) {
+          finalResults.done = _this14._checkIteratorAndCache();
+          return Promise.resolve(finalResults);
+        }
+
         var handleFetchFromAncestors = function handleFetchFromAncestors(lastParentKey, finalResults) {
           if (self._checkFinalResults(options, finalResults) || lastParentKey === null) {
             finalResults.done = this._checkIteratorAndCache();
@@ -1601,6 +1606,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
           maxCount: _this14._getMaxCount(),
           initialRowCount: _this14.getFetchSize(),
           strategy: exports.VirtualizationStrategy.HIGH_WATER_MARK,
+          isOverflow: _this14._getOverflowFunc(),
           success: function success(result) {
             _this14.handleFetchSuccess(result);
           },
@@ -1619,6 +1625,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
 
       _this14.getLoadMoreCount = function () {
         return 0;
+      };
+
+      _this14._getOverflowFunc = function () {
+        var scroller = _this14._getScroller();
+
+        if (scroller !== _this14.root) {
+          return _this14._isLastItemInViewport.bind(_assertThisInitialized(_this14));
+        }
+
+        return null;
+      };
+
+      _this14._isLastItemInViewport = function () {
+        var styleClass = '.' + _this14.callback.getItemStyleClass() + ', .' + _this14.callback.getGroupStyleClass();
+
+        var items = _this14.root.querySelectorAll(styleClass);
+
+        var lastItem = items[items.length - 1];
+
+        if (lastItem) {
+          var lastItemBounds = lastItem.getBoundingClientRect();
+
+          if (lastItemBounds.top >= 0 && lastItemBounds.bottom <= document.documentElement.clientHeight) {
+            return false;
+          }
+        }
+
+        return true;
       };
 
       _this14._cachedIteratorsAndResults = {};
@@ -2017,8 +2051,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
         if (this.domScroller && this.isReady()) {
           var fetchPromise = this.domScroller.checkViewport();
 
-          if (fetchPromise != null) {
+          if (fetchPromise != null && this.fetchPromise !== fetchPromise) {
+            this.fetchPromise = fetchPromise;
             fetchPromise.then(function (result) {
+              this.fetchPromise = null;
+
               if (result != null) {
                 this.handleFetchSuccess(result);
               }

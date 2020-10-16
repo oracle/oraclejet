@@ -1401,7 +1401,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           onFocusin: this._handleFocusIn,
           onFocusout: this._handleFocusOut,
           onPointerdown: this._handlePointerDown,
-          role: 'grid'
+          role: 'grid',
+          "aria-label": this.props['aria-label'],
+          "aria-labelledby": this.props['aria-labelledby']
         }, ojvcomponent.h("div", {
           role: 'row',
           style: this._getContentDivStyle(),
@@ -2105,7 +2107,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
   exports.WaterfallLayout.gutterWidth = 20;
   exports.WaterfallLayout.metadata = {
     "extension": {
-      "_DEFAULTS": Props
+      "_DEFAULTS": Props,
+      "_ROOT_PROPS_MAP": {
+        "aria-label": true,
+        "aria-labelledby": true
+      }
     },
     "properties": {
       "data": {

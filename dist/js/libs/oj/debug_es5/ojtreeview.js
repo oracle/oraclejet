@@ -180,6 +180,10 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  *
  * <p>The JET TreeView allows a user to display the hierarchical relationship between items.</p>
  *
+ * <p>The child content can be configured via inline HTML content or a DataProvider.
+ * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
+ * </p>
+ *
  * <h3 id="data-section">
  *   Data
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
@@ -199,6 +203,14 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  * See the documentation for <a href="oj.CollectionTreeDataSource.html">oj.CollectionTreeDataSource</a>
  * for more details on the available options.</li>
  * </ul>
+ *
+ * <p>Example of tree data provider content:</p>
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-tree-view data="[[dataprovider]]">
+ * &lt;/oj-tree-view>
+ * </code></pre>
+ * <p>Check out this <a href="../jetCookbook.html?component=arrayTreeDataProvider&demo=keys">demo</a>.</p>
  *
  * <p>The second way is using static HTML content as data.</p>
  *
@@ -1803,7 +1815,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
           selector.setAttribute('data-oj-binding-provider', 'none');
           selector.setAttribute('selection-mode', 'multiple');
           selector.addEventListener('selectedKeysChanged', function (event) {
-            if (event.detail.value !== this.options.selected) {
+            if (event.detail.updatedFrom === 'internal') {
               var selectedItem = this._getItemByKey(event.target.rowKey);
 
               this._focus(selectedItem, event);

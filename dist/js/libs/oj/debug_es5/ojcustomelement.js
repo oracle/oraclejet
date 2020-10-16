@@ -89,6 +89,16 @@ oj.BaseCustomElementBridge.proto = {
     Object.setPrototypeOf(constructorFunc, HTMLElement);
     return constructorFunc;
   },
+  // Provides a promise for JET's Knockout throttling timeout
+  // when knockout is used for the component
+  getThrottlePromise: function getThrottlePromise(element) {
+    var throttlePromise = this._getBindingProvider(element);
+
+    throttlePromise = throttlePromise.then(function (bindingProvider) {
+      return bindingProvider ? bindingProvider.__GetThrottlePromise() : null;
+    });
+    return throttlePromise;
+  },
   playbackEarlyPropertySets: function playbackEarlyPropertySets(element) {
     this._bCanSetProperty = true;
     this.PlaybackEarlyPropertySets(element);
@@ -184,6 +194,59 @@ oj.BaseCustomElementBridge.proto = {
   DefineMethodCallback: function DefineMethodCallback(proto, method, methodMeta) {},
   // eslint-disable-next-line no-unused-vars
   DefinePropertyCallback: function DefinePropertyCallback(proto, property, propertyMeta) {},
+  // Is this attribute one that gets moved off of the root element?
+  // eslint-disable-next-line no-unused-vars
+  IsTransferAttribute: function IsTransferAttribute(element, name) {
+    return false;
+  },
+  // Get descriptive text of an attribute.
+  GetDescriptiveValue: function GetDescriptiveValue(element, attrName) {
+    var propName = oj.__AttributeUtils.attributeToPropertyName(attrName);
+
+    var properties = oj.BaseCustomElementBridge.getProperties(this); // Get the descriptive value from:
+    // 1. If the attribute is a declared property of the component, return the property
+    // 2. If the attribute gets moved off of the root element, fetch it from the new location
+    // 3. Otherwise just return the attribute value.
+
+    var value;
+
+    if (properties && properties[propName]) {
+      value = element[propName];
+    } else if (this.IsTransferAttribute(element, attrName)) {
+      value = this.GetDescriptiveTransferAttributeValue(attrName);
+    } else {
+      value = element.getAttribute(attrName);
+    }
+
+    return value;
+  },
+  // Gets the label value of a "labelled-by" like attribute
+  GetDescriptiveLabelByValue: function GetDescriptiveLabelByValue(element, attrName) {
+    var LabelBy = this.GetDescriptiveValue(element, attrName);
+
+    if (LabelBy) {
+      var label = document.getElementById(LabelBy);
+
+      if (label) {
+        return label.textContent;
+      }
+    }
+
+    return null;
+  },
+  // Get the label or descriptive text for Tracing
+  GetDescriptiveText: function GetDescriptiveText(element) {
+    var text = this.GetDescriptiveValue(element, 'aria-label') || this.GetDescriptiveValue(element, 'title') || this.GetDescriptiveLabelByValue(element, 'labelled-by') || this.GetDescriptiveValue(element, 'label-hint') || this.GetDescriptiveLabelByValue(element, 'aria-labelledby');
+
+    if (text) {
+      // Normalize whitespace to a single space
+      text = text.trim().replace(/\s+/g, ' ');
+    } else {
+      text = '';
+    }
+
+    return text;
+  },
 
   /**
    * Returns a promise that will be resolved when the component has been initialized.
@@ -656,21 +719,20 @@ oj.BaseCustomElementBridge.proto = {
     this._bpResolve = resolve;
   },
   _getBindingProvider: function _getBindingProvider(element) {
-    var name = this._getBindingProviderName(element);
+    if (!this._bpPromise) {
+      var name = this._getBindingProviderName(element);
 
-    if (name === oj.BaseCustomElementBridge._NO_BINDING_PROVIDER) {
-      this.playbackEarlyPropertySets(element);
-      return Promise.resolve(null);
-    } else if (name === 'knockout') {
-      if (this._bpInst) {
-        return Promise.resolve(this._bpInst);
+      if (name === oj.BaseCustomElementBridge._NO_BINDING_PROVIDER) {
+        this.playbackEarlyPropertySets(element);
+        this._bpPromise = Promise.resolve(null);
+      } else if (name === 'knockout') {
+        this._bpPromise = this._bpInst ? Promise.resolve(this._bpInst) : new Promise(this._setBpResolver.bind(this));
+      } else {
+        this.throwError(element, "Unknown binding provider '" + name + "'.");
       }
-
-      return new Promise(this._setBpResolver.bind(this));
     }
 
-    this.throwError(element, "Unknown binding provider '" + name + "'.");
-    return undefined; // not reachable but eslint is too stupid to figure that out.
+    return this._bpPromise;
   },
   _getBindingProviderName: function _getBindingProviderName(element) {
     var cachedProp = '_ojBndgPrv';
@@ -865,6 +927,19 @@ oj.BaseCustomElementBridge.getElementInfo = function (element) {
   }
 
   return '';
+};
+/**
+ * Returns if an bridge instance exists for an element.
+ * @ignore
+ */
+
+
+oj.BaseCustomElementBridge.hasInstance = function (element) {
+  var instance = element[oj.BaseCustomElementBridge._INSTANCE_KEY];
+
+  var info = oj.BaseCustomElementBridge._registry[element.tagName.toLowerCase()];
+
+  return instance != null || info != null;
 };
 /**
  * Returns the bridge instance for an element.
@@ -1188,20 +1263,23 @@ oj.BaseCustomElementBridge.__CheckOverlappingAttribute = function (element, attr
 
 oj.BaseCustomElementBridge.__GetPropertyMetadata = function (prop, metadata) {
   var meta = metadata;
-  var propAr = prop.split('.');
 
-  for (var i = 0; i < propAr.length; i++) {
-    meta = meta[propAr[i]];
+  if (meta) {
+    var propAr = prop.split('.');
 
-    if (!meta) {
-      break;
-    }
-
-    if (propAr.length > 1 && i < propAr.length - 1) {
-      meta = meta.properties;
+    for (var i = 0; i < propAr.length; i++) {
+      meta = meta[propAr[i]];
 
       if (!meta) {
         break;
+      }
+
+      if (propAr.length > 1 && i < propAr.length - 1) {
+        meta = meta.properties;
+
+        if (!meta) {
+          break;
+        }
       }
     }
   }

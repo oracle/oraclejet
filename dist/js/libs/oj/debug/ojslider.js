@@ -29,11 +29,7 @@ var __oj_range_slider_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -42,16 +38,10 @@ var __oj_range_slider_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -77,6 +67,10 @@ var __oj_range_slider_metadata =
         }
       }
     },
+    "higherValueThumb": {
+      "type": "string",
+      "value": "Higher Value Thumb"
+    },
     "labelEdge": {
       "type": "string",
       "enumValues": [
@@ -91,6 +85,10 @@ var __oj_range_slider_metadata =
     },
     "labelledBy": {
       "type": "string"
+    },
+    "lowerValueThumb": {
+      "type": "string",
+      "value": "Lower Value Thumb"
     },
     "max": {
       "type": "number"
@@ -200,11 +198,7 @@ var __oj_slider_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -213,16 +207,10 @@ var __oj_slider_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -1486,11 +1474,37 @@ var __oj_slider_metadata =
 
     _copyLabelledbyToThumb: function (labelId) {
       var thumb = this._elementWrapped.find('.oj-slider-thumb');
+      var thumb2;
+      if (this._isCustomRangeSlider()) {
+        var labelEl = document.getElementById(labelId);
+        var ariaLabelText = labelEl ? labelEl.textContent : '';
+        var lowerValueThumbString = this.getTranslatedString('lowerValueThumb');
+        var higherValueThumbString = this.getTranslatedString('higherValueThumb');
+        thumb.attr('aria-label', ariaLabelText + ' ' + lowerValueThumbString);
+        thumb2 = thumb[1];
+        $(thumb2).attr('aria-label', ariaLabelText + ' ' + higherValueThumbString);
+      } else {
       thumb.attr('aria-labelledby', labelId);
+        if (thumb.length > 1) {
+          thumb2 = thumb[1];
+          $(thumb2).attr('aria-labelledby', String(labelId));
+        }
+      }
+    },
 
-      if (thumb.length > 1) {
+    _setAriaLabelToThumb: function (ariaLabel) {
+      var thumb;
+      if (this._isCustomRangeSlider()) {
+        var lowerValueThumbString = this.getTranslatedString('lowerValueThumb');
+        var higherValueThumbString = this.getTranslatedString('higherValueThumb');
+
+        thumb = this._elementWrapped.find('.oj-slider-thumb');
+        thumb.attr('aria-label', ariaLabel + ' ' + lowerValueThumbString);
         var thumb2 = thumb[1];
-        $(thumb2).attr('aria-labelledby', String(labelId));
+        $(thumb2).attr('aria-label', ariaLabel + ' ' + higherValueThumbString);
+      } else {
+        thumb = this.OuterWrapper.querySelector('.oj-slider-thumb');
+        thumb.setAttribute('aria-label', ariaLabel);
       }
     },
 
@@ -1523,8 +1537,7 @@ var __oj_slider_metadata =
         if (!this.options.labelledBy || document.getElementById(this.options.labelledBy)) {
           ariaLabelString = this.OuterWrapper.getAttribute('aria-label');
           if (ariaLabelString) {
-            thumb = this.OuterWrapper.querySelector('.oj-slider-thumb');
-            thumb.setAttribute('aria-label', ariaLabelString);
+            this._setAriaLabelToThumb(ariaLabelString);
           }
         }
       } else {

@@ -79,10 +79,18 @@ export interface ProgressCircleElementSettableProperties extends JetSettableProp
 export interface ProgressCircleElementSettablePropertiesLenient extends Partial<ProgressCircleElementSettableProperties> {
   [key: string]: any;
 }
-export declare type ojProgressCircle = ProgressCircleElement;
-export declare type ojProgressCircleEventMap = ProgressCircleElementEventMap;
-export declare type ojProgressCircleSettableProperties = ProgressCircleElementSettableProperties;
-export declare type ojProgressCircleSettablePropertiesLenient = ProgressCircleElementSettablePropertiesLenient;
+export type ojProgressCircle = ProgressCircleElement
+export namespace ojProgressCircle {
+  // tslint:disable-next-line interface-over-type-literal
+  type maxChanged = JetElementCustomEvent<ojProgressCircle["max"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type sizeChanged = JetElementCustomEvent<ojProgressCircle["size"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type valueChanged = JetElementCustomEvent<ojProgressCircle["value"]>;
+}
+export type ojProgressCircleEventMap = ProgressCircleElementEventMap;
+export type ojProgressCircleSettableProperties = ProgressCircleElementSettableProperties;
+export type ojProgressCircleSettablePropertiesLenient = ProgressCircleElementSettablePropertiesLenient;
 export interface ProgressCircleProperties extends Partial<ProgressCircleElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

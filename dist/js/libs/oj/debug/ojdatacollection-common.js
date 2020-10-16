@@ -26,6 +26,10 @@ DataCollectionUtils._TAB_INDEX = 'tabIndex';
  */
 DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
 
+/**
+ * @private
+ */
+DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY = "input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex='-1'])";
 
 /** ******************* focusable/editable element related methods *****************/
 
@@ -102,6 +106,24 @@ DataCollectionUtils.enableAllFocusableElements = function (element) {
     }
   }
   return focusElems;
+};
+
+/**
+ * Finds all the focusable elements in a node including ones with tabmod on them (disbaled by us)
+ * @param {Element} element
+ * @return {Element[]} An array of the enabled elements
+ * @private
+ */
+DataCollectionUtils.getFocusableElementsIncludingDisabled = function (element) {
+  var inputElems = [];
+  let nodes = element.querySelectorAll(DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY + ',[' + DataCollectionUtils._DATA_OJ_TABMOD + ']');
+  for (var i = 0; i < nodes.length; i++) {
+    var elem = nodes[i];
+    if (!elem.disabled && elem.style.display !== 'none') {
+      inputElems.push(elem);
+    }
+  }
+  return inputElems;
 };
 
 /**

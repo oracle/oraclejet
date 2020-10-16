@@ -45,6 +45,7 @@ var DomScroller = function (element, dataprovider, options) {
   this._requestCallback = options.request;
   this._errorCallback = options.error;
   this._beforeFetchCallback = options.beforeFetch;
+  this._isOverflowCallback = options.isOverflow;
   this._handleScrollTopCallback = options.onScrollTop;
   this._localKeyValidator = options.localKeyValidator;
   this._registerDataSourceEventListeners();
@@ -249,6 +250,10 @@ DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollT
  * @return {boolean} true if overflowed, false otherwise
  */
 DomScroller.prototype.isOverflow = function () {
+  if (this._isOverflowCallback) {
+    return this._isOverflowCallback();
+  }
+
   var element = this._element;
   var diff = element.scrollHeight - (element.clientHeight + this._fetchTrigger);
   if (diff === 1 && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {

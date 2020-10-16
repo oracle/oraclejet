@@ -11,10 +11,10 @@ import { editableValue, editableValueEventMap, editableValueSettableProperties }
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojColorPalette extends editableValue<Color, ojColorPaletteSettableProperties> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;
@@ -78,10 +78,10 @@ export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojC
 }
 export interface ojColorPaletteSettableProperties extends editableValueSettableProperties<Color> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;

@@ -745,8 +745,19 @@ DataProviderContentHandler.prototype._handleAddTransitionEnd =
 
     if (this.shouldUseGridRole()) {
       if (!this.isCardLayout()) {
-        // eslint-disable-next-line no-param-reassign
-        elem.children[0].className = 'oj-listview-cell-element';
+        var firstChild = elem.firstElementChild;
+        // should not be null
+        if (firstChild) {
+          elem._className.split(' ').forEach(function (cls) {
+            firstChild.classList.remove(cls);
+          });
+          firstChild.classList.add('oj-listview-cell-element');
+
+          var firstElem = firstChild.firstElementChild;
+          if (firstElem) {
+            firstElem.classList.remove('oj-listview-cell-element');
+          }
+        }
       }
     } else {
       $(elem).children().children().unwrap();
@@ -972,7 +983,7 @@ DataProviderContentHandler.prototype.afterRenderItemForChangeEvent =
     this.signalTaskStart('after render item for model change event'); // signal method task start
 
     // adds all neccessary wai aria role and classes
-    this.afterRenderItem(item, context);
+    this.afterRenderItem(item, context, isCustomizeItem);
 
     var promise = this.m_widget.StartAnimation(item, action);
 
@@ -1145,6 +1156,12 @@ DataProviderContentHandler.prototype.animateShowContent =
       var skeletonContainer = root.querySelector('.oj-listview-skeleton-container');
       if (skeletonContainer != null) {
         AnimationUtils.fadeOut(skeletonContainer, { duration: '100ms' }).then(function () {
+          // component could have been destroyed
+          if (this.m_widget == null) {
+            resolve(false);
+            return;
+          }
+
           // remove skeleton
           var skeletonContainerRoot = skeletonContainer.parentNode;
           if (skeletonContainerRoot.classList.contains('oj-listview-initial-skeletons')) {
@@ -1165,7 +1182,7 @@ DataProviderContentHandler.prototype.animateShowContent =
           });
           // can resolve immediately instead of waiting for fade in
           resolve(false);
-        });
+        }.bind(this));
       } else {
         // skeleton is not supported
         if (shouldEmptyElem) {
@@ -2398,6 +2415,11 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData =
     if (data.length === keys.length) {
       this._handleFetchSuccess(data, keys, (dataObj.done || dataObj.maxCountLimit), templateEngine,
         dataObj.isMouseWheel, metadata, isInitialFetch).then(function (skipPostProcessing) {
+          // component could have been destroyed
+          if (this.m_widget == null) {
+            return;
+          }
+
           var nothingInserted = (keys != null && keys.length === 0);
 
           if (this._isLoadMoreOnScroll()) {

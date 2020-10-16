@@ -408,7 +408,9 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
       // save off the browser fetch and XHR only in browser context.
       // also add listeners for browser online
       // Don't do it for Service Workers
-      if (_isSafari()) {
+      if (_isSafari() &&
+        !persistenceManager._browserRequestConstructor &&
+        !persistenceManager._persistenceRequestConstructor) {
         logger.log("Offline Persistence Toolkit PersistenceManager: Replacing Safari Browser APIs");
         // using self to refer to both the "window" and the "self" context
         // of serviceworker
@@ -421,7 +423,8 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
           writable: false
         });
         self['Request'] = persistenceManager._persistenceRequestConstructor;
-        if (!_isBrowserContext()) {
+        if (!_isBrowserContext() && 
+          !persistenceManager._browserFetchFunc) {
           // replace serviceWorker's fetch with this wrapper to unwrap safari request in sw
           Object.defineProperty(persistenceManager, '_browserFetchFunc', {
             value: self.fetch,

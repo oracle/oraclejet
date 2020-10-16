@@ -315,6 +315,7 @@
 
     /* Styling for the column header element. */
     .oj-table-column-header {
+      display: flex;
       position: relative;
       float: none;
       text-overflow: inherit;

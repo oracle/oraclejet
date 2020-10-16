@@ -914,6 +914,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             };
             this._fetchFromAncestors = (options, key, iterator, finalResults) => {
                 let self = this;
+                if (self._checkFinalResults(options, finalResults)) {
+                    finalResults.done = this._checkIteratorAndCache();
+                    return Promise.resolve(finalResults);
+                }
                 let handleFetchFromAncestors = function (lastParentKey, finalResults) {
                     if (self._checkFinalResults(options, finalResults) || lastParentKey === null) {
                         finalResults.done = this._checkIteratorAndCache();
@@ -1178,6 +1182,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     maxCount: this._getMaxCount(),
                     initialRowCount: this.getFetchSize(),
                     strategy: exports.VirtualizationStrategy.HIGH_WATER_MARK,
+                    isOverflow: this._getOverflowFunc(),
                     success: (result) => {
                         this.handleFetchSuccess(result);
                     },
@@ -1195,6 +1200,26 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             };
             this.getLoadMoreCount = () => {
                 return 0;
+            };
+            this._getOverflowFunc = () => {
+                var scroller = this._getScroller();
+                if (scroller !== this.root) {
+                    return this._isLastItemInViewport.bind(this);
+                }
+                return null;
+            };
+            this._isLastItemInViewport = () => {
+                var styleClass = '.' + this.callback.getItemStyleClass() + ', .' + this.callback.getGroupStyleClass();
+                var items = this.root.querySelectorAll(styleClass);
+                var lastItem = items[items.length - 1];
+                if (lastItem) {
+                    var lastItemBounds = lastItem.getBoundingClientRect();
+                    if (lastItemBounds.top >= 0 &&
+                        lastItemBounds.bottom <= document.documentElement.clientHeight) {
+                        return false;
+                    }
+                }
+                return true;
             };
             this._cachedIteratorsAndResults = {};
             this._clientId = Symbol();
@@ -1487,8 +1512,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
         checkViewport() {
             if (this.domScroller && this.isReady()) {
                 let fetchPromise = this.domScroller.checkViewport();
-                if (fetchPromise != null) {
+                if (fetchPromise != null && this.fetchPromise !== fetchPromise) {
+                    this.fetchPromise = fetchPromise;
                     fetchPromise.then(function (result) {
+                        this.fetchPromise = null;
                         if (result != null) {
                             this.handleFetchSuccess(result);
                         }

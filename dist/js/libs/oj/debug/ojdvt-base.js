@@ -231,7 +231,8 @@ DataProviderHandler.prototype._getDataProviderEventHandler = function (dataPrope
 
   // rerenders the component with updated data
   var renderUpdatedData = function (dataPromise) {
-    Promise.all([dataPromise]).then(function (values) {
+    var throttlePromise = self._component._GetThrottlePromise();
+    Promise.all([dataPromise, throttlePromise]).then(function (values) {
       // Reset cached data so that the templates would be reprocessed for the new data
       self._fireEvent('clearState', { dataProperty: dataProperty });
       self._fetchedData[dataProperty] = values[0];
@@ -1207,7 +1208,7 @@ TemplateHandler.prototype.processNodeTemplate = function (dataProperty,
 
       if (this._queueNextEvent) {
         this._fireEvent('notReady');
-        templateEngine.getThrottlePromise().then(function () {
+        this._component._GetThrottlePromise().then(function () {
           // Rerender component
           this._fireEvent('dataUpdated', {
             dataProperty: dataProperty,

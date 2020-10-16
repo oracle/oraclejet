@@ -4,6 +4,63 @@ define(['exports', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdatapr
     DedupDataProvider = DedupDataProvider && Object.prototype.hasOwnProperty.call(DedupDataProvider, 'default') ? DedupDataProvider['default'] : DedupDataProvider;
     MutateEventFilteringDataProvider = MutateEventFilteringDataProvider && Object.prototype.hasOwnProperty.call(MutateEventFilteringDataProvider, 'default') ? MutateEventFilteringDataProvider['default'] : MutateEventFilteringDataProvider;
 
+    class EnhancedTreeDataProvider {
+        constructor(treeDataProvider, enhancedDataProvider, options) {
+            this.treeDataProvider = treeDataProvider;
+            this.enhancedDataProvider = enhancedDataProvider;
+            this.options = options;
+            enhancedDataProvider.addEventListener(EnhancedTreeDataProvider._MUTATE, (event) => {
+                this.dispatchEvent(event);
+            });
+            enhancedDataProvider.addEventListener(EnhancedTreeDataProvider._REFRESH, (event) => {
+                this.dispatchEvent(event);
+            });
+            if (enhancedDataProvider.createOptimizedKeyMap) {
+                this.createOptimizedKeyMap = (initialMap) => {
+                    return enhancedDataProvider.createOptimizedKeyMap(initialMap);
+                };
+            }
+            if (enhancedDataProvider.createOptimizedKeySet) {
+                this.createOptimizedKeySet = (initialSet) => {
+                    return enhancedDataProvider.createOptimizedKeySet(initialSet);
+                };
+            }
+        }
+        getChildDataProvider(parentKey) {
+            const childDataProvider = this.treeDataProvider.getChildDataProvider(parentKey);
+            if (childDataProvider) {
+                return getEnhancedDataProvider(childDataProvider, this.options);
+            }
+            return null;
+        }
+        containsKeys(parameters) {
+            return this.enhancedDataProvider.containsKeys(parameters);
+        }
+        fetchByKeys(parameters) {
+            return this.enhancedDataProvider.fetchByKeys(parameters);
+        }
+        fetchByOffset(parameters) {
+            return this.enhancedDataProvider.fetchByOffset(parameters);
+        }
+        fetchFirst(parameters) {
+            return this.enhancedDataProvider.fetchFirst(parameters);
+        }
+        getCapability(capabilityName) {
+            return this.enhancedDataProvider.getCapability(capabilityName);
+        }
+        getTotalSize() {
+            return this.enhancedDataProvider.getTotalSize();
+        }
+        isEmpty() {
+            return this.enhancedDataProvider.isEmpty();
+        }
+    }
+    EnhancedTreeDataProvider._REFRESH = 'refresh';
+    EnhancedTreeDataProvider._MUTATE = 'mutate';
+    oj['EnhancedTreeDataProvider'] = EnhancedTreeDataProvider;
+    oj.EnhancedTreeDataProvider = EnhancedTreeDataProvider;
+    oj.EventTargetMixin.applyMixin(EnhancedTreeDataProvider);
+
     function getEnhancedDataProvider(dataProvider, options) {
         var _a, _b, _c;
         let fetchCapability = (_a = options === null || options === void 0 ? void 0 : options.capabilities) === null || _a === void 0 ? void 0 : _a.fetchCapability;
@@ -42,6 +99,9 @@ define(['exports', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdedupdatapr
         }
         if (needsEventFiltering) {
             wrappedDataProvider = new MutateEventFilteringDataProvider(wrappedDataProvider);
+        }
+        if (dataProvider['getChildDataProvider']) {
+            wrappedDataProvider = new EnhancedTreeDataProvider(dataProvider, wrappedDataProvider, options);
         }
         return wrappedDataProvider;
     }

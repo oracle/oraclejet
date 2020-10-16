@@ -137,6 +137,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleSortable?: string;
         accessibleStateSelected?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
@@ -616,6 +617,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
+        accessibleSortable?: string;
         accessibleStateSelected?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;

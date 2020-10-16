@@ -24,6 +24,8 @@ declare class Props<Key, Data> {
         key?: Key;
         offsetY?: number;
     };
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
 }
 declare type State = {
     renderedData: any;
@@ -175,10 +177,20 @@ export interface WaterfallLayoutElementSettableProperties<Key,Data> extends JetS
 export interface WaterfallLayoutElementSettablePropertiesLenient<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export declare type ojWaterfallLayout<Key,Data> = WaterfallLayoutElement<Key,Data>;
-export declare type ojWaterfallLayoutEventMap<Key,Data> = WaterfallLayoutElementEventMap<Key,Data>;
-export declare type ojWaterfallLayoutSettableProperties<Key,Data> = WaterfallLayoutElementSettableProperties<Key,Data>;
-export declare type ojWaterfallLayoutSettablePropertiesLenient<Key,Data> = WaterfallLayoutElementSettablePropertiesLenient<Key,Data>;
+export type ojWaterfallLayout<Key,Data> = WaterfallLayoutElement<Key,Data>
+export namespace ojWaterfallLayout {
+  // tslint:disable-next-line interface-over-type-literal
+  type dataChanged<Key,Data> = JetElementCustomEvent<ojWaterfallLayout<Key,Data>["data"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPolicyChanged<Key,Data> = JetElementCustomEvent<ojWaterfallLayout<Key,Data>["scrollPolicy"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPolicyOptionsChanged<Key,Data> = JetElementCustomEvent<ojWaterfallLayout<Key,Data>["scrollPolicyOptions"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPositionChanged<Key,Data> = JetElementCustomEvent<ojWaterfallLayout<Key,Data>["scrollPosition"]>;
+}
+export type ojWaterfallLayoutEventMap<Key,Data> = WaterfallLayoutElementEventMap<Key,Data>;
+export type ojWaterfallLayoutSettableProperties<Key,Data> = WaterfallLayoutElementSettableProperties<Key,Data>;
+export type ojWaterfallLayoutSettablePropertiesLenient<Key,Data> = WaterfallLayoutElementSettablePropertiesLenient<Key,Data>;
 export interface WaterfallLayoutProperties<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

@@ -121,8 +121,10 @@ export declare class StreamList<K extends string | number, D> extends VComponent
     private getGroupRenderer;
     private getGroupStyleClass;
     private _handleTouchOrClickEvent;
+    private _isFocusable;
     private _isInputElement;
-    private _isInsideInputElement;
+    private _isInsideFocusableElement;
+    private _isInFocusableElementsList;
     private _resetFocus;
     private _setFocus;
     private _updateCurrentItemAndFocus;
@@ -207,10 +209,22 @@ export interface StreamListElementSettableProperties<Key,Data> extends JetSettab
 export interface StreamListElementSettablePropertiesLenient<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export declare type ojStreamList<Key,Data> = StreamListElement<Key,Data>;
-export declare type ojStreamListEventMap<Key,Data> = StreamListElementEventMap<Key,Data>;
-export declare type ojStreamListSettableProperties<Key,Data> = StreamListElementSettableProperties<Key,Data>;
-export declare type ojStreamListSettablePropertiesLenient<Key,Data> = StreamListElementSettablePropertiesLenient<Key,Data>;
+export type ojStreamList<Key,Data> = StreamListElement<Key,Data>
+export namespace ojStreamList {
+  // tslint:disable-next-line interface-over-type-literal
+  type dataChanged<Key,Data> = JetElementCustomEvent<ojStreamList<Key,Data>["data"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type expandedChanged<Key,Data> = JetElementCustomEvent<ojStreamList<Key,Data>["expanded"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPolicyChanged<Key,Data> = JetElementCustomEvent<ojStreamList<Key,Data>["scrollPolicy"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPolicyOptionsChanged<Key,Data> = JetElementCustomEvent<ojStreamList<Key,Data>["scrollPolicyOptions"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type scrollPositionChanged<Key,Data> = JetElementCustomEvent<ojStreamList<Key,Data>["scrollPosition"]>;
+}
+export type ojStreamListEventMap<Key,Data> = StreamListElementEventMap<Key,Data>;
+export type ojStreamListSettableProperties<Key,Data> = StreamListElementSettableProperties<Key,Data>;
+export type ojStreamListSettablePropertiesLenient<Key,Data> = StreamListElementSettablePropertiesLenient<Key,Data>;
 export interface StreamListProperties<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

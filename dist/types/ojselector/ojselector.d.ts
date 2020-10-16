@@ -17,9 +17,15 @@ declare class Props<Key> {
     'aria-label'?: string;
     'aria-labelledby'?: string;
 }
-export declare class Selector<K> extends VComponent<Props<K>> {
+declare type State = {
+    focus?: boolean;
+};
+export declare class Selector<K> extends VComponent<Props<K>, State> {
+    constructor(props: Readonly<Props<K>>);
     protected render(): any;
     private _checkboxListener;
+    private _handleFocusin;
+    private _handleFocusout;
     private _isSelected;
     protected _vprops?: VProps<K>;
 }
@@ -75,10 +81,18 @@ export interface SelectorElementSettableProperties<Key> extends JetSettablePrope
 export interface SelectorElementSettablePropertiesLenient<Key> extends Partial<SelectorElementSettableProperties<Key>> {
   [key: string]: any;
 }
-export declare type ojSelector<Key> = SelectorElement<Key>;
-export declare type ojSelectorEventMap<Key> = SelectorElementEventMap<Key>;
-export declare type ojSelectorSettableProperties<Key> = SelectorElementSettableProperties<Key>;
-export declare type ojSelectorSettablePropertiesLenient<Key> = SelectorElementSettablePropertiesLenient<Key>;
+export type ojSelector<Key> = SelectorElement<Key>
+export namespace ojSelector {
+  // tslint:disable-next-line interface-over-type-literal
+  type rowKeyChanged<Key> = JetElementCustomEvent<ojSelector<Key>["rowKey"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type selectedKeysChanged<Key> = JetElementCustomEvent<ojSelector<Key>["selectedKeys"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type selectionModeChanged<Key> = JetElementCustomEvent<ojSelector<Key>["selectionMode"]>;
+}
+export type ojSelectorEventMap<Key> = SelectorElementEventMap<Key>;
+export type ojSelectorSettableProperties<Key> = SelectorElementSettableProperties<Key>;
+export type ojSelectorSettablePropertiesLenient<Key> = SelectorElementSettablePropertiesLenient<Key>;
 export interface SelectorProperties<Key> extends Partial<SelectorElementSettableProperties<Key>>, GlobalAttributes {}
 export interface VProps<Key> extends Props<Key>, GlobalAttributes {}
 declare global {

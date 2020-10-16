@@ -410,7 +410,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
                 legacyViewModelMethodFunc(currentViewModel,
                                           'detachedHandler',
                                           [element, valueAccessor, cachedNodeArray]);
-                viewModelMethodFunc(currentViewModel, 'disconnected');
+                viewModelMethodFunc(currentViewModel, 'disconnected', cachedNodeArray);
                 dispatchLifecycleEventFunc(contextElement,
                                            'ojViewDisconnected',
                                            [currentViewModel, cachedNodeArray]);
@@ -465,7 +465,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
                                           [targetElement, valueAccessor, model, fromCache]);
               legacyViewModelMethodFunc(model, 'attachedHandler',
                                         [targetElement, valueAccessor, fromCache]);
-              viewModelMethodFunc(model, 'connected');
+              viewModelMethodFunc(model, 'connected', nodes);
               dispatchLifecycleEventFunc(contextElement, 'ojViewConnected', [model]);
 
               if (!fromCache && !bindingApplied) {
@@ -503,7 +503,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
                                           [element, valueAccessor, model]);
               legacyViewModelMethodFunc(model, 'transitionCompletedHandler',
                                         [element, valueAccessor]);
-              viewModelMethodFunc(model, 'transitionCompleted');
+              viewModelMethodFunc(model, 'transitionCompleted', nodes);
               dispatchLifecycleEventFunc(contextElement, 'ojTransitionEnd', [model]);
               resolveBusyState();
             };
@@ -768,13 +768,14 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
    * @ignore
    * @param {?Object} model
    * @param {string} name
+   * @param {Array} params
    */
-  function _invokeViewModelMethodOnElement(model, name) {
+  function _invokeViewModelMethodOnElement(model, name, params) {
     if (model && name) {
       var handler = model[name];
       if (typeof handler === 'function') {
         // suspend dependency detection while listeners are invoked
-        ko.ignoreDependencies(handler, model);
+        ko.ignoreDependencies(handler, model, [params]);
       }
     }
   }

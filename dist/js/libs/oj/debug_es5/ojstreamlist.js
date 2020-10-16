@@ -930,8 +930,15 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
     _createClass(StreamList, [{
       key: "_handleFocusIn",
-      value: function _handleFocusIn() {
+      value: function _handleFocusIn(event) {
         this._clearFocusoutTimeout();
+
+        var target = event.target;
+        var item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
+
+        if (item && this._isFocusable(target, item)) {
+          this._enterActionableMode(target);
+        }
       }
     }, {
       key: "_handleFocusOut",
@@ -1268,12 +1275,11 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var _this4 = this;
 
         var data = this.props.data;
-        var scroller = this.props.scrollPolicyOptions.scroller ? this.props.scrollPolicyOptions.scroller : this.root;
 
         if (this._isTreeData()) {
-          this.contentHandler = new StreamListTreeContentHandler(scroller, data, this, this.props.scrollPolicyOptions);
+          this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this.props.scrollPolicyOptions);
         } else if (data != null) {
-          this.contentHandler = new StreamListContentHandler(scroller, data, this, this.props.scrollPolicyOptions);
+          this.contentHandler = new StreamListContentHandler(this.root, data, this, this.props.scrollPolicyOptions);
         }
 
         this.contentHandler.fetchRows();
@@ -1375,12 +1381,11 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             expandedSkeletonKeys: new KeySet.KeySetImpl(),
             expandingKeys: new KeySet.KeySetImpl()
           });
-          var scroller = this.props.scrollPolicyOptions.scroller ? this.props.scrollPolicyOptions.scroller : this.root;
 
           if (this._isTreeData()) {
-            this.contentHandler = new StreamListTreeContentHandler(scroller, this.props.data, this, this.props.scrollPolicyOptions);
+            this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this.props.scrollPolicyOptions);
           } else if (this.props.data != null) {
-            this.contentHandler = new StreamListContentHandler(scroller, this.props.data, this, this.props.scrollPolicyOptions);
+            this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this.props.scrollPolicyOptions);
           }
 
           this.contentHandler.fetchRows();
@@ -1727,7 +1732,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
 
         if (item) {
-          if (this._isInputElement(target) || this._isInsideInputElement(target, item)) {
+          if (this._isFocusable(target, item)) {
             this._updateCurrentItemAndFocus(item, false);
 
             this._enterActionableMode(target);
@@ -1737,18 +1742,23 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         }
       }
     }, {
+      key: "_isFocusable",
+      value: function _isFocusable(target, item) {
+        return this._isInputElement(target) || this._isInsideFocusableElement(target, item);
+      }
+    }, {
       key: "_isInputElement",
       value: function _isInputElement(target) {
         var inputRegExp = /^INPUT|SELECT|OPTION|TEXTAREA/;
         return target.nodeName.match(inputRegExp) != null && !target.readOnly;
       }
     }, {
-      key: "_isInsideInputElement",
-      value: function _isInsideInputElement(target, item) {
+      key: "_isInsideFocusableElement",
+      value: function _isInsideFocusableElement(target, item) {
         var found = false;
 
         while (target !== item && target != null) {
-          if (target.classList.contains('oj-form-control')) {
+          if (target.classList.contains('oj-form-control') || this._isInFocusableElementsList(target, item)) {
             if (!target.readonly && !target.disabled) {
               found = true;
             }
@@ -1759,6 +1769,18 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           target = target.parentNode;
         }
 
+        return found;
+      }
+    }, {
+      key: "_isInFocusableElementsList",
+      value: function _isInFocusableElementsList(target, item) {
+        var found = false;
+        var nodes = DataCollectionUtils.getFocusableElementsIncludingDisabled(item);
+        nodes.forEach(function (node) {
+          if (node === target) {
+            found = true;
+          }
+        });
         return found;
       }
     }, {

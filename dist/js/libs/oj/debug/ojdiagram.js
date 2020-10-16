@@ -4608,16 +4608,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
           return origRenderer(context);
         };
       };
-      if (option === 'focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
+      if (option === 'nodeContent/focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
         return getDefaultWrapperFunction('renderDefaultFocus');
       }
-      if (option === 'hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
+      if (option === 'nodeContent/hoverRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-hover')) {
         return getDefaultWrapperFunction('renderDefaultHover');
       }
-      if (option === 'selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
+      if (option === 'nodeContent/selectionRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-selection')) {
         return getDefaultWrapperFunction('renderDefaultSelection');
       }
-      if (option === 'zoomRenderer') {
+      if (option === 'nodeContent/zoomRenderer') {
         if (templateDataSet.ojZoomThresholds) {
           try {
             var thresholds = JSON.parse(templateDataSet.ojZoomThresholds);

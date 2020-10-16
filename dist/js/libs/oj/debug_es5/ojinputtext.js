@@ -46,11 +46,7 @@ var __oj_input_password_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -59,16 +55,10 @@ var __oj_input_password_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -264,11 +254,7 @@ var __oj_input_text_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -277,16 +263,10 @@ var __oj_input_text_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -508,11 +488,7 @@ var __oj_text_area_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -521,16 +497,10 @@ var __oj_text_area_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },

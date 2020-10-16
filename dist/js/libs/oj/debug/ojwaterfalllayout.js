@@ -1068,7 +1068,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 }
             }
             return (ojvcomponent.h("oj-waterfall-layout", { ref: this.setRootElement, style: this._getRootElementStyle() },
-                ojvcomponent.h("div", { onClick: this._handleClick, onKeydown: this._handleKeyDown, onTouchstart: this._touchStartHandler, onFocusin: this._handleFocusIn, onFocusout: this._handleFocusOut, onPointerdown: this._handlePointerDown, role: 'grid' },
+                ojvcomponent.h("div", { onClick: this._handleClick, onKeydown: this._handleKeyDown, onTouchstart: this._touchStartHandler, onFocusin: this._handleFocusIn, onFocusout: this._handleFocusOut, onPointerdown: this._handlePointerDown, role: 'grid', "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
                     ojvcomponent.h("div", { role: 'row', style: this._getContentDivStyle(), "data-oj-context": true }, content))));
         }
         mounted() {
@@ -1537,7 +1537,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
     };
     exports.WaterfallLayout.gutterWidth = 20;
-    exports.WaterfallLayout.metadata = { "extension": { "_DEFAULTS": Props }, "properties": { "data": { "type": "object|null", "value": null }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"], "value": "loadMoreOnScroll" }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number", "value": 25 }, "maxCount": { "type": "number", "value": 500 }, "scroller": { "type": "Element|null", "value": null } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number", "value": 0 }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true, "readOnly": false } }, "slots": { "itemTemplate": {} } };
+    exports.WaterfallLayout.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-label": true, "aria-labelledby": true } }, "properties": { "data": { "type": "object|null", "value": null }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"], "value": "loadMoreOnScroll" }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number", "value": 25 }, "maxCount": { "type": "number", "value": 500 }, "scroller": { "type": "Element|null", "value": null } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number", "value": 0 }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true, "readOnly": false } }, "slots": { "itemTemplate": {} } };
     __decorate([
         ojvcomponent.listener()
     ], exports.WaterfallLayout.prototype, "_handleFocusIn", null);

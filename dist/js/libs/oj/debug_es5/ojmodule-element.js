@@ -446,26 +446,28 @@ Composite.register('oj-module', {
  * This method might be called multiple times - after the View is created and
  * inserted into the DOM, after the View is reconnected after being disconnected
  * and after a parent element, oj-module, with attached View is reconnected to the DOM.
+ * An array of DOM nodes that represent the connected View will be passed to the callback.
  * @method
  * @since 7.0.0
  * @name connected
  * @ojshortdesc A callback method that is invoked after the View is inserted into the DOM.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): void"}
+ * @ojsignature {target: "Type", value: "?(view:Array<Node>): void"}
  */
 
 /**
  * This optional method may be implemented on the ViewModel and invoked
  * after transition to the new View is complete, including any possible
  * animation between the old and the new View.
+ * An array of DOM nodes that represent the new View will be passed to the callback.
  * @method
  * @since 7.0.0
  * @name transitionCompleted
  * @ojshortdesc A callback method that is invoked after transition to the new View is complete.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): void"}
+ * @ojsignature {target: "Type", value: "?(view:Array<Node>): void"}
  */
 
 /**
@@ -474,13 +476,14 @@ Composite.register('oj-module', {
  * This method might be called multiple times - after the View is disconnected
  * from the DOM and after a parent element, oj-module, with attached View is
  * disconnected from the DOM.
+ * An array of DOM nodes that represent the disconnected View will be passed to the callback.
  * @method
  * @since 7.0.0
  * @name disconnected
  * @ojshortdesc A callback method that is invoked after View is disconnected from the DOM.
  * @memberof oj.ModuleViewModel
  * @instance
- * @ojsignature {target: "Type", value: "?(): void"}
+ * @ojsignature {target: "Type", value: "?(view:Array<Node>): void"}
  */
 
 /**

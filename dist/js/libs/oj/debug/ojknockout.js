@@ -3036,7 +3036,9 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
 }());
 
 
-/* global Promise:false */
+
+/* global Promise: false, BindingProviderImpl: false */
+
 /**
  * @ignore
  * @constructor
@@ -3110,6 +3112,16 @@ oj._KnockoutBindingProvider = function () {
     // This method is only called from the CustomElementBinding where we know the
     // oj.BaseCustomElementBridge class is available
     oj.BaseCustomElementBridge.getInstance(elem).disposeBindingProvider(elem);
+  };
+
+  /**
+   * Provides a promise for JET's Knockout throttling timeout
+   * @return {Promise} a promise for JET's Knockout throttling timeout completing or a promise that will be resolved immediately for the case
+   * when there is no outstanding throttling timeout
+   * @ignore
+   */
+  this.__GetThrottlePromise = function () {
+    return BindingProviderImpl.getGlobalChangeQueue().getThrottlePromise();
   };
 };
 

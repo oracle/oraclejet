@@ -5,4 +5,4 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore"],function(e){"use strict"});
+define(["ojs/ojcore"],(function(o){}));

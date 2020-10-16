@@ -15,7 +15,7 @@ export interface ojSelectSingle<V, D> extends editableValue<V, ojSelectSingleSet
     data: DataProvider<V, D>;
     displayOptions: {
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        messages: 'display' | 'none';
     };
     itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
     labelledBy: string | null;
@@ -127,7 +127,7 @@ export interface ojSelectSingleSettableProperties<V, D> extends editableValueSet
     data: DataProvider<V, D>;
     displayOptions: {
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
+        messages: 'display' | 'none';
     };
     itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
     labelledBy: string | null;

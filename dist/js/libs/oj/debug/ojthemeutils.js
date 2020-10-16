@@ -6,7 +6,7 @@
  * @ignore
  */
 
-define(['ojs/ojlogger'], function(Logger)
+define(['ojs/ojcore-base', 'ojs/ojlogger'], function(oj, Logger)
 {
   "use strict";
 
@@ -74,7 +74,6 @@ ThemeUtils.getThemeTargetPlatform = function () {
 
   return themeMap.targetPlatform;
 };
-
 
 /**
  * clear values cached in  [oj.ThemeUtils.parseJSONFromFontFamily]{@link oj.ThemeUtils.parseJSONFromFontFamily}
@@ -170,7 +169,9 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
     // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element.
     // So save off the font family from the head
     // element to compare to what we read off our generated element.
-    this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+    if (typeof window !== 'undefined') {
+      this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+    }
   }
 
   // see if we already have a map for this component's option defaults
@@ -189,6 +190,9 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
   // the hope is that the browser is smart enough to realize the
   // meta element isn't visible and therefore we avoid perf issues of calling
   // getcomputedstyle
+  if (typeof document === 'undefined') {
+    return null;
+  }
   var elem = document.createElement('meta');
   elem.className = selector;
   document.head.appendChild(elem); // @HTMLUpdateOK
@@ -260,6 +264,25 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
   return jsonval;
 };
 
+if (true) {
+  // Compare JET version with theme version
+  const jetVersions = oj.version.split('.');
+  const themeMap = (ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {}).jetReleaseVersion;
+  const themeVersions = (themeMap || '')
+    .replace(/^v/, '') // Remove leading 'v'
+    .split('.');
+
+  // Log error if major/minor mismatch, warning for patch mismatch
+  const message = `
+  Your CSS file is compatible with JET version ${oj.version}, but you are using JET version ${themeMap}.
+  Please update your CSS to match the version of JET being used.
+  `;
+  if (jetVersions[0] !== themeVersions[0] || jetVersions[1] !== themeVersions[1]) {
+    Logger.error(message);
+  } else if (jetVersions[2] !== themeVersions[2]) {
+    Logger.warn(message);
+  }
+}
 
 ;return ThemeUtils;
 });

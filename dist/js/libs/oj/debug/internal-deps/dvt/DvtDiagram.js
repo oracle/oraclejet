@@ -5978,6 +5978,23 @@ DvtDiagramOverview.prototype.render = function() {
 
 /**
  * @override
+ * @param {DvtDiagramDataAnimationHandler} animationHandler the animation handler, which can be used to chain animations.
+ */
+DvtDiagramOverview.prototype.animateInsert = function(animationHandler) {
+  // do nothing
+};
+
+/**
+ * @override
+ * @param {DvtDiagramDataAnimationHandler} animationHandler the animation handler, which can be used to chain animations.
+ * @param {dvt.Container} deleteContainer
+ */
+DvtDiagramOverview.prototype.animateDelete = function(animationHandler, deleteContainer) {
+  // do nothing
+};
+
+/**
+ * @override
  */
 DvtDiagramOverview.prototype.animateUpdate = function(animationHandler, oldDiagramOverview) {
   // animate content  - fade in/out and matrix

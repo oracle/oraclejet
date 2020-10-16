@@ -198,10 +198,25 @@ export interface InputSearchElementSettableProperties<Key,Data> extends JetSetta
 export interface InputSearchElementSettablePropertiesLenient<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export declare type ojInputSearch<Key,Data> = InputSearchElement<Key,Data>;
-export declare type ojInputSearchEventMap<Key,Data> = InputSearchElementEventMap<Key,Data>;
-export declare type ojInputSearchSettableProperties<Key,Data> = InputSearchElementSettableProperties<Key,Data>;
-export declare type ojInputSearchSettablePropertiesLenient<Key,Data> = InputSearchElementSettablePropertiesLenient<Key,Data>;
+export type ojInputSearch<Key,Data> = InputSearchElement<Key,Data>
+export namespace ojInputSearch {
+  interface ojValueAction<Key,Data> extends CustomEvent<ValueDetail<Key, Data> & {
+    [propName: string]: any;
+  }>{}
+  // tslint:disable-next-line interface-over-type-literal
+  type placeholderChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["placeholder"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type rawValueChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["rawValue"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type suggestionItemTextChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["suggestionItemText"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type suggestionsChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["suggestions"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type valueChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["value"]>;
+}
+export type ojInputSearchEventMap<Key,Data> = InputSearchElementEventMap<Key,Data>;
+export type ojInputSearchSettableProperties<Key,Data> = InputSearchElementSettableProperties<Key,Data>;
+export type ojInputSearchSettablePropertiesLenient<Key,Data> = InputSearchElementSettablePropertiesLenient<Key,Data>;
 export interface InputSearchProperties<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>>, GlobalAttributes {}
 export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
 declare global {

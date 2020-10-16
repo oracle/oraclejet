@@ -34,10 +34,7 @@ var __oj_select_single_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -856,7 +853,16 @@ LovDropdown.prototype.renderResults = function (searchText, filterCriteria,
       // Once the collection is ready, call the configureResults
       // to set the selected and currentRow accordingly.
       busyContext.whenReady().then(function () {
-        this._configureResults(searchText, selectedValue, initial).then(resolve, reject);
+        // JET-39227 - DYNAMIC FORM: USER NEEDS TO CLICK TWICE TO GET VALUE SELECTED FROM SINGLE
+        // SELECT WHEN IT HAS ONLY ONE RECORD IN IT
+        // don't call _configureResults unless this is the most recent render promise, because
+        // otherwise the current item may not be present in the rendered list
+        // ignore old responses
+        if (retPromise === this._lastRenderResultsPromise) {
+          this._configureResults(searchText, selectedValue, initial).then(resolve, reject);
+        } else {
+          resolve();
+        }
       }.bind(this), reject);
     }.bind(this), reject);
   }.bind(this));
@@ -2088,6 +2094,9 @@ LovMainField.prototype._createInnerDom = function (options) {
 
   var input = cachedMainFieldInputElement || document.createElement('input');
   input.setAttribute('id', className + '-input-' + idSuffix);
+  // JET-37990 - oj-select-single: autocomplete is not disabled in chrome browser
+  // Chrome used to ignore "off" value, but as of Chrome 81 it works more reliably
+  // (https://stackoverflow.com/questions/57367813/2019-chrome-76-approach-to-autocomplete-off)
   input.setAttribute('autocomplete', 'off');
   input.setAttribute('autocorrect', 'off');
   input.setAttribute('autocapitalize', 'off');
@@ -2517,7 +2526,9 @@ AbstractLovBase.prototype._runQuery = function (term, focusFirstElem, initial) {
       this._lovMainField.getInputElem().setAttribute('aria-expanded', 'true');
     }
 
-    if (focusFirstElem) {
+    // if not on mobile, transfer focus into the dropdown now;  otherwise wait until after the
+    // dropdown busy state resolves in _handleQueryResultsFetch below
+    if (focusFirstElem && !this._fullScreenPopup) {
       oj.FocusUtils.focusFirstTabStop(lovDropdown.getElement());
     }
 
@@ -2526,19 +2537,19 @@ AbstractLovBase.prototype._runQuery = function (term, focusFirstElem, initial) {
     fetchPromise.then(function () {
       // ignore old responses
       if (fetchPromise === this._lastDataProviderPromise) {
-        this._handleQueryResultsFetch();
+        this._handleQueryResultsFetch(focusFirstElem);
       }
     }.bind(this), function (reason) {
       // ignore old responses
       if (fetchPromise === this._lastDataProviderPromise) {
         Logger.warn('Select: _fetchFromDataProvider promise was rejected: ' + reason);
-        this._handleQueryResultsFetch();
+        this._handleQueryResultsFetch(focusFirstElem);
       }
     }.bind(this));
   }
 };
 
-AbstractLovBase.prototype._handleQueryResultsFetch = function () {
+AbstractLovBase.prototype._handleQueryResultsFetch = function (focusFirstElem) {
   // ignore a response if the oj-combobox has been closed before it was received
   if (!this.isDropdownOpen()) {
     return;
@@ -2566,6 +2577,13 @@ AbstractLovBase.prototype._handleQueryResultsFetch = function () {
       this._getTranslatedStringFunc('nOrMoreMatchesFound', { num: String(resultsCount) });
   }
   this.updateLiveRegion(translation);
+
+  // JET-39385 - SELECT SINGLE HAS NO OPTION TO SET TITLE IN MOBILE SEARCH
+  // wait until the dropdown busy state resolves to transfer focus, otherwise the placeholder in
+  // the mobile search field may not get rendered when the inside label animates
+  if (focusFirstElem && this._fullScreenPopup) {
+    oj.FocusUtils.focusFirstTabStop(this._lovDropdown.getElement());
+  }
 };
 
 AbstractLovBase.prototype.updateLiveRegion = function (translatedString) {
@@ -2892,6 +2910,12 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @private
    */
   _ALLOWED_INPUT_TYPES: ['email', 'number', 'search', 'tel', 'text', 'url'],
+
+  /**
+   * Options that require a refresh when changed.
+   * @private
+   */
+  _OPTIONS_REQUIRING_REFRESH: new Set(['disabled', 'readOnly', 'placeholder', 'data', 'itemText']),
 
   options: {
     /**
@@ -3676,11 +3700,6 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       .removeAttr('aria-hidden tabindex')
       .show();
 
-    var $labelElem = this._$labelElem;
-    $labelElem.attr('for', $labelElem.attr('data-oj-lov-for'));
-    $labelElem.removeAttr('data-oj-lov-for');
-    this._$labelElem = null;
-
     this._removeDataProviderEventListeners();
     this._wrappedDataProvider = null;
 
@@ -3737,42 +3756,23 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
    * @private
    */
   _updateLabel: function () {
-    var $labelElem = this._GetLabelElement() || $();
-    this._$labelElem = $labelElem;
     var options = this.options;
     var lovMainField = this._lovMainField;
     var lovDropdown = this._lovDropdown;
     var filterInputText = this._filterInputText;
 
     var labelId;
-    if ($labelElem.length > 0) {
-      if (!$labelElem.attr('id')) {
-        $labelElem.attr('id', this._className + '-label-' + this._idSuffix);
-      }
-      $labelElem.attr('data-oj-lov-for', $labelElem.attr('for'));
-
-      labelId = $labelElem.attr('id');
-    } else if (options.labelledBy) {
+    if (options.labelledBy) {
       labelId = options.labelledBy;
     }
 
     // element.attr('aria-labelledby', labelId);
-    if ($labelElem.length > 0) {
-      var $inputElem = $(lovMainField.getInputElem());
-      $labelElem.attr('for', $inputElem.attr('id'));
-    }
 
     //  - oghag missing label for ojselect and ojcombobox
     var labelText;
-    if ($labelElem.length > 0) {
-      if (!labelId) {
-        labelText = $labelElem.text();
-      }
-    } else {
-      var alabel = this.OuterWrapper.getAttribute('aria-label');
-      if (alabel) {
-        labelText = alabel;
-      }
+    var alabel = this.OuterWrapper.getAttribute('aria-label');
+    if (alabel) {
+      labelText = alabel;
     }
 
     lovDropdown.updateLabel(labelId, labelText);
@@ -3786,6 +3786,22 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       filterInputText.setAttribute('aria-label', labelText);
       // The attribute value only can be removed by setting it to an empty string
       filterInputText.setAttribute('labelled-by', '');
+    }
+
+    // JET-39385 - SELECT SINGLE HAS NO OPTION TO SET TITLE IN MOBILE SEARCH
+    // set the component's label-hint as the mobile search field label
+    // (don't use the text of an external label because: 1) multiple controls could be labelled
+    // by it, and 2) in non-ko environments, the label may not have been been rendered by now)
+    if (this._fullScreenPopup) {
+      // only affect label-hint attribute if on mobile;  otherwise there are several unit test
+      // failures because we're setting label-hint to ''
+      if (options.labelHint) {
+        filterInputText.setAttribute('label-hint', options.labelHint);
+        filterInputText.setAttribute('label-edge', 'inside');
+        filterInputText.setAttribute('labelled-by', '');
+      } else {
+        filterInputText.setAttribute('label-hint', '');
+      }
     }
   },
 
@@ -3867,6 +3883,17 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   _setFilterFieldText: function (text) {
     this._ignoreFilterFieldRawValueChanged = true;
     this._filterInputText.value = text;
+    // if the filter field is in the mobile dropdown and the dropdown is not currently in
+    // the DOM, remove any oj-label elems from the field before refreshing because the
+    // refresh will not be able to find them to remove them and will simply add a new
+    // oj-label elem, resulting in multiple duplicate label elems
+    if (this._fullScreenPopup) {
+      var dropdownElem = this._lovDropdown.getElement();
+      if (!dropdownElem.parentElement) {
+        var $filterInputElemLabels = $(this._filterInputText).find('oj-label');
+        $filterInputElemLabels.remove();
+      }
+    }
     // if the value is same and focus stays in the field, the rawValue will not be updated.
     // So, the filter text has to be refreshed to reflect the changes.
     this._filterInputText.refresh();
@@ -4589,6 +4616,9 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     filterInputText.setAttribute('id', className + '-filter-' + idSuffix);
     filterInputText.setAttribute('class', className + '-filter');
     filterInputText.setAttribute('clear-icon', this._fullScreenPopup ? 'always' : 'never');
+    // JET-37990 - oj-select-single: autocomplete is not disabled in chrome browser
+    // Chrome used to ignore "off" value, but as of Chrome 81 it works more reliably
+    // (https://stackoverflow.com/questions/57367813/2019-chrome-76-approach-to-autocomplete-off)
     filterInputText.setAttribute('autocomplete', 'off');
     filterInputText.setAttribute('aria-autocomplete', 'list');
     filterInputText.setAttribute('data-oj-internal', '');
@@ -4920,7 +4950,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
 
     // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
     // if setting both data and value at the same time, defer setting the value until after the
-    // has been set
+    // data has been set
     var resolveBusyState;
     var needToUpdateValueItem = false;
     // eslint-disable-next-line no-prototype-builtins
@@ -4929,12 +4959,27 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     var hasValue = options.hasOwnProperty('value');
     // eslint-disable-next-line no-prototype-builtins
     var hasValueItem = options.hasOwnProperty('valueItem');
-    if (hasData) {
+    // JET-38612 - Select Single | Value, disable bug
+    // check whether any of the options being set will require a refresh
+    var requiresRefresh = false;
+    // iterate over the set of options being applied because that set is most likely smaller than
+    // the set of options that would require a refresh, so the loop iterates fewer times
+    var keys = Object.keys(options);
+    for (var i = 0; i < keys.length; i++) {
+      if (this._OPTIONS_REQUIRING_REFRESH.has(keys[i])) {
+        requiresRefresh = true;
+        break;
+      }
+    }
+    if (requiresRefresh) {
       if (hasValue) {
+        // JET-38612 - Select Single | Value, disable bug
+        // if the options require a refresh and a new value is being set that requires a fetch,
+        // defer setting the new value until after the refresh
         this._deferSettingValue = true;
         // maintain a busy state until we've at least started to process all changes
         resolveBusyState = LovUtils.addBusyState(this.OuterWrapper, 'Defer setting value');
-      } else if (!hasValueItem) {
+      } else if (hasData && !hasValueItem) {
         // JET-38441 - WHEN GENERATOR VARIABLE OF TYPE 'OJS/OJARRAYDATAPROVIDER' IS BOUND TO
         // SELECT-SINGLE, IT FAILS TO SHOW THE SELECTED VALUE
         // if setting new data and the current valueItem was set internally, then it needs to be
@@ -4955,7 +5000,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         processSetOptions.forRefresh();
       }
 
-      // turn off the flag now, after setting the new data but before processing the new value,
+      // turn off the flag now, after refreshing but before processing the new value,
       // only if we set the flag during this call to _setOptions
       if (resolveBusyState) {
         this._deferSettingValue = false;
@@ -5021,8 +5066,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       } else {
         processSetOptionValue();
       }
-    } else if (key === 'disabled' || key === 'readOnly' || key === 'placeholder' ||
-      key === 'data' || key === 'itemText') {
+    } else if (this._OPTIONS_REQUIRING_REFRESH.has(key)) {
       // JET-34601 - SELECT SINGLE- CHANGING DISABLED PROPERTY GIVES A GLOWING EFFECT
       // save the processing function for execution in _setOptions
       var processSetOptionForRefresh = function () {
@@ -5155,7 +5199,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
   _SetDisplayValue: function (displayValue) {
     // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
     // if setting both data and value at the same time, defer setting the value until after the
-    // has been set
+    // data has been set
     if (this._deferSettingValue) {
       return;
     }
@@ -5440,8 +5484,10 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         // may need to find out the label and setValueItem later
         resolveLater = !oj.Object.compareValues(value, valueItem.key);
       }
-    } else if (valueItem) {
-      // value not specified
+    } else if (valueItem && !this._deferSettingValue) {
+      // JET-38612 - Select Single | Value, disable bug
+      // if the value is not specified, and we have a value item, and we are not deferring setting
+      // a new value, then sync the value with the value item
       this._syncValueWithValueItem(valueItem, value);
     }
 
@@ -5497,7 +5543,7 @@ oj.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         this.options.value;
       // JET-37550 - REGRESSION : OJ-SELECT-SINGLE NOT DISPLAYING DEFAULT VALUE
       // if setting both data and value at the same time, defer setting a non-placeholder value
-      // until after the has been set
+      // until after the data has been set
       var isPlaceholderValue = LovUtils.isValueForPlaceholder(value);
       if (isPlaceholderValue || !this._deferSettingValue) {
         this._initSelectionHelper(value, this._updateSelectedOption.bind(this));

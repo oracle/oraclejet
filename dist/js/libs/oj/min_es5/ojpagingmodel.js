@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-"use strict";define(["ojs/ojcore","jquery"],function(e,n){
+"use strict";define(["ojs/ojcore","jquery"],(function(e,n){
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -16,4 +16,4 @@
  * Released under the MIT license.
  * http://jquery.org/license
  */
-e.PagingModel=function(){},e.PagingModel.EventType={BEFOREPAGE:"beforePage",PAGE:"page",PAGECOUNT:"pageCount"}});
+e.PagingModel=function(){},e.PagingModel.EventType={BEFOREPAGE:"beforePage",PAGE:"page",PAGECOUNT:"pageCount"}}));

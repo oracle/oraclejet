@@ -24,11 +24,7 @@ var __oj_color_palette_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -37,16 +33,10 @@ var __oj_color_palette_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -629,20 +619,21 @@ var __oj_color_palette_metadata =
           self._$LVWidget = self._$LV;
           return LVResolve.whenReady();
         }).then(function () {
-          // Don't want any listview text if palette is empty
-          self._$LV.ojListView('option', 'translations.msgNoData', '');
+          if (self._$LVWidget) {
+            // Don't want any listview text if palette is empty
+            self._$LV.ojListView('option', 'translations.msgNoData', '');
 
-          self._setOptDisabled(self._disabled);
+            self._setOptDisabled(self._disabled);
 
-          // FIX : when there is a vertical scrollbar, add
-          // padding so that no horizontal scrollbar is needed and the
-          // text doesn't get cut off or truncated
-          if (self._$LV[0].scrollWidth > self._$LV[0].clientWidth) {
-            var scrollbarWidth = self._getScrollbarWidth();
-            var rtl = (self._GetReadingDirection() === 'rtl');
-            self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
+            // FIX : when there is a vertical scrollbar, add
+            // padding so that no horizontal scrollbar is needed and the
+            // text doesn't get cut off or truncated
+            if (self._$LV[0].scrollWidth > self._$LV[0].clientWidth) {
+              var scrollbarWidth = self._getScrollbarWidth();
+              var rtl = (self._GetReadingDirection() === 'rtl');
+              self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
+            }
           }
-
           self._resolvePaletteBusyContext(); // component is ready to use
         });
       },

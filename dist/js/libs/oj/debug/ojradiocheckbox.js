@@ -31,7 +31,7 @@ oj.RadioCheckboxUtils = {};
  * @public
  * @ignore
  */
-oj.RadioCheckboxUtils.renderOptions = function () {
+oj.RadioCheckboxUtils.renderOptions = function (wrapperClassName) {
   var optionsDataArray = this._optionsDataArray;
   var choiceset = this.element[0];
 
@@ -46,7 +46,7 @@ oj.RadioCheckboxUtils.renderOptions = function () {
     // was nothing to wrap in _ComponentCreate.
     if (wrapper == null) {
       wrapper = document.createElement('div');
-      wrapper.className = wrapperClass;
+      wrapper.className = wrapperClassName;
       choiceset.appendChild(wrapper);
     } else {
       // Remove all the existing option items
@@ -107,7 +107,7 @@ oj.RadioCheckboxUtils.renderOptions = function () {
  * @public
  * @ignore
  */
-oj.RadioCheckboxUtils.generateOptionsFromData = function () {
+oj.RadioCheckboxUtils.generateOptionsFromData = function (wrapperClassName) {
   var dataProvider = this.options.options;
 
   // Remove any existing DataProvider listeners
@@ -156,7 +156,7 @@ oj.RadioCheckboxUtils.generateOptionsFromData = function () {
 
   fetchPromise.then(
     function () {
-      oj.RadioCheckboxUtils.renderOptions.call(self);
+      oj.RadioCheckboxUtils.renderOptions.call(self, wrapperClassName);
       // Add back DataProvider listeners after the options are rendered
       oj.RadioCheckboxUtils.addDataListener.call(self);
       // Resolve busy state

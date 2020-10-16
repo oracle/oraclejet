@@ -122,14 +122,20 @@ var GroupingDataProvider = /*#__PURE__*/function () {
         key: 'next',
         value: function next() {
           var self = this;
-          return this._parent._getDataFromDataProvider(this._params, this._parentKey, false).then(function (value) {
+
+          var internalOffset = self._parent._getIteratorOffset(self);
+
+          var updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset.offset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
+
+          var totalSectionSize = self._parent._sections[self._parentKey].children().length; // if there's already enough data, skip pre-fetch
+
+
+          var skipFetch = totalSectionSize - internalOffset.offset >= self._params.size;
+          return this._parent._getDataFromDataProvider(this._params, this._parentKey, skipFetch).then(function (value) {
             if (value === undefined) {
               self._parent._updateSectionIndex();
             }
 
-            var internalOffset = self._parent._getIteratorOffset(self);
-
-            var updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset.offset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
             return self._dataprovider.fetchByOffset(updatedParams).then(function (res) {
               var result = res['results'];
               var data = result.map(function (value) {

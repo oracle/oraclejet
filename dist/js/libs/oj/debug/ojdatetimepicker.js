@@ -125,11 +125,7 @@ var __oj_date_picker_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -138,16 +134,10 @@ var __oj_date_picker_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -519,11 +509,7 @@ var __oj_date_time_picker_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -532,16 +518,10 @@ var __oj_date_time_picker_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -953,11 +933,7 @@ var __oj_input_date_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -966,16 +942,10 @@ var __oj_input_date_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -1354,11 +1324,7 @@ var __oj_input_date_time_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -1367,16 +1333,10 @@ var __oj_input_date_time_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -1708,11 +1668,7 @@ var __oj_input_time_metadata =
       "type": "object",
       "properties": {
         "converterHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "placeholder",
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         },
         "helpInstruction": {
           "type": "Array<string>|string",
@@ -1721,16 +1677,10 @@ var __oj_input_time_metadata =
           ]
         },
         "messages": {
-          "type": "Array<string>|string",
-          "value": [
-            "inline"
-          ]
+          "type": "Array<string>|string"
         },
         "validatorHint": {
-          "type": "Array<string>|string",
-          "value": [
-            "notewindow"
-          ]
+          "type": "Array<string>|string"
         }
       }
     },
@@ -4047,14 +3997,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         this._ignoreShow = true;
         this._hide(this._ON_CLOSE_REASON_CLOSE);
       } else {
-        var inputActive = this.element[0] === document.activeElement;
-
-        this.show();
         this._redirectFocusToInputContainer = true;
-
-        if (inputActive) {
-          this._inputContainer.focus();
-        }
+        this._inputContainer.find('input').focus();
       }
     }
   },
@@ -4270,6 +4214,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       datePickerCalendar.addClass('oj-focus-highlight');
       datePickerCalendar.attr('aria-activedescendant', cParent.attr('id') + '');
       cParent.addClass(this._DAYOVER_CLASS);
+      // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
+      // we change date with no zoom.
+      if (window.devicePixelRatio >= 4) {
+        cParent[0].scrollIntoView();
+      }
     }
   },
 
@@ -4521,6 +4470,11 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     } else {
       dpContentDiv.empty().append(generatedHtmlContent.html); // @HTMLUpdateOK
       this._setupNewView(focusOnCalendar, view, generatedHtmlContent.dayOverId);
+    }
+    // This is needed only for zoom % 400 or above. Without if condition, it makes the page move when
+    // we change date with no zoom.
+    if (window.devicePixelRatio >= 4) {
+      this._dpDiv[0].scrollIntoView();
     }
   },
 

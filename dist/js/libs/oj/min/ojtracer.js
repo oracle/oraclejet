@@ -1,0 +1,1 @@
+define(["exports","ojs/ojcore-base","ojs/ojcustomelement"],(function(e,t,s){"use strict";t=t&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t,e.getDescriptiveText=function(e){if(t.BaseCustomElementBridge.hasInstance(e)){return t.BaseCustomElementBridge.getInstance(e).GetDescriptiveText(e)}return""},Object.defineProperty(e,"__esModule",{value:!0})}));

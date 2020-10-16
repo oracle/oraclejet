@@ -672,6 +672,27 @@ html[dir="rtl"] .oj-divider-end.oj-divider-margin {
 .oj-bg-brand-30 {
   background-color: #d7eaf6 !important; }
 
+.oj-line-clamp-1,
+.oj-line-clamp-2,
+.oj-line-clamp-3,
+.oj-line-clamp-4 {
+  display: -webkit-box !important;
+  /* autoprefixer: ignore next */
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important; }
+
+.oj-line-clamp-1 {
+  -webkit-line-clamp: 1 !important; }
+
+.oj-line-clamp-2 {
+  -webkit-line-clamp: 2 !important; }
+
+.oj-line-clamp-3 {
+  -webkit-line-clamp: 3 !important; }
+
+.oj-line-clamp-4 {
+  -webkit-line-clamp: 4 !important; }
+
 .oj-fwk-icon-arrow-e:before, html[dir="rtl"] .oj-fwk-icon-arrow-start:before, html:not([dir="rtl"]) .oj-fwk-icon-arrow-end:before, html:not([dir="rtl"]) .oj-collapsible-close-icon:before, html:not([dir="rtl"]) .oj-listview-collapse-icon:before {
   content: "\f101"; }
 
@@ -5071,23 +5092,37 @@ oj-menu {
        least one menu item in the menu (excluding its "Cancel" menu item and submenus) has an icon (not submenu icon).
        These classes facilitate (say) leaving space for a column of icons iff at least one item has an icon, and doing so
        for each menu/submenu independently. */
-html:not([dir="rtl"]) .oj-menu-icons .oj-menu-item > a {
+html:not([dir="rtl"]) .oj-menu-icons > .oj-menu-item > a, html:not([dir="rtl"])
+.oj-menu-icons > oj-menu-select-many > .oj-menu-item > a, html:not([dir="rtl"])
+.oj-menu-icons > oj-defer > .oj-menu-item > a {
   padding-left: calc(0.57143rem + 16px + 0.57143rem); }
 
-html[dir="rtl"] .oj-menu-icons .oj-menu-item > a {
+html[dir="rtl"] .oj-menu-icons > .oj-menu-item > a, html[dir="rtl"]
+.oj-menu-icons > oj-menu-select-many > .oj-menu-item > a, html[dir="rtl"]
+.oj-menu-icons > oj-defer > .oj-menu-item > a {
   padding-right: calc(0.57143rem + 16px + 0.57143rem); }
 
-html:not([dir="rtl"]) .oj-menu-end-icons > .oj-menu-item > a {
+html:not([dir="rtl"]) .oj-menu-end-icons > .oj-menu-item > a, html:not([dir="rtl"])
+.oj-menu-end-icons > oj-menu-select-many > .oj-menu-item > a, html:not([dir="rtl"])
+.oj-menu-end-icons > oj-defer > .oj-menu-item > a {
   padding-right: calc(0.57143rem + 16px + 0.57143rem); }
 
-html[dir="rtl"] .oj-menu-end-icons > .oj-menu-item > a {
+html[dir="rtl"] .oj-menu-end-icons > .oj-menu-item > a, html[dir="rtl"]
+.oj-menu-end-icons > oj-menu-select-many > .oj-menu-item > a, html[dir="rtl"]
+.oj-menu-end-icons > oj-defer > .oj-menu-item > a {
   padding-left: calc(0.57143rem + 16px + 0.57143rem); }
 
-.oj-menu-text-only .oj-menu-item > a {
+.oj-menu-text-only > .oj-menu-item > a,
+.oj-menu-text-only > oj-menu-select-many > .oj-menu-item > a,
+.oj-menu-text-only > oj-defer > .oj-menu-item > a {
   text-align: initial; }
-  html:not([dir="rtl"]) .oj-menu-text-only .oj-menu-item > a {
+  html:not([dir="rtl"]) .oj-menu-text-only > .oj-menu-item > a, html:not([dir="rtl"])
+  .oj-menu-text-only > oj-menu-select-many > .oj-menu-item > a, html:not([dir="rtl"])
+  .oj-menu-text-only > oj-defer > .oj-menu-item > a {
     padding-left: calc(0.57143rem + 16px + 0.57143rem); }
-  html[dir="rtl"] .oj-menu-text-only .oj-menu-item > a {
+  html[dir="rtl"] .oj-menu-text-only > .oj-menu-item > a, html[dir="rtl"]
+  .oj-menu-text-only > oj-menu-select-many > .oj-menu-item > a, html[dir="rtl"]
+  .oj-menu-text-only > oj-defer > .oj-menu-item > a {
     padding-right: calc(0.57143rem + 16px + 0.57143rem); }
 
 .oj-menu-text-only .oj-menu-cancel-icon {
@@ -8774,6 +8809,7 @@ html[dir="rtl"] .oj-table-column-header-cell.oj-table-column-header-drag-indicat
 
 /* Styling for the column header element. */
 .oj-table-column-header {
+  display: flex;
   position: relative;
   float: none;
   text-overflow: inherit;
@@ -10745,32 +10781,52 @@ html:not([dir="rtl"]) .oj-listview.oj-full-width.oj-listview-card-layout > .oj-l
 oj-list-item-layout:not(.oj-complete) {
   visibility: hidden; }
 
-.oj-listitemlayout {
-  display: flex;
-  box-sizing: border-box;
-  align-items: center;
+.oj-listitemlayout-grid {
+  display: grid;
+  grid-template-areas: "selector leading textslots extra" ".... .... quaternary navigation";
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   min-height: 2.28571rem; }
-  html:not([dir="rtl"]) .oj-listitemlayout {
+  html:not([dir="rtl"]) .oj-listitemlayout-grid {
     padding-right: 0.85714rem; }
-  html[dir="rtl"] .oj-listitemlayout {
+  html[dir="rtl"] .oj-listitemlayout-grid {
     padding-left: 0.85714rem; }
 
-.oj-listitemlayout-selector,
-.oj-listitemlayout-image {
-  display: flex;
-  align-items: center;
-  justify-content: center; }
+.oj-listitemlayout-selector {
+  grid-area: selector;
+  align-self: center; }
+
+.oj-listitemlayout-leading {
+  grid-area: leading;
+  align-self: center; }
 
 .oj-listitemlayout-textslots {
-  flex: auto; }
+  grid-area: textslots;
+  align-self: center; }
 
-.oj-listitemlayout-allslots {
-  display: flex;
-  flex: auto;
-  align-items: center; }
+.oj-listitemlayout-extra {
+  grid-area: extra;
+  display: grid;
+  grid-template-areas: "metadata trailing action"; }
 
-.oj-listitemlayout-vertical-padding {
-  padding-top: 0.85714rem;
+.oj-listitemlayout-metadata {
+  grid-area: metadata; }
+
+.oj-listitemlayout-trailing {
+  grid-area: trailing; }
+
+.oj-listitemlayout-action {
+  grid-area: action;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem; }
+
+.oj-listitemlayout-quaternary {
+  grid-area: quaternary;
+  justify-self: start;
+  padding-bottom: 0.85714rem; }
+
+.oj-listitemlayout-navigation {
+  grid-area: navigation;
+  justify-self: end;
   padding-bottom: 0.85714rem; }
 
 html:not([dir="rtl"]) .oj-listitemlayout-horizontal-padding {
@@ -10779,16 +10835,19 @@ html:not([dir="rtl"]) .oj-listitemlayout-horizontal-padding {
 html[dir="rtl"] .oj-listitemlayout-horizontal-padding {
   padding-right: 0.85714rem; }
 
-.oj-listitemlayout-action {
-  padding-top: 4px;
-  padding-bottom: 4px; }
-  html[dir="rtl"] .oj-listitemlayout-action {
-    padding-right: 0.85714rem; }
-  html:not([dir="rtl"]) .oj-listitemlayout-action {
-    padding-left: 0.85714rem; }
+.oj-listitemlayout-vertical-padding {
+  padding-bottom: 0.85714rem;
+  padding-top: 0.85714rem; }
+
+.oj-listitemlayout-vertical-padding-quaternary {
+  padding-bottom: 0.75rem;
+  padding-top: 0.85714rem; }
 
 .oj-listitemlayout-tertiary {
-  padding-top: 2px; }
+  padding-top: 0.125rem; }
+
+.oj-listitemlayout-align {
+  align-items: center; }
 
 oj-indexer:not(.oj-complete) {
   visibility: hidden; }
@@ -13145,7 +13204,7 @@ oj-form-layout {
   border-width: 0; }
 
 .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-formlayout-label-nowrap,
-.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+.oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
 .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
@@ -15733,6 +15792,26 @@ html[dir="rtl"] .oj-searchselect .oj-searchselect-filter .oj-inputtext-input {
 
 .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect .oj-text-field-middle {
   height: 100%; }
+
+/* clears the 'X' from Internet Explorer */
+.oj-searchselect input[type=search]::-ms-clear,
+.oj-searchselect input[type=search]::-ms-reveal,
+.oj-listbox-searchselect .oj-searchselect-filter input[type=search]::-ms-clear,
+.oj-listbox-searchselect .oj-searchselect-filter input[type=search]::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0; }
+
+/* clears the 'X' from Chrome */
+.oj-searchselect input[type="search"]::-webkit-search-decoration,
+.oj-searchselect input[type="search"]::-webkit-search-cancel-button,
+.oj-searchselect input[type="search"]::-webkit-search-results-button,
+.oj-searchselect input[type="search"]::-webkit-search-results-decoration,
+.oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-decoration,
+.oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-cancel-button,
+.oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-button,
+.oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-decoration {
+  display: none; }
 
 /* Default options*/
 .oj-searchselect-option-defaults {
@@ -23350,7 +23429,7 @@ html[dir="rtl"] .oj-flex-bar-end {
 
 @media print, screen {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-sm-label-nowrap,
-  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-sm-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
@@ -23500,7 +23579,7 @@ html[dir="rtl"] .oj-flex-bar-end {
 
 @media print, screen and (min-width: 768px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-nowrap,
-  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-md-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
@@ -23650,7 +23729,7 @@ html[dir="rtl"] .oj-flex-bar-end {
 
 @media print and (orientation: landscape), screen and (min-width: 1024px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-nowrap,
-  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-lg-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
@@ -23800,7 +23879,7 @@ html[dir="rtl"] .oj-flex-bar-end {
 
 @media screen and (min-width: 1281px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-nowrap,
-  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
   .oj-xl-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {

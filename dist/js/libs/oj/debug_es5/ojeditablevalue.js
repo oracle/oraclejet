@@ -1735,6 +1735,27 @@ var _sValidationMode = {
   REQUIRED_VALIDATOR_ONLY: 3
 };
 /**
+ * The displayOptions property default options when theme is Redwood
+ * @ignore
+ */
+
+var _sDisplayOptionsRedwoodDefaults = {
+  MESSAGES: 'display',
+  VALIDATOR_HINT: 'display',
+  CONVERTER_HINT: 'display'
+};
+/**
+ * The displayOptions property default options when theme is Alta
+ * As of v9.0, the Alta theme is deprecated.
+ * @ignore
+ */
+
+var _sDisplayOptionsAltaDefaults = {
+  MESSAGES: ['inline'],
+  VALIDATOR_HINT: ['notewindow'],
+  CONVERTER_HINT: ['placeholder', 'notewindow']
+};
+/**
 * String used in the id on the span that surrounds the help icon.
 * @const
 * @private
@@ -3405,6 +3426,38 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent, {
 
       case 'readOnly':
         this._addRemoveOjReadOnlyClassOnLabel(document.getElementById(this.options.labelledBy), value);
+
+        break;
+
+      case 'displayOptions':
+        // since the displayOptions defaults are theme-dependent
+        // (except for displayOptions.helpInstruction), we
+        // need set the defaults ourselves when displayOptions is set to undefined.
+        // Also, in Redwood theme, we use 'display' and 'none'. Anything that isn't 'none'
+        // works the same as 'display'.
+        // In Alta, it must be one of the accepted options that Alta supports.
+        // JET framework doesn't support unsetting of subproperties.
+        // Can only reset top level, not sub-properties
+        // Setting to null doesn't reset.
+        var displayOptions = value;
+        var resetNeeded = value !== null && value.validatorHint === undefined && value.converterHint === undefined && value.messages === undefined;
+
+        if (resetNeeded) {
+          // this will change value back to the defaults,
+          // and when super is called at the end of the method, the displayOptions option will
+          // be set with defaults
+          var useUserAssistanceDensity = (ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {}).useUserAssistanceOptionDefault === 'use';
+
+          if (useUserAssistanceDensity) {
+            displayOptions.validatorHint = _sDisplayOptionsRedwoodDefaults.VALIDATOR_HINT;
+            displayOptions.converterHint = _sDisplayOptionsRedwoodDefaults.CONVERTER_HINT;
+            displayOptions.messages = _sDisplayOptionsRedwoodDefaults.MESSAGES;
+          } else {
+            displayOptions.validatorHint = _sDisplayOptionsAltaDefaults.VALIDATOR_HINT;
+            displayOptions.converterHint = _sDisplayOptionsAltaDefaults.CONVERTER_HINT;
+            displayOptions.messages = _sDisplayOptionsAltaDefaults.MESSAGES;
+          }
+        }
 
         break;
 
@@ -6789,11 +6842,26 @@ Components.setDefaultOptions({
   editableValue: // properties for all editableValue components
   {
     displayOptions: Components.createDynamicPropertyGetter(function (context) {
-      var displayOptions = {
-        messages: context.containers.indexOf('ojDataGrid') >= 0 || context.containers.indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
-        converterHint: ['placeholder', 'notewindow'],
-        validatorHint: ['notewindow']
-      };
+      // displayOptions defaults are theme dependent
+      // See also _setOption when displayOptions is changed. Need to handle
+      // defaulting there as well.
+      var useUserAssistanceDensity = (ThemeUtils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {}).useUserAssistanceOptionDefault === 'use';
+      var displayOptions;
+
+      if (useUserAssistanceDensity) {
+        displayOptions = {
+          messages: _sDisplayOptionsRedwoodDefaults.MESSAGES,
+          converterHint: _sDisplayOptionsRedwoodDefaults.CONVERTER_HINT,
+          validatorHint: _sDisplayOptionsRedwoodDefaults.VALIDATOR_HINT
+        };
+      } else {
+        displayOptions = {
+          messages: context.containers.indexOf('ojDataGrid') >= 0 || context.containers.indexOf('ojTable') >= 0 ? ['notewindow'] : _sDisplayOptionsAltaDefaults.MESSAGES,
+          converterHint: _sDisplayOptionsAltaDefaults.CONVERTER_HINT,
+          validatorHint: _sDisplayOptionsAltaDefaults.VALIDATOR_HINT
+        };
+      }
+
       displayOptions[context.isCustomElement ? 'helpInstruction' : 'title'] = ['notewindow'];
       return displayOptions;
     }),
@@ -7020,6 +7088,8 @@ Components.setDefaultOptions({
 
 
 
+/* global Translations:false */
+
 /* jslint browser: true*/
 
 /**
@@ -7071,6 +7141,9 @@ InlineHelpHintsStrategy.prototype.activate = function (cm) {
   }
 };
 /**
+ * This gets called when display-options changes. It may be that they set
+ * display-options.validator-hints='none', so then if validator hints were
+ * showing they won't show anymore.
  * @param {Array.<string>} newOptions
  * @public
  * @memberof InlineHelpHintsStrategy
@@ -7081,13 +7154,17 @@ InlineHelpHintsStrategy.prototype.activate = function (cm) {
 
 InlineHelpHintsStrategy.prototype.reactivate = function (newOptions, parentElement) {
   InlineHelpHintsStrategy.superclass.reactivate.call(this, newOptions);
-  this._userAssistanceDivElement = parentElement;
+  this._userAssistanceDivElement = parentElement; // sets up dom and focusin handlers
 
   var containerRootExists = this._isContainerRootDomInDocument();
 
   if (!containerRootExists) {
     this._createInlineHelpHints();
-  }
+  } // set the global flag so that in the focusIn handler we will fetch
+  // the content again.
+
+
+  this._setFocusInContentCurrent(false);
 };
 /**
  * @param {Object=} content the messaging content object. If it contains validityState, then
@@ -7102,14 +7179,20 @@ InlineHelpHintsStrategy.prototype.reactivate = function (newOptions, parentEleme
 
 
 InlineHelpHintsStrategy.prototype.shouldUpdate = function (content) {
-  // TODO: Add other help/validation as well. If any of those change
-  // we should update.
+  // EditableValue updates messaging when help.instruction (aka title), validator hint,
+  // and converter hint are changed.
+  // for help-hints, we have set a helpHintsChanged listener, see
+  // InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers
   var updateTitle = !!(content && content.title !== undefined);
   var updateValidatorHint = !!(content && content.validatorHint !== undefined);
-  return updateTitle || updateValidatorHint;
+  var updateConverterHint = !!(content && content.converterHint !== undefined);
+  return updateTitle || updateValidatorHint || updateConverterHint;
 };
 /**
- * Updates component with instance using the content provided.
+ * Updates component with instance using the content provided. One condition when this gets called
+ * is when we fetch the async validator hint to show it, but since it is async, it doesn't come back
+ * serially, so instead update is called when it is ready. Go ahead and update the inline help hints
+ * right away since you could already be in the focusinhandler at that point.
  * @memberof InlineHelpHintsStrategy
  * @instance
  * @public
@@ -7120,7 +7203,7 @@ InlineHelpHintsStrategy.prototype.shouldUpdate = function (content) {
 InlineHelpHintsStrategy.prototype.update = function () {
   InlineHelpHintsStrategy.superclass.update.call(this);
 
-  this._updateInlineHelpHints();
+  this._updateInlineHelpHints(true);
 };
 /**
  * Cleans up dom on the component and removes any event listeners it created.
@@ -7190,7 +7273,7 @@ InlineHelpHintsStrategy.prototype._createFocusEventHandlers = function (componen
 
   this._focusinCallback = InlineHelpHintsStrategy._focusinHandler.bind(this, component);
   element.addEventListener('focusin', this._focusinCallback);
-  this._focusoutCallback = InlineHelpHintsStrategy._focusoutHandler.bind(this, component);
+  this._focusoutCallback = InlineHelpHintsStrategy._focusoutHandler.bind(this);
   element.addEventListener('focusout', this._focusoutCallback);
 };
 
@@ -7202,6 +7285,7 @@ InlineHelpHintsStrategy.prototype._deleteFocusEventHandlers = function (element)
 };
 /**
  * Creates the help/helpHints handlers.
+ * @param {Object} component form component
  * @memberof InlineHelpHintsStrategy
  * @instance
  * @private
@@ -7211,7 +7295,7 @@ InlineHelpHintsStrategy.prototype._deleteFocusEventHandlers = function (element)
 InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers = function (component) {
   var element = component._getRootElement();
 
-  this._helpHintsChangedCallback = InlineHelpHintsStrategy._helpHintsChangedHandler.bind(this, component);
+  this._helpHintsChangedCallback = InlineHelpHintsStrategy._helpHintsChangedHandler.bind(this);
   element.addEventListener('helpHintsChanged', this._helpHintsChangedCallback);
 };
 
@@ -7272,25 +7356,28 @@ InlineHelpHintsStrategy.prototype._isContainerRootDomInDocument = function () {
 
 InlineHelpHintsStrategy._focusinHandler = function (component, event) {
   // add focusin on parent
-  this._userAssistanceDivElement.classList.add('oj-focus');
+  this._userAssistanceDivElement.classList.add('oj-focus'); // if the content we fetched earlier is still up-to-date, like no
+  // properties that affect the help hints has changed, then return.
 
-  if (this._contentAddedOnFocus) {
+
+  if (this._isFocusInContentCurrent()) {
     return;
   }
 
-  this._contentAddedOnFocus = this._addHelpHintsContent(component);
+  this._addHelpHintsContent(component);
+
+  this._setFocusInContentCurrent(true);
 };
 /**
  * @static
  * @private
- * @param {Object} component form component root element
  * @param {CustomEvent} event helpChanged event
  */
 // eslint-disable-next-line no-unused-vars
 
 
-InlineHelpHintsStrategy._helpHintsChangedHandler = function (component, event) {
-  this._addHelpHintsContent(component);
+InlineHelpHintsStrategy._helpHintsChangedHandler = function (event) {
+  this._updateInlineHelpHints();
 };
 /**
  * Creates the content.
@@ -7303,10 +7390,10 @@ InlineHelpHintsStrategy._helpHintsChangedHandler = function (component, event) {
 
 
 InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
-  // let helpSource = component.options.helpHints.source;
   var hintsHtml;
   var helpOptions = component.options.help;
   var helpInstruction = helpOptions ? helpOptions.instruction : null;
+  var helpHints = component.options.helpHints;
 
   if (helpInstruction) {
     var helpInstructionDom = oj.PopupMessagingStrategyUtils.GetTextDom(document, helpInstruction, true); // turn it into a string
@@ -7334,7 +7421,6 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
     // try to get help definition
     // We get notified of changes to help-hints in
     // InlineHelpHintsStrategy.prototype._createHelpHintsAttributeEventHandlers
-    var helpHints = component.options.helpHints;
     var definition = helpHints ? helpHints.definition : null;
 
     if (definition) {
@@ -7351,7 +7437,15 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
     }
   }
 
-  if (hintsHtml && !this.containerRoot) {
+  var source = helpHints ? helpHints.source : null;
+  var helpSourceDom;
+
+  if (source) {
+    helpSourceDom = this._getHelpSourceDom(source);
+  } // create container if needed
+
+
+  if ((hintsHtml || helpSourceDom) && !this.containerRoot) {
     this.containerRoot = document.createElement('div');
     this.containerRoot.classList.add('oj-helphints-inline-container');
     $(this.containerRoot).uniqueId();
@@ -7373,26 +7467,73 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
 
 
   if (this.containerRoot) {
-    this.containerRoot.innerHTML = hintsHtml || ''; // @HTMLUpdateOK
+    if (hintsHtml) {
+      hintsHtml = '<div>' + hintsHtml + '</div>';
+      this.containerRoot.innerHTML = hintsHtml; // @HTMLUpdateOK
+    }
+
+    if (helpSourceDom) {
+      this.containerRoot.appendChild(helpSourceDom);
+    }
+
+    if (!(hintsHtml || helpSourceDom)) {
+      this.containerRoot.innerHTML = ''; // @HTMLUpdateOK
+    }
   }
 
   if (this._userAssistanceDivElement) {
     // add this selector the first time we have hints. then use
     // theming to hide/show it based on focus and whether or not
     // we have messages, which trumps hints.
-    if (hintsHtml) {
+    if (hintsHtml || helpSourceDom) {
       this._userAssistanceDivElement.classList.add('oj-has-helphints');
     } else {
       this._userAssistanceDivElement.classList.remove('oj-has-helphints');
     }
   }
 
-  return hintsHtml;
+  return hintsHtml || helpSourceDom;
 };
 /**
- * If the inline message is already open its contents need to updated when update() or
- * reactivate() is called.
- *
+ * @private
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ * @param {String} source
+ */
+
+
+InlineHelpHintsStrategy.prototype._getHelpSourceDom = function (source) {
+  oj.Assert.assertString(source);
+  var helpAnchorDiv = document.createElement('div');
+  var helpSourceAnchor = document.createElement('a');
+  helpSourceAnchor.classList.add('oj-helphints-anchor');
+  helpSourceAnchor.setAttribute('tabindex', '0');
+  helpSourceAnchor.setAttribute('target', '_blank');
+
+  try {
+    oj.DomUtils.validateURL(source);
+    helpSourceAnchor.setAttribute('href', source);
+  } catch (e) {
+    throw new Error(e + '. The source option (' + source + ') is invalid.');
+  } // add Learn more... text on the link
+
+
+  var helpSourceText = Translations.getTranslatedString('oj-ojEditableValue.helpSourceText');
+  helpSourceAnchor.textContent = helpSourceText;
+  helpAnchorDiv.appendChild(helpSourceAnchor);
+  oj.DomUtils.makeFocusable({
+    element: helpSourceAnchor,
+    applyHighlight: true,
+    component: this.GetComponent()
+  });
+  return helpAnchorDiv;
+};
+/**
+ * This gets called when a component property changes that will affect the
+ * inline help hints content or when mc.update is called
+ * // (like when an async validator hint resolves)
+ * @param {boolean} showRightAway true if we need to add the content right away
+ * which is the case when the update method is called.
  * @private
  * @memberof InlineHelpHintsStrategy
  * @instance
@@ -7400,22 +7541,78 @@ InlineHelpHintsStrategy.prototype._addHelpHintsContent = function (component) {
 
 
 InlineHelpHintsStrategy.prototype._updateInlineHelpHints = function () {
+  var showRightAway = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   var component = this.GetComponent();
 
-  this._addHelpHintsContent(component);
+  if (this.containerRoot) {
+    // clear out the containerRoot's innerHTML since we need to create the content
+    // again.
+    this.containerRoot.innerHTML = ''; // @HTMLUpdateOK
+  }
+
+  var showHelpHints = component._ShowHelpHints();
+
+  if (showHelpHints === 'always' || showRightAway) {
+    // if showHelpHints is 'focus', then we create the content on the first focusin so that
+    // we can delay getting validation hints.
+    // otherwise add content now.
+    this._addHelpHintsContent(component);
+  } else {
+    // set the global flag so that in the focusIn handler we will fetch
+    // the content again.
+    this._setFocusInContentCurrent(false);
+  }
 };
 /**
+ * @return {boolean} true if you need to re-fetch new content on focusin.
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ */
+
+
+InlineHelpHintsStrategy.prototype._isFocusInContentCurrent = function () {
+  return this._focusInContentCurrent;
+};
+/**
+ * Sets a flag to false when we something has changed that causes the helphints content to
+ * need to be updated again. Instead of just changing it we wait until it is needed which is on focus.
+ * @param {boolean} isContentCurrent
+ * @private
+ * @memberof InlineHelpHintsStrategy
+ * @instance
+ */
+
+
+InlineHelpHintsStrategy.prototype._setFocusInContentCurrent = function (isContentCurrent) {
+  this._focusInContentCurrent = isContentCurrent;
+};
+/**
+ * When the component's root element has lost focus, then remove oj-focus.
  * @static
  * @private
  * @param {Object} component the form component
  * @param {CustomEvent} event focus event
  */
-// eslint-disable-next-line no-unused-vars
 
 
-InlineHelpHintsStrategy._focusoutHandler = function (component, event) {
+InlineHelpHintsStrategy._focusoutHandler = function (event) {
   // make this focusout since focusout bubbles and blur does not.
-  this._userAssistanceDivElement.classList.remove('oj-focus');
+  // This way you can put the event handler on the component's root
+  // element and if any child element that can get focus loses focus,
+  // this handler will be called. But we need to check if we are still
+  // within the element or not, and we remove the oj-focus only if
+  // we focusout of the component. This way the inline hint won't disappear
+  // if we focus on the help source Learn more... link.
+  // The currentTarget read-only property of the Event interface identifies
+  // the current target for the event, as the event traverses the DOM.
+  // It always refers to the element to which the event handler has been attached.
+  var rootElem = event.currentTarget; // for focusout this is the EventTarget receiving focus (if any)
+
+  var relatedTarget = event.relatedTarget;
+
+  if (relatedTarget == null || !rootElem.contains(relatedTarget)) {
+    this._userAssistanceDivElement.classList.remove('oj-focus');
+  }
 };
 
 

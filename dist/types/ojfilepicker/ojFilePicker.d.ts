@@ -159,10 +159,31 @@ export interface FilePickerElementSettableProperties extends JetSettableProperti
 export interface FilePickerElementSettablePropertiesLenient extends Partial<FilePickerElementSettableProperties> {
   [key: string]: any;
 }
-export declare type ojFilePicker = FilePickerElement;
-export declare type ojFilePickerEventMap = FilePickerElementEventMap;
-export declare type ojFilePickerSettableProperties = FilePickerElementSettableProperties;
-export declare type ojFilePickerSettablePropertiesLenient = FilePickerElementSettablePropertiesLenient;
+export type ojFilePicker = FilePickerElement
+export namespace ojFilePicker {
+  interface ojBeforeSelect extends CustomEvent<BeforeDetail & {
+    [propName: string]: any;
+  }>{}
+  interface ojInvalidSelect extends CustomEvent<InvalidDetail & {
+    [propName: string]: any;
+  }>{}
+  interface ojSelect extends CustomEvent<SelectDetail & {
+    [propName: string]: any;
+  }>{}
+  // tslint:disable-next-line interface-over-type-literal
+  type acceptChanged = JetElementCustomEvent<ojFilePicker["accept"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type captureChanged = JetElementCustomEvent<ojFilePicker["capture"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type disabledChanged = JetElementCustomEvent<ojFilePicker["disabled"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type selectOnChanged = JetElementCustomEvent<ojFilePicker["selectOn"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type selectionModeChanged = JetElementCustomEvent<ojFilePicker["selectionMode"]>;
+}
+export type ojFilePickerEventMap = FilePickerElementEventMap;
+export type ojFilePickerSettableProperties = FilePickerElementSettableProperties;
+export type ojFilePickerSettablePropertiesLenient = FilePickerElementSettablePropertiesLenient;
 export interface FilePickerProperties extends Partial<FilePickerElementSettableProperties>, GlobalAttributes {}
 export interface VProps extends Props, GlobalAttributes {}
 declare global {

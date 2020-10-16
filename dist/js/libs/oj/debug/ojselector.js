@@ -1,4 +1,4 @@
-define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, Translations, ojvcomponent) { 'use strict';
+define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponent, DomUtils) { 'use strict';
 
     /**
      * @license
@@ -68,7 +68,6 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
      * @memberof oj.ojSelector
      * @instance
      * @type {KeySet<K>|null}
-     * @default null
      * @ojwriteback
      */
     /**
@@ -114,12 +113,19 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
         }
     }
     exports.Selector = class Selector extends ojvcomponent.VComponent {
+        constructor(props) {
+            super(props);
+            this.state = {
+                focus: false
+            };
+        }
         render() {
             const { rowKey } = this.props;
             const isSelected = this._isSelected(rowKey);
             const spanClassName = {
                 'oj-selector-wrapper': true,
                 'oj-selected': isSelected,
+                'oj-focus-highlight': this.state.focus && !DomUtils.recentPointer(),
                 'oj-component-icon': true
             };
             const ariaLabelledby = this.props['aria-labelledby'] || null;
@@ -129,32 +135,40 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
                 });
             return (ojvcomponent.h("oj-selector", { class: 'oj-selector' },
                 ojvcomponent.h("span", { class: spanClassName },
-                    ojvcomponent.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onClick: this._checkboxListener }))));
+                    ojvcomponent.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onClick: this._checkboxListener }))));
         }
         _checkboxListener(event) {
             const { selectedKeys, rowKey, selectionMode } = this.props;
             let newSelectedKeys;
-            if (event.target.checked) {
-                if (selectionMode === 'single') {
-                    newSelectedKeys = selectedKeys.clear().add([rowKey]);
-                }
-                else if (selectionMode === 'all') {
-                    newSelectedKeys = selectedKeys.addAll();
-                }
-                else {
-                    newSelectedKeys = selectedKeys.add([rowKey]);
-                }
-            }
-            else {
-                if (selectionMode === 'all') {
-                    newSelectedKeys = selectedKeys.clear();
+            if (selectedKeys != null) {
+                if (event.target.checked) {
+                    if (selectionMode === 'single') {
+                        newSelectedKeys = selectedKeys.clear().add([rowKey]);
+                    }
+                    else if (selectionMode === 'all') {
+                        newSelectedKeys = selectedKeys.addAll();
+                    }
+                    else {
+                        newSelectedKeys = selectedKeys.add([rowKey]);
+                    }
                 }
                 else {
-                    newSelectedKeys = selectedKeys.delete([rowKey]);
+                    if (selectionMode === 'all') {
+                        newSelectedKeys = selectedKeys.clear();
+                    }
+                    else {
+                        newSelectedKeys = selectedKeys.delete([rowKey]);
+                    }
                 }
+                this._updateProperty('selectedKeys', newSelectedKeys, true);
             }
-            this._updateProperty('selectedKeys', newSelectedKeys, true);
             event.stopPropagation();
+        }
+        _handleFocusin(event) {
+            this.updateState({ focus: true });
+        }
+        _handleFocusout(event) {
+            this.updateState({ focus: false });
         }
         _isSelected(rowKey) {
             const { selectedKeys, selectionMode } = this.props;
@@ -168,6 +182,12 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent'], function (exports, 
     __decorate([
         ojvcomponent.listener()
     ], exports.Selector.prototype, "_checkboxListener", null);
+    __decorate([
+        ojvcomponent.listener()
+    ], exports.Selector.prototype, "_handleFocusin", null);
+    __decorate([
+        ojvcomponent.listener()
+    ], exports.Selector.prototype, "_handleFocusout", null);
     exports.Selector = __decorate([
         ojvcomponent.customElement('oj-selector')
     ], exports.Selector);

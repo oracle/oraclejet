@@ -280,7 +280,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
 
     // if the AbortController api is supported by browser
     // a signal is created to abort the fetch api
-    if (AbortController) {
+    if (typeof AbortController != "undefined") {
       this._abortController = new AbortController();
     }
 

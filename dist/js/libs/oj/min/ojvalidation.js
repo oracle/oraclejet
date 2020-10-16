@@ -5,4 +5,4 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","jquery","ojL10n!ojtranslations/nls/localeElements","ojs/ojmessaging","ojs/ojvalidation-datetime","ojs/ojvalidation-number"],function(o,e,n){"use strict"});
+define(["ojs/ojcore","jquery","ojL10n!ojtranslations/nls/localeElements","ojs/ojmessaging","ojs/ojvalidation-datetime","ojs/ojvalidation-number"],(function(o,n,e){}));

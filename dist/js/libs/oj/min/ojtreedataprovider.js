@@ -5,9 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojeventtarget","ojs/ojdataprovider"],function(e){"use strict";
+define(["ojs/ojcore","ojs/ojeventtarget","ojs/ojdataprovider"],(function(e){"use strict";
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
- */e.TreeDataProvider=function(){};e.TreeDataProvider;return e.TreeDataProvider});
+ */e.TreeDataProvider=function(){};e.TreeDataProvider;return e.TreeDataProvider}));

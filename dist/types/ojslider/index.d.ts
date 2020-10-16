@@ -11,12 +11,14 @@ import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropert
 export interface ojRangeSlider extends editableValue<Object | null, ojRangeSliderSettableProperties> {
     disabled: boolean;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
+    higherValueThumb: string | null;
     labelledBy: string | null;
+    lowerValueThumb: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';
@@ -59,7 +61,11 @@ export namespace ojRangeSlider {
     // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged = JetElementCustomEvent<ojRangeSlider["displayOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type higherValueThumbChanged = JetElementCustomEvent<ojRangeSlider["higherValueThumb"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojRangeSlider["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lowerValueThumbChanged = JetElementCustomEvent<ojRangeSlider["lowerValueThumb"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojRangeSlider["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -78,7 +84,9 @@ export interface ojRangeSliderEventMap extends editableValueEventMap<Object | nu
     'ojAnimateStart': ojRangeSlider.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojRangeSlider["disabled"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojRangeSlider["displayOptions"]>;
+    'higherValueThumbChanged': JetElementCustomEvent<ojRangeSlider["higherValueThumb"]>;
     'labelledByChanged': JetElementCustomEvent<ojRangeSlider["labelledBy"]>;
+    'lowerValueThumbChanged': JetElementCustomEvent<ojRangeSlider["lowerValueThumb"]>;
     'maxChanged': JetElementCustomEvent<ojRangeSlider["max"]>;
     'minChanged': JetElementCustomEvent<ojRangeSlider["min"]>;
     'orientationChanged': JetElementCustomEvent<ojRangeSlider["orientation"]>;
@@ -89,12 +97,14 @@ export interface ojRangeSliderEventMap extends editableValueEventMap<Object | nu
 export interface ojRangeSliderSettableProperties extends editableValueSettableProperties<Object | null> {
     disabled: boolean;
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
+    higherValueThumb: string | null;
     labelledBy: string | null;
+    lowerValueThumb: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';
@@ -116,10 +126,10 @@ export interface ojRangeSliderSettablePropertiesLenient extends Partial<ojRangeS
 }
 export interface ojSlider extends editableValue<number | null, ojSliderSettableProperties> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -192,10 +202,10 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
 }
 export interface ojSliderSettableProperties extends editableValueSettableProperties<number | null> {
     displayOptions: {
-        converterHint: Array<'placeholder' | 'notewindow' | 'none'> | 'placeholder' | 'notewindow' | 'none';
+        converterHint: 'display' | 'none';
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: Array<'inline' | 'notewindow' | 'none'> | 'inline' | 'notewindow' | 'none';
-        validatorHint: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages: 'display' | 'none';
+        validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;

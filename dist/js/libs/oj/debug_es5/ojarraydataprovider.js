@@ -1396,12 +1396,11 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @param {(string | Array.<string>)=} options.idAttribute <span class="important">Deprecated: this option is deprecated and will be removed in the future.
  *                                                  Please use the keyAttributes option instead.</span><br><br>
  *                                                  Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations.
+ *                                                  of strings for multiple key attributes. Dot notation can be used to specify nested attribute (e.g. 'attr.id'). Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations.
  *                                                  @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. Dot notation can be used to specify nested attribute (e.g. 'attr.id').
- *                                                  Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @param {(Array.<string>)=} options.textFilterAttributes Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
  * @ojsignature [{target: "Type",

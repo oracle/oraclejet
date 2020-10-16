@@ -241,10 +241,6 @@ function _KoCustomBindingProvider() {
     return _changeQueue;
   };
 
-  this.getThrottlePromise = function () {
-    return this.getGlobalChangeQueue().getThrottlePromise();
-  };
-
   function _wrap(wrapped, name, prewrap) {
     var isHasBindings = name === 'nodeHasBindings';
 

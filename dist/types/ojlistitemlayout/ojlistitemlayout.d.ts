@@ -16,10 +16,11 @@ declare class ListItemLayoutProps {
     children?: VComponent.VNode[];
     secondary?: VComponent.Slot;
     tertiary?: VComponent.Slot;
-    link?: VComponent.Slot;
     metadata?: VComponent.Slot;
     trailing?: VComponent.Slot;
     action?: VComponent.Slot;
+    quaternary?: VComponent.Slot;
+    navigation?: VComponent.Slot;
 }
 export declare class ListItemLayout extends VComponent<ListItemLayoutProps> {
     private _hasContent;
@@ -44,10 +45,10 @@ export interface ListItemLayoutElementSettableProperties extends JetSettableProp
 export interface ListItemLayoutElementSettablePropertiesLenient extends Partial<ListItemLayoutElementSettableProperties> {
   [key: string]: any;
 }
-export declare type ojListItemLayout = ListItemLayoutElement;
-export declare type ojListItemLayoutEventMap = ListItemLayoutElementEventMap;
-export declare type ojListItemLayoutSettableProperties = ListItemLayoutElementSettableProperties;
-export declare type ojListItemLayoutSettablePropertiesLenient = ListItemLayoutElementSettablePropertiesLenient;
+export type ojListItemLayout = ListItemLayoutElement
+export type ojListItemLayoutEventMap = ListItemLayoutElementEventMap;
+export type ojListItemLayoutSettableProperties = ListItemLayoutElementSettableProperties;
+export type ojListItemLayoutSettablePropertiesLenient = ListItemLayoutElementSettablePropertiesLenient;
 export interface ListItemLayoutProperties extends Partial<ListItemLayoutElementSettableProperties>, GlobalAttributes {}
 export interface VListItemLayoutProps extends ListItemLayoutProps, GlobalAttributes {}
 declare global {

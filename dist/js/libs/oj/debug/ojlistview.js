@@ -822,6 +822,8 @@ oj.TreeDataProviderContentHandler.prototype.addItemsForModelInsert =
 
       this.signalTaskEnd(); // signal add item end
     }
+
+    this.m_widget.renderComplete();
   };
 
 /**
@@ -3624,7 +3626,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
     }
 
     // about gridlines for last item
-    if (this.m_gridlinePlaceholder != null) {
+    if (this.m_gridlinePlaceholder != null && this.m_gridlinePlaceholder.parentNode != null) {
       this.m_gridlinePlaceholder.parentNode.removeChild(this.m_gridlinePlaceholder);
     }
     if ((this.m_contentHandler.hasMoreToFetch === undefined ||
@@ -8280,6 +8282,10 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  *
  * <p>Description: The JET ListView enhances a HTML list element into a themable, WAI-ARIA compliant, mobile friendly component with advance interactive features.</p>
  *
+ * <p>The child content can be configured via inline HTML content or a DataProvider.
+ * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
+ * </p>
+ *
  * <h3 id="data-section">
  *   Data
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-section"></a>
@@ -8351,6 +8357,12 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
  * &lt;/oj-list-view>
  * </code></pre>
  *
+ * <p>Example of data provider content</p>
+ * <pre class="prettyprint"><code>
+ *   &lt;oj-list-view data="[[dataProvider]]">
+ *   &lt;/oj-list-view>
+ * </code></pre>
+ * <p>Check out the <a href="../jetCookbook.html?component=listView&demo=basicListView>demo</a>
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>

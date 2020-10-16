@@ -258,7 +258,9 @@
        for each menu/submenu independently. */
 
     // need > rather than (space) to avoid matching the items of a submenu without icons whose ancestor menu has icons
-    .oj-menu-icons .oj-menu-item > a {
+    .oj-menu-icons > .oj-menu-item > a,
+    .oj-menu-icons > oj-menu-select-many > .oj-menu-item > a,
+    .oj-menu-icons > oj-defer > .oj-menu-item > a {
 
         // leave space at start of item for icon plus spacing before/after it.  
         @include oj-ltr() {
@@ -270,7 +272,9 @@
 
     }
     
-    .oj-menu-end-icons > .oj-menu-item > a {
+    .oj-menu-end-icons > .oj-menu-item > a,
+    .oj-menu-end-icons > oj-menu-select-many > .oj-menu-item > a,
+    .oj-menu-end-icons > oj-defer > .oj-menu-item > a {
 
         // leave space at start of item for icon plus spacing before/after it.
         @include oj-ltr() {
@@ -283,7 +287,9 @@
     }
 
     // need > rather than (space) to avoid matching the items of a submenu with icons whose ancestor menu lacks icons
-    .oj-menu-text-only .oj-menu-item > a {
+    .oj-menu-text-only > .oj-menu-item > a,
+    .oj-menu-text-only > oj-menu-select-many > .oj-menu-item > a,
+    .oj-menu-text-only > oj-defer > .oj-menu-item > a {
         // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector
         // .oj-menu-item > a (see above), so we also can't use justify-content.
         // Use text-align instead to horizontally align text until Apple fixes their VoiceOver bug.

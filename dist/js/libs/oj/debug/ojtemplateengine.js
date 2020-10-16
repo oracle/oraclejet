@@ -94,16 +94,6 @@ function JetTemplateEngine() {
     _createPropertyBackedByObservable(target, name, value, changeListener);
   };
 
-  /**
-    * Provides a promise for JET's Knockout throttling timeout
-    * @return {Promise} a promise for JET's Knockout throttling timeout completing or a promise that will be resolved immediately for the case
-    * when there is no outstanding throttling timeout
-    * @ignore
-    */
-  this.getThrottlePromise = function () {
-    return BindingProviderImpl.getThrottlePromise();
-  };
-
   function _createPropertyBackedByObservable(target, name, value, changeListener) {
     var obs = ko.observable(value);
     Object.defineProperty(target, name, {

@@ -5,4 +5,4 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define([],function(){"use strict";var e;return{whenDocumentReady:function(){return e||(e="loading"===document.readyState?new Promise(function(e){var n=function(){document.removeEventListener("DOMContentLoaded",n),e()};document.addEventListener("DOMContentLoaded",n)}):Promise.resolve()),e}}});
+define([],(function(){"use strict";var e;return{whenDocumentReady:function(){return e||(e="loading"===document.readyState?new Promise((function(e){var n=function(){document.removeEventListener("DOMContentLoaded",n),e()};document.addEventListener("DOMContentLoaded",n)})):Promise.resolve()),e}}}));

@@ -3400,6 +3400,24 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
     },
 
     /**
+     * Provides a promise for JET's Knockout throttling timeout
+     * @return {Promise} a promise for JET's Knockout throttling timeout completing or a promise that will be resolved immediately for the case
+     * when there is no outstanding throttling timeout
+     * @memberof oj.baseComponent
+     * @instance
+     * @protected
+     */
+    _GetThrottlePromise: function _GetThrottlePromise() {
+      if (this._IsCustomElement()) {
+        var elem = this._getRootElement();
+
+        return oj.BaseCustomElementBridge.getInstance(elem).getThrottlePromise(elem);
+      }
+
+      return Promise.resolve(null);
+    },
+
+    /**
      * Prepares a custom renderer context object for either the JQuery or custom element syntax,
      * removing and exposing keys as needed.
      * @param {Object} context The renderer context object.
@@ -4522,8 +4540,6 @@ oj.ComponentMessaging.prototype._resolveStrategyTypeForArtifact = function (arti
         }
       } else {// strategyType 'placeholder' is not supported on other artifacts
         // ignore if present
-        // TODO: In the future we may want to support configuring validatorHint ot helpInstruction as
-        // placeholder as well.
       }
 
       break;
@@ -4687,8 +4703,10 @@ oj.ComponentMessaging.prototype._strategyToArtifacts = function () {
     var messagingPreferences = options.displayOptions || {};
 
     if (resolvedUserAssistance === 'compact') {
-      // for 'compact' set displayOptions.messages to notewindow.
+      // for 'compact' set displayOptions.messages, validator-hint and converter hint to notewindow.
       messagingPreferences.messages = 'notewindow';
+      messagingPreferences.validatorHint = 'notewindow';
+      messagingPreferences.converterHint = 'notewindow';
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
     } else {
       strategyToArtifacts = this._getResolvedMessagingDisplayOptions(messagingPreferences);
@@ -5784,6 +5802,17 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto, {
 
 
     this._processProperties();
+  },
+  // Is this attribute one that gets moved off of the root element?
+  // eslint-disable-next-line no-unused-vars
+  IsTransferAttribute: function IsTransferAttribute(element, attrName) {
+    var transferAttrs = this._EXTENSION._GLOBAL_TRANSFER_ATTRS;
+    return this._WIDGET_ELEM && transferAttrs && transferAttrs.includes(attrName);
+  },
+  // If this attribute has moved off of the root element, fetch it if possible.
+  // Only called if IsTransferAttribute() returns true
+  GetDescriptiveTransferAttributeValue: function GetDescriptiveTransferAttributeValue(name) {
+    return this._WIDGET_ELEM.getAttribute(name);
   },
   _copyProperties: function _copyProperties() {
     // Copies properties from the bridge _PROPS before the widget is instantiated

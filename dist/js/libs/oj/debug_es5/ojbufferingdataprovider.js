@@ -499,9 +499,8 @@ var BufferingDataProvider = /*#__PURE__*/function () {
       return isEmpty;
     }
   }, {
-    key: "addItem",
-    value: function addItem(item) {
-      this.editBuffer.addItem(item);
+    key: "_addToMergedArrays",
+    value: function _addToMergedArrays(item) {
       var addBeforeKey = null;
 
       if (this.lastIterator) {
@@ -524,7 +523,16 @@ var BufferingDataProvider = /*#__PURE__*/function () {
           // If there is no sortCriteria, new items are added at the beginning of dataset
           addBeforeKey = this.lastIterator.firstBaseKey;
         }
-      } // Fire mutate event if successful
+      }
+
+      return addBeforeKey;
+    }
+  }, {
+    key: "addItem",
+    value: function addItem(item) {
+      this.editBuffer.addItem(item); // Add item to the merged arrays
+
+      var addBeforeKey = this._addToMergedArrays(item); // Fire mutate event if successful
 
 
       var detail = {
@@ -541,24 +549,37 @@ var BufferingDataProvider = /*#__PURE__*/function () {
       this._dispatchSubmittableChangeEvent();
     }
   }, {
-    key: "removeItem",
-    value: function removeItem(item) {
-      this.editBuffer.removeItem(item);
-
+    key: "_removeFromMergedArrays",
+    value: function _removeFromMergedArrays(key) {
       if (this.lastIterator) {
         // Remove item from the merged arrays
         var mergedMetadataArray = this.lastIterator.mergedMetadataArray;
         var mergedDataArray = this.lastIterator.mergedDataArray;
         var mergedAddKeySet = this.lastIterator.mergedAddKeySet;
 
-        var keyIdx = this._findKeyInMetadata(item.metadata.key, mergedMetadataArray);
+        var keyIdx = this._findKeyInMetadata(key, mergedMetadataArray);
 
         if (keyIdx !== -1) {
           mergedMetadataArray.splice(keyIdx, 1);
           mergedDataArray.splice(keyIdx, 1);
-          mergedAddKeySet.delete(item.metadata.key);
+          mergedAddKeySet.delete(key); // If the firstBaseKey is removed, set it to the next one
+
+          if (oj.KeyUtils.equals(this.lastIterator.firstBaseKey, key)) {
+            if (mergedMetadataArray.length > keyIdx) {
+              this.lastIterator.firstBaseKey = mergedMetadataArray[keyIdx].key;
+            } else {
+              this.lastIterator.firstBaseKey = null;
+            }
+          }
         }
-      } // Fire mutate event if successful
+      }
+    }
+  }, {
+    key: "removeItem",
+    value: function removeItem(item) {
+      this.editBuffer.removeItem(item); // Remove item from the merged arrays
+
+      this._removeFromMergedArrays(item.metadata.key); // Fire mutate event if successful
 
 
       var detail = {
@@ -750,8 +771,8 @@ var BufferingDataProvider = /*#__PURE__*/function () {
         var submittingItems = this.editBuffer.getSubmittingItems();
         var unsubmittedItems = this.editBuffer.getUnsubmittedItems();
 
-        if (submittingItems.size === 0) {
-          // If not item is submitting, simply use the underlying operation detail except indexes.
+        if (submittingItems.size === 0 && unsubmittedItems.size === 0) {
+          // If no item is buffered, simply use the underlying operation detail except indexes.
           this._initDetailProp(detail, newDetail, 'data', detail.data);
 
           this._initDetailProp(detail, newDetail, 'metadata', detail.metadata);
@@ -771,10 +792,20 @@ var BufferingDataProvider = /*#__PURE__*/function () {
           this._initDetailProp(detail, newDetail, 'parentKeys', []);
 
           detail.keys.forEach(function (key) {
-            // Skip the mutation if it's in the submitting buffer, because this should be coming from
-            // the data source when the item is committed.  We would have already fired the mutate
-            // event when the item was first added to the buffer.
-            if (!submittingItems.get(key)) {
+            // Skip the mutation if:
+            // 1. The key is in the submitting buffer, because the mutation should be coming from
+            //    the data source when the item is committed.  We would have already fired the mutate
+            //    event when the item was first added to the buffer.
+            // 2. The key is in the unsubmitted buffer as removed item. Skip any mutation because
+            //    the item does not exist from this dataprovider's perspective.
+            var skipItem = submittingItems.get(key) != null;
+
+            if (!skipItem) {
+              var editItem = unsubmittedItems.get(key);
+              skipItem = editItem && editItem.operation === 'remove';
+            }
+
+            if (!skipItem) {
               newDetail.keys.add(key);
 
               if (detail.metadata) {
@@ -794,9 +825,9 @@ var BufferingDataProvider = /*#__PURE__*/function () {
 
 
             if (isRemoveDetail) {
-              var editItem = unsubmittedItems.get(key);
+              var _editItem = unsubmittedItems.get(key);
 
-              if (editItem && (editItem.operation === 'remove' || editItem.operation === 'update')) {
+              if (_editItem && (_editItem.operation === 'remove' || _editItem.operation === 'update')) {
                 unsubmittedItems.delete(key);
               }
             }
@@ -847,6 +878,26 @@ var BufferingDataProvider = /*#__PURE__*/function () {
   }, {
     key: "_handleMutateEvent",
     value: function _handleMutateEvent(event) {
+      var _this10 = this;
+
+      // Fix up the merged arrays
+      if (event.detail.remove) {
+        event.detail.remove.keys.forEach(function (key) {
+          _this10._removeFromMergedArrays(key);
+        });
+      }
+
+      var detailAdd = event.detail.add;
+
+      if (detailAdd && detailAdd.metadata && detailAdd.data) {
+        detailAdd.metadata.forEach(function (metadata, idx) {
+          _this10._addToMergedArrays({
+            metadata: detailAdd.metadata[idx],
+            data: detailAdd.data[idx]
+          });
+        });
+      }
+
       var newAddDetail = this._getOperationDetail(event.detail.add, false);
 
       var newRemoveDetail = this._getOperationDetail(event.detail.remove, true);

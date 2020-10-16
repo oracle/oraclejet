@@ -5,4 +5,4 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojprogress"],function(){"use strict"});
+define(["ojs/ojprogress"],(function(){}));

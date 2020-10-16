@@ -386,7 +386,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
               // ensure that this is not the very first view displayed by the binding
               legacyLifecycleListenerFunc(lifecycleListener, 'detached', [element, valueAccessor, currentViewModel, cachedNodeArray]);
               legacyViewModelMethodFunc(currentViewModel, 'detachedHandler', [element, valueAccessor, cachedNodeArray]);
-              viewModelMethodFunc(currentViewModel, 'disconnected');
+              viewModelMethodFunc(currentViewModel, 'disconnected', cachedNodeArray);
               dispatchLifecycleEventFunc(contextElement, 'ojViewDisconnected', [currentViewModel, cachedNodeArray]);
               legacyLifecycleListenerFunc(lifecycleListener, 'deactivated', [element, valueAccessor, currentViewModel]);
               legacyViewModelMethodFunc(currentViewModel, 'deactivatedHandler', [element, valueAccessor]);
@@ -432,7 +432,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
 
             legacyLifecycleListenerFunc(lifecycleListener, 'attached', [targetElement, valueAccessor, model, fromCache]);
             legacyViewModelMethodFunc(model, 'attachedHandler', [targetElement, valueAccessor, fromCache]);
-            viewModelMethodFunc(model, 'connected');
+            viewModelMethodFunc(model, 'connected', nodes);
             dispatchLifecycleEventFunc(contextElement, 'ojViewConnected', [model]);
 
             if (!fromCache && !bindingApplied) {
@@ -465,7 +465,7 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
           var transitionComplete = function transitionComplete() {
             legacyLifecycleListenerFunc(lifecycleListener, 'transitionCompleted', [element, valueAccessor, model]);
             legacyViewModelMethodFunc(model, 'transitionCompletedHandler', [element, valueAccessor]);
-            viewModelMethodFunc(model, 'transitionCompleted');
+            viewModelMethodFunc(model, 'transitionCompleted', nodes);
             dispatchLifecycleEventFunc(contextElement, 'ojTransitionEnd', [model]);
             resolveBusyState();
           };
@@ -749,16 +749,17 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
    * @ignore
    * @param {?Object} model
    * @param {string} name
+   * @param {Array} params
    */
 
 
-  function _invokeViewModelMethodOnElement(model, name) {
+  function _invokeViewModelMethodOnElement(model, name, params) {
     if (model && name) {
       var handler = model[name];
 
       if (typeof handler === 'function') {
         // suspend dependency detection while listeners are invoked
-        ko.ignoreDependencies(handler, model);
+        ko.ignoreDependencies(handler, model, [params]);
       }
     }
   }
