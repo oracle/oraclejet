@@ -1,0 +1,18 @@
+
+//-------------------------------------------------------------------------------------------------
+// This function returns an image url relative to the $imageDir variable
+//-------------------------------------------------------------------------------------------------
+@function oj-image-url($path)
+{
+  @if $path == null {@return null;}
+  @else { @return url($imageDir + $path);}
+}
+
+//-------------------------------------------------------------------------------------------------
+// This function returns a font relative to the $fontDir variable
+//-------------------------------------------------------------------------------------------------
+@function oj-font-url($path)
+{
+  @if $path == null {@return null;}
+  @else { @return url($fontDir + $path);}
+}

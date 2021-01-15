@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,21 +14,21 @@ declare class Router {
     readonly currentValue: (() => string | undefined);
     defaultStateId: string | undefined;
     static defaults: {
-        urlAdapter?: Router.urlPathAdapter | Router.urlParamAdapter;
         baseUrl?: string;
         rootInstanceName?: string;
+        urlAdapter?: Router.urlPathAdapter | Router.urlParamAdapter;
     };
     readonly direction: string | undefined;
     readonly moduleConfig: {
+        lifecycleListener: {
+            attached: ((param0: any) => void);
+        };
         name: ko.Observable<string>;
         params: {
             ojRouter: {
-                parentRouter: Router;
                 direction: string;
+                parentRouter: Router;
             };
-        };
-        lifecycleListener: {
-            attached: ((param0: any) => void);
         };
     };
     readonly name: string;
@@ -64,18 +64,18 @@ declare class Router {
 declare namespace Router {
     // tslint:disable-next-line interface-over-type-literal
     type ModuleConfigType = {
+        lifecycleListener: {
+            attached: ((param0: any) => void);
+        };
         name: ko.Observable<string>;
         params: {
             ojRouter: {
-                parentRouter: Router;
                 direction: string;
                 parameters: {
                     [key: string]: any;
                 };
+                parentRouter: Router;
             };
-        };
-        lifecycleListener: {
-            attached: ((param0: any) => void);
         };
     };
     // tslint:disable-next-line no-unnecessary-class

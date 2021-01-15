@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox.cssvars.scss";
+// scoped cssvars override
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.variables.menuselectmany") {
+
+    :root {
+    // menu-select-many
+    // ---------------------------
+      --oj-menu-icon-size: 24px;
+    }
+  }

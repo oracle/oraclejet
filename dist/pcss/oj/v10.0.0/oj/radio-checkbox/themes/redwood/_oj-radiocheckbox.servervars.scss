@@ -1,0 +1,12 @@
+
+// RADIO and CHECKBOX
+//-----------------------------------------------------------------------------
+// The input html element can be hidden the radio/checkbox rendered as an image instead
+// values are 'html' and 'backgroundImage'.
+$privateRadioCheckboxRenderInputAs: backgroundImage !default;
+
+// The label can be rendered before or after the input/image.
+//todo
+$privateRadioCheckboxLabelPosition: end !default;
+// todo: there's a row height css variable
+$privateRadioCheckboxRowHeight: 1.9rem !default;

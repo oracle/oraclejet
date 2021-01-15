@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -146,8 +146,8 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
     };
-    addEventListener<T extends keyof ojTimelineEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTimelineEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTimelineEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTimelineEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTimelineSettableProperties<K, D>>(property: T): ojTimeline<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTimelineSettableProperties<K, D>>(property: T, value: ojTimelineSettableProperties<K, D>[T]): void;
@@ -157,9 +157,9 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
 }
 export namespace ojTimeline {
     interface ojViewportChange extends CustomEvent<{
-        viewportStart: string;
-        viewportEnd: string;
         minorAxisScale: string;
+        viewportEnd: string;
+        viewportStart: string;
         [propName: string]: any;
     }> {
     }
@@ -199,15 +199,31 @@ export namespace ojTimeline {
     type viewportStartChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportStart"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DataItem = {
-        seriesId: string;
-        title?: string;
         description?: string;
         durationFillColor?: string;
         end?: string;
+        seriesId: string;
         shortDesc?: string;
         start: string;
         svgStyle?: CSSStyleDeclaration;
         thumbnail?: string;
+        title?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type itemBubbleTemplateContext<K, D> = {
+        data: SeriesItem<K>;
+        itemData: D;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        seriesData: Series<K>;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
@@ -218,9 +234,9 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
-        subId: string;
-        seriesIndex: number;
         itemIndex: number;
+        seriesIndex: number;
+        subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
@@ -228,30 +244,30 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Series<K> = {
-        id: string;
-        items?: Array<SeriesItem<K>>;
         emptyText?: string;
+        id: string;
         itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
+        items?: Array<SeriesItem<K>>;
         label?: string;
         svgStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesItem<K> = {
-        id: K;
-        title?: string;
         description?: string;
         durationFillColor?: string;
         end?: string;
+        id: K;
         shortDesc?: string;
         start: string;
         svgStyle?: CSSStyleDeclaration;
         thumbnail?: string;
+        title?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext = {
         componentElement: Element;
-        index: number;
         id: any;
+        index: number;
         items: Array<{
             data: object;
             index: number;
@@ -260,12 +276,12 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
-        parentElement: Element;
-        data: SeriesItem<K>;
-        seriesData: Series<K>;
-        itemData: D;
-        componentElement: Element;
         color: string;
+        componentElement: Element;
+        data: SeriesItem<K>;
+        itemData: D;
+        parentElement: Element;
+        seriesData: Series<K>;
     };
 }
 export interface ojTimelineEventMap<K, D extends ojTimeline.DataItem | any> extends dvtTimeComponentEventMap<ojTimelineSettableProperties<K, D>> {
@@ -437,8 +453,8 @@ export interface ojTimelineItem extends JetElement<ojTimelineItemSettablePropert
     start: string;
     svgStyle?: CSSStyleDeclaration;
     thumbnail?: string;
-    addEventListener<T extends keyof ojTimelineItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineItemEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTimelineItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTimelineItemSettableProperties>(property: T): ojTimelineItem[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTimelineItemSettableProperties>(property: T, value: ojTimelineItemSettableProperties[T]): void;
@@ -495,8 +511,8 @@ export interface ojTimelineSeries extends JetElement<ojTimelineSeriesSettablePro
     itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
     label?: string;
     svgStyle?: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojTimelineSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineSeriesEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTimelineSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTimelineSeriesSettableProperties>(property: T): ojTimelineSeries[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTimelineSeriesSettableProperties>(property: T, value: ojTimelineSeriesSettableProperties[T]): void;

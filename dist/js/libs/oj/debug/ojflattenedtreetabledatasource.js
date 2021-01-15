@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,17 +17,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * http://jquery.org/license
  */
 
-/* global Promise:false */
 
 /* jslint browser: true,devel:true*/
 /**
  * @export
  * @class oj.FlattenedTreeTableDataSource
- * @extends oj.TableDataSource
+ * @extends TableDataSource
  * @ojtsignore
  * @classdesc Object representing data used by Table with RowExpander.<br><br>
- *            See the <a href="../jetCookbook.html?component=rowExpander&demo=tableRowExpander">Row Expander - Table</a> demo for an example.<br><br>
- *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
+ *            See the Row Expander - Table demo for an example.<br><br>
+ *            Refer to {@link TableDataSource} for other data sources that represent tabular data.
  * @param {Object} data
  * @param {Object|null} options Options for the FlattenedTreeTableDataSource
  * @param {string} options.startFetch Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
@@ -163,7 +162,7 @@ oj.FlattenedTreeTableDataSource.prototype.getCapability = function (feature) {
 
 /**
  * Retrieves the underlying DataSource.
- * @return {Object} the underlying oj.DataSource.
+ * @return {Object} the underlying DataSource.
  * @export
  * @expose
  * @memberof oj.FlattenedTreeTableDataSource

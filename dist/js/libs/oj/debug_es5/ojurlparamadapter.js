@@ -1,21 +1,24 @@
+(function() {
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) {
+  'use strict';
 
-define(['ojs/ojcore', 'ojs/ojurlpathadapter', 'ojs/ojlogger'],
-function(oj, UrlPathAdapter, Logger) {
-  "use strict";
-
-
-
-/* global UrlPathAdapter, Logger:false */
-// eslint-disable-next-line no-unused-vars
-var adapter = function () {
+  UrlPathAdapter = UrlPathAdapter && Object.prototype.hasOwnProperty.call(UrlPathAdapter, 'default') ? UrlPathAdapter['default'] : UrlPathAdapter;
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
   // The old (8.0.0) paramter name
+
   var _OLD_PARAM_NAME = '_ojCoreRouter'; // The new (9.0.0) paramter name
 
   var _NEW_PARAM_NAME = 'ojr';
@@ -23,6 +26,7 @@ var adapter = function () {
   /**
    * Parse document.location.search into
    * [[ name, value ], [ name, value ]]
+   * @ignore
    */
 
   function parseSearch() {
@@ -44,6 +48,7 @@ var adapter = function () {
    * [[ name1, value1 ], [ name2, value2 ]]
    * recreate a search string, "name1=value1&name2=value2"
    * @param {Array<object>} params An array of param objects
+   * @ignore
    */
 
 
@@ -55,6 +60,7 @@ var adapter = function () {
   }
   /**
    * Given search parameters from the URL, find the value of '_ojCoreRouter'
+   * @ignore
    */
 
 
@@ -69,6 +75,7 @@ var adapter = function () {
    * Given a string of route states (/path1/path2/path3), encode the value and
    * set into the _ojCoreRouter parameter, and preserve remaining query params.
    * @param {string} routerValue The router states to set
+   * @ignore
    */
 
 
@@ -91,6 +98,7 @@ var adapter = function () {
    * Given a segment-encoded path (/path1/path2/path3), URL encode the value and
    * return it.
    * @param {string} value The unencoded path
+   * @ignore
    */
 
 
@@ -102,6 +110,7 @@ var adapter = function () {
    * Given an encoded path (%2Fpath1%2Fpath2%2Fpath3), decode the valu and
    * return it.
    * @param {string} value The encoded path
+   * @ignore
    */
 
 
@@ -187,7 +196,6 @@ var adapter = function () {
   };
 
   return UrlParamAdapter;
-}();
-
-  return adapter;
 });
+
+}())

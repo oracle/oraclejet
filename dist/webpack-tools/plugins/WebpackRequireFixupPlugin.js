@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -21,7 +21,8 @@ const IncompatibleDependency = require('./IncompatibleDependency');
 const ReplaceContentDependency = require('./ReplaceContentDependency');
 const OjModuleImportDependency = require('./OjModuleImportDependency');
 const BaseResourceUrlDependency = require('./BaseResourceUrlDependency');
-const ImportDependenciesBlock = require('webpack/lib/dependencies/ImportDependenciesBlock');
+const AsyncDependenciesBlock = require('webpack/lib/AsyncDependenciesBlock');
+const ImportDependency = require('webpack/lib/dependencies/ImportDependency');
 
 const vm = require("vm");
 
@@ -94,7 +95,10 @@ class WebpackRequireFixupPlugin
                   const start = expr.range[0];
                   // Look for comments immediately preceeding the require variable
                   const immediateComment = parser.comments.find(
-                    comment => start === comment.range[1]
+                    comment => {
+                      const diff = start - comment.range[1];
+                      return diff === 0 || diff === 1; // 0 or one space between the end of the comment and the replaced expression
+                    }
                   );
                   if (immediateComment) {
                     const opts = _getCommentOptions(parser, immediateComment.range);
@@ -102,22 +106,29 @@ class WebpackRequireFixupPlugin
                     const viewOpts = opts.ojModuleElementView;
                     const modelOpts = opts.ojModuleElementViewModel;
                     const ojModuleBindingOpts = opts.ojModuleResources;
+                    const moduleRouterAdapterOpts = opts.ojModuleRouterAdapter;
                     // range for replacing both the comment and the variable
                     const range = [immediateComment.range[0], expr.range[1]];
 
                     var rootOpts = this.options.ojModuleResources || {};
-                    var root  = {root: './'}; // ignore the global ojModuleResources root when the require instance is specified
+                    var root  = {root: './'}; // ignore the global ojModuleResources root when a require instance is specified
                     // require instance is being passed for loading a View by ModuleElementUtils
                     if (viewOpts) {
-                      return _replaceOjModuleViewPromise(range, Object.assign(root, rootOpts.view||{}, viewOpts), parser, true);
+                      return _replaceOjModuleRequireDelegate(range, Object.assign(root, rootOpts.view||{}, viewOpts), parser);
                     }
                     // require instance is being passed for loading a ViewModel by ModuleElementUtils
                     else if (modelOpts) {
-                      return _replaceOjModuleViewModelPromise(range, Object.assign(root, rootOpts.viewModel||{}, modelOpts), parser, true);
+                      return _replaceOjModuleRequireDelegate(range, Object.assign(root, rootOpts.viewModel||{}, modelOpts), parser);
                     }
                     // require instance is being passed for loading a View and a ViewModel by ojModule
                     else if (ojModuleBindingOpts) {
                       return _replaceOjModuleRequirePromise(range, _mergeDeep({}, rootOpts, root, ojModuleBindingOpts), parser, true);
+                    }
+                    // require instance is being passed for use by ModuleRouterAdapter
+                    else if (moduleRouterAdapterOpts) {
+                      const vOpts = Object.assign({}, root, rootOpts.view||{}, moduleRouterAdapterOpts.view||{});
+                      const mOpts = Object.assign({}, root, rootOpts.viewModel||{}, moduleRouterAdapterOpts.viewModel||{});
+                      return _replaceRouterAdapterRequireDelegate(range, vOpts, mOpts, parser);
                     }
                   }
                   else if (expr.name === 'localRequire') {
@@ -191,6 +202,12 @@ class WebpackRequireFixupPlugin
                           ret = true;
                           parser.state.current.addDependency(
                                       new BaseResourceUrlDependency(func.range, this.options.baseResourceUrl || ""));
+                        break;
+                        case "setLocale":
+                          if (clazz === "Config") {
+                            parser.state.current.addDependency(new IncompatibleDependency(func.range, ".setLocale() cannot be used from a Webpack bundle", true));
+                            ret = true;
+                          }
                         break;
 
                       }
@@ -279,49 +296,38 @@ function _replaceOjModuleRequirePromise(range, options, parser, isDelegate) {
   return true;
 }
 
-// This function will replace a method loading the ojModule or <oj-module> View.
-// The 'delegate' parameter will be true when the function is replacing the require
-// instance used to load a View with a relative path.
+// This function will replace ModuleElementUtils.createViewModel() implementation.
 // Since Webpack cannot perform further optimization of the code that has been modified by a plugin,
 // we have to make all the modifications that Webpack would have done, in this case insert the code that would
 // normally replace the dynamic imports. The OjModuleImportDependency handles that replacement.
 
-function _replaceOjModuleViewPromise(range, options, parser, isDelegate) {
+function _replaceOjModuleViewPromise(range, options, parser) {
   const part1 = range[0];
   const part2 = part1 + 1;
   const part3 = part2 + 1;
   const end = range[1];
 
-  const content1 = isDelegate ?
-  `function(module) {
-    var ret = ` :
-
+  const content1 =
   `function(options) {
-    if (!options || !options['viewPath'])
+    if (!(options && options.viewPath)) {
       return Promise.resolve([]);
+    }
 
-    var delegate = options['require'];
-    var module = options['viewPath'];
+    var delegate = options.require;
+    var module = options.viewPath;
 
     var ret;
 
     if (delegate) {
+      var vd = delegate.view;
+      delegate = vd || delegate;
       ret = delegate(module);
     }
     else
       ret = `;
 
-    const content3 = isDelegate ? `
-      return ret;
-    }` : `ret = ret.then(
-        function(value){
-          return HtmlUtils.stringToNodeArray(value);
-        }
-      );
-      return ret;
-    }`
-
-
+  const content3 = `return ret.then(ModuleElementUtils._processViewText);
+  }`;
 
   const blocks = [
     {
@@ -336,39 +342,52 @@ function _replaceOjModuleViewPromise(range, options, parser, isDelegate) {
     }
   ];
   parser.state.current.addDependency(new ReplaceContentDependency(blocks));
-  parser.state.current.addDependency(
-            new OjModuleImportDependency(part2,
-              options));
+  parser.state.current.addDependency(new OjModuleImportDependency(part2, options));
 
   return true;
-
 };
 
-// This function will replace a method loading he ojModule or <oj-module> ViewModel.
-// The 'delegate' parameter will be true when the function is replacing the require
-// instance used to load a View with a relative path.
+// This function will replace ModuleElementUtils.createViewModel() implementation.
 // Since Webpack cannot perform further optimization of the code that has been modified by a plugin,
 // we have to make all the modifications that Webpack would have done, in this case insert the code that would
 // normally replace the dynamic imports. The OjModuleImportDependency handles that replacement.
-function _replaceOjModuleViewModelPromise(range, options, parser, isDelegate) {
+function _replaceOjModuleViewModelPromise(range, options, parser) {
   const part1 = range[0];
   const part2 = part1 + 1;
   const part3 = part2 + 1;
   const end = range[1];
 
-  const content1 = isDelegate ?
-    `function(module) {
-      return ` :
+  const content1 =
     `function(options) {
-      if (!options || !options['viewModelPath'])
+      if (!(options && options.viewModelPath)) {
         return Promise.resolve(null);
-
-      var delegate = options['require'];
-      var module = options['viewModelPath'];
-      if (delegate) {
-        return delegate(module);
       }
-      return `;
+      var vmP;
+      var delegate = options.require;
+      var module = options.viewModelPath;
+      if (delegate) {
+        var vmd = delegate.viewModel;
+        delegate = vmd || delegate;
+        vmP = delegate(module);
+      }
+      else {
+        vmP = `;
+
+    const content3 = `
+      }
+      return vmP.then(function (viewModelValue) {
+        var viewModel = viewModelValue;
+        if (viewModel && (options.initialize === 'always' ||
+          (options.params != null && options.initialize !== 'never'))) {
+          if (typeof viewModel === 'function') {
+            viewModel = new viewModel(options.params);
+          } else if (typeof viewModel.initialize === 'function') {
+            viewModel.initialize(options.params);
+          }
+        }
+        return viewModel;
+      });
+      }`;
 
 
   const blocks = [
@@ -380,11 +399,9 @@ function _replaceOjModuleViewModelPromise(range, options, parser, isDelegate) {
     {
       start: part3,
       end: end,
-      content: `
-    }`
+      content: content3
     }
   ];
-
 
   parser.state.current.addDependency(new ReplaceContentDependency(blocks));
   parser.state.current.addDependency(
@@ -392,6 +409,77 @@ function _replaceOjModuleViewModelPromise(range, options, parser, isDelegate) {
 
   return true;
 };
+
+function _replaceOjModuleRequireDelegate(range, options, parser) {
+  const part1 = range[0];
+  const part2 = part1 + 1;
+  const part3 = part2 + 1;
+  const end = range[1];
+
+  const content1 =
+    `function(module) {
+      return `;
+
+  const content3 = `
+    }`;
+
+  const blocks = [
+    {
+      start: part1,
+      end: part1 + 1,
+      content: content1
+    },
+    {
+      start: part3,
+      end: end,
+      content: content3
+    }
+  ];
+
+  parser.state.current.addDependency(new ReplaceContentDependency(blocks));
+  parser.state.current.addDependency(
+            new OjModuleImportDependency(part2, options));
+
+  return true;
+};
+
+function _replaceRouterAdapterRequireDelegate(range, viewOpts, viewModelOpts, parser) {
+  const part1 = range[0];
+  const part2 = part1 + 1;
+  const part3 = part2 + 3;
+  const part4 = part3 + 1;
+  const part5 = part4 + 3;
+
+  const content1 = '{view:'
+  const content3 = ',viewModel:';
+  const content5 = '}';
+
+  const blocks = [
+    {
+      start: part1,
+      end: part2,
+      content: content1
+    },
+    {
+      start: part3,
+      end: part4,
+      content: content3
+    },
+    {
+      start: part5,
+      end: range[1],
+      content: content5
+    }
+  ];
+
+  parser.state.current.addDependency(new ReplaceContentDependency(blocks));
+
+  _replaceOjModuleRequireDelegate([part2, part3], viewOpts, parser);
+  _replaceOjModuleRequireDelegate([part4, part5], viewModelOpts, parser);
+
+  return true;
+}
+
 
 function _isObject(item) {
   return (item && typeof item === 'object' && !Array.isArray(item));
@@ -447,14 +535,14 @@ function _replaceGetRequirePromise(expr, parser) {
   const end = expr.range[1];
 
 
-  const depBlock = new ImportDependenciesBlock(
-    module.string,
-    [start, end - 1],
+  const depBlock = new AsyncDependenciesBlock(
     {},
-    parser.state.module,
     expr.loc,
-    parser.state.module
-  )
+    module.string
+  );
+  const dep = new ImportDependency(module.string, [start, end - 1], null);
+  dep.loc = expr.loc;
+  depBlock.addDependency(dep);
   parser.state.current.addBlock(depBlock);
 
   parser.state.current.addDependency(new ReplaceContentDependency(

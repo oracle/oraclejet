@@ -1,0 +1,96 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example avatar/themes/redwood/oj-avatar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.avatar") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-avatar:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-avatar {
+    display: inline-block;
+  }
+
+  .oj-avatar-background-image {
+    background-size: cover;
+    background-position: center center;
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    // Chrome bug 1016796 Background-image upscaling creates artifact on top/right edges
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+  }
+
+  .oj-avatar {
+    color: var(--oj-avatar-text-color);
+
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    position: relative;
+    background-color: var(--oj-avatar-bg-color);
+    overflow: hidden;
+  }
+
+  //div selector present to give it priority over colored backgrounds below
+  div.oj-avatar.oj-avatar-image {
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  .oj-avatar-initials {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .oj-avatar-placeholder {
+    color: #ffffff;
+    @extend .oj-fwk-icon;
+  }
+
+  .oj-avatar-group-image .oj-avatar-placeholder {
+    @extend .oj-fwk-icon-users;
+  }
+
+  
+  /*Don't need to specify medium size since it is the default*/
+  .oj-avatar .oj-avatar-background-image {
+    border-radius: var(--oj-avatar-border-radius);
+  }
+
+  .oj-avatar {
+    height: var(--oj-avatar-size);
+    width: var(--oj-avatar-size);
+    font-size: var(--oj-avatar-initials-font-size);
+    font-weight: var(--oj-avatar-initials-font-weight);
+    border-radius: var(--oj-avatar-border-radius);
+  }
+  .oj-avatar-placeholder {
+    font-size: calc(2 / 3 * var(--oj-avatar-size));
+  }
+
+  .oj-avatar-bg-red.oj-avatar {
+    background-color: #9b5734;
+  }
+
+  .oj-avatar-bg-forest.oj-avatar {
+    background-color: #4c825c;
+  }
+
+  .oj-avatar-bg-mauve.oj-avatar {
+    background-color: #925865;
+  }
+
+}

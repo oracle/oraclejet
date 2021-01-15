@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 
 
@@ -348,18 +348,28 @@
 }
 
 
-.oj-fwk-icon-warning:before {
+.oj-fwk-icon-view-hide:before {
 	content:"\f145";
 }
 
 
-.oj-fwk-icon-zoom-in:before {
+.oj-fwk-icon-view:before {
 	content:"\f146";
 }
 
 
-.oj-fwk-icon-zoom-out:before {
+.oj-fwk-icon-warning:before {
 	content:"\f147";
+}
+
+
+.oj-fwk-icon-zoom-in:before {
+	content:"\f148";
+}
+
+
+.oj-fwk-icon-zoom-out:before {
+	content:"\f149";
 }
 
 }

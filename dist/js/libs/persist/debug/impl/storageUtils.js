@@ -192,6 +192,8 @@ define(['./logger'], function (logger) {
             return true
           }
         }
+      } else if (operator === '$nin') {
+        return value.indexOf(itemValue) < 0;
       } else {
         throw new Error("not a valid expression! " + expTree);
       }
@@ -230,7 +232,8 @@ define(['./logger'], function (logger) {
   function _isSingleSelector(token) {
     return (token === '$lt' || token === '$gt' || token === '$lte' ||
       token === '$gte' || token === '$eq' || token === '$ne' ||
-      token === '$regex' || token === '$exists' || token === '$in');
+      token === '$regex' || token === '$exists' || token === '$in' ||
+      token === '$nin');
   };
 
   /**

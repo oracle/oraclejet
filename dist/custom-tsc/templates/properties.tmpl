@@ -1,23 +1,27 @@
 <?js
 var properties = obj.properties;
 var propsClassName = obj.propsClassName;
-var propsTypeParams = obj.propsTypeParams;
+var propsTypeParams = obj.typeParams;
+var propsToInclude = obj.propsToInclude; // readOnly | settable
 var self = this;
 var props = properties? Object.keys(properties) : undefined;
 props.sort();
 for (let prop of props) {
-  if (properties[prop].description) {
-  ?>
+  if ((propsToInclude === 'readOnly' && properties[prop]['readOnly']) ||
+      (propsToInclude === 'settable' && !properties[prop]['readOnly'])) {
+    if (properties[prop].description) {
+    ?>
   /**
-   * <?js= properties[prop].description ?>
-   */
+  * <?js= properties[prop].description ?>
+  */
+    <?js
+    }
+    let optional = properties[prop]['optional'] ? '?' : '';
+    let strProp = properties[prop]['readOnly']? `readonly ${prop}`: `${prop}`;
+    strProp = `${strProp}${optional}`;
+    ?>
+  <?js= `${strProp}: ${propsClassName}${propsTypeParams}['${prop}'];` ?>
   <?js
   }
-  let optional = properties[prop]['optional'] ? '?' : '';
-  let strProp = properties[prop]['readOnly']? `readonly ${prop}`: `${prop}`;
-  strProp = `${strProp}${optional}`;
-  ?>
-  <?js= `${strProp}: ${propsClassName}${propsTypeParams}['${prop}'];` ?>
-<?js
 }
 ?>

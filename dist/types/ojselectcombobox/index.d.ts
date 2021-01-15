@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -28,8 +28,9 @@ export interface ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV
         messages: 'display' | 'none';
         validatorHint: 'display' | 'none';
     };
-    addEventListener<T extends keyof ojComboboxEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: ojComboboxEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojComboboxEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: ojComboboxEventMap<V, SP, SV, RV>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojComboboxSettableProperties<V, SV, RV>>(property: T): ojCombobox<V, SP, SV, RV>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojComboboxSettableProperties<V, SV, RV>>(property: T, value: ojComboboxSettableProperties<V, SV, RV>[T]): void;
@@ -56,9 +57,9 @@ export namespace ojCombobox {
     type displayOptionsChanged<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> = JetElementCustomEvent<ojCombobox<V, SP, SV, RV>["displayOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Optgroup = {
+        children: Array<Option | Optgroup>;
         disabled?: boolean;
         label: string;
-        children: Array<Option | Optgroup>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Option = {
@@ -69,19 +70,19 @@ export namespace ojCombobox {
     // tslint:disable-next-line interface-over-type-literal
     type OptionContext = {
         componentElement: Element;
-        parent: Element;
-        index: number;
-        depth: number;
-        leaf: boolean;
         data: object;
+        depth: number;
+        index: number;
+        leaf: boolean;
+        parent: Element;
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
     type OptionsKeys = {
+        childKeys?: OptionsKeys;
+        children?: string;
         label?: string;
         value?: string;
-        children?: string;
-        childKeys?: OptionsKeys;
     };
 }
 export interface ojComboboxEventMap<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV = V, RV = V> extends editableValueEventMap<V, SP, SV, RV> {
@@ -110,8 +111,8 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojCombobox.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readonly rawValue: string[] | null;
@@ -134,8 +135,9 @@ export interface ojComboboxMany<K, D, V = any> extends ojCombobox<V[], ojCombobo
             messageSummary?: string;
         };
     };
-    addEventListener<T extends keyof ojComboboxManyEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojComboboxManyEventMap<K, D, V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojComboboxManyEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojComboboxManyEventMap<K, D, V>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojComboboxManySettableProperties<K, D, V>>(property: T): ojComboboxMany<K, D, V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojComboboxManySettableProperties<K, D, V>>(property: T, value: ojComboboxManySettableProperties<K, D, V>[T]): void;
@@ -219,8 +221,8 @@ export interface ojComboboxManySettableProperties<K, D, V = any> extends ojCombo
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojCombobox.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readonly rawValue: string[] | null;
@@ -258,8 +260,8 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojCombobox.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readonly rawValue: string | null;
@@ -268,8 +270,8 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
     valueOption: {
-        value: V | null;
         label?: string;
+        value: V | null;
     };
     translations: {
         filterFurther?: string;
@@ -282,8 +284,9 @@ export interface ojComboboxOne<K, D, V = any> extends ojCombobox<V, ojComboboxOn
             messageSummary?: string;
         };
     };
-    addEventListener<T extends keyof ojComboboxOneEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojComboboxOneEventMap<K, D, V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojComboboxOneEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojComboboxOneEventMap<K, D, V>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojComboboxOneSettableProperties<K, D, V>>(property: T): ojComboboxOne<K, D, V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojComboboxOneSettableProperties<K, D, V>>(property: T, value: ojComboboxOneSettableProperties<K, D, V>[T]): void;
@@ -305,8 +308,8 @@ export namespace ojComboboxOne {
     }> {
     }
     interface ojValueUpdated extends CustomEvent<{
-        value: any;
         previousValue: any;
+        value: any;
         [propName: string]: any;
     }> {
     }
@@ -378,8 +381,8 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
     options: Array<ojCombobox.Option | ojCombobox.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojCombobox.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readonly rawValue: string | null;
@@ -388,8 +391,8 @@ export interface ojComboboxOneSettableProperties<K, D, V = any> extends ojCombob
     validators: Array<Validator<V> | AsyncValidator<V>> | null;
     value: V | null;
     valueOption: {
-        value: V | null;
         label?: string;
+        value: V | null;
     };
     translations: {
         filterFurther?: string;
@@ -414,8 +417,9 @@ export interface ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV = 
         validatorHint: 'display' | 'none';
     };
     labelledBy: string | null;
-    addEventListener<T extends keyof ojSelectEventMap<V, SP, SV>>(type: T, listener: (this: HTMLElement, ev: ojSelectEventMap<V, SP, SV>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSelectEventMap<V, SP, SV>>(type: T, listener: (this: HTMLElement, ev: ojSelectEventMap<V, SP, SV>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSelectSettableProperties<V, SV>>(property: T): ojSelect<V, SP, SV>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSelectSettableProperties<V, SV>>(property: T, value: ojSelectSettableProperties<V, SV>[T]): void;
@@ -444,9 +448,9 @@ export namespace ojSelect {
     type labelledByChanged<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> = JetElementCustomEvent<ojSelect<V, SP, SV>["labelledBy"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Optgroup = {
+        children: Array<(Option | Optgroup)>;
         disabled?: boolean;
         label: string;
-        children: Array<(Option | Optgroup)>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Option = {
@@ -457,19 +461,19 @@ export namespace ojSelect {
     // tslint:disable-next-line interface-over-type-literal
     type OptionContext = {
         componentElement: Element;
-        parent: Element;
-        index: number;
-        depth: number;
-        leaf: boolean;
         data: object;
+        depth: number;
+        index: number;
+        leaf: boolean;
+        parent: Element;
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
     type OptionsKeys = {
+        childKeys?: (OptionsKeys);
+        children?: string;
         label?: string;
         value?: string;
-        children?: string;
-        childKeys?: (OptionsKeys);
     };
 }
 export interface ojSelectEventMap<V, SP extends ojSelectSettableProperties<V, SV>, SV = V> extends editableValueEventMap<V, SP, SV> {
@@ -498,8 +502,8 @@ export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManyS
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojSelect.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readOnly: boolean;
@@ -522,8 +526,9 @@ export interface ojSelectMany<K, D, V = any> extends ojSelect<V[], ojSelectManyS
         };
         searchField?: string;
     };
-    addEventListener<T extends keyof ojSelectManyEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojSelectManyEventMap<K, D, V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSelectManyEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojSelectManyEventMap<K, D, V>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSelectManySettableProperties<K, D, V>>(property: T): ojSelectMany<K, D, V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSelectManySettableProperties<K, D, V>>(property: T, value: ojSelectManySettableProperties<K, D, V>[T]): void;
@@ -596,8 +601,8 @@ export interface ojSelectManySettableProperties<K, D, V = any[]> extends ojSelec
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojSelect.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readOnly: boolean;
@@ -632,8 +637,8 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojSelect.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readOnly: boolean;
@@ -641,8 +646,8 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
     required: boolean;
     value: V | null;
     valueOption: {
-        value: V | null;
         label?: string;
+        value: V | null;
     };
     translations: {
         filterFurther?: string;
@@ -656,8 +661,9 @@ export interface ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSetta
         };
         searchField?: string;
     };
-    addEventListener<T extends keyof ojSelectOneEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojSelectOneEventMap<K, D, V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSelectOneEventMap<K, D, V>>(type: T, listener: (this: HTMLElement, ev: ojSelectOneEventMap<K, D, V>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSelectOneSettableProperties<K, D, V>>(property: T): ojSelectOne<K, D, V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSelectOneSettableProperties<K, D, V>>(property: T, value: ojSelectOneSettableProperties<K, D, V>[T]): void;
@@ -730,8 +736,8 @@ export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSe
     options: Array<ojSelect.Option | ojSelect.Optgroup> | DataProvider<K, D> | null;
     optionsKeys: ojSelect.OptionsKeys | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     placeholder: string | null;
     readOnly: boolean;
@@ -739,8 +745,8 @@ export interface ojSelectOneSettableProperties<K, D, V = any> extends ojSelectSe
     required: boolean;
     value: V | null;
     valueOption: {
-        value: V | null;
         label?: string;
+        value: V | null;
     };
     translations: {
         filterFurther?: string;

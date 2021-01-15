@@ -7,7 +7,7 @@ formatter functions to be called by the application to get localized strings.
 Dependencies
 ============
 The utility depends on these NPM packages to run:
-  * intl-messageformat-parser (^5.0.2)
+  * intl-messageformat-parser (^5.1.3)
   * make-plural-compiler (^5.1.0)
   * cldr-core (^36.0.0)
   * fs-extra (^4.0.0)

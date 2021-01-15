@@ -1,0 +1,29 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../popup/themes/redwood/_oj-popup.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+
+  @include module-include-once("redwood.variables.menu") {
+    :root {
+// todo: currently we use the term focus instead of hover, should we change it?
+// todo: we don't currently support active on menu but it's in the spec
+// todo: why do we have --oj-menu-sheet-line-height & --oj-menu-sheet-item-line-height, get rid of one if possible
+
+      // menu
+      // ---------------------------
+      // todo: this is medium box shadow
+      --oj-menu-icon-size:                      1.5rem;
+      --oj-menu-icon-to-edge-padding:           1rem;
+      --oj-menu-text-to-start-icon-padding:     1rem;
+      --oj-menu-text-to-end-icon-padding:       2rem;
+      --oj-menu-text-to-edge-padding:           1rem;
+      --oj-menu-divider-margin:                 var(--oj-core-spacing-2x) 0;
+    
+      --oj-menu-item-text-color:                var(--oj-core-text-color-primary);
+      --oj-menu-icon-color:                     var(--oj-core-text-color-primary);
+    
+      // menu sheet
+      --oj-menu-sheet-margin-horizontal:        0px;
+    }  
+  }

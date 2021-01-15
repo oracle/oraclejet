@@ -1,0 +1,1 @@
+{"version":3,"sources":["../debug_es5/ojtreedataprovider.js"],"names":["define","oj","Object","prototype","hasOwnProperty","call","_registerLegacyNamespaceProp"],"mappings":";;;;;;;AAQAA,OAAO,CAAC,cAAe,SAAUC,GAC/B,cAEAA,EAAKA,GAAMC,OAAOC,UAAUC,eAAeC,KAAKJ,EAAI,WAAaA,EAAY,QAAIA,GAa9EK,6BAA6B,mBAJT"}

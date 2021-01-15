@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -53,7 +53,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
             borderWidth: number;
             color: string;
             iconDefaults: {
-                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
+                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'blue' | 'slate' | 'pink' | 'mauve' | 'purple' | 'lilac' | 'gray' | string;
                 borderColor: string;
                 borderRadius: string;
                 borderWidth: number;
@@ -62,7 +62,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
                 opacity: number;
                 pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
                    'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star';
+                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star' | string;
                 source: string;
                 width: number;
             };
@@ -76,7 +76,7 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
                 opacity: number;
                 pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
                    'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star';
+                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star' | string;
                 source: string;
                 width: number;
             };
@@ -118,8 +118,8 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof ojNBoxEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojNBoxEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojNBoxEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojNBoxEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojNBoxSettableProperties<K, D>>(property: T): ojNBox<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojNBoxSettableProperties<K, D>>(property: T, value: ojNBoxSettableProperties<K, D>[T]): void;
@@ -186,24 +186,24 @@ export namespace ojNBox {
     type touchResponseChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["touchResponse"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Cell = {
-        label?: string;
         column: string;
+        label?: string;
         labelHalign?: string;
         labelStyle?: CSSStyleDeclaration;
+        maximizedSvgClassName?: string;
+        maximizedSvgStyle?: CSSStyleDeclaration;
+        minimizedSvgClassName?: string;
+        minimizedSvgStyle?: CSSStyleDeclaration;
+        row: string;
+        shortDesc?: string;
+        showCount?: 'on' | 'off' | 'auto';
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
-        maximizedSvgStyle?: CSSStyleDeclaration;
-        maximizedSvgClassName?: string;
-        minimizedSvgStyle?: CSSStyleDeclaration;
-        minimizedSvgClassName?: string;
-        row: string;
-        showCount?: 'on' | 'off' | 'auto';
-        shortDesc?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CellContext = {
-        row: string;
         column: string;
+        row: string;
         subId: 'oj-nbox-cell';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -214,11 +214,11 @@ export namespace ojNBox {
     };
     // tslint:disable-next-line interface-over-type-literal
     type CountLabelContext = {
-        row: string;
         column: string;
-        nodeCount: number;
-        totalNodeCount: number;
         highlightedNodeCount: number;
+        nodeCount: number;
+        row: string;
+        totalNodeCount: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DialogContext = {
@@ -226,14 +226,13 @@ export namespace ojNBox {
     };
     // tslint:disable-next-line interface-over-type-literal
     type GroupNodeContext = {
-        row: string;
         column: string;
         groupCategory: string;
+        row: string;
         subId: 'oj-nbox-group-node';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Node<K> = {
-        id?: K;
         borderColor?: string;
         borderWidth?: number;
         categories?: string[];
@@ -241,22 +240,23 @@ export namespace ojNBox {
         column: string;
         groupCategory?: string;
         icon?: {
+            background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
             borderColor?: string;
             borderRadius?: string;
             borderWidth?: number;
             color?: string;
             height?: number;
+            initials?: string;
             opacity?: number;
             pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
                'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
-            initials?: string;
-            background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
             svgClassName?: string;
             svgStyle?: CSSStyleDeclaration;
             width?: number;
         };
+        id?: K;
         indicatorColor?: string;
         indicatorIcon?: {
             borderColor?: string;
@@ -273,14 +273,14 @@ export namespace ojNBox {
             svgStyle?: CSSStyleDeclaration;
             width?: number;
         };
-        row: string;
         label?: string;
+        row: string;
         secondaryLabel?: string;
+        shortDesc?: string;
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         xPercentage?: number;
         yPercentage?: number;
-        shortDesc?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
@@ -302,15 +302,15 @@ export namespace ojNBox {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
-        parentElement: Element;
-        id: K;
-        label: string;
-        secondaryLabel: string;
-        row: string;
-        column: string;
         color: string;
-        indicatorColor: string;
+        column: string;
         componentElement: Element;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        parentElement: Element;
+        row: string;
+        secondaryLabel: string;
     };
 }
 export interface ojNBoxEventMap<K, D extends ojNBox.Node<K> | any> extends dvtBaseComponentEventMap<ojNBoxSettableProperties<K, D>> {
@@ -387,7 +387,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
             borderWidth: number;
             color: string;
             iconDefaults: {
-                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
+                background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'blue' | 'slate' | 'pink' | 'mauve' | 'purple' | 'lilac' | 'gray' | string;
                 borderColor: string;
                 borderRadius: string;
                 borderWidth: number;
@@ -396,7 +396,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
                 opacity: number;
                 pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
                    'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star';
+                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star' | string;
                 source: string;
                 width: number;
             };
@@ -410,7 +410,7 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
                 opacity: number;
                 pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
                    'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
-                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star';
+                shape: 'circle' | 'ellipse' | 'square' | 'plus' | 'diamond' | 'triangleUp' | 'triangleDown' | 'human' | 'rectangle' | 'star' | string;
                 source: string;
                 width: number;
             };
@@ -464,7 +464,7 @@ export interface ojNBoxNode extends JetElement<ojNBoxNodeSettableProperties> {
     column: string;
     groupCategory?: string;
     icon?: {
-        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
+        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'blue' | 'slate' | 'mauve' | 'pink' | 'purple' | 'lilac' | 'gray' | string;
         borderColor?: string;
         borderRadius?: string;
         borderWidth: number;
@@ -504,8 +504,8 @@ export interface ojNBoxNode extends JetElement<ojNBoxNodeSettableProperties> {
     svgStyle: CSSStyleDeclaration | null;
     xPercentage?: number | null;
     yPercentage?: number | null;
-    addEventListener<T extends keyof ojNBoxNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojNBoxNodeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojNBoxNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojNBoxNodeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojNBoxNodeSettableProperties>(property: T): ojNBoxNode[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojNBoxNodeSettableProperties>(property: T, value: ojNBoxNodeSettableProperties[T]): void;
@@ -575,7 +575,7 @@ export interface ojNBoxNodeSettableProperties extends JetSettableProperties {
     column: string;
     groupCategory?: string;
     icon?: {
-        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
+        background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'blue' | 'slate' | 'mauve' | 'pink' | 'purple' | 'lilac' | 'gray' | string;
         borderColor?: string;
         borderRadius?: string;
         borderWidth: number;

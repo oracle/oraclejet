@@ -1,5 +1,5 @@
-import * as ts from 'typescript';
-import * as MetadataTypes from 'ojs/ojmetadata';
+import * as ts from "typescript";
+import * as MetadataTypes from "ojs/ojmetadata";
 declare type CompileOptions = {
     files: string[];
     compilerOptions?: ts.CompilerOptions;
@@ -9,6 +9,7 @@ export declare type BuildOptions = {
     dtDir: string;
     coreJetBuildOptions?: {
         exclude?: Array<string>;
+        enableLegacyElement?: number;
     };
     debug?: boolean;
     importMaps?: {
@@ -23,7 +24,7 @@ export declare type BuildOptions = {
     mainEntryFile: string;
     typesDir: string;
 };
-export default function compile({ files, compilerOptions, buildOptions }: CompileOptions): {
+export default function compile({ files, compilerOptions, buildOptions, }: CompileOptions): {
     errors: any[];
 };
 export {};

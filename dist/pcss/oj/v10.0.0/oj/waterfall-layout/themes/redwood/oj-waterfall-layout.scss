@@ -1,0 +1,17 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+@import "../../../panel/themes/redwood/_oj-panel.cssvars.scss";
+
+@import "_oj-waterfall-layout.servervars.scss";
+@import "_oj-waterfall-layout.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-waterfall-layout.scss"; 
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";

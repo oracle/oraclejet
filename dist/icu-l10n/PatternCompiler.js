@@ -7,7 +7,9 @@ module.exports = class PatternCompiler {
   }
 
   compile(pattern) {
-    const ast = Parser.parse(pattern);
+    // set ignioreTag flag, so that < and > characters are treated as regular characters that do not
+    // require escaping
+    const ast = Parser.parse(pattern, {ignoreTag: true});
     const paramAccumulator = Object.create(null);
     const combinedParts = this._processParts(ast, paramAccumulator);
     return {paramTypes: paramAccumulator, formatter: `function (p){return ${combinedParts};}`};

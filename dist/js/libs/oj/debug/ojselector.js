@@ -1,103 +1,11 @@
-define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponent, DomUtils) { 'use strict';
-
-    /**
-     * @license
-     * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-    /**
-     * @ojcomponent oj.ojSelector
-     * @ojtsvcomponent
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "class ojSelector<K> extends JetElement<ojSelectorSettableProperties<K>>",
-     *                genericParameters: [{"name": "K", "description": "Type of key"}]
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojSelectorSettableProperties<K> extends JetSettableProperties",
-     *                genericParameters: [{"name": "K", "description": "Type of key"}],
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet", "ExpandedKeySet", "ExpandAllKeySet", 'AllKeySetImpl']}
-     * @since 9.0.0
-     *
-     * @ojshortdesc The selector component renders checkboxes in collections to support selection.
-     *
-     * @classdesc
-     * <h3 id="selectorOverview-section">
-     *   JET Selector
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectorOverview-section"></a>
-     * </h3>
-     * <p>Description: A checkbox to support selection in Collection Components</p>
-     * <p>The oj-selector is a component that may be placed within a template for Table, ListView.
-     * It presents as a checkbox when the Collection Component is configured for multi-selection.</p>
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-list-view id="listview"
-     *      data="[[dataProvider]]"
-     *      selected="{{selectedItems}}"
-     *      selection-mode="[[selectedSelectionMode]]"
-     *      scroll-policy="loadMoreOnScroll">
-     *  &lt;template slot="itemTemplate" data-oj-as="item">
-     *    &lt;li>
-     *      &lt;div class='oj-flex'>
-     *        &lt;div class="oj-flex-item">
-     *          &lt;oj-selector selected-keys='{{selectedItems}}'
-     *                        selection-mode='[[selectedSelectionMode]]'
-     *                        rowKey='[[item.key]]'>
-     *          &lt;/oj-selector>
-     *        &lt;/div>
-     *        &lt;div class="oj-flex-item">
-     *          &lt;span data-bind="text: 'Name '+ item.data.name">&lt;/span>
-     *        &lt;/div>
-     *      &lt;/div>
-     *    &lt;/li>
-     *  &lt;/template>
-     *&lt;/oj-list-view>
-     *</code></pre>
-     */
-    /**
-     * Specifies the selectedKeys, should be hooked into the collection component.
-     * @expose
-     * @ojrequired
-     * @name selectedKeys
-     * @memberof oj.ojSelector
-     * @instance
-     * @type {KeySet<K>|null}
-     * @ojwriteback
-     */
-    /**
-     * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
-     * @expose
-     * @name rowKey
-     * @memberof oj.ojSelector
-     * @instance
-     * @type {any}
-     * @default null
-     * @ojsignature [{target: "Type", value: "K|null", jsdocOverride:true}]
-     */
-    /**
-     * Specifies the selection mode ('single', 'multiple', 'all'). 'all' should only be used for the select all case and will ignore the key property.
-     * <code>
-     * &lt;oj-selector selected-keys='{{selectedItems}}'
-     *          selection-mode='all'>
-     * &lt;/oj-selector>
-     * </code>
-     * @expose
-     * @name selectionMode
-     * @memberof oj.ojSelector
-     * @ojshortdesc Specifies the selection mode.
-     * @instance
-     * @type {string}
-     * @default 'multiple'
-     * @ojvalue {string} "single" Only a single item can be selected at a time.
-     * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-     * @ojvalue {string} "all" Specifies the select all case (rowKey property is ignored).
-     */
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent-element', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponentElement, DomUtils) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -108,11 +16,12 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
     class Props {
         constructor() {
             this.rowKey = null;
+            this.indeterminate = false;
             this.selectedKeys = null;
             this.selectionMode = 'multiple';
         }
     }
-    exports.Selector = class Selector extends ojvcomponent.VComponent {
+    exports.Selector = class Selector extends ojvcomponentElement.ElementVComponent {
         constructor(props) {
             super(props);
             this.state = {
@@ -120,11 +29,12 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
             };
         }
         render() {
-            const { rowKey } = this.props;
+            const { rowKey, indeterminate } = this.props;
             const isSelected = this._isSelected(rowKey);
             const spanClassName = {
                 'oj-selector-wrapper': true,
-                'oj-selected': isSelected,
+                'oj-selected': isSelected && !indeterminate,
+                'oj-indeterminate': indeterminate,
                 'oj-focus-highlight': this.state.focus && !DomUtils.recentPointer(),
                 'oj-component-icon': true
             };
@@ -133,17 +43,26 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
                 Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
                     rowKey: rowKey
                 });
-            return (ojvcomponent.h("oj-selector", { class: 'oj-selector' },
-                ojvcomponent.h("span", { class: spanClassName },
-                    ojvcomponent.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onClick: this._checkboxListener }))));
+            return (ojvcomponentElement.h("oj-selector", { class: 'oj-selector' },
+                ojvcomponentElement.h("span", { class: spanClassName },
+                    ojvcomponentElement.h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onClick: this._checkboxListener }))));
+        }
+        _handleFocusin(event) {
+            this.updateState({ focus: true });
+        }
+        _handleFocusout(event) {
+            this.updateState({ focus: false });
         }
         _checkboxListener(event) {
+            var _a, _b, _c, _d;
             const { selectedKeys, rowKey, selectionMode } = this.props;
             let newSelectedKeys;
             if (selectedKeys != null) {
                 if (event.target.checked) {
                     if (selectionMode === 'single') {
-                        newSelectedKeys = selectedKeys.clear().add([rowKey]);
+                        if (!selectedKeys.has(rowKey)) {
+                            newSelectedKeys = selectedKeys.clear().add([rowKey]);
+                        }
                     }
                     else if (selectionMode === 'all') {
                         newSelectedKeys = selectedKeys.addAll();
@@ -160,15 +79,10 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
                         newSelectedKeys = selectedKeys.delete([rowKey]);
                     }
                 }
-                this._updateProperty('selectedKeys', newSelectedKeys, true);
+                (_b = (_a = this.props).onSelectedKeysChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newSelectedKeys);
+                (_d = (_c = this.props).onIndeterminateChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
             }
             event.stopPropagation();
-        }
-        _handleFocusin(event) {
-            this.updateState({ focus: true });
-        }
-        _handleFocusout(event) {
-            this.updateState({ focus: false });
         }
         _isSelected(rowKey) {
             const { selectedKeys, selectionMode } = this.props;
@@ -178,18 +92,18 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
             return selectionMode === 'all' ? selectedKeys.isAddAll() : selectedKeys.has(rowKey);
         }
     };
-    exports.Selector.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-label": true, "aria-labelledby": true } }, "properties": { "rowKey": { "type": "any", "value": null }, "selectedKeys": { "type": "object|null", "value": null, "writeback": true, "readOnly": false }, "selectionMode": { "type": "string", "enumValues": ["all", "multiple", "single"], "value": "multiple" } } };
+    exports.Selector.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-label": 1, "aria-labelledby": 1 }, "_WRITEBACK_PROPS": ["selectedKeys", "indeterminate"], "_READ_ONLY_PROPS": [] }, "properties": { "rowKey": { "type": "any", "value": null }, "indeterminate": { "type": "boolean", "value": false, "writeback": true }, "selectedKeys": { "type": "any", "value": null, "writeback": true }, "selectionMode": { "type": "string", "enumValues": ["all", "multiple", "single"], "value": "multiple" } } };
     __decorate([
-        ojvcomponent.listener()
-    ], exports.Selector.prototype, "_checkboxListener", null);
-    __decorate([
-        ojvcomponent.listener()
+        ojvcomponentElement.listener()
     ], exports.Selector.prototype, "_handleFocusin", null);
     __decorate([
-        ojvcomponent.listener()
+        ojvcomponentElement.listener()
     ], exports.Selector.prototype, "_handleFocusout", null);
+    __decorate([
+        ojvcomponentElement.listener()
+    ], exports.Selector.prototype, "_checkboxListener", null);
     exports.Selector = __decorate([
-        ojvcomponent.customElement('oj-selector')
+        ojvcomponentElement.customElement('oj-selector')
     ], exports.Selector);
 
     Object.defineProperty(exports, '__esModule', { value: true });

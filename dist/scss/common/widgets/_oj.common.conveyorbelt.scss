@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -35,6 +35,15 @@
     .oj-conveyorbelt-content-container {
         display: flex;
         align-items: center;
+    }
+
+    .oj-conveyorbelt-content-container,
+    .oj-conveyorbelt-overflow-container {
+        height: 100%
+    }
+
+    .oj-conveyorbelt.oj-conveyorbelt-vertical .oj-conveyorbelt-content-container {
+        height: auto
     }
     
     //oj-conveyorbelt-vertical is applied to the root element when the

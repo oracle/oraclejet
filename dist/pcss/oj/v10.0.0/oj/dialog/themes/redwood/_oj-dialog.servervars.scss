@@ -1,0 +1,11 @@
+
+// DIALOG
+//-----------------------------------------------------------------------------
+// animation theme defaults
+$privateDialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
+$privateDialogCloseAnimation: ((effect: "zoomOut"), "fadeOut") !default;
+// ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
+// default to the programmatic settings.
+$privateDialogResizeBehaviorOptionDefault: none !default;
+$privateDialogCancelBehaviorOptionDefault: none !default;
+$privateDialogDragAffordanceOptionDefault: none !default;

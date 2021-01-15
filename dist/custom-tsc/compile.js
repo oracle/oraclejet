@@ -1,25 +1,47 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const ts = require("typescript");
-const metadataTransformer_1 = require("./metadataTransformer");
-const decoratorTransformer_1 = require("./decoratorTransformer");
-const jsxTransformer_1 = require("./jsxTransformer");
-const importAmdTransformer_1 = require("./importAmdTransformer");
-const importEs6Transformer_1 = require("./importEs6Transformer");
+const ts = __importStar(require("typescript"));
+const metadataTransformer_1 = __importDefault(require("./metadataTransformer"));
+const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer"));
+const jsxTransformer_1 = __importDefault(require("./jsxTransformer"));
+const importAmdTransformer_1 = __importDefault(require("./importAmdTransformer"));
+const importEs6Transformer_1 = __importDefault(require("./importEs6Transformer"));
 const JetTypeGenerator_1 = require("./JetTypeGenerator");
 const COMPILER_OPTIONS = {
     experimentalDecorators: true,
     failOnTypeErrors: true,
-    jsx: 'react',
+    jsx: "react",
     jsxFactory: "h",
-    module: 'commonjs',
-    moduleResolution: 'node',
+    module: "commonjs",
+    moduleResolution: "node",
     noEmitOnError: false,
     stripInternal: true,
-    target: 'es6'
+    target: "es6",
 };
-function compile({ files, compilerOptions, buildOptions }) {
-    const { options: _compilerOptions } = ts.convertCompilerOptionsFromJson(Object.assign(Object.assign({}, COMPILER_OPTIONS), compilerOptions), '.');
+function compile({ files, compilerOptions, buildOptions, }) {
+    const { options: _compilerOptions } = ts.convertCompilerOptionsFromJson(Object.assign(Object.assign({}, COMPILER_OPTIONS), compilerOptions), ".");
     const _buildOptions = Object.assign({}, buildOptions);
     const compilerHost = ts.createCompilerHost(_compilerOptions);
     const program = ts.createProgram(files, _compilerOptions, compilerHost);
@@ -31,12 +53,22 @@ function compile({ files, compilerOptions, buildOptions }) {
     else if (_compilerOptions.module === ts.ModuleKind.ES2015) {
         afterTransformers.push(importEs6Transformer_1.default(_buildOptions));
     }
-    const emitResult = program.emit(undefined, undefined, undefined, undefined, {
-        before: [metadataTransformer_1.default(program, _buildOptions), decoratorTransformer_1.default(_buildOptions)],
-        after: afterTransformers,
-        afterDeclarations: [jsxTransformer_1.default(program, _buildOptions)]
-    });
+    let emitResult;
     const errors = [];
+    try {
+        emitResult = program.emit(undefined, undefined, undefined, undefined, {
+            before: [
+                metadataTransformer_1.default(program, _buildOptions),
+                decoratorTransformer_1.default(_buildOptions),
+            ],
+            after: afterTransformers,
+            afterDeclarations: [jsxTransformer_1.default(program, _buildOptions)],
+        });
+    }
+    catch (error) {
+        errors.push(error);
+        return { errors };
+    }
     function parseDiagnostic(diagnostic) {
         let result;
         if (diagnostic.file) {
@@ -49,7 +81,7 @@ function compile({ files, compilerOptions, buildOptions }) {
         }
         return result;
     }
-    [...ts.getPreEmitDiagnostics(program), ...emitResult.diagnostics].forEach(diagnostic => {
+    [...ts.getPreEmitDiagnostics(program), ...emitResult.diagnostics].forEach((diagnostic) => {
         const errorMessage = parseDiagnostic(diagnostic);
         if (errors.indexOf(errorMessage) === -1) {
             errors.push(errorMessage);
@@ -59,7 +91,7 @@ function compile({ files, compilerOptions, buildOptions }) {
         JetTypeGenerator_1.assembleTypes(buildOptions);
     }
     return {
-        errors
+        errors,
     };
 }
 exports.default = compile;

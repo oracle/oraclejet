@@ -1,32 +1,32 @@
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['ojs/ojcore-base'], function (oj) {
+  'use strict';
 
-define(['ojs/ojcore'], function(oj)
-{
-  "use strict";
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  /**
+   * @license
+   * Copyright (c) 2016 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
 
-
-
-/*
- * Portions of this component are based on
- * TinyColor v1.3.0
- * https://github.com/bgrins/TinyColor
- * Brian Grinstead, MIT License
- */
-(function () {
   var trimLeft = /^\s+/;
   var trimRight = /\s+$/;
   var mathRound = Math.round;
   var mathMin = Math.min;
   var mathMax = Math.max;
   /**
-   * @typedef {Object} oj.Color.RGBA
+   * @typedef {Object} Color.RGBA
    * @property {number} r the red value
    * @property {number} g the green value
    * @property {number} b the blue value
@@ -34,7 +34,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
   /**
-   * @typedef {Object} oj.Color.HSLA
+   * @typedef {Object} Color.HSLA
    * @property {number} h the hue value
    * @property {number} s the saturation value
    * @property {number} l the luminosity or lightness value
@@ -42,7 +42,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
   /**
-   * @typedef {Object} oj.Color.HSVA
+   * @typedef {Object} Color.HSVA
    * @property {number} h the hue value
    * @property {number} s the saturation value
    * @property {number} v the value
@@ -50,7 +50,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
   /**
-   * @class oj.Color
+   * @class Color
    * @since 3.0.0
    * @classdesc Immutable object representing a color.
    * @ojshortdesc Object representing a color definition.
@@ -59,30 +59,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * the RGB, HSL, and HSV model values as an object, or as a CSS3 color specification string (refer to
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}, and also
    * {@link https://www.w3.org/TR/css3-color/#svg-color} for color visualization.  The
-   * CSS3 named colors are available as oj.Color constants (e.g. oj.Color.ALICEBLUE)
+   * CSS3 named colors are available as Color constants (e.g. Color.ALICEBLUE)
    *
    * @example <caption>Typical color definitions</caption>
-   *  oj.Color.RED;
-   *  oj.Color.ALICEBLUE;
-   *  new oj.Color({r:30, g:128, b:201});
-   *  new oj.Color({r:30, g:128, b:201, a:0.8});
-   *  new oj.Color({h:310, s:50, l:80});
-   *  new oj.Color({h:310, s:50, l:80, a:0.8});
-   *  new oj.Color({h:310, s:50, v:80});
-   *  new oj.Color({h:310, s:50, v:80, a:0.8});
-   *  new oj.Color('#4bc');
-   *  new oj.Color('#44ccbb');
-   *  new oj.Color('rgb(27,128,254)');
-   *  new oj.Color('rgba(27,128,254,0.8)');
-   *  new oj.Color('hsl(87, 100%,50%)');
-   *  new oj.Color('hsla(87, 100%,50%, 0.5)');
-   *  new oj.Color('hsv(0, 100%, 100%)') ;
-   *  oj.Color.TRANSPARENT;
+   *  Color.RED;
+   *  Color.ALICEBLUE;
+   *  new Color({r:30, g:128, b:201});
+   *  new Color({r:30, g:128, b:201, a:0.8});
+   *  new Color({h:310, s:50, l:80});
+   *  new Color({h:310, s:50, l:80, a:0.8});
+   *  new Color({h:310, s:50, v:80});
+   *  new Color({h:310, s:50, v:80, a:0.8});
+   *  new Color('#4bc');
+   *  new Color('#44ccbb');
+   *  new Color('rgb(27,128,254)');
+   *  new Color('rgba(27,128,254,0.8)');
+   *  new Color('hsl(87, 100%,50%)');
+   *  new Color('hsla(87, 100%,50%, 0.5)');
+   *  new Color('hsv(0, 100%, 100%)') ;
+   *  Color.TRANSPARENT;
    *
    * @example <caption>Using a converter to obtain a different color format</caption>
    * var convHsl  = new ColorConverter({"format": "hsl"}) ;
    *
-   * var c        = new oj.Color('rgb(0, 191, 255)');
+   * var c        = new Color('rgb(0, 191, 255)');
    * var s        = convHsl.format(c) ;            // returns "hsl(197, 71%, 73%)"
      * </p></br>
    * @param {string | Object} color
@@ -111,7 +111,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * </ul>
    * </li></ul>
    * @ojsignature {target: "Type",
-   *               value: "string|oj.Color.RGBA|oj.Color.HSLA|oj.Color.HSVA",
+   *               value: "string|Color.RGBA|Color.HSLA|Color.HSVA",
    *               for: "color",
    *               jsdocOverride: true}
    * @constructor
@@ -120,7 +120,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @export
    */
 
-  oj.Color = function (color) {
+  function Color(color) {
     var rgb; // eslint-disable-next-line no-param-reassign
 
     color = color || '';
@@ -129,7 +129,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     this._g = rgb.g;
     this._b = rgb.b;
     this._a = Math.round(100 * rgb.a) / 100;
-  };
+  }
   /**
    * Returns the red channel value of the color.
    * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
@@ -137,13 +137,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    *                               (Fractional values for the red, green, or blue channels can
    *                               arise when a color is defined using the "hsl" format.)
    * @return {number} The red channel value in the range [0,255].
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.getRed = function (doNotRound) {
+  Color.prototype.getRed = function (doNotRound) {
     return doNotRound ? this._r : mathRound(this._r);
   };
   /**
@@ -153,13 +153,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    *                               (Fractional values for the red, green, or blue channels can
    *                               arise when a color is defined using the "hsl" format.)
    * @return {number} The green channel value contained in [0,255].
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.getGreen = function (doNotRound) {
+  Color.prototype.getGreen = function (doNotRound) {
     return doNotRound ? this._g : mathRound(this._g);
   };
   /**
@@ -169,1402 +169,1402 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    *                               (Fractional values for the red, green, or blue channels can
    *                               arise when a color is defined using the "hsl" format.)
    * @return {number} The blue channel value contained in [0,255].
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.getBlue = function (doNotRound) {
+  Color.prototype.getBlue = function (doNotRound) {
     return doNotRound ? this._b : mathRound(this._b);
   };
   /**
    * Returns the alpha channel of the color.
    * @return {number} The alpha channel value contained in [0,1].
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.getAlpha = function () {
+  Color.prototype.getAlpha = function () {
     return this._a;
   };
   /**
    * Returns the color as an "rgb" or rgba" (if the alpha value is less than 1) CSS3 color
    * specification string.
    * @return {string} The color as an "rgb" or "rgba" CSS3 color specification string.
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.toString = function () {
+  Color.prototype.toString = function () {
     return toRgbString(this);
   };
   /**
    * Compares this color object with the supplied color specification, and returns true
    * if they represent the same color, else false.
-   * @param {oj.Color} color   The color to be compared.
+   * @param {Color} color   The color to be compared.
    * @return {boolean} Returns true if the comperand represents the same color.
-   * @memberof oj.Color
+   * @memberof Color
    * @instance
    * @export
    */
 
 
-  oj.Color.prototype.isEqual = function (color) {
+  Color.prototype.isEqual = function (color) {
     var ret = false;
 
-    if (color instanceof oj.Color) {
+    if (color instanceof Color) {
       ret = this._r === color._r && this._g === color._g && this._b === color._b && this._a === color._a;
     }
 
     return ret;
   };
   /** CSS3 color <code class="prettyprint">aliceblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aliceblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
 
-  oj.Color.ALICEBLUE = null;
+  Color.ALICEBLUE = null;
   /** CSS3 color <code class="prettyprint">antiquewhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:antiquewhite;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ANTIQUEWHITE = null;
+  Color.ANTIQUEWHITE = null;
   /** CSS3 color <code class="prettyprint">aqua</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aqua;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.AQUA = null;
+  Color.AQUA = null;
   /** CSS3 color <code class="prettyprint">aquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aquamarine;"></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.AQUAMARINE = null;
+  Color.AQUAMARINE = null;
   /** CSS3 color <code class="prettyprint">azure</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:azure;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.AZURE = null;
+  Color.AZURE = null;
   /** CSS3 color <code class="prettyprint">beige</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:beige;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BEIGE = null;
+  Color.BEIGE = null;
   /** CSS3 color <code class="prettyprint">bisque</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:bisque;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BISQUE = null;
+  Color.BISQUE = null;
   /** CSS3 color <code class="prettyprint">black</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:black;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BLACK = null;
+  Color.BLACK = null;
   /** CSS3 color <code class="prettyprint">blanchedalmond</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blanchedalmond;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BLANCHEDALMOND = null;
+  Color.BLANCHEDALMOND = null;
   /** CSS3 color <code class="prettyprint">blue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BLUE = null;
+  Color.BLUE = null;
   /** CSS3 color <code class="prettyprint">blueviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blueviolet;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BLUEVIOLET = null;
+  Color.BLUEVIOLET = null;
   /** CSS3 color <code class="prettyprint">brown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:brown;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BROWN = null;
+  Color.BROWN = null;
   /** CSS3 color <code class="prettyprint">burlywood</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:burlywood;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.BURLYWOOD = null;
+  Color.BURLYWOOD = null;
   /** CSS3 color <code class="prettyprint">cadetblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cadetblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CADETBLUE = null;
+  Color.CADETBLUE = null;
   /** CSS3 color <code class="prettyprint">chartreuse</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chartreuse;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CHARTREUSE = null;
+  Color.CHARTREUSE = null;
   /** CSS3 color <code class="prettyprint">chocolate</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chocolate;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CHOCOLATE = null;
+  Color.CHOCOLATE = null;
   /** CSS3 color <code class="prettyprint">coral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:coral;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CORAL = null;
+  Color.CORAL = null;
   /** CSS3 color <code class="prettyprint">cornflowerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornflowerblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CORNFLOWERBLUE = null;
+  Color.CORNFLOWERBLUE = null;
   /** CSS3 color <code class="prettyprint">cornsilk</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornsilk;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CORNSILK = null;
+  Color.CORNSILK = null;
   /** CSS3 color <code class="prettyprint">crimson</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:crimson;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CRIMSON = null;
+  Color.CRIMSON = null;
   /** CSS3 color <code class="prettyprint">cyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cyan;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.CYAN = null;
+  Color.CYAN = null;
   /** CSS3 color <code class="prettyprint">darkblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKBLUE = null;
+  Color.DARKBLUE = null;
   /** CSS3 color <code class="prettyprint">darkcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkcyan;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKCYAN = null;
+  Color.DARKCYAN = null;
   /** CSS3 color <code class="prettyprint">darkgoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgoldenrod;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKGOLDENROD = null;
+  Color.DARKGOLDENROD = null;
   /** CSS3 color <code class="prettyprint">darkgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKGRAY = null;
+  Color.DARKGRAY = null;
   /** CSS3 color <code class="prettyprint">darkgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKGREY = null;
+  Color.DARKGREY = null;
   /** CSS3 color <code class="prettyprint">darkgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKGREEN = null;
+  Color.DARKGREEN = null;
   /** CSS3 color <code class="prettyprint">darkkhaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkkhaki;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKKHAKI = null;
+  Color.DARKKHAKI = null;
   /** CSS3 color <code class="prettyprint">darkmagenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkmagenta;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKMAGENTA = null;
+  Color.DARKMAGENTA = null;
   /** CSS3 color <code class="prettyprint">darkolivegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkolivegreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKOLIVEGREEN = null;
+  Color.DARKOLIVEGREEN = null;
   /** CSS3 color <code class="prettyprint">darkorange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorange;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKORANGE = null;
+  Color.DARKORANGE = null;
   /** CSS3 color <code class="prettyprint">darkorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorchid;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKORCHID = null;
+  Color.DARKORCHID = null;
   /** CSS3 color <code class="prettyprint">darkred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkred;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKRED = null;
+  Color.DARKRED = null;
   /** CSS3 color <code class="prettyprint">darksalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darksalmon;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKSALMON = null;
+  Color.DARKSALMON = null;
   /** CSS3 color <code class="prettyprint">darkseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkseagreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKSEAGREEN = null;
+  Color.DARKSEAGREEN = null;
   /** CSS3 color <code class="prettyprint">darkslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslateblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKSLATEBLUE = null;
+  Color.DARKSLATEBLUE = null;
   /** CSS3 color <code class="prettyprint">darkslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKSLATEGRAY = null;
+  Color.DARKSLATEGRAY = null;
   /** CSS3 color <code class="prettyprint">darkslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKSLATEGREY = null;
+  Color.DARKSLATEGREY = null;
   /** CSS3 color <code class="prettyprint">darkturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkturquoise;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKTURQUOISE = null;
+  Color.DARKTURQUOISE = null;
   /** CSS3 color <code class="prettyprint">darkviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkviolet;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DARKVIOLET = null;
+  Color.DARKVIOLET = null;
   /** CSS3 color <code class="prettyprint">deeppink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deeppink;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DEEPPINK = null;
+  Color.DEEPPINK = null;
   /** CSS3 color <code class="prettyprint">deepskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deepskyblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DEEPSKYBLUE = null;
+  Color.DEEPSKYBLUE = null;
   /** CSS3 color <code class="prettyprint">dimgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DIMGRAY = null;
+  Color.DIMGRAY = null;
   /** CSS3 color <code class="prettyprint">dimgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DIMGREY = null;
+  Color.DIMGREY = null;
   /** CSS3 color <code class="prettyprint">dodgerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dodgerblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.DODGERBLUE = null;
+  Color.DODGERBLUE = null;
   /** CSS3 color <code class="prettyprint">firebrick</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:firebrick;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.FIREBRICK = null;
+  Color.FIREBRICK = null;
   /** CSS3 color <code class="prettyprint">floralwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:floralwhite;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.FLORALWHITE = null;
+  Color.FLORALWHITE = null;
   /** CSS3 color <code class="prettyprint">forestgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:forestgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.FORESTGREEN = null;
+  Color.FORESTGREEN = null;
   /** CSS3 color <code class="prettyprint">fuchsia</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:fuchsia;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.FUCHSIA = null;
+  Color.FUCHSIA = null;
   /** CSS3 color <code class="prettyprint">gainsboro</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gainsboro;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GAINSBORO = null;
+  Color.GAINSBORO = null;
   /** CSS3 color <code class="prettyprint">ghostwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ghostwhite;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GHOSTWHITE = null;
+  Color.GHOSTWHITE = null;
   /** CSS3 color <code class="prettyprint">gold</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gold;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GOLD = null;
+  Color.GOLD = null;
   /** CSS3 color <code class="prettyprint">goldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:goldenrod;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GOLDENROD = null;
+  Color.GOLDENROD = null;
   /** CSS3 color <code class="prettyprint">gray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GRAY = null;
+  Color.GRAY = null;
   /** CSS3 color <code class="prettyprint">green</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:green;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GREEN = null;
+  Color.GREEN = null;
   /** CSS3 color <code class="prettyprint">greenyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:greenyellow;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GREENYELLOW = null;
+  Color.GREENYELLOW = null;
   /** CSS3 color <code class="prettyprint">grey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:grey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.GREY = null;
+  Color.GREY = null;
   /** CSS3 color <code class="prettyprint">honeydew</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:honeydew;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.HONEYDEW = null;
+  Color.HONEYDEW = null;
   /** CSS3 color <code class="prettyprint">hotpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:hotpink;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.HOTPINK = null;
+  Color.HOTPINK = null;
   /** CSS3 color <code class="prettyprint">indianred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indianred;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.INDIANRED = null;
+  Color.INDIANRED = null;
   /** CSS3 color <code class="prettyprint">indigo</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indigo;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.INDIGO = null;
+  Color.INDIGO = null;
   /** CSS3 color <code class="prettyprint">ivory</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ivory;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.IVORY = null;
+  Color.IVORY = null;
   /** CSS3 color <code class="prettyprint">khaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:khaki;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.KHAKI = null;
+  Color.KHAKI = null;
   /** CSS3 color <code class="prettyprint">lavender</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavender;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LAVENDER = null;
+  Color.LAVENDER = null;
   /** CSS3 color <code class="prettyprint">lavenderblush</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavenderblush;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LAVENDERBLUSH = null;
+  Color.LAVENDERBLUSH = null;
   /** CSS3 color <code class="prettyprint">lawngreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lawngreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LAWNGREEN = null;
+  Color.LAWNGREEN = null;
   /** CSS3 color <code class="prettyprint">lemonchiffon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lemonchiffon;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LEMONCHIFFON = null;
+  Color.LEMONCHIFFON = null;
   /** CSS3 color <code class="prettyprint">lightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTBLUE = null;
+  Color.LIGHTBLUE = null;
   /** CSS3 color <code class="prettyprint">lightcoral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcoral;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTCORAL = null;
+  Color.LIGHTCORAL = null;
   /** CSS3 color <code class="prettyprint">lightcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcyan;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTCYAN = null;
+  Color.LIGHTCYAN = null;
   /** CSS3 color <code class="prettyprint">lightgoldenrodyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgoldenrodyellow;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTGOLDENRODYELLOW = null;
+  Color.LIGHTGOLDENRODYELLOW = null;
   /** CSS3 color <code class="prettyprint">lightgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTGRAY = null;
+  Color.LIGHTGRAY = null;
   /** CSS3 color <code class="prettyprint">lightgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTGREEN = null;
+  Color.LIGHTGREEN = null;
   /** CSS3 color <code class="prettyprint">lightgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTGREY = null;
+  Color.LIGHTGREY = null;
   /** CSS3 color <code class="prettyprint">lightpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightpink;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTPINK = null;
+  Color.LIGHTPINK = null;
   /** CSS3 color <code class="prettyprint">lightsalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsalmon;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSALMON = null;
+  Color.LIGHTSALMON = null;
   /** CSS3 color <code class="prettyprint">lightseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightseagreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSEAGREEN = null;
+  Color.LIGHTSEAGREEN = null;
   /** CSS3 color <code class="prettyprint">lightskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightskyblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSKYBLUE = null;
+  Color.LIGHTSKYBLUE = null;
   /** CSS3 color <code class="prettyprint">lightslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSLATEGRAY = null;
+  Color.LIGHTSLATEGRAY = null;
   /** CSS3 color <code class="prettyprint">lightslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSLATEGREY = null;
+  Color.LIGHTSLATEGREY = null;
   /** CSS3 color <code class="prettyprint">lightsteelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsteelblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTSTEELBLUE = null;
+  Color.LIGHTSTEELBLUE = null;
   /** CSS3 color <code class="prettyprint">lightyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightyellow;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIGHTYELLOW = null;
+  Color.LIGHTYELLOW = null;
   /** CSS3 color <code class="prettyprint">lime</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lime;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIME = null;
+  Color.LIME = null;
   /** CSS3 color <code class="prettyprint">limegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:limegreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LIMEGREEN = null;
+  Color.LIMEGREEN = null;
   /** CSS3 color <code class="prettyprint">linen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:linen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.LINEN = null;
+  Color.LINEN = null;
   /** CSS3 color <code class="prettyprint">magenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:magenta;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MAGENTA = null;
+  Color.MAGENTA = null;
   /** CSS3 color <code class="prettyprint">maroon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:maroon;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MAROON = null;
+  Color.MAROON = null;
   /** CSS3 color <code class="prettyprint">mediumaquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumaquamarine;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMAQUAMARINE = null;
+  Color.MEDIUMAQUAMARINE = null;
   /** CSS3 color <code class="prettyprint">mediumblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMBLUE = null;
+  Color.MEDIUMBLUE = null;
   /** CSS3 color <code class="prettyprint">mediumorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumorchid;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMORCHID = null;
+  Color.MEDIUMORCHID = null;
   /** CSS3 color <code class="prettyprint">mediumpurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumpurple;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMPURPLE = null;
+  Color.MEDIUMPURPLE = null;
   /** CSS3 color <code class="prettyprint">mediumseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumseagreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMSEAGREEN = null;
+  Color.MEDIUMSEAGREEN = null;
   /** CSS3 color <code class="prettyprint">mediumslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumslateblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMSLATEBLUE = null;
+  Color.MEDIUMSLATEBLUE = null;
   /** CSS3 color <code class="prettyprint">mediumspringgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumspringgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMSPRINGGREEN = null;
+  Color.MEDIUMSPRINGGREEN = null;
   /** CSS3 color <code class="prettyprint">mediumturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumturquoise;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMTURQUOISE = null;
+  Color.MEDIUMTURQUOISE = null;
   /** CSS3 color <code class="prettyprint">mediumvioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumvioletred;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MEDIUMVIOLETRED = null;
+  Color.MEDIUMVIOLETRED = null;
   /** CSS3 color <code class="prettyprint">midnightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:midnightblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MIDNIGHTBLUE = null;
+  Color.MIDNIGHTBLUE = null;
   /** CSS3 color <code class="prettyprint">mintcream</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mintcream;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MINTCREAM = null;
+  Color.MINTCREAM = null;
   /** CSS3 color <code class="prettyprint">mistyrose</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mistyrose;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MISTYROSE = null;
+  Color.MISTYROSE = null;
   /** CSS3 color <code class="prettyprint">moccasin</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:moccasin;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.MOCCASIN = null;
+  Color.MOCCASIN = null;
   /** CSS3 color <code class="prettyprint">navajowhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navajowhite;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.NAVAJOWHITE = null;
+  Color.NAVAJOWHITE = null;
   /** CSS3 color <code class="prettyprint">navy</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navy;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.NAVY = null;
+  Color.NAVY = null;
   /** CSS3 color <code class="prettyprint">oldlace</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:oldlace;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.OLDLACE = null;
+  Color.OLDLACE = null;
   /** CSS3 color <code class="prettyprint">olive</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olive;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.OLIVE = null;
+  Color.OLIVE = null;
   /** CSS3 color <code class="prettyprint">olivedrab</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olivedrab;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.OLIVEDRAB = null;
+  Color.OLIVEDRAB = null;
   /** CSS3 color <code class="prettyprint">orange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orange;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ORANGE = null;
+  Color.ORANGE = null;
   /** CSS3 color <code class="prettyprint">orangered</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orangered;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ORANGERED = null;
+  Color.ORANGERED = null;
   /** CSS3 color <code class="prettyprint">orchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orchid;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ORCHID = null;
+  Color.ORCHID = null;
   /** CSS3 color <code class="prettyprint">palegoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegoldenrod;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PALEGOLDENROD = null;
+  Color.PALEGOLDENROD = null;
   /** CSS3 color <code class="prettyprint">palegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PALEGREEN = null;
+  Color.PALEGREEN = null;
   /** CSS3 color <code class="prettyprint">paleturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:paleturquoise;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PALETURQUOISE = null;
+  Color.PALETURQUOISE = null;
   /** CSS3 color <code class="prettyprint">palevioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palevioletred;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PALEVIOLETRED = null;
+  Color.PALEVIOLETRED = null;
   /** CSS3 color <code class="prettyprint">papayawhip</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:papayawhip;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PAPAYAWHIP = null;
+  Color.PAPAYAWHIP = null;
   /** CSS3 color <code class="prettyprint">peachpuff</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peachpuff;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PEACHPUFF = null;
+  Color.PEACHPUFF = null;
   /** CSS3 color <code class="prettyprint">peru</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peru;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PERU = null;
+  Color.PERU = null;
   /** CSS3 color <code class="prettyprint">pink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:pink;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PINK = null;
+  Color.PINK = null;
   /** CSS3 color <code class="prettyprint">plum</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:plum;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PLUM = null;
+  Color.PLUM = null;
   /** CSS3 color <code class="prettyprint">powderblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:powderblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.POWDERBLUE = null;
+  Color.POWDERBLUE = null;
   /** CSS3 color <code class="prettyprint">purple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:purple;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.PURPLE = null;
+  Color.PURPLE = null;
   /** CSS3 color <code class="prettyprint">rebeccapurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rebeccapurple;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.REBECCAPURPLE = null;
+  Color.REBECCAPURPLE = null;
   /** CSS3 color <code class="prettyprint">red</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:red;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.RED = null;
+  Color.RED = null;
   /** CSS3 color <code class="prettyprint">rosybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rosybrown;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ROSYBROWN = null;
+  Color.ROSYBROWN = null;
   /** CSS3 color <code class="prettyprint">royalblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:royalblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.ROYALBLUE = null;
+  Color.ROYALBLUE = null;
   /** CSS3 color <code class="prettyprint">saddlebrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:saddlebrown;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SADDLEBROWN = null;
+  Color.SADDLEBROWN = null;
   /** CSS3 color <code class="prettyprint">salmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:salmon;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SALMON = null;
+  Color.SALMON = null;
   /** CSS3 color <code class="prettyprint">sandybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sandybrown;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SANDYBROWN = null;
+  Color.SANDYBROWN = null;
   /** CSS3 color <code class="prettyprint">seagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seagreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SEAGREEN = null;
+  Color.SEAGREEN = null;
   /** CSS3 color <code class="prettyprint">seashell</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seashell;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SEASHELL = null;
+  Color.SEASHELL = null;
   /** CSS3 color <code class="prettyprint">sienna</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sienna;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SIENNA = null;
+  Color.SIENNA = null;
   /** CSS3 color <code class="prettyprint">silver</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:silver;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SILVER = null;
+  Color.SILVER = null;
   /** CSS3 color <code class="prettyprint">skyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:skyblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SKYBLUE = null;
+  Color.SKYBLUE = null;
   /** CSS3 color <code class="prettyprint">slateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slateblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SLATEBLUE = null;
+  Color.SLATEBLUE = null;
   /** CSS3 color <code class="prettyprint">slategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategray;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SLATEGRAY = null;
+  Color.SLATEGRAY = null;
   /** CSS3 color <code class="prettyprint">slategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategrey;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SLATEGREY = null;
+  Color.SLATEGREY = null;
   /** CSS3 color <code class="prettyprint">snow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:snow;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SNOW = null;
+  Color.SNOW = null;
   /** CSS3 color <code class="prettyprint">springgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:springgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.SPRINGGREEN = null;
+  Color.SPRINGGREEN = null;
   /** CSS3 color <code class="prettyprint">steelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:steelblue;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.STEELBLUE = null;
+  Color.STEELBLUE = null;
   /** CSS3 color <code class="prettyprint">tan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tan;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.TAN = null;
+  Color.TAN = null;
   /** CSS3 color <code class="prettyprint">teal</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:teal;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.TEAL = null;
+  Color.TEAL = null;
   /** CSS3 color <code class="prettyprint">thistle</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:thistle;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.THISTLE = null;
+  Color.THISTLE = null;
   /** CSS3 color <code class="prettyprint">tomato</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tomato;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.TOMATO = null;
+  Color.TOMATO = null;
   /** CSS3 color <code class="prettyprint">turquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:turquoise;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.TURQUOISE = null;
+  Color.TURQUOISE = null;
   /** CSS3 color <code class="prettyprint">violet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:violet;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.VIOLET = null;
+  Color.VIOLET = null;
   /** CSS3 color <code class="prettyprint">wheat</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:wheat;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.WHEAT = null;
+  Color.WHEAT = null;
   /** CSS3 color <code class="prettyprint">white</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:white;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.WHITE = null;
+  Color.WHITE = null;
   /** CSS3 color <code class="prettyprint">whitesmoke</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:whitesmoke;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.WHITESMOKE = null;
+  Color.WHITESMOKE = null;
   /** CSS3 color <code class="prettyprint">yellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellow;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.YELLOW = null;
+  Color.YELLOW = null;
   /** CSS3 color <code class="prettyprint">yellowgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellowgreen;"/></div>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.YELLOWGREEN = null;
+  Color.YELLOWGREEN = null;
   /** CSS3 color <code class="prettyprint">transparent</code>
-   * @type {oj.Color}
+   * @type {Color}
    * @expose
    * @public
    * @static
-   * @memberof oj.Color
+   * @memberof Color
    */
 
-  oj.Color.TRANSPARENT = null;
+  Color.TRANSPARENT = null;
   /*-----------------------------------------------------------------------*/
 
   /*     Internal supporting functions below this point                    */
@@ -1591,7 +1591,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    *  Note: when converting from hsl or hsv, the resulting r,g,b components may be fractional
    *       e.g.  hsla(0, 97%,37%,0.851) will return the following
    *             r = 185.8695, g = 2.8305, b = 2.8305, a = 0.851
-   * @memberof oj.Color
+   * @memberof Color
    * @returns {Object} color object
    * @private
    */
@@ -1647,9 +1647,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     };
   }
   /**
-   * @param {oj.Color} co The color object
+   * @param {Color} co The color object
    * @returns {string} rgb string
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -1680,7 +1680,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {number} g the green value
    * @param {number} b the blue value
    * @returns {Object} Object with properties r, g, and b, in [0, 255].
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -1702,7 +1702,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {number} g the green value
    * @param {number} b the blue value
    * @returns {Object} Object with properties h, s, l, in [0, 1].
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -1745,7 +1745,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {number} s the saturation value
    * @param {number} l the lightness value
    * @returns {Object} Object with properties r, g, b, in [0, 255].
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -1795,7 +1795,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * Converts an HSV color value to RGB.
    * Assumes: h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
    * @returns {Object} An object with properties  r, g, b  in the set [0,255]
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -1823,615 +1823,615 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     };
   }
   /**
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    * @return {void}
    */
 
 
   function _initColorConstants() {
-    Object.defineProperty(oj.Color, 'ALICEBLUE', {
+    Object.defineProperty(Color, 'ALICEBLUE', {
       writable: false,
-      value: new oj.Color('f0f8ff')
+      value: new Color('f0f8ff')
     });
-    Object.defineProperty(oj.Color, 'ANTIQUEWHITE', {
+    Object.defineProperty(Color, 'ANTIQUEWHITE', {
       writable: false,
-      value: new oj.Color('faebd7')
+      value: new Color('faebd7')
     });
-    Object.defineProperty(oj.Color, 'AQUA', {
+    Object.defineProperty(Color, 'AQUA', {
       writable: false,
-      value: new oj.Color('0ff')
+      value: new Color('0ff')
     });
-    Object.defineProperty(oj.Color, 'AQUAMARINE', {
+    Object.defineProperty(Color, 'AQUAMARINE', {
       writable: false,
-      value: new oj.Color('7fffd4')
+      value: new Color('7fffd4')
     });
-    Object.defineProperty(oj.Color, 'AZURE', {
+    Object.defineProperty(Color, 'AZURE', {
       writable: false,
-      value: new oj.Color('f0ffff')
+      value: new Color('f0ffff')
     });
-    Object.defineProperty(oj.Color, 'BEIGE', {
+    Object.defineProperty(Color, 'BEIGE', {
       writable: false,
-      value: new oj.Color('f5f5dc')
+      value: new Color('f5f5dc')
     });
-    Object.defineProperty(oj.Color, 'BISQUE', {
+    Object.defineProperty(Color, 'BISQUE', {
       writable: false,
-      value: new oj.Color('ffe4c4')
+      value: new Color('ffe4c4')
     });
-    Object.defineProperty(oj.Color, 'BLACK', {
+    Object.defineProperty(Color, 'BLACK', {
       writable: false,
-      value: new oj.Color('000')
+      value: new Color('000')
     });
-    Object.defineProperty(oj.Color, 'BLANCHEDALMOND', {
+    Object.defineProperty(Color, 'BLANCHEDALMOND', {
       writable: false,
-      value: new oj.Color('ffebcd')
+      value: new Color('ffebcd')
     });
-    Object.defineProperty(oj.Color, 'BLUE', {
+    Object.defineProperty(Color, 'BLUE', {
       writable: false,
-      value: new oj.Color('00f')
+      value: new Color('00f')
     });
-    Object.defineProperty(oj.Color, 'BLUEVIOLET', {
+    Object.defineProperty(Color, 'BLUEVIOLET', {
       writable: false,
-      value: new oj.Color('8a2be2')
+      value: new Color('8a2be2')
     });
-    Object.defineProperty(oj.Color, 'BROWN', {
+    Object.defineProperty(Color, 'BROWN', {
       writable: false,
-      value: new oj.Color('a52a2a')
+      value: new Color('a52a2a')
     });
-    Object.defineProperty(oj.Color, 'BURLYWOOD', {
+    Object.defineProperty(Color, 'BURLYWOOD', {
       writable: false,
-      value: new oj.Color('deb887')
+      value: new Color('deb887')
     });
-    Object.defineProperty(oj.Color, 'CADETBLUE', {
+    Object.defineProperty(Color, 'CADETBLUE', {
       writable: false,
-      value: new oj.Color('5f9ea0')
+      value: new Color('5f9ea0')
     });
-    Object.defineProperty(oj.Color, 'CHARTREUSE', {
+    Object.defineProperty(Color, 'CHARTREUSE', {
       writable: false,
-      value: new oj.Color('7fff00')
+      value: new Color('7fff00')
     });
-    Object.defineProperty(oj.Color, 'CHOCOLATE', {
+    Object.defineProperty(Color, 'CHOCOLATE', {
       writable: false,
-      value: new oj.Color('d2691e')
+      value: new Color('d2691e')
     });
-    Object.defineProperty(oj.Color, 'CORAL', {
+    Object.defineProperty(Color, 'CORAL', {
       writable: false,
-      value: new oj.Color('ff7f50')
+      value: new Color('ff7f50')
     });
-    Object.defineProperty(oj.Color, 'CORNFLOWERBLUE', {
+    Object.defineProperty(Color, 'CORNFLOWERBLUE', {
       writable: false,
-      value: new oj.Color('6495ed')
+      value: new Color('6495ed')
     });
-    Object.defineProperty(oj.Color, 'CORNSILK', {
+    Object.defineProperty(Color, 'CORNSILK', {
       writable: false,
-      value: new oj.Color('fff8dc')
+      value: new Color('fff8dc')
     });
-    Object.defineProperty(oj.Color, 'CRIMSON', {
+    Object.defineProperty(Color, 'CRIMSON', {
       writable: false,
-      value: new oj.Color('dc143c')
+      value: new Color('dc143c')
     });
-    Object.defineProperty(oj.Color, 'CYAN', {
+    Object.defineProperty(Color, 'CYAN', {
       writable: false,
-      value: new oj.Color('0ff')
+      value: new Color('0ff')
     });
-    Object.defineProperty(oj.Color, 'DARKBLUE', {
+    Object.defineProperty(Color, 'DARKBLUE', {
       writable: false,
-      value: new oj.Color('00008b')
+      value: new Color('00008b')
     });
-    Object.defineProperty(oj.Color, 'DARKCYAN', {
+    Object.defineProperty(Color, 'DARKCYAN', {
       writable: false,
-      value: new oj.Color('008b8b')
+      value: new Color('008b8b')
     });
-    Object.defineProperty(oj.Color, 'DARKGOLDENROD', {
+    Object.defineProperty(Color, 'DARKGOLDENROD', {
       writable: false,
-      value: new oj.Color('b8860b')
+      value: new Color('b8860b')
     });
-    Object.defineProperty(oj.Color, 'DARKGRAY', {
+    Object.defineProperty(Color, 'DARKGRAY', {
       writable: false,
-      value: new oj.Color('a9a9a9')
+      value: new Color('a9a9a9')
     });
-    Object.defineProperty(oj.Color, 'DARKGREY', {
+    Object.defineProperty(Color, 'DARKGREY', {
       writable: false,
-      value: new oj.Color('a9a9a9')
+      value: new Color('a9a9a9')
     });
-    Object.defineProperty(oj.Color, 'DARKGREEN', {
+    Object.defineProperty(Color, 'DARKGREEN', {
       writable: false,
-      value: new oj.Color('006400')
+      value: new Color('006400')
     });
-    Object.defineProperty(oj.Color, 'DARKKHAKI', {
+    Object.defineProperty(Color, 'DARKKHAKI', {
       writable: false,
-      value: new oj.Color('bdb76b')
+      value: new Color('bdb76b')
     });
-    Object.defineProperty(oj.Color, 'DARKMAGENTA', {
+    Object.defineProperty(Color, 'DARKMAGENTA', {
       writable: false,
-      value: new oj.Color('8b008b')
+      value: new Color('8b008b')
     });
-    Object.defineProperty(oj.Color, 'DARKOLIVEGREEN', {
+    Object.defineProperty(Color, 'DARKOLIVEGREEN', {
       writable: false,
-      value: new oj.Color('556b2f')
+      value: new Color('556b2f')
     });
-    Object.defineProperty(oj.Color, 'DARKORANGE', {
+    Object.defineProperty(Color, 'DARKORANGE', {
       writable: false,
-      value: new oj.Color('ff8c00')
+      value: new Color('ff8c00')
     });
-    Object.defineProperty(oj.Color, 'DARKORCHID', {
+    Object.defineProperty(Color, 'DARKORCHID', {
       writable: false,
-      value: new oj.Color('9932cc')
+      value: new Color('9932cc')
     });
-    Object.defineProperty(oj.Color, 'DARKRED', {
+    Object.defineProperty(Color, 'DARKRED', {
       writable: false,
-      value: new oj.Color('8b0000')
+      value: new Color('8b0000')
     });
-    Object.defineProperty(oj.Color, 'DARKSALMON', {
+    Object.defineProperty(Color, 'DARKSALMON', {
       writable: false,
-      value: new oj.Color('e9967a')
+      value: new Color('e9967a')
     });
-    Object.defineProperty(oj.Color, 'DARKSEAGREEN', {
+    Object.defineProperty(Color, 'DARKSEAGREEN', {
       writable: false,
-      value: new oj.Color('8fbc8f')
+      value: new Color('8fbc8f')
     });
-    Object.defineProperty(oj.Color, 'DARKSLATEBLUE', {
+    Object.defineProperty(Color, 'DARKSLATEBLUE', {
       writable: false,
-      value: new oj.Color('483d8b')
+      value: new Color('483d8b')
     });
-    Object.defineProperty(oj.Color, 'DARKSLATEGRAY', {
+    Object.defineProperty(Color, 'DARKSLATEGRAY', {
       writable: false,
-      value: new oj.Color('2f4f4f')
+      value: new Color('2f4f4f')
     });
-    Object.defineProperty(oj.Color, 'DARKSLATEGREY', {
+    Object.defineProperty(Color, 'DARKSLATEGREY', {
       writable: false,
-      value: new oj.Color('2f4f4f')
+      value: new Color('2f4f4f')
     });
-    Object.defineProperty(oj.Color, 'DARKTURQUOISE', {
+    Object.defineProperty(Color, 'DARKTURQUOISE', {
       writable: false,
-      value: new oj.Color('00ced1')
+      value: new Color('00ced1')
     });
-    Object.defineProperty(oj.Color, 'DARKVIOLET', {
+    Object.defineProperty(Color, 'DARKVIOLET', {
       writable: false,
-      value: new oj.Color('9400d3')
+      value: new Color('9400d3')
     });
-    Object.defineProperty(oj.Color, 'DEEPPINK', {
+    Object.defineProperty(Color, 'DEEPPINK', {
       writable: false,
-      value: new oj.Color('ff1493')
+      value: new Color('ff1493')
     });
-    Object.defineProperty(oj.Color, 'DEEPSKYBLUE', {
+    Object.defineProperty(Color, 'DEEPSKYBLUE', {
       writable: false,
-      value: new oj.Color('00bfff')
+      value: new Color('00bfff')
     });
-    Object.defineProperty(oj.Color, 'DIMGRAY', {
+    Object.defineProperty(Color, 'DIMGRAY', {
       writable: false,
-      value: new oj.Color('696969')
+      value: new Color('696969')
     });
-    Object.defineProperty(oj.Color, 'DIMGREY', {
+    Object.defineProperty(Color, 'DIMGREY', {
       writable: false,
-      value: new oj.Color('696969')
+      value: new Color('696969')
     });
-    Object.defineProperty(oj.Color, 'DODGERBLUE', {
+    Object.defineProperty(Color, 'DODGERBLUE', {
       writable: false,
-      value: new oj.Color('1e90ff')
+      value: new Color('1e90ff')
     });
-    Object.defineProperty(oj.Color, 'FIREBRICK', {
+    Object.defineProperty(Color, 'FIREBRICK', {
       writable: false,
-      value: new oj.Color('b22222')
+      value: new Color('b22222')
     });
-    Object.defineProperty(oj.Color, 'FLORALWHITE', {
+    Object.defineProperty(Color, 'FLORALWHITE', {
       writable: false,
-      value: new oj.Color('fffaf0')
+      value: new Color('fffaf0')
     });
-    Object.defineProperty(oj.Color, 'FORESTGREEN', {
+    Object.defineProperty(Color, 'FORESTGREEN', {
       writable: false,
-      value: new oj.Color('228b22')
+      value: new Color('228b22')
     });
-    Object.defineProperty(oj.Color, 'FUCHSIA', {
+    Object.defineProperty(Color, 'FUCHSIA', {
       writable: false,
-      value: new oj.Color('f0f')
+      value: new Color('f0f')
     });
-    Object.defineProperty(oj.Color, 'GAINSBORO', {
+    Object.defineProperty(Color, 'GAINSBORO', {
       writable: false,
-      value: new oj.Color('dcdcdc')
+      value: new Color('dcdcdc')
     });
-    Object.defineProperty(oj.Color, 'GHOSTWHITE', {
+    Object.defineProperty(Color, 'GHOSTWHITE', {
       writable: false,
-      value: new oj.Color('f8f8ff')
+      value: new Color('f8f8ff')
     });
-    Object.defineProperty(oj.Color, 'GOLD', {
+    Object.defineProperty(Color, 'GOLD', {
       writable: false,
-      value: new oj.Color('ffd700')
+      value: new Color('ffd700')
     });
-    Object.defineProperty(oj.Color, 'GOLDENROD', {
+    Object.defineProperty(Color, 'GOLDENROD', {
       writable: false,
-      value: new oj.Color('daa520')
+      value: new Color('daa520')
     });
-    Object.defineProperty(oj.Color, 'GRAY', {
+    Object.defineProperty(Color, 'GRAY', {
       writable: false,
-      value: new oj.Color('808080')
+      value: new Color('808080')
     });
-    Object.defineProperty(oj.Color, 'GREY', {
+    Object.defineProperty(Color, 'GREY', {
       writable: false,
-      value: new oj.Color('808080')
+      value: new Color('808080')
     });
-    Object.defineProperty(oj.Color, 'GREEN', {
+    Object.defineProperty(Color, 'GREEN', {
       writable: false,
-      value: new oj.Color('008000')
+      value: new Color('008000')
     });
-    Object.defineProperty(oj.Color, 'GREENYELLOW', {
+    Object.defineProperty(Color, 'GREENYELLOW', {
       writable: false,
-      value: new oj.Color('adff2f')
+      value: new Color('adff2f')
     });
-    Object.defineProperty(oj.Color, 'HONEYDEW', {
+    Object.defineProperty(Color, 'HONEYDEW', {
       writable: false,
-      value: new oj.Color('f0fff0')
+      value: new Color('f0fff0')
     });
-    Object.defineProperty(oj.Color, 'HOTPINK', {
+    Object.defineProperty(Color, 'HOTPINK', {
       writable: false,
-      value: new oj.Color('ff69b4')
+      value: new Color('ff69b4')
     });
-    Object.defineProperty(oj.Color, 'INDIANRED', {
+    Object.defineProperty(Color, 'INDIANRED', {
       writable: false,
-      value: new oj.Color('cd5c5c')
+      value: new Color('cd5c5c')
     });
-    Object.defineProperty(oj.Color, 'INDIGO', {
+    Object.defineProperty(Color, 'INDIGO', {
       writable: false,
-      value: new oj.Color('4b0082')
+      value: new Color('4b0082')
     });
-    Object.defineProperty(oj.Color, 'IVORY', {
+    Object.defineProperty(Color, 'IVORY', {
       writable: false,
-      value: new oj.Color('fffff0')
+      value: new Color('fffff0')
     });
-    Object.defineProperty(oj.Color, 'KHAKI', {
+    Object.defineProperty(Color, 'KHAKI', {
       writable: false,
-      value: new oj.Color('f0e68c')
+      value: new Color('f0e68c')
     });
-    Object.defineProperty(oj.Color, 'LAVENDER', {
+    Object.defineProperty(Color, 'LAVENDER', {
       writable: false,
-      value: new oj.Color('e6e6fa')
+      value: new Color('e6e6fa')
     });
-    Object.defineProperty(oj.Color, 'LAVENDERBLUSH', {
+    Object.defineProperty(Color, 'LAVENDERBLUSH', {
       writable: false,
-      value: new oj.Color('fff0f5')
+      value: new Color('fff0f5')
     });
-    Object.defineProperty(oj.Color, 'LAWNGREEN', {
+    Object.defineProperty(Color, 'LAWNGREEN', {
       writable: false,
-      value: new oj.Color('7cfc00')
+      value: new Color('7cfc00')
     });
-    Object.defineProperty(oj.Color, 'LEMONCHIFFON', {
+    Object.defineProperty(Color, 'LEMONCHIFFON', {
       writable: false,
-      value: new oj.Color('fffacd')
+      value: new Color('fffacd')
     });
-    Object.defineProperty(oj.Color, 'LIGHTBLUE', {
+    Object.defineProperty(Color, 'LIGHTBLUE', {
       writable: false,
-      value: new oj.Color('add8e6')
+      value: new Color('add8e6')
     });
-    Object.defineProperty(oj.Color, 'LIGHTCORAL', {
+    Object.defineProperty(Color, 'LIGHTCORAL', {
       writable: false,
-      value: new oj.Color('f08080')
+      value: new Color('f08080')
     });
-    Object.defineProperty(oj.Color, 'LIGHTCYAN', {
+    Object.defineProperty(Color, 'LIGHTCYAN', {
       writable: false,
-      value: new oj.Color('e0ffff')
+      value: new Color('e0ffff')
     });
-    Object.defineProperty(oj.Color, 'LIGHTGOLDENRODYELLOW', {
+    Object.defineProperty(Color, 'LIGHTGOLDENRODYELLOW', {
       writable: false,
-      value: new oj.Color('fafad2')
+      value: new Color('fafad2')
     });
-    Object.defineProperty(oj.Color, 'LIGHTGRAY', {
+    Object.defineProperty(Color, 'LIGHTGRAY', {
       writable: false,
-      value: new oj.Color('d3d3d3')
+      value: new Color('d3d3d3')
     });
-    Object.defineProperty(oj.Color, 'LIGHTGREY', {
+    Object.defineProperty(Color, 'LIGHTGREY', {
       writable: false,
-      value: new oj.Color('d3d3d3')
+      value: new Color('d3d3d3')
     });
-    Object.defineProperty(oj.Color, 'LIGHTGREEN', {
+    Object.defineProperty(Color, 'LIGHTGREEN', {
       writable: false,
-      value: new oj.Color('90ee90')
+      value: new Color('90ee90')
     });
-    Object.defineProperty(oj.Color, 'LIGHTPINK', {
+    Object.defineProperty(Color, 'LIGHTPINK', {
       writable: false,
-      value: new oj.Color('ffb6c1')
+      value: new Color('ffb6c1')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSALMON', {
+    Object.defineProperty(Color, 'LIGHTSALMON', {
       writable: false,
-      value: new oj.Color('ffa07a')
+      value: new Color('ffa07a')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSEAGREEN', {
+    Object.defineProperty(Color, 'LIGHTSEAGREEN', {
       writable: false,
-      value: new oj.Color('20b2aa')
+      value: new Color('20b2aa')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSKYBLUE', {
+    Object.defineProperty(Color, 'LIGHTSKYBLUE', {
       writable: false,
-      value: new oj.Color('87cefa')
+      value: new Color('87cefa')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSLATEGRAY', {
+    Object.defineProperty(Color, 'LIGHTSLATEGRAY', {
       writable: false,
-      value: new oj.Color('789')
+      value: new Color('789')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSLATEGREY', {
+    Object.defineProperty(Color, 'LIGHTSLATEGREY', {
       writable: false,
-      value: new oj.Color('789')
+      value: new Color('789')
     });
-    Object.defineProperty(oj.Color, 'LIGHTSTEELBLUE', {
+    Object.defineProperty(Color, 'LIGHTSTEELBLUE', {
       writable: false,
-      value: new oj.Color('b0c4de')
+      value: new Color('b0c4de')
     });
-    Object.defineProperty(oj.Color, 'LIGHTYELLOW', {
+    Object.defineProperty(Color, 'LIGHTYELLOW', {
       writable: false,
-      value: new oj.Color('ffffe0')
+      value: new Color('ffffe0')
     });
-    Object.defineProperty(oj.Color, 'LIME', {
+    Object.defineProperty(Color, 'LIME', {
       writable: false,
-      value: new oj.Color('0f0')
+      value: new Color('0f0')
     });
-    Object.defineProperty(oj.Color, 'LIMEGREEN', {
+    Object.defineProperty(Color, 'LIMEGREEN', {
       writable: false,
-      value: new oj.Color('32cd32')
+      value: new Color('32cd32')
     });
-    Object.defineProperty(oj.Color, 'LINEN', {
+    Object.defineProperty(Color, 'LINEN', {
       writable: false,
-      value: new oj.Color('faf0e6')
+      value: new Color('faf0e6')
     });
-    Object.defineProperty(oj.Color, 'MAGENTA', {
+    Object.defineProperty(Color, 'MAGENTA', {
       writable: false,
-      value: new oj.Color('f0f')
+      value: new Color('f0f')
     });
-    Object.defineProperty(oj.Color, 'MAROON', {
+    Object.defineProperty(Color, 'MAROON', {
       writable: false,
-      value: new oj.Color('800000')
+      value: new Color('800000')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMAQUAMARINE', {
+    Object.defineProperty(Color, 'MEDIUMAQUAMARINE', {
       writable: false,
-      value: new oj.Color('66cdaa')
+      value: new Color('66cdaa')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMBLUE', {
+    Object.defineProperty(Color, 'MEDIUMBLUE', {
       writable: false,
-      value: new oj.Color('0000cd')
+      value: new Color('0000cd')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMORCHID', {
+    Object.defineProperty(Color, 'MEDIUMORCHID', {
       writable: false,
-      value: new oj.Color('ba55d3')
+      value: new Color('ba55d3')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMPURPLE', {
+    Object.defineProperty(Color, 'MEDIUMPURPLE', {
       writable: false,
-      value: new oj.Color('9370db')
+      value: new Color('9370db')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMSEAGREEN', {
+    Object.defineProperty(Color, 'MEDIUMSEAGREEN', {
       writable: false,
-      value: new oj.Color('3cb371')
+      value: new Color('3cb371')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMSLATEBLUE', {
+    Object.defineProperty(Color, 'MEDIUMSLATEBLUE', {
       writable: false,
-      value: new oj.Color('7b68ee')
+      value: new Color('7b68ee')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMSPRINGGREEN', {
+    Object.defineProperty(Color, 'MEDIUMSPRINGGREEN', {
       writable: false,
-      value: new oj.Color('00fa9a')
+      value: new Color('00fa9a')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMTURQUOISE', {
+    Object.defineProperty(Color, 'MEDIUMTURQUOISE', {
       writable: false,
-      value: new oj.Color('48d1cc')
+      value: new Color('48d1cc')
     });
-    Object.defineProperty(oj.Color, 'MEDIUMVIOLETRED', {
+    Object.defineProperty(Color, 'MEDIUMVIOLETRED', {
       writable: false,
-      value: new oj.Color('c71585')
+      value: new Color('c71585')
     });
-    Object.defineProperty(oj.Color, 'MIDNIGHTBLUE', {
+    Object.defineProperty(Color, 'MIDNIGHTBLUE', {
       writable: false,
-      value: new oj.Color('191970')
+      value: new Color('191970')
     });
-    Object.defineProperty(oj.Color, 'MINTCREAM', {
+    Object.defineProperty(Color, 'MINTCREAM', {
       writable: false,
-      value: new oj.Color('f5fffa')
+      value: new Color('f5fffa')
     });
-    Object.defineProperty(oj.Color, 'MISTYROSE', {
+    Object.defineProperty(Color, 'MISTYROSE', {
       writable: false,
-      value: new oj.Color('ffe4e1')
+      value: new Color('ffe4e1')
     });
-    Object.defineProperty(oj.Color, 'MOCCASIN', {
+    Object.defineProperty(Color, 'MOCCASIN', {
       writable: false,
-      value: new oj.Color('ffe4b5')
+      value: new Color('ffe4b5')
     });
-    Object.defineProperty(oj.Color, 'NAVAJOWHITE', {
+    Object.defineProperty(Color, 'NAVAJOWHITE', {
       writable: false,
-      value: new oj.Color('ffdead')
+      value: new Color('ffdead')
     });
-    Object.defineProperty(oj.Color, 'NAVY', {
+    Object.defineProperty(Color, 'NAVY', {
       writable: false,
-      value: new oj.Color('000080')
+      value: new Color('000080')
     });
-    Object.defineProperty(oj.Color, 'OLDLACE', {
+    Object.defineProperty(Color, 'OLDLACE', {
       writable: false,
-      value: new oj.Color('fdf5e6')
+      value: new Color('fdf5e6')
     });
-    Object.defineProperty(oj.Color, 'OLIVE', {
+    Object.defineProperty(Color, 'OLIVE', {
       writable: false,
-      value: new oj.Color('808000')
+      value: new Color('808000')
     });
-    Object.defineProperty(oj.Color, 'OLIVEDRAB', {
+    Object.defineProperty(Color, 'OLIVEDRAB', {
       writable: false,
-      value: new oj.Color('6b8e23')
+      value: new Color('6b8e23')
     });
-    Object.defineProperty(oj.Color, 'ORANGE', {
+    Object.defineProperty(Color, 'ORANGE', {
       writable: false,
-      value: new oj.Color('ffa500')
+      value: new Color('ffa500')
     });
-    Object.defineProperty(oj.Color, 'ORANGERED', {
+    Object.defineProperty(Color, 'ORANGERED', {
       writable: false,
-      value: new oj.Color('ff4500')
+      value: new Color('ff4500')
     });
-    Object.defineProperty(oj.Color, 'ORCHID', {
+    Object.defineProperty(Color, 'ORCHID', {
       writable: false,
-      value: new oj.Color('da70d6')
+      value: new Color('da70d6')
     });
-    Object.defineProperty(oj.Color, 'PALEGOLDENROD', {
+    Object.defineProperty(Color, 'PALEGOLDENROD', {
       writable: false,
-      value: new oj.Color('eee8aa')
+      value: new Color('eee8aa')
     });
-    Object.defineProperty(oj.Color, 'PALEGREEN', {
+    Object.defineProperty(Color, 'PALEGREEN', {
       writable: false,
-      value: new oj.Color('98fb98')
+      value: new Color('98fb98')
     });
-    Object.defineProperty(oj.Color, 'PALETURQUOISE', {
+    Object.defineProperty(Color, 'PALETURQUOISE', {
       writable: false,
-      value: new oj.Color('afeeee')
+      value: new Color('afeeee')
     });
-    Object.defineProperty(oj.Color, 'PALEVIOLETRED', {
+    Object.defineProperty(Color, 'PALEVIOLETRED', {
       writable: false,
-      value: new oj.Color('db7093')
+      value: new Color('db7093')
     });
-    Object.defineProperty(oj.Color, 'PAPAYAWHIP', {
+    Object.defineProperty(Color, 'PAPAYAWHIP', {
       writable: false,
-      value: new oj.Color('ffefd5')
+      value: new Color('ffefd5')
     });
-    Object.defineProperty(oj.Color, 'PEACHPUFF', {
+    Object.defineProperty(Color, 'PEACHPUFF', {
       writable: false,
-      value: new oj.Color('ffdab9')
+      value: new Color('ffdab9')
     });
-    Object.defineProperty(oj.Color, 'PERU', {
+    Object.defineProperty(Color, 'PERU', {
       writable: false,
-      value: new oj.Color('cd853f')
+      value: new Color('cd853f')
     });
-    Object.defineProperty(oj.Color, 'PINK', {
+    Object.defineProperty(Color, 'PINK', {
       writable: false,
-      value: new oj.Color('ffc0cb')
+      value: new Color('ffc0cb')
     });
-    Object.defineProperty(oj.Color, 'PLUM', {
+    Object.defineProperty(Color, 'PLUM', {
       writable: false,
-      value: new oj.Color('dda0dd')
+      value: new Color('dda0dd')
     });
-    Object.defineProperty(oj.Color, 'POWDERBLUE', {
+    Object.defineProperty(Color, 'POWDERBLUE', {
       writable: false,
-      value: new oj.Color('b0e0e6')
+      value: new Color('b0e0e6')
     });
-    Object.defineProperty(oj.Color, 'PURPLE', {
+    Object.defineProperty(Color, 'PURPLE', {
       writable: false,
-      value: new oj.Color('800080')
+      value: new Color('800080')
     });
-    Object.defineProperty(oj.Color, 'REBECCAPURPLE', {
+    Object.defineProperty(Color, 'REBECCAPURPLE', {
       writable: false,
-      value: new oj.Color('663399')
+      value: new Color('663399')
     });
-    Object.defineProperty(oj.Color, 'RED', {
+    Object.defineProperty(Color, 'RED', {
       writable: false,
-      value: new oj.Color('f00')
+      value: new Color('f00')
     });
-    Object.defineProperty(oj.Color, 'ROSYBROWN', {
+    Object.defineProperty(Color, 'ROSYBROWN', {
       writable: false,
-      value: new oj.Color('bc8f8f')
+      value: new Color('bc8f8f')
     });
-    Object.defineProperty(oj.Color, 'ROYALBLUE', {
+    Object.defineProperty(Color, 'ROYALBLUE', {
       writable: false,
-      value: new oj.Color('4169e1')
+      value: new Color('4169e1')
     });
-    Object.defineProperty(oj.Color, 'SADDLEBROWN', {
+    Object.defineProperty(Color, 'SADDLEBROWN', {
       writable: false,
-      value: new oj.Color('8b4513')
+      value: new Color('8b4513')
     });
-    Object.defineProperty(oj.Color, 'SALMON', {
+    Object.defineProperty(Color, 'SALMON', {
       writable: false,
-      value: new oj.Color('fa8072')
+      value: new Color('fa8072')
     });
-    Object.defineProperty(oj.Color, 'SANDYBROWN', {
+    Object.defineProperty(Color, 'SANDYBROWN', {
       writable: false,
-      value: new oj.Color('f4a460')
+      value: new Color('f4a460')
     });
-    Object.defineProperty(oj.Color, 'SEAGREEN', {
+    Object.defineProperty(Color, 'SEAGREEN', {
       writable: false,
-      value: new oj.Color('2e8b57')
+      value: new Color('2e8b57')
     });
-    Object.defineProperty(oj.Color, 'SEASHELL', {
+    Object.defineProperty(Color, 'SEASHELL', {
       writable: false,
-      value: new oj.Color('fff5ee')
+      value: new Color('fff5ee')
     });
-    Object.defineProperty(oj.Color, 'SIENNA', {
+    Object.defineProperty(Color, 'SIENNA', {
       writable: false,
-      value: new oj.Color('a0522d')
+      value: new Color('a0522d')
     });
-    Object.defineProperty(oj.Color, 'SILVER', {
+    Object.defineProperty(Color, 'SILVER', {
       writable: false,
-      value: new oj.Color('c0c0c0')
+      value: new Color('c0c0c0')
     });
-    Object.defineProperty(oj.Color, 'SKYBLUE', {
+    Object.defineProperty(Color, 'SKYBLUE', {
       writable: false,
-      value: new oj.Color('87ceeb')
+      value: new Color('87ceeb')
     });
-    Object.defineProperty(oj.Color, 'SLATEBLUE', {
+    Object.defineProperty(Color, 'SLATEBLUE', {
       writable: false,
-      value: new oj.Color('6a5acd')
+      value: new Color('6a5acd')
     });
-    Object.defineProperty(oj.Color, 'SLATEGRAY', {
+    Object.defineProperty(Color, 'SLATEGRAY', {
       writable: false,
-      value: new oj.Color('708090')
+      value: new Color('708090')
     });
-    Object.defineProperty(oj.Color, 'SLATEGREY', {
+    Object.defineProperty(Color, 'SLATEGREY', {
       writable: false,
-      value: new oj.Color('708090')
+      value: new Color('708090')
     });
-    Object.defineProperty(oj.Color, 'SNOW', {
+    Object.defineProperty(Color, 'SNOW', {
       writable: false,
-      value: new oj.Color('fffafa')
+      value: new Color('fffafa')
     });
-    Object.defineProperty(oj.Color, 'SPRINGGREEN', {
+    Object.defineProperty(Color, 'SPRINGGREEN', {
       writable: false,
-      value: new oj.Color('00ff7f')
+      value: new Color('00ff7f')
     });
-    Object.defineProperty(oj.Color, 'STEELBLUE', {
+    Object.defineProperty(Color, 'STEELBLUE', {
       writable: false,
-      value: new oj.Color('4682b4')
+      value: new Color('4682b4')
     });
-    Object.defineProperty(oj.Color, 'TAN', {
+    Object.defineProperty(Color, 'TAN', {
       writable: false,
-      value: new oj.Color('d2b48c')
+      value: new Color('d2b48c')
     });
-    Object.defineProperty(oj.Color, 'TEAL', {
+    Object.defineProperty(Color, 'TEAL', {
       writable: false,
-      value: new oj.Color('008080')
+      value: new Color('008080')
     });
-    Object.defineProperty(oj.Color, 'THISTLE', {
+    Object.defineProperty(Color, 'THISTLE', {
       writable: false,
-      value: new oj.Color('d8bfd8')
+      value: new Color('d8bfd8')
     });
-    Object.defineProperty(oj.Color, 'TOMATO', {
+    Object.defineProperty(Color, 'TOMATO', {
       writable: false,
-      value: new oj.Color('ff6347')
+      value: new Color('ff6347')
     });
-    Object.defineProperty(oj.Color, 'TURQUOISE', {
+    Object.defineProperty(Color, 'TURQUOISE', {
       writable: false,
-      value: new oj.Color('40e0d0')
+      value: new Color('40e0d0')
     });
-    Object.defineProperty(oj.Color, 'VIOLET', {
+    Object.defineProperty(Color, 'VIOLET', {
       writable: false,
-      value: new oj.Color('ee82ee')
+      value: new Color('ee82ee')
     });
-    Object.defineProperty(oj.Color, 'WHEAT', {
+    Object.defineProperty(Color, 'WHEAT', {
       writable: false,
-      value: new oj.Color('f5deb3')
+      value: new Color('f5deb3')
     });
-    Object.defineProperty(oj.Color, 'WHITE', {
+    Object.defineProperty(Color, 'WHITE', {
       writable: false,
-      value: new oj.Color('fff')
+      value: new Color('fff')
     });
-    Object.defineProperty(oj.Color, 'WHITESMOKE', {
+    Object.defineProperty(Color, 'WHITESMOKE', {
       writable: false,
-      value: new oj.Color('f5f5f5')
+      value: new Color('f5f5f5')
     });
-    Object.defineProperty(oj.Color, 'YELLOW', {
+    Object.defineProperty(Color, 'YELLOW', {
       writable: false,
-      value: new oj.Color('ff0')
+      value: new Color('ff0')
     });
-    Object.defineProperty(oj.Color, 'YELLOWGREEN', {
+    Object.defineProperty(Color, 'YELLOWGREEN', {
       writable: false,
-      value: new oj.Color('9acd32')
+      value: new Color('9acd32')
     });
-    Object.defineProperty(oj.Color, 'TRANSPARENT', {
+    Object.defineProperty(Color, 'TRANSPARENT', {
       writable: false,
-      value: new oj.Color('rgba(0,0,0,0)')
+      value: new Color('rgba(0,0,0,0)')
     });
   }
   /**
    * Returns a valid alpha value [0);1] with all invalid values being set to 1
    * @param {number} a alpha value
    * @returns {number} alpha value
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2450,7 +2450,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {string|number} n The input value
    * @param {number} max The max value
    * @returns {number}
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2481,7 +2481,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * Parse a base-16 hex value into a base-10 integer
    * @param {number} val The input value
    * @returns {number}
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2494,7 +2494,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
    * @param {string|number} n The input value
    * @returns {boolean}
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2506,7 +2506,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * Returns true if supplied string is a percentage
    * @param {string|number} n The input value
    * @returns {boolean} true if supplied string is a percentage
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2516,7 +2516,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }
   /**
    * Replace a decimal with it's percentage value
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2533,7 +2533,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   /**
    * Converts a hex value to a decimal
    * @param {number} h The hex value
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2574,7 +2574,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * (see `matchers` above for definition).
    * @param {string|number} color  The value to check.
    * @returns {boolean} true if valid CSS
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2588,7 +2588,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    * @param {string}  color  A CSS color specification string.
    * @return {Object | boolean}  Returns an object with properties r, g, b  or  h, s, l  or  h, s, v,
    *                             or false if parsing failed.
-   * @memberof oj.Color
+   * @memberof Color
    * @private
    */
 
@@ -2608,7 +2608,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // 1) Try to match string input using regular expressions.
     // 2) Keep most of the number bounding out of this function - don't worry about [0,1] or [0,100] or [0,360]
     // 3) Just return an object and let the conversion functions handle that.
-    // This way the result will be the same whether the oj.Color is initialized with string or object.
+    // This way the result will be the same whether the Color is initialized with string or object.
 
 
     var match = matchers.rgb.exec(color);
@@ -2711,12 +2711,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }
 
   _initColorConstants();
-})(); // mapping a variable to the name used in the require callback function for this module
-// it is used in a no-require environment (oj.js)
-// eslint-disable-next-line no-unused-vars
 
+  oj._registerLegacyNamespaceProp('Color', Color);
 
-var Color = oj.Color;
-
-  return oj.Color;
+  return Color;
 });
+
+}())

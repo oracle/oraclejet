@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -23,6 +23,8 @@
       display: block;
       overflow: auto;
       -webkit-tap-highlight-color: transparent;
+      // Padding-bottom so container does not expand when dropline is rendered at bottom of treeview
+      padding-bottom: .25rem;
     }
 
     // Remove focus ring
@@ -109,9 +111,17 @@
         margin-right: 2px;
       }
     }
+
     .oj-treeview-item-content-icon {
       vertical-align: middle;
       font-size: $fontSize;
+      display: inline-block;
+      @include oj-ltr() {
+        margin: 0 0.5rem 0 0.5rem;
+      }
+      @include oj-rtl() {
+        margin: 0 0.5rem 0 0.5rem;
+      }
     }
     
     .oj-treeview-item-content {
@@ -170,9 +180,9 @@
 
     // Disclosure icon or the spacer
     .oj-treeview-spacer {
-
         height: $treeViewSpacerHeight;
-
+        display: inline-block;
+        vertical-align: middle;
     }
 
     .oj-treeview-disclosure-icon {

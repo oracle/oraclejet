@@ -1,0 +1,21 @@
+{
+  "name": "icu-l10n",
+  "version": "1.0.0",
+  "description": "JET ICU Message Format Parser =============================",
+  "main": "l10nBundleBuilder.js",
+  "scripts": {
+    "test": "npx mocha ./test/l10nTest.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cldr-core": "^37.0.0",
+    "fs-extra": "^9.0.1",
+    "intl-messageformat-parser": "^5.1.4",
+    "make-plural-compiler": "^5.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^8.2.1",
+    "typescript-parser": "^2.6.1"
+  }
+}

@@ -1,60 +1,68 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['ojs/ojcore-base', 'ojs/ojlocaledata', 'ojL10n!ojtranslations/nls/timezoneData'], function (oj, LocaleData, ojtd) { 'use strict';
 
-define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojlocaledata'], function(oj, ojtd, LocaleData)
-{
-  "use strict";
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  ojtd = ojtd && Object.prototype.hasOwnProperty.call(ojtd, 'default') ? ojtd['default'] : ojtd;
 
-/* global ojtd:true, LocaleData:false*/
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
 
+  /**
+   * Internal utilities for dealing with timezone data
+   * @ignore
+   */
+  const TimezoneData = {};
+  oj._registerLegacyNamespaceProp('TimezoneData', TimezoneData);
 
-/**
- * Internal utilities for dealing with timezone data
- * @ignore
- */
-oj.TimezoneData = {};
-
-/**
- * Merges timezone data bundle into the LocaleElements bundle
- * @param {Object} timezoneBundle bundle to merge into the LocaleElements bundle
- * @ignore
- */
-oj.TimezoneData.__mergeIntoLocaleElements = function (timezoneBundle) {
-  var localeElements = LocaleData.__getBundle();
-  oj.CollectionUtils.copyInto(localeElements, timezoneBundle, undefined, true);
-};
-
-
-/**
- * @return {Array.<string>} names of the timezone bundles
- * @ignore
- */
-oj.TimezoneData.__getBundleNames = function () {
-  return oj.TimezoneData._bundleNames;
-};
-
-/**
- * @param {string} name bundle name
- * @ignore
- */
-oj.TimezoneData.__registerBundleName = function (name) {
-  oj.TimezoneData._bundleNames.push(name);
-};
-
-/**
- * @ignore
- */
-oj.TimezoneData._bundleNames = [];
+  /**
+   * Merges timezone data bundle into the LocaleElements bundle
+   * @param {Object} timezoneBundle bundle to merge into the LocaleElements bundle
+   * @ignore
+   */
+  TimezoneData.__mergeIntoLocaleElements = function (timezoneBundle) {
+    var localeElements = LocaleData.__getBundle();
+    oj.CollectionUtils.copyInto(localeElements, timezoneBundle, undefined, true);
+  };
 
 
-(function () {
-  oj.TimezoneData.__registerBundleName('/timezoneData');
-  oj.TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
-}());
+  /**
+   * @return {Array.<string>} names of the timezone bundles
+   * @ignore
+   */
+  TimezoneData.__getBundleNames = function () {
+    return TimezoneData._bundleNames;
+  };
+
+  /**
+   * @param {string} name bundle name
+   * @ignore
+   */
+  TimezoneData.__registerBundleName = function (name) {
+    TimezoneData._bundleNames.push(name);
+  };
+
+  /**
+   * @ignore
+   */
+  TimezoneData._bundleNames = [];
+
+
+  (function () {
+    TimezoneData.__registerBundleName('/timezoneData');
+    TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
+  }());
+
+  return TimezoneData;
 
 });

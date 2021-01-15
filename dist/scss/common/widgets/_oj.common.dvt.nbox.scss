@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the
@@ -31,6 +31,10 @@
       height:540px;
     }
 
+    .oj-nbox-container {
+      grid-gap: 3px;
+    }
+
     .oj-nbox-columns-title,
     .oj-nbox-rows-title {
 
@@ -50,6 +54,10 @@
     .oj-nbox-cell {
 
         background-color: $dvtNBoxCellBgColor;
+        padding: 6px;
+        grid-gap: 6px;
+        height: 34px;
+
 
     }
 
@@ -74,6 +82,22 @@
 
     }
 
+    .oj-nbox-node-one-label-padding {
+      padding: 2px;
+      
+    }
+
+    .oj-nbox-node-two-label-padding {
+      padding: 2px;
+      
+    }
+
+    .oj-nbox-node-no-label {
+      height: 19px;
+    }
+
+
+
     // Cell node count in the body of the cell.  Shown when nbox is too
     // small to show all of the nodes.
     .oj-nbox-cell-countlabel {
@@ -94,6 +118,8 @@
 
         background-color: $dvtComponentBgColor;
         border-radius: 1px;
+        min-width: 55px;
+        max-width: 148px;
 
     }
 
@@ -164,36 +190,56 @@
 
     }
 
-    .oj-nbox-node-initials-background-neutral {
+    .oj-nbox-node-initials-neutral {
       fill: $neutralColor13;
     }
 
-    .oj-nbox-node-initials-background-red {
+    .oj-nbox-node-initials-red {
       fill: $avatarRed;
     }
 
-    .oj-nbox-node-initials-background-orange {
+    .oj-nbox-node-initials-orange {
       fill: $avatarOrange;
     }
 
-    .oj-nbox-node-initials-background-forest {
+    .oj-nbox-node-initials-forest {
       fill: $avatarForest;
     }
 
-    .oj-nbox-node-initials-background-green {
+    .oj-nbox-node-initials-green {
       fill: $avatarGreen;
     }
 
-    .oj-nbox-node-initials-background-teal {
+    .oj-nbox-node-initials-teal {
       fill: $avatarTeal;
     }
 
-    .oj-nbox-node-initials-background-mauve {
+    .oj-nbox-node-initials-mauve {
       fill: $avatarMauve;
     }
 
-    .oj-nbox-node-initials-background-purple {
+    .oj-nbox-node-initials-pink {
+      fill: $avatarPink;
+    }
+
+    .oj-nbox-node-initials-purple {
       fill: $avatarPurple;
+    }
+
+    .oj-nbox-node-initials-blue {
+      fill: $avatarBlue;
+    }
+
+    .oj-nbox-node-initials-slate {
+      fill: $avatarSlate;
+    }
+
+    .oj-nbox-node-initials-lilac {
+      fill: $avatarLilac;
+    }
+
+    .oj-nbox-node-initials-gray {
+      fill: $avatarGray;
     }
   }
 }

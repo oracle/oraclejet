@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -50,8 +50,9 @@ export interface inputBase<V, SP extends inputBaseSettableProperties<V, SV>, SV 
             messageSummary?: string;
         };
     };
-    addEventListener<T extends keyof inputBaseEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: inputBaseEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof inputBaseEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: inputBaseEventMap<V, SP, SV, RV>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof inputBaseSettableProperties<V, SV, RV>>(property: T): inputBase<V, SP, SV, RV>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof inputBaseSettableProperties<V, SV, RV>>(property: T, value: inputBaseSettableProperties<V, SV, RV>[T]): void;
@@ -143,10 +144,13 @@ export interface inputBaseSettablePropertiesLenient<V, SV = V, RV = V> extends P
     [key: string]: any;
 }
 export interface ojInputPassword<V = string> extends inputBase<V, ojInputPasswordSettableProperties<V>> {
+    maskIcon: 'hidden' | 'visible';
     value: V | null;
     translations: {
+        accessibleHidePassword?: string;
         accessibleMaxLengthExceeded?: string;
         accessibleMaxLengthRemaining?: string;
+        accessibleShowPassword?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;
@@ -157,8 +161,8 @@ export interface ojInputPassword<V = string> extends inputBase<V, ojInputPasswor
             messageSummary?: string;
         };
     };
-    addEventListener<T extends keyof ojInputPasswordEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputPasswordEventMap<V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputPasswordEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputPasswordEventMap<V>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputPasswordSettableProperties<V>>(property: T): ojInputPassword<V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojInputPasswordSettableProperties<V>>(property: T, value: ojInputPasswordSettableProperties<V>[T]): void;
@@ -180,18 +184,24 @@ export namespace ojInputPassword {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
+    type maskIconChanged<V = string> = JetElementCustomEvent<ojInputPassword<V>["maskIcon"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type valueChanged<V = string> = JetElementCustomEvent<ojInputPassword<V>["value"]>;
 }
 export interface ojInputPasswordEventMap<V = string> extends inputBaseEventMap<V, ojInputPasswordSettableProperties<V>> {
     'ojAnimateEnd': ojInputPassword.ojAnimateEnd;
     'ojAnimateStart': ojInputPassword.ojAnimateStart;
+    'maskIconChanged': JetElementCustomEvent<ojInputPassword<V>["maskIcon"]>;
     'valueChanged': JetElementCustomEvent<ojInputPassword<V>["value"]>;
 }
 export interface ojInputPasswordSettableProperties<V = string> extends inputBaseSettableProperties<V> {
+    maskIcon: 'hidden' | 'visible';
     value: V | null;
     translations: {
+        accessibleHidePassword?: string;
         accessibleMaxLengthExceeded?: string;
         accessibleMaxLengthRemaining?: string;
+        accessibleShowPassword?: string;
         regexp?: {
             messageDetail?: string;
             messageSummary?: string;
@@ -215,8 +225,8 @@ export interface ojInputText<V = any> extends inputBase<V, ojInputTextSettablePr
     };
     list: string;
     virtualKeyboard: 'auto' | 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
-    addEventListener<T extends keyof ojInputTextEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputTextEventMap<V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputTextEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojInputTextEventMap<V>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputTextSettableProperties<V>>(property: T): ojInputText<V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojInputTextSettableProperties<V>>(property: T, value: ojInputTextSettableProperties<V>[T]): void;
@@ -280,8 +290,8 @@ export interface ojTextArea<V = any> extends inputBase<V, ojTextAreaSettableProp
     maxRows: number;
     resizeBehavior: 'both' | 'horizontal' | 'vertical' | 'none';
     rows: number;
-    addEventListener<T extends keyof ojTextAreaEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojTextAreaEventMap<V>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTextAreaEventMap<V>>(type: T, listener: (this: HTMLElement, ev: ojTextAreaEventMap<V>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTextAreaSettableProperties<V>>(property: T): ojTextArea<V>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTextAreaSettableProperties<V>>(property: T, value: ojTextAreaSettableProperties<V>[T]): void;

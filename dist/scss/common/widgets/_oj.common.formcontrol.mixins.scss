@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -60,7 +60,7 @@
     @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
       @media #{$responsiveQuerySmallOnly} {
         & {
-          -webkit-text-size-adjust: var(--oj-text-field-trigger-font-size-adjust);
+          -webkit-text-size-adjust: var(--oj-text-field-font-size-adjust);
         }
       }
     }
@@ -95,10 +95,6 @@
 
  
   text-align: var(#{$textAlign});
- 
-  html[dir="rtl"] & {
-    text-align: var(#{$textAlign}-rtl);
-  }
  
   color: var(#{$valueColor});
   background-color: var(--oj-text-field-bg-color);
@@ -150,9 +146,6 @@
                              $textAlign: '--oj-text-field-text-align') {
 
     text-align: var(#{$textAlign});
-    html[dir="rtl"] & {
-     text-align: var(#{$textAlign}-rtl);
-    }
     color: var(#{$valueColor});
     background-color: var(--oj-text-field-bg-color);
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -81,8 +81,8 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
         tooltipCollapse?: string;
         tooltipExpand?: string;
     };
-    addEventListener<T extends keyof ojSunburstEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSunburstEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSunburstEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSunburstEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSunburstSettableProperties<K, D>>(property: T): ojSunburst<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSunburstSettableProperties<K, D>>(property: T, value: ojSunburstSettableProperties<K, D>[T]): void;
@@ -92,43 +92,43 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
 }
 export namespace ojSunburst {
     interface ojBeforeCollapse<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeDrill<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeExpand<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
     }
     interface ojCollapse<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
     }
     interface ojDrill<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
     }
     interface ojExpand<K, D> extends CustomEvent<{
-        id: K;
         data: Node<K>;
+        id: K;
         itemData: D;
         [propName: string]: any;
     }> {
@@ -223,8 +223,8 @@ export namespace ojSunburst {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
-        subId: string;
         indexPath: number[];
+        subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -237,34 +237,34 @@ export namespace ojSunburst {
     };
     // tslint:disable-next-line interface-over-type-literal
     type RootNodeContext<K, D> = {
-        outerBounds: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
-        innerBounds: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
-        id: K;
-        data: Node<K>;
-        itemData: D;
         componentElement: Element;
+        data: Node<K>;
+        id: K;
+        innerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        itemData: D;
+        outerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D> = {
-        parentElement: Element;
-        id: K;
-        label: string;
-        value: number;
-        radius: number;
         color: string;
-        data: Node<K>;
-        itemData: D;
         componentElement: Element;
+        data: Node<K>;
+        id: K;
+        itemData: D;
+        label: string;
+        parentElement: Element;
+        radius: number;
+        value: number;
     };
 }
 export interface ojSunburstEventMap<K, D extends ojSunburst.Node<K> | any> extends dvtBaseComponentEventMap<ojSunburstSettableProperties<K, D>> {
@@ -396,8 +396,8 @@ export interface ojSunburstNode extends JetElement<ojSunburstNodeSettablePropert
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     value: number;
-    addEventListener<T extends keyof ojSunburstNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojSunburstNodeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSunburstNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojSunburstNodeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSunburstNodeSettableProperties>(property: T): ojSunburstNode[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSunburstNodeSettableProperties>(property: T, value: ojSunburstNodeSettableProperties[T]): void;

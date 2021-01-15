@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -47,8 +47,8 @@ declare namespace CoreRouter {
     }, P = {
         [key: string]: any;
     }> = {
-        state: CoreRouterState<D, P>;
         complete: ((param0: Promise<any>) => void);
+        state: CoreRouterState<D, P>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CreateOptions<P = {
@@ -61,8 +61,8 @@ declare namespace CoreRouter {
     type DetailedRouteConfig<D = {
         [key: string]: any;
     }> = {
-        path: string | RegExp;
         detail?: D;
+        path: string | RegExp;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Observable<T> = {
@@ -81,8 +81,8 @@ declare namespace CoreRouter {
     type UrlAdapter<P = {
         [key: string]: any;
     }> = {
-        getUrlForRoutes: ((routes: Route<P>[]) => string);
         getRoutesForUrl: (() => Route<P>[]);
+        getUrlForRoutes: ((routes: Route<P>[]) => string);
     };
     // tslint:disable-next-line interface-over-type-literal
     type VetoableState<D = {
@@ -90,8 +90,8 @@ declare namespace CoreRouter {
     }, P = {
         [key: string]: any;
     }> = {
-        state: CoreRouterState<D, P>;
         accept: ((param0: Promise<any>) => void);
+        state: CoreRouterState<D, P>;
     };
     interface Route<P extends {
         [key: string]: any;

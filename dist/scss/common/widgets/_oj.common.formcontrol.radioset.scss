@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -274,6 +274,14 @@ $labelPosition: $radioCheckboxLabelPosition) {
         {
           border-width: 0;
         }
+
+    // set display to flex on checkboxset/radioset wrapper to remove the whitespace between spans. 
+    .oj-choice-direction-row .oj-checkboxset-wrapper,
+    .oj-choice-direction-row .oj-radioset-wrapper {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
 
 
     // when pressed, the row's background and border changes color.
@@ -816,7 +824,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
           .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper,
           .oj-radioset.oj-warning .oj-radioset-wrapper,
           .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
-            padding: $radioCheckboxMessagePadding;
+            padding: $ojprivateRadioCheckboxMessagePadding;
           }
         }
         @else {

@@ -1,0 +1,37 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-data-grid.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-data-grid.scss";
+
+  @include module-include-once("redwood.datagrid") {
+    /* Styling for the default sort icon */
+    .oj-datagrid-sort-default-icon {
+      @extend .oj-fwk-icon-sort;
+    }
+    /* Styling for the sort ascending icon */
+    .oj-datagrid-sort-ascending-icon {
+      @extend .oj-fwk-icon-arrowtail-n;
+    }
+
+    /* Styling for the sort descending icon */
+    .oj-datagrid-sort-descending-icon {
+      @extend .oj-fwk-icon-arrowtail-s;
+    }    
+    
+    .oj-datagrid-sort-icon-container > .oj-component-icon{
+      font-size: var(--oj-core-icon-size-sm);
+    }
+  }

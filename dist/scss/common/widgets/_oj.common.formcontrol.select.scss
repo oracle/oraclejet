@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -45,11 +45,19 @@
     }
 
     /* 
-     * Suppress focus ring around the select box 
+     * Focus ring support around the select box 
      */
-    .oj-select .oj-select-choice:not(.oj-focus-highlight):focus,
-    .oj-select .oj-select-choices:not(.oj-focus-highlight):focus {
+    .oj-select .oj-select-accessible-container:focus {
+      // The parent container has overflow: hidden; which would hide the focus ring
+      // is shown here. So, remove the focus ring and make the parent to appear
+      // focused.
       outline: none;
+    }
+    
+    .oj-select.oj-focus-highlight .oj-text-field-container {
+      // Make the parent to appear focused when the inner element is focused using
+      // keyboard.
+      @include oj-browser-focus-outline-approximation($formControlTriggerValueColor);
     }
 
     /* 
@@ -134,10 +142,6 @@
       @include oj-rtl() {
         padding-right: 0;
       }
-    }
-
-    .oj-select.oj-read-only .oj-select-selected-choice-label {
-      display: inherit;
     }
 
     /* don't show dropdown trigger */
@@ -278,9 +282,14 @@
 
       margin: 0;
 
-      position: relative;
       cursor: text;
       overflow: hidden;
+      width: 100%;
+    }
+    
+    // For oj-select-many .oj-select-choices is different from .oj-select-accessible-container
+    // so we need to apply separate stylings for it.
+    .oj-select-multi .oj-select-accessible-container {
       width: 100%;
     }
 
@@ -383,7 +392,8 @@
     /* 
      * Applied to the label of the selected choice
      */
-    .oj-select-selected-choice-label {
+    .oj-select-selected-choice-label,
+    .oj-select-selected-choice-separator {
       display: inline-block;
       vertical-align: middle;
     }
@@ -764,8 +774,7 @@
         margin: 10px 0 0 6px;
       }
     }
-    .oj-text-field-label-inside.oj-select,
-    .oj-form-control-label-top.oj-select {
+    .oj-text-field-label-inside.oj-select {
       max-width: 100%;
     }
     .oj-text-field-label-inside .oj-select-label {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,23 +17,23 @@ declare namespace NumberRangeValidator {
     // tslint:disable-next-line interface-over-type-literal
     type ValidatorOptions = {
         converter?: NumberConverter;
-        min?: number;
-        max?: number;
         hint?: {
+            exact?: string;
+            inRange?: string;
             max?: string;
             min?: string;
-            inRange?: string;
-            exact?: string;
         };
+        max?: number;
         messageDetail?: {
-            rangeUnderflow?: string;
-            rangeOverflow?: string;
             exact?: string;
+            rangeOverflow?: string;
+            rangeUnderflow?: string;
         };
         messageSummary?: {
-            rangeUnderflow?: string;
             rangeOverflow?: string;
+            rangeUnderflow?: string;
         };
+        min?: number;
     };
 }
 export = NumberRangeValidator;

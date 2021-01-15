@@ -1,4 +1,5 @@
-(function() {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
@@ -36,401 +37,24 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojvcomponent', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection'], function (exports, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, ojvcomponent, Context, Logger, ojvcollection) {
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojvcomponent-element', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection', 'ojs/ojdomutils'], function (exports, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, ojvcomponentElement, Context, Logger, ojvcollection, DomUtils) {
   'use strict';
-  /**
-   * @license
-   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
-  /**
-   * @ojcomponent oj.ojWaterfallLayout
-   * @ojtsvcomponent
-   * @augments oj.baseComponent
-   * @since 9.0.0
-   *
-   * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
-   * @ojsignature [{
-   *                target: "Type",
-   *                value: "class ojWaterfallLayout<K extends (string | number), D> extends baseComponent<ojWaterfallLayoutSettableProperties<K,D>>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
-   *               },
-   *               {
-   *                target: "Type",
-   *                value: "ojWaterfallLayoutSettableProperties<K,D> extends baseComponentSettableProperties",
-   *                for: "SettableProperties"
-   *               }
-   *              ]
-   *
-   * @ojunsupportedthemes ["Alta"]
-   *
-   * @ojshortdesc A waterfall layout displays heterogeneous data as a grid of cards.
-   * @ojrole grid
-   *
-   * @ojuxspecs ['waterfall-layout']
-   *
-   * @classdesc
-   * <h3 id="waterfallLayoutOverview-section">
-   *   JET WaterfallLayout
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#waterfallLayoutOverview-section"></a>
-   * </h3>
-   * <p>Description: The JET WaterfallLayout displays data as cards in a grid layout based on columns.
-   * Cards inside WaterfallLayout usually don't have a fixed height but the width of each columns are the
-   * same.</p>
-   * <pre class="prettyprint">
-   * <code>//WaterfallLayout with a DataProvider
-   *&lt;oj-waterfall-layout data="[[dataProvider]]">
-   * &lt;/oj-waterfall-layout>
-   *</code></pre>
-   *  <h3 id="dataprovider-section">
-   *   DataProvider
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dataprovider-section"></a>
-   *  </h3>
-   *  <p>WaterfallLayout can work with any non-hierarchical <a href="DataProvider.html">DataProvider</a> as long as the data type for its key is of type string or number.</p>
-   *  <p>An error will be logged and no data will be rendered if the data type for key is not one of the above types.  This requirement enables WaterfallLayout to optimize rendering in all scenarios.</p>
-   *
-   *  <h3 id="a11y-section">
-   *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-   *  </h3>
-   *
-   * <h3 id="touch-section">
-   *   Touch End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"touchDoc"}
-   *
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"keyboardDoc"}
-   */
-  // Fragments
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Card</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Focus on the item.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojWaterfallLayout
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td rowspan = "6" nowrap>Card</td>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Move focus to the previous item according to the data order.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Move focus to the next item according to the data order.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>F2</kbd></td>
-   *       <td>Enters Actionable mode.  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Esc</kbd></td>
-   *       <td>Exits Actionable mode.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Tab</kbd></td>
-   *       <td>When in Actionable Mode, navigates to next focusable element within the item.  If the last focusable element is reached, shift focus back to the first focusable element.
-   *           When not in Actionable Mode, navigates to next focusable element on the page (outside of the component).</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift+Tab</kbd></td>
-   *       <td>When in Actionable Mode, navigates to previous focusable element within the item.  If the first focusable element is reached, shift focus back to the last focusable element.
-   *           When not in Actionable Mode, navigates to previous focusable element on the page (outside of the component).</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojWaterfallLayout
-   */
-
-  /**
-   * The data for WaterfallLayout.  Must be of type <a href="DataProvider.html">DataProvider</a>.
-   * Please refer to the <a href="#dataprovider-section">DataProvider</a> section for key data type requirement.
-   *
-   * @ojshortdesc Specifies the data for the component. See the Help documentation for more information.
-   * @expose
-   * @name data
-   * @memberof! oj.ojWaterfallLayout
-   * @instance
-   * @type {Object}
-   * @default null
-   *
-   * @example <caption>Initialize the WaterfallLayout with the <code class="prettyprint">data</code> attribute specified:</caption>
-   * &lt;oj-waterfall-layout data='{{myDataProvider}}'>&lt;/oj-waterfall-layout>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
-   * // getter
-   * var dataValue = myWaterfallLayout.data;
-   *
-   * // setter
-   * myWaterfallLayout.data = myDataProvider;
-   * @ojsignature [{target: "Type", value: "DataProvider<K, D>"}]
-   */
-
-  /**
-   * Specifies the mechanism used to scroll the data inside the WaterfallLayout. Possible values are: "loadMoreOnScroll", and "loadAll".
-   * When "loadMoreOnScroll" is specified, additional data is fetched when the user scrolls to the bottom of the WaterfallLayout.  Note that
-   * the component must have a height specified or inside a height constraint element so that the component element is scrollable.
-   * When "loadAll" is specified, WaterfallLayout will fetch all the data when it is initially rendered.
-   *
-   * @ojshortdesc Specifies how data are fetched as user scrolls towards the bottom of the grid.
-   * @expose
-   * @name scrollPolicy
-   * @memberof! oj.ojWaterfallLayout
-   * @instance
-   * @type {string|null}
-   * @default "loadMoreOnScroll"
-   * @ojvalue {string} "loadAll" Fetch and render all data.
-   * @ojvalue {string} "loadMoreOnScroll" Additional data is fetched when the user scrolls towards the bottom of the grid.
-   *
-   * @example <caption>Initialize the WaterfallLayout with the <code class="prettyprint">scroll-policy</code> attribute specified:</caption>
-   * &lt;oj-waterfall-layout scroll-policy='loadMoreOnScroll'>&lt;/oj-waterfall-layout>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPolicy</code> property after initialization:</caption>
-   * // getter
-   * var scrollPolicyValue = myWaterfallLayout.scrollPolicy;
-   *
-   * // setter
-   * myWaterfallLayout.scrollPolicy = 'loadMoreOnScroll';
-   */
-
-  /**
-   * scrollPolicy options.
-   * <p>
-   * The following options are supported:
-   * <ul>
-   *   <li>fetchSize: The number of items fetched each time when scroll to the end.</li>
-   *   <li>maxCount: Maximum rows which will be displayed before fetching more rows will be stopped.</li>
-   *   <li>scroller: The element which WaterfallLayout uses to determine the scroll position as well as the maximum scroll position where scroll to the end will trigger a fetch.  If not specified then the oj-waterfall-layout element is used.</li>
-   * </ul>
-   * When scrollPolicy is loadMoreOnScroll, the next block of rows is fetched
-   * when the user scrolls to the end of the component. The fetchSize option
-   * determines how many rows are fetched in each block.
-   *
-   * @ojshortdesc Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
-   * @expose
-   * @name scrollPolicyOptions
-   * @instance
-   * @memberof! oj.ojWaterfallLayout
-   * @type {Object.<string, any>|null}
-   *
-   * @example <caption>Initialize the WaterfallLayout with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
-   * &lt;oj-waterfall-layout scroll-policy-options.fetch-size='30'>&lt;/oj-waterfall-layout>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scroll-policy-options</code> attribute after initialization:</caption>
-   * // getter
-   * var fetchSizeValue = myWaterfallLayout.scrollPolicyOptions.fetchSize;
-   *
-   * // setter
-   * myWaterfallLayout.scrollPolicyOptions.fetchSize = 30;
-   *
-   * @example <caption>Initialize the WaterfallLayout with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
-   * &lt;!-- Using dot notation -->
-   * &lt;oj-waterfall-layout scroll-policy-options.fetch-size='30' scroll-policy-options.max-count='1000'>&lt;/oj-waterfall-layout>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPolicyOptions</code> property after initialization:</caption>
-   * // Get one
-   * var fetchSizeValue = myWaterfallLayout.scrollPolicyOptions.fetchSize;
-   *
-   * // Get all
-   * var scrollPolicyOptionsValues = myWaterfallLayout.scrollPolicyOptions;
-   *
-   * // Set one, leaving the others intact
-   * myWaterfallLayout.setProperty('scrollPolicyOptions.fetchSize', 30);
-   *
-   * // Set all.
-   * myWaterfallLayout.scrollPolicyOptions = {fetchSize: 30, maxCount: 1000};
-   */
-
-  /**
-   * The number of items to fetch in each block.
-   * @expose
-   * @name scrollPolicyOptions.fetchSize
-   * @memberof! oj.ojWaterfallLayout
-   * @instance
-   * @type {number}
-   * @default 25
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-   * The maximum total number of items to fetch.
-   * @expose
-   * @name scrollPolicyOptions.maxCount
-   * @memberof! oj.ojWaterfallLayout
-   * @instance
-   * @type {number}
-   * @default 500
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-   * The element which WaterfallLayout uses to determine the scroll position as well as the maximum scroll position.
-   * @expose
-   * @name scrollPolicyOptions.scroller
-   * @ojshortdesc The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   * @memberof! oj.ojWaterfallLayout
-   * @instance
-   * @type {Element}
-   * @default null
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-   * The current scroll position of WaterfallLayout. The scroll position is updated when the vertical scroll position
-   * (or its scroller, as specified in scrollPolicyOptions.scroller) has changed.  The value contains the y scroll position, the key of
-   * the item closest to the top of the viewport, as well as vertical offset from the position of the item to the actual scroll position.
-   * <p>
-   * The default value contains just the scroll position.  Once data is fetched the 'key' and 'offsetY' sub-properties will be added.
-   * If there is no data then the 'key' sub-properties will not be available.
-   * </p>
-   * <p>
-   * When setting the scrollPosition property, applications can change any combination of the sub-properties.
-   * If both key and y sub-properties are set at once then key will take precedent.
-   * If offsetY is specified, it will be used to adjust the scroll position from the position where the key of the item is located.
-   * </p>
-   * <p>
-   * If a sparse object is set the other sub-properties will be populated and updated once WaterfallLayout has scrolled to that position.
-   * </p>
-   * <p>
-   * Also, if <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' and the scrollPosition is set to a value outside
-   * of the currently rendered region, then the value of scrollPosition will be ignored.
-   * </p>
-   * Lastly, when a re-rendered is triggered by a <a href="DataProviderRefreshEvent.html">refresh event</a> from the DataProvider,
-   * or if the value for <a href="#data">data</a> attribute has changed, then the scrollPosition will by default remain at the top.
-   * </p>
-   *
-   * @ojshortdesc Specifies the current scroll position of the WaterfallLayout. See the Help documentation for more information.
-   * @expose
-   * @name scrollPosition
-   * @instance
-   * @memberof! oj.ojWaterfallLayout
-   * @type {Object.<string, any>}
-   * @default {"y": 0}
-   * @property {number=} y The vertical position in pixels.
-   * @property {any=} key The key of the item.  If DataProvider is used for <a href="#data">data</a> and the key does not exists in the
-   * DataProvider or if the item has not been fetched yet, then the value is ignored.
-   * @property {number=} offsetY The vertical offset in pixels relative to the item identified by key.
-   *
-   * @ojsignature [{target:"type", value:"K", for:"key"}]
-   * @ojwriteback
-   * @example <caption>Initialize the WaterfallLayout with the <code class="prettyprint">scroll-position</code> attribute specified:</caption>
-   * &lt;!-- Using dot notation -->
-   * &lt;oj-waterfall-layout scroll-position.index='10'>&lt;/oj-waterfall-layout>
-   *
-   * &lt;!-- Using JSON notation -->
-   * &lt;oj-waterfall-layout scroll-position='{"index": 10}'>&lt;/oj-waterfall-layout>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPosition</code> property after initialization:</caption>
-   * // Get one
-   * var scrollPositionValue = myWaterfallLayout.scrollPosition.key;
-   *
-   * // Set one, leaving the others intact
-   * myWaterfallLayout.setProperty('scrollPosition.key', 'id10');
-   *
-   * // Get all
-   * var scrollPositionValues = myWaterfallLayout.scrollPosition;
-   *
-   * // Set all.  Those not listed will be lost until the scroll completes and the remaining fields are populated.
-   * myWaterfallLayout.scrollPosition = {y: 150};
-   */
-
-  /**
-   * @typedef {Object} oj.ojWaterfallLayout.ItemTemplateContext
-   * @property {Object} data The data for the current item being rendered
-   * @property {number} index The zero-based index of the current item
-   * @property {any} key The key of the current item being rendered
-   */
-  // Slots
-
-  /**
-   * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the WaterfallLayout. The slot content must be a &lt;template> element.
-   * <p>The content inside the template must have a single <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a> as the root node. It cannot have multiple root nodes,
-   *    incluidng Text and Comment nodes.  The root node also cannot be a <a href="http://jet.us.oracle.com/jsdocs/BindingOverview.html">JET Binding Element</a>, you must wrap it with an Element node.
-   *    If the content do contain multiple nodes, WaterfallLayout will take the first Element node it encountered and ignore the rest.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojWaterfallLayout.ItemTemplateContext]{@link oj.ojWaterfallLayout.ItemTemplateContext})</li>
-   * </ul>
-   *
-   * @ojslot itemTemplate
-   * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the component. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojWaterfallLayout
-   * @ojslotitemprops oj.ojWaterfallLayout.ItemTemplateContext
-   *
-   * @example <caption>Initialize the WaterfallLayout with an inline item template specified:</caption>
-   * &lt;oj-waterfall-layout>
-   *   &lt;template slot='itemTemplate'>
-   *     &lt;span>&lt;oj-bind-text value='[[$current.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-waterfall-layout>
-   */
-  // Override contextMenu slot definition to remove it from the jsdoc as it is not yet supported
-
-  /**
-  * @ojslot contextMenu
-  * @memberof oj.ojWaterfallLayout
-  * @ignore
-  */
-
-  /**
-   * @name refresh
-   * @memberof oj.ojWaterfallLayout
-   * @instance
-   * @ignore
-   */
-
-  /**
-   * @name translations
-   * @memberof oj.ojWaterfallLayout
-   * @instance
-   * @ignore
-   */
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
   var DefaultLayout = /*#__PURE__*/function () {
-    function DefaultLayout(fullWidth, gutterWidth, itemWidth, cache) {
+    function DefaultLayout(dataProvider, fullWidth, gutterWidth, itemWidth, cache) {
       _classCallCheck(this, DefaultLayout);
 
+      this.dataProvider = dataProvider;
       this.fullWidth = fullWidth;
       this.gutterWidth = gutterWidth;
       this.itemWidth = itemWidth;
@@ -441,12 +65,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       this.bottom = 0;
       this.keys = [];
 
+      if (dataProvider) {
+        this.modelEventHandler = this._handleModelEvent.bind(this);
+        dataProvider.addEventListener('mutate', this.modelEventHandler);
+      }
+
       if (this.cache == null) {
         this.cache = new Map();
       }
     }
 
     _createClass(DefaultLayout, [{
+      key: "destroy",
+      value: function destroy() {
+        if (this.dataProvider && this.modelEventHandler) {
+          this.dataProvider.removeEventListener('mutate', this.modelEventHandler);
+        }
+      }
+    }, {
       key: "_initializeColumnsInfo",
       value: function _initializeColumnsInfo() {
         this.columns = Math.max(1, Math.floor(this.fullWidth / (this.itemWidth + this.gutterWidth)));
@@ -532,6 +168,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "setWidth",
       value: function setWidth(width) {
+        if (this.fullWidth === width) {
+          return;
+        }
+
         this.fullWidth = width;
 
         if (this.columnsInfo.length > 0) {
@@ -545,7 +185,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       value: function getPositionForItems(items, startIndex) {
         var positions = new Map();
 
-        if (isNaN(this.itemWidth) && items.length > 0) {
+        if (this.itemWidth == null && items.length > 0) {
           this.itemWidth = items[0].element.offsetWidth;
         }
 
@@ -637,8 +277,37 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         });
       }
     }, {
-      key: "insert",
-      value: function insert(beforeKeys, keys) {
+      key: "_handleModelEvent",
+      value: function _handleModelEvent(event) {
+        if (event.type === 'mutate') {
+          var detail = event['detail'];
+
+          if (detail.add) {
+            var addBeforeKeys = detail.add.addBeforeKeys;
+
+            if (addBeforeKeys != null) {
+              var keys = Array.from(detail.add.keys);
+
+              this._insertKeys(addBeforeKeys, keys);
+            }
+          }
+
+          if (detail.remove) {
+            var _keys = Array.from(detail.remove.keys);
+
+            this._removeKeys(_keys);
+          }
+
+          if (detail.update) {
+            var _keys2 = Array.from(detail.update.keys);
+
+            this._updateKeys(_keys2);
+          }
+        }
+      }
+    }, {
+      key: "_insertKeys",
+      value: function _insertKeys(beforeKeys, keys) {
         var _this2 = this;
 
         var minIndex = Number.MAX_VALUE;
@@ -664,8 +333,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         this._invalidatePositions(minIndex);
       }
     }, {
-      key: "remove",
-      value: function remove(keys) {
+      key: "_removeKeys",
+      value: function _removeKeys(keys) {
         var _this3 = this;
 
         var minIndex = Number.MAX_VALUE;
@@ -684,17 +353,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         this._invalidatePositions(minIndex);
       }
     }, {
-      key: "update",
-      value: function update(keys) {
+      key: "_updateKeys",
+      value: function _updateKeys(keys) {
         var _this4 = this;
 
+        var minIndex = Number.MAX_VALUE;
         keys.forEach(function (key) {
-          var position = _this4.getPosition(key);
+          var index = _this4.keys.indexOf(key);
 
-          if (position) {
-            position.height = undefined;
+          if (index > -1) {
+            minIndex = Math.min(minIndex, index + 1);
+
+            var position = _this4.getPosition(key);
+
+            if (position) {
+              position.top = undefined;
+              position.left = undefined;
+              position.height = undefined;
+              position.valid = false;
+            }
           }
         });
+
+        this._invalidatePositions(minIndex);
       }
     }, {
       key: "_invalidatePositions",
@@ -750,7 +431,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
 
     var _super = _createSuper(WaterfallLayoutContentHandler);
 
-    function WaterfallLayoutContentHandler(root, dataProvider, callback, scrollPolicyOptions, itemDimension, gutterWidth) {
+    function WaterfallLayoutContentHandler(root, dataProvider, callback, scrollPolicyOptions, gutterWidth) {
       var _this6;
 
       _classCallCheck(this, WaterfallLayoutContentHandler);
@@ -760,14 +441,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       _this6.dataProvider = dataProvider;
       _this6.callback = callback;
       _this6.scrollPolicyOptions = scrollPolicyOptions;
-      _this6.itemDimension = itemDimension;
       _this6.gutterWidth = gutterWidth;
 
       _this6.postRender = function () {
         var itemsRoot = _this6.root.lastElementChild.firstElementChild;
 
         if (itemsRoot && _this6.adjustPositionsResolveFunc == null) {
-          _this6.adjustPositionsResolveFunc = _this6._addComponentBusyState('adjusting item positions');
+          _this6.adjustPositionsResolveFunc = _this6.addBusyState('adjusting item positions');
           var busyContext = Context.getContext(itemsRoot).getBusyContext();
           busyContext.whenReady().then(function () {
             if (_this6.adjustPositionsResolveFunc) {
@@ -777,16 +457,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
 
             if (_this6.callback) {
-              var recalculate = _this6._handleOutOfRangeItems();
-
-              var result = _this6._adjustAllItems(recalculate);
+              var result = _this6._adjustAllItems();
 
               if (result.done) {
+                _this6.newItemsTracker.clear();
+
                 if (_this6.domScroller && !_this6.domScroller.checkViewport()) {
                   return;
                 }
 
                 _this6.callback.renderComplete(result.items);
+
+                _this6.initialFetch = false;
               }
             }
           });
@@ -799,48 +481,27 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }
 
     _createClass(WaterfallLayoutContentHandler, [{
+      key: "destroy",
+      value: function destroy() {
+        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "destroy", this).call(this);
+
+        if (this.layout) {
+          this.layout.destroy();
+        }
+      }
+    }, {
       key: "getLayout",
       value: function getLayout() {
         if (this.layout == null) {
-          var itemWidth;
-
-          if (this.itemDimension) {
-            itemWidth = this.itemDimension.width;
-          }
-
-          this.layout = new DefaultLayout(this.root.clientWidth, this.gutterWidth, itemWidth, new Map());
+          this.layout = new DefaultLayout(this.dataProvider, this.root.clientWidth, this.gutterWidth, null, null);
         }
 
         return this.layout;
       }
     }, {
-      key: "_handleOutOfRangeItems",
-      value: function _handleOutOfRangeItems() {
-        var _this7 = this;
-
-        var recalculate = false;
-        var layout = this.getLayout();
-        this.root.querySelectorAll('.oj-waterfalllayout-position-only').forEach(function (elem) {
-          var key = _this7.getKey(elem);
-
-          var position = layout.getPosition(key);
-
-          if (position) {
-            position.height = elem.offsetHeight;
-            recalculate = true;
-          }
-        });
-
-        if (recalculate) {
-          layout.recalculatePositions();
-        }
-
-        return recalculate;
-      }
-    }, {
       key: "_adjustAllItems",
-      value: function _adjustAllItems(force) {
-        var _this8 = this;
+      value: function _adjustAllItems() {
+        var _this7 = this;
 
         var adjusted = true;
         var items = Array.from(this.root.querySelectorAll('.oj-waterfalllayout-item')).map(function (elem) {
@@ -849,12 +510,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           }
 
           return {
-            key: _this8.getKey(elem),
+            key: _this7.getKey(elem),
             element: elem
           };
         });
 
-        if (adjusted && !force) {
+        if (adjusted) {
           return {
             done: true,
             items: items
@@ -880,125 +541,26 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       value: function handleResizeWidth(newWidth) {
         this.initialFetch = false;
         this.getLayout().setWidth(newWidth);
-        this.newItemsTracker.clear();
       }
     }, {
-      key: "_addComponentBusyState",
-      value: function _addComponentBusyState(description) {
-        var componentBusyContext = Context.getContext(this.root).getBusyContext();
-        return componentBusyContext.addBusyState({
-          description: description
-        });
-      }
-    }, {
-      key: "handleBeforeFetchNext",
-      value: function handleBeforeFetchNext(scrollTop) {
-        var positions = this.callback.getPositions();
-
-        if (positions == null) {
-          return -1;
-        }
-
-        var index = this.callback.getData().startIndex;
-
-        if (isNaN(index)) {
-          index = 0;
-        }
-
-        var iterator = positions.values();
-        var pos = iterator.next();
-
-        while (!pos.done) {
-          var bottom = pos.value.top + pos.value.height;
-
-          if (bottom > scrollTop) {
-            break;
-          }
-
-          pos = iterator.next();
-          index++;
-        }
-
-        return index;
-      }
-    }, {
-      key: "_isRenderingViewportOnly",
-      value: function _isRenderingViewportOnly() {
-        return false;
-      }
-    }, {
-      key: "handleBeforeFetchByOffset",
-      value: function handleBeforeFetchByOffset(startIndex, endIndex) {
-        if (!this._isRenderingViewportOnly()) {
-          return;
-        }
-
-        var map = this.getLayout().getPositions();
-        var positions = Array.from(map.values()).slice(startIndex, endIndex);
-
-        if (positions.length > 0) {
-          this.callback.setSkeletonPositions({
-            startIndex: startIndex,
-            endIndex: endIndex,
-            positions: positions
-          });
-        }
-      }
-    }, {
-      key: "handleFetchSuccess",
-      value: function handleFetchSuccess(result) {
+      key: "fetchSuccess",
+      value: function fetchSuccess(result) {
         if (result != null) {
           this.newItemsTracker.clear();
         }
 
         this.initialFetch = false;
 
-        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleFetchSuccess", this).call(this, result);
+        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "fetchSuccess", this).call(this, result);
       }
     }, {
-      key: "renderFetchedData",
-      value: function renderFetchedData() {
-        var positions = this.callback.getSkeletonPositions();
-
-        if (positions != null && !isNaN(positions.startIndex) && !isNaN(positions.endIndex)) {
-          var skeletonStartIndex = positions.startIndex;
-          var skeletonEndIndex = positions.endIndex;
-          var skeletonPositions = positions.positions;
-          var dataObj = this.callback.getData();
-          var dataStartIndex = isNaN(dataObj.startIndex) ? 0 : dataObj.startIndex;
-          var dataEndIndex = dataStartIndex + dataObj.value.data.length;
-
-          if (dataEndIndex < skeletonStartIndex || dataStartIndex > skeletonEndIndex) {
-            this._log('no data within range, rendering all items as skeletons');
-
-            return this.callback.renderSkeletons(skeletonPositions);
-          } else {
-            var data = dataObj.value.data.slice(0);
-            var metadata = dataObj.value.metadata.slice(0);
-
-            if (dataStartIndex >= skeletonStartIndex) {
-              skeletonPositions = skeletonPositions.slice(0, dataStartIndex - skeletonStartIndex);
-            } else {
-              data = data.slice(skeletonStartIndex - dataStartIndex);
-              metadata = metadata.slice(skeletonStartIndex - dataStartIndex);
-
-              this._log('rendering data from: ' + skeletonStartIndex + ' to ' + (skeletonStartIndex + data.length));
-            }
-
-            if (dataEndIndex >= skeletonEndIndex) {
-              data = data.slice(0, skeletonEndIndex - dataEndIndex);
-              metadata = metadata.slice(0, skeletonEndIndex - dataEndIndex);
-
-              this._log('rendering data from: ' + dataStartIndex + ' to ' + (dataStartIndex + data.length));
-            }
-
-            var skeletons = this.callback.renderSkeletons(skeletonPositions);
-            var content = this.renderData(data, metadata);
-            return content.concat(skeletons);
-          }
-        } else {
-          return _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "renderFetchedData", this).call(this);
+      key: "beforeFetchByOffset",
+      value: function beforeFetchByOffset(startIndex, endIndex) {
+        if (this.isRenderingViewportOnly()) {
+          this.vnodesCache.clear();
         }
+
+        return _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "beforeFetchByOffset", this).call(this, startIndex, endIndex);
       }
     }, {
       key: "addItem",
@@ -1024,7 +586,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
 
         var vnodes = this.renderItem(key, index, data);
-        this.decorateItem(vnodes, key, index, x, y, initialFetch, visible);
+        this.decorateItem(vnodes, key, x, y, initialFetch, visible);
         return vnodes;
       }
     }, {
@@ -1054,11 +616,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       }
     }, {
       key: "decorateItem",
-      value: function decorateItem(vnodes, key, index, x, y, initialFetch, visible) {
+      value: function decorateItem(vnodes, key, x, y, initialFetch, visible) {
+        var vnode;
         var contentRoot;
 
         for (var i = 0; i < vnodes.length; i++) {
-          var node = vnodes[i]._node;
+          vnode = vnodes[i];
+          var node = vnode._node;
 
           if (node.nodeType === 1) {
             contentRoot = node;
@@ -1066,9 +630,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           }
         }
 
-        if (contentRoot != null && !contentRoot.classList.contains('oj-waterfalllayout-exit-animation')) {
+        if (contentRoot != null) {
           contentRoot.key = key;
-          contentRoot.setAttribute('key', JSON.stringify(key));
           contentRoot.setAttribute('role', 'gridcell');
           contentRoot.setAttribute('tabIndex', '-1');
           contentRoot.setAttribute('data-oj-positioned', x != -1 && y != -1 ? 'true' : 'false');
@@ -1076,7 +639,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           styleClasses.forEach(function (styleClass) {
             contentRoot.classList.add(styleClass);
           });
-          var inlineStyle = this.getItemInlineStyle(visible, x, y, index, initialFetch);
+          var inlineStyle = this.getItemInlineStyle(visible, x, y, initialFetch);
           Object.keys(inlineStyle).forEach(function (prop) {
             contentRoot.style[prop] = inlineStyle[prop];
           });
@@ -1084,7 +647,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       }
     }, {
       key: "getItemInlineStyle",
-      value: function getItemInlineStyle(visible, x, y, index, animate) {
+      value: function getItemInlineStyle(visible, x, y, animate) {
         var style = {};
 
         if (x === -1 || y === -1) {
@@ -1095,16 +658,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           style.top = y + 'px';
         }
 
-        if (visible && x != -1 && y != -1) {
-          if (!animate) {
-            style.visibility = 'visible';
-          } else {
-            style.opacity = 0;
-
-            if (!isNaN(index)) {
-              style.animationDelay = 50 * index + 'ms';
-            }
-          }
+        if (visible && x != -1 && y != -1 && !animate) {
+          style.visibility = 'visible';
         }
 
         return style;
@@ -1117,15 +672,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         if (visible) {
           styleClass.push('oj-waterfalllayout-item');
 
-          if (x != -1 && y != -1) {
-            if (animate) {
-              styleClass.push('oj-waterfalllayout-entrance-animation');
-            } else if (isNew) {
-              styleClass.push('oj-waterfalllayout-item-fadein-animation');
-            }
+          if (x != -1 && y != -1 && !animate && isNew) {
+            styleClass.push('oj-waterfalllayout-new-item');
           }
-        } else {
-          styleClass.push('oj-waterfalllayout-position-only');
         }
 
         return styleClass;
@@ -1158,26 +707,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         return skeletons;
       }
     }, {
-      key: "handleItemsAdded",
-      value: function handleItemsAdded(detail) {
-        var addBeforeKeys = detail.addBeforeKeys;
-
-        if (addBeforeKeys != null) {
-          var keys = Array.from(detail.keys);
-          this.getLayout().insert(addBeforeKeys, keys);
-        }
-
-        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleItemsAdded", this).call(this, detail);
-      }
-    }, {
-      key: "handleItemsRemoved",
-      value: function handleItemsRemoved(detail) {
-        var keys = Array.from(detail.keys);
-        this.getLayout().remove(keys);
-
-        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleItemsRemoved", this).call(this, detail);
-      }
-    }, {
       key: "handleCurrentRangeItemUpdated",
       value: function handleCurrentRangeItemUpdated(key) {
         var position = this.getLayout().getPosition(key);
@@ -1192,10 +721,31 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "handleItemsUpdated",
       value: function handleItemsUpdated(detail) {
-        var keys = Array.from(detail.keys);
-        this.getLayout().update(keys);
+        var _this8 = this;
+
+        detail.keys.forEach(function (key) {
+          _this8.vnodesCache.delete(key);
+        });
 
         _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleItemsUpdated", this).call(this, detail);
+      }
+    }, {
+      key: "handleItemsRemoved",
+      value: function handleItemsRemoved(detail) {
+        var _this9 = this;
+
+        detail.keys.forEach(function (key) {
+          _this9.vnodesCache.delete(key);
+        });
+
+        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleItemsRemoved", this).call(this, detail);
+      }
+    }, {
+      key: "handleModelRefresh",
+      value: function handleModelRefresh() {
+        this.vnodesCache.clear();
+
+        _get(_getPrototypeOf(WaterfallLayoutContentHandler.prototype), "handleModelRefresh", this).call(this);
       }
     }, {
       key: "_log",
@@ -1234,65 +784,55 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     };
   };
 
-  exports.WaterfallLayout = WaterfallLayout_1 = /*#__PURE__*/function (_ojvcomponent$VCompon) {
-    _inherits(WaterfallLayout, _ojvcomponent$VCompon);
+  exports.WaterfallLayout = WaterfallLayout_1 = /*#__PURE__*/function (_ojvcomponentElement$) {
+    _inherits(WaterfallLayout, _ojvcomponentElement$);
 
     var _super2 = _createSuper(WaterfallLayout);
 
     function WaterfallLayout(props) {
-      var _this9;
+      var _this10;
 
       _classCallCheck(this, WaterfallLayout);
 
-      _this9 = _super2.call(this, props);
-      _this9.restoreFocus = false;
-      _this9.actionableMode = false;
-      _this9.ticking = false;
+      _this10 = _super2.call(this, props);
+      _this10.restoreFocus = false;
+      _this10.actionableMode = false;
+      _this10.renderCompleted = false;
+      _this10.ticking = false;
 
-      _this9.setRootElement = function (element) {
-        _this9.root = element;
+      _this10.setRootElement = function (element) {
+        _this10.root = element;
       };
 
-      _this9.state = {
+      _this10.state = {
         renderedData: null,
-        outOfRangeData: null,
         positions: null,
         skeletonPositions: null,
         width: 0,
         height: 0,
         contentHeight: 0
       };
-      return _this9;
+      return _this10;
     }
 
     _createClass(WaterfallLayout, [{
       key: "_handleFocusIn",
       value: function _handleFocusIn(event) {
         if (this.currentItem) {
-          this.currentItem.classList.add('oj-focus');
+          this.focusInHandler(this.currentItem);
         }
       }
     }, {
       key: "_handleFocusOut",
       value: function _handleFocusOut(event) {
         if (this.currentItem) {
-          this.currentItem.classList.remove('oj-focus');
-          this.currentItem.classList.remove('oj-waterfalllayout-item-suppress-focus');
+          this.focusOutHandler(this.currentItem);
         }
       }
     }, {
       key: "_handleClick",
       value: function _handleClick(event) {
         this._handleTouchOrClickEvent(event);
-      }
-    }, {
-      key: "_handlePointerDown",
-      value: function _handlePointerDown(event) {
-        var item = event.target.closest('.' + this.getItemStyleClass());
-
-        if (item != null) {
-          item.classList.add('oj-waterfalllayout-item-suppress-focus');
-        }
       }
     }, {
       key: "_handleKeyDown",
@@ -1346,16 +886,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
 
                 break;
               }
-
-            default:
-              {
-                break;
-              }
           }
 
           if (this.actionableMode === false && next != null && next.classList.contains(this.getItemStyleClass())) {
-            this.currentItem.classList.remove('oj-waterfalllayout-item-suppress-focus');
-
             this._updateCurrentItem(next);
           }
         }
@@ -1391,33 +924,45 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           }
         }
 
-        return ojvcomponent.h("oj-waterfall-layout", {
+        return ojvcomponentElement.h("oj-waterfall-layout", {
           ref: this.setRootElement,
           style: this._getRootElementStyle()
-        }, ojvcomponent.h("div", {
+        }, ojvcomponentElement.h("div", {
           onClick: this._handleClick,
           onKeydown: this._handleKeyDown,
           onTouchstart: this._touchStartHandler,
           onFocusin: this._handleFocusIn,
           onFocusout: this._handleFocusOut,
-          onPointerdown: this._handlePointerDown,
           role: 'grid',
           "aria-label": this.props['aria-label'],
           "aria-labelledby": this.props['aria-labelledby']
-        }, ojvcomponent.h("div", {
+        }, ojvcomponentElement.h("div", {
           role: 'row',
           style: this._getContentDivStyle(),
           "data-oj-context": true
         }, content)));
       }
     }, {
+      key: "_getScrollPolicyOptions",
+      value: function _getScrollPolicyOptions() {
+        return {
+          fetchSize: this.props.scrollPolicyOptions.fetchSize,
+          maxCount: this.props.scrollPolicyOptions.maxCount,
+          scroller: this._getScroller()
+        };
+      }
+    }, {
       key: "mounted",
       value: function mounted() {
-        var _this10 = this;
+        var _this11 = this;
 
         var root = this.getRootElement();
-        this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicyOptions, null, WaterfallLayout_1.gutterWidth);
-        this.contentHandler.fetchRows();
+
+        if (this.props.data) {
+          this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
+          this.contentHandler.fetchRows();
+        }
+
         var rootWidth = root.clientWidth;
         var rootHeight = root.clientHeight;
         this.updateState({
@@ -1429,29 +974,39 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         if (skeleton) {
           this.skeletonWidth = skeleton.clientWidth;
 
-          this._delayShowSkeletons();
+          if (this.contentHandler) {
+            this._delayShowSkeletons();
+          }
         }
 
         if (window['ResizeObserver']) {
           var resizeObserver = new window['ResizeObserver'](function (entries) {
             entries.forEach(function (entry) {
               if (entry.target === root && entry.contentRect) {
-                var currWidth = _this10.state.width;
+                var currWidth = _this11.state.width;
                 var newWidth = Math.round(entry.contentRect.width);
 
-                if (Math.abs(newWidth - currWidth) > 1) {
-                  _this10.contentHandler.handleResizeWidth(newWidth);
-
-                  _this10.updateState({
+                if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
+                  _this11.updateState({
                     width: newWidth
                   });
+
+                  if (_this11.getSkeletonPositions() != null) {
+                    _this11._updatePositionsForSkeletons(newWidth);
+                  } else if (_this11.getPositions() != null && _this11.contentHandler) {
+                    _this11.contentHandler.getLayout().setWidth(newWidth);
+
+                    if (_this11.renderCompleted) {
+                      _this11.contentHandler.handleResizeWidth(newWidth);
+                    }
+                  }
                 }
 
-                var currHeight = _this10.state.height;
+                var currHeight = _this11.state.height;
                 var newHeight = Math.round(entry.contentRect.height);
 
-                if (Math.abs(newHeight - currHeight) > 1 && newHeight !== _this10.state.contentHeight) {
-                  _this10.updateState({
+                if (Math.abs(newHeight - currHeight) > 1 && newHeight !== _this11.state.contentHeight) {
+                  _this11.updateState({
                     height: newHeight
                   });
                 }
@@ -1462,24 +1017,51 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           this.resizeObserver = resizeObserver;
         }
 
+        DomUtils.makeFocusable({
+          applyHighlight: true,
+          setupHandlers: function setupHandlers(focusInHandler, focusOutHandler) {
+            var noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+            _this11.focusInHandler = noJQHandlers.focusIn;
+            _this11.focusOutHandler = noJQHandlers.focusOut;
+          }
+        });
+
         this._getScroller().addEventListener('scroll', this.scrollListener);
+      }
+    }, {
+      key: "_handleNewData",
+      value: function _handleNewData() {
+        this.updateState({
+          renderedData: null,
+          positions: null
+        });
+
+        if (this.contentHandler) {
+          this.contentHandler.destroy();
+        }
+
+        this.currentKey = null;
+        this.currentItem = null;
+        var root = this.getRootElement();
+        this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
+        this.contentHandler.fetchRows();
+
+        this._delayShowSkeletons();
       }
     }, {
       key: "updated",
       value: function updated(oldProps, oldState) {
-        var _this11 = this;
+        var _this12 = this;
 
         var data = this.getData();
 
         if (data != null) {
-          var root = this.getRootElement();
-
           if (oldState.renderedData == null) {
             var skeletons = this._findSkeletons();
 
             if (skeletons.length > 0) {
               this._applySkeletonExitAnimation(skeletons).then(function () {
-                _this11.updateState({
+                _this12.updateState({
                   skeletonPositions: null
                 });
               });
@@ -1490,27 +1072,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
               this.contentHandler.postRender();
             }
           } else if (this.props.data != oldProps.data) {
+            var resolveFunc = this.addBusyState('apply exit animations on existing items');
+
             this._applyExitAnimation().then(function () {
-              _this11.updateState({
-                renderedData: null
-              });
+              resolveFunc();
 
-              if (_this11.contentHandler) {
-                _this11.contentHandler.destroy();
-              }
-
-              _this11.contentHandler = new WaterfallLayoutContentHandler(root, _this11.props.data, _this11, _this11.props.scrollPolicyOptions, null, WaterfallLayout_1.gutterWidth);
-
-              _this11.contentHandler.fetchRows();
-
-              _this11._delayShowSkeletons();
+              _this12._handleNewData();
             });
-          } else {
+          } else if (oldState.positions == null && this.state.positions != null) {
+            this._applyEntranceAnimation();
+
+            if (!this.renderCompleted && this.contentHandler) {
+              this.contentHandler.postRender();
+            }
+          } else if (oldState.positions != null && this.state.positions != null && oldState.positions.size < this.state.positions.size) {
+            this._applyLoadMoreEntranceAnimation();
+
+            if (!this.renderCompleted && this.contentHandler) {
+              this.contentHandler.postRender();
+            }
+          } else if (this.contentHandler) {
             this.contentHandler.postRender();
           }
 
-          if (this.props.scrollPosition != oldProps.scrollPosition) {
+          if (!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) && !oj.Object.compareValues(this.props.scrollPosition, this.lastInternalScrollPositionUpdate)) {
             this._syncScrollTopWithProps();
+          }
+        } else {
+          if (this.props.data && oldProps.data == null) {
+            this._handleNewData();
           }
         }
       }
@@ -1536,19 +1126,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "_delayShowSkeletons",
       value: function _delayShowSkeletons() {
-        var _this12 = this;
+        var _this13 = this;
 
         window.setTimeout(function () {
-          var data = _this12.getData();
+          var data = _this13.getData();
 
           if (data == null) {
-            var positions = _this12._getPositionsForSkeletons(50, _this12.state.width, _this12.skeletonWidth);
-
-            _this12.updateState({
-              skeletonPositions: positions
-            });
+            _this13._updatePositionsForSkeletons(_this13.state.width);
           }
         }, this._getShowSkeletonsDelay());
+      }
+    }, {
+      key: "_updatePositionsForSkeletons",
+      value: function _updatePositionsForSkeletons(width) {
+        var positions = this._getPositionsForSkeletons(50, width, this.skeletonWidth);
+
+        this.updateState({
+          skeletonPositions: positions
+        });
       }
     }, {
       key: "_getOptionDefaults",
@@ -1564,21 +1159,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       value: function _getShowSkeletonsDelay() {
         var defaultOptions = this._getOptionDefaults();
 
-        if (defaultOptions == null) {
-          return 0;
-        }
-
         var delay = parseInt(defaultOptions.showIndicatorDelay, 10);
         return isNaN(delay) ? 0 : delay;
       }
     }, {
-      key: "_addBusyState",
-      value: function _addBusyState(description) {
+      key: "addBusyState",
+      value: function addBusyState(description) {
         var root = this.getRootElement();
         var componentBusyContext = Context.getContext(root).getBusyContext();
         return componentBusyContext.addBusyState({
           description: description
         });
+      }
+    }, {
+      key: "_isReady",
+      value: function _isReady() {
+        var root = this.getRootElement();
+        var componentBusyContext = Context.getContext(root).getBusyContext();
+        return componentBusyContext.isReady();
       }
     }, {
       key: "_findSkeletons",
@@ -1614,6 +1212,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "setData",
       value: function setData(data) {
+        if (data != null) {
+          this.renderCompleted = false;
+        }
+
         this.updateState({
           renderedData: data
         });
@@ -1636,18 +1238,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }.bind(this));
       }
     }, {
-      key: "getOutOfRangeData",
-      value: function getOutOfRangeData() {
-        return this.state.outOfRangeData;
-      }
-    }, {
-      key: "setOutOfRangeData",
-      value: function setOutOfRangeData(data) {
-        this.updateState({
-          outOfRangeData: data
-        });
-      }
-    }, {
       key: "getSkeletonPositions",
       value: function getSkeletonPositions() {
         return this.state.skeletonPositions;
@@ -1668,8 +1258,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       key: "setPositions",
       value: function setPositions(positions) {
         this.updateState({
-          positions: positions,
-          outOfRangeData: null
+          positions: positions
         });
       }
     }, {
@@ -1692,18 +1281,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         return 'oj-waterfalllayout-item';
       }
     }, {
-      key: "getItemElementStyleClass",
-      value: function getItemElementStyleClass() {
-        return 'oj-waterfalllayout-item-element';
-      }
-    }, {
       key: "getExpanded",
       value: function getExpanded() {}
     }, {
       key: "_applySkeletonExitAnimation",
       value: function _applySkeletonExitAnimation(skeletons) {
-        var resolveFunc = this._addBusyState('apply skeleton exit animations');
-
+        var resolveFunc = this.addBusyState('apply skeleton exit animations');
         return new Promise(function (resolve, reject) {
           var promise;
           skeletons.forEach(function (skeleton) {
@@ -1719,39 +1302,82 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         });
       }
     }, {
+      key: "_applyEntranceAnimation",
+      value: function _applyEntranceAnimation() {
+        var root = this.getRootElement();
+        var items = root.querySelectorAll('.' + this.getItemStyleClass());
+
+        if (items.length === 0) {
+          return Promise.resolve(true);
+        }
+
+        var promises = [];
+        items.forEach(function (item, index) {
+          var elem = item;
+          elem.style.visibility = 'visible';
+          var currentTransition = elem.style.transition;
+          elem.style.transition = 'none';
+          var delay = Math.min(1000, index * 50) + 'ms';
+          var duration = '300ms';
+          var promise = AnimationUtils.slideIn(item, {
+            offsetY: '300px',
+            delay: delay,
+            duration: duration
+          });
+          promises.push(promise);
+          promises.push(AnimationUtils.fadeIn(item, {
+            delay: delay,
+            duration: duration
+          }));
+          promise.then(function () {
+            elem.style.transition = currentTransition;
+          });
+        });
+        return Promise.all(promises);
+      }
+    }, {
       key: "_applyExitAnimation",
       value: function _applyExitAnimation() {
-        var _this13 = this;
+        var root = this.getRootElement();
+        var items = root.querySelectorAll('.' + this.getItemStyleClass());
 
-        var resolveFunc = this._addBusyState('apply exit animations on existing items');
+        if (items.length === 0) {
+          return Promise.resolve(true);
+        }
 
-        return new Promise(function (resolve, reject) {
-          var root = _this13.getRootElement();
-
-          var items = root.querySelectorAll('.' + _this13.getItemStyleClass());
-
-          if (items.length === 0) {
-            resolveFunc();
-            resolve(true);
-          } else {
-            var listener = function listener(event) {
-              root.removeEventListener('animationend', listener);
-              items.forEach(function (item) {
-                item.classList.remove('oj-waterfalllayout-exit-animation');
-              });
-              resolveFunc();
-              resolve(true);
-            };
-
-            root.addEventListener('animationend', listener);
-            items.forEach(function (item) {
-              item.style.animationDelay = '0ms';
-              item.classList.remove('oj-waterfalllayout-item-fadein-animation');
-              item.classList.remove('oj-waterfalllayout-entrance-animation');
-              item.classList.add('oj-waterfalllayout-exit-animation');
-            });
-          }
+        var promises = [];
+        items.forEach(function (item) {
+          var duration = '300ms';
+          promises.push(AnimationUtils.slideOut(item, {
+            offsetY: '300px',
+            duration: duration,
+            persist: 'all'
+          }));
+          promises.push(AnimationUtils.fadeOut(item, {
+            duration: duration,
+            persist: 'all'
+          }));
         });
+        return Promise.all(promises);
+      }
+    }, {
+      key: "_applyLoadMoreEntranceAnimation",
+      value: function _applyLoadMoreEntranceAnimation() {
+        var root = this.getRootElement();
+        var items = root.querySelectorAll('.oj-waterfalllayout-new-item');
+
+        if (items.length === 0) {
+          return Promise.resolve(true);
+        }
+
+        var promises = [];
+        items.forEach(function (item) {
+          item.classList.remove('oj-waterfalllayout-new-item');
+          promises.push(AnimationUtils.fadeIn(item, {
+            duration: '150ms'
+          }));
+        });
+        return Promise.all(promises);
       }
     }, {
       key: "scrollListener",
@@ -1760,7 +1386,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
 
         if (!this.ticking) {
           window.requestAnimationFrame(function () {
-            _this14._updateScrollPosition();
+            if (_this14.isAvailable()) {
+              _this14._updateScrollPosition();
+            }
 
             _this14.ticking = false;
           });
@@ -1770,6 +1398,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "_updateScrollPosition",
       value: function _updateScrollPosition() {
+        var _a, _b;
+
         var scrollTop = this._getScroller().scrollTop;
 
         var iterator = this.contentHandler.getLayout().getPositions().entries();
@@ -1800,8 +1430,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           key: key,
           offsetY: offsetY
         };
-
-        this._updateProperty('scrollPosition', scrollPosition);
+        this.lastInternalScrollPositionUpdate = scrollPosition;
+        (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
       }
     }, {
       key: "_syncScrollTopWithProps",
@@ -1851,7 +1481,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "_resetFocus",
       value: function _resetFocus(elem) {
-        elem.classList.remove('oj-focus');
+        this.focusOutHandler(elem);
         elem.tabIndex = -1;
       }
     }, {
@@ -1860,16 +1490,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         elem.tabIndex = 0;
 
         if (focus) {
-          elem.classList.add('oj-focus');
+          this.focusInHandler(elem);
           elem.focus();
         }
       }
     }, {
       key: "_updateCurrentItem",
       value: function _updateCurrentItem(item) {
-        var currentElem = this.currentItem;
+        if (this.currentItem) {
+          var currentElem = this.currentItem;
 
-        this._resetFocus(currentElem);
+          this._resetFocus(currentElem);
+        }
 
         this.currentItem = item;
         var elem = item;
@@ -1901,6 +1533,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
       key: "_getScroller",
       value: function _getScroller() {
         var scroller = this.props.scrollPolicyOptions.scroller;
+
+        if (typeof scroller === 'string') {
+          scroller = document.querySelector(scroller);
+        }
+
         return scroller != null ? scroller : this.getRootElement();
       }
     }, {
@@ -1937,7 +1574,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             skeletons.push(this._renderSkeleton(position));
           }
 
-          return ojvcomponent.h("div", {
+          return ojvcomponentElement.h("div", {
             role: 'row'
           }, skeletons);
         }
@@ -1958,7 +1595,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           });
         }
 
-        var layout = new DefaultLayout(rootWidth, WaterfallLayout_1.gutterWidth, skeletonWidth, cache);
+        var layout = new DefaultLayout(null, rootWidth, WaterfallLayout_1.gutterWidth, skeletonWidth, cache);
         var positions = layout.getPositionForItems(items, 0);
         return positions;
       }
@@ -2029,6 +1666,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }, {
       key: "renderComplete",
       value: function renderComplete(items) {
+        this.renderCompleted = true;
         this.actionableMode = false;
 
         this._disableAllTabbableElements(items);
@@ -2044,31 +1682,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         positions.forEach(function (position) {
           skeletons.push(_this15._renderSkeleton(position));
         });
-        return skeletons;
-      }
-    }, {
-      key: "renderSkeletonsForLoadMore",
-      value: function renderSkeletonsForLoadMore(columnsInfo, itemWidth) {
-        var _this16 = this;
-
-        var skeletons = [];
-        var maxTop = Math.max.apply(Math, _toConsumableArray(columnsInfo.map(function (column) {
-          return column.top;
-        })));
-
-        if (maxTop > 0) {
-          var endPos = maxTop + 100;
-          columnsInfo.forEach(function (columnInfo) {
-            var position = {
-              left: columnInfo.left,
-              top: columnInfo.top,
-              height: endPos - columnInfo.top,
-              width: itemWidth
-            };
-            skeletons.push(_this16._renderSkeleton(position));
-          });
-        }
-
         return skeletons;
       }
     }, {
@@ -2092,26 +1705,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
           }
         }
 
-        return ojvcomponent.h("div", {
+        return ojvcomponentElement.h("div", {
           class: 'oj-waterfalllayout-skeleton',
           style: style
-        }, ojvcomponent.h("div", {
+        }, ojvcomponentElement.h("div", {
           class: 'oj-waterfalllayout-skeleton-content oj-animation-skeleton'
         }));
       }
     }]);
 
     return WaterfallLayout;
-  }(ojvcomponent.VComponent);
+  }(ojvcomponentElement.ElementVComponent);
 
   exports.WaterfallLayout.gutterWidth = 20;
+  exports.WaterfallLayout.minResizeWidthThreshold = 10;
   exports.WaterfallLayout.metadata = {
     "extension": {
       "_DEFAULTS": Props,
       "_ROOT_PROPS_MAP": {
-        "aria-label": true,
-        "aria-labelledby": true
-      }
+        "aria-label": 1,
+        "aria-labelledby": 1
+      },
+      "_WRITEBACK_PROPS": ["scrollPosition"],
+      "_READ_ONLY_PROPS": []
     },
     "properties": {
       "data": {
@@ -2135,7 +1751,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             "value": 500
           },
           "scroller": {
-            "type": "Element|null",
+            "type": "Element|string|null",
             "value": null
           }
         }
@@ -2154,34 +1770,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             "type": "number"
           }
         },
-        "writeback": true,
-        "readOnly": false
+        "writeback": true
       }
     },
     "slots": {
-      "itemTemplate": {}
+      "itemTemplate": {
+        "data": {}
+      }
     }
   };
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "_handleFocusIn", null);
+  __decorate([ojvcomponentElement.listener()], exports.WaterfallLayout.prototype, "_handleFocusIn", null);
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "_handleFocusOut", null);
+  __decorate([ojvcomponentElement.listener()], exports.WaterfallLayout.prototype, "_handleFocusOut", null);
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "_handleClick", null);
+  __decorate([ojvcomponentElement.listener()], exports.WaterfallLayout.prototype, "_handleClick", null);
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "_handlePointerDown", null);
+  __decorate([ojvcomponentElement.listener()], exports.WaterfallLayout.prototype, "_handleKeyDown", null);
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "_handleKeyDown", null);
-
-  __decorate([ojvcomponent.listener({
+  __decorate([ojvcomponentElement.listener({
     passive: true
   })], exports.WaterfallLayout.prototype, "_touchStartHandler", null);
 
-  __decorate([ojvcomponent.listener()], exports.WaterfallLayout.prototype, "scrollListener", null);
+  __decorate([ojvcomponentElement.listener()], exports.WaterfallLayout.prototype, "scrollListener", null);
 
-  exports.WaterfallLayout = WaterfallLayout_1 = __decorate([ojvcomponent.customElement('oj-waterfall-layout')], exports.WaterfallLayout);
+  exports.WaterfallLayout = WaterfallLayout_1 = __decorate([ojvcomponentElement.customElement('oj-waterfall-layout')], exports.WaterfallLayout);
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
+
 }())

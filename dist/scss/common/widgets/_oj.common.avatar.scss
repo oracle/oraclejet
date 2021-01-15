@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -23,13 +23,6 @@
 
     oj-avatar {
       display: inline-block;
-    }
-
-    :not(.oj-hicontrast) .oj-avatar-background-image .oj-avatar-initials {
-      opacity:0;
-    }
-    .oj-hicontrast .oj-avatar-background-image .oj-avatar-initials {
-      opacity:1;
     }
 
     .oj-avatar-background-image {
@@ -97,6 +90,31 @@
     .oj-avatar-bg-mauve.oj-avatar {
       background-color: $avatarMauve;
       border-color: $avatarMauve;
+    }
+
+    .oj-avatar-bg-pink.oj-avatar {
+      background-color: $avatarPink;
+      border-color: $avatarPink;
+    }
+
+    .oj-avatar-bg-slate.oj-avatar {
+      background-color: $avatarSlate;
+      border-color: $avatarSlate;
+    }
+
+    .oj-avatar-bg-blue.oj-avatar {
+      background-color: $avatarBlue;
+      border-color: $avatarBlue;
+    }
+
+    .oj-avatar-bg-lilac.oj-avatar {
+      background-color: $avatarLilac;
+      border-color: $avatarLilac;
+    }
+
+    .oj-avatar-bg-gray.oj-avatar {
+      background-color: $avatarGray;
+      border-color: $avatarGray;
     }
 
     .oj-avatar::after {

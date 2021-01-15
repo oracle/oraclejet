@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -67,6 +67,7 @@ export interface DvtDiagramLayoutContextLink<K1, K2, D2 extends ojDiagram.Link<K
         y: number;
     };
     getLabelValign(): 'top' | 'middle' | 'bottom' | 'baseline';
+    getLayoutAttributes(): object;
     getLinkWidth(): number;
     getPoints(): any[];
     getSelected(): boolean;
@@ -95,6 +96,7 @@ export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> |
         h: number;
     };
     getChildNodes(): DvtDiagramLayoutContextNode<K1, D1>[];
+    getContainerId(): K1;
     getContentBounds(): {
         x: number;
         y: number;
@@ -120,6 +122,7 @@ export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> |
         y: number;
     };
     getLabelValign(): 'top' | 'middle' | 'bottom' | 'baseline';
+    getLayoutAttributes(): object;
     getPosition(): {
         x: number;
         y: number;
@@ -437,8 +440,9 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof ojDiagramEventMap<K1, K2, D1, D2>>(type: T, listener: (this: HTMLElement, ev: ojDiagramEventMap<K1, K2, D1, D2>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDiagramEventMap<K1, K2, D1, D2>>(type: T, listener: (this: HTMLElement, ev: ojDiagramEventMap<K1, K2, D1, D2>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDiagramSettableProperties<K1, K2, D1, D2>>(property: T): ojDiagram<K1, K2, D1, D2>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDiagramSettableProperties<K1, K2, D1, D2>>(property: T, value: ojDiagramSettableProperties<K1, K2, D1, D2>[T]): void;
@@ -535,63 +539,63 @@ export namespace ojDiagram {
     type zoomingChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DndNodeContext<K1, D1> = {
+        componentElement: Element;
+        data: Node<K1>;
+        id: K1;
+        itemData: D1;
+        label: string;
         nodeOffset: {
             x: number;
             y: number;
         };
-        componentElement: Element;
-        id: K1;
         type: 'node';
-        label: string;
-        data: Node<K1>;
-        itemData: D1;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Link<K2, K1> = {
-        id?: K1;
         categories: string[];
         color?: string;
+        endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+        endNode: K2;
+        id?: K1;
         label?: string;
         labelStyle?: CSSStyleDeclaration | null;
         selectable?: 'auto' | 'off';
         shortDesc?: string;
+        startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
+        startNode: K2;
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         width?: number;
-        startNode: K2;
-        endNode: K2;
-        startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
-        endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkItemContext<K1, K2, D2> = {
         componentElement: Element;
-        id: K2;
-        type: 'link';
-        label: string;
         data: Link<K2, K1>;
+        id: K2;
         itemData: D2;
+        label: string;
+        type: 'link';
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkRendererContext<K1, K2, D2> = {
-        parentElement: Element;
         componentElement: Element;
-        rootElement: Element | null;
         data: Link<K2, K1>;
-        itemData: D2 | D2[];
-        state: {
-            hovered: boolean;
-            selected: boolean;
-            focused: boolean;
-        };
-        previousState: {
-            hovered: boolean;
-            selected: boolean;
-            focused: boolean;
-        };
         id: K2;
-        type: 'link' | 'promotedLink';
+        itemData: D2 | D2[];
+        parentElement: Element;
         points: any[] | string;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        rootElement: Element | null;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        type: 'link' | 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
@@ -602,53 +606,53 @@ export namespace ojDiagram {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Node<K1> = {
-        id?: K1;
         categories?: string[];
+        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
         icon?: {
             borderColor?: string;
             borderRadius?: string;
             borderWidth?: number;
             color?: string;
+            height?: number;
+            opacity?: number;
             pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
                'smallDiamond' | 'smallTriangle' | string;
-            opacity?: number;
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
             sourceHover?: string;
             sourceHoverSelected?: string;
             sourceSelected?: string;
-            width?: number;
-            height?: number;
-            svgStyle?: CSSStyleDeclaration;
             svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
         };
+        id?: K1;
         label?: string;
         labelStyle?: CSSStyleDeclaration | null;
         overview?: {
             icon?: {
                 shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-                svgStyle?: CSSStyleDeclaration;
                 svgClassName?: string;
+                svgStyle?: CSSStyleDeclaration;
             };
         };
         selectable?: 'auto' | 'off';
         shortDesc?: string;
         showDisclosure?: 'on' | 'off';
-        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
-        subId: 'oj-diagram-link' | 'oj-diagram-node';
         index: number;
+        subId: 'oj-diagram-link' | 'oj-diagram-node';
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeItemContext<K1, D1> = {
         componentElement: Element;
-        id: K1;
-        type: 'node';
-        label: string;
         data: Node<K1>;
+        id: K1;
         itemData: D1;
+        label: string;
+        type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -661,53 +665,53 @@ export namespace ojDiagram {
     // tslint:disable-next-line interface-over-type-literal
     type PromotedLinkItemContext<K1, K2, D2> = {
         componentElement: Element;
-        id: K2;
-        type: 'promotedLink';
-        label: string;
         data: Link<K2, K1>[];
+        id: K2;
         itemData: D2[];
+        label: string;
+        type: 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
     type RendererContext<K1, D1> = {
-        parentElement: Element;
         componentElement: Element;
-        rootElement: Element | null;
-        data: Node<K1>;
-        itemData: D1;
         content: {
             element: Element;
-            width: number;
             height: number;
+            width: number;
         };
-        state: {
-            hovered: boolean;
-            selected: boolean;
-            focused: boolean;
-            expanded: boolean;
-            zoom: number;
-        };
-        previousState: {
-            hovered: boolean;
-            selected: boolean;
-            focused: boolean;
-            expanded: boolean;
-            zoom: number;
-        };
+        data: Node<K1>;
         id: K1;
-        type: string;
+        itemData: D1;
+        parentElement: Element;
+        previousState: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+            zoom: number;
+        };
         renderDefaultFocus: (() => void);
         renderDefaultHover: (() => void);
         renderDefaultSelection: (() => void);
+        rootElement: Element | null;
+        state: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        type: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K1, K2, D1, D2> = {
-        parentElement: Element;
         componentElement: Element;
-        id: K1 | K2;
-        type: 'node' | 'link' | 'promotedLink';
-        label: string;
         data: Node<K1> | Link<K2, K1> | Link<K2, K1>[];
+        id: K1 | K2;
         itemData: D1 | D2 | D2[];
+        label: string;
+        parentElement: Element;
+        type: 'node' | 'link' | 'promotedLink';
     };
 }
 export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentEventMap<ojDiagramSettableProperties<K1, K2, D1, D2>> {
@@ -1058,8 +1062,8 @@ export interface ojDiagramLink extends JetElement<ojDiagramLinkSettablePropertie
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     width?: number;
-    addEventListener<T extends keyof ojDiagramLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDiagramLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T): ojDiagramLink[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T, value: ojDiagramLinkSettableProperties[T]): void;
@@ -1160,8 +1164,8 @@ export interface ojDiagramNode extends JetElement<ojDiagramNodeSettablePropertie
     selectable?: 'auto' | 'off';
     shortDesc?: string;
     showDisclosure?: 'on' | 'off';
-    addEventListener<T extends keyof ojDiagramNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramNodeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDiagramNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramNodeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T): ojDiagramNode[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T, value: ojDiagramNodeSettableProperties[T]): void;

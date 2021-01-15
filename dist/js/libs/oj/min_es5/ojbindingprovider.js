@@ -1,8 +1,17 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojkoshared"],(function(r,e){"use strict";function o(){}return o.registerPreprocessor=function(r,o){e.registerPreprocessor(r,o)},o.createBindingExpressionEvaluator=function(r,o){return e.createBindingExpressionEvaluator(r,o)},o}));
+define(["exports","ojs/ojkoshared"],function(e,r){"use strict";r=r&&Object.prototype.hasOwnProperty.call(r,"default")?r.default:r;
+/**
+   * @license
+   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+var o=function(){},t=o.registerPreprocessor=function(e,o){r.registerPreprocessor(e,o)},s=o.createBindingExpressionEvaluator=function(e,o){return r.createBindingExpressionEvaluator(e,o)};e.createBindingExpressionEvaluator=s,e.registerPreprocessor=t,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojbindingprovider.js.map

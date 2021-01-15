@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,7 +16,9 @@ export interface ojPagingControl extends baseComponent<ojPagingControlSettablePr
     mode: 'page' | 'loadMore';
     overflow: 'fit' | 'none';
     pageOptions: {
-        layout?: ['auto' | 'all' | 'input' | 'rangeText' | 'pages' | 'nav'];
+        layout?: [
+            'auto' | 'all' | 'input' | 'rangeText' | 'pages' | 'nav'
+        ];
         maxPageLinks?: number;
         orientation?: 'horizontal' | 'vertical';
         type?: 'numbers' | 'dots';
@@ -57,8 +59,8 @@ export interface ojPagingControl extends baseComponent<ojPagingControlSettablePr
         tipNavPageLink?: string;
         tipNavPreviousPage?: string;
     };
-    addEventListener<T extends keyof ojPagingControlEventMap>(type: T, listener: (this: HTMLElement, ev: ojPagingControlEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojPagingControlEventMap>(type: T, listener: (this: HTMLElement, ev: ojPagingControlEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojPagingControlSettableProperties>(property: T): ojPagingControl[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojPagingControlSettableProperties>(property: T, value: ojPagingControlSettableProperties[T]): void;
@@ -102,7 +104,9 @@ export interface ojPagingControlSettableProperties extends baseComponentSettable
     mode: 'page' | 'loadMore';
     overflow: 'fit' | 'none';
     pageOptions: {
-        layout?: ['auto' | 'all' | 'input' | 'rangeText' | 'pages' | 'nav'];
+        layout?: [
+            'auto' | 'all' | 'input' | 'rangeText' | 'pages' | 'nav'
+        ];
         maxPageLinks?: number;
         orientation?: 'horizontal' | 'vertical';
         type?: 'numbers' | 'dots';

@@ -1,0 +1,13 @@
+import * as ts from "typescript";
+import * as MetaTypes from "./MetadataTypes";
+export declare function writebackCallbackToProperty(property: string): string;
+export declare function stringToJS(memberName: string, type: ts.SyntaxKind, value: string, metaUtilObj: MetaTypes.MetaUtilObj): any;
+export declare function getGenericTypeParameters(propsType: ts.NodeWithTypeArguments): string;
+export declare function getDtMetadata(objWithJsDoc: ts.HasJSDoc, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.AllMetadataTypes;
+export declare function addMetadataToClassNode(classNode: ts.ClassDeclaration, metadata: MetaTypes.RuntimeMetadata): ts.ClassDeclaration;
+export declare function walkTypeNodeMembers(typeNode: ts.TypeNode, checker: ts.TypeChecker, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String) => void): void;
+export declare function updateCompilerPropsMetadata(propsAsType: ts.NodeWithTypeArguments, declaration: ts.Node, propsClassName: string, readOnlyProps: string[], metaUtilObj: MetaTypes.MetaUtilObj): void;
+export declare function updateCompilerClassMetadata(classNode: ts.ClassDeclaration, metaUtilObj: MetaTypes.MetaUtilObj): void;
+export declare function pruneCompilerMetadata(metaUtilObj: MetaTypes.MetaUtilObj): void;
+export declare function pruneMetadata(metadata: Record<string, any>): void;
+export declare function updateRtExtensionMetadata(name: string, value: any, metaUtilObj: MetaTypes.MetaUtilObj): void;

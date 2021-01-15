@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the
@@ -34,12 +34,21 @@
     .oj-chart-data-label {
 
         font-size: $dvtChartDataLabelFontSize;
+        color: #333333;
 
     }
 
     .oj-chart-data-cursor-line {
 
         color: $textColor;
+        width: 2px;
+
+    }
+
+    .oj-chart-data-cursor-outer-line {
+
+      stroke: transparent;
+      stroke-width: 0px;
 
     }
     
@@ -87,6 +96,13 @@
 
     }
 
+    .oj-chart-polar-axis-tick-label-outside {
+      fill: rgba(255,255,255,1);
+    }
+    .oj-chart-polar-axis-tick-label-inside {
+      fill:  rgba(255, 255, 255, 0.6);
+    }
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-spark-chart:not(.oj-complete) {
@@ -123,6 +139,22 @@
 
     .oj-chart .oj-active-drop {
       fill: $accentColorHighlight1;
+    }
+
+    .oj-chart-reference-object-area {
+      color: #333333;
+    }
+
+    .oj-chart-reference-object-line {
+      width: 1px;
+      color: #333333;
+    }
+
+    .oj-chart-reference-object-inner-line {
+
+      stroke: transparent;
+      stroke-width: 0px;
+
     }
   }
 }

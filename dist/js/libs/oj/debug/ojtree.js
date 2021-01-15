@@ -1,18 +1,18 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojdnd'],
-function(oj, $, Context, Components)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojdomutils', 'ojdnd'],
+function(oj, $, Context, Components, DomUtils)
 {
   "use strict";
 
 
-/* global TreeUtils:false */
+/* global DomUtils:false, TreeUtils:false */
 
 /* jslint browser: true,devel:true*/
 
@@ -389,7 +389,7 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
     if (dnd.pureReorder) {
       dt.effectAllowed = 'move'; // reorder only & no dragStart callback
     } else {
-      dt.effectAllowed = (oj.DomUtils.isMetaKeyPressed(e)) ? 'copy' : 'move';
+      dt.effectAllowed = (DomUtils.isMetaKeyPressed(e)) ? 'copy' : 'move';
     }
   }
 
@@ -837,7 +837,7 @@ oj.TreeDndContext.prototype._dndFinishReorder = function (e) {
 
   // For a pure reorder on the same tree, we can just move the nodes.
   if (dnd.dragStarted && dnd.reorder && (typeof vars.o === 'object') && vars.o.length > 0) {
-    this.component._moveNode(vars.o, vars.r, vars.last_pos, oj.DomUtils.isMetaKeyPressed(e));
+    this.component._moveNode(vars.o, vars.r, vars.last_pos, DomUtils.isMetaKeyPressed(e));
 
     // Don't want dragEnd() to do any node(s) removal since they have just been
     // moved  by tree
@@ -1816,7 +1816,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
  */
 
 /* eslint-disable no-param-reassign */ /* component deprecated */
-/* global TreeUtils:false, Components:false, Context:false */
+/* global DomUtils:false, TreeUtils:false, Components:false, Context:false */
 
 /*---------------------------------------------------------
    ojTree     Displays a Hierarchical Tree of Nodes
@@ -1966,7 +1966,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
   function _KeyFilterHandler(e) {
     var s = '';
 
-    if (oj.DomUtils.isMetaKeyPressed(e)) {
+    if (DomUtils.isMetaKeyPressed(e)) {
       s += 'ctrl+';
     } else if (e.shiftKey) {
       s += 'shift+';
@@ -4642,7 +4642,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         this._data = {}; // working data
         this._tds = null; // Tree DataSource
         this._isRtl = this._GetReadingDirection() === 'rtl';
-        this._isTouch = oj.DomUtils.isTouchSupported();
+        this._isTouch = DomUtils.isTouchSupported();
         this._initTree(); // initialize data structures
         this._animDuration = this._getAnimDuration(); // get css $treeAnimationDuration value
         if (this._animDuration) {
@@ -6028,7 +6028,7 @@ TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
         var selRangeMod = ui.defaults.selectRangeModifier; // not yet published
         var disSelChildren = ui.defaults.disableSelectingChildren; // not yet published
         var isMultiple = (selMultMod === 'on' ||
-                          (selMultMod !== false && e && oj.DomUtils.isMetaKeyPressed(e)));
+                          (selMultMod !== false && e && DomUtils.isMetaKeyPressed(e)));
         var isRange = ((selRangeMod !== false) && (e && (e[selRangeMod + 'Key'])) &&
                        ui.lastSelected && this._data.ui.lastSelected[0] !== node[0] &&
                        (ui.lastSelected.parent()[0] === node.parent()[0]));

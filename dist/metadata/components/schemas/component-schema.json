@@ -313,6 +313,9 @@
             "displayName": {
               "type": "string"
             },
+            "dynamicSlotDef": {
+              "type": "string"
+            },
             "eventGroup": {
               "type": "string"
             },
@@ -575,7 +578,7 @@
     "slotsDef": {
       "type": "object",
 
-      "$comment": "slot names follow HTML attribute name restrictions",
+      "$comment": "slot names & dynamic slot definition names follow HTML attribute name restrictions",
       "patternProperties": {
         "^([^\t\n\f \u002f\u003e\u0022\u0027=]*)$": {
           "type": "object",
@@ -1038,6 +1041,9 @@
     "slots": {
       "$ref": "#/definitions/slotsDef"
     },
+    "dynamicSlots": {
+      "$ref": "#/definitions/slotsDef"
+    },
     "extension": {
       "anyOf": [
         {"$ref": "#/definitions/extensionComponentDef"},
@@ -1047,8 +1053,7 @@
       ]
     },
     "help": {
-      "type": "string",
-      "format": "uri"
+      "type": "string"
     },
     "icon": {
       "$ref": "#/definitions/iconsDef"
@@ -1099,6 +1104,10 @@
       "items": {
         "$ref": "#/definitions/styleClassItemDef"
       }
+    },
+    "subcomponentType": {
+      "type": "string",
+      "enum": ["data", "patternImpl", "packPrivate"]
     },
     "type": {
       "type": "string",
@@ -1207,7 +1216,7 @@
     },
 
     {
-      "$comment": "if the component type is explicitly set to 'pack', then the values of 'dependencies' property key-value pairs must be exact semver strings AND 'pack' property is invalid (nested JET Packs not allowed)",
+      "$comment": "if the component type is explicitly set to 'pack', then values of 'dependencies' property key-value pairs must be exact semver strings AND 'pack' property is invalid (nested JET Packs not allowed)",
       "if": {
         "properties": {
           "type": {

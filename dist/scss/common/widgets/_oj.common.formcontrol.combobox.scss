@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -145,10 +145,6 @@
       @include oj-rtl() {
         padding-right: 0;
       }
-    }
-
-    .oj-combobox.oj-read-only .oj-combobox-selected-choice-label {
-      display: inherit;
     }
 
     /* don't show dropdown trigger */
@@ -360,7 +356,8 @@
     /* 
      * Applied to the label of the selected choice
      */
-    .oj-combobox-selected-choice-label {
+    .oj-combobox-selected-choice-label,
+    .oj-combobox-selected-choice-separator {
       display: inline-block;
       vertical-align: middle;
     }
@@ -600,8 +597,7 @@
       }
 
 
-    .oj-text-field-label-inside.oj-combobox,
-    .oj-form-control-label-top.oj-combobox{
+    .oj-text-field-label-inside.oj-combobox {
       max-width: 100%;
     }
 

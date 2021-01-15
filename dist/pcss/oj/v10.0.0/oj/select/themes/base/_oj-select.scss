@@ -1,0 +1,374 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example select/themes/redwood/oj-select.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.select") {
+  /* select */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-searchselect:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-searchselect {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    // font size needs to be on the root, because max/min width is in em.
+    font-size: var(--oj-text-field-font-size);
+    @include oj-form-control-text-size-adjust-css-vars();
+
+    width: 100%;
+  }
+  // .oj-form-control-full-width is an override to set max-width to 100% if on the
+  // element or an ancestor element
+  .oj-form-control-full-width.oj-searchselect,
+  .oj-form-control-full-width .oj-searchselect {
+    max-width: 100%;
+  }
+
+  .oj-searchselect .oj-text-field-middle {
+    width: 100%;
+    flex: auto;
+  }
+
+  /* single-select */
+
+  /*
+     * Applied to the input field
+     */
+  .oj-searchselect-input {
+    flex: 1;
+    // needed for the input to be able to shrink smaller than the browser
+    // default width.  Because this has flex-grow of 1, it will always grow
+    // to the available space of the parent container, which is what we want.
+    width: 1em;
+    // needed or else the input could overflow the container
+    min-width: 1em;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: transparent;
+    color: var(--oj-text-field-text-color);
+    font-size: var(--oj-text-field-font-size);
+    box-shadow: none;
+    @include oj-form-control-text-size-adjust-css-vars();
+    // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+    &:-ms-input-placeholder {
+      color: var(--oj-text-field-placeholder-color);
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: var(--oj-text-field-placeholder-font-style);
+    }
+    &::placeholder {
+      color: var(--oj-text-field-placeholder-color);
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: var(--oj-text-field-placeholder-font-style);
+    }
+
+    // the below styles came from the old oj-searchselect-choice class
+
+    // TODO, We need to think about getting rid of this mixin and move the relevant style to
+    // container
+    @include oj-form-control-input-css-vars();
+    html:not([dir="rtl"]) & {
+      padding-left: var(--oj-text-field-text-to-edge-padding);
+    }
+    html[dir="rtl"] & {
+      padding-right: var(--oj-text-field-text-to-edge-padding);
+    }
+  }
+
+  // .oj-searchselect-fullscreen .oj-searchselect-input
+  // {
+  //   caret-color: 'transparent';
+  // }
+
+  /*
+     * Applied to the filter field on desktop and mobile.
+     */
+  .oj-searchselect-filter.oj-form-control {
+    max-width: 100%;
+  }
+
+  /*
+     * Applied to the filter field on desktop.
+     */
+  .oj-searchselect .oj-searchselect-filter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: inherit;
+  }
+  .oj-searchselect .oj-searchselect-filter.oj-form-control {
+    margin-bottom: 0;
+  }
+  // JET-39184 - single-select error border turns green when focus
+  // When the component shows a red border due to an error message and the user focuses the
+  // filter input text, the filter input text's green border overlays the component's red
+  // border.  This is because the input text's green border style selector is more specific
+  // than this selector that attempts to make the border color tansparent.  Instead of
+  // overriding the more specific selector here, which would be fragile to selector and
+  // specificity changes, the preferred fix is to mark the transparent border "!important".
+  .oj-searchselect .oj-searchselect-filter.oj-text-field .oj-text-field-container {
+    background-color: transparent;
+    border-color: transparent !important;
+    box-shadow: none;
+  }
+  .oj-searchselect.oj-form-control-text-align-end .oj-searchselect-filter,
+  .oj-searchselect.oj-form-control-text-align-right .oj-searchselect-filter {
+    html:not([dir="rtl"]) & {
+      padding-right: 1px;
+    }
+  }
+  .oj-searchselect.oj-form-control-text-align-end .oj-searchselect-filter {
+    html[dir="rtl"] & {
+      padding-left: 1px;
+    }
+  }
+
+  /* Styling for readonly mode */
+
+  /* don't show dropdown trigger or mobile clear value icon */
+  .oj-searchselect.oj-read-only .oj-searchselect-arrow,
+  .oj-searchselect.oj-read-only .oj-searchselect-clear-value {
+    display: none;
+  }
+
+  /* don't show mobile clear value icon when field is required */
+  .oj-searchselect.oj-required .oj-searchselect-clear-value {
+    display: none;
+  }
+
+  /*
+     * Only show either the dropdown arrow or the clear value icon on mobile depending on whether
+     * a value is selected.
+     */
+  .oj-searchselect-mobile.oj-searchselect-no-value .oj-searchselect-clear-value,
+  .oj-searchselect-mobile.oj-disabled .oj-searchselect-clear-value,
+  .oj-searchselect-mobile:not(.oj-searchselect-no-value):not(.oj-disabled):not(.oj-required) .oj-searchselect-arrow {
+    display: none;
+  }
+
+  /*
+     * On desktop, hide the dropdown arrow in the main field when the component has focus
+     * (when the filter field is shown)
+     */
+  .oj-searchselect.oj-focus:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow {
+    visibility: hidden;
+  }
+
+  .oj-searchselect-arrow:hover,
+  .oj-searchselect-arrow:focus,
+  .oj-searchselect-clear-value:hover,
+  .oj-searchselect-clear-value:focus,
+  .oj-searchselect-back-button:hover,
+  .oj-searchselect-back-button:focus {
+    text-decoration: none;
+  }
+
+  /*
+     * Disabled styles for single-select
+     */
+  .oj-searchselect.oj-disabled .oj-searchselect-input {
+    @include oj-form-control-content-disabled($outputCssVars: true);
+  }
+
+  .oj-searchselect.oj-disabled .oj-searchselect-arrow,
+  .oj-searchselect.oj-disabled .oj-searchselect-clear-value {
+    cursor: default;
+  }
+
+  .oj-searchselect.oj-loading .oj-searchselect-arrow,
+  .oj-searchselect.oj-loading .oj-searchselect-clear-value {
+    display: none;
+  }
+
+  /*
+     * Applied to results collection element
+     */
+  .oj-select-results {
+    @extend .oj-listbox-results-base;
+  }
+
+  /*
+     * Applied to results collection element when the dropdown is initially opened while the
+     * data is being fetched
+     */
+  .oj-listbox-initial-open .oj-select-results {
+    min-height: 10rem; // 160px;
+  }
+
+  // .oj-listbox-fullscreen .oj-select-results {
+  //   max-height: 100%;
+  //   flex-grow: 1;
+  // }
+
+  /* icon */
+  /* -----------------------------*/
+
+  /*
+     * Applied to the single-select drop down open icon
+     */
+  .oj-searchselect-open-icon {
+    @extend .oj-fwk-icon-arrow02-s;
+  }
+
+  /*
+     * Applied to the single-select mobile clear value icon
+     */
+  .oj-searchselect-clear-value-icon {
+    @extend .oj-fwk-icon-cross03;
+  }
+
+  /*
+     * Applied to the single-select mobile filter field back icon
+     */
+  .oj-searchselect-back-icon {
+    @extend .oj-fwk-icon-caret-start;
+  }
+
+  /*
+     * Applied to the container of the no data template shown in the default listView.
+     */
+  .oj-searchselect-no-results-container {
+    display: none;
+    height: 0;
+  }
+
+  /**
+     * Applied to the default list view if no results are found
+     */
+  .oj-listbox-searchselect-no-results .oj-select-results {
+    display: none;
+  }
+
+  /* Styling on collection selection */
+  .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+  .oj-listbox-searchselect .oj-listview-item.oj-selected {
+    // show hover color instead of selection color
+    background-color: var(--oj-core-bg-color-hover);
+  }
+  .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
+  .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
+    // show hover color instead of selection color
+    background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
+  }
+
+  /* remove border for list item inside a listbox search-select */
+  .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+  .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected + li.oj-listview-item,
+  .oj-listbox-searchselect .oj-listview .oj-listview-item.oj-selected,
+  .oj-listbox-searchselect .oj-listview .oj-listview-item.oj-selected + li.oj-listview-item,
+  .oj-listbox-searchselect .oj-listview-item.oj-selected,
+  .oj-listbox-searchselect .oj-listview-item.oj-selected + li.oj-listview-item,
+  .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
+  .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected + li.oj-listview-item,
+  .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected,
+  .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected + li.oj-listview-item {
+    border-top: 1px solid transparent;
+  }
+
+  
+  .oj-select-results.oj-listview {
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+   
+  }
+
+  .oj-listbox-drop.oj-listbox-searchselect {
+
+    border-radius: var(--oj-core-border-radius-md);
+    box-shadow: var(--oj-core-dropdown-box-shadow);
+    border: 1px solid var(--oj-popup-border-color);  
+  }
+
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+  // editable datagrid cells and editable table cells
+  // -----------------------------------------------------------------------------------------
+
+  // if a focus border width is set reset it back to 0
+  // TODO
+
+  /*
+     * Styling for focus state
+     */
+  .oj-form-control-inherit:not(.oj-form-control-default)
+    .oj-searchselect:not(.oj-disabled):not(.oj-read-only)
+    .oj-searchselect-input:focus {
+    border-width: 0;
+  }
+
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-arrow,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect-clear-value {
+    align-self: stretch;
+  }
+
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-searchselect .oj-text-field-middle {
+    height: 100%;
+  }
+
+  /* clears the 'X' from Internet Explorer */
+  .oj-searchselect input[type="search"]::-ms-clear,
+  .oj-searchselect input[type="search"]::-ms-reveal,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-ms-clear,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* clears the 'X' from Chrome */
+  .oj-searchselect input[type="search"]::-webkit-search-decoration,
+  .oj-searchselect input[type="search"]::-webkit-search-cancel-button,
+  .oj-searchselect input[type="search"]::-webkit-search-results-button,
+  .oj-searchselect input[type="search"]::-webkit-search-results-decoration,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-decoration,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-cancel-button,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-button,
+  .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+  }
+
+  /* Default options*/
+  $searchSelectDefaultOptions: ();
+
+  @if ($privateLoadingIndicatorDelayDuration) {
+    $searchSelectDefaultOptions: map-merge(
+      $searchSelectDefaultOptions,
+      (
+        showIndicatorDelay: $privateLoadingIndicatorDelayDuration
+      )
+    );
+  }
+  .oj-searchselect-option-defaults {
+    font-family: oj-json-from-map($searchSelectDefaultOptions) !important;
+  }
+
+  // TODO: single select's text-align: right makes the text overlap the icon
+  // TODO: single select's height stretches for choice, but the icon no longer lines up
+
+  // For quiet Forms
+
+  .oj-searchselect .oj-text-field-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .oj-searchselect-input {
+    border: 0;
+    background-color: transparent;
+  }
+
+  // TODO: Add warning, error and focus borders to the container rather than the input element
+}

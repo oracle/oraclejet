@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -28,6 +28,8 @@
   @if ($themeTargetPlatform != null) {
       $themeRootMap: map-merge($themeRootMap, (targetPlatform: $themeTargetPlatform));
   }
+  $themeRootMap: map-merge($themeRootMap, (behavior: "alta"));
+  $themeRootMap: map-merge($themeRootMap, (jetReleaseVersion: "v10.0.0"));
 
   .oj-theme-json {
       font-family: oj-json-from-map($themeRootMap);
@@ -72,6 +74,39 @@
   .oj-helper-hidden {
     display: none !important;
   }
+  
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-inline-block {
+    display: inline-block !important;
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-tabular-nums {
+    font-variant-numeric: tabular-nums !important;
+  }
+  
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-proportional-nums {
+    font-variant-numeric: proportional-nums !important;
+  }
+  
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-overflow-wrap-anywhere {
+    overflow-wrap: anywhere !important;
+  }
+
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-hyphens-auto {
+    hyphens: auto !important;
+  }
+
+  
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-text-align-center {
+    text-align: center ;
+  }
+
 
   // todo: add a demo for these text-align classes
 
@@ -221,5 +256,14 @@
     @include oj-rtl() {
       justify-content: flex-end !important;
     }
+  }
+  
+
+  .oj-helper-border-box {
+    box-sizing: border-box  !important;
+  }
+  
+  .oj-helper-content-box {
+    box-sizing: border-content  !important;
   }
 }

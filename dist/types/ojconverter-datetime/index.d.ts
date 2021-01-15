@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -53,25 +53,25 @@ export class IntlDateTimeConverter extends DateTimeConverter {
 export namespace IntlDateTimeConverter {
     // tslint:disable-next-line interface-over-type-literal
     type ConverterOptions = {
-        year?: '2-digit' | 'numeric';
-        'two-digit-year-start'?: number;
-        month?: '2-digit' | 'numeric' | 'narrow' | 'short' | 'long';
-        day?: '2-digit' | 'numeric';
-        hour?: '2-digit' | 'numeric';
-        minute?: '2-digit' | 'numeric';
-        second?: '2-digit' | 'numeric';
-        millisecond?: 'numeric';
-        weekday?: 'narrow' | 'short' | 'long';
-        era?: 'narrow' | 'short' | 'long';
-        timeZoneName?: 'short' | 'long';
-        timeZone?: string;
-        isoStrFormat?: 'offset' | 'zulu' | 'local' | 'auto';
-        dst?: boolean;
-        hour12?: boolean;
-        pattern?: string;
-        formatType?: 'date' | 'time' | 'datetime';
         dateFormat?: 'short' | 'medium' | 'long' | 'full';
-        timeFormat?: 'short' | 'medium' | 'long' | 'full';
+        day?: '2-digit' | 'numeric';
+        dst?: boolean;
+        era?: 'narrow' | 'short' | 'long';
+        formatType?: 'date' | 'time' | 'datetime';
+        hour?: '2-digit' | 'numeric';
+        hour12?: boolean;
+        isoStrFormat?: 'offset' | 'zulu' | 'local' | 'auto';
         lenientParse?: 'full' | 'none';
+        millisecond?: 'numeric';
+        minute?: '2-digit' | 'numeric';
+        month?: '2-digit' | 'numeric' | 'narrow' | 'short' | 'long';
+        pattern?: string;
+        second?: '2-digit' | 'numeric';
+        timeFormat?: 'short' | 'medium' | 'long' | 'full';
+        timeZone?: string;
+        timeZoneName?: 'short' | 'long';
+        'two-digit-year-start'?: number;
+        weekday?: 'narrow' | 'short' | 'long';
+        year?: '2-digit' | 'numeric';
     };
 }

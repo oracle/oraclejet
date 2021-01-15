@@ -1,36 +1,56 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const ts = require("typescript");
-let _BUILD_OPTIONS;
-let _FILE_NAME;
-let _VCOMP_CLASS_NAME;
+const ts = __importStar(require("typescript"));
+const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 function jsxTransformer(program, buildOptions) {
-    _BUILD_OPTIONS = buildOptions;
     function visitor(ctx, sf) {
         var _a;
-        _FILE_NAME = sf.fileName;
-        if (_BUILD_OPTIONS["debug"])
-            console.log(`${_FILE_NAME}: processing jsx types...`);
-        const exportToAlias = (_a = _BUILD_OPTIONS.importMaps) === null || _a === void 0 ? void 0 : _a.exportToAlias;
+        if (!buildOptions.componentToMetadata) {
+            return (node) => {
+                return node;
+            };
+        }
+        if (buildOptions["debug"])
+            console.log(`${sf.fileName}: processing jsx types...`);
+        const exportToAlias = (_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.exportToAlias;
         const visitor = (node) => {
             var _a;
             if (exportToAlias && ts.isClassDeclaration(node)) {
-                _VCOMP_CLASS_NAME = undefined;
+                let vcompClassName = undefined;
                 const heritageClauses = node.heritageClauses;
                 if (heritageClauses) {
                     for (let clause of heritageClauses) {
                         for (let type of clause.types) {
-                            if (type.expression.getText() === exportToAlias.VComponent) {
+                            if (type.expression.getText() === exportToAlias.ElementVComponent) {
                                 const propsType = (_a = type.typeArguments) === null || _a === void 0 ? void 0 : _a[0];
                                 let propsTypeParams = "";
                                 if ((propsType === null || propsType === void 0 ? void 0 : propsType.kind) === ts.SyntaxKind.TypeReference) {
                                     const propsTypeRef = propsType;
                                     if (propsTypeRef.typeArguments) {
-                                        propsTypeParams = getGenericTypeParameters(propsTypeRef);
+                                        propsTypeParams = MetaUtils.getGenericTypeParameters(propsTypeRef);
                                     }
                                 }
-                                _VCOMP_CLASS_NAME = node.name.getText();
-                                return injectVpropsVariable(node, propsTypeParams);
+                                vcompClassName = node.name.getText();
+                                return injectVpropsVariable(node, propsTypeParams, vcompClassName, buildOptions.componentToMetadata);
                             }
                         }
                     }
@@ -46,34 +66,17 @@ function jsxTransformer(program, buildOptions) {
     };
 }
 exports.default = jsxTransformer;
-function injectVpropsVariable(classNode, propsTypeParams) {
-    var _a;
-    const meta = (_a = _BUILD_OPTIONS.componentToMetadata) === null || _a === void 0 ? void 0 : _a[_VCOMP_CLASS_NAME];
+function injectVpropsVariable(classNode, propsTypeParams, vcompClassName, componentToMetadata) {
+    const meta = componentToMetadata === null || componentToMetadata === void 0 ? void 0 : componentToMetadata[vcompClassName];
     if (meta && (meta["propsClassName"] || meta.name)) {
-        const vpropsClassName = `${meta.name ? "V" : ""}${meta["propsClassName"] || _VCOMP_CLASS_NAME + "Props"}`;
+        const vpropsClassName = `${meta.name ? "V" : ""}${meta["propsClassName"] || vcompClassName + "Props"}`;
         meta["vpropsClassName"] = vpropsClassName;
-        const vpropsProperty = ts.createProperty(undefined, ts.createModifiersFromModifierFlags(ts.ModifierFlags.Protected), "_vprops", ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode(`${vpropsClassName}${propsTypeParams}`, undefined), undefined);
+        const vpropsProperty = ts.factory.createPropertyDeclaration(undefined, ts.factory.createModifiersFromModifierFlags(ts.ModifierFlags.Protected), "_vprops", ts.factory.createToken(ts.SyntaxKind.QuestionToken), ts.factory.createTypeReferenceNode(`${vpropsClassName}${propsTypeParams}`, undefined), undefined);
         const members = classNode.members.concat([vpropsProperty]);
-        return ts.updateClassDeclaration(classNode, classNode.decorators, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, members);
+        return ts.factory.updateClassDeclaration(classNode, classNode.decorators, classNode.modifiers, classNode.name, classNode.typeParameters, classNode.heritageClauses, members);
     }
     return classNode;
 }
 function trimQuotes(text) {
     return text.slice(1, text.length - 1);
-}
-function getGenericTypeParameters(propsType) {
-    let genericSignature = "<";
-    for (let i = 0; i < propsType.typeArguments.length; i++) {
-        const type = propsType.typeArguments[i];
-        const typeName = type.getText();
-        genericSignature += typeName;
-        if (type.typeArguments && type.typeArguments.length) {
-            genericSignature += getGenericTypeParameters(type);
-        }
-        if (i < propsType.typeArguments.length - 1) {
-            genericSignature += ", ";
-        }
-    }
-    genericSignature += ">";
-    return genericSignature;
 }

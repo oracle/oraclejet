@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,7 +11,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
   "use strict";
 
 /* jslint browser: true*/
-/* global ko, Promise, signals, Logger:false */
+/* global ko, signals, Logger:false */
 
 /**
  * The ojRouter module.
@@ -2027,7 +2027,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *    var state;
    *
    *    if (stateId) {
-   *       state = new oj.RouterState(stateId, { value: data[stateId] }, router);
+   *       state = { value: data[stateId] };
    *    }
    *    return state;
    * });
@@ -3437,7 +3437,6 @@ var Router = oj.Router;
 
 
 /* jslint browser: true*/
-/* global Promise:false */
 
 /**
  * The RouterState module.

@@ -1,0 +1,54 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../toolbar/themes/redwood/_oj-toolbar.cssvars.scss";
+@import "../../../tree-view/themes/redwood/_oj-tree-view.cssvars.scss";
+@import "../../../menu/themes/redwood/_oj-menu.cssvars.scss";
+
+// todo: we should not have to import tab bar vars here, most of the use of tab bar vars
+// is to support the old non-custom element syntax, hopefully that css can just be removed
+@import "../../../tab-bar/themes/redwood/_oj-tab-bar.cssvars.scss";
+
+  @include module-include-once("redwood.variables.navigationlist") {
+
+:root {
+  // nav list
+  // ----------------------------
+  --oj-navigation-list-font-size:                          var(--oj-typography-body-md-font-size);
+  --oj-navigation-list-font-weight:                        600;
+  --oj-navigation-list-icon-margin:                        0;
+  
+  --oj-navigation-list-sliding-heading-font-size:          var(--oj-typography-subheading-xs-font-size);
+  --oj-navigation-list-sliding-heading-font-weight:        var(--oj-typography-subheading-xs-font-weight);
+  --oj-navigation-list-sliding-heading-line-height:        var(--oj-typography-subheading-xs-line-height);
+
+  --oj-navigation-list-icon-to-text-padding:               0.5rem;
+
+  --oj-navigation-list-item-min-height:                    3rem;
+  
+  --oj-navigation-list-item-margin:                        2rem;
+  
+  --oj-private-navigation-list-item-border-width:          0.1875rem;
+  
+  --oj-private-navigation-list-item-start-end-padding:             1.5rem;
+
+  --oj-navigation-list-item-padding:                       0;
+  
+
+  // default
+  --oj-navigation-list-item-label-color:               var(--oj-core-text-color-secondary);
+  
+  // hover
+  --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary);
+  --oj-navigation-list-item-bg-color-hover:                    var(--oj-core-bg-color-hover);
+  --oj-private-navigation-list-item-border-color-hover:        transparent;
+
+  // selected
+  --oj-navigation-list-item-bg-color-selected:                 transparent;
+  --oj-navigation-list-item-border-color-selected:             var(--oj-core-border-color-selected);
+  --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary);
+
+}
+
+}

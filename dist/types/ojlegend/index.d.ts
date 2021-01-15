@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -48,8 +48,8 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
         tooltipCollapse?: string;
         tooltipExpand?: string;
     };
-    addEventListener<T extends keyof ojLegendEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojLegendEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojLegendEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojLegendEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojLegendSettableProperties<K, D>>(property: T): ojLegend<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojLegendSettableProperties<K, D>>(property: T, value: ojLegendSettableProperties<K, D>[T]): void;
@@ -136,8 +136,8 @@ export namespace ojLegend {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PreferredSize = {
-        width: number;
         height: number;
+        width: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Section<K> = {
@@ -232,8 +232,8 @@ export interface ojLegendItem extends JetElement<ojLegendItemSettableProperties>
     svgStyle?: CSSStyleDeclaration;
     symbolType?: 'line' | 'lineWithMarker' | 'image' | 'marker';
     text: string;
-    addEventListener<T extends keyof ojLegendItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendItemEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojLegendItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojLegendItemSettableProperties>(property: T): ojLegendItem[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojLegendItemSettableProperties>(property: T, value: ojLegendItemSettableProperties[T]): void;
@@ -327,8 +327,8 @@ export interface ojLegendSection extends JetElement<ojLegendSectionSettablePrope
     text?: string;
     textHalign?: 'center' | 'end' | 'start';
     textStyle?: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojLegendSectionEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendSectionEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojLegendSectionEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendSectionEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojLegendSectionSettableProperties>(property: T): ojLegendSection[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojLegendSectionSettableProperties>(property: T, value: ojLegendSectionSettableProperties[T]): void;

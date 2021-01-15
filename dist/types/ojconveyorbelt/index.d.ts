@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,8 +11,12 @@ export interface ojConveyorBelt extends baseComponent<ojConveyorBeltSettableProp
     arrowVisibility: 'auto' | 'visible' | 'hidden';
     contentParent: string | null;
     orientation: 'horizontal' | 'vertical';
-    addEventListener<T extends keyof ojConveyorBeltEventMap>(type: T, listener: (this: HTMLElement, ev: ojConveyorBeltEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    translations: {
+        tipArrowNext?: string;
+        tipArrowPrevious?: string;
+    };
+    addEventListener<T extends keyof ojConveyorBeltEventMap>(type: T, listener: (this: HTMLElement, ev: ojConveyorBeltEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojConveyorBeltSettableProperties>(property: T): ojConveyorBelt[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojConveyorBeltSettableProperties>(property: T, value: ojConveyorBeltSettableProperties[T]): void;
@@ -38,6 +42,10 @@ export interface ojConveyorBeltSettableProperties extends baseComponentSettableP
     arrowVisibility: 'auto' | 'visible' | 'hidden';
     contentParent: string | null;
     orientation: 'horizontal' | 'vertical';
+    translations: {
+        tipArrowNext?: string;
+        tipArrowPrevious?: string;
+    };
 }
 export interface ojConveyorBeltSettablePropertiesLenient extends Partial<ojConveyorBeltSettableProperties> {
     [key: string]: any;

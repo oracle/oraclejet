@@ -1329,19 +1329,6 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
      */
 
     /**
-     * Bulk operation of add.
-     * @method
-     * @name upsertAll
-     * @memberof OfflineCache
-     * @param {Array} requests An array of Request
-     * @return {Promise} Returns a promise when all the requests in the array are handled.
-     * @example
-     * OfflineCache.upsertAll([request1,request2,request3]).then(function(){
-     * // Your Code here
-     * });
-     */
-
-    /**
      * Find the first response in this Cache object that match the request with the options.
      * @method
      * @name match

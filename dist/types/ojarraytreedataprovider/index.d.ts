@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,6 +20,8 @@ declare class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
+    createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
+    createOptimizedKeySet?(initialSet?: Set<K>): Set<K>;
     dispatchEvent(evt: Event): boolean;
     fetchByKeys(parameters: FetchByKeysParameters<K>): Promise<FetchByKeysResults<K, D>>;
     fetchByOffset(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>;

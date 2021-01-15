@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,6 +9,7 @@
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties> {
     colspanWrap: 'nowrap' | 'wrap';
+    columns: number;
     direction: 'column' | 'row';
     labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;
@@ -16,8 +17,8 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
     maxColumns: number;
     readonly: boolean;
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
-    addEventListener<T extends keyof ojFormLayoutEventMap>(type: T, listener: (this: HTMLElement, ev: ojFormLayoutEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojFormLayoutEventMap>(type: T, listener: (this: HTMLElement, ev: ojFormLayoutEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojFormLayoutSettableProperties>(property: T): ojFormLayout[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojFormLayoutSettableProperties>(property: T, value: ojFormLayoutSettableProperties[T]): void;
@@ -28,6 +29,8 @@ export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties>
 export namespace ojFormLayout {
     // tslint:disable-next-line interface-over-type-literal
     type colspanWrapChanged = JetElementCustomEvent<ojFormLayout["colspanWrap"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsChanged = JetElementCustomEvent<ojFormLayout["columns"]>;
     // tslint:disable-next-line interface-over-type-literal
     type directionChanged = JetElementCustomEvent<ojFormLayout["direction"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -45,6 +48,7 @@ export namespace ojFormLayout {
 }
 export interface ojFormLayoutEventMap extends HTMLElementEventMap {
     'colspanWrapChanged': JetElementCustomEvent<ojFormLayout["colspanWrap"]>;
+    'columnsChanged': JetElementCustomEvent<ojFormLayout["columns"]>;
     'directionChanged': JetElementCustomEvent<ojFormLayout["direction"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojFormLayout["labelEdge"]>;
     'labelWidthChanged': JetElementCustomEvent<ojFormLayout["labelWidth"]>;
@@ -55,6 +59,7 @@ export interface ojFormLayoutEventMap extends HTMLElementEventMap {
 }
 export interface ojFormLayoutSettableProperties extends JetSettableProperties {
     colspanWrap: 'nowrap' | 'wrap';
+    columns: number;
     direction: 'column' | 'row';
     labelEdge: 'inside' | 'start' | 'top';
     labelWidth: string;

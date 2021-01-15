@@ -1,5 +1,13 @@
-(function() {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
 define(['exports'], function (exports) {
   'use strict';
 
@@ -4659,8 +4667,14 @@ define(['exports'], function (exports) {
 
   function _getFormatter(pattern, locale) {
     return function (values) {
-      return new IntlMessageFormat(pattern, locale).format(values);
+      return new IntlMessageFormat(_parsePattern(pattern), locale).format(values);
     };
+  }
+
+  function _parsePattern(pattern) {
+    return parse(pattern, {
+      ignoreTag: true
+    });
   }
 
   function convertBundle(bundle, locale) {
@@ -4678,4 +4692,5 @@ define(['exports'], function (exports) {
     value: true
   });
 });
+
 }())

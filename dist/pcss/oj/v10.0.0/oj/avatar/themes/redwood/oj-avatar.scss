@@ -1,0 +1,212 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+// ----- end dependencies ---------
+
+@import "_oj-avatar.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-avatar.scss";
+
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "_oj-avatar-scoped.cssvars.scss"; 
+
+.oj-avatar-no-image::before {
+  content: '';
+  display: var(--oj-avatar-pattern-display);
+  background-size: 200px 200px;
+  mix-blend-mode: overlay;
+  filter: opacity(.5);
+  width: 100%;
+  height: 100%;
+  background-image: oj-image-url('avatar-pattern1.png');
+}
+
+.oj-avatar-xxs.oj-avatar-no-image::before,
+.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-bg-forest.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-red.oj-avatar-no-image::before {
+  background-size: 125px 125px;
+}
+
+.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-bg-red.oj-avatar-no-image::before,
+.oj-avatar-lg.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-lg.oj-avatar-bg-forest.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-forest.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-forest.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-forest.oj-avatar-no-image::before {
+  background-size: 150px 150px;
+}
+
+.oj-avatar-xs.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-red.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-red.oj-avatar-no-image::before  {
+  background-size: 175px 175px;
+}
+
+.oj-avatar-xxs.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-red.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-forest.oj-avatar-no-image::before{
+  background-size: 200px 200px;
+}
+
+.oj-avatar-xxl.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-forest.oj-avatar-no-image::before {
+  background-size: 250px 250px;
+}
+   
+.oj-avatar-xs.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-bg-purple.oj-avatar-no-image::before  {
+  background-size: 275px 275px;
+}
+  
+   
+.oj-avatar-bg-gray.oj-avatar-no-image::before,
+.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-bg-teal.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-lilac.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-lilac.oj-avatar-no-image::before {
+  background-size: 300px 300px;
+}
+
+
+.oj-avatar-xxs.oj-avatar-bg-slate.oj-avatar-no-image::before {
+  background-size: 320px 320px;
+}
+
+.oj-avatar-lg.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-lg.oj-avatar-bg-lilac.oj-avatar-no-image::before {
+  background-size: 325px 325px;
+}
+
+.oj-avatar-xxl.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-bg-lilac.oj-avatar-no-image::before {
+  background-size: 350px 350px;
+}
+
+.oj-avatar-xs.oj-avatar-bg-lilac.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-lilac.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-slate.oj-avatar-no-image::before {
+  background-size: 400px 400px;
+}
+
+.oj-avatar-bg-slate.oj-avatar-no-image::before {
+  background-size: 480px 480px;
+}
+
+.oj-avatar-xxl.oj-avatar-bg-slate.oj-avatar-no-image::before {
+  background-size: 560px 560px;
+}
+
+.oj-avatar-lg.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-bg-teal.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-gray.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-gray.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-gray.oj-avatar-no-image::before {
+  filter: opacity(.2);
+}
+
+.oj-avatar-xs.oj-avatar-bg-lilac.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-lilac.oj-avatar-no-image::before {
+  filter: opacity(.25);
+}
+
+.oj-avatar-bg-blue.oj-avatar-no-image::before,
+.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-bg-forest.oj-avatar-no-image::before,
+.oj-avatar-bg-purple.oj-avatar-no-image::before,
+.oj-avatar-bg-lilac.oj-avatar-no-image::before, 
+.oj-avatar-bg-gray.oj-avatar-no-image::before,
+.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-sm.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-slate.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-red.oj-avatar-no-image::before {
+  filter: opacity(.3);
+}
+
+
+.oj-avatar-xxl.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-xxl.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-xl.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-xs.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-xxs.oj-avatar-bg-mauve.oj-avatar-no-image::before,
+.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-bg-red.oj-avatar-no-image::before {
+  filter: opacity(.4);
+}
+
+
+.oj-avatar-bg-orange.oj-avatar-no-image::before,
+.oj-avatar-bg-red.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern2.png');
+}
+
+.oj-avatar-bg-green.oj-avatar-no-image::before,
+.oj-avatar-bg-forest.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern3.png');
+}
+
+.oj-avatar-bg-teal.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern4.png');
+}
+
+.oj-avatar-bg-blue.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern5.png');
+}
+
+.oj-avatar-bg-slate.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern6.png');
+}
+
+.oj-avatar-bg-pink.oj-avatar-no-image::before,
+.oj-avatar-bg-mauve.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern7.png');
+}
+
+.oj-avatar-bg-purple.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern8.png');
+}
+
+.oj-avatar-bg-lilac.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern9.png');
+}
+
+.oj-avatar-bg-gray.oj-avatar-no-image::before {
+  background-image: oj-image-url('avatar-pattern10.png');
+}

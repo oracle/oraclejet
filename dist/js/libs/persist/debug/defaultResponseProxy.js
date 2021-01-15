@@ -63,10 +63,13 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
      * <li>options.jsonProcessor An object containing the JSON shredder, unshredder, and queryHandler for the responses.</li>
      * <li>options.jsonProcessor.shredder JSON shredder for the responses</li>
      * <li>options.jsonProcessor.unshredder JSON unshredder for the responses</li>
-     * <li>options.queryHandler query parameter handler. Should be a function which takes a
+     * <li>options.queryHandler query parameter handler. Should be a function object which takes a
      *                          Request and returns a Promise which resolves with a Response
      *                          when the query parameters have been processed. If the Request
-     *                          was not handled then resolve to null.</li>
+     *                          was not handled then resolve to null. The queryHandler object
+     *                          also contains an optional function named normalizeQueryParameter
+     *                          that takes a request URL and returns the normalized query parameters
+     *                          as defined in {@link NormalizedQuery}</li>
      * <li>options.fetchStrategy Should be a function which takes a
      *                   Request and returns a Promise which resolves to a Response
      *                   If unspecified then uses the default.</li>

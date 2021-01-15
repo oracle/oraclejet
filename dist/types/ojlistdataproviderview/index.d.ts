@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,7 +15,7 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
     from?: Kin;
     offset?: number;
     sortCriteria?: Array<SortCriterion<D>>;
-    constructor(dataProvider: DataProvider<K, D>, options?: {
+    constructor(dataProvider: DataProvider<Kin, Din>, options?: {
         from?: Kin;
         offset?: number;
         sortCriteria?: Array<SortCriterion<D>>;

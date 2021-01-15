@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -73,7 +73,7 @@
         font-size: $iconCircleXlFontSize;
       }
       
-      .oj-icon-circle-xl .oj-icon-circle-inner,
+      .oj-icon-circle-xxl .oj-icon-circle-inner,
       .oj-icon-xxl .oj-icon-circle-inner {
         height:$iconCircleXxlInnerSize;
         width: $iconCircleXxlInnerSize;
@@ -106,6 +106,26 @@
       
       .oj-icon-circle-mauve .oj-icon-circle-inner{
         background-color: $iconCircleMauve; 
+      }
+
+      .oj-icon-circle-pink .oj-icon-circle-inner{
+        background-color: $iconCirclePink; 
+      }
+
+      .oj-icon-circle-gray .oj-icon-circle-inner{
+        background-color: $iconCircleGray; 
+      }
+
+      .oj-icon-circle-blue .oj-icon-circle-inner{
+        background-color: $iconCircleBlue; 
+      }
+
+      .oj-icon-circle-lilac .oj-icon-circle-inner{
+        background-color: $iconCircleLilac; 
+      }
+
+      .oj-icon-circle-slate .oj-icon-circle-inner{
+        background-color: $iconCircleSlate; 
       }
 
       

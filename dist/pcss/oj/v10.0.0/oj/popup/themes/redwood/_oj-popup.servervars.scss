@@ -1,0 +1,12 @@
+
+// POPUP
+//-----------------------------------------------------------------------------
+// animation theme defaults
+$privatePopupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
+$privatePopupCloseAnimation: ((effect: "zoomOut", transformOrigin: "#myPosition"), "fadeOut") !default;
+// Placeholder for theme specific popup modality option override.
+$privatePopupModalityOptionDefault: "modeless" !default;
+
+// animation 
+$privatePopupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+$privatePopupTailCloseAnimation: (effect: "none") !default;

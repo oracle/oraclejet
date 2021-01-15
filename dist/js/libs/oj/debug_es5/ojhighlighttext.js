@@ -1,4 +1,5 @@
-(function() {function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+(function() {
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
@@ -20,127 +21,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojvcomponent-element'], function (exports, ojvcomponentElement) {
   'use strict';
-  /**
-   * @license
-   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
-   * @ojcomponent oj.ojHighlightText
-   * @ojtsvcomponent
-   * @augments oj.baseComponent
-   * @since 9.1.0
-   * @ojdisplayname Highlight Text
-   * @ojshortdesc A Highlight Text renders text with highlighting applied.
-   * @ojsignature [{
-   *                target: "Type",
-   *                value: "class ojHighlightText extends baseComponent<ojHighlightTextSettableProperties>"
-   *               },
-   *               {
-   *                target: "Type",
-   *                value: "ojHighlightTextSettableProperties extends baseComponentSettableProperties",
-   *                for: "SettableProperties"
-   *               }
-   *              ]
-   *
-   * @ojpropertylayout {propertyGroup: "common", items: ["text", "matchText"]}
-   * @ojvbdefaultcolumns 6
-   * @ojvbmincolumns 2
-   *
-   * @classdesc
-   * <h3 id="highlightTextOverview-section">
-   *   JET Highlight Text
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#highlightTextOverview-section"></a>
-   * </h3>
-   * <p>Description: JET Highlight Text renders text with highlighting applied.</p>
-   *
-   * <p>JET Highlight Text renders a text string with highlighting applied to the given text to match.</p>
-   *
-   * A Highlight Text can be created with the following markup.</p>
-   *
-   * <pre class="prettyprint"><code>
-   * &lt;oj-highlight-text
-   *   text='My text to apply highlighting to.'
-   *   match-text='igh'>
-   * &lt;/oj-highlight-text>
-   * </code></pre>
-   */
-
-  /**
-   * The text string to apply highlighting to.
-   *
-   * @example <caption>Initialize the Highlight Text with the <code class="prettyprint">text</code> attribute specified:</caption>
-   * &lt;oj-highlight-text text="My text to apply highlighting to.">&lt;/oj-highlight-text>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">text</code> property after initialization:</caption>
-   * // getter
-   * var textValue = myHighlightText.text;
-   *
-   * // setter
-   * myHighlightText.text = "My text to apply highlighting to.";
-   *
-   * @expose
-   * @member
-   * @name text
-   * @ojshortdesc The text string to apply highlighting to.
-   * @ojtranslatable
-   * @access public
-   * @instance
-   * @memberof oj.ojHighlightText
-   * @type {string}
-   * @default ''
-   */
-
-  /**
-   * The text string to match.
-   *
-   * @example <caption>Initialize the Highlight Text with the <code class="prettyprint">match-text</code> attribute specified:</caption>
-   * &lt;oj-highlight-text match-text="igh">&lt;/oj-highlight-text>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">matchText</code> property after initialization:</caption>
-   * // getter
-   * var matchTextValue = myHighlightText.matchText;
-   *
-   * // setter
-   * myHighlightText.matchText = "igh";
-   *
-   * @expose
-   * @member
-   * @name matchText
-   * @ojshortdesc The text string to match.
-   * @ojtranslatable
-   * @access public
-   * @instance
-   * @memberof oj.ojHighlightText
-   * @type {string}
-   * @default ''
-   */
-  // Superclass Doc Overrides
-
-  /**
-   * @ojslot contextMenu
-   * @memberof oj.ojHighlightText
-   * @ignore
-   */
-
-  /**
-   * @name refresh
-   * @memberof oj.ojHighlightText
-   * @instance
-   * @ignore
-   */
-
-  /**
-   * @name translations
-   * @memberof oj.ojHighlightText
-   * @instance
-   * @ignore
-   */
 
   var __decorate = null && null.__decorate || function (decorators, target, key, desc) {
     var c = arguments.length,
@@ -159,8 +48,8 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
     this.matchText = '';
   };
 
-  exports.HighlightText = /*#__PURE__*/function (_ojvcomponent$VCompon) {
-    _inherits(HighlightText, _ojvcomponent$VCompon);
+  exports.HighlightText = /*#__PURE__*/function (_ojvcomponentElement$) {
+    _inherits(HighlightText, _ojvcomponentElement$);
 
     var _super = _createSuper(HighlightText);
 
@@ -181,7 +70,7 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
 
         var content = this._highlighter(props.text, props.matchText);
 
-        return ojvcomponent.h("oj-highlight-text", {
+        return ojvcomponentElement.h("oj-highlight-text", {
           class: 'oj-highlighttext'
         }, content);
       }
@@ -194,14 +83,14 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
           var highlightedText = unhighlightedText.replace(new RegExp(escapedMatchText, 'gi'), this._HIGHLIGHT_TOKEN + '$&' + this._HIGHLIGHT_TOKEN);
           var tokens = highlightedText.split(this._HIGHLIGHT_TOKEN);
           var nodes = tokens.map(function (current, index) {
-            return index % 2 == 0 ? current : ojvcomponent.h("span", {
+            return index % 2 == 0 ? current : ojvcomponentElement.h("span", {
               class: 'oj-highlighttext-highlighter'
             }, current);
           });
-          return ojvcomponent.h("span", null, nodes);
+          return ojvcomponentElement.h("span", null, nodes);
         }
 
-        return ojvcomponent.h("span", null, unhighlightedText);
+        return ojvcomponentElement.h("span", null, unhighlightedText);
       }
     }, {
       key: "_escapeRegExp",
@@ -211,7 +100,7 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
     }]);
 
     return HighlightText;
-  }(ojvcomponent.VComponent);
+  }(ojvcomponentElement.ElementVComponent);
 
   exports.HighlightText.metadata = {
     "extension": {
@@ -228,9 +117,10 @@ define(['exports', 'ojs/ojvcomponent'], function (exports, ojvcomponent) {
       }
     }
   };
-  exports.HighlightText = __decorate([ojvcomponent.customElement('oj-highlight-text')], exports.HighlightText);
+  exports.HighlightText = __decorate([ojvcomponentElement.customElement('oj-highlight-text')], exports.HighlightText);
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
+
 }())

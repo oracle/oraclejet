@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -16,9 +16,7 @@ export interface ojRangeSlider extends editableValue<Object | null, ojRangeSlide
         messages: 'display' | 'none';
         validatorHint: 'display' | 'none';
     };
-    higherValueThumb: string | null;
     labelledBy: string | null;
-    lowerValueThumb: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';
@@ -32,10 +30,12 @@ export interface ojRangeSlider extends editableValue<Object | null, ojRangeSlide
         start: number | null;
     };
     translations: {
+        higherValueThumb?: string;
+        lowerValueThumb?: string;
         startEnd?: string;
     };
-    addEventListener<T extends keyof ojRangeSliderEventMap>(type: T, listener: (this: HTMLElement, ev: ojRangeSliderEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojRangeSliderEventMap>(type: T, listener: (this: HTMLElement, ev: ojRangeSliderEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojRangeSliderSettableProperties>(property: T): ojRangeSlider[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojRangeSliderSettableProperties>(property: T, value: ojRangeSliderSettableProperties[T]): void;
@@ -61,11 +61,7 @@ export namespace ojRangeSlider {
     // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged = JetElementCustomEvent<ojRangeSlider["displayOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type higherValueThumbChanged = JetElementCustomEvent<ojRangeSlider["higherValueThumb"]>;
-    // tslint:disable-next-line interface-over-type-literal
     type labelledByChanged = JetElementCustomEvent<ojRangeSlider["labelledBy"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type lowerValueThumbChanged = JetElementCustomEvent<ojRangeSlider["lowerValueThumb"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojRangeSlider["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -84,9 +80,7 @@ export interface ojRangeSliderEventMap extends editableValueEventMap<Object | nu
     'ojAnimateStart': ojRangeSlider.ojAnimateStart;
     'disabledChanged': JetElementCustomEvent<ojRangeSlider["disabled"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojRangeSlider["displayOptions"]>;
-    'higherValueThumbChanged': JetElementCustomEvent<ojRangeSlider["higherValueThumb"]>;
     'labelledByChanged': JetElementCustomEvent<ojRangeSlider["labelledBy"]>;
-    'lowerValueThumbChanged': JetElementCustomEvent<ojRangeSlider["lowerValueThumb"]>;
     'maxChanged': JetElementCustomEvent<ojRangeSlider["max"]>;
     'minChanged': JetElementCustomEvent<ojRangeSlider["min"]>;
     'orientationChanged': JetElementCustomEvent<ojRangeSlider["orientation"]>;
@@ -102,9 +96,7 @@ export interface ojRangeSliderSettableProperties extends editableValueSettablePr
         messages: 'display' | 'none';
         validatorHint: 'display' | 'none';
     };
-    higherValueThumb: string | null;
     labelledBy: string | null;
-    lowerValueThumb: string | null;
     max: number | null;
     min: number | null;
     orientation: 'horizontal' | 'vertical';
@@ -118,6 +110,8 @@ export interface ojRangeSliderSettableProperties extends editableValueSettablePr
         start: number | null;
     };
     translations: {
+        higherValueThumb?: string;
+        lowerValueThumb?: string;
         startEnd?: string;
     };
 }
@@ -146,8 +140,8 @@ export interface ojSlider extends editableValue<number | null, ojSliderSettableP
         optionNum?: string;
         valueRange?: string;
     };
-    addEventListener<T extends keyof ojSliderEventMap>(type: T, listener: (this: HTMLElement, ev: ojSliderEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSliderEventMap>(type: T, listener: (this: HTMLElement, ev: ojSliderEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSliderSettableProperties>(property: T): ojSlider[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSliderSettableProperties>(property: T, value: ojSliderSettableProperties[T]): void;

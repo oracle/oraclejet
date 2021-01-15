@@ -1,0 +1,83 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example gauge/themes/redwood/oj-gauge.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.gauge") {
+  // todo: there's actually 3 components in here, this needs to be broken out into
+  // separate files/dirs
+  .oj-dialgauge {
+    width: 200px;
+    height: 200px;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-led-gauge:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-led-gauge {
+    display: block;
+  }
+
+  .oj-ledgauge {
+    width: 40px;
+    height: 40px;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-status-meter-gauge:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-status-meter-gauge {
+    display: block;
+  }
+
+  .oj-statusmetergauge {
+    width: 220px;
+    height: 25px;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-rating-gauge:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-rating-gauge {
+    display: block;
+  }
+
+  .oj-gauge-metric-label {
+    font-weight: bold;
+  }
+
+  .oj-gauge-label {
+  }
+
+  // color for the first threshold on a gauge, typically represents a low value
+  .oj-gauge-threshold1 {
+    color: var(--oj-dvt-danger-color);
+  }
+
+  // color for the second threshold on a gauge, typically represents a medium value
+  .oj-gauge-threshold2 {
+    color: var(--oj-dvt-warning-color);
+  }
+
+  // color for the third threshold on a gauge, typically represents a high value
+  .oj-gauge-threshold3 {
+    color: var(--oj-dvt-success-color);
+  }
+
+  .oj-dialgauge.oj-focus-highlight,
+  .oj-ledgauge.oj-focus-highlight,
+  .oj-statusmetergauge.oj-focus-highlight,
+  .oj-ratinggauge.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color); // used on most browsers
+    outline: -webkit-focus-ring-color auto; // used on chrome
+  }
+}

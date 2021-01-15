@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
@@ -188,7 +188,6 @@ $formControlMessageSummaryOptionDefault: "header" !default;
 
 $formLayoutLabelInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
-$formLayoutLabelGenerationDefault: form !default;
 $formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
@@ -199,7 +198,7 @@ $radioCheckboxRowHeight: 1.9rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
 $radioCheckboxInputToEdgePadding: 0 !default;
 $radioCheckboxInputToLabelPadding: .6rem !default;
-$radioCheckboxMessagePadding: .3rem .6rem .3rem .6rem !default; //settings: ignore
+$ojprivateRadioCheckboxMessagePadding: .3rem .6rem .3rem .6rem !default;
 $radioCheckboxLabelToEdgePadding: 0 !default;
 
 // INPUT DATE/TIME

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -41,8 +41,9 @@ export interface ojSelectSingle<V, D> extends editableValue<V, ojSelectSingleSet
             messageSummary?: string;
         };
     };
-    addEventListener<T extends keyof ojSelectSingleEventMap<V, D>>(type: T, listener: (this: HTMLElement, ev: ojSelectSingleEventMap<V, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSelectSingleEventMap<V, D>>(type: T, listener: (this: HTMLElement, ev: ojSelectSingleEventMap<V, D>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSelectSingleSettableProperties<V, D>>(property: T): ojSelectSingle<V, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSelectSingleSettableProperties<V, D>>(property: T, value: ojSelectSingleSettableProperties<V, D>[T]): void;
@@ -62,6 +63,13 @@ export namespace ojSelectSingle {
         action: string;
         element: Element;
         endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojValueAction<V, D> extends CustomEvent<{
+        itemContext: CommonTypes.ItemContext<V, D>;
+        previousValue: V | null;
+        value: V | null;
         [propName: string]: any;
     }> {
     }
@@ -87,31 +95,32 @@ export namespace ojSelectSingle {
     type virtualKeyboardChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["virtualKeyboard"]>;
     // tslint:disable-next-line interface-over-type-literal
     type CollectionTemplateContext<V, D> = {
-        data: DataProvider<V, D>;
-        searchText: string;
-        selectedItem: CommonTypes.ItemContext<V, D>;
-        selected: KeySet<V>;
         currentRow: {
             rowKey: V;
         };
+        data: DataProvider<V, D>;
         handleRowAction: ((event: Event, context: CommonTypes.ItemContext<V, D>) => void);
+        searchText: string;
+        selected: KeySet<V>;
+        selectedItem: CommonTypes.ItemContext<V, D>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<V, D> = {
         componentElement: Element;
         data: D;
+        depth: number;
         index: number;
         key: V;
-        metadata: ItemMetadata<V>;
-        searchText: string;
-        depth: number;
         leaf: boolean;
+        metadata: ItemMetadata<V>;
         parentKey: V;
+        searchText: string;
     };
 }
 export interface ojSelectSingleEventMap<V, D> extends editableValueEventMap<V, ojSelectSingleSettableProperties<V, D>> {
     'ojAnimateEnd': ojSelectSingle.ojAnimateEnd;
     'ojAnimateStart': ojSelectSingle.ojAnimateStart;
+    'ojValueAction': ojSelectSingle.ojValueAction<V, D>;
     'dataChanged': JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojSelectSingle<V, D>["displayOptions"]>;
     'itemTextChanged': JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;

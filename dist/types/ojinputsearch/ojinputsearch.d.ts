@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,16 +11,18 @@ import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
 import 'ojs/ojlistdataproviderview';
 import * as CommonTypes from 'ojs/ojcommontypes';
 import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
-import { VComponent } from 'ojs/ojvcomponent';
+import { ElementVComponent } from 'ojs/ojvcomponent-element';
 declare class Props<Key, Data> {
     suggestions?: DataProvider<Key, Data> | null;
-    suggestionItemText?: string | ((itemContext: CommonTypes.ItemContext<Key, Data>) => string);
+    suggestionItemText?: keyof Data | ((itemContext: CommonTypes.ItemContext<Key, Data>) => string);
     placeholder?: string;
     rawValue?: string | null;
+    onRawValueChanged?: ElementVComponent.PropertyChanged<string | null>;
     value?: string | null;
+    onValueChanged?: ElementVComponent.PropertyChanged<string | null>;
     'aria-label'?: string;
-    onOjValueAction?: VComponent.Action<ValueDetail<Key, Data>>;
-    suggestionItemTemplate?: VComponent.Slot<SuggestionItemTemplateContext<Key, Data>>;
+    onOjValueAction?: ElementVComponent.Action<ValueDetail<Key, Data>>;
+    suggestionItemTemplate?: ElementVComponent.TemplateSlot<SuggestionItemTemplateContext<Key, Data>>;
 }
 declare type State<Key, Data> = {
     dropdownOpen: boolean;
@@ -41,10 +43,13 @@ declare type State<Key, Data> = {
     actionDetail: CommonTypes.ItemContext<Key, Data>;
     valueSubmitted: boolean;
     lastEventType: string;
+    showAutocompleteText: boolean;
+    autocompleteFloatingText: string;
 };
 declare type ValueDetail<Key, Data> = {
     value?: string;
     itemContext?: CommonTypes.ItemContext<Key, Data>;
+    previousValue?: string;
 };
 interface SuggestionItemTemplateContext<Key, Data> {
     data: Data;
@@ -53,7 +58,7 @@ interface SuggestionItemTemplateContext<Key, Data> {
     index: number;
     searchText?: string | null;
 }
-export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, D>> {
+export declare class InputSearch<K, D> extends ElementVComponent<Props<K, D>, State<K, D>> {
     private _CLASS_NAMES;
     private _KEYS;
     private _rootElem;
@@ -68,6 +73,7 @@ export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, 
     private _queryCount;
     private _resolveFetchBusyState;
     private _renderedSuggestions;
+    private _testPromiseResolve;
     constructor(props: Readonly<Props<K, D>>);
     protected render(): any;
     protected static initStateFromProps<K, D>(props: Readonly<Props<K, D>>, state: Readonly<State<K, D>>): Partial<State<K, D>> | null;
@@ -105,6 +111,7 @@ export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, 
     private _usingHandler;
     private _renderEnabled;
     private _renderDropdown;
+    private _renderAutocompleteFloatingText;
     private _scrollSuggestionIntoView;
     private _generateId;
     private _handleDataProviderRefreshEventListener;
@@ -118,107 +125,79 @@ export declare class InputSearch<K, D> extends VComponent<Props<K, D>, State<K, 
     private _addDataProviderEventListeners;
     private _removeDataProviderEventListeners;
     private _resolveFetching;
+    private static _formatItemText;
+    private _testChangeValue;
+    private _testChangeValueByKey;
     protected _vprops?: VProps<K, D>;
 }
 // Custom Element interfaces
-export interface InputSearchElement<Key,Data> extends JetElement<InputSearchElementSettableProperties<Key,Data>> {
+export interface InputSearchElement<K,D> extends JetElement<InputSearchElementSettableProperties<K, D>>, InputSearchElementSettableProperties<K, D> {
   /**
-   * A short hint that can be displayed before user selects or enters a value.
-   */
-  placeholder?: Props<Key,Data>['placeholder'];
-  /**
-   * Read-only property used for retrieving the current value from the input field in string form.
-   */
-  readonly rawValue?: Props<Key,Data>['rawValue'];
-  /**
-   * Specifies the text string to render for a suggestion.
-   */
-  suggestionItemText?: Props<Key,Data>['suggestionItemText'];
-  /**
-   * The suggestions data for the InputSearch.
-   */
-  suggestions?: Props<Key,Data>['suggestions'];
-  /**
-   * The value of the element.
-   */
-  value?: Props<Key,Data>['value'];
-  addEventListener<T extends keyof InputSearchElementEventMap<Key,Data>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<Key,Data>[T]) => any, useCapture?: boolean): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-  getProperty<T extends keyof InputSearchElementSettableProperties<Key,Data>>(property: T): InputSearchElement<Key,Data>[T];
+  * Read-only property used for retrieving the current value from the input field in string form.
+  */
+  readonly rawValue?: Props<K, D>['rawValue'];
+  addEventListener<T extends keyof InputSearchElementEventMap<K,D>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<K,D>[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
+  getProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T): InputSearchElement<K,D>[T];
   getProperty(property: string): any;
-  setProperty<T extends keyof InputSearchElementSettableProperties<Key,Data>>(property: T, value: InputSearchElementSettableProperties<Key,Data>[T]): void;
-  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, InputSearchElementSettableProperties<Key,Data>>): void;
-  setProperties(properties: InputSearchElementSettablePropertiesLenient<Key,Data>): void;
+  setProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T, value: InputSearchElementSettableProperties<K, D>[T]): void;
+  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, InputSearchElementSettableProperties<K, D>>): void;
+  setProperties(properties: InputSearchElementSettablePropertiesLenient<K, D>): void;
+  _testChangeValue: InputSearch<K,D>['_testChangeValue'];
+  _testChangeValueByKey: InputSearch<K,D>['_testChangeValueByKey'];
+  blur: InputSearch<K,D>['blur'];
+  focus: InputSearch<K,D>['focus'];
 }
 export namespace InputSearchElement {
-  interface ojValueAction<Key,Data> extends CustomEvent<ValueDetail<Key, Data> & {
+  interface ojValueAction<Key,Data> extends CustomEvent<ValueDetail<Key,Data> & {
     [propName: string]: any;
   }>{}
   // tslint:disable-next-line interface-over-type-literal
-  type placeholderChanged<Key,Data> = JetElementCustomEvent<InputSearchElement<Key,Data>["placeholder"]>;
+  type placeholderChanged<K,D> = JetElementCustomEvent<InputSearchElement<K,D>["placeholder"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type rawValueChanged<Key,Data> = JetElementCustomEvent<InputSearchElement<Key,Data>["rawValue"]>;
+  type rawValueChanged<K,D> = JetElementCustomEvent<InputSearchElement<K,D>["rawValue"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type suggestionItemTextChanged<Key,Data> = JetElementCustomEvent<InputSearchElement<Key,Data>["suggestionItemText"]>;
+  type suggestionItemTextChanged<K,D> = JetElementCustomEvent<InputSearchElement<K,D>["suggestionItemText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type suggestionsChanged<Key,Data> = JetElementCustomEvent<InputSearchElement<Key,Data>["suggestions"]>;
+  type suggestionsChanged<K,D> = JetElementCustomEvent<InputSearchElement<K,D>["suggestions"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type valueChanged<Key,Data> = JetElementCustomEvent<InputSearchElement<Key,Data>["value"]>;
+  type valueChanged<K,D> = JetElementCustomEvent<InputSearchElement<K,D>["value"]>;
 }
-export interface InputSearchElementEventMap<Key,Data> extends HTMLElementEventMap {
-  'ojValueAction': InputSearchElement.ojValueAction<Key,Data>;
-  'placeholderChanged': JetElementCustomEvent<InputSearchElement<Key,Data>["placeholder"]>;
-  'rawValueChanged': JetElementCustomEvent<InputSearchElement<Key,Data>["rawValue"]>;
-  'suggestionItemTextChanged': JetElementCustomEvent<InputSearchElement<Key,Data>["suggestionItemText"]>;
-  'suggestionsChanged': JetElementCustomEvent<InputSearchElement<Key,Data>["suggestions"]>;
-  'valueChanged': JetElementCustomEvent<InputSearchElement<Key,Data>["value"]>;
+export interface InputSearchElementEventMap<K,D> extends HTMLElementEventMap {
+  'ojValueAction': InputSearchElement.ojValueAction<K, D>;
+  'placeholderChanged': JetElementCustomEvent<InputSearchElement<K,D>["placeholder"]>;
+  'rawValueChanged': JetElementCustomEvent<InputSearchElement<K,D>["rawValue"]>;
+  'suggestionItemTextChanged': JetElementCustomEvent<InputSearchElement<K,D>["suggestionItemText"]>;
+  'suggestionsChanged': JetElementCustomEvent<InputSearchElement<K,D>["suggestions"]>;
+  'valueChanged': JetElementCustomEvent<InputSearchElement<K,D>["value"]>;
 }
 export interface InputSearchElementSettableProperties<Key,Data> extends JetSettableProperties {
   /**
-   * A short hint that can be displayed before user selects or enters a value.
-   */
+  * A short hint that can be displayed before user selects or enters a value.
+  */
   placeholder?: Props<Key,Data>['placeholder'];
   /**
-   * Read-only property used for retrieving the current value from the input field in string form.
-   */
-  readonly rawValue?: Props<Key,Data>['rawValue'];
-  /**
-   * Specifies the text string to render for a suggestion.
-   */
+  * Specifies the text string to render for a suggestion.
+  */
   suggestionItemText?: Props<Key,Data>['suggestionItemText'];
   /**
-   * The suggestions data for the InputSearch.
-   */
+  * Data for the InputSearch suggestions.
+  */
   suggestions?: Props<Key,Data>['suggestions'];
   /**
-   * The value of the element.
-   */
+  * The value of the element.
+  */
   value?: Props<Key,Data>['value'];
 }
 export interface InputSearchElementSettablePropertiesLenient<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export type ojInputSearch<Key,Data> = InputSearchElement<Key,Data>
-export namespace ojInputSearch {
-  interface ojValueAction<Key,Data> extends CustomEvent<ValueDetail<Key, Data> & {
-    [propName: string]: any;
-  }>{}
-  // tslint:disable-next-line interface-over-type-literal
-  type placeholderChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["placeholder"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type rawValueChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["rawValue"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type suggestionItemTextChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["suggestionItemText"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type suggestionsChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["suggestions"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type valueChanged<Key,Data> = JetElementCustomEvent<ojInputSearch<Key,Data>["value"]>;
+export interface InputSearchProperties<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>>, GlobalAttributes {
+  rawValue?: never;
 }
-export type ojInputSearchEventMap<Key,Data> = InputSearchElementEventMap<Key,Data>;
-export type ojInputSearchSettableProperties<Key,Data> = InputSearchElementSettableProperties<Key,Data>;
-export type ojInputSearchSettablePropertiesLenient<Key,Data> = InputSearchElementSettablePropertiesLenient<Key,Data>;
-export interface InputSearchProperties<Key,Data> extends Partial<InputSearchElementSettableProperties<Key,Data>>, GlobalAttributes {}
-export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {}
+export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {
+  rawValue?: never;
+}
 declare global {
   namespace JSX {
     interface IntrinsicElements {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,70 +19,11 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     data: DataProvider<K, D> | null;
     dataCursor: 'off' | 'on' | 'auto';
     dataCursorBehavior: 'smooth' | 'snap' | 'auto';
-    dataCursorPosition: {
-        x: number | string;
-        y: number;
-        y2: number;
-    };
+    dataCursorPosition: ojChart.DataCursorPosition;
     dataLabel: ((context: ojChart.DataLabelContext<K, D, I>) => (string[] | string | number[] | number));
     dnd: {
-        drag: {
-            groups: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndGroup) => void);
-            };
-            items: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndItem<K, D, I>) => void);
-            };
-            series: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndSeries<K, I>) => void);
-            };
-        };
-        drop: {
-            legend: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            plotArea: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            xAxis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            y2Axis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            yAxis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-        };
+        drag: ojChart.DndDragConfigs<K, D, I>;
+        drop: ojChart.DndDropConfigs;
     };
     dragMode: 'pan' | 'zoom' | 'select' | 'off' | 'user';
     drilling: 'on' | 'seriesOnly' | 'groupsOnly' | 'off';
@@ -93,56 +34,13 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     highlightedCategories: string[];
     hoverBehavior: 'dim' | 'none';
     initialZooming: 'first' | 'last' | 'none';
-    legend: {
-        backgroundColor: string;
-        borderColor: string;
-        maxSize: string;
-        position: 'start' | 'end' | 'bottom' | 'top' | 'auto';
-        referenceObjectSection: {
-            title: string;
-            titleHalign: 'center' | 'end' | 'start';
-            titleStyle: CSSStyleDeclaration;
-        };
-        rendered: 'on' | 'off' | 'auto';
-        scrolling: 'off' | 'asNeeded';
-        sections: ojChart.LegendSection[];
-        seriesSection: {
-            title: string;
-            titleHalign: 'center' | 'end' | 'start';
-            titleStyle: CSSStyleDeclaration;
-        };
-        size: string;
-        symbolHeight: number;
-        symbolWidth: number;
-        textStyle: CSSStyleDeclaration;
-        title: string;
-        titleHalign: 'center' | 'end' | 'start';
-        titleStyle: CSSStyleDeclaration;
-    };
+    legend: ojChart.Legend;
+    multiSeriesDrilling: 'on' | 'off';
     orientation: 'horizontal' | 'vertical';
     otherThreshold: number;
-    overview: {
-        content: C;
-        height: string;
-        rendered: 'on' | 'off';
-    };
-    pieCenter: {
-        converter?: (Converter<number>);
-        label: string;
-        labelStyle: CSSStyleDeclaration;
-        renderer: ((context: ojChart.PieCenterContext) => ({
-            insert: Element | string;
-        } | {
-            preventDefault: boolean;
-        }));
-        scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-    };
-    plotArea: {
-        backgroundColor: string;
-        borderColor: string;
-        borderWidth: number;
-        rendered: 'off' | 'on';
-    };
+    overview: ojChart.Overview<C>;
+    pieCenter: ojChart.PieCenter;
+    plotArea: ojChart.PlotArea;
     polarGridShape: 'polygon' | 'circle';
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
@@ -152,379 +50,17 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     splitterPosition: number;
     stack: 'on' | 'off';
     stackLabel: 'on' | 'off';
-    styleDefaults: {
-        animationDownColor: string;
-        animationDuration: number;
-        animationIndicators: 'none' | 'all';
-        animationUpColor: string;
-        barGapRatio: number;
-        borderColor: string;
-        borderWidth: number;
-        boxPlot: {
-            medianSvgClassName: string;
-            medianSvgStyle: CSSStyleDeclaration;
-            whiskerEndLength: string;
-            whiskerEndSvgClassName: string;
-            whiskerEndSvgStyle: CSSStyleDeclaration;
-            whiskerSvgClassName: string;
-            whiskerSvgStyle: CSSStyleDeclaration;
-        };
-        colors: string[];
-        dataCursor: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            markerColor: string;
-            markerDisplayed: 'off' | 'on';
-            markerSize: number;
-        };
-        dataItemGaps: string;
-        dataLabelCollision: 'fitInBounds' | 'none';
-        dataLabelPosition: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        dataLabelStyle: CSSStyleDeclaration | CSSStyleDeclaration[];
-        funnelBackgroundColor: string;
-        groupSeparators: {
-            color: string;
-            rendered: 'off' | 'auto';
-        };
-        hoverBehaviorDelay: number;
-        lineStyle: 'dotted' | 'dashed' | 'solid';
-        lineType: 'straight' | 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'auto';
-        lineWidth: number;
-        markerColor: string;
-        markerDisplayed: 'on' | 'off' | 'auto';
-        markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-        markerSize: number;
-        marqueeBorderColor: string;
-        marqueeColor: string;
-        maxBarWidth: number;
-        otherColor: string;
-        patterns: string[];
-        pieFeelerColor: string;
-        pieInnerRadius: number;
-        selectionEffect: 'explode' | 'highlightAndExplode' | 'highlight';
-        seriesEffect: 'color' | 'pattern' | 'gradient';
-        shapes: string[];
-        stackLabelStyle: CSSStyleDeclaration;
-        stockFallingColor: string;
-        stockRangeColor: string;
-        stockRisingColor: string;
-        stockVolumeColor: string;
-        threeDEffect: 'on' | 'off';
-        tooltipLabelStyle: CSSStyleDeclaration;
-        tooltipValueStyle: CSSStyleDeclaration;
-    };
+    styleDefaults: ojChart.StyleDefaults;
     timeAxisType: 'enabled' | 'mixedFrequency' | 'skipGaps' | 'disabled' | 'auto';
     tooltip: {
-        renderer: ((context: ojChart.TooltipContext<K, D, I>) => ({
-            insert: Element | string;
-        } | {
-            preventDefault: boolean;
-        }));
+        renderer: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.TooltipContext<K, D, I>>;
     };
     touchResponse: 'touchStart' | 'auto';
-    type: 'line' | 'area' | 'lineWithArea' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid' | 'bar';
-    valueFormats: {
-        close: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        group: {
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string | string[];
-        };
-        high: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        label: {
-            converter?: (Converter<string>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        };
-        low: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        open: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q1: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q2: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q3: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        series: {
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        targetValue: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        value: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        volume: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        x: {
-            converter?: (Converter<string | number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        y: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        y2: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        z: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-    };
-    xAxis: {
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'off' | 'on';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number | string;
-        maxSize: string;
-        min: number | string;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number | string;
-            id: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number | string;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number | string;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<string | number>);
-            rendered: 'off' | 'on';
-            rotation: 'none' | 'auto';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-        viewportEndGroup: number | string;
-        viewportMax: number | string;
-        viewportMin: number | string;
-        viewportStartGroup: number | string;
-    };
-    y2Axis: {
-        alignTickMarks: 'off' | 'on';
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number;
-        maxSize: string;
-        min: number;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        position: 'start' | 'end' | 'top' | 'bottom' | 'auto';
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number;
-            id: string;
-            items: Array<{
-                high: number;
-                low: number;
-                value: number;
-                x: number | string;
-            }>;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineType: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<number>);
-            position: 'inside' | 'outside';
-            rendered: 'off' | 'on';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-    };
-    yAxis: {
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number;
-        maxSize: string;
-        min: number;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        position: 'start' | 'end' | 'top' | 'bottom' | 'auto';
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number;
-            id: string;
-            items: Array<{
-                high: number;
-                low: number;
-                value: number;
-                x: number | string;
-            }>;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineType: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<number>);
-            position: 'inside' | 'outside';
-            rendered: 'off' | 'on';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-        viewportMax: number;
-        viewportMin: number;
-    };
+    type: ojChart.ChartType;
+    valueFormats: ojChart.ValueFormats;
+    xAxis: ojChart.XAxis;
+    y2Axis: ojChart.Y2Axis;
+    yAxis: ojChart.YAxis;
     zoomAndScroll: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection: 'x' | 'y' | 'auto';
     translations: {
@@ -568,8 +104,9 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
         tooltipSelect?: string;
         tooltipZoom?: string;
     };
-    addEventListener<T extends keyof ojChartEventMap<K, D, I, C>>(type: T, listener: (this: HTMLElement, ev: ojChartEventMap<K, D, I, C>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojChartEventMap<K, D, I, C>>(type: T, listener: (this: HTMLElement, ev: ojChartEventMap<K, D, I, C>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojChartSettableProperties<K, D, I, C>>(property: T): ojChart<K, D, I, C>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojChartSettableProperties<K, D, I, C>>(property: T, value: ojChartSettableProperties<K, D, I, C>[T]): void;
@@ -577,38 +114,124 @@ export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array
     setProperties(properties: ojChartSettablePropertiesLenient<K, D, I, C>): void;
     getContextByNode(node: Element): ojChart.PieCenterLabelContext | ojChart.LegendItemContext | ojChart.ReferenceObject | ojChart.GroupContext | ojChart.AxisTitleContext | ojChart.ItemContext |
        ojChart.SeriesContext;
+    getLegend(): {
+        bounds: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+    };
+    getPlotArea(): {
+        bounds: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+    };
     getValuesAt(x: number, y: number): {
         x: number | string | null;
         y: number | null;
         y2: number | null;
     };
+    getXAxis(): {
+        bounds: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+        getPreferredSize(width: number, height: number): {
+            width: number;
+            height: number;
+        };
+    };
+    getY2Axis(): {
+        bounds: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+        getPreferredSize(width: number, height: number): {
+            width: number;
+            height: number;
+        };
+    };
+    getYAxis(): {
+        bounds: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+        getPreferredSize(width: number, height: number): {
+            width: number;
+            height: number;
+        };
+    };
 }
 export namespace ojChart {
     interface ojDrill<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
-        id: string;
-        series: string;
-        group: string;
         data: Item<K, I> | number | null;
-        itemData: D;
-        seriesData: Series<K, I> | null;
+        group: string;
         groupData: Group[] | null;
+        id: string;
+        itemData: D;
+        series: string;
+        seriesData: Series<K, I> | null;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojGroupDrill<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
+        group: string | string[];
+        groupData: Group[];
+        id: string;
+        items: Array<DrillItem<K, D, I>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojItemDrill<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
+        data: Item<K, I> | number;
+        group: string | string[];
+        groupData: Group[];
+        id: string;
+        itemData: D;
+        series: string;
+        seriesData: Series<K, I>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMultiSeriesDrill<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
+        items: Array<DrillItem<K, D, I>>;
+        series: string[];
+        seriesData: Series<K, I>;
         [propName: string]: any;
     }> {
     }
     interface ojSelectInput<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
+        endGroup: string;
         items: string[];
         selectionData: Array<{
             data: Item<K, I> | number;
-            itemData: D;
             groupData: Group[];
+            itemData: D;
             seriesData: Series<K, I>;
         }>;
-        endGroup: string;
         startGroup: string;
         xMax: number;
         xMin: number;
         yMax: number;
         yMin: number;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSeriesDrill<K, D, I extends Array<Item<any, null>> | number[] | null> extends CustomEvent<{
+        id: string;
+        items: Array<DrillItem<K, D, I>>;
+        series: string;
+        seriesData: Series<K, I>;
         [propName: string]: any;
     }> {
     }
@@ -690,6 +313,9 @@ export namespace ojChart {
     type legendChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["legend"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type multiSeriesDrillingChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["multiSeriesDrilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type orientationChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["orientation"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -764,9 +390,25 @@ export namespace ojChart {
     type zoomDirectionChanged<K, D extends DataItem<I> | any, I extends Array<Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
        C>["zoomDirection"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type AxisLine = {
+        lineColor?: string;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type AxisTitleContext = {
         axis: 'xAxis' | 'yAxis' | 'y2Axis';
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type BoxPlotDefaults = {
+        medianSvgClassName?: string;
+        medianSvgStyle?: CSSStyleDeclaration;
+        whiskerEndLength?: string;
+        whiskerEndSvgClassName?: string;
+        whiskerEndSvgStyle?: CSSStyleDeclaration;
+        whiskerSvgClassName?: string;
+        whiskerSvgStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotStyle = {
@@ -785,70 +427,107 @@ export namespace ojChart {
         whiskerSvgStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type DataItem<I extends Array<Item<any, null>> | number[] | null> = {
-        groupId: Array<(string | number)>;
-        seriesId: string | number;
-        x?: number | string;
+    type CategoricalValueFormat<T extends string | number = string | number> = {
+        converter?: (Converter<T>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ChartType = 'line' | 'area' | 'lineWithArea' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid' | 'bar';
+    // tslint:disable-next-line interface-over-type-literal
+    type DataCursorDefaults = {
+        lineColor?: string;
+        lineStyle?: LineStyle;
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'off' | 'on';
+        markerSize?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataCursorPosition<T extends number | string = number | string> = {
+        x?: T;
         y?: number;
-        z?: number;
-        low?: number;
-        high?: number;
-        open?: number;
-        close?: number;
-        volume?: number;
-        q1?: number;
-        q2?: number;
-        q3?: number;
-        shortDesc?: string;
-        color?: string;
+        y2?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataItem<I extends Array<Item<any, null>> | number[] | null> = {
         borderColor?: string;
         borderWidth?: number;
-        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
-           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
-        svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
-        markerDisplayed?: 'on' | 'off' | 'auto';
-        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
-        markerSize?: number;
-        source?: string;
-        sourceHover?: string;
-        sourceSelected?: string;
-        sourceHoverSelected?: string;
+        boxPlot?: BoxPlotStyle;
+        categories?: string[];
+        close?: number;
+        color?: string;
+        drilling?: 'on' | 'off' | 'inherit';
+        groupId: Array<(string | number)>;
+        high?: number;
         label?: string | string[];
         labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
         labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
-        categories?: string[];
-        value?: number;
+        low?: number;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        open?: number;
+        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
+           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
+        q1?: number;
+        q2?: number;
+        q3?: number;
+        seriesId: string | number;
+        shortDesc?: string;
+        source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
         targetValue?: number;
-        drilling?: 'on' | 'off' | 'inherit';
-        boxPlot?: BoxPlotStyle;
+        value?: number;
+        volume?: number;
+        x?: number | string;
+        y?: number;
+        z?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DataLabelContext<K, D, I extends Array<Item<any, null>> | number[] | null> = {
-        id: any;
-        series: string;
+        close: number;
+        componentElement: Element;
+        data: Item<K, Array<Item<any, null>> | number[] | null> | number | null;
+        dimensions: {
+            height: number;
+            width: number;
+        };
         group: string | string[];
-        value: number;
+        groupData: Group[] | null;
+        high: number;
+        id: any;
+        itemData: D;
+        label: string;
+        low: number;
+        open: number;
+        series: string;
+        seriesData: Series<K, I> | null;
         targetValue: number;
+        totalValue: number;
+        value: number;
+        volume: number;
         x: number | string;
         y: number;
         z: number;
-        low: number;
-        high: number;
-        open: number;
-        close: number;
-        volume: number;
-        label: string;
-        totalValue: number;
-        data: Item<K, Array<Item<any, null>> | number[] | null> | number | null;
-        itemData: D;
-        seriesData: Series<K, I> | null;
-        groupData: Group[] | null;
-        dimensions: {
-            width: number;
-            height: number;
-        };
-        componentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfig<T> = {
+        dataTypes?: string | string[];
+        drag?: ((param0: Event) => void);
+        dragEnd?: ((param0: Event) => void);
+        dragStart?: ((event: Event, context: T) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfigs<K, D, I extends Array<Item<any, null>> | number[] | null> = {
+        groups?: DndDragConfig<DndGroup>;
+        items?: DndDragConfig<DndItem<K, D, I>>;
+        series?: DndDragConfig<DndSeries<K, I>>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndDrop = {
@@ -857,9 +536,25 @@ export namespace ojChart {
         y2: number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfig = {
+        dataTypes?: string | string[];
+        dragEnter?: ((event: Event, context: DndDrop) => void);
+        dragLeave?: ((event: Event, context: DndDrop) => void);
+        dragOver?: ((event: Event, context: DndDrop) => void);
+        drop?: ((event: Event, context: DndDrop) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfigs = {
+        legend?: DndDropConfig;
+        plotArea?: DndDropConfig;
+        xAxis?: DndDropConfig;
+        y2Axis?: DndDropConfig;
+        yAxis?: DndDropConfig;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type DndGroup = {
-        id: string | number | Array<(string | number)>;
         group: string | number | Array<(string | number)>;
+        id: string | number | Array<(string | number)>;
         label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -868,17 +563,25 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type DndSeries<K, I extends Array<Item<any, null>> | number[] | null> = {
-        id: string | number;
         color: string;
         componentElement: any;
+        id: string | number;
         series: string | number;
         seriesData: Series<K, I>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type DrillItem<K, D, I extends Array<Item<any, null>> | number[] | null> = {
+        data: Item<K, Array<Item<any, null>> | number[] | null> | number;
+        group: string | string[];
+        id: K;
+        itemData: D;
+        series: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Group = {
-        id?: string | number;
-        groups?: Group[];
         drilling?: 'on' | 'off' | 'inherit';
+        groups?: Group[];
+        id?: string | number;
         labelStyle?: CSSStyleDeclaration;
         name?: string;
         shortDesc?: string;
@@ -889,69 +592,103 @@ export namespace ojChart {
         subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type GroupSeparatorDefaults = {
+        color?: string;
+        rendered?: 'off' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type GroupTemplateContext<D> = {
         componentElement: Element;
-        index: number;
-        ids: string[];
         depth: number;
-        leaf: boolean;
+        ids: string[];
+        index: number;
         items: Array<{
             data: D;
             index: number;
             key: any;
         }>;
+        leaf: boolean;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupValueFormat = {
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string | string[];
     };
     // tslint:disable-next-line interface-over-type-literal
     type Item<K, I extends Array<Item<any, null>> | number[] | null> = {
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: BoxPlotStyle;
+        categories?: string[];
+        close?: number;
+        color?: string;
+        drilling?: 'on' | 'off' | 'inherit';
+        high?: number;
         id: K;
         items?: I;
-        x?: number | string;
-        y?: number;
-        z?: number;
+        label?: string | string[];
+        labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
         low?: number;
-        high?: number;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
         open?: number;
-        close?: number;
-        volume?: number;
+        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
+           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
         q1?: number;
         q2?: number;
         q3?: number;
         shortDesc?: string;
-        color?: string;
-        borderColor?: string;
-        borderWidth?: number;
-        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
-           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
-        svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
-        markerDisplayed?: 'on' | 'off' | 'auto';
-        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
-        markerSize?: number;
         source?: string;
         sourceHover?: string;
-        sourceSelected?: string;
         sourceHoverSelected?: string;
-        label?: string | string[];
-        labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
-        categories?: string[];
-        value?: number;
+        sourceSelected?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
         targetValue?: number;
-        drilling?: 'on' | 'off' | 'inherit';
-        boxPlot?: BoxPlotStyle;
+        value?: number;
+        volume?: number;
+        x?: number | string;
+        y?: number;
+        z?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemContext = {
-        seriesIndex: number;
         itemIndex: number;
+        seriesIndex: number;
         subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
         componentElement: Element;
-        index: number;
         data: object;
+        index: number;
         key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LabelValueFormat = {
+        converter?: (Converter<string>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Legend = {
+        backgroundColor?: string;
+        borderColor?: string;
+        maxSize?: string;
+        position?: 'start' | 'end' | 'bottom' | 'top' | 'auto';
+        referenceObjectSection?: LegendReferenceObjectSection;
+        rendered?: 'on' | 'off' | 'auto';
+        scrolling?: 'off' | 'asNeeded';
+        sections?: LegendSection[];
+        seriesSection?: LegendSeriesSection;
+        size?: string;
+        symbolHeight?: number;
+        symbolWidth?: number;
+        textStyle?: CSSStyleDeclaration;
+        title: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
@@ -973,9 +710,15 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItemContext = {
-        sectionIndexPath: any[];
         itemIndex: number;
+        sectionIndexPath: any[];
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LegendReferenceObjectSection = {
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSection = {
@@ -986,27 +729,82 @@ export namespace ojChart {
         titleStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LegendSeriesSection = {
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LineStyle = 'dotted' | 'dashed' | 'solid';
+    // tslint:disable-next-line interface-over-type-literal
+    type LineType = 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
+    // tslint:disable-next-line interface-over-type-literal
+    type MajorTick = {
+        baselineColor?: 'inherit' | 'auto' | string;
+        baselineStyle?: LineStyle;
+        baselineWidth?: number;
+        lineColor?: string;
+        lineStyle?: LineStyle;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type MinorTick = {
+        lineColor?: string;
+        lineStyle?: LineStyle;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NumericValueFormat = {
+        converter?: (Converter<number>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Overview<C> = {
+        content?: C;
+        height?: string;
+        rendered?: 'on' | 'off';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PieCenter = {
+        converter?: (Converter<number>);
+        label?: number | string;
+        labelStyle?: CSSStyleDeclaration;
+        renderer?: dvtBaseComponent.PreventableDOMRendererFunction<PieCenterContext>;
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type PieCenterContext = {
-        outerBounds: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
-        innerBounds: {
-            x: number;
-            y: number;
-            width: number;
-            height: number;
-        };
-        labelStyle: CSSStyleDeclaration;
-        label: string;
-        totalValue: number;
         componentElement: Element;
+        innerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        label: string;
+        labelStyle: CSSStyleDeclaration;
+        outerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        totalValue: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type PieCenterLabelContext = {
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PlotArea = {
+        backgroundColor?: string;
+        borderColor?: string;
+        borderWidth?: number;
+        rendered?: 'off' | 'on';
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
@@ -1015,9 +813,14 @@ export namespace ojChart {
         subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObjectItem<T extends number | string = number | string> = {
+        high?: number;
+        low?: number;
+        value?: number;
+        x?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Series<K, I extends Array<Item<any, null>> | number[] | null> = {
-        id?: string | number;
-        items?: (Array<Item<K, Array<Item<any, null>> | number[] | null>> | number[]);
         areaColor?: string;
         areaSvgClassName?: string;
         areaSvgStyle?: CSSStyleDeclaration;
@@ -1029,12 +832,14 @@ export namespace ojChart {
         color?: string;
         displayInLegend?: 'on' | 'off' | 'auto';
         drilling?: 'on' | 'off' | 'inherit';
-        lineStyle?: 'dotted' | 'dashed' | 'solid';
-        lineType?: 'straight' | 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'auto';
+        id?: string | number;
+        items?: (Array<Item<K, Array<Item<any, null>> | number[] | null>> | number[]);
+        lineStyle?: LineStyle;
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
         lineWidth?: number;
         markerColor?: string;
         markerDisplayed?: 'on' | 'off' | 'auto';
-        markerShape?: 'auto' | 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | string;
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
         markerSize?: number;
         markerSvgClassName?: string;
         markerSvgStyle?: CSSStyleDeclaration;
@@ -1060,8 +865,8 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext<D> = {
         componentElement: Element;
-        index: number;
         id: string;
+        index: number;
         items: Array<{
             data: D;
             index: number;
@@ -1069,34 +874,237 @@ export namespace ojChart {
         }>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type SeriesValueFormat = {
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type StyleDefaults = {
+        animationDownColor?: string;
+        animationDuration?: number;
+        animationIndicators?: 'none' | 'all';
+        animationUpColor?: string;
+        barGapRatio?: number;
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: BoxPlotDefaults;
+        colors?: string[];
+        dataCursor?: DataCursorDefaults;
+        dataItemGaps?: string;
+        dataLabelCollision?: 'fitInBounds' | 'none';
+        dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        dataLabelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        funnelBackgroundColor?: string;
+        groupSeparators?: GroupSeparatorDefaults;
+        hoverBehaviorDelay?: number;
+        lineStyle?: LineStyle;
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        marqueeBorderColor?: string;
+        marqueeColor?: string;
+        maxBarWidth?: number;
+        otherColor?: string;
+        patterns?: string[];
+        pieFeelerColor?: string;
+        pieInnerRadius?: number;
+        selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
+        seriesEffect?: 'color' | 'pattern' | 'gradient';
+        shapes?: string[];
+        stackLabelStyle?: CSSStyleDeclaration;
+        stockFallingColor?: string;
+        stockRangeColor?: string;
+        stockRisingColor?: string;
+        stockVolumeColor?: string;
+        threeDEffect?: 'on' | 'off';
+        tooltipLabelStyle?: CSSStyleDeclaration;
+        tooltipValueStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D, I extends Array<Item<any, null>> | number[] | null> = {
-        parentElement: Element;
-        id: any;
-        series: string;
+        close: number;
+        color: string;
+        componentElement: Element;
+        data: Item<K, Array<Item<any, null>> | number[] | null> | number | null;
         group: string | string[];
+        groupData: Group[] | null;
+        high: number;
+        id: any;
+        itemData: D;
         label: string;
+        low: number;
+        open: number;
+        parentElement: Element;
+        series: string;
+        seriesData: Series<K, I> | null;
+        targetValue: number;
         value: number;
+        volume: number;
         x: number | string;
         y: number;
         z: number;
-        low: number;
-        high: number;
-        open: number;
-        close: number;
-        volume: number;
-        targetValue: number;
-        data: Item<K, Array<Item<any, null>> | number[] | null> | number | null;
-        itemData: D;
-        seriesData: Series<K, I> | null;
-        groupData: Group[] | null;
-        componentElement: Element;
-        color: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ValueFormats = {
+        close?: NumericValueFormat;
+        group?: GroupValueFormat;
+        high?: NumericValueFormat;
+        label?: LabelValueFormat;
+        low?: NumericValueFormat;
+        open?: NumericValueFormat;
+        q1?: NumericValueFormat;
+        q2?: NumericValueFormat;
+        q3?: NumericValueFormat;
+        series?: SeriesValueFormat;
+        targetValue?: NumericValueFormat;
+        value?: NumericValueFormat;
+        volume?: NumericValueFormat;
+        x?: CategoricalValueFormat;
+        y?: NumericValueFormat;
+        y2?: NumericValueFormat;
+        z?: NumericValueFormat;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type XAxis<T extends number | string = number | string> = {
+        axisLine?: AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: MajorTick;
+        max?: T;
+        maxSize?: string;
+        min?: T;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: MinorTick;
+        referenceObjects?: Array<XReferenceObject<T>>;
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: XTickLabel<T>;
+        title?: string;
+        titleStyle?: CSSStyleDeclaration;
+        viewportEndGroup?: T;
+        viewportMax?: T;
+        viewportMin?: T;
+        viewportStartGroup?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type XReferenceObject<T extends number | string = number | string> = {
+        categories?: string[];
+        color?: string;
+        displayInLegend?: 'on' | 'off';
+        high?: T;
+        id?: string;
+        lineStyle?: LineStyle;
+        lineWidth?: number;
+        location?: 'front' | 'back';
+        low?: T;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        text?: string;
+        type?: 'area' | 'line';
+        value?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type XTickLabel<T extends number | string = number | string> = {
+        converter?: (Converter<T>);
+        rendered?: 'off' | 'on';
+        rotation?: 'none' | 'auto';
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        style?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Y2Axis = {
+        alignTickMarks?: 'off' | 'on';
+        axisLine?: AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: MajorTick;
+        max?: number;
+        maxSize?: string;
+        min?: number;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: MinorTick;
+        position?: 'start' | 'end' | 'top' | 'bottom' | 'auto';
+        referenceObjects?: YReferenceObject[];
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: YTickLabel;
+        title?: string;
+        titleStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type YAxis = {
+        axisLine?: AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: MajorTick;
+        max?: number;
+        maxSize?: string;
+        min?: number;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: MinorTick;
+        position?: 'start' | 'end' | 'top' | 'bottom' | 'auto';
+        referenceObjects?: YReferenceObject[];
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: YTickLabel;
+        title?: string;
+        titleStyle?: CSSStyleDeclaration;
+        viewportMax?: number;
+        viewportMin?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type YReferenceObject = {
+        categories?: string[];
+        color?: string;
+        displayInLegend?: 'on' | 'off';
+        high?: number;
+        id?: string;
+        items?: ReferenceObjectItem[];
+        lineStyle?: LineStyle;
+        lineType?: LineType;
+        lineWidth?: number;
+        location?: 'front' | 'back';
+        low?: number;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        text?: string;
+        type?: 'area' | 'line';
+        value?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type YTickLabel = {
+        converter?: (Converter<number>);
+        position?: 'inside' | 'outside';
+        rendered?: 'off' | 'on';
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        style?: CSSStyleDeclaration;
     };
 }
 export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponentEventMap<ojChartSettableProperties<K, D, I, C>> {
     'ojDrill': ojChart.ojDrill<K, D, I>;
+    'ojGroupDrill': ojChart.ojGroupDrill<K, D, I>;
+    'ojItemDrill': ojChart.ojItemDrill<K, D, I>;
+    'ojMultiSeriesDrill': ojChart.ojMultiSeriesDrill<K, D, I>;
     'ojSelectInput': ojChart.ojSelectInput<K, D, I>;
+    'ojSeriesDrill': ojChart.ojSeriesDrill<K, D, I>;
     'ojViewportChange': ojChart.ojViewportChange;
     'ojViewportChangeInput': ojChart.ojViewportChangeInput;
     'animationOnDataChangeChanged': JetElementCustomEvent<ojChart<K, D, I, C>["animationOnDataChange"]>;
@@ -1119,6 +1127,7 @@ export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I exten
     'hoverBehaviorChanged': JetElementCustomEvent<ojChart<K, D, I, C>["hoverBehavior"]>;
     'initialZoomingChanged': JetElementCustomEvent<ojChart<K, D, I, C>["initialZooming"]>;
     'legendChanged': JetElementCustomEvent<ojChart<K, D, I, C>["legend"]>;
+    'multiSeriesDrillingChanged': JetElementCustomEvent<ojChart<K, D, I, C>["multiSeriesDrilling"]>;
     'orientationChanged': JetElementCustomEvent<ojChart<K, D, I, C>["orientation"]>;
     'otherThresholdChanged': JetElementCustomEvent<ojChart<K, D, I, C>["otherThreshold"]>;
     'overviewChanged': JetElementCustomEvent<ojChart<K, D, I, C>["overview"]>;
@@ -1154,70 +1163,11 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     data: DataProvider<K, D> | null;
     dataCursor: 'off' | 'on' | 'auto';
     dataCursorBehavior: 'smooth' | 'snap' | 'auto';
-    dataCursorPosition: {
-        x: number | string;
-        y: number;
-        y2: number;
-    };
+    dataCursorPosition: ojChart.DataCursorPosition;
     dataLabel: ((context: ojChart.DataLabelContext<K, D, I>) => (string[] | string | number[] | number));
     dnd: {
-        drag: {
-            groups: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndGroup) => void);
-            };
-            items: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndItem<K, D, I>) => void);
-            };
-            series: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: ojChart.DndSeries<K, I>) => void);
-            };
-        };
-        drop: {
-            legend: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            plotArea: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            xAxis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            y2Axis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-            yAxis: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: ojChart.DndDrop) => void);
-                dragLeave: ((event: Event, context: ojChart.DndDrop) => void);
-                dragOver: ((event: Event, context: ojChart.DndDrop) => void);
-                drop: ((event: Event, context: ojChart.DndDrop) => void);
-            };
-        };
+        drag: ojChart.DndDragConfigs<K, D, I>;
+        drop: ojChart.DndDropConfigs;
     };
     dragMode: 'pan' | 'zoom' | 'select' | 'off' | 'user';
     drilling: 'on' | 'seriesOnly' | 'groupsOnly' | 'off';
@@ -1228,56 +1178,13 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     highlightedCategories: string[];
     hoverBehavior: 'dim' | 'none';
     initialZooming: 'first' | 'last' | 'none';
-    legend: {
-        backgroundColor: string;
-        borderColor: string;
-        maxSize: string;
-        position: 'start' | 'end' | 'bottom' | 'top' | 'auto';
-        referenceObjectSection: {
-            title: string;
-            titleHalign: 'center' | 'end' | 'start';
-            titleStyle: CSSStyleDeclaration;
-        };
-        rendered: 'on' | 'off' | 'auto';
-        scrolling: 'off' | 'asNeeded';
-        sections: ojChart.LegendSection[];
-        seriesSection: {
-            title: string;
-            titleHalign: 'center' | 'end' | 'start';
-            titleStyle: CSSStyleDeclaration;
-        };
-        size: string;
-        symbolHeight: number;
-        symbolWidth: number;
-        textStyle: CSSStyleDeclaration;
-        title: string;
-        titleHalign: 'center' | 'end' | 'start';
-        titleStyle: CSSStyleDeclaration;
-    };
+    legend: ojChart.Legend;
+    multiSeriesDrilling: 'on' | 'off';
     orientation: 'horizontal' | 'vertical';
     otherThreshold: number;
-    overview: {
-        content: C;
-        height: string;
-        rendered: 'on' | 'off';
-    };
-    pieCenter: {
-        converter?: (Converter<number>);
-        label: string;
-        labelStyle: CSSStyleDeclaration;
-        renderer: ((context: ojChart.PieCenterContext) => ({
-            insert: Element | string;
-        } | {
-            preventDefault: boolean;
-        }));
-        scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-    };
-    plotArea: {
-        backgroundColor: string;
-        borderColor: string;
-        borderWidth: number;
-        rendered: 'off' | 'on';
-    };
+    overview: ojChart.Overview<C>;
+    pieCenter: ojChart.PieCenter;
+    plotArea: ojChart.PlotArea;
     polarGridShape: 'polygon' | 'circle';
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple';
@@ -1287,379 +1194,17 @@ export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | an
     splitterPosition: number;
     stack: 'on' | 'off';
     stackLabel: 'on' | 'off';
-    styleDefaults: {
-        animationDownColor: string;
-        animationDuration: number;
-        animationIndicators: 'none' | 'all';
-        animationUpColor: string;
-        barGapRatio: number;
-        borderColor: string;
-        borderWidth: number;
-        boxPlot: {
-            medianSvgClassName: string;
-            medianSvgStyle: CSSStyleDeclaration;
-            whiskerEndLength: string;
-            whiskerEndSvgClassName: string;
-            whiskerEndSvgStyle: CSSStyleDeclaration;
-            whiskerSvgClassName: string;
-            whiskerSvgStyle: CSSStyleDeclaration;
-        };
-        colors: string[];
-        dataCursor: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            markerColor: string;
-            markerDisplayed: 'off' | 'on';
-            markerSize: number;
-        };
-        dataItemGaps: string;
-        dataLabelCollision: 'fitInBounds' | 'none';
-        dataLabelPosition: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        dataLabelStyle: CSSStyleDeclaration | CSSStyleDeclaration[];
-        funnelBackgroundColor: string;
-        groupSeparators: {
-            color: string;
-            rendered: 'off' | 'auto';
-        };
-        hoverBehaviorDelay: number;
-        lineStyle: 'dotted' | 'dashed' | 'solid';
-        lineType: 'straight' | 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'auto';
-        lineWidth: number;
-        markerColor: string;
-        markerDisplayed: 'on' | 'off' | 'auto';
-        markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-        markerSize: number;
-        marqueeBorderColor: string;
-        marqueeColor: string;
-        maxBarWidth: number;
-        otherColor: string;
-        patterns: string[];
-        pieFeelerColor: string;
-        pieInnerRadius: number;
-        selectionEffect: 'explode' | 'highlightAndExplode' | 'highlight';
-        seriesEffect: 'color' | 'pattern' | 'gradient';
-        shapes: string[];
-        stackLabelStyle: CSSStyleDeclaration;
-        stockFallingColor: string;
-        stockRangeColor: string;
-        stockRisingColor: string;
-        stockVolumeColor: string;
-        threeDEffect: 'on' | 'off';
-        tooltipLabelStyle: CSSStyleDeclaration;
-        tooltipValueStyle: CSSStyleDeclaration;
-    };
+    styleDefaults: ojChart.StyleDefaults;
     timeAxisType: 'enabled' | 'mixedFrequency' | 'skipGaps' | 'disabled' | 'auto';
     tooltip: {
-        renderer: ((context: ojChart.TooltipContext<K, D, I>) => ({
-            insert: Element | string;
-        } | {
-            preventDefault: boolean;
-        }));
+        renderer: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.TooltipContext<K, D, I>>;
     };
     touchResponse: 'touchStart' | 'auto';
-    type: 'line' | 'area' | 'lineWithArea' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid' | 'bar';
-    valueFormats: {
-        close: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        group: {
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string | string[];
-        };
-        high: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        label: {
-            converter?: (Converter<string>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        };
-        low: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        open: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q1: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q2: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        q3: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        series: {
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        targetValue: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        value: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        volume: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        x: {
-            converter?: (Converter<string | number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        y: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        y2: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-        z: {
-            converter?: (Converter<number>);
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            tooltipDisplay: 'off' | 'auto';
-            tooltipLabel: string;
-        };
-    };
-    xAxis: {
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'off' | 'on';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number | string;
-        maxSize: string;
-        min: number | string;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number | string;
-            id: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number | string;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number | string;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<string | number>);
-            rendered: 'off' | 'on';
-            rotation: 'none' | 'auto';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-        viewportEndGroup: number | string;
-        viewportMax: number | string;
-        viewportMin: number | string;
-        viewportStartGroup: number | string;
-    };
-    y2Axis: {
-        alignTickMarks: 'off' | 'on';
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number;
-        maxSize: string;
-        min: number;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        position: 'start' | 'end' | 'top' | 'bottom' | 'auto';
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number;
-            id: string;
-            items: Array<{
-                high: number;
-                low: number;
-                value: number;
-                x: number | string;
-            }>;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineType: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<number>);
-            position: 'inside' | 'outside';
-            rendered: 'off' | 'on';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-    };
-    yAxis: {
-        axisLine: {
-            lineColor: string;
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        baselineScaling: 'min' | 'zero';
-        dataMax: number;
-        dataMin: number;
-        majorTick: {
-            baselineColor: 'inherit' | 'auto';
-            baselineStyle: 'dotted' | 'dashed' | 'solid';
-            baselineWidth: number;
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        max: number;
-        maxSize: string;
-        min: number;
-        minStep: number;
-        minorStep: number;
-        minorTick: {
-            lineColor: string;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineWidth: number;
-            rendered: 'on' | 'off' | 'auto';
-        };
-        position: 'start' | 'end' | 'top' | 'bottom' | 'auto';
-        referenceObjects: Array<{
-            categories: string[];
-            color: string;
-            displayInLegend: 'on' | 'off';
-            high: number;
-            id: string;
-            items: Array<{
-                high: number;
-                low: number;
-                value: number;
-                x: number | string;
-            }>;
-            lineStyle: 'dotted' | 'dashed' | 'solid';
-            lineType: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
-            lineWidth: number;
-            location: 'front' | 'back';
-            low: number;
-            shortDesc: string;
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            text: string;
-            type: 'area' | 'line';
-            value: number;
-        }>;
-        rendered: 'off' | 'on';
-        scale: 'log' | 'linear';
-        size: string;
-        step: number;
-        tickLabel: {
-            converter?: (Converter<number>);
-            position: 'inside' | 'outside';
-            rendered: 'off' | 'on';
-            scaling: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-            style: CSSStyleDeclaration;
-        };
-        title: string;
-        titleStyle: CSSStyleDeclaration;
-        viewportMax: number;
-        viewportMin: number;
-    };
+    type: ojChart.ChartType;
+    valueFormats: ojChart.ValueFormats;
+    xAxis: ojChart.XAxis;
+    y2Axis: ojChart.Y2Axis;
+    yAxis: ojChart.YAxis;
     zoomAndScroll: 'delayedScrollOnly' | 'liveScrollOnly' | 'delayed' | 'live' | 'off';
     zoomDirection: 'x' | 'y' | 'auto';
     translations: {
@@ -1713,8 +1258,8 @@ export interface ojChartGroup extends JetElement<ojChartGroupSettableProperties>
     labelStyle?: CSSStyleDeclaration;
     name?: string;
     shortDesc?: string;
-    addEventListener<T extends keyof ojChartGroupEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartGroupEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojChartGroupEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartGroupEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojChartGroupSettableProperties>(property: T): ojChartGroup[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojChartGroupSettableProperties>(property: T, value: ojChartGroupSettableProperties[T]): void;
@@ -1784,8 +1329,8 @@ export interface ojChartItem extends JetElement<ojChartItemSettableProperties> {
     x?: number | string;
     y?: number;
     z?: number;
-    addEventListener<T extends keyof ojChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartItemEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojChartItemSettableProperties>(property: T): ojChartItem[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojChartItemSettableProperties>(property: T, value: ojChartItemSettableProperties[T]): void;
@@ -1958,12 +1503,12 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     color?: string;
     displayInLegend?: 'on' | 'off' | 'auto';
     drilling?: 'on' | 'off' | 'inherit';
-    lineStyle?: 'dotted' | 'dashed' | 'solid';
-    lineType?: 'straight' | 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'auto';
+    lineStyle?: ojChart.LineStyle;
+    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
     lineWidth?: number;
     markerColor?: string;
     markerDisplayed?: 'on' | 'off' | 'auto';
-    markerShape?: 'auto' | 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | string;
+    markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
     markerSvgClassName?: string;
     markerSvgStyle?: CSSStyleDeclaration;
@@ -1980,8 +1525,8 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
-    addEventListener<T extends keyof ojChartSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartSeriesEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojChartSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojChartSeriesSettableProperties>(property: T): ojChartSeries[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojChartSeriesSettableProperties>(property: T, value: ojChartSeriesSettableProperties[T]): void;
@@ -2100,12 +1645,12 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     color?: string;
     displayInLegend?: 'on' | 'off' | 'auto';
     drilling?: 'on' | 'off' | 'inherit';
-    lineStyle?: 'dotted' | 'dashed' | 'solid';
-    lineType?: 'straight' | 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'auto';
+    lineStyle?: ojChart.LineStyle;
+    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
     lineWidth?: number;
     markerColor?: string;
     markerDisplayed?: 'on' | 'off' | 'auto';
-    markerShape?: 'auto' | 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | string;
+    markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
     markerSvgClassName?: string;
     markerSvgStyle?: CSSStyleDeclaration;
@@ -2178,8 +1723,8 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof ojSparkChartEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSparkChartEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSparkChartEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSparkChartEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSparkChartSettableProperties<K, D>>(property: T): ojSparkChart<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSparkChartSettableProperties<K, D>>(property: T, value: ojSparkChartSettableProperties<K, D>[T]): void;
@@ -2273,8 +1818,8 @@ export namespace ojSparkChart {
     type ReferenceObject = {
         color?: string;
         high?: number;
-        lineWidth?: number;
         lineStyle: 'dotted' | 'dashed' | 'solid';
+        lineWidth?: number;
         location: 'front' | 'back';
         low?: number;
         svgClassName?: string;
@@ -2385,8 +1930,8 @@ export interface ojSparkChartItem extends JetElement<ojSparkChartItemSettablePro
     svgClassName: string;
     svgStyle: CSSStyleDeclaration;
     value: number | null;
-    addEventListener<T extends keyof ojSparkChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojSparkChartItemEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojSparkChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojSparkChartItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojSparkChartItemSettableProperties>(property: T): ojSparkChartItem[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojSparkChartItemSettableProperties>(property: T, value: ojSparkChartItemSettableProperties[T]): void;

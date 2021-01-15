@@ -1,8 +1,16 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojconfig"],(function(t,e){"use strict";function n(){}return n.getExpressionInfo=function(e){return t.__AttributeUtils.getExpressionInfo(e)},n.createGenericExpressionEvaluator=function(t){var n,r=e.getExpressionEvaluator();if(r){var o=r.createEvaluator(t).evaluate;return function(t){return o([t])}}try{n=new Function("context","with(context){return "+t+";}")}catch(e){throw new Error(e.message+' in expression "'+t+'"')}return n},n}));
+define(["exports","ojs/ojconfig","ojs/ojcustomelement-utils"],function(e,t,r){"use strict";
+/**
+   * @license
+   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */var n=function(){},o=n.getExpressionInfo=function(e){return r.AttributeUtils.getExpressionInfo(e)},i=n.createGenericExpressionEvaluator=function(e){var r,n=t.getExpressionEvaluator();if(n){var o=n.createEvaluator(e).evaluate;return function(e){return o([e])}}try{r=new Function("context","with(context){return "+e+";}")}catch(t){throw new Error(t.message+' in expression "'+e+'"')}return r};e.createGenericExpressionEvaluator=i,e.getExpressionInfo=o,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojexpressionutils.js.map

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.units";
 @import "../common/oj.common.palette";
@@ -18,9 +18,6 @@ $dateTimePickerSwitcherBgColor:         $neutralColor7 !default;
 $trainConnectorBgColor:                 $neutralColor11 !default;
 $trainContinuousConnectorBgColorSelected:$neutralColor11 !default;
 $trainBgColorActive:                    $brandColorLight3 !default;
-$swipeActionsNeutralActionBgColor:       $neutralColor13 !default; //settings: ignore
-$swipeActionsActionTextColor:         $neutralColor1 !default; // text color applied to all action items //settings: ignore
-$swipeActionsActionBgColor:           $brandColor !default; // background color applied to all action items //settings: ignore
 
 $dvtComponentBg2Color:                  $neutralColor8 !default;
 $dvtNBoxCellBgColor:                    $neutralColor5 !default;
@@ -586,7 +583,6 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 
 $formLayoutFieldInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
-$formLayoutLabelGenerationDefault: form !default;
 $formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute

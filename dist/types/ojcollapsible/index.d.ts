@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,8 +11,8 @@ export interface ojCollapsible extends baseComponent<ojCollapsibleSettableProper
     disabled: boolean;
     expandArea: 'header' | 'disclosureIcon';
     expanded: boolean;
-    addEventListener<T extends keyof ojCollapsibleEventMap>(type: T, listener: (this: HTMLElement, ev: ojCollapsibleEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojCollapsibleEventMap>(type: T, listener: (this: HTMLElement, ev: ojCollapsibleEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojCollapsibleSettableProperties>(property: T): ojCollapsible[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojCollapsibleSettableProperties>(property: T, value: ojCollapsibleSettableProperties[T]): void;
@@ -22,26 +22,26 @@ export interface ojCollapsible extends baseComponent<ojCollapsibleSettableProper
 }
 export namespace ojCollapsible {
     interface ojBeforeCollapse extends CustomEvent<{
-        header: Element;
         content: Element;
+        header: Element;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeExpand extends CustomEvent<{
-        header: Element;
         content: Element;
+        header: Element;
         [propName: string]: any;
     }> {
     }
     interface ojCollapse extends CustomEvent<{
-        header: Element;
         content: Element;
+        header: Element;
         [propName: string]: any;
     }> {
     }
     interface ojExpand extends CustomEvent<{
-        header: Element;
         content: Element;
+        header: Element;
         [propName: string]: any;
     }> {
     }

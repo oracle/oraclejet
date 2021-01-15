@@ -1,0 +1,384 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// todo: get rid of this file
+
+//*****************************************************************************
+// On iphone safari if zooming is not disabled then
+// form controls auto zoom when you click on them if their
+// text size is not 16px. This mixin attempts to avoid that behavior by
+// setting -webkit-text-size-adjust to a percentage where the font size
+// is a minimum of 16px.
+//
+// @param {Number} $formControlFontSize - font size of form control,
+//               only rem or px values are valid, value otherwise ignored
+//*****************************************************************************
+@mixin oj-form-control-text-size-adjust($formControlFontSize) {
+  @if ($formControlTextSizeAdjust) {
+    @if ($formControlFontSize != null and unit($formControlFontSize) == "rem") {
+      $formControlFontSize: oj-rem-to-px($formControlFontSize, $rootFontSize);
+    }
+
+    @if ($formControlFontSize != null and unit($formControlFontSize) == "px") {
+      @if ($formControlFontSize < 16px) {
+        @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+          @media #{$responsiveQuerySmallOnly} {
+            & {
+              -webkit-text-size-adjust: ceil(16px / $formControlFontSize * 100) * 1%;
+            }
+          }
+        }
+      } @else {
+        // This is here for sass/precss diffs
+        @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+          @media #{$responsiveQuerySmallOnly} {
+            & {
+              -webkit-text-size-adjust: 100%;
+            }
+          }
+        }
+      }
+    } @else {
+      @warn $formControlFontSize ' was passed to oj-form-control-text-size-adjust(), only px and rem units allowed, therefore no text-size-adjust value applied';
+    }
+  }
+}
+
+@mixin oj-form-control-text-size-adjust-css-vars() {
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      & {
+        -webkit-text-size-adjust: var(--oj-private-text-field-font-size-adjust);
+      }
+    }
+  }
+}
+// form controls
+//----------------------------------
+
+@mixin oj-form-control-content($valueColor: $formControlInputValueColor, $textAlign: $formControlTextAlign) {
+  @include oj-bidi-property($property: "text-align", $startOrEnd: $textAlign);
+  color: $valueColor;
+  background-color: $formControlBgColor;
+  @include oj-form-control-border;
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  @include oj-placeholder() {
+    color: $formControlPlaceholderColor;
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: $formControlPlaceholderFontStyle;
+  }
+}
+
+@mixin oj-form-control-content-css-vars($valueColor: "--oj-text-field-text-color", $textAlign: "--oj-text-field-text-align") {
+  text-align: var(#{$textAlign});
+
+  color: var(#{$valueColor});
+
+  // All bg colors should come from the text-field-container
+  background-color: transparent;
+  @include oj-form-control-border($outputCssVars: true);
+  // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+  &:-ms-input-placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+  &::placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+}
+
+// this doesn't add borders
+@mixin oj-form-control-input($valueColor: $formControlInputValueColor, $textAlign: $formControlTextAlign) {
+  @include oj-bidi-property($property: "text-align", $startOrEnd: $textAlign);
+  color: $valueColor;
+  background-color: $formControlBgColor;
+
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  @include oj-placeholder() {
+    color: $formControlPlaceholderColor;
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: $formControlPlaceholderFontStyle;
+  }
+}
+
+@mixin oj-form-control-input-css-vars($valueColor: "--oj-text-field-text-color", $textAlign: "--oj-text-field-text-align") {
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  &::placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+}
+
+@mixin oj-form-control-border($borderWidth: $privateFormControlBorderWidth, $outputCssVars: false) {
+  border-style: solid;
+
+  @if ($outputCssVars) {
+    border-color: var(--oj-text-field-border-color);
+    border-width: var(--oj-text-field-border-width);
+    border-radius: var(--oj-text-field-border-radius);
+  } @else {
+    border-color: $formControlBorderColor;
+    border-width: $borderWidth;
+    @include oj-border-radius($formControlBorderRadius);
+  }
+}
+
+@mixin oj-form-control-content-disabled($outputCssVars: false) {
+  @if ($outputCssVars == true) {
+    color: var(--oj-text-field-text-color-disabled);
+    border-color: var(--oj-text-field-border-color-disabled);
+  } @else {
+    color: $formControlValueColorDisabled;
+    background-color: $formControlBgColorDisabled;
+    border-color: $formControlBorderColorDisabled;
+    opacity: $formControlOpacityDisabled;
+  }
+}
+
+@mixin oj-form-control-content-readonly($outputCssVars: false) {
+  background-color: transparent;
+  border-color: transparent;
+  // Remove the border on the left/right so that the
+  //       input value is flush with the label gutter
+  border-left-width: 0;
+  border-right-width: 0;
+  @if ($outputCssVars == true) {
+    color: var(--oj-core-text-color-primary);
+    font-size: var(--oj-typography-body-md-font-size);
+    font-weight: var(--oj-form-control-font-weight-read-only); 
+  } @else {
+    color: $formControlValueColorReadOnly;
+    font-size: $formControlFontSizeReadOnly;
+    font-weight: $formControlFontWeightReadOnly;
+  }
+}
+
+@mixin oj-form-control-content-focus-padding($outputCssVars: false, $focusPaddingBottom: 0) {
+  //8-3-18, removed code that handled a 2px border on top, the
+  // only way having a larger border on top makes sense is to have a larger
+  // border all the way around, but when you do that the text jumps to the right
+  // when you focus
+  padding-bottom: $focusPaddingBottom;
+}
+
+@mixin oj-form-control-content-focus($outputCssVars: false) {
+  @if ($outputCssVars == true) {
+    border-color: var(--oj-text-field-border-color-focus);
+  } @else {
+    border-color: $formControlInputBorderColorFocus;
+  }
+}
+
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its padding, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+//     @include oj-form-control-padding-override(
+//        $padding: "0 5px");
+//   }
+//
+@mixin oj-form-control-padding-override($padding: null) {
+  @if ($padding != null) {
+    & .oj-inputtext-input,
+    & .oj-inputtext-nocomp,
+    & .oj-inputpassword-input,
+    & .oj-inputpassword-nocomp,
+    & .oj-textarea-input,
+    & .oj-textarea-nocomp,
+    & .oj-inputnumber-input,
+    & .oj-select-select,
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-searchselect-input,
+    & .oj-inputdatetime .oj-inputdatetime-input {
+      padding: #{$padding};
+    }
+  }
+}
+
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its font-size, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+//    @include oj-form-control-font-size-override(
+//      $fontSize: 16px);
+//   }
+//
+@mixin oj-form-control-font-size-override($fontSize: null) {
+  @if ($fontSize != null) {
+    & .oj-inputtext-input,
+    & .oj-inputpassword-input,
+    & .oj-textarea-input,
+    & .oj-inputnumber-input,
+    & .oj-select-select,
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-combobox .oj-combobox-input,
+    & .oj-searchselect-input,
+    & .oj-inputdatetime .oj-inputdatetime-input {
+      font-size: #{$fontSize};
+    }
+  }
+}
+
+// This allows the form control to inherit styles from the container.
+// Usage Example:
+//  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input { @include oj-form-control-inherit();}
+@mixin oj-form-control-inherit() {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  @include oj-ltr() {
+    text-align: inherit;
+  }
+
+  @include oj-rtl() {
+    text-align: inherit;
+  }
+}
+
+@mixin oj-form-control-inherit-background() {
+  // use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+}
+
+@mixin oj-form-control-inherit-border() {
+  border-width: 0;
+}
+
+// returns the difference between the bottom border width on focus and the bottom border width
+// when not in focus.
+@function value-bottom-difference($borderWidthFocus, $borderWidth, $paddingBottom) {
+  @return calc(
+    #{oj-shorthand-property-value-bottom($borderWidthFocus)} - #{oj-shorthand-property-value-bottom($borderWidth)} + #{$paddingBottom}
+  );
+}
+
+// returns the difference between the top border width on focus and the top border width
+// when not in focus.
+// @function value-top-difference ($borderWidthFocus, $borderWidth, $paddingTop) {
+//   @return calc(#{oj-shorthand-property-value-top($borderWidthFocus)}
+//                   - #{oj-shorthand-property-value-top($borderWidth)} + #{$paddingTop});
+// }
+
+// returns the difference between the top and bottom border widths.
+// returns null if they are the same or there is no border.
+@function focus-top-bottom-border-difference($borderWidthFocus) {
+  @if ($borderWidthFocus != null) {
+    $difference: (oj-shorthand-property-value-bottom($borderWidthFocus) - oj-shorthand-property-value-top($borderWidthFocus));
+    @return if(($difference/1px) != 0, $difference, null);
+  } @else {
+    @return null;
+  }
+}
+
+// sets the border-width and border-radius for the message box by looking at the background-color
+// of the form control, and the border width and the error border width.
+// The logic is, if the form control has a background-color, then use the errorBorderWidth as the
+// border width. If it has no background-color or form control border (like in ios), then use
+// the errorBorder's bottom border only as the error border.
+// usage:
+// @include oj-form-control-border-message-width($inputSearchBgColor); where the background
+// color variable is not the default $formControlBgColor.
+// @include oj-form-control-border-message-width; if using the defaults
+@mixin oj-form-control-border-message-width(
+  $backgroundColor: $formControlBgColor,
+  $borderWidth: $privateFormControlBorderWidth,
+  $messageBorderWidth: $privateFormControlMessagingBorderWidth
+) {
+  $finalMessageBorderWidth: oj-form-control-border-message-width-func($backgroundColor, $borderWidth, $messageBorderWidth);
+  border-width: $finalMessageBorderWidth;
+  // We don't want to mess with the border-radius if the error border is on all four sides.
+  // Otherwise, set the border-radius to 0 to show a straight border.
+  @if (not(oj-form-control-message-border-four-sides($finalMessageBorderWidth)) and $formControlBorderRadius != 0) {
+    @include oj-border-radius(0);
+  }
+}
+
+// returns the border-width for when there is a message (e.g., error) on the form control.
+// we calculate this because in some cases, we want only a bottom-border, in other cases we
+// want a border on all four sides.
+@function oj-form-control-border-message-width-func(
+  $backgroundColor: $formControlBgColor,
+  $borderWidth: $privateFormControlBorderWidth,
+  $messageBorderWidth: $privateFormControlMessagingBorderWidth
+) {
+  // if there is a visible background color, then use the error border width as is. This may
+  // be on all four sides if $privateFormControlMessagingBorderWidth is set to that.
+  @if ($backgroundColor != null and $backgroundColor != transparent) {
+    @return $messageBorderWidth;
+  }
+
+  $top: oj-shorthand-property-value-top($borderWidth);
+  $right: oj-shorthand-property-value-right($borderWidth);
+  $bottom: oj-shorthand-property-value-bottom($borderWidth);
+  $left: oj-shorthand-property-value-left($borderWidth);
+
+  // if no form control background color or form control borders, then use the bottom only
+  // border
+  @if ($top == 0 and $right == 0 and $bottom == 0 and $left == 0) {
+    @return 0 0 oj-shorthand-property-value-bottom($messageBorderWidth) 0;
+  }
+
+  $errortop: oj-shorthand-property-value-top($messageBorderWidth);
+  $errorright: oj-shorthand-property-value-right($messageBorderWidth);
+  $errorbottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $errorleft: oj-shorthand-property-value-left($messageBorderWidth);
+
+  $returntop: if(($top != null and $top != 0), $errortop, 0);
+  $returnright: if(($right != null and $right != 0), $errorright, 0);
+  $returnbottom: if(($bottom != null and $bottom != 0), $errorbottom, 0);
+  $returnleft: if(($left != null and $left != 0), $errorleft, 0);
+
+  @return $returntop $returnright $returnbottom $returnleft;
+}
+
+// returns true if the message border width has four sides
+@function oj-form-control-message-border-four-sides($messageBorderWidth) {
+  $top: oj-shorthand-property-value-top($messageBorderWidth);
+  $right: oj-shorthand-property-value-right($messageBorderWidth);
+  $bottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $left: oj-shorthand-property-value-left($messageBorderWidth);
+
+  // count form control borders. If all four are set, return true
+  @if ($top != 0 and $right != 0 and $bottom != 0 and $left != 0) {
+    @return true;
+  } @else {
+    @return false;
+  }
+}

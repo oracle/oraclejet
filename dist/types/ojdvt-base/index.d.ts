@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -27,8 +27,9 @@ export interface dvtBaseComponent<SP extends dvtBaseComponentSettableProperties 
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof dvtBaseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: dvtBaseComponentEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof dvtBaseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: dvtBaseComponentEventMap<SP>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof dvtBaseComponentSettableProperties>(property: T): dvtBaseComponent<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof dvtBaseComponentSettableProperties>(property: T, value: dvtBaseComponentSettableProperties[T]): void;
@@ -38,6 +39,12 @@ export interface dvtBaseComponent<SP extends dvtBaseComponentSettableProperties 
 export namespace dvtBaseComponent {
     // tslint:disable-next-line interface-over-type-literal
     type trackResizeChanged<SP extends dvtBaseComponentSettableProperties = dvtBaseComponentSettableProperties> = JetElementCustomEvent<dvtBaseComponent<SP>["trackResize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type PreventableDOMRendererFunction<T> = ((context: T) => ({
+        insert: Element | string;
+    } | {
+        preventDefault: boolean;
+    }));
 }
 export interface dvtBaseComponentEventMap<SP extends dvtBaseComponentSettableProperties = dvtBaseComponentSettableProperties> extends baseComponentEventMap<SP> {
     'trackResizeChanged': JetElementCustomEvent<dvtBaseComponent<SP>["trackResize"]>;

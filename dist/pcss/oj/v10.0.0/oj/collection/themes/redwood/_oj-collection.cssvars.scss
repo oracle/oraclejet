@@ -1,0 +1,61 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("redwood.variables.collection") {
+// todo: in list view grid lines are optional, we should add a class to remove them
+//       called  oj-listview-hide-horizontal-gridlines
+//       dev will need to figure out how to expose this class
+// todo: we don't support active, cell active bg color: neutral 70, 60% opacity (should match oj-active-bg-color)
+// todo: get rid of the selected inactive vars? they're weird.
+// todo: it's actually really confusing using the collection vars, like on list view a lot of them
+//       don't apply. I think we should have list view vars and data grid vars and then table uses one or
+//       the other depending on this: http://jet.us.oracle.com/trunk/jsdocs/oj.ojTable.html#display
+
+:root {
+
+  // collections (used by components like table, data grid, list view)
+  // ----------------------------
+
+  --oj-collection-bg-color:                                rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-collection-border-color:                            rgba(var(--oj-palette-neutral-rgb-190), .1);
+  --oj-collection-free-space-bg-color:                     rgb(var(--oj-palette-neutral-rgb-0));
+
+//  For table in list mode and listview
+  --oj-collection-list-row-height:                         3rem;
+  --oj-collection-list-cell-padding-vertical:              0.75rem;
+
+  // this should be at least as high as var(--oj-text-field-height)
+  // todo: this seems to only affect the data grid, table has a different row height which seems odd
+  --oj-collection-grid-row-height:                         2.375rem;
+
+  // header
+  // todo: the header font vars don't apply to table headers. 
+  // todo: should be using caption-2
+  --oj-collection-header-font-size:                        var(--oj-typography-body-xs-font-size);
+  --oj-collection-header-font-weight:                      normal;
+  --oj-collection-header-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-collection-header-text-color:                       var(--oj-core-text-color-secondary);
+  --oj-collection-grid-header-height:                      2.25rem;
+
+  // header hover
+  --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover); 
+
+  // header selected
+  --oj-collection-header-bg-color-selected:                var(--oj-core-bg-color-selected);
+
+  // cell
+// todo: should we use line-height as well?
+  --oj-collection-cell-banded-bg-color:                    rgb(var(--oj-palette-neutral-rgb-10));
+
+  --oj-collection-grid-cell-padding:                       .5rem;
+
+  // cell focus
+  --oj-collection-editable-cell-border-color-focus:        rgb(var(--oj-palette-brand-rgb-110));
+
+  // cell readonly
+  --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-bg-color-hover);
+
+  // icon
+  --oj-collection-default-sort-icon-display:               block;
+}
+
+}

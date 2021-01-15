@@ -1,8 +1,17 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","jquery","ojs/ojcomponentcore","ojs/ojdvt-base"],(function(e,t,i,n){"use strict";e.TimeUtils={};e.TimeUtils;return e.TimeUtils.getPosition=function(e,t,i,n){var o=new Date(e).getTime(),m=new Date(t).getTime(),s=(o-m)*n,T=new Date(i).getTime()-m;return 0===s||0===T?0:s/T},e.TimeUtils.getLength=function(t,i,n,o,m){var s=new Date(t).getTime(),T=new Date(i).getTime(),g=new Date(n).getTime(),r=new Date(o).getTime(),a=e.TimeUtils.getPosition(s,g,r,m);return e.TimeUtils.getPosition(T,g,r,m)-a},e.TimeUtils.getDate=function(e,t,i,n){var o=new Date(t).getTime(),m=e*(new Date(i).getTime()-o);return 0===m||0===n?o:m/n+o},e.TimeUtils}));
+define(["exports","ojs/ojcore-base","ojs/ojlocaledata"],function(e,t,n){"use strict";t=t&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t;
+/**
+   * @license
+   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+const o={};t._registerLegacyNamespaceProp("TimeUtils",o),o.getPosition=function(e,t,n,o){var a=new Date(e).getTime(),g=new Date(t).getTime(),i=(a-g)*o,r=new Date(n).getTime()-g;return 0===i||0===r?0:i/r},o.getLength=function(e,t,n,a,g){var i=new Date(e).getTime(),r=new Date(t).getTime(),s=new Date(n).getTime(),c=new Date(a).getTime(),u=o.getPosition(i,s,c,g);return o.getPosition(r,s,c,g)-u},o.getDate=function(e,t,n,o){var a=new Date(t).getTime(),g=e*(new Date(n).getTime()-a);return 0===g||0===o?a:g/o+a},o.getWeekendReferenceObjects=function(e,t){const o=new Date(e),a=new Date(t),g=o.getTime(),i=a.getTime();if(i<=g)return[];const r=n.getWeekendStart(),s=n.getWeekendEnd(),c=864e5*(s>=r?s-r+1:s+7-r+1),u=o.getDay(),D=r>=u?r-u:r+7-u,f=[];for(let e=o.setHours(0,0,0,0)+864e5*D;e<=i;e+=6048e5){const t=e+c-1;f.push({type:"area",start:new Date(e).toISOString(),end:new Date(t).toISOString()})}return f};const a=o.getPosition,g=o.getLength,i=o.getDate,r=o.getWeekendReferenceObjects;e.getDate=i,e.getLength=g,e.getPosition=a,e.getWeekendReferenceObjects=r,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojtimeutils.js.map

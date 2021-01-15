@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -114,15 +114,16 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         maxRowCount: number;
     };
     scrollPosition: {
-        x?: number;
-        y?: number;
-        rowIndex?: number;
         columnIndex?: number;
-        rowKey?: K;
         columnKey?: K;
         offsetX?: number;
         offsetY?: number;
+        rowIndex?: number;
+        rowKey?: K;
+        x?: number;
+        y?: number;
     };
+    scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selection: Array<ojDataGrid.Selection<K>>;
     selectionMode: {
         cell: 'none' | 'single' | 'multiple';
@@ -137,6 +138,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleColumnHeaderLabelContext?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
+        accessibleContainsControls?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;
@@ -181,8 +183,8 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         msgFetchingData?: string;
         msgNoData?: string;
     };
-    addEventListener<T extends keyof ojDataGridEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojDataGridEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDataGridEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojDataGridEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDataGridSettableProperties<K, D>>(property: T): ojDataGrid<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDataGridSettableProperties<K, D>>(property: T, value: ojDataGridSettableProperties<K, D>[T]): void;
@@ -210,20 +212,20 @@ export namespace ojDataGrid {
     }> {
     }
     interface ojBeforeEditEnd<K, D> extends CustomEvent<{
-        cellContext: CellContext<K, D>;
         cancelEdit: boolean;
+        cellContext: CellContext<K, D>;
         [propName: string]: any;
     }> {
     }
     interface ojResize extends CustomEvent<{
         header: string | number;
-        oldDimensions: {
-            width: number;
-            height: number;
-        };
         newDimensions: {
-            width: number;
             height: number;
+            width: number;
+        };
+        oldDimensions: {
+            height: number;
+            width: number;
         };
         [propName: string]: any;
     }> {
@@ -235,8 +237,8 @@ export namespace ojDataGrid {
     }> {
     }
     interface ojSort extends CustomEvent<{
-        header: any;
         direction: 'ascending' | 'descending';
+        header: any;
         [propName: string]: any;
     }> {
     }
@@ -263,75 +265,77 @@ export namespace ojDataGrid {
     // tslint:disable-next-line interface-over-type-literal
     type scrollPositionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPosition"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollToKey"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type selectionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selection"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectionModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selectionMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type CellContext<K, D> = {
-        componentElement: Element;
-        parentElement: Element;
         cell: D;
+        componentElement: Element;
         data: D;
         datasource: DataProvider<K, D> | null;
-        indexes: {
-            row: number;
-            column: number;
-        };
-        keys: {
-            row: K;
-            column: K;
-        };
         extents: {
-            row: number;
             column: number;
+            row: number;
         };
         indexFromParent: number;
+        indexes: {
+            column: number;
+            row: number;
+        };
+        isLeaf: boolean;
+        keys: {
+            column: K;
+            row: K;
+        };
+        mode: 'edit' | 'navigation';
+        parentElement: Element;
         parentKey: K;
         treeDepth: number;
-        isLeaf: boolean;
-        mode: 'edit' | 'navigation';
     };
     // tslint:disable-next-line interface-over-type-literal
     type CurrentCell<K> = {
-        type: 'cell' | 'header' | 'label';
         axis?: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         index?: number;
-        level?: number;
-        key?: any;
         indexes?: {
-            row: number;
             column: number;
+            row: number;
         };
+        key?: any;
         keys?: {
-            row: K;
             column: K;
+            row: K;
         };
+        level?: number;
+        type: 'cell' | 'header' | 'label';
     };
     // tslint:disable-next-line interface-over-type-literal
     type HeaderContext<K, D> = {
+        axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
         componentElement: Element;
-        parentElement: Element;
         data: D;
         datasource: DataProvider<K, D> | null;
-        axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
+        depth: number;
+        extent: number;
         index: number;
+        indexFromParent: number;
+        isLeaf: boolean;
         key: K;
         level: number;
-        extent: number;
-        depth: number;
-        indexFromParent: number;
+        parentElement: Element;
         parentKey: K;
         treeDepth: number;
-        isLeaf: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LabelContext<K, D> = {
-        componentElement: Element;
-        parentElement: Element;
-        datasource: DataProvider<K, D> | null;
         axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
+        componentElement: Element;
+        datasource: DataProvider<K, D> | null;
         key: K;
         level: number;
+        parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Selection<K> = {
@@ -371,6 +375,7 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
     'scrollPolicyChanged': JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicy"]>;
     'scrollPolicyOptionsChanged': JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicyOptions"]>;
     'scrollPositionChanged': JetElementCustomEvent<ojDataGrid<K, D>["scrollPosition"]>;
+    'scrollToKeyChanged': JetElementCustomEvent<ojDataGrid<K, D>["scrollToKey"]>;
     'selectionChanged': JetElementCustomEvent<ojDataGrid<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojDataGrid<K, D>["selectionMode"]>;
 }
@@ -480,15 +485,16 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         maxRowCount: number;
     };
     scrollPosition: {
-        x?: number;
-        y?: number;
-        rowIndex?: number;
         columnIndex?: number;
-        rowKey?: K;
         columnKey?: K;
         offsetX?: number;
         offsetY?: number;
+        rowIndex?: number;
+        rowKey?: K;
+        x?: number;
+        y?: number;
     };
+    scrollToKey: 'auto' | 'capability' | 'always' | 'never';
     selection: Array<ojDataGrid.Selection<K>>;
     selectionMode: {
         cell: 'none' | 'single' | 'multiple';
@@ -503,6 +509,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleColumnHeaderLabelContext?: string;
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
+        accessibleContainsControls?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;

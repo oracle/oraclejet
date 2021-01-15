@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -74,6 +74,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-ltr() {
+            display: inline-flex;
             margin-right: $buttonIconToTextPadding;
             margin-left:  $buttonIconToEdgePadding;
         }
@@ -87,6 +88,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-rtl() {
+            display: inline-flex;
             margin-right: $buttonIconToTextPadding;
             margin-left:  $buttonIconToEdgePadding;
         }
@@ -100,6 +102,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-ltr() {
+            display: inline-flex;
             margin-right: $buttonIconToTextPadding;
             margin-left:  $buttonIconOnlyPadding; // between-icon padding lives on left icon
         }
@@ -111,6 +114,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-rtl() {
+            display: inline-flex;
             margin-right: $buttonIconToTextPadding;
             margin-left:  $buttonIconOnlyPadding; // between-icon padding lives on left icon
         }
@@ -138,6 +142,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-ltr() {
+            display: inline-flex;
             margin-right: $buttonIconToEdgePadding;
             margin-left: $buttonIconToTextPadding;
         }
@@ -151,6 +156,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-rtl() {
+            display: inline-flex;
             margin-right: $buttonIconToEdgePadding;
             margin-left: $buttonIconToTextPadding;
         }
@@ -164,6 +170,7 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-ltr() {
+            display: inline-flex;
             // between-icon padding lives on left icon, not this right icon
             margin-right: $buttonIconOnlyPadding;
         }
@@ -175,9 +182,13 @@
         // it's easy for people to add some margins at the top/bottom
         // to center images 
         @include oj-rtl() {
+            display: inline-flex;
             // between-icon padding lives on left icon, not this right icon
             margin-right: $buttonIconOnlyPadding; 
         }
+    }
+    #{$selector}.oj-button-icon-only .oj-button-icon {
+        display: inline-flex;
     }
 }
 
@@ -254,7 +265,7 @@
         height: 100%;
     }
 
-    .oj-button-jqui,     // jqui only
+    .oj-button-toggle,     
     .oj-button-nocomp,   // nocomp button only
     .oj-button-button {  // custom element only
         justify-content: center;
@@ -288,7 +299,7 @@
     }
 
     // specificity needed to override this Normalize rule:  html input[type="button"] {cursor: pointer} 
-    html body .oj-button-jqui,                // jqui only
+    html body .oj-button-toggle,                
     html body .oj-button-nocomp,   // nocomp button only
     html body .oj-button-button {  // custom element only
 
@@ -350,7 +361,7 @@
     
     .oj-button.oj-button-sm,
     .oj-button-nocomp.oj-button-sm, 
-    .oj-buttonset.oj-button-sm .oj-button-jqui    {  // custom element buttonset    
+    .oj-buttonset.oj-button-sm .oj-button-toggle    {  // custom element buttonset    
 
         height: $buttonSmallHeight;
         line-height: $buttonSmallHeight;
@@ -360,7 +371,7 @@
 
     .oj-button.oj-button-lg,
     .oj-button-nocomp.oj-button-lg,
-    .oj-buttonset.oj-button-lg .oj-button-jqui    {  // custom element buttonset
+    .oj-buttonset.oj-button-lg .oj-button-toggle    {  // custom element buttonset
 
         height: $buttonLargeHeight;
         line-height: $buttonLargeHeight;
@@ -370,7 +381,7 @@
 
     .oj-button.oj-button-xl,
     .oj-button-nocomp.oj-button-xl,
-    .oj-buttonset.oj-button-xl .oj-button-jqui    {  // custom element buttonset
+    .oj-buttonset.oj-button-xl .oj-button-toggle    {  // custom element buttonset
 
         height: $buttonXlargeHeight;
         line-height: $buttonXlargeHeight;
@@ -383,25 +394,25 @@
     //----------------------------------
 
 
-    .oj-button-jqui,            // jqui only
+    .oj-button-toggle,            
     .oj-button-button,          // custom element only
     .oj-button-nocomp,          // nocomp button only
-    .oj-button-jqui:link,       // jqui only
+    .oj-button-toggle:link,       
     .oj-button-button:link,     // custom element only
     .oj-button-nocomp:link,     // nocomp button only
-    .oj-button-jqui:visited,    // jqui only
+    .oj-button-toggle:visited,    
     .oj-button-button:visited,  // custom element only
     .oj-button-nocomp:visited,  // nocomp button only
-    .oj-button-jqui:hover,      // jqui only
+    .oj-button-toggle:hover,      
     .oj-button-button:hover,    // custom element only
     .oj-button-nocomp:hover,    // nocomp button only
-    .oj-button-jqui:active,     // jqui only
+    .oj-button-toggle:active,     
     .oj-button-button:active,   // custom element only
     .oj-button-nocomp:active {  // nocomp button only
         text-decoration: none; 
     }
 
-    .oj-button-jqui:not(.oj-focus-highlight):focus,                // jqui only
+    .oj-button-toggle:not(.oj-focus-highlight):focus,                
     .oj-button-nocomp:not(.oj-focus-highlight):focus,              // nocomp button only
     .oj-button:not(.oj-focus-highlight) .oj-button-button:focus {  // custom element only
         outline: none;
@@ -413,7 +424,7 @@
     // example keyboard or initial page load.
     // See also the $focusHighlightPolicy variable, which controls when this 
     // class is set.  That variable affects multiple components, not just Button.
-    .oj-button-jqui.oj-focus-highlight,                // jqui only
+    .oj-button-toggle.oj-focus-highlight,                
     .oj-button-nocomp.oj-focus-highlight,              // nocomp button only
     .oj-button.oj-focus-highlight .oj-button-button {  // custom element only
 
@@ -421,7 +432,7 @@
 
     }
 
-    .oj-button-jqui.oj-disabled,                // jqui only
+    .oj-button-toggle.oj-disabled,                
     .oj-button-nocomp:disabled,                 // nocomp button only
     .oj-button.oj-disabled .oj-button-button {  // custom element only
         cursor: default; // in case a themer sets clickable "hand" cursor on buttons, override it if disabled
@@ -436,11 +447,11 @@
      * focus-only, disabled, hover, active, selected, ...).
      */
 
-    .oj-button-jqui.oj-button-full-chrome,                       // jqui only
-    .oj-button-jqui.oj-button-full-chrome:link,                  // jqui only
-    .oj-button-jqui.oj-button-full-chrome:visited,               // jqui only
-    .oj-button-jqui.oj-button-full-chrome:hover,                 // jqui only
-    .oj-button-jqui.oj-button-full-chrome:active,                // jqui only
+    .oj-button-toggle.oj-button-full-chrome,                       
+    .oj-button-toggle.oj-button-full-chrome:link,                  
+    .oj-button-toggle.oj-button-full-chrome:visited,               
+    .oj-button-toggle.oj-button-full-chrome:hover,                 
+    .oj-button-toggle.oj-button-full-chrome:active,                
     .oj-button-nocomp.oj-button-full-chrome,                     // nocomp button only
     .oj-button-nocomp.oj-button-full-chrome:link,                // nocomp button only
     .oj-button-nocomp.oj-button-full-chrome:visited,             // nocomp button only
@@ -461,8 +472,8 @@
     /* oj-default is applied iff the button is not in any of the other states, 
        namely oj-active, oj-disabled, oj-selected, oj-hover, or oj-focus.
        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
-    .oj-button-jqui.oj-default.oj-button-full-chrome,                   // jqui only
-    .oj-button-jqui.oj-focus-only.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-default.oj-button-full-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-full-chrome,                
     .oj-button-nocomp.oj-button-full-chrome,                            // nocomp button only
     .oj-button.oj-default.oj-button-full-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {  // custom element only
@@ -487,7 +498,7 @@
 
     }
 
-    .oj-button-jqui.oj-hover.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-hover.oj-button-full-chrome,                
     .oj-button-nocomp.oj-button-full-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {  // custom element only
 
@@ -512,7 +523,7 @@
     // active should trump hover
     /* oj-active is applied to a push button when it is actively being held down 
        by the mouse button or Enter or Spacebar. */
-    .oj-button-jqui.oj-active.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-active.oj-button-full-chrome,                
     .oj-button-nocomp.oj-button-full-chrome:active,                 // nocomp button only
     .oj-button-nocomp.oj-active.oj-button-full-chrome,                 // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-full-chrome .oj-button-button {  // custom element only
@@ -540,7 +551,7 @@
 
     // selected mostly trumps hover (like active), but unlike active, the text/icon
     // colors are a 3rd color different than the selected color and hover color
-    .oj-button-jqui.oj-selected.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-button-full-chrome,                
     .oj-button.oj-selected.oj-button-full-chrome .oj-button-button {  // custom element only
 
         background-color: $buttonBgColorSelected;
@@ -554,7 +565,7 @@
 
     }
 
-    .oj-button-jqui.oj-selected.oj-hover.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-hover.oj-button-full-chrome,                
     .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-button {  // custom element only
 
         color: $buttonTextColorSelectedHover;  
@@ -575,7 +586,7 @@
 
     }
 
-    .oj-button-jqui.oj-disabled.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-button-full-chrome,                
     .oj-button-nocomp.oj-button-full-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-full-chrome .oj-button-button {  // custom element only
 
@@ -598,7 +609,7 @@
     // Unlike other occurrences of .oj-selected, these "disabled selected" rules have no corresponding "disabled active"
     // rules, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
 
-    .oj-button-jqui.oj-disabled.oj-selected.oj-button-full-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-selected.oj-button-full-chrome,                
     .oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-button {  // custom element only
 
         color: $buttonTextColorSelectedDisabled;
@@ -630,9 +641,9 @@
      */
     
     // half-chrome and (default or focus-only or disabled)
-    .oj-button-jqui.oj-default.oj-button-half-chrome,                 // jqui only
-    .oj-button-jqui.oj-focus-only.oj-button-half-chrome,              // jqui only
-    .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-default.oj-button-half-chrome,                 
+    .oj-button-toggle.oj-focus-only.oj-button-half-chrome,              
+    .oj-button-toggle.oj-disabled.oj-button-half-chrome,                
     .oj-button-nocomp.oj-button-half-chrome,                          // nocomp button only
     .oj-button-nocomp.oj-button-half-chrome:disabled,                 // nocomp button only
     .oj-button.oj-default.oj-button-half-chrome .oj-button-button,    // custom element only
@@ -647,8 +658,8 @@
     }
 
     // half-chrome and (default or focus-only)
-    .oj-button-jqui.oj-default.oj-button-half-chrome,                   // jqui only
-    .oj-button-jqui.oj-focus-only.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-default.oj-button-half-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-half-chrome,                
     .oj-button-nocomp.oj-button-half-chrome,                            // LV nocomp
     .oj-button.oj-default.oj-button-half-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button {  // custom element only
@@ -659,7 +670,7 @@
     }
 
     // half-chrome hover
-    .oj-button-jqui.oj-hover.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-hover.oj-button-half-chrome,                
     .oj-button-nocomp.oj-button-half-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {  // custom element only
 
@@ -672,7 +683,7 @@
     }
 
     // half-chrome active: should trump half-chrome hover
-    .oj-button-jqui.oj-active.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-active.oj-button-half-chrome,                
     .oj-button-nocomp.oj-button-half-chrome:active,                 // nocomp button only
     .oj-button-nocomp.oj-active.oj-button-half-chrome,              // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-half-chrome .oj-button-button {  // custom element only
@@ -686,7 +697,7 @@
     }
 
     // half-chrome selected
-    .oj-button-jqui.oj-selected.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-button-half-chrome,                
     .oj-button.oj-selected.oj-button-half-chrome .oj-button-button {  // custom element only
 
         color: $buttonHalfChromeTextColorSelected;
@@ -697,7 +708,7 @@
     }
 
     // half-chrome selected hover 
-    .oj-button-jqui.oj-selected.oj-hover.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-hover.oj-button-half-chrome,                
     .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-button {  // custom element only
 
         color: $buttonHalfChromeTextColorSelectedHover;
@@ -708,7 +719,7 @@
     }
 
     // half-chrome disabled
-    .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-button-half-chrome,                
     .oj-button-nocomp.oj-button-half-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {  // custom element only
 
@@ -721,7 +732,7 @@
     // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
     // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
     // 6/2014:  still need this line for specificity
-    .oj-button-jqui.oj-disabled.oj-selected.oj-button-half-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-selected.oj-button-half-chrome,                
     .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-button {  // custom element only
 
         color: $buttonHalfChromeTextColorSelectedDisabled;
@@ -732,11 +743,11 @@
     }
 
     // half-chrome
-    .oj-button-jqui.oj-button-half-chrome,                       // jqui only
-    .oj-button-jqui.oj-button-half-chrome:link,                  // jqui only
-    .oj-button-jqui.oj-button-half-chrome:visited,               // jqui only
-    .oj-button-jqui.oj-button-half-chrome:hover,                 // jqui only
-    .oj-button-jqui.oj-button-half-chrome:active,                // jqui only
+    .oj-button-toggle.oj-button-half-chrome,                       
+    .oj-button-toggle.oj-button-half-chrome:link,                  
+    .oj-button-toggle.oj-button-half-chrome:visited,               
+    .oj-button-toggle.oj-button-half-chrome:hover,                 
+    .oj-button-toggle.oj-button-half-chrome:active,                
     .oj-button-nocomp.oj-button-half-chrome,                     // nocomp button only
     .oj-button-nocomp.oj-button-half-chrome:link,                // nocomp button only
     .oj-button-nocomp.oj-button-half-chrome:visited,             // nocomp button only
@@ -818,9 +829,9 @@
     /* Outlined buttons are similar to half-chrome buttons, but have a border in the default state. */
     
     // outlined and (default or focus-only or disabled)
-    .oj-button-jqui.oj-default.oj-button-outlined-chrome,                 // jqui only
-    .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,              // jqui only
-    .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-default.oj-button-outlined-chrome,                 
+    .oj-button-toggle.oj-focus-only.oj-button-outlined-chrome,              
+    .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,                
     .oj-button-nocomp.oj-button-outlined-chrome,                          // nocomp button only
     .oj-button-nocomp.oj-button-outlined-chrome:disabled,                 // nocomp button only
     .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,    // custom element only
@@ -836,8 +847,8 @@
     }
 
     // outlined and (default or focus-only)
-    .oj-button-jqui.oj-default.oj-button-outlined-chrome,                   // jqui only
-    .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-default.oj-button-outlined-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-outlined-chrome,                
     .oj-button-nocomp.oj-button-outlined-chrome,                            // nocomp button only
     .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,      // custom element only
     .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button {  // custom element only
@@ -848,7 +859,7 @@
     }
 
     // outlined hover
-    .oj-button-jqui.oj-hover.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-hover.oj-button-outlined-chrome,                
     .oj-button-nocomp.oj-button-outlined-chrome:hover,                 // nocomp button only
     .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {  // custom element only
 
@@ -862,7 +873,7 @@
     }
 
     // outlined active: should trump outlined hover
-    .oj-button-jqui.oj-active.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-active.oj-button-outlined-chrome,                
     .oj-button-nocomp.oj-button-outlined-chrome:active,                 // nocomp button only
     .oj-button-nocomp.oj-active.oj-button-outlined-chrome,              // nocomp button only (enter key)
     .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {  // custom element only
@@ -876,7 +887,7 @@
     }
 
     // outlined selected
-    .oj-button-jqui.oj-selected.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-button-outlined-chrome,                
     .oj-button.oj-selected.oj-button-outlined-chrome .oj-button-button {  // custom element only
 
         color: $buttonOutlinedChromeTextColorSelected;
@@ -887,7 +898,7 @@
     }
 
     // outlined selected hover 
-    .oj-button-jqui.oj-selected.oj-hover.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-selected.oj-hover.oj-button-outlined-chrome,                
     .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-button {  // custom element only
 
         color: $buttonOutlinedChromeTextColorSelectedHover;
@@ -898,7 +909,7 @@
     }
 
     // outlined disabled
-    .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,                
     .oj-button-nocomp.oj-button-outlined-chrome:disabled,                 // nocomp button only
     .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {  // custom element only
 
@@ -913,7 +924,7 @@
     // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
     // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
     // 6/2014:  still need this line for specificity
-    .oj-button-jqui.oj-disabled.oj-selected.oj-button-outlined-chrome,                // jqui only
+    .oj-button-toggle.oj-disabled.oj-selected.oj-button-outlined-chrome,                
     .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-button {  // custom element only
 
         color: $buttonOutlinedChromeTextColorSelectedDisabled;
@@ -924,11 +935,11 @@
     }
 
     // outlined
-    .oj-button-jqui.oj-button-outlined-chrome,                       // jqui only
-    .oj-button-jqui.oj-button-outlined-chrome:link,                  // jqui only
-    .oj-button-jqui.oj-button-outlined-chrome:visited,               // jqui only
-    .oj-button-jqui.oj-button-outlined-chrome:hover,                 // jqui only
-    .oj-button-jqui.oj-button-outlined-chrome:active,                // jqui only
+    .oj-button-toggle.oj-button-outlined-chrome,                       
+    .oj-button-toggle.oj-button-outlined-chrome:link,                  
+    .oj-button-toggle.oj-button-outlined-chrome:visited,               
+    .oj-button-toggle.oj-button-outlined-chrome:hover,                 
+    .oj-button-toggle.oj-button-outlined-chrome:active,                
     .oj-button-nocomp.oj-button-outlined-chrome,                     // nocomp button only
     .oj-button-nocomp.oj-button-outlined-chrome:link,                // nocomp button only
     .oj-button-nocomp.oj-button-outlined-chrome:visited,             // nocomp button only
@@ -1013,11 +1024,11 @@
      * selected states do not apply since CTA buttons are Push Buttons only
      */
 
-     .oj-button-jqui.oj-button-cta-chrome,                       // jqui only
-     .oj-button-jqui.oj-button-cta-chrome:link,                  // jqui only
-     .oj-button-jqui.oj-button-cta-chrome:visited,               // jqui only
-     .oj-button-jqui.oj-button-cta-chrome:hover,                 // jqui only
-     .oj-button-jqui.oj-button-cta-chrome:active,                // jqui only
+     .oj-button-toggle.oj-button-cta-chrome,                       
+     .oj-button-toggle.oj-button-cta-chrome:link,                  
+     .oj-button-toggle.oj-button-cta-chrome:visited,               
+     .oj-button-toggle.oj-button-cta-chrome:hover,                 
+     .oj-button-toggle.oj-button-cta-chrome:active,                
      .oj-button-nocomp.oj-button-cta-chrome,                     // nocomp button only
      .oj-button-nocomp.oj-button-cta-chrome:link,                // nocomp button only
      .oj-button-nocomp.oj-button-cta-chrome:visited,             // nocomp button only
@@ -1038,8 +1049,8 @@
      /* oj-default is applied iff the button is not in any of the other states, 
         namely oj-active, oj-disabled, oj-hover, or oj-focus.
         oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
-     .oj-button-jqui.oj-default.oj-button-cta-chrome,                   // jqui only
-     .oj-button-jqui.oj-focus-only.oj-button-cta-chrome,                // jqui only
+     .oj-button-toggle.oj-default.oj-button-cta-chrome,                   
+     .oj-button-toggle.oj-focus-only.oj-button-cta-chrome,                
      .oj-button-nocomp.oj-button-cta-chrome,                            // nocomp button only
      .oj-button.oj-default.oj-button-cta-chrome .oj-button-button,      // custom element only
      .oj-button.oj-focus-only.oj-button-cta-chrome .oj-button-button {  // custom element only
@@ -1064,7 +1075,7 @@
  
      }
  
-     .oj-button-jqui.oj-hover.oj-button-cta-chrome,                // jqui only
+     .oj-button-toggle.oj-hover.oj-button-cta-chrome,                
      .oj-button-nocomp.oj-button-cta-chrome:hover,                 // nocomp button only
      .oj-button.oj-hover.oj-button-cta-chrome .oj-button-button {  // custom element only
  
@@ -1089,7 +1100,7 @@
      // active should trump hover
      /* oj-active is applied to a push button when it is actively being held down 
         by the mouse button or Enter or Spacebar. */
-     .oj-button-jqui.oj-active.oj-button-cta-chrome,                // jqui only
+     .oj-button-toggle.oj-active.oj-button-cta-chrome,                
      .oj-button-nocomp.oj-button-cta-chrome:active,                 // nocomp button only
      .oj-button-nocomp.oj-active.oj-button-cta-chrome,                 // nocomp button only (enter key)
      .oj-button.oj-active.oj-button-cta-chrome .oj-button-button {  // custom element only
@@ -1115,7 +1126,7 @@
  
      }
  
-     .oj-button-jqui.oj-disabled.oj-button-cta-chrome,                // jqui only
+     .oj-button-toggle.oj-disabled.oj-button-cta-chrome,                
      .oj-button-nocomp.oj-button-cta-chrome:disabled,                 // nocomp button only
      .oj-button.oj-disabled.oj-button-cta-chrome .oj-button-button {  // custom element only
  
@@ -1178,25 +1189,25 @@
 
     // in high contrast mode bump up the focus outline size to 
     // make it easier to see
-    .oj-hicontrast .oj-button-jqui.oj-focus,                // jqui only
+    .oj-hicontrast .oj-button-toggle.oj-focus,                
     .oj-hicontrast .oj-button.oj-focus .oj-button-button {  // custom element only
       outline-width: 3px;
     }
 
     // a selected button will have a more prominent border
-    .oj-hicontrast .oj-button-jqui.oj-selected,                // jqui only
+    .oj-hicontrast .oj-button-toggle.oj-selected,                
     .oj-hicontrast .oj-button.oj-selected .oj-button-button {  // custom element only
       border-style: double;
       border-width: 3px;
     }
 
     // a disabled button will have a less prominent border
-    .oj-hicontrast .oj-button-jqui.oj-disabled,                // jqui only
+    .oj-hicontrast .oj-button-toggle.oj-disabled,                
     .oj-hicontrast .oj-button.oj-disabled .oj-button-button {  // custom element only
       border-style: dotted;
     }
 
-    .oj-hicontrast .oj-button-jqui.oj-disabled.oj-selected,                // jqui only
+    .oj-hicontrast .oj-button-toggle.oj-disabled.oj-selected,                
     .oj-hicontrast .oj-button.oj-disabled.oj-selected .oj-button-button {  // custom element only
       border-width: 2px;
     }
@@ -1205,7 +1216,7 @@
     /* menu buttons */
 
     .oj-button-menu-dropdown-icon,
-    .oj-button-menu-dropdown-nostartslot-icon {
+    .oj-button-menu-icon-only-dropdown-icon {
         @extend .oj-fwk-icon-arrow02-s;
     }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -55,8 +55,8 @@ export interface ojPictoChart<K, D extends ojPictoChart.Item<K> | any> extends d
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof ojPictoChartEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojPictoChartEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojPictoChartEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojPictoChartEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojPictoChartSettableProperties<K, D>>(property: T): ojPictoChart<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojPictoChartSettableProperties<K, D>>(property: T, value: ojPictoChartSettableProperties<K, D>[T]): void;
@@ -112,24 +112,24 @@ export namespace ojPictoChart {
     type tooltipChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
-        id?: K;
-        name?: string;
-        shape?: 'ellipse' | 'square' | 'circle' | 'diamond' | 'triangleUp' | 'triangleDown' | 'star' | 'plus' | 'human' | 'none' | 'rectangle' | string;
-        color?: string;
         borderColor?: string;
         borderWidth?: number;
+        categories?: string[];
+        color?: string;
+        columnSpan?: number;
+        count?: number;
+        drilling?: 'inherit' | 'off' | 'on';
+        id?: K;
+        name?: string;
+        rowSpan?: number;
+        shape?: 'ellipse' | 'square' | 'circle' | 'diamond' | 'triangleUp' | 'triangleDown' | 'star' | 'plus' | 'human' | 'none' | 'rectangle' | string;
+        shortDesc?: string;
         source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
-        sourceHover?: string;
-        sourceSelected?: string;
-        sourceHoverSelected?: string;
-        count?: number;
-        rowSpan?: number;
-        columnSpan?: number;
-        shortDesc?: string;
-        categories?: string[];
-        drilling?: 'inherit' | 'off' | 'on';
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemContext<K> = {
@@ -149,17 +149,17 @@ export namespace ojPictoChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
-        subId: string;
         index: number;
+        subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
-        parentElement: Element;
-        id: K;
-        name: string;
-        count: number;
         color: string;
         componentElement: Element;
+        count: number;
+        id: K;
+        name: string;
+        parentElement: Element;
     };
 }
 export interface ojPictoChartEventMap<K, D extends ojPictoChart.Item<K> | any> extends dvtBaseComponentEventMap<ojPictoChartSettableProperties<K, D>> {
@@ -253,8 +253,8 @@ export interface ojPictoChartItem extends JetElement<ojPictoChartItemSettablePro
     sourceSelected: string;
     svgClassName: string;
     svgStyle: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojPictoChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojPictoChartItemEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojPictoChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojPictoChartItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojPictoChartItemSettableProperties>(property: T): ojPictoChartItem[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojPictoChartItemSettableProperties>(property: T, value: ojPictoChartItemSettableProperties[T]): void;

@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -16,7 +16,6 @@
  * This dependency does what the Webpack's ImportDependency would have done for a dynamic
  * import, but also assumes that all modules will be always lazily loaded.
  */
-const path = require('path');
 const ContextDependency = require("webpack/lib/dependencies/ContextDependency");
 
 class OjModuleImportDependency extends ContextDependency
@@ -28,18 +27,20 @@ class OjModuleImportDependency extends ContextDependency
                                                       // (this provides the 'context' to Webpack dynamic module loading).
            mode:'lazy'});
     this.pos = pos;
-    //this.path = options.root;
     this.ext = options.addExtension || "";
   }
 }
 
 OjModuleImportDependency.Template = class OjModuleImportDependencyTemplate
 {
-  apply(dep, source, runtime) {
+  apply(dep, source,
+    {runtimeTemplate, moduleGraph, chunkGraph, runtimeRequirements}) {
 
-    const moduleExports = runtime.moduleExports({
-			module: dep.module,
-			request: dep.request
+    const moduleExports = runtimeTemplate.moduleExports({
+      module: moduleGraph.getModule(dep),
+      chunkGraph,
+      request: dep.request,
+      runtimeRequirements
 		});
 
     source.replace(dep.pos, dep.pos,

@@ -1,0 +1,19 @@
+
+// values could be "circle" or "none"
+$privateNavigationListIconOnlyStyle:             none !default;
+$privateNavigationListHorizontalIconOnlyStyle:   none !default;
+
+//---------------Animations-------------------
+$privateNavigationListHorizontalAddAnimation:                     ((effect: "expand", direction:"width"), "fadeIn") !default;
+$privateNavigationListHorizontalRemoveAnimation:                  ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+$privateNavigationListAddAnimation:                               ((effect: "expand"), "fadeIn") !default;
+$privateNavigationListRemoveAnimation:                            ((effect: "collapse"), "fadeOut") !default;
+$privateNavigationListUpdateAnimation:                            (effect: "fadeIn") !default;
+$privateNavigationListExpandAnimation:                            (effect: "expand") !default;
+$privateNavigationListCollapseAnimation:                          (effect: "collapse") !default;
+$privateNavigationListSliderExpandAnimation:                      (effect: "slideIn", direction:"start", duration: $privateAnimationDurationMedium) !default;
+$privateNavigationListSliderCollapseAnimation:                    (effect: "slideIn", direction:"end", duration: $privateAnimationDurationMedium) !default;
+$privateNavigationListPointerUpAnimation:                         (effect: "ripple") !default;
+
+//------Options----------------
+$privateNavigationListHierarchyMenuThresholdOptionDefault: -1 !default;

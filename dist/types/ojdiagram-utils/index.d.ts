@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -41,11 +41,11 @@ export function getLayout<K1, K2, D1, D2>(obj: {
 }): (context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void;
 // tslint:disable-next-line interface-over-type-literal
 export type LabelLayout = {
-    x: number;
-    y: number;
-    rotationPointX?: number;
-    rotationPointY?: number;
     angle?: number;
     halign?: string;
+    rotationPointX?: number;
+    rotationPointY?: number;
     valign?: string;
+    x: number;
+    y: number;
 };

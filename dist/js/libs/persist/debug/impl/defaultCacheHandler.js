@@ -110,11 +110,81 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     return shredder(response);
   };
 
-  DefaultCacheHandler.prototype.cacheShreddedData = function(shreddedObjArray) {
+  // adds the shredded data into local shredded store.
+  // shreddedObjArray:
+  //  each item in this array corresponds to a shredded store:
+  //    name: name of the store
+  //    resourceType: single or collection
+  //    resourceIdentifier: resource identifier
+  //    keys: an array of key values
+  //    data: an array of the data
+  DefaultCacheHandler.prototype.cacheShreddedData = function(shreddedObjArray, requestMetadata) {
     logger.log("Offline Persistence Toolkit DefaultCacheHandler: cacheShreddedData()");
     var shreddedData = shreddedObjArray.map(_convertShreddedData);
-    return _updateShreddedDataStore(shreddedData);
+    var self = this;
+    return _updateShreddedDataStore(shreddedData).then(function() {
+      if (self._isCompleteCollection(requestMetadata, shreddedObjArray)) {
+        // this is a get request that returns the full collection,
+        // then we need to remove shredded data that doesn't belong
+        // in the list.
+        return _removeStaleShreddedEntry(shreddedObjArray);
+      }
+    });
   };
+
+  // check if the request is for a complete collection of a resource.
+  // a complete collection request are those:
+  // 1. must be a get/head request
+  // 2. must return a collection type of response
+  // 3.a if the request doesn't contain any query parameter, the response contains
+  //      the complete list.
+  // 3.b if the request contains "limit" query parameter, while the response
+  //      contains the less than "limit" items, the response contains the full
+  //      list.
+  // 3.c if the request contains "offset" query parameter whose value is not 0,
+  //     the respone is not a complete collection.
+  DefaultCacheHandler.prototype._isCompleteCollection = function (requestMetadata, shreddedObjArray) {
+    if (!requestMetadata ||
+        (requestMetadata.method !== 'GET' && requestMetadata.method !== 'HEAD')) {
+      return false;
+    } else if (!_isCollectionResponse(shreddedObjArray)){
+      return false;
+    } else if (requestMetadata.url === requestMetadata.baseUrl) {
+      return true;
+    } else {
+      var queryHandler = this._getQueryHandler(requestMetadata.url);
+      if (!queryHandler || typeof queryHandler.normalizeQueryParameter !== 'function') {
+        return false;
+      }
+      var queryParams = queryHandler.normalizeQueryParameter(requestMetadata.url);
+      if (queryParams.searchCriteria || queryParams.offset !== 0) {
+        return false;
+      }
+      var limit = queryParams.limit;
+      if (limit < 0) {
+        return true;
+      }
+      var rows = shreddedObjArray[0].keys.length;
+      if (rows < limit) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // check if the shredded data comes from a collection type of response
+  function _isCollectionResponse(shreddedObjArray) {
+    if (!shreddedObjArray) {
+      return false;
+    }
+    for (var i = 0; i < shreddedObjArray.length; i++) {
+      var storeData = shreddedObjArray[i];
+      if (storeData.resourceType !== 'collection') {
+        return false;
+      }
+    }
+    return true;
+  }
 
   // helper function to convert array where each element of format
   // into array where each
@@ -138,9 +208,42 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     });
   };
 
+  // remove the stale entries from the shredded store, those entries
+  // do not show up in the complete collection response from server,
+  // we should replicate the deletion on client.
+  function _removeStaleShreddedEntry(shreddedObjArray) {
+    var promises = shreddedObjArray.map(function(element) {
+      var storeName = element.name;
+      var deleteExpression = {
+        selector: {
+          'key': {
+            '$nin': element.keys
+          }
+        }
+      };
+      return persistenceStoreManager.openStore(storeName).then(function (store) {
+        return store.delete(deleteExpression);
+      });
+    });
+    return Promise.all(promises);
+  };
+
   // helper function to convert entry of format
-  // {}
+  // {
+  //   name: store of the name
+  //   resourceType: single or collection
+  //   resourceIdentifier: etag
+  //   keys: string[]
+  //   data: object[]
+  // }
   // into format
+  // {
+  //   storeName: [{
+  //     key: keyValue,
+  //     metadata: {lastUpdated: xx, resourceIdentifier: etag},
+  //     value: {...}
+  //   }, {...}]
+  // }
   function _convertShreddedData (entry) {
     var storeName = entry.name;
     var resourceIdentifierValue = entry.resourceIdentifier;
@@ -494,20 +597,20 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
   };
 
   DefaultCacheHandler.prototype._getShredder = function (request) {
-    var jsonProcessor = this._getJsonProcessor(request);
+    var jsonProcessor = this._getJsonProcessor(request.url);
     return jsonProcessor ? jsonProcessor.shredder : null;
   };
 
   DefaultCacheHandler.prototype._getUnshredder = function (request) {
-    var jsonProcessor = this._getJsonProcessor(request);
+    var jsonProcessor = this._getJsonProcessor(request.url);
     return jsonProcessor ? jsonProcessor.unshredder : null;
   };
 
-  DefaultCacheHandler.prototype._getJsonProcessor = function (request) {
+  DefaultCacheHandler.prototype._getJsonProcessor = function (requestUrl) {
     var allKeys = Object.keys(this._endpointToOptionsMap);
     for (var index = 0; index < allKeys.length; index++) {
       var key = allKeys[index];
-      if (request.url === JSON.parse(key).url) {
+      if (requestUrl === JSON.parse(key).url) {
         var option = this._endpointToOptionsMap[key];
         if (option && option.jsonProcessor &&
             option.jsonProcessor.shredder &&
@@ -520,6 +623,22 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
     }
     return null;
   };
+
+  DefaultCacheHandler.prototype._getQueryHandler = function (requestUrl) {
+    var allKeys = Object.keys(this._endpointToOptionsMap);
+    for (var index = 0; index < allKeys.length; index++) {
+      var key = allKeys[index];
+      if (requestUrl === JSON.parse(key).url) {
+        var option = this._endpointToOptionsMap[key];
+        if (option && option.queryHandler) {
+          return option.queryHandler;
+        } else {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
 
   /**
    * Utility method that fill the body-less response with data queried from

@@ -36,20 +36,16 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
 
     this._name = name;
     this._storeName = storeName;
+    // the names of all the shredded stores associated
+    // with this cache. We need them when clear() is
+    // called since we need to clear all the shredded
+    // stores as well.
+    this._shreddedNamesStoreName = this._storeName + '_OPT_INT_SHRED_STORE_NAMES_';
     this._store = null;
 
     // in-memory cache of all the keys in the store, for quick lookup.
     this._cacheKeys = [];
     this._createStorePromise;
-
-    // the names of all the shredded stores associated
-    // with this cache. We need them when clear() is
-    // called since we need to clear all the shredded
-    // stores as well.
-    Object.defineProperty(this, '_STORE_NAMES_', {
-      value: '_OPT_INT_SHRED_STORE_NAMES_',
-      writable: false
-    });
   }
 
   /**
@@ -312,6 +308,29 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     }
   }
 
+    /**
+   * Return the persistent store.
+   * @returns {Object} The persistent store.
+   */
+  OfflineCache.prototype._getShreddedNamesStore = function () {
+    var self = this;
+    if (self._shreddedNamesStore) {
+      return Promise.resolve(self._shreddedNamesStore);
+    }
+    if (self._createShreddedNamesStorePromise) {
+      return self._createShreddedNamesStorePromise;
+    } else {
+      self._createShreddedNamesStorePromise = persistenceStoreManager.openStore(self._shreddedNamesStoreName, {
+        index: ["metadata.baseUrl", "metadata.url", "metadata.created"],
+        skipMetadata: true
+     }).then(function (store) {
+        self._shreddedNamesStore = store;
+        return self._shreddedNamesStore;
+      });
+      return self._createShreddedNamesStorePromise;
+    }
+  }
+
   /**
    * Perform vary header check and return the first match among all the
    * cacheEntries.
@@ -493,16 +512,18 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
             cacheKey = null;
             return;
           }
-          self._updateShreddedStoreNames(shreddedPayload.map(function(entry) {
-            return entry.name;
-          }));
           var storePromises = [];
           requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
           storePromises.push(cacheStore.upsert(requestResponsePair.key,
                                                requestResponsePair.metadata,
                                                requestResponsePair.value));
-          storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
-          return Promise.all(storePromises);
+          storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload, requestResponsePair.metadata));
+
+          return self._updateShreddedStoreNames(shreddedPayload.map(function(entry) {
+            return entry.name;
+          })).then(function() {
+            return Promise.all(storePromises);
+          });
         });
       }
     }).then(function() {
@@ -515,41 +536,33 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
   };
 
   OfflineCache.prototype._updateShreddedStoreNames = function (storeNames) {
-    if (!storeNames) {
-      localStorage.setItem(this._STORE_NAMES_, "");
-      return;
-    }
-    var storeageData = localStorage.getItem(this._STORE_NAMES_);
-    if (!storeageData) {
-      storeageData = JSON.stringify(storeNames);
-    } else {
-      var existingStoreNames;
-      try {
-        existingStoreNames = JSON.parse(storeageData);
-      } catch(exc) {
-        existingStoreNames = [];
+    return this._getShreddedNamesStore().then(function(store) {
+      if (!storeNames) {
+        return store.delete();
+      } else {
+        return store.keys().then(function(keys) {
+          var keysToAdd = [];
+          storeNames.forEach(function(storeName) {
+            if (keys.indexOf(storeName) < 0) {
+              keysToAdd.push(storeName);
+            }
+          });
+          if (keysToAdd.length > 0) {
+            var rowsToAdd = [];
+            keysToAdd.forEach(function(key) {
+              rowsToAdd.push({key: key, metadata: {}, value: {}});
+            });
+            return store.upsertAll(rowsToAdd);
+          }
+        });
       }
-      storeNames.forEach(function (storeName) {
-        if (existingStoreNames.indexOf(storeName) < 0) {
-          existingStoreNames.push(storeName);
-        }
-      });
-      storeageData = JSON.stringify(existingStoreNames);
-    }
-    localStorage.setItem(this._STORE_NAMES_, storeageData);
+    });
   };
 
   OfflineCache.prototype._getShreddedStoreNames = function () {
-    var storeNames = [];
-    var storeageData = localStorage.getItem(this._STORE_NAMES_);
-    if (storeageData) {
-      try {
-        storeNames = JSON.parse(storeageData);
-      } catch (exc) {
-        logger.log("error getting shredded store names from localStorage");
-      }
-    }
-    return storeNames;
+    return this._getShreddedNamesStore().then(function(store) {
+      return store.keys();
+    });
   };
 
   function _buildBodyAbstract (shreddedPayload) {
@@ -796,15 +809,17 @@ define(["./defaultCacheHandler", "../persistenceStoreManager", "../persistenceUt
     return self._getStore().then(function(cacheStore) {
       var deletePromiseArray = [];
       deletePromiseArray.push(cacheStore.delete());
-      var storeNames = self._getShreddedStoreNames();
-      storeNames.forEach(function(storeName) {
-        deletePromiseArray.push(persistenceStoreManager.deleteStore(storeName));
-        return;
-      });
-      return Promise.all(deletePromiseArray).then(function(results) {
-        self._updateShreddedStoreNames(null);
-        self._cacheKeys = [];
-        return true;
+      return self._getShreddedStoreNames().then(function(storeNames) {
+        storeNames.forEach(function(storeName) {
+          deletePromiseArray.push(persistenceStoreManager.deleteStore(storeName));
+          return;
+        });
+        return Promise.all(deletePromiseArray).then(function(results) {
+          return self._updateShreddedStoreNames(null);
+        }).then(function() {
+          self._cacheKeys = [];
+          return true;
+        });
       });
     }).catch(function(error) {
       logger.log("Offline Persistence Toolkit OfflineCache: clear() error");

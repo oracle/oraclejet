@@ -1,0 +1,129 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example input-search/themes/redwood/oj-input-search.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.inputsearch") {
+  /* input-search */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-inputsearch:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-inputsearch {
+    position: relative;
+  }
+
+  /* input-search */
+
+  /*
+     * Applied to the input field
+     */
+  .oj-inputsearch-input {
+    width: 100%;
+  }
+
+  /*
+     * Applied to the input-search search icon
+     */
+  .oj-inputsearch.oj-loading .oj-inputsearch-search-icon {
+    display: none;
+  }
+
+  /*
+     * Applied to the element containing the floating autocomplete text
+     */
+  .oj-inputsearch-autocomplete-floating-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+    display: inline-flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  /*
+     * Applied to the floating autocomplete text
+     */
+  .oj-inputsearch-autocomplete-floating-text {
+    font-size: var(--oj-typography-body-xs-font-size);
+    color: var(--oj-core-text-color-secondary);
+    white-space: nowrap;
+  }
+
+  /* icon */
+  /* -----------------------------*/
+
+  /*
+     * Applied to the single-select drop down open icon
+     */
+  .oj-inputsearch-search-icon {
+    @extend .oj-fwk-icon-magnifier;
+  }
+
+  /* clears the 'X' from Internet Explorer */
+  .oj-inputsearch input[type="search"]::-ms-clear,
+  .oj-inputsearch input[type="search"]::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* clears the 'X' from Chrome */
+  .oj-inputsearch input[type="search"]::-webkit-search-decoration,
+  .oj-inputsearch input[type="search"]::-webkit-search-cancel-button,
+  .oj-inputsearch input[type="search"]::-webkit-search-results-button,
+  .oj-inputsearch input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+  }
+
+  // option defaults
+  $inputSearchDefaultOptions: ();
+
+  @if ($privateLoadingIndicatorDelayDuration) {
+    $inputSearchDefaultOptions: map-merge(
+      $inputSearchDefaultOptions,
+      (
+        showIndicatorDelay: $privateLoadingIndicatorDelayDuration
+      )
+    );
+  }
+
+  // component default options selector
+  .oj-inputsearch-option-defaults {
+    font-family: oj-json-from-map($inputSearchDefaultOptions) !important;
+  }
+
+  // High Contrast
+  //--------------------------------------------
+
+  // Applied to a hovered suggestion
+  .oj-hicontrast .oj-inputsearch-results .oj-hover {
+    border: 1px solid var(--oj-text-field-border-color);
+  }
+
+  // Hero Search
+  .oj-input-search-hero .oj-text-field-container .oj-text-field-input {
+    padding: 0;
+    padding-inline-end: var(--oj-text-field-text-to-edge-padding);
+  }
+
+  .oj-input-search-hero.oj-text-field .oj-text-field-start .oj-text-field-start-end-icon {
+    @include oj-ltr() {
+      margin-left: var(--oj-text-field-icon-to-edge-padding);
+      margin-right: var(--oj-text-field-icon-to-text-padding);
+    }
+
+    @include oj-rtl() { 
+      margin-right: var(--oj-text-field-icon-to-edge-padding);
+      margin-left: var(--oj-text-field-icon-to-text-padding);
+    }
+  }
+}

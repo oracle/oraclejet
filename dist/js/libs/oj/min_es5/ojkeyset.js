@@ -1,8 +1,41 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojkeysetimpl"],(function(t,e){"use strict";var n=function(){};t.Object.createSubclass(n,t.Object,"KeySet"),t.KeySet=n,n.prototype.SetInternal=function(t){this._keys=t},n.prototype.AddOrDeleteInternal=function(t,e){var n,r;return null==(n=t?this._add(e):this._remove(e))?this:((r=Object.create(Object.getPrototypeOf(this))).SetInternal(n),r)},n.prototype._add=function(t){var e=this,n=null;return t.forEach((function(t){t!==e.NOT_A_KEY&&e.get(t)===e.NOT_A_KEY&&(null==n&&(n=e.Clone()),n.add(t))})),n},n.prototype._remove=function(t){var e,n=this,r=null;return 0===this._keys.size?null:(t.forEach((function(t){(e=n.get(t))!==n.NOT_A_KEY&&(null==r&&(r=n.Clone()),r.delete(e))})),r)},n.prototype.GetInternalSize=function(){return this._keys.size},n.prototype.Clone=function(){return new Set(this._keys)},e.call(n.prototype);var r=function(t){this.InitializeWithKeys(t)};t.Object.createSubclass(r,n,"ExpandedKeySet"),t.ExpandedKeySet=r,r.prototype.add=function(t){return this.AddOrDeleteInternal(!0,t)},r.prototype.addAll=function(){return new o},r.prototype.isAddAll=function(){return!1},r.prototype.delete=function(t){return this.AddOrDeleteInternal(!1,t)},r.prototype.clear=function(){return 0===this.GetInternalSize()?this:new r},r.prototype.has=function(t){return this.get(t)!==this.NOT_A_KEY},r.prototype.values=function(){return this.Clone()};var o=function(){this.InitializeWithKeys(null)};t.Object.createSubclass(o,n,"ExpandAllKeySet"),t.ExpandAllKeySet=o,o.prototype.add=function(t){return this.AddOrDeleteInternal(!1,t)},o.prototype.addAll=function(){return 0===this.GetInternalSize()?this:new o},o.prototype.isAddAll=function(){return!0},o.prototype.delete=function(t){return this.AddOrDeleteInternal(!0,t)},o.prototype.clear=function(){return new r},o.prototype.has=function(t){return this.get(t)===this.NOT_A_KEY},o.prototype.deletedValues=function(){return this.Clone()};e=function(t){this.InitializeWithKeys(t)};t.Object.createSubclass(e,n,"KeySetImpl"),t.KeySetImpl=e,e.prototype.add=function(t){return this.AddOrDeleteInternal(!0,t)},e.prototype.addAll=function(){return new i},e.prototype.isAddAll=function(){return!1},e.prototype.delete=function(t){return this.AddOrDeleteInternal(!1,t)},e.prototype.clear=function(){return 0===this.GetInternalSize()?this:new e},e.prototype.has=function(t){return this.get(t)!==this.NOT_A_KEY},e.prototype.values=function(){return this.Clone()};var i=function(){this.InitializeWithKeys(null)};t.Object.createSubclass(i,n,"AllKeySetImpl"),t.AllKeySetImpl=i,i.prototype.add=function(t){return this.AddOrDeleteInternal(!1,t)},i.prototype.addAll=function(){return 0===this.GetInternalSize()?this:new i},i.prototype.isAddAll=function(){return!0},i.prototype.delete=function(t){return this.AddOrDeleteInternal(!0,t)},i.prototype.clear=function(){return new e},i.prototype.has=function(t){return this.get(t)===this.NOT_A_KEY},i.prototype.deletedValues=function(){return this.Clone()};var l={toArray:function(t){var e,n=t.isAddAll()?t.deletedValues():t.values();return Array.from?e=Array.from(n):(e=[],n.forEach((function(t){e.push(t)}))),e.inverted=t.isAddAll(),e},toKeySet:function(t){return t.inverted?(new i).delete(t):(new e).add(t)}};return{KeySet:n,ExpandedKeySet:r,ExpandAllKeySet:o,KeySetImpl:e,AllKeySetImpl:i,KeySetUtils:l}}));
+define(["exports","ojs/ojcore-base","ojs/ojkeysetimpl"],function(e,t,n){"use strict";t=t&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t,n=n&&Object.prototype.hasOwnProperty.call(n,"default")?n.default:n;
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+var r=function(){};t._registerLegacyNamespaceProp("KeySet",r),t.Object.createSubclass(r,t.Object,"KeySet"),r.prototype.SetInternal=function(e){this._keys=e},r.prototype.AddOrDeleteInternal=function(e,t){var n,r;return null==(n=e?this._add(t):this._remove(t))?this:((r=Object.create(Object.getPrototypeOf(this))).SetInternal(n),r)},r.prototype._add=function(e){var t=this,n=null;return e.forEach(function(e){e!==t.NOT_A_KEY&&t.get(e)===t.NOT_A_KEY&&(null==n&&(n=t.Clone()),n.add(e))}),n},r.prototype._remove=function(e){var t,n=this,r=null;return 0===this._keys.size?null:(e.forEach(function(e){(t=n.get(e))!==n.NOT_A_KEY&&(null==r&&(r=n.Clone()),r.delete(t))}),r)},r.prototype.GetInternalSize=function(){return this._keys.size},r.prototype.Clone=function(){return new Set(this._keys)},n.call(r.prototype);
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+var o=function(e){this.InitializeWithKeys(e)};t._registerLegacyNamespaceProp("ExpandedKeySet",o),t.Object.createSubclass(o,r,"ExpandedKeySet"),o.prototype.add=function(e){return this.AddOrDeleteInternal(!0,e)},o.prototype.addAll=function(){return new i},o.prototype.isAddAll=function(){return!1},o.prototype.delete=function(e){return this.AddOrDeleteInternal(!1,e)},o.prototype.clear=function(){return 0===this.GetInternalSize()?this:new o},o.prototype.has=function(e){return this.get(e)!==this.NOT_A_KEY},o.prototype.values=function(){return this.Clone()};var i=function(){this.InitializeWithKeys(null)};t._registerLegacyNamespaceProp("ExpandAllKeySet",i),t.Object.createSubclass(i,r,"ExpandAllKeySet"),i.prototype.add=function(e){return this.AddOrDeleteInternal(!1,e)},i.prototype.addAll=function(){return 0===this.GetInternalSize()?this:new i},i.prototype.isAddAll=function(){return!0},i.prototype.delete=function(e){return this.AddOrDeleteInternal(!0,e)},i.prototype.clear=function(){return new o},i.prototype.has=function(e){return this.get(e)===this.NOT_A_KEY},i.prototype.deletedValues=function(){return this.Clone()};
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+var l=function(e){this.InitializeWithKeys(e)};t._registerLegacyNamespaceProp("KeySetImpl",l),t.Object.createSubclass(l,r,"KeySetImpl"),l.prototype.add=function(e){return this.AddOrDeleteInternal(!0,e)},l.prototype.addAll=function(){return new u},l.prototype.isAddAll=function(){return!1},l.prototype.delete=function(e){return this.AddOrDeleteInternal(!1,e)},l.prototype.clear=function(){return 0===this.GetInternalSize()?this:new l},l.prototype.has=function(e){return this.get(e)!==this.NOT_A_KEY},l.prototype.values=function(){return this.Clone()};var u=function(){this.InitializeWithKeys(null)};t._registerLegacyNamespaceProp("AllKeySetImpl",u),t.Object.createSubclass(u,r,"AllKeySetImpl"),u.prototype.add=function(e){return this.AddOrDeleteInternal(!1,e)},u.prototype.addAll=function(){return 0===this.GetInternalSize()?this:new u},u.prototype.isAddAll=function(){return!0},u.prototype.delete=function(e){return this.AddOrDeleteInternal(!0,e)},u.prototype.clear=function(){return new l},u.prototype.has=function(e){return this.get(e)===this.NOT_A_KEY},u.prototype.deletedValues=function(){return this.Clone()};
+/**
+   * @license
+   * Copyright (c) 2019 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+var a={toArray:function(e){var t,n=e.isAddAll()?e.deletedValues():e.values();return Array.from?t=Array.from(n):(t=[],n.forEach(function(e){t.push(e)})),t.inverted=e.isAddAll(),t},toKeySet:function(e){return e.inverted?(new u).delete(e):(new l).add(e)}};e.AllKeySetImpl=u,e.ExpandAllKeySet=i,e.ExpandedKeySet=o,e.KeySet=r,e.KeySetImpl=l,e.KeySetUtils=a,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojkeyset.js.map

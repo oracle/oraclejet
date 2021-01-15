@@ -1,8 +1,33 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","jquery"],(function(t,e){"use strict";var r=function(t){this.Init(t)};t.Object.createSubclass(r,t.Object,"AttributeGroupHandler"),r.prototype.Init=function(t){if(this._assignments={},this._valueIndex=0,this._matchRules={},null!=t)for(var e=Object.keys(t),r=0;r<e.length;r++){var a=e[r];this.addMatchRule(a,t[a])}},r.prototype.getValueRamp=function(){return[]},r.prototype.getValue=function(t){return this._matchRules[t]?this._matchRules[t]:(this._assignments[t]||(this._values||(this._values=this.getValueRamp().slice()),this._assignments[t]=this._values[this._valueIndex],this._valueIndex+=1,this._valueIndex===this._values.length&&(this._valueIndex=0)),this._assignments[t])},r.prototype.getCategoryAssignments=function(){for(var t=[],e=Object.keys(this._assignments),r=0;r<e.length;r++){var a=e[r];t.push({category:a,value:this._assignments[a]})}return t},r.prototype.addMatchRule=function(t,e){this._matchRules[t]=e};var a=function(t){if(this._attributeValues=[],e(document.body).hasClass("oj-hicontrast"))this._attributeValues=a._DEFAULT_COLORS.slice();else{var r=a.__createAttrDiv();r&&(a.__processAttrDiv(r),r.remove()),a._colors.length>0?this._attributeValues=a._colors.slice():this._attributeValues=a._DEFAULT_COLORS.slice()}this.Init(t)};t.Object.createSubclass(a,r,"ColorAttributeGroupHandler"),a._DEFAULT_COLORS=["#237bb1","#68c182","#fad55c","#ed6647","#8561c8","#6ddbdb","#ffb54d","#e371b2","#47bdef","#a2bf39","#a75dba","#f7f37b"],a._STYLE_CLASSES=["oj-dvt-category1","oj-dvt-category2","oj-dvt-category3","oj-dvt-category4","oj-dvt-category5","oj-dvt-category6","oj-dvt-category7","oj-dvt-category8","oj-dvt-category9","oj-dvt-category10","oj-dvt-category11","oj-dvt-category12"],a._colors=null,a.prototype.getValueRamp=function(){return this._attributeValues},a.__createAttrDiv=function(){if(a._colors)return null;var t=e(document.createElement("div"));t.css("display","none;"),t.attr("id","attrGps"),e(document.body).append(t);for(var r=0;r<a._STYLE_CLASSES.length;r++){var s=e(document.createElement("div"));s.addClass(a._STYLE_CLASSES[r]),t.append(s)}return t},a.__processAttrDiv=function(t){a._colors=[];for(var r=t.children(),s=0;s<r.length;s++){var o=e(r[s]).css("color");o&&a._colors.push(o)}};var s=function(t){this.Init(t)};t.Object.createSubclass(s,r,"ShapeAttributeGroupHandler"),s._attributeValues=["square","circle","diamond","plus","triangleDown","triangleUp","human"],s.prototype.getValueRamp=function(){return s._attributeValues};var o={};return o.AttributeGroupHandler=r,o.ColorAttributeGroupHandler=a,o.ShapeAttributeGroupHandler=s,o}));
+define(["exports","ojs/ojcore-base","jquery"],function(t,e,a){"use strict";e=e&&Object.prototype.hasOwnProperty.call(e,"default")?e.default:e,a=a&&Object.prototype.hasOwnProperty.call(a,"default")?a.default:a;
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+const r=function(t){this.Init(t)};e.Object.createSubclass(r,e.Object,"AttributeGroupHandler"),r.prototype.Init=function(t){if(this._assignments={},this._valueIndex=0,this._matchRules={},null!=t)for(var e=Object.keys(t),a=0;a<e.length;a++){var r=e[a];this.addMatchRule(r,t[r])}},r.prototype.getValueRamp=function(){return[]},r.prototype.getValue=function(t){return this._matchRules[t]?this._matchRules[t]:(this._assignments[t]||(this._values||(this._values=this.getValueRamp().slice()),this._assignments[t]=this._values[this._valueIndex],this._valueIndex+=1,this._valueIndex===this._values.length&&(this._valueIndex=0)),this._assignments[t])},r.prototype.getCategoryAssignments=function(){for(var t=[],e=Object.keys(this._assignments),a=0;a<e.length;a++){var r=e[a];t.push({category:r,value:this._assignments[r]})}return t},r.prototype.addMatchRule=function(t,e){this._matchRules[t]=e};
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+const s=function(t){if(this._attributeValues=[],a(document.body).hasClass("oj-hicontrast"))this._attributeValues=s._DEFAULT_COLORS.slice();else{if(!s._colors){var e=s.__createAttrDiv();a(document.body).append(e),s._colors=s.__processAttrDiv(e),e.remove()}s._colors.length>0?this._attributeValues=s._colors.slice():this._attributeValues=s._DEFAULT_COLORS.slice()}this.Init(t)};e.Object.createSubclass(s,r,"ColorAttributeGroupHandler"),s._DEFAULT_COLORS=["#237bb1","#68c182","#fad55c","#ed6647","#8561c8","#6ddbdb","#ffb54d","#e371b2","#47bdef","#a2bf39","#a75dba","#f7f37b"],s._STYLE_CLASSES=["oj-dvt-category1","oj-dvt-category2","oj-dvt-category3","oj-dvt-category4","oj-dvt-category5","oj-dvt-category6","oj-dvt-category7","oj-dvt-category8","oj-dvt-category9","oj-dvt-category10","oj-dvt-category11","oj-dvt-category12"],s._colors=null,s.prototype.getValueRamp=function(){return this._attributeValues},s.__createAttrDiv=function(){var t=a(document.createElement("div"));t.css("display","none;"),t.attr("id","attrGps");for(var e=0;e<s._STYLE_CLASSES.length;e++){var r=a(document.createElement("div"));r.addClass(s._STYLE_CLASSES[e]),t.append(r)}return t},s.__processAttrDiv=function(t){for(var e=[],r=t.children(),s=0;s<r.length;s++){var o=a(r[s]).css("color");o&&e.push(o)}return e};
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignoreg
+   */
+var o=function(t){this.Init(t)};e.Object.createSubclass(o,r,"ShapeAttributeGroupHandler"),o._attributeValues=["square","circle","diamond","plus","triangleDown","triangleUp","human"],o.prototype.getValueRamp=function(){return o._attributeValues},t.AttributeGroupHandler=r,t.ColorAttributeGroupHandler=s,t.ShapeAttributeGroupHandler=o,Object.defineProperty(t,"__esModule",{value:!0})});
+//# sourceMappingURL=ojattributegrouphandler.js.map

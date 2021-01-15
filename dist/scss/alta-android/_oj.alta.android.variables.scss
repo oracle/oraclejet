@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.property";
 @import "../utilities/oj.utilities.units";
@@ -508,7 +508,6 @@ $formLayoutLabelInlineMarginTop: .5em !default;
 
 $formLayoutFieldInlineAlign: end !default;
 $formLayoutLabelEdgeDefault: top !default;
-$formLayoutLabelGenerationDefault: form !default;
 $formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
@@ -554,7 +553,7 @@ $radioCheckboxInputToEdgePadding: 0 !default;
 // spacing between input image and label text.
 // this is zero because 16px margin is built into the image itself.
 $radioCheckboxInputToLabelPadding: 0 !default;
-$radioCheckboxMessagePadding: 0 !default; //settings: ignore
+$ojprivateRadioCheckboxMessagePadding: 0 !default;
 
 // states
 //
@@ -757,7 +756,6 @@ $tabBarItemBgColorActive:                             $neutralColor4 !default;
 $tabBarItemBorderColorActive:                         $iconColorHover !default;
 
 //sizing
-$tabBarItemAccentBorderWidth:                         3px !default; //settings: ignore
 $tabBarItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
 $tabBarVerticalItemBorderWidth:                       0 0 1px 2px !default;
@@ -884,8 +882,7 @@ $buttonBgColorActive:               $brandColorDark1  !default;
 // selected disabled
 $buttonTextColorSelectedDisabled:   $neutralColor3 !default;
 $buttonBgColorSelectedDisabled:     $neutralColor10  !default;
-//$headerBgColor: $neutralColor6 !default;
-$listViewHeaderBgColor:             $neutralColor6 !default; //settings: ignore
+
 // nav list
 $navigationListItemContrastLabelColorDefault:     $neutralColor10 !default;
 $navigationListItemContrastLabelColorHover:       $neutralColor3 !default;

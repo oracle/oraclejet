@@ -1,0 +1,10 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+@import "../../../list-view/themes/redwood/_oj-list-view.cssvars.scss";
+// ----- end dependencies ---------
+
+@include module-include-once("redwood.variables.listitemlayout") {
+
+}

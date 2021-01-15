@@ -1,15 +1,4 @@
-/**
- * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-define(['ojs/ojcore', 'require', 'ojs/ojasyncvalidator-adapter'], 
-function(oj, localRequire, SyncValidatorAdapter)
-{
-  "use strict";
+(function() {
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -36,96 +25,142 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var AsyncDateRestrictionValidator = /*#__PURE__*/function (_SyncValidatorAdapter) {
-  _inherits(AsyncDateRestrictionValidator, _SyncValidatorAdapter);
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['require', 'ojs/ojasyncvalidator-adapter'], function (require, SyncValidatorAdapter) {
+  'use strict';
 
-  var _super = _createSuper(AsyncDateRestrictionValidator);
+  function _interopNamespace(e) {
+    if (e && e.__esModule) {
+      return e;
+    } else {
+      var n = {};
 
-  function AsyncDateRestrictionValidator(options) {
-    var _this;
+      if (e) {
+        Object.keys(e).forEach(function (k) {
+          var d = Object.getOwnPropertyDescriptor(e, k);
+          Object.defineProperty(n, k, d.get ? d : {
+            enumerable: true,
+            get: function get() {
+              return e[k];
+            }
+          });
+        });
+      }
 
-    _classCallCheck(this, AsyncDateRestrictionValidator);
-
-    _this = _super.call(this, options);
-    _this.options = options;
-    return _this;
+      n['default'] = e;
+      return n;
+    }
   }
 
-  _createClass(AsyncDateRestrictionValidator, [{
-    key: "_InitLoadingPromise",
-    value: function _InitLoadingPromise() {
-      if (!this._loadingPromise) {
-        this._loadingPromise = oj.__getRequirePromise('./ojvalidator-daterestriction', localRequire);
+  SyncValidatorAdapter = SyncValidatorAdapter && Object.prototype.hasOwnProperty.call(SyncValidatorAdapter, 'default') ? SyncValidatorAdapter['default'] : SyncValidatorAdapter;
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
+
+  /**
+   * @preserve Copyright 2013 jQuery Foundation and other contributors
+   * Released under the MIT license.
+   * http://jquery.org/license
+   */
+
+  /* jslint browser: true,devel:true*/
+
+  /**
+   * @since 8.0.0
+   * @export
+   * @class AsyncDateRestrictionValidator
+   * @final
+   * @implements AsyncValidator
+   * @classdesc Constructs an AsyncDateRestrictionValidator that ensures the value provided is
+   * not in a disabled entry of dayMetaData.
+   * @param {Object=} options an object literal used to provide the following properties
+   * @ojtsmodule
+   * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+   * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
+   * @ojsignature [{target: "Type",
+   *                value: "class AsyncDateRestrictionValidator<V> implements AsyncValidator<V>"},
+   *               {target: "Type",
+   *                value: "DateRestrictionValidator.ValidatorOptions",
+   *                for: "options", jsdocOverride: true}
+   *              ]
+   * @see oj.DateRestrictionValidator
+   */
+
+  /**
+   * Validates whether the date provided is part of disabled date. Returns a
+   * Promise which resolves when valid and rejects which invalid.
+   *
+   * @param {string} value that is being validated
+   * @returns {Promise.<void>}
+   * @ojsignature {target: "Type",
+   *               value: "(value: V): Promise<void>"}
+   * @memberof AsyncDateRestrictionValidator
+   * @instance
+   * @export
+   * @method validate
+   */
+
+  /**
+   * A message to be used as hint. As there exists no hint for AsyncDateRestrictionValidator, default is to return null.
+   *
+   * @memberof AsyncDateRestrictionValidator
+   * @instance
+   * @export
+   * @name hint
+   * @type {Promise.<string|null>}
+   */
+
+  /**
+   * End of jsdoc
+   */
+
+  var AsyncDateRestrictionValidator = /*#__PURE__*/function (_SyncValidatorAdapter) {
+    _inherits(AsyncDateRestrictionValidator, _SyncValidatorAdapter);
+
+    var _super = _createSuper(AsyncDateRestrictionValidator);
+
+    function AsyncDateRestrictionValidator(options) {
+      var _this;
+
+      _classCallCheck(this, AsyncDateRestrictionValidator);
+
+      _this = _super.call(this, options);
+      _this.options = options;
+      return _this;
+    }
+
+    _createClass(AsyncDateRestrictionValidator, [{
+      key: "_InitLoadingPromise",
+      value: function _InitLoadingPromise() {
+        if (!this._loadingPromise) {
+          this._loadingPromise = new Promise(function (resolve, reject) {
+            require(['ojs/ojvalidator-daterestriction'], function (m) {
+              resolve(_interopNamespace(m));
+            }, reject);
+          });
+        }
       }
-    }
-  }, {
-    key: "hint",
-    get: function get() {
-      return _get(_getPrototypeOf(AsyncDateRestrictionValidator.prototype), "_GetHint", this).call(this);
-    }
-  }]);
+    }, {
+      key: "hint",
+      get: function get() {
+        return _get(_getPrototypeOf(AsyncDateRestrictionValidator.prototype), "_GetHint", this).call(this);
+      }
+    }]);
 
-  return AsyncDateRestrictionValidator;
-}(SyncValidatorAdapter);
-
-
-
-/**
- * @preserve Copyright 2013 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-/* jslint browser: true,devel:true*/
-
-/**
- * @since 8.0.0
- * @export
- * @class AsyncDateRestrictionValidator
- * @final
- * @implements AsyncValidator
- * @classdesc Constructs an AsyncDateRestrictionValidator that ensures the value provided is
- * not in a disabled entry of dayMetaData.
- * @param {Object=} options an object literal used to provide the following properties
- * @ojtsmodule
- * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
- * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
- * @ojsignature [{target: "Type",
- *                value: "class AsyncDateRestrictionValidator<V> implements AsyncValidator<V>"},
- *               {target: "Type",
- *                value: "DateRestrictionValidator.ValidatorOptions",
- *                for: "options", jsdocOverride: true}
- *              ]
- * @see oj.DateRestrictionValidator
- */
-
-/**
- * Validates whether the date provided is part of disabled date. Returns a
- * Promise which resolves when valid and rejects which invalid.
- *
- * @param {string} value that is being validated
- * @returns {Promise.<void>}
- * @ojsignature {target: "Type",
- *               value: "(value: V): Promise<void>"}
- * @memberof AsyncDateRestrictionValidator
- * @instance
- * @export
- * @method validate
- */
-
-/**
- * A message to be used as hint. As there exists no hint for AsyncDateRestrictionValidator, default is to return null.
- *
- * @memberof AsyncDateRestrictionValidator
- * @instance
- * @export
- * @name hint
- * @type {Promise.<string|null>}
- */
-
-/**
- * End of jsdoc
- */
+    return AsyncDateRestrictionValidator;
+  }(SyncValidatorAdapter);
 
   return AsyncDateRestrictionValidator;
 });
+
+}())

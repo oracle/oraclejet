@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -23,6 +23,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
             tasks?: 'disabled' | 'enabled';
         };
     };
+    dragMode: 'pan' | 'select';
     end: string;
     expanded: KeySet<K2>;
     gridlines: {
@@ -198,8 +199,9 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
     };
-    addEventListener<T extends keyof ojGanttEventMap<K1, K2, D1, D2>>(type: T, listener: (this: HTMLElement, ev: ojGanttEventMap<K1, K2, D1, D2>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojGanttEventMap<K1, K2, D1, D2>>(type: T, listener: (this: HTMLElement, ev: ojGanttEventMap<K1, K2, D1, D2>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojGanttSettableProperties<K1, K2, D1, D2>>(property: T): ojGantt<K1, K2, D1, D2>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojGanttSettableProperties<K1, K2, D1, D2>>(property: T, value: ojGanttSettableProperties<K1, K2, D1, D2>[T]): void;
@@ -216,6 +218,14 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
 }
 export namespace ojGantt {
     interface ojMove<K2, D2> extends CustomEvent<{
+        baselineEnd: string;
+        baselineStart: string;
+        end: string;
+        rowContext: {
+            rowData: Row<K2>;
+            componentElement: Element;
+        };
+        start: string;
         taskContexts: Array<{
             data: RowTask<K2>;
             rowData: Row<K2>;
@@ -223,18 +233,12 @@ export namespace ojGantt {
             color: string;
         }>;
         value: string;
-        start: string;
-        end: string;
-        baselineStart: string;
-        baselineEnd: string;
-        rowContext: {
-            rowData: Row<K2>;
-            componentElement: Element;
-        };
         [propName: string]: any;
     }> {
     }
     interface ojResize<K2, D2> extends CustomEvent<{
+        end: string;
+        start: string;
         taskContexts: Array<{
             data: RowTask<K2>;
             rowData: Row<K2>;
@@ -243,16 +247,14 @@ export namespace ojGantt {
         }>;
         type: string;
         value: string;
-        start: string;
-        end: string;
         [propName: string]: any;
     }> {
     }
     interface ojViewportChange extends CustomEvent<{
-        viewportStart: string;
-        viewportEnd: string;
         majorAxisScale: string;
         minorAxisScale: string;
+        viewportEnd: string;
+        viewportStart: string;
         [propName: string]: any;
     }> {
     }
@@ -268,6 +270,8 @@ export namespace ojGantt {
     type dependencyDataChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dependencyData"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dragModeChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dragMode"]>;
     // tslint:disable-next-line interface-over-type-literal
     type endChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["end"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -306,7 +310,14 @@ export namespace ojGantt {
     type viewportStartChanged<K1, K2, D1 extends Dependency<K1, K2> | any, D2 extends DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["viewportStart"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DataTask = {
-        rowId?: any;
+        baseline?: {
+            borderRadius?: string;
+            end?: string;
+            height?: number;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+        };
         borderRadius?: string;
         end?: string;
         height?: number;
@@ -316,11 +327,6 @@ export namespace ojGantt {
         overlap?: {
             behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
         };
-        start?: string;
-        shortDesc?: string;
-        svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
-        type?: 'normal' | 'milestone' | 'summary' | 'auto';
         progress?: {
             borderRadius?: string;
             height?: string;
@@ -328,14 +334,12 @@ export namespace ojGantt {
             svgStyle?: CSSStyleDeclaration;
             value?: number;
         };
-        baseline?: {
-            borderRadius?: string;
-            end?: string;
-            height?: number;
-            start?: string;
-            svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
-        };
+        rowId?: any;
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Dependency<K1, K2> = {
@@ -356,50 +360,32 @@ export namespace ojGantt {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
+        end?: string;
+        shortDesc?: string;
+        start?: string;
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
+        type?: 'area' | 'line';
         value?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Row<K2> = {
         id?: any;
-        tasks?: Array<RowTask<K2>>;
         label?: string;
         labelStyle?: CSSStyleDeclaration;
+        tasks?: Array<RowTask<K2>>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowAxisLabelRendererContext<K2, D2> = {
+        componentElement: Element;
+        itemData: D2[];
+        maxHeight: number;
+        maxWidth: number;
         parentElement: Element;
         rowData: Row<K2>;
-        itemData: D2[];
-        componentElement: Element;
-        maxWidth: number;
-        maxHeight: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowTask<K2> = {
-        id: K2;
-        borderRadius?: string;
-        end?: string;
-        height?: number;
-        label?: string;
-        labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-        labelStyle?: CSSStyleDeclaration;
-        overlap?: {
-            behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
-        };
-        start?: string;
-        shortDesc?: string;
-        svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
-        type?: 'normal' | 'milestone' | 'summary' | 'auto';
-        progress?: {
-            borderRadius?: string;
-            height?: string;
-            svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
-            value?: number;
-        };
         baseline?: {
             borderRadius?: string;
             end?: string;
@@ -408,12 +394,34 @@ export namespace ojGantt {
             svgClassName?: string;
             svgStyle?: CSSStyleDeclaration;
         };
+        borderRadius?: string;
+        end?: string;
+        height?: number;
+        id: K2;
+        label?: string;
+        labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
+        labelStyle?: CSSStyleDeclaration;
+        overlap?: {
+            behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
+        };
+        progress?: {
+            borderRadius?: string;
+            height?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            value?: number;
+        };
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
     type RowTemplateContext = {
         componentElement: Element;
-        index: number;
         id: any;
+        index: number;
         tasks: Array<{
             data: object;
             index: number;
@@ -433,12 +441,12 @@ export namespace ojGantt {
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K2, D2> = {
-        parentElement: Element;
-        data: RowTask<K2>;
-        rowData: Row<K2>;
-        itemData: D2;
-        componentElement: Element;
         color: string;
+        componentElement: Element;
+        data: RowTask<K2>;
+        itemData: D2;
+        parentElement: Element;
+        rowData: Row<K2>;
     };
 }
 export interface ojGanttEventMap<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> extends dvtTimeComponentEventMap<ojGanttSettableProperties<K1, K2, D1, D2>> {
@@ -451,6 +459,7 @@ export interface ojGanttEventMap<K1, K2, D1 extends ojGantt.Dependency<K1, K2> |
     'axisPositionChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["axisPosition"]>;
     'dependencyDataChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dependencyData"]>;
     'dndChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dnd"]>;
+    'dragModeChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dragMode"]>;
     'endChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["end"]>;
     'expandedChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["expanded"]>;
     'gridlinesChanged': JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["gridlines"]>;
@@ -481,6 +490,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
             tasks?: 'disabled' | 'enabled';
         };
     };
+    dragMode: 'pan' | 'select';
     end: string;
     expanded: KeySet<K2>;
     gridlines: {
@@ -667,8 +677,8 @@ export interface ojGanttDependency extends JetElement<ojGanttDependencySettableP
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
-    addEventListener<T extends keyof ojGanttDependencyEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttDependencyEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojGanttDependencyEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttDependencyEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojGanttDependencySettableProperties>(property: T): ojGanttDependency[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojGanttDependencySettableProperties>(property: T, value: ojGanttDependencySettableProperties[T]): void;
@@ -711,8 +721,8 @@ export interface ojGanttDependencySettablePropertiesLenient extends Partial<ojGa
 export interface ojGanttRow extends JetElement<ojGanttRowSettableProperties> {
     label?: string;
     labelStyle?: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojGanttRowEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttRowEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojGanttRowEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttRowEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojGanttRowSettableProperties>(property: T): ojGanttRow[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojGanttRowSettableProperties>(property: T, value: ojGanttRowSettableProperties[T]): void;
@@ -767,8 +777,8 @@ export interface ojGanttTask extends JetElement<ojGanttTaskSettableProperties> {
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     type?: 'normal' | 'milestone' | 'summary' | 'auto';
-    addEventListener<T extends keyof ojGanttTaskEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttTaskEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojGanttTaskEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttTaskEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojGanttTaskSettableProperties>(property: T): ojGanttTask[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojGanttTaskSettableProperties>(property: T, value: ojGanttTaskSettableProperties[T]): void;

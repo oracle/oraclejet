@@ -1,23 +1,27 @@
+(function() {
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(function () {
+  'use strict';
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
 
-define(['ojs/ojcore', 'ojs/ojlogger'], function(oj, Logger) {
-  "use strict";
-
-
-
-/* global Logger:false */
-// eslint-disable-next-line no-unused-vars
-var adapter = function () {
   /**
    * Add a trailing slash to the given path if it doesn't already end with one.
    * @param {string} path
+   * @ignore
    */
+
   function trailingSlash(path) {
     var copy = path;
 
@@ -31,6 +35,7 @@ var adapter = function () {
    * Build a parameter string from a parameter object ({ key1: value1, key2: value2 })
    * @param {Object} params The params object
    * @return {string} The encoded parameter string ("key1=value1;key2=value2")
+   * @ignore
    */
 
 
@@ -51,6 +56,7 @@ var adapter = function () {
    * i.e., "list;param=123"
    * @return {CoreRouter.Route} An object representing the state name and parameters,
    * i.e. { path: 'list', params: { param: 123 } }
+   * @ignore
    */
 
 
@@ -69,10 +75,20 @@ var adapter = function () {
     });
     return parsed;
   }
+  /**
+   * @param {*} value
+   * @ignore
+   */
+
 
   function encode(value) {
     return encodeURIComponent(value);
   }
+  /**
+   * @param {*} value
+   * @ignore
+   */
+
 
   function decode(value) {
     return decodeURIComponent(value);
@@ -196,7 +212,6 @@ var adapter = function () {
   };
 
   return UrlPathAdapter;
-}();
-
-  return adapter;
 });
+
+}())

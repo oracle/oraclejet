@@ -2,6 +2,7 @@ Bundling JET code with Webpack
 ==============================
 
 This plugin should be used when using Webpack to bundle JET modules. It should be used if you are trying to generate Web-pack-specific bundles and not if you are planning to generate AMD modules and use Require.js at runtime. These tools require JET 6.0 or newer.
+The current version of the plugin is compatible with Webpack 5.x and later
 
 Refer to the enclosed webpack.config.js for typical configuration.
 
@@ -47,18 +48,24 @@ If you want to enable Webpack with an existing application, you will need to mak
 
 4) If your application is using ojModule or <oj-module>, provide the ojModuleResources configuration in WebpackRequireFixupPlugin configuration. Note that the 'root' setting is only used for modules that are defined with global (as opposed to relative) paths.
 
-If your application is using ojModule with relative view/viewModel paths or <oj-module> with ModuleElementUtils and relative paths, make sure to annotate the require instance with information needed to locate the views and viewModels at build time. Note that annotation is placed in a comment that must immediately precede the variable containing the require instance.
+If your application is using ojModule with relative view/viewModel paths or <oj-module> with ModuleRouterAdapter/ModuleElementUtils and relative paths, make sure to annotate the require instance with information needed to locate the views and viewModels at build time. Note that annotation is placed in a comment that must precede (by no more than one space) the variable containing the require instance.
 ojModule example with 'req' variable pointing to the local require instance:
 this.moduleConfig = {name: 'one', 
-                     require: {instance: /*ojModuleResources: {root: './', view:{match: '^\\./views2/.+\\.html$'}, viewModel:{match: '^\\./viewModels2/.+\\.js$'}}*/req, 
+                     require: {instance: /*ojModuleResources: {root: './', view:{match: '^\\./views2/.+\\.html$'}, viewModel:{match: '^\\./viewModels2/.+\\.js$'}}*/ req, 
                      viewPath:"text!./views2/", modelPath: "./viewModels2/"}};
 
-ModuleElementUtils (<oj-module>) example:
+ModuleElementUtils example:
+
     var masterPromise = Promise.all([
       moduleUtils.createView({'viewPath':"views/one.html", 'require': /*ojModuleElementView: {root: './', match: '^\\./views/.+\\.html$'}*/req}),
       moduleUtils.createViewModel({'viewModelPath':"viewModels/one", 
-                                       'require': /*ojModuleElementViewModel: {root: './', match: '^\\./viewModels/.+\\.js$'}*/req})
+                                       'require': /*ojModuleElementViewModel: {root: './', match: '^\\./viewModels/.+\\.js$'}*/ req})
     ]);
+
+ModuleRouterAdapter example:
+    this.moduleAdapter = new ModuleRouterAdapter(router, 
+        { require: /*ojModuleRouterAdapter:{view: {match: '^\\./views/.+\\.html$'}, viewModel: {match: '^\\./viewModels/.+\\.js$'}}*/ req});
+
 Note that the 'match', 'addExtension' and 'prefix' settings for views and viewModels can be sparse. i.e. you only need to specify settings that are different from the View and ViewModel settings in ojModuleResources configuration of WebpackRequireFixupPlugin (see step 4)
 
 5) Run webpack as you would do for any other project (normally 'npx webpack').

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the
@@ -130,8 +130,8 @@
     // datatip styles shared by data visualizations
     .oj-dvt-datatip {
       padding: 2px;
-      outline-style: solid;
-      outline-width: 2px;
+      border-style: solid;
+      border-width: 2px;
 
         background-color: $dvtTooltipBgColor;
         color: $textColor;
@@ -317,6 +317,10 @@
     .oj-dvt-marquee {
       fill: $dvtMarqueeColor;
       stroke: $dvtMarqueeBorderColor;
+    }
+
+    .oj-dvt-marquee-inner-area {
+      fill: transparent;
     }
   }
 }

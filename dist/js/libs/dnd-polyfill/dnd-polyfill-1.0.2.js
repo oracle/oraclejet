@@ -1617,11 +1617,17 @@ define('touchDragDriver',['./args'], function(Args) {
       rootElement.removeEventListener("touchmove", _handleRootTouchMove, { passive: false, capture: true });
     }
 
+    function _isDraggable(elem) {
+      // note images, links, text selections are draggable by default so we'll
+      // need to also check that the "draggable" attribute has been set
+      return elem.hasAttribute && elem.hasAttribute("draggable") && elem.draggable;
+    }
+
     function _handleRootTouchStart(event) {
       var elem = event.target;
 
       // Find the first draggable ancestor element of the touch target
-      while (elem && !elem.draggable) {
+      while (elem && !_isDraggable(elem)) {
         elem = elem.parentNode;
       }
 

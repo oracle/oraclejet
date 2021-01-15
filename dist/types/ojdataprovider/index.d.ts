@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -133,7 +133,7 @@ export interface DataProviderOperationEventDetail<K, D> {
     keys: Set<K>;
     metadata?: Array<ItemMetadata<K>>;
 }
-export class DataProviderRefreshEvent implements Event {
+export class DataProviderRefreshEvent<K> {
     AT_TARGET: number;
     BUBBLING_PHASE: number;
     CAPTURING_PHASE: number;
@@ -146,6 +146,7 @@ export class DataProviderRefreshEvent implements Event {
     currentTarget: EventTarget;
     deepPath: () => EventTarget[];
     defaultPrevented: boolean;
+    detail?: DataProviderRefreshEventDetail<K>;
     eventPhase: number;
     initEvent: (eventTypeArg: string, canBubbleArg: boolean, cancelableArg: boolean) => void;
     isTrusted: boolean;
@@ -160,6 +161,9 @@ export class DataProviderRefreshEvent implements Event {
     type: string;
     constructor();
 }
+export interface DataProviderRefreshEventDetail<K> {
+    disregardAfterKey?: K;
+}
 export interface DedupCapability {
     type: 'global' | 'none' | 'iterator';
 }
@@ -171,7 +175,9 @@ export interface FetchAttribute {
     name: string;
 }
 export interface FetchByKeysCapability<D> {
-    implementation: 'iteration' | 'lookup';
+    attributeFilter?: AttributeFilterCapability;
+    caching?: 'all' | 'none' | 'visitedByCurrentIterator';
+    implementation: 'iteration' | 'lookup' | 'batchLookup';
 }
 export namespace FetchByKeysMixin {
     function applyMixin(derivedCtor: {
@@ -191,6 +197,8 @@ export interface FetchByKeysResults<K, D> {
     results: Map<K, Item<K, D>>;
 }
 export interface FetchByOffsetCapability<D> {
+    attributeFilter?: AttributeFilterCapability;
+    caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     implementation: 'iteration' | 'randomAccess';
 }
 export namespace FetchByOffsetMixin {
@@ -211,8 +219,14 @@ export interface FetchCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
 }
+export interface FetchFirstCapability<D> {
+    attributeFilter?: AttributeFilterCapability;
+    caching?: 'all' | 'none' | 'visitedByCurrentIterator';
+    iterationSpeed: 'immediate' | 'delayed';
+}
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
+    clientId?: symbol;
     filterCriterion?: DataFilter.Filter<D>;
     size?: number;
     sortCriteria?: Array<SortCriterion<D>>;
@@ -230,7 +244,7 @@ export interface FilterCapability {
 export class FilterFactory<D> {
     static getFilter(options: {
         filterDef: DataFilter.FilterDef<any>;
-        filterOptions: any;
+        filterOptions?: any;
     }): DataFilter.Filter<any>;
 }
 export interface FilterOperator<D> {

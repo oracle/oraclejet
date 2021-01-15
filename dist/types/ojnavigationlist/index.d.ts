@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,8 +30,9 @@ export interface ojNavigationList<K, D> extends baseComponent<ojNavigationListSe
         hierMenuBtnLabel?: string;
         previousIcon?: string;
     };
-    addEventListener<T extends keyof ojNavigationListEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojNavigationListEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojNavigationListEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojNavigationListEventMap<K, D>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojNavigationListSettableProperties<K, D>>(property: T): ojNavigationList<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojNavigationListSettableProperties<K, D>>(property: T, value: ojNavigationListSettableProperties<K, D>[T]): void;
@@ -55,40 +56,40 @@ export namespace ojNavigationList {
     }> {
     }
     interface ojBeforeCollapse extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeCurrentItem extends CustomEvent<{
-        previousKey: any;
-        previousItem: Element;
-        key: any;
         item: Element;
+        key: any;
+        previousItem: Element;
+        previousKey: any;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeExpand extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeSelect extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
     interface ojCollapse extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
     interface ojExpand extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
@@ -119,32 +120,32 @@ export namespace ojNavigationList {
     // tslint:disable-next-line interface-over-type-literal
     type ItemContext<K, D> = {
         componentElement: Element;
+        data: any;
         datasource?: DataProvider<K, D>;
+        depth?: number;
         index: number;
         key: any;
-        data: any;
-        parentElement: Element;
-        depth?: number;
-        parentKey?: K;
         leaf?: boolean;
+        parentElement: Element;
+        parentKey?: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
         componentElement: Element;
         data: object;
+        depth: number;
         index: number;
         key: any;
-        depth: number;
         leaf: boolean;
         parentkey: any;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
-        subId: string;
+        group: boolean;
         index: number;
         key: K;
-        group: boolean;
         parent?: Element;
+        subId: string;
     };
 }
 export interface ojNavigationListEventMap<K, D> extends baseComponentEventMap<ojNavigationListSettableProperties<K, D>> {
@@ -223,8 +224,8 @@ export interface ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties
         removeCueText?: string;
         selectedLabel?: string;
     };
-    addEventListener<T extends keyof ojTabBarEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTabBarEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojTabBarEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTabBarEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTabBarSettableProperties<K, D>>(property: T): ojTabBar<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTabBarSettableProperties<K, D>>(property: T, value: ojTabBarSettableProperties<K, D>[T]): void;
@@ -248,18 +249,18 @@ export namespace ojTabBar {
     }> {
     }
     interface ojBeforeCurrentItem extends CustomEvent<{
-        previousKey: any;
-        previousItem: Element;
-        key: any;
         item: Element;
+        key: any;
+        previousItem: Element;
+        previousKey: any;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeDeselect extends CustomEvent<{
-        fromKey: any;
         fromItem: Element;
-        toKey: any;
+        fromKey: any;
         toItem: Element;
+        toKey: any;
         [propName: string]: any;
     }> {
     }
@@ -270,16 +271,16 @@ export namespace ojTabBar {
     }> {
     }
     interface ojBeforeSelect extends CustomEvent<{
-        key: any;
         item: Element;
+        key: any;
         [propName: string]: any;
     }> {
     }
     interface ojDeselect extends CustomEvent<{
-        fromKey: any;
         fromItem: Element;
-        toKey: any;
+        fromKey: any;
         toItem: Element;
+        toKey: any;
         [propName: string]: any;
     }> {
     }
@@ -321,10 +322,10 @@ export namespace ojTabBar {
     // tslint:disable-next-line interface-over-type-literal
     type ItemContext<K, D> = {
         componentElement: Element;
+        data: D;
         datasource?: DataProvider<K, D>;
         index: number;
         key: K;
-        data: D;
         parentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -336,9 +337,9 @@ export namespace ojTabBar {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext<K> = {
-        subId: string;
         index: number;
         key: K;
+        subId: string;
     };
 }
 export interface ojTabBarEventMap<K, D> extends baseComponentEventMap<ojTabBarSettableProperties<K, D>> {

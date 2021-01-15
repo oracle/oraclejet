@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -14,8 +14,8 @@ export interface ojMenu extends baseComponent<ojMenuSettableProperties> {
         ariaFocusSkipLink?: string;
         labelCancel?: string;
     };
-    addEventListener<T extends keyof ojMenuEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojMenuEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMenuSettableProperties>(property: T): ojMenu[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojMenuSettableProperties>(property: T, value: ojMenuSettableProperties[T]): void;
@@ -31,8 +31,8 @@ export namespace ojMenu {
     }> {
     }
     interface ojAnimateEnd extends CustomEvent<{
-        element: Element;
         action: 'open' | 'close';
+        element: Element;
         [propName: string]: any;
     }> {
     }
@@ -50,6 +50,11 @@ export namespace ojMenu {
     }
     interface ojClose extends CustomEvent<{
         event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMenuAction extends CustomEvent<{
+        selectedValue: any;
         [propName: string]: any;
     }> {
     }
@@ -71,16 +76,16 @@ export namespace ojMenu {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Position = {
-        my?: PositionAlign;
         at?: PositionAlign;
-        offset?: PositionPoint;
-        of?: string | PositionPoint;
         collision?: 'flip' | 'fit' | 'flipfit' | 'flipcenter' | 'none';
+        my?: PositionAlign;
+        of?: string | PositionPoint;
+        offset?: PositionPoint;
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
-        vertical?: 'top' | 'bottom' | 'center';
         horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        vertical?: 'top' | 'bottom' | 'center';
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionPoint = {
@@ -94,6 +99,7 @@ export interface ojMenuEventMap extends baseComponentEventMap<ojMenuSettableProp
     'ojAnimateStart': ojMenu.ojAnimateStart;
     'ojBeforeOpen': ojMenu.ojBeforeOpen;
     'ojClose': ojMenu.ojClose;
+    'ojMenuAction': ojMenu.ojMenuAction;
     'ojOpen': ojMenu.ojOpen;
     'disabledChanged': JetElementCustomEvent<ojMenu["disabled"]>;
     'openOptionsChanged': JetElementCustomEvent<ojMenu["openOptions"]>;

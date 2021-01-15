@@ -1,0 +1,16 @@
+
+$privateTabBarIconOnlyStyle:                               none !default;
+// values could be "circle" or "none"
+$privateTabBarHorizontalIconOnlyStyle:                     none !default;
+//Align label of vertical tab bar, support either null or center
+$privateTabBarVerticalItemLabelTextAlign:                  null !default;
+//Valid values are either null or even which ensures equal size for all tabs
+$privateTabBarHorizontalItemWidthDistribution:             null !default;
+
+//----------Animations------------
+$privateTabBarHorizontalAddAnimation:                      ((effect: "expand", direction:"width"), "fadeIn") !default;
+$privateTabBarHorizontalRemoveAnimation:                   ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+$privateTabBarAddAnimation:                                ((effect: "expand"), "fadeIn") !default;
+$privateTabBarRemoveAnimation:                             ((effect: "collapse"), "fadeOut") !default;
+$privateTabBarUpdateAnimation:                             (effect: "fadeIn") !default;
+$privateTabBarPointerUpAnimation:                          (effect: "ripple") !default;

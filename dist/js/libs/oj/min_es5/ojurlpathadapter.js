@@ -1,8 +1,16 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(["ojs/ojcore","ojs/ojlogger"],(function(t,n){"use strict";return function(){function t(t){var n=t;return n&&!n.match(/\/$/)&&(n+="/"),n}function n(t){var n=[];return Object.keys(t).sort().forEach((function(o){var r=t[o];null!=r&&n.push(";"+o+"="+function(t){return encodeURIComponent(t)}(r))})),n.join("")}function o(t){var n=t.split(";"),o={path:r(n.shift()),params:{}};return n.forEach((function(t){if(t){var n=t.split("=");o.params[n[0]]=r(n[1])}})),o}function r(t){return decodeURIComponent(t)}function e(n){this._baseUrl=t(void 0!==n?n:document.location.pathname)}return e.prototype.getRoutesForUrl=function(t){var n=void 0!==t?t:document.location.pathname,r=this._baseUrl,e=n.substring(r.length).split("/"),u=[];return e.forEach((function(t){var n=o(t);u.push(n)})),u.length||u.push(o("")),u},e.prototype.getUrlForRoutes=function(o){var r=[];o.forEach((function(t){var o=n(t.params||{});r.push(t.path+o)}));var e=this._baseUrl,u=r.join("/");return u&&(e=t(e)),e+u+document.location.search},e}()}));
+define(function(){"use strict";
+/**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */function t(t){var n=t;return n&&!n.match(/\/$/)&&(n+="/"),n}function n(t){var n=[];return Object.keys(t).sort().forEach(function(r){var o=t[r];null!=o&&n.push(";"+r+"="+function(t){return encodeURIComponent(t)}(o))}),n.join("")}function r(t){var n=t.split(";"),r={path:o(n.shift()),params:{}};return n.forEach(function(t){if(t){var n=t.split("=");r.params[n[0]]=o(n[1])}}),r}function o(t){return decodeURIComponent(t)}function e(n){this._baseUrl=t(void 0!==n?n:document.location.pathname)}return e.prototype.getRoutesForUrl=function(t){var n=void 0!==t?t:document.location.pathname,o=this._baseUrl,e=n.substring(o.length).split("/"),a=[];return e.forEach(function(t){var n=r(t);a.push(n)}),a.length||a.push(r("")),a},e.prototype.getUrlForRoutes=function(r){var o=[];r.forEach(function(t){var r=n(t.params||{});o.push(t.path+r)});var e=this._baseUrl,a=o.join("/");return a&&(e=t(e)),e+a+document.location.search},e});
+//# sourceMappingURL=ojurlpathadapter.js.map

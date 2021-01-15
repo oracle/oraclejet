@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -81,6 +81,12 @@
       min-width: 100%;
     }
 
+    // setting background-color doesn't work, using box shadow is the only
+    // known hack to override the browser's default autofill background color
+    .oj-form-control input:-webkit-autofill {
+      box-shadow: 0 0 0px 1000px $formControlBgColor inset;
+    }
+    
     // suppress the native clear icons in IE
     .oj-form-control input::-ms-clear {
       display: none; 
@@ -103,9 +109,7 @@
        which does not have a configured default max width in alta.
     */
     .oj-text-field-label-inside.oj-form-control,
-    .oj-form-control-label-top.oj-form-control,
-    .oj-text-field-label-inside.oj-text-field,
-    .oj-form-control-label-top.oj-text-field {
+    .oj-text-field-label-inside.oj-text-field {
       max-width: 100%;
     }
 
@@ -417,7 +421,23 @@
     .oj-text-field.oj-disabled .oj-text-field-start .oj-text-field-start-end-icon {
       color: $iconColorDisabled;
     }
-      
+
+    .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: default;
+    }
+    .oj-text-field .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext:focus {
+      outline-style: dotted;
+      outline-width: 1px;
+      outline-offset: 1px;
+    }      
+    .oj-text-field:not(.oj-focus-highlight) .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext:focus {
+      outline: none;
+    }
+
     .oj-text-field-counter {
       align-items: center;
       justify-content: center;

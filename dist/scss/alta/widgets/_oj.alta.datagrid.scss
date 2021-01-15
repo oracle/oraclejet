@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -9,6 +9,7 @@
 // set up include variables before importing dependencies
 @if $includeDataGridClasses != false {
   $includeIconClasses: true !global;
+  $includeAnimationClasses: true !global;
 }
 
 // import dependencies
@@ -24,7 +25,7 @@
 @if $includeDataGridClasses != false {
   @include module-include-once("alta.datagrid") {
     /* Styling for the sort ascending icon */
-    .oj-datagrid-sort-ascending-icon {
+    .oj-datagrid-sort-ascending-icon, .oj-datagrid-sort-default-icon {
       @extend .oj-fwk-icon-arrow03-n;
     }
 

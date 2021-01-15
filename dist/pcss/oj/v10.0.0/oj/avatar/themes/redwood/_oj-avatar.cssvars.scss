@@ -1,0 +1,43 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.avatar") {
+:root {
+
+// todo: border-radius: add support for border radius, see commented vars below
+// todo: the spec calls for a different height than width, before you do anything with that
+//       follow up with Chloe and Carmen to see if there will be an issue with that in FA
+//       If we decide a different height and width is ok then
+//          width: rename all avatar vars that end with -inner-size to -inner-width
+//          height: add support for height vars, see commented vars below
+// todo: alignment: TBD how to implement but add support for aligning the initials bottom right at some sizes.
+//       - the initials should flip in rtl mode
+//       - consider using a rem value for the left/bottom padding instead of var for left/bottom for every size and see how it looks
+// todo: add support for font weight
+// todo: border- currently we always show a border, you can see it when there's a picture.
+//       Add support for not showing any border
+// todo: bg colors, we don't support out of the box colors on avatar, discuss with Gab and Chunmei how to do that,
+//       here are the colors to use if we find an api:
+//     brand-40
+//     orange-50
+//     red-50
+//     blue-40
+//     purple-50
+//     warm-purple-50
+
+
+  // avatar
+  // ----------------------------
+  --oj-avatar-bg-color:                       rgb(var(--oj-palette-neutral-rgb-130));
+  --oj-avatar-text-color:                     var(--oj-core-neutral-contrast);
+  --oj-avatar-pattern-display:                block;
+
+  --oj-avatar-size:                        4.5rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size:          var(--oj-typography-heading-lg-font-size);
+  --oj-avatar-initials-font-weight:        lighter;
+
+}
+
+}

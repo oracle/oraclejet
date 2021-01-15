@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -102,7 +102,7 @@
         }
 
         /* styling to hide the gridline */
-        .oj-listview-item.gridline-hidden {
+        .oj-listview-gridlines-hidden .oj-listview-item {
             background-size: 0;
         }
 
@@ -339,6 +339,7 @@
         }
 
         /* Styling for group content when listview is filling the entire width and display mode is card */
+        .oj-listview.oj-listview-full-width > .oj-listview-element > li > .oj-listview-card-group,
         .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-card-group {
             @include oj-rtl() {
                 padding-left: oj-shorthand-property-value-left($listViewCardMargin);
@@ -383,7 +384,9 @@
 
         /* Styling for group content when listview is filling the entire width and card layout is used */
         /* for now, first level group header or no group headers only */
+        .oj-listview.oj-listview-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
         .oj-listview.oj-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
+        .oj-listview.oj-listview-full-width > .oj-listview-card-layout > li > .oj-listview-group,
         .oj-listview.oj-full-width > .oj-listview-card-layout > li > .oj-listview-group {
 
             @include oj-rtl() {
@@ -399,6 +402,7 @@
 
         /* Styling for group header when listview is filling the entire width */
         /* for now, first level group header only */
+        .oj-listview.oj-listview-full-width > .oj-listview-element > li > .oj-listview-group-item,
         .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-group-item {
             border-left-style: none;
             border-right-style: none;

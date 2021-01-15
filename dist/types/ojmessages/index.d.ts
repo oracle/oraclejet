@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -23,8 +23,8 @@ export interface ojMessages extends JetElement<ojMessagesSettableProperties> {
         };
         labelLandmark?: string;
     };
-    addEventListener<T extends keyof ojMessagesEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessagesEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojMessagesEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessagesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMessagesSettableProperties>(property: T): ojMessages[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojMessagesSettableProperties>(property: T, value: ojMessagesSettableProperties[T]): void;
@@ -51,16 +51,16 @@ export namespace ojMessages {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Position = {
-        my?: PositionAlign;
         at?: PositionAlign;
-        offset?: PositionPoint;
-        of?: string | PositionPoint;
         collision?: 'flip' | 'fit' | 'flipfit' | 'none';
+        my?: PositionAlign;
+        of?: string | PositionPoint;
+        offset?: PositionPoint;
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
-        vertical?: 'top' | 'bottom' | 'center';
         horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        vertical?: 'top' | 'bottom' | 'center';
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionPoint = {

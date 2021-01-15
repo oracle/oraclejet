@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -29,8 +29,8 @@ export interface dvtBaseGauge<SP extends dvtBaseGaugeSettableProperties = dvtBas
         stateUnselected?: string;
         stateVisible?: string;
     };
-    addEventListener<T extends keyof dvtBaseGaugeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: dvtBaseGaugeEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof dvtBaseGaugeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: dvtBaseGaugeEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof dvtBaseGaugeSettableProperties>(property: T): dvtBaseGauge<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof dvtBaseGaugeSettableProperties>(property: T, value: dvtBaseGaugeSettableProperties[T]): void;
@@ -94,11 +94,11 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
             preventDefault: boolean;
         }));
     };
-    type: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle';
+    type: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
     value: number | null;
     visualEffects: 'none' | 'auto';
-    addEventListener<T extends keyof ojLedGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojLedGaugeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojLedGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojLedGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojLedGaugeSettableProperties>(property: T): ojLedGauge[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojLedGaugeSettableProperties>(property: T, value: ojLedGaugeSettableProperties[T]): void;
@@ -197,7 +197,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
             preventDefault: boolean;
         }));
     };
-    type: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle';
+    type: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
     value: number | null;
     visualEffects: 'none' | 'auto';
 }
@@ -238,7 +238,8 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
-    step: 0.5 | 1;
+    size: 'small' | 'medium' | 'large' | 'fit';
+    step: 0.5 | 1 | number;
     thresholds: ojRatingGauge.Threshold[];
     tooltip: {
         renderer: ((context: ojRatingGauge.TooltipContext) => ({
@@ -258,8 +259,8 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
     };
     value: number | null;
     visualEffects: 'none' | 'auto';
-    addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojRatingGaugeSettableProperties>(property: T): ojRatingGauge[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojRatingGaugeSettableProperties>(property: T, value: ojRatingGaugeSettableProperties[T]): void;
@@ -291,6 +292,8 @@ export namespace ojRatingGauge {
     type readonlyChanged = JetElementCustomEvent<ojRatingGauge["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectedStateChanged = JetElementCustomEvent<ojRatingGauge["selectedState"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sizeChanged = JetElementCustomEvent<ojRatingGauge["size"]>;
     // tslint:disable-next-line interface-over-type-literal
     type stepChanged = JetElementCustomEvent<ojRatingGauge["step"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -333,6 +336,7 @@ export interface ojRatingGaugeEventMap extends dvtBaseGaugeEventMap<ojRatingGaug
     'preserveAspectRatioChanged': JetElementCustomEvent<ojRatingGauge["preserveAspectRatio"]>;
     'readonlyChanged': JetElementCustomEvent<ojRatingGauge["readonly"]>;
     'selectedStateChanged': JetElementCustomEvent<ojRatingGauge["selectedState"]>;
+    'sizeChanged': JetElementCustomEvent<ojRatingGauge["size"]>;
     'stepChanged': JetElementCustomEvent<ojRatingGauge["step"]>;
     'thresholdsChanged': JetElementCustomEvent<ojRatingGauge["thresholds"]>;
     'tooltipChanged': JetElementCustomEvent<ojRatingGauge["tooltip"]>;
@@ -375,7 +379,8 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
-    step: 0.5 | 1;
+    size: 'small' | 'medium' | 'large' | 'fit';
+    step: 0.5 | 1 | number;
     thresholds: ojRatingGauge.Threshold[];
     tooltip: {
         renderer: ((context: ojRatingGauge.TooltipContext) => ({
@@ -461,8 +466,8 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     readonly transientValue: number | null;
     value: number | null;
     visualEffects: 'none' | 'auto';
-    addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojStatusMeterGaugeSettableProperties>(property: T): ojStatusMeterGauge[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojStatusMeterGaugeSettableProperties>(property: T, value: ojStatusMeterGaugeSettableProperties[T]): void;
@@ -532,10 +537,10 @@ export namespace ojStatusMeterGauge {
     type visualEffectsChanged = JetElementCustomEvent<ojStatusMeterGauge["visualEffects"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Bounds = {
+        height: number;
+        width: number;
         x: number;
         y: number;
-        width: number;
-        height: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CenterContext = {
@@ -547,9 +552,9 @@ export namespace ojStatusMeterGauge {
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceLine = {
         color?: string;
-        value?: number;
-        lineWidth?: number;
         lineStyle?: 'dashed' | 'dotted' | 'solid';
+        lineWidth?: number;
+        value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {

@@ -1,0 +1,24 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+
+@include module-include-once("redwood.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  // group header
+  --oj-list-view-group-header-bg-color:          transparent;
+  --oj-list-view-group-header-bg-color-sticky:   rgb(var(--oj-palette-neutral-rgb-30));
+
+  --oj-list-view-group-header-font-weight:  var(--oj-typography-subheading-xs-font-weight);
+  --oj-list-view-group-header-font-size:    var(--oj-typography-subheading-xs-font-size);
+  --oj-list-view-group-header-line-height:  var(--oj-typography-subheading-xs-line-height);
+  
+  // item
+  --oj-list-view-item-padding-horizontal: 1rem;  
+}
+
+}

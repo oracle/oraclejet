@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,8 +12,8 @@ export interface ojMenuSelectMany extends JetElement<ojMenuSelectManySettablePro
     disabled: boolean;
     options: ojMenuSelectMany.Option[] | DataProvider<any, any> | null;
     value: any[];
-    addEventListener<T extends keyof ojMenuSelectManyEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuSelectManyEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojMenuSelectManyEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuSelectManyEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMenuSelectManySettableProperties>(property: T): ojMenuSelectMany[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojMenuSelectManySettableProperties>(property: T, value: ojMenuSelectManySettableProperties[T]): void;
@@ -29,8 +29,8 @@ export namespace ojMenuSelectMany {
     type valueChanged = JetElementCustomEvent<ojMenuSelectMany["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type Option = {
-        id?: string;
         disabled?: boolean;
+        id?: string;
         label: string;
         value: any;
     };

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -167,7 +167,8 @@
       }
       @include oj-rtl() { 
         padding: 7px 10px 0 0; 
-      } 
+      }
+      word-break: break-word;
     }
     
     /**
@@ -273,6 +274,7 @@
       $messageInlineDefaultOptions: map-merge($messageInlineDefaultOptions, (animation: $messageInlineAnimationDefaults));
     }
 
+    // this is used for the form components inline messaging for Alta. See InlineMessagingStrategy.
     .oj-messaging-inline-option-defaults {
       font-family: oj-json-from-map($messageInlineDefaultOptions);
     }

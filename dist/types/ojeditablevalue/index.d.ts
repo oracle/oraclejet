@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,8 +24,9 @@ export interface editableValue<V, SP extends editableValueSettableProperties<V, 
     userAssistanceDensity: 'reflow' | 'efficient' | 'compact';
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
     value: V | null;
-    addEventListener<T extends keyof editableValueEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: editableValueEventMap<V, SP, SV, RV>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof editableValueEventMap<V, SP, SV, RV>>(type: T, listener: (this: HTMLElement, ev: editableValueEventMap<V, SP, SV, RV>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof editableValueSettableProperties<V, SV, RV>>(property: T): editableValue<V, SP, SV, RV>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof editableValueSettableProperties<V, SV, RV>>(property: T, value: editableValueSettableProperties<V, SV, RV>[T]): void;

@@ -1,225 +1,219 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['jquery', 'ojs/ojcore-base'], function ($, oj) { 'use strict';
 
-define(['ojs/ojcore', 'jquery'], 
-function(oj, $)
-{
-  "use strict";
+  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
 
-/**
- * @preserve jQuery UI Touch Punch 0.2.3
- *
- * Copyright 2011-2014, Dave Furfero
- * Dual licensed under the MIT or GPL Version 2 licenses.
- */
+  const _TouchProxy = function (elem) {
+    this._init(elem);
+  };
 
-/**
- * Utility class for proxying touch events for a given element and mapping them to mouse events
- * @constructor
- * @ignore
- * @private
- */
-oj._TouchProxy = function (elem) {
-  this._init(elem);
-};
+  oj._registerLegacyNamespaceProp('_TouchProxy', _TouchProxy);
 
-/**
- * Initializes the TouchProxy instance
- *
- * @param {Object} elem
- * @private
- */
-oj._TouchProxy.prototype._init = function (elem) {
-  this._elem = elem;
+  /**
+   * Initializes the TouchProxy instance
+   *
+   * @param {Object} elem
+   * @private
+   */
+  _TouchProxy.prototype._init = function (elem) {
+    this._elem = elem;
 
-  this._touchHandled = false;
-  this._touchMoved = false;
+    this._touchHandled = false;
+    this._touchMoved = false;
 
-  // add touchListeners
-  this._touchStartHandler = $.proxy(this._touchStart, this);
-  this._touchEndHandler = $.proxy(this._touchEnd, this);
-  this._touchMoveHandler = $.proxy(this._touchMove, this);
+    // add touchListeners
+    this._touchStartHandler = $.proxy(this._touchStart, this);
+    this._touchEndHandler = $.proxy(this._touchEnd, this);
+    this._touchMoveHandler = $.proxy(this._touchMove, this);
 
-  this._elem.on({
-    touchend: this._touchEndHandler,
-    touchcancel: this._touchEndHandler
-  });
-
-  // register touchstart & touchmove with passive option
-  this._elem[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
-  this._elem[0].addEventListener('touchmove', this._touchMoveHandler, { passive: false });
-};
-
-oj._TouchProxy.prototype._destroy = function () {
-  if (this._elem && this._touchStartHandler) {
-    this._elem.off({
+    this._elem.on({
       touchend: this._touchEndHandler,
       touchcancel: this._touchEndHandler
     });
 
-    // remove touchstart & touchmove registered with passive option
-    this._elem[0].removeEventListener('touchstart', this._touchStartHandler, { passive: true });
-    this._elem[0].removeEventListener('touchmove', this._touchMoveHandler, { passive: false });
+    // register touchstart & touchmove with passive option
+    this._elem[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
+    this._elem[0].addEventListener('touchmove', this._touchMoveHandler, { passive: false });
+  };
 
-    this._touchStartHandler = undefined;
-    this._touchEndHandler = undefined;
-    this._touchMoveHandler = undefined;
-  }
-};
+  _TouchProxy.prototype._destroy = function () {
+    if (this._elem && this._touchStartHandler) {
+      this._elem.off({
+        touchend: this._touchEndHandler,
+        touchcancel: this._touchEndHandler
+      });
 
-/**
- * Simulate a mouse event based on a corresponding touch event
- * @param {Object} event A touch event
- * @param {string} simulatedType The corresponding mouse event
- *
- * @private
- */
-oj._TouchProxy.prototype._touchHandler = function (event, simulatedType) {
-  // Ignore multi-touch events
-  if (event.originalEvent.touches.length > 1) {
-    return;
-  }
+      // remove touchstart & touchmove registered with passive option
+      this._elem[0].removeEventListener('touchstart', this._touchStartHandler, { passive: true });
+      this._elem[0].removeEventListener('touchmove', this._touchMoveHandler, { passive: false });
 
-  //  - contextmenu issues: presshold should launch the contextmenu on touch devices
-  if (event.type !== 'touchstart' && event.type !== 'touchend') {
-    event.preventDefault();
-  }
+      this._touchStartHandler = undefined;
+      this._touchEndHandler = undefined;
+      this._touchMoveHandler = undefined;
+    }
+  };
 
-  var touch = event.originalEvent.changedTouches[0];
-  var simulatedEvent = document.createEvent('MouseEvent');
+  /**
+   * Simulate a mouse event based on a corresponding touch event
+   * @param {Object} event A touch event
+   * @param {string} simulatedType The corresponding mouse event
+   *
+   * @private
+   */
+  _TouchProxy.prototype._touchHandler = function (event, simulatedType) {
+    // Ignore multi-touch events
+    if (event.originalEvent.touches.length > 1) {
+      return;
+    }
 
-  // Initialize the simulated mouse event using the touch event's coordinates
-  // initMouseEvent(type, canBubble, cancelable, view, clickCount,
-  //                screenX, screenY, clientX, clientY, ctrlKey,
-  //                altKey, shiftKey, metaKey, button, relatedTarget);
-  simulatedEvent.initMouseEvent(simulatedType, true, true, window, 1,
-                                touch.screenX, touch.screenY,
-                                touch.clientX, touch.clientY, false,
-                                false, false, false, 0/* left*/, null);
+    //  - contextmenu issues: presshold should launch the contextmenu on touch devices
+    if (event.type !== 'touchstart' && event.type !== 'touchend') {
+      event.preventDefault();
+    }
 
-  touch.target.dispatchEvent(simulatedEvent);
-};
+    var touch = event.originalEvent.changedTouches[0];
+    var simulatedEvent = document.createEvent('MouseEvent');
 
-/**
- * Handle touchstart events
- * @param {Object} event The element's touchstart event
- *
- * @private
- */
-oj._TouchProxy.prototype._touchStart = function (event) {
-  // Ignore the event if already being handled
-  if (this._touchHandled) {
-    return;
-  }
+    // Initialize the simulated mouse event using the touch event's coordinates
+    // initMouseEvent(type, canBubble, cancelable, view, clickCount,
+    //                screenX, screenY, clientX, clientY, ctrlKey,
+    //                altKey, shiftKey, metaKey, button, relatedTarget);
+    simulatedEvent.initMouseEvent(simulatedType, true, true, window, 1,
+                                  touch.screenX, touch.screenY,
+                                  touch.clientX, touch.clientY, false,
+                                  false, false, false, 0/* left*/, null);
 
-  // set the touchHandled flag
-  this._touchHandled = true;
+    touch.target.dispatchEvent(simulatedEvent);
+  };
 
-  // Track movement to determine if interaction was a click
-  this._touchMoved = false;
+  /**
+   * Handle touchstart events
+   * @param {Object} event The element's touchstart event
+   *
+   * @private
+   */
+  _TouchProxy.prototype._touchStart = function (event) {
+    // Ignore the event if already being handled
+    if (this._touchHandled) {
+      return;
+    }
 
-  // touchstart is registered with addEventListener but
-  // downstream code expects jQuery event
-  // eslint-disable-next-line no-param-reassign
-  event = $.Event(event);
+    // set the touchHandled flag
+    this._touchHandled = true;
 
-  // Simulate the mouseover, mousemove and mousedown events
-  this._touchHandler(event, 'mouseover');
-  this._touchHandler(event, 'mousemove');
-  this._touchHandler(event, 'mousedown');
-};
+    // Track movement to determine if interaction was a click
+    this._touchMoved = false;
 
-/**
- * Handle the touchmove events
- * @param {Object} event The element's touchmove event
- *
- * @private
- */
-oj._TouchProxy.prototype._touchMove = function (event) {
-  // Ignore event if not handled
-  if (!this._touchHandled) {
-    return;
-  }
+    // touchstart is registered with addEventListener but
+    // downstream code expects jQuery event
+    // eslint-disable-next-line no-param-reassign
+    event = $.Event(event);
 
-  // Interaction was not a click
-  this._touchMoved = true;
+    // Simulate the mouseover, mousemove and mousedown events
+    this._touchHandler(event, 'mouseover');
+    this._touchHandler(event, 'mousemove');
+    this._touchHandler(event, 'mousedown');
+  };
 
-  // touchmove is registered with addEventListener but
-  // downstream code expects jQuery event
-  // eslint-disable-next-line no-param-reassign
-  event = $.Event(event);
+  /**
+   * Handle the touchmove events
+   * @param {Object} event The element's touchmove event
+   *
+   * @private
+   */
+  _TouchProxy.prototype._touchMove = function (event) {
+    // Ignore event if not handled
+    if (!this._touchHandled) {
+      return;
+    }
 
-  // Simulate the mousemove event
-  this._touchHandler(event, 'mousemove');
-};
+    // Interaction was not a click
+    this._touchMoved = true;
 
-/**
- * Handle the touchend events
- * @param {Object} event The element's touchend event
- *
- * @private
- */
-oj._TouchProxy.prototype._touchEnd = function (event) {
-  // Ignore event if not handled
-  if (!this._touchHandled) {
-    return;
-  }
+    // touchmove is registered with addEventListener but
+    // downstream code expects jQuery event
+    // eslint-disable-next-line no-param-reassign
+    event = $.Event(event);
 
-  // Simulate the mouseup and mouseout events
-  this._touchHandler(event, 'mouseup');
-  this._touchHandler(event, 'mouseout');
+    // Simulate the mousemove event
+    this._touchHandler(event, 'mousemove');
+  };
 
-  // If the touch interaction did not move, it should trigger a click
-  if (!this._touchMoved && event.type === 'touchend') {
-    // Simulate the click event
-    this._touchHandler(event, 'click');
-  }
+  /**
+   * Handle the touchend events
+   * @param {Object} event The element's touchend event
+   *
+   * @private
+   */
+  _TouchProxy.prototype._touchEnd = function (event) {
+    // Ignore event if not handled
+    if (!this._touchHandled) {
+      return;
+    }
 
-  // Unset the flag
-  this._touchHandled = false;
-};
+    // Simulate the mouseup and mouseout events
+    this._touchHandler(event, 'mouseup');
+    this._touchHandler(event, 'mouseout');
 
-oj._TouchProxy._TOUCH_PROXY_KEY = '_ojTouchProxy';
+    // If the touch interaction did not move, it should trigger a click
+    if (!this._touchMoved && event.type === 'touchend') {
+      // Simulate the click event
+      this._touchHandler(event, 'click');
+    }
 
-oj._TouchProxy.prototype.touchMoved = function () {
-  return this._touchMoved;
-};
+    // Unset the flag
+    this._touchHandled = false;
+  };
 
-/**
- * Adds touch event listeners
- * @param {Object} elem
- * @ignore
- */
-oj._TouchProxy.addTouchListeners = function (elem) {
-  var jelem = $(elem);
-  var proxy = jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY);
-  if (!proxy) {
-    proxy = new oj._TouchProxy(jelem);
-    jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY, proxy);
-  }
+  _TouchProxy._TOUCH_PROXY_KEY = '_ojTouchProxy';
 
-  return proxy;
-};
+  _TouchProxy.prototype.touchMoved = function () {
+    return this._touchMoved;
+  };
 
-/**
- * Removes touch event listeners
- * @param {Object} elem
- * @ignore
- */
-oj._TouchProxy.removeTouchListeners = function (elem) {
-  var jelem = $(elem);
-  var proxy = jelem.data(oj._TouchProxy._TOUCH_PROXY_KEY);
-  if (proxy) {
-    proxy._destroy();
-    jelem.removeData(oj._TouchProxy._TOUCH_PROXY_KEY);
-  }
-};
+  /**
+   * Adds touch event listeners
+   * @param {Object} elem
+   * @ignore
+   */
+  _TouchProxy.addTouchListeners = function (elem) {
+    var jelem = $(elem);
+    var proxy = jelem.data(_TouchProxy._TOUCH_PROXY_KEY);
+    if (!proxy) {
+      proxy = new _TouchProxy(jelem);
+      jelem.data(_TouchProxy._TOUCH_PROXY_KEY, proxy);
+    }
 
+    return proxy;
+  };
+
+  /**
+   * Removes touch event listeners
+   * @param {Object} elem
+   * @ignore
+   */
+  _TouchProxy.removeTouchListeners = function (elem) {
+    var jelem = $(elem);
+    var proxy = jelem.data(_TouchProxy._TOUCH_PROXY_KEY);
+    if (proxy) {
+      proxy._destroy();
+      jelem.removeData(_TouchProxy._TOUCH_PROXY_KEY);
+    }
+  };
 
 });

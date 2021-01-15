@@ -8,6 +8,50 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
     'use strict';
 
     /**
+     * @export
+     * @interface NormalizedQuery
+     * @classdesc Interface for normalized query structure. Various REST endpoints support
+     *            different syntax for querying resources. Normalizing the query syntax 
+     *            enables Oracle Persistence Toolkit to perform certain functionalities 
+     *            including client side shredded data cleanup. 
+     * @hideconstructor
+     */
+
+     /**
+      * The offset to be requested from the current query.
+      *
+      * @export
+      * @expose
+      * @memberof NormalizedQuery
+      * @instance
+      * @name offset
+      * @type {int}
+      */
+
+      /**
+       * The number of rows to be requested from the current query. Can be -1 or
+       * any integer. -1 indicates no limit.
+       *
+       * @export
+       * @expose
+       * @memberof NormalizedQuery
+       * @instance
+       * @name limit
+       * @type {number}
+       */
+
+       /**
+        * The search criteria to be included in the current query.
+        *
+        * @export
+        * @expose
+        * @memberof NormalizedQuery
+        * @instance
+        * @name searchCriteria
+        * @type {object}
+        */
+        
+    /**
      * @class queryHandlers
      * @classdesc Contains out of the box query handlers.
      * @export
@@ -41,47 +85,55 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
       createQueryExp = createQueryExp || function (urlParams) {
         return _createQueryFromAdfBcParams(urlParams, null);
       }
-      return function (request, options) {
+      // normalize the query parameters into format:
+      // offset: integer
+      // limit: integer
+      // searchCriteria:
+      var normalizeOracleRestQueryParameter = function (requestUrl) {
+        var limit = -1;
+        var offset = 0;
+        var searchCriteria;
+        var urlParams = requestUrl.split('?');
+        var queryParamsIter;
+        var queryParamEntry;
+        var queryParamName;
+        var queryParamValue;
+        if (typeof URLSearchParams === 'undefined') {
+          // IE does not support URLSearchParams so parse
+          // it ourselves
+          queryParamsIter = _parseURLSearchParams(urlParams[1]);
+        } else {
+          queryParamsIter = (new URLSearchParams(urlParams[1])).entries();
+        }
+        do {
+          queryParamEntry = queryParamsIter.next();
+
+          if (queryParamEntry['value'] != null) {
+            queryParamName = queryParamEntry['value'][0];
+            queryParamValue = queryParamEntry['value'][1];
+
+            if (queryParamName == 'q') {
+              searchCriteria = queryParamValue;
+            } else if (queryParamName == 'limit') {
+              limit = parseInt(queryParamValue, 10);
+            } else if (queryParamName == 'offset') {
+              offset = parseInt(queryParamValue, 10);
+            }
+          }
+        } while (!queryParamEntry['done']);
+        return {
+          offset: offset,
+          limit: limit,
+          searchCriteria: searchCriteria
+        }
+      };
+      var queryHandler = function (request, options) {
         if (request.method == 'GET' ||
           request.method == 'HEAD') {
           logger.log("Offline Persistence Toolkit queryHandlers: OracleRestQueryHandler processing request");
-          var urlParams = request.url.split('?');
-          var findQuery = {};
-          var queryParams;
-          var queryParamsIter;
+          var normalized = normalizeOracleRestQueryParameter(request.url);
 
-          if (typeof URLSearchParams === 'undefined') {
-            // IE does not support URLSearchParams so parse
-            // it ourselves
-            queryParamsIter = _parseURLSearchParams(urlParams[1]);
-          } else {
-            queryParamsIter = (new URLSearchParams(urlParams[1])).entries();
-          }
-
-          var queryParamEntry;
-          var queryParamName;
-          var queryParamValue;
-          var limit;
-          var offset;
-
-          do {
-            queryParamEntry = queryParamsIter.next();
-
-            if (queryParamEntry['value'] != null) {
-              queryParamName = queryParamEntry['value'][0];
-              queryParamValue = queryParamEntry['value'][1];
-
-              if (queryParamName == 'q') {
-                queryParams = queryParamValue;
-              } else if (queryParamName == 'limit') {
-                limit = queryParamValue;
-              } else if (queryParamName == 'offset') {
-                offset = queryParamValue;
-              }
-            }
-          } while (!queryParamEntry['done']);
-
-          var findQuery = persistenceUtils._mapFindQuery(createQueryExp(queryParams), dataMapping);
+          var findQuery = persistenceUtils._mapFindQuery(createQueryExp(normalized.searchCriteria), dataMapping);
 
           var shredder;
           var unshredder;
@@ -90,10 +142,9 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
             shredder = options['jsonProcessor']['shredder'];
             unshredder = options['jsonProcessor']['unshredder'];
           }
-
           if (shredder != null &&
             unshredder != null) {
-            return _processQuery(request, storeName, findQuery, shredder, unshredder, offset, limit).then(function(response) {
+            return _processQuery(request, storeName, findQuery, shredder, unshredder, normalized.offset, normalized.limit).then(function(response) {
               if (!response) {
                 return;
               }
@@ -120,6 +171,9 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
         }
         return Promise.resolve();
       };
+      queryHandler.normalizeQueryParameter = normalizeOracleRestQueryParameter;
+
+      return queryHandler;
     };
 
     // 1. get the matched raw entry from cache store: it should contain key, and
@@ -329,9 +383,9 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
                   };
                   break;
                 case 'LIKE':
-                  rhsOp = rhsOp.replace('%', '.+');
+                  rhsOp = rhsOp.replace(/%/g, '.*');
                   returnExp[lhsOp] = {
-                    $regex: rhsOp
+                    $regex: RegExp(rhsOp,'i')
                   };
                   break;
                 case 'BETWEEN':
@@ -409,15 +463,27 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
      * @return {Function} Returns the query handler
      */
     function getSimpleQueryHandler(storeName, ignoreUrlParams, dataMapping) {
-      return function (request, options) {
+      var normalizeSimpleQueryParameter = function (requestUrl) {
+        var searchCriteria;
+        var urlParams = requestUrl.split('?');
+        if (urlParams.length > 1) {
+          searchCriteria = urlParams[1];
+        }
+        return {
+          offset: 0,
+          limit: -1,
+          searchCriteria: searchCriteria
+        }
+      };
+      var queryHandler = function (request, options) {
         if (request.method == 'GET' ||
           request.method == 'HEAD') {
           logger.log("Offline Persistence Toolkit queryHandlers: SimpleQueryHandler processing request");
           // applies to all GET requests. If there are any URL query params
           // then the keys in the parameter are directly mapped to the shredded
           // data fields and values to the shredded data values
-          var urlParams = request.url.split('?');
-          var findQuery = persistenceUtils._mapFindQuery(_createQueryFromUrlParams(urlParams, ignoreUrlParams), dataMapping);
+          var normalized = normalizeSimpleQueryParameter(request.url);
+          var findQuery = persistenceUtils._mapFindQuery(_createQueryFromUrlParams(normalized.searchCriteria, ignoreUrlParams), dataMapping);
 
           var shredder;
           var unshredder;
@@ -434,22 +500,23 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
         }
         return Promise.resolve();
       };
+      queryHandler.normalizeQueryParameter = normalizeSimpleQueryParameter;
+      return queryHandler;
     };
 
-    function _createQueryFromUrlParams(urlParams, ignoreUrlParams) {
+    function _createQueryFromUrlParams(searchParams, ignoreUrlParams) {
       var findQuery = {};
 
-      if (urlParams &&
-        urlParams.length > 1) {
+      if (searchParams) {
         var selectorQuery = {};
         var queryParamsIter;
 
         if (typeof URLSearchParams === 'undefined') {
           // IE does not support URLSearchParams so parse
           // it ourselves
-          queryParamsIter = _parseURLSearchParams(urlParams[1]);
+          queryParamsIter = _parseURLSearchParams(searchParams);
         } else {
-          queryParamsIter = (new URLSearchParams(urlParams[1])).entries();
+          queryParamsIter = (new URLSearchParams(searchParams)).entries();
         }
 
         var queryParamEntry;

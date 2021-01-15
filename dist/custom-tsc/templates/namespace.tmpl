@@ -1,5 +1,5 @@
 <?js
-const { data, props, componentName, componentNameWithGenerics } = obj;
+const { data, props, componentName } = obj;
 if (data.events || props){?>
 export namespace <?js= componentName ?> {
   <?js= this.partial('events.tmpl', data.events) ?>
@@ -7,7 +7,7 @@ export namespace <?js= componentName ?> {
   if (props){
   for (let prop of props) {?>
   // tslint:disable-next-line interface-over-type-literal
-  type <?js= prop ?>Changed<?js= this.propsTypeParams ?> = JetElementCustomEvent<<?js= componentNameWithGenerics ?><?js= data.classTypeParams ?>["<?js= prop ?>"]>;
+  type <?js= prop ?>Changed<?js= this.classTypeParamsDeclaration ?> = JetElementCustomEvent<<?js= componentName ?><?js= data.classTypeParams ?>["<?js= prop ?>"]>;
   <?js}
   }?>
 }

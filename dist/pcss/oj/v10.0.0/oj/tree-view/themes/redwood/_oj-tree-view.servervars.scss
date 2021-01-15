@@ -1,0 +1,10 @@
+
+
+// TREE VIEW
+//-----------------------------------------------------------------------------
+// Treeview animations
+$privateTreeViewExpandAnimation:             (effect: "expand") !default;
+$privateTreeViewCollapseAnimation:           (effect: "collapse") !default;
+
+// data animation fade in time
+$privateTreeViewDataFadeInDuration: .15s !default;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -24,13 +24,13 @@ export interface ojDatePicker extends ojInputDate<ojDatePickerSettableProperties
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet';
     value: string;
-    addEventListener<T extends keyof ojDatePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDatePickerEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDatePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDatePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDatePickerSettableProperties>(property: T): ojDatePicker[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDatePickerSettableProperties>(property: T, value: ojDatePickerSettableProperties[T]): void;
@@ -73,8 +73,8 @@ export interface ojDatePickerSettableProperties extends ojInputDateSettablePrope
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet';
     value: string;
@@ -87,13 +87,13 @@ export interface ojDateTimePicker extends ojInputDateTime<ojDateTimePickerSettab
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet';
     value: string;
-    addEventListener<T extends keyof ojDateTimePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDateTimePickerEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojDateTimePickerEventMap>(type: T, listener: (this: HTMLElement, ev: ojDateTimePickerEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojDateTimePickerSettableProperties>(property: T): ojDateTimePicker[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojDateTimePickerSettableProperties>(property: T, value: ojDateTimePickerSettableProperties[T]): void;
@@ -136,8 +136,8 @@ export interface ojDateTimePickerSettableProperties extends ojInputDateTimeSetta
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet';
     value: string;
@@ -176,8 +176,8 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet' | 'native';
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -223,8 +223,8 @@ export interface ojInputDate<SP extends ojInputDateSettableProperties = ojInputD
         tooltipCalendarTimeDisabled?: string;
         weekHeader?: string;
     };
-    addEventListener<T extends keyof ojInputDateEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputDateEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputDateSettableProperties>(property: T): ojInputDate<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojInputDateSettableProperties>(property: T, value: ojInputDateSettableProperties[T]): void;
@@ -272,14 +272,14 @@ export namespace ojInputDate {
     type valueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type DayFormatterInput = {
+        date: number;
         fullYear: number;
         month: number;
-        date: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DayFormatterOutput = {
-        disabled?: boolean;
         className?: string;
+        disabled?: boolean;
         tooltip?: string;
     };
 }
@@ -329,8 +329,8 @@ export interface ojInputDateSettableProperties extends inputBaseSettableProperti
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet' | 'native';
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -435,8 +435,9 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
         tooltipCalendarTimeDisabled?: string;
         weekHeader?: string;
     };
-    addEventListener<T extends keyof ojInputDateTimeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateTimeEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputDateTimeEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojInputDateTimeEventMap<SP>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputDateTimeSettableProperties>(property: T): ojInputDateTime<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojInputDateTimeSettableProperties>(property: T, value: ojInputDateTimeSettableProperties[T]): void;
@@ -551,8 +552,8 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet' | 'native';
     timePicker: {
@@ -598,8 +599,8 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
         tooltipTime?: string;
         tooltipTimeDisabled?: string;
     };
-    addEventListener<T extends keyof ojInputTimeEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputTimeEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojInputTimeEventMap>(type: T, listener: (this: HTMLElement, ev: ojInputTimeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojInputTimeSettableProperties>(property: T): ojInputTime[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojInputTimeSettableProperties>(property: T, value: ojInputTimeSettableProperties[T]): void;
@@ -661,8 +662,8 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
     max: string | null;
     min: string | null;
     pickerAttributes: {
-        style?: string;
         class?: string;
+        style?: string;
     };
     renderMode: 'jet' | 'native';
     timePicker: {

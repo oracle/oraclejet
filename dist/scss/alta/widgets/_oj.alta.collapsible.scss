@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -8,6 +8,7 @@
 // set up include variables before importing dependencies
 @if $includeCollapsibleClasses != false {
   $includeIconClasses: true !global;
+  $includeAnimationClasses: true !global;
 }
 
 // import dependencies
@@ -23,7 +24,6 @@
 
 @if $includeCollapsibleClasses != false {
   @include module-include-once("alta.collapsible") {
-    .oj-collapsible-header a,
     .oj-collapsible-header .oj-collapsible-header-icon {
       /*
        * For a basic collapsible (not in an accordion)

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,12 +8,12 @@
 
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
 import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { VComponent } from 'ojs/ojvcomponent';
+import { ElementVComponent } from 'ojs/ojvcomponent-element';
 declare class Props {
     text?: string;
     matchText?: string;
 }
-export declare class HighlightText extends VComponent<Props> {
+export declare class HighlightText extends ElementVComponent<Props> {
     private _HIGHLIGHT_TOKEN;
     constructor(props: Readonly<Props>);
     protected render(): any;
@@ -22,17 +22,9 @@ export declare class HighlightText extends VComponent<Props> {
     protected _vprops?: VProps;
 }
 // Custom Element interfaces
-export interface HighlightTextElement extends JetElement<HighlightTextElementSettableProperties> {
-  /**
-   * The text string to match.
-   */
-  matchText?: Props['matchText'];
-  /**
-   * The text string to apply highlighting to.
-   */
-  text?: Props['text'];
-  addEventListener<T extends keyof HighlightTextElementEventMap>(type: T, listener: (this: HTMLElement, ev: HighlightTextElementEventMap[T]) => any, useCapture?: boolean): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+export interface HighlightTextElement extends JetElement<HighlightTextElementSettableProperties>, HighlightTextElementSettableProperties {
+  addEventListener<T extends keyof HighlightTextElementEventMap>(type: T, listener: (this: HTMLElement, ev: HighlightTextElementEventMap[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
   getProperty<T extends keyof HighlightTextElementSettableProperties>(property: T): HighlightTextElement[T];
   getProperty(property: string): any;
   setProperty<T extends keyof HighlightTextElementSettableProperties>(property: T, value: HighlightTextElementSettableProperties[T]): void;
@@ -51,19 +43,21 @@ export interface HighlightTextElementEventMap extends HTMLElementEventMap {
 }
 export interface HighlightTextElementSettableProperties extends JetSettableProperties {
   /**
-   * The text string to match.
-   */
+  * The text string to match.
+  */
   matchText?: Props['matchText'];
   /**
-   * The text string to apply highlighting to.
-   */
+  * The text string to apply highlighting to.
+  */
   text?: Props['text'];
 }
 export interface HighlightTextElementSettablePropertiesLenient extends Partial<HighlightTextElementSettableProperties> {
   [key: string]: any;
 }
-export interface HighlightTextProperties extends Partial<HighlightTextElementSettableProperties>, GlobalAttributes {}
-export interface VProps extends Props, GlobalAttributes {}
+export interface HighlightTextProperties extends Partial<HighlightTextElementSettableProperties>, GlobalAttributes {
+}
+export interface VProps extends Props, GlobalAttributes {
+}
 declare global {
   namespace JSX {
     interface IntrinsicElements {

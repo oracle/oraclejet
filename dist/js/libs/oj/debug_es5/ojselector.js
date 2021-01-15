@@ -1,4 +1,5 @@
-(function() {function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+(function() {
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
@@ -20,110 +21,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponent, DomUtils) {
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent-element', 'ojs/ojdomutils'], function (exports, Translations, ojvcomponentElement, DomUtils) {
   'use strict';
-  /**
-   * @license
-   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
-   * @ojcomponent oj.ojSelector
-   * @ojtsvcomponent
-   * @ojsignature [{
-   *                target: "Type",
-   *                value: "class ojSelector<K> extends JetElement<ojSelectorSettableProperties<K>>",
-   *                genericParameters: [{"name": "K", "description": "Type of key"}]
-   *               },
-   *               {
-   *                target: "Type",
-   *                value: "ojSelectorSettableProperties<K> extends JetSettableProperties",
-   *                genericParameters: [{"name": "K", "description": "Type of key"}],
-   *                for: "SettableProperties"
-   *               }
-   *              ]
-   * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet", "ExpandedKeySet", "ExpandAllKeySet", 'AllKeySetImpl']}
-   * @since 9.0.0
-   *
-   * @ojshortdesc The selector component renders checkboxes in collections to support selection.
-   *
-   * @classdesc
-   * <h3 id="selectorOverview-section">
-   *   JET Selector
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectorOverview-section"></a>
-   * </h3>
-   * <p>Description: A checkbox to support selection in Collection Components</p>
-   * <p>The oj-selector is a component that may be placed within a template for Table, ListView.
-   * It presents as a checkbox when the Collection Component is configured for multi-selection.</p>
-   * <pre class="prettyprint">
-   * <code>
-   * &lt;oj-list-view id="listview"
-   *      data="[[dataProvider]]"
-   *      selected="{{selectedItems}}"
-   *      selection-mode="[[selectedSelectionMode]]"
-   *      scroll-policy="loadMoreOnScroll">
-   *  &lt;template slot="itemTemplate" data-oj-as="item">
-   *    &lt;li>
-   *      &lt;div class='oj-flex'>
-   *        &lt;div class="oj-flex-item">
-   *          &lt;oj-selector selected-keys='{{selectedItems}}'
-   *                        selection-mode='[[selectedSelectionMode]]'
-   *                        rowKey='[[item.key]]'>
-   *          &lt;/oj-selector>
-   *        &lt;/div>
-   *        &lt;div class="oj-flex-item">
-   *          &lt;span data-bind="text: 'Name '+ item.data.name">&lt;/span>
-   *        &lt;/div>
-   *      &lt;/div>
-   *    &lt;/li>
-   *  &lt;/template>
-   *&lt;/oj-list-view>
-   *</code></pre>
-   */
-
-  /**
-   * Specifies the selectedKeys, should be hooked into the collection component.
-   * @expose
-   * @ojrequired
-   * @name selectedKeys
-   * @memberof oj.ojSelector
-   * @instance
-   * @type {KeySet<K>|null}
-   * @ojwriteback
-   */
-
-  /**
-   * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
-   * @expose
-   * @name rowKey
-   * @memberof oj.ojSelector
-   * @instance
-   * @type {any}
-   * @default null
-   * @ojsignature [{target: "Type", value: "K|null", jsdocOverride:true}]
-   */
-
-  /**
-   * Specifies the selection mode ('single', 'multiple', 'all'). 'all' should only be used for the select all case and will ignore the key property.
-   * <code>
-   * &lt;oj-selector selected-keys='{{selectedItems}}'
-   *          selection-mode='all'>
-   * &lt;/oj-selector>
-   * </code>
-   * @expose
-   * @name selectionMode
-   * @memberof oj.ojSelector
-   * @ojshortdesc Specifies the selection mode.
-   * @instance
-   * @type {string}
-   * @default 'multiple'
-   * @ojvalue {string} "single" Only a single item can be selected at a time.
-   * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
-   * @ojvalue {string} "all" Specifies the select all case (rowKey property is ignored).
-   */
 
   var __decorate = null && null.__decorate || function (decorators, target, key, desc) {
     var c = arguments.length,
@@ -139,12 +45,13 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
     _classCallCheck(this, Props);
 
     this.rowKey = null;
+    this.indeterminate = false;
     this.selectedKeys = null;
     this.selectionMode = 'multiple';
   };
 
-  exports.Selector = /*#__PURE__*/function (_ojvcomponent$VCompon) {
-    _inherits(Selector, _ojvcomponent$VCompon);
+  exports.Selector = /*#__PURE__*/function (_ojvcomponentElement$) {
+    _inherits(Selector, _ojvcomponentElement$);
 
     var _super = _createSuper(Selector);
 
@@ -163,13 +70,16 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
     _createClass(Selector, [{
       key: "render",
       value: function render() {
-        var rowKey = this.props.rowKey;
+        var _this$props = this.props,
+            rowKey = _this$props.rowKey,
+            indeterminate = _this$props.indeterminate;
 
         var isSelected = this._isSelected(rowKey);
 
         var spanClassName = {
           'oj-selector-wrapper': true,
-          'oj-selected': isSelected,
+          'oj-selected': isSelected && !indeterminate,
+          'oj-indeterminate': indeterminate,
           'oj-focus-highlight': this.state.focus && !DomUtils.recentPointer(),
           'oj-component-icon': true
         };
@@ -177,11 +87,11 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
         var ariaLabel = this.props['aria-label'] || Translations.getTranslatedString('oj-ojSelector.checkboxAriaLabel', {
           rowKey: rowKey
         });
-        return ojvcomponent.h("oj-selector", {
+        return ojvcomponentElement.h("oj-selector", {
           class: 'oj-selector'
-        }, ojvcomponent.h("span", {
+        }, ojvcomponentElement.h("span", {
           class: spanClassName
-        }, ojvcomponent.h("input", {
+        }, ojvcomponentElement.h("input", {
           type: 'checkbox',
           class: 'oj-selectorbox oj-clickthrough-disabled',
           "aria-label": ariaLabel,
@@ -191,37 +101,6 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
           onFocusout: this._handleFocusout,
           onClick: this._checkboxListener
         })));
-      }
-    }, {
-      key: "_checkboxListener",
-      value: function _checkboxListener(event) {
-        var _this$props = this.props,
-            selectedKeys = _this$props.selectedKeys,
-            rowKey = _this$props.rowKey,
-            selectionMode = _this$props.selectionMode;
-        var newSelectedKeys;
-
-        if (selectedKeys != null) {
-          if (event.target.checked) {
-            if (selectionMode === 'single') {
-              newSelectedKeys = selectedKeys.clear().add([rowKey]);
-            } else if (selectionMode === 'all') {
-              newSelectedKeys = selectedKeys.addAll();
-            } else {
-              newSelectedKeys = selectedKeys.add([rowKey]);
-            }
-          } else {
-            if (selectionMode === 'all') {
-              newSelectedKeys = selectedKeys.clear();
-            } else {
-              newSelectedKeys = selectedKeys.delete([rowKey]);
-            }
-          }
-
-          this._updateProperty('selectedKeys', newSelectedKeys, true);
-        }
-
-        event.stopPropagation();
       }
     }, {
       key: "_handleFocusin",
@@ -238,11 +117,47 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
         });
       }
     }, {
-      key: "_isSelected",
-      value: function _isSelected(rowKey) {
+      key: "_checkboxListener",
+      value: function _checkboxListener(event) {
+        var _a, _b, _c, _d;
+
         var _this$props2 = this.props,
             selectedKeys = _this$props2.selectedKeys,
+            rowKey = _this$props2.rowKey,
             selectionMode = _this$props2.selectionMode;
+        var newSelectedKeys;
+
+        if (selectedKeys != null) {
+          if (event.target.checked) {
+            if (selectionMode === 'single') {
+              if (!selectedKeys.has(rowKey)) {
+                newSelectedKeys = selectedKeys.clear().add([rowKey]);
+              }
+            } else if (selectionMode === 'all') {
+              newSelectedKeys = selectedKeys.addAll();
+            } else {
+              newSelectedKeys = selectedKeys.add([rowKey]);
+            }
+          } else {
+            if (selectionMode === 'all') {
+              newSelectedKeys = selectedKeys.clear();
+            } else {
+              newSelectedKeys = selectedKeys.delete([rowKey]);
+            }
+          }
+
+          (_b = (_a = this.props).onSelectedKeysChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newSelectedKeys);
+          (_d = (_c = this.props).onIndeterminateChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
+        }
+
+        event.stopPropagation();
+      }
+    }, {
+      key: "_isSelected",
+      value: function _isSelected(rowKey) {
+        var _this$props3 = this.props,
+            selectedKeys = _this$props3.selectedKeys,
+            selectionMode = _this$props3.selectionMode;
 
         if (!selectedKeys) {
           return false;
@@ -253,26 +168,32 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
     }]);
 
     return Selector;
-  }(ojvcomponent.VComponent);
+  }(ojvcomponentElement.ElementVComponent);
 
   exports.Selector.metadata = {
     "extension": {
       "_DEFAULTS": Props,
       "_ROOT_PROPS_MAP": {
-        "aria-label": true,
-        "aria-labelledby": true
-      }
+        "aria-label": 1,
+        "aria-labelledby": 1
+      },
+      "_WRITEBACK_PROPS": ["selectedKeys", "indeterminate"],
+      "_READ_ONLY_PROPS": []
     },
     "properties": {
       "rowKey": {
         "type": "any",
         "value": null
       },
+      "indeterminate": {
+        "type": "boolean",
+        "value": false,
+        "writeback": true
+      },
       "selectedKeys": {
-        "type": "object|null",
+        "type": "any",
         "value": null,
-        "writeback": true,
-        "readOnly": false
+        "writeback": true
       },
       "selectionMode": {
         "type": "string",
@@ -282,15 +203,16 @@ define(['exports', 'ojs/ojtranslation', 'ojs/ojvcomponent', 'ojs/ojdomutils'], f
     }
   };
 
-  __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_checkboxListener", null);
+  __decorate([ojvcomponentElement.listener()], exports.Selector.prototype, "_handleFocusin", null);
 
-  __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_handleFocusin", null);
+  __decorate([ojvcomponentElement.listener()], exports.Selector.prototype, "_handleFocusout", null);
 
-  __decorate([ojvcomponent.listener()], exports.Selector.prototype, "_handleFocusout", null);
+  __decorate([ojvcomponentElement.listener()], exports.Selector.prototype, "_checkboxListener", null);
 
-  exports.Selector = __decorate([ojvcomponent.customElement('oj-selector')], exports.Selector);
+  exports.Selector = __decorate([ojvcomponentElement.customElement('oj-selector')], exports.Selector);
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
+
 }())

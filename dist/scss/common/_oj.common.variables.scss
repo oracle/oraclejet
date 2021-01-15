@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
@@ -202,7 +202,7 @@ $includeTreemapClasses: $includeDvtClasses !default;
 
 // other
 $includeAccordionClasses: $includeAllClasses !default;
-$includeActivityStreamClasses: $includeAllClasses !default;
+$includeActionCardClasses: $includeAllClasses !default;
 $includeAnimationClasses: $includeAllClasses !default;
 $includeAppLayoutClasses: $includeAllClasses !default;
 $includeAppLayoutHybridClasses: $includeAllClasses !default;
@@ -210,7 +210,6 @@ $includeAppLayoutWebClasses: $includeAllClasses !default;
 $includeAvatarClasses: $includeAllClasses !default;
 $includeButtonClasses: $includeAllClasses !default;
 $includeButtonsetClasses: $includeAllClasses !default;
-$includeActionCardClasses: $includeAllClasses !default;
 $includeCollapsibleClasses: $includeAllClasses !default;
 $includeConveyorBeltClasses: $includeAllClasses !default;
 $includeDataGridClasses: $includeAllClasses !default;
@@ -859,10 +858,10 @@ $popupTailSimpleHeightRawValue: oj-strip-unit($popupTailSimpleHeight) !default;
 // animation theme defaults
 $popupTailOpenAnimation: (
   effect: "zoomIn",
-  transformOrigin: "#myPosition",
+  transformOrigin: "#myPosition"
 ) !default;
 $popupTailCloseAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 
 // POPUP
@@ -881,14 +880,14 @@ $popupModalityOptionDefault: null !default;
 $popupOpenAnimation: (
   (
     effect: "zoomIn",
-    transformOrigin: "#myPosition",
+    transformOrigin: "#myPosition"
   ),
   "fadeIn"
 ) !default;
 $popupCloseAnimation: (
   (
     effect: "zoomOut",
-    transformOrigin: "#myPosition",
+    transformOrigin: "#myPosition"
   ),
   "fadeOut"
 ) !default;
@@ -914,14 +913,14 @@ $messagesGeneralOverlayBoxShadow: initial !default;
 $messagesGeneralOverlayPositionOptionDefault: (
   my: (
     horizontal: "center",
-    vertical: "top",
+    vertical: "top"
   ),
   at: (
     horizontal: "center",
-    vertical: "top",
+    vertical: "top"
   ),
   of: "window",
-  collision: "none",
+  collision: "none"
 ) !default;
 
 // The following variables apply on individual oj-message when its oj-messages parent has display
@@ -940,11 +939,11 @@ $messageGeneralOverlayBodyBgColor: $neutralColor1 !default;
 // Variables to override the default animation of individual oj-message.
 $messageGeneralOverlayOpenAnimation: (
   effect: "expand",
-  duration: "300ms",
+  duration: "300ms"
 ) !default;
 $messageGeneralOverlayCloseAnimation: (
   effect: "collapse",
-  duration: "300ms",
+  duration: "300ms"
 ) !default;
 
 // The following variables apply on styles for the oj-messages parent that has display type set
@@ -961,14 +960,14 @@ $messagesNotificationOverlayBoxShadow: initial !default;
 $messagesNotificationOverlayPositionOptionDefault: (
   my: (
     horizontal: "end",
-    vertical: "top",
+    vertical: "top"
   ),
   at: (
     horizontal: "end",
-    vertical: "top",
+    vertical: "top"
   ),
   of: "window",
-  collision: "none",
+  collision: "none"
 ) !default;
 
 // The following variables apply on individual oj-message when its oj-messages parent has display
@@ -985,12 +984,12 @@ $messageNotificationOverlayHeaderBgColor: $neutralColor1 !default;
 $messageNotificationOverlayBodyBgColor: $neutralColor1 !default;
 $messageNotificationOverlayOpenAnimation: (
   effect: "slideIn",
-  duration: "300ms",
+  duration: "300ms"
 ) !default;
 $messageNotificationOverlayCloseAnimation: (
   effect: "slideOut",
   duration: "300ms",
-  direction: "end",
+  direction: "end"
 ) !default;
 
 // The following variables apply on individual oj-message when its oj-messages parent does not have
@@ -1020,11 +1019,11 @@ $messageComponentInlineBgColorInfo: $accentColorInfo1 !default;
 $messageComponentInlineBorderColorInfo: $accentColorInfo2 !default;
 $messageComponentInlineOpenAnimation: (
   effect: "expand",
-  startMaxHeight: "#oldHeight",
+  startMaxHeight: "#oldHeight"
 ) !default;
 $messageComponentInlineCloseAnimation: (
   effect: "collapse",
-  endMaxHeight: "#newHeight",
+  endMaxHeight: "#newHeight"
 ) !default;
 
 // The following variables apply to individual oj-message regardless of the display type and
@@ -1247,32 +1246,32 @@ $menuSheetDividerBorderColor: $menuDividerBorderColor !default;
 $menuDropDownOpenAnimation: (
   effect: "zoomIn",
   transformOrigin: "#myPosition",
-  duration: $animationDurationShort,
+  duration: $animationDurationShort
 ) !default;
 $menuDropDownCloseAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 
 // sheet menu
 $menuSheetOpenAnimation: (
   effect: "slideIn",
   direction: "top",
-  duration: $animationDurationShort,
+  duration: $animationDurationShort
 ) !default;
 $menuSheetCloseAnimation: (
   effect: "slideOut",
   direction: "bottom",
-  duration: $animationDurationShort,
+  duration: $animationDurationShort
 ) !default;
 
 // submenu
 $menuSubmenuOpenAnimation: (
   effect: "zoomIn",
   transformOrigin: "#myPosition",
-  duration: $animationDurationShort,
+  duration: $animationDurationShort
 ) !default;
 $menuSubmenuCloseAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 
 // BUTTONS
@@ -1559,13 +1558,13 @@ $buttonsetEqualWidthOverallWidth: 100% !default; // default width of equal width
 // animation theme defaults
 $dialogOpenAnimation: (
   (
-    effect: "zoomIn",
+    effect: "zoomIn"
   ),
   "fadeIn"
 ) !default;
 $dialogCloseAnimation: (
   (
-    effect: "zoomOut",
+    effect: "zoomOut"
   ),
   "fadeOut"
 ) !default;
@@ -1768,7 +1767,7 @@ $formLayoutHorizontalMargin: 0px !default;
 // The gutter is the space between columns of an oj-form-layout
 // This is assigned to be twice the label-inline-gutter currently
 // for backwards compatibility
-$formLayoutColumnGutter: calc(#{$formControlLabelInlineGutter} * 2);
+$formLayoutColumnGutter: $formControlLabelInlineGutter * 2 !default;
 
 // In a form layout this is the space expected between
 // form controls in different rows
@@ -1782,7 +1781,6 @@ $formLayoutLabelInlineMarginTop: 0.4em !default;
 // default label alignment, legal values are start and end
 $formLayoutLabelInlineAlign: start !default;
 $formLayoutLabelEdgeDefault: top !default;
-$formLayoutLabelGenerationDefault: form !default;
 $formLayoutDirectionDefault: column !default;
 
 // Default value for colspan-wrap attribute
@@ -1817,7 +1815,7 @@ $radioCheckboxRowHeight: 2.6rem !default;
 $radioCheckboxLabelToEdgePadding: 10px !default;
 
 // spacing between two checkbox/radio when direction is row (inline)
-$radioCheckboxDirectionRowInlinePadding: 1.5rem !default;
+$radioCheckboxDirectionRowInlinePadding: 2rem !default;
 
 // spacing between edge and the input (html input or input image)
 $radioCheckboxInputToEdgePadding: $radioCheckboxLabelToEdgePadding !default;
@@ -2115,7 +2113,7 @@ $datepickerWeekOfYearCellBgColor: $neutralColor6 !default;
 // For option 'renderMode' in ojInputDate / ojInputDateTime / ojInputDate
 $inputDateTimeRenderModeOptionDefault: native !default;
 $inputDateTimeDatePickerOptionDefault: (
-  footerLayout: "today",
+  footerLayout: "today"
 ) !default;
 
 $inputDateTimeKeyboardEditOptionDefault: disabled !default;
@@ -2370,10 +2368,10 @@ $collectionSelectionAffordanceBorderColor: $brandColor !default;
 
 // animations
 $treeViewExpandAnimation: (
-  effect: "expand",
+  effect: "expand"
 ) !default;
 $treeViewCollapseAnimation: (
-  effect: "collapse",
+  effect: "collapse"
 ) !default;
 
 // text
@@ -2420,26 +2418,32 @@ $tableCellPadding: $tableHeaderPadding;
 // Table Display Option Default
 $tableDisplayOptionDefault: "list" !default;
 
+// Table horizontal grid visible
+$tableHorizontalGridVisibleOptionDefault: "enabled" !default;
+
 // Table selector for multiple selection
 $tableEnableSelector: false !default;
+
+// Table sticky layouts
+$tableEnableSticky: false !default;
 
 // animations
 $tableAddAnimation: (
   (
     effect: "slideIn",
-    direction: "bottom",
+    direction: "bottom"
   ),
   "fadeIn"
 ) !default;
 $tableRemoveAnimation: (
   (
     effect: "slideOut",
-    direction: "top",
+    direction: "top"
   ),
   "fadeOut"
 ) !default;
 $tableUpdateAnimation: (
-  effect: "fadeIn",
+  effect: "fadeIn"
 ) !default;
 
 // load indicator
@@ -2476,27 +2480,27 @@ $listViewDrillIconColor: $iconColorDefault !default;
 // animations
 $listViewAddAnimation: (
   (
-    effect: "expand",
+    effect: "expand"
   ),
   "fadeIn"
 ) !default;
 $listViewRemoveAnimation: (
   (
-    effect: "collapse",
+    effect: "collapse"
   ),
   "fadeOut"
 ) !default;
 $listViewUpdateAnimation: (
-  effect: "fadeIn",
+  effect: "fadeIn"
 ) !default;
 $listViewExpandAnimation: (
-  effect: "expand",
+  effect: "expand"
 ) !default;
 $listViewCollapseAnimation: (
-  effect: "collapse",
+  effect: "collapse"
 ) !default;
 $listViewPointerUpAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 // gridlines option defaulting
 $listViewGridlinesItemOptionDefault: visible !default;
@@ -2553,23 +2557,6 @@ $indexerTextDecorationHover: none !default;
 // font weight of the prefix in the indexer
 $indexerFontWeight: bold !default;
 
-// ACTIVITY STREAM
-//-----------------------------------------------------------------------------
-$activityStreamItemBorderPosition: 0 !default;
-$activityStreamAnimationDuration: $animationDurationMedium !default;
-$activityStreamInsertAnimation: (
-  (
-    effect: "expand",
-  ),
-  "fadeIn"
-) !default;
-$activityStreamRemoveAnimation: (
-  (
-    effect: "collapse",
-  ),
-  "fadeOut"
-) !default;
-
 // MASONRY
 //-----------------------------------------------------------------------------
 // width of each item in the indexer
@@ -2577,13 +2564,13 @@ $masonryItemWidth: 240px !default;
 $masonryAnimationDuration: $animationDurationMedium !default;
 $masonryInsertAnimation: (
   (
-    effect: "expand",
+    effect: "expand"
   ),
   "fadeIn"
 ) !default;
 $masonryRemoveAnimation: (
   (
-    effect: "collapse",
+    effect: "collapse"
   ),
   "fadeOut"
 ) !default;
@@ -2607,7 +2594,7 @@ $masonryLayoutInsertAnimation: (
   (
     effect: "zoomIn",
     duration: $masonryLayoutAnimationDuration,
-    timingFunction: "ease-in-out",
+    timingFunction: "ease-in-out"
   ),
   "fadeIn"
 ) !default;
@@ -2615,7 +2602,7 @@ $masonryLayoutRemoveAnimation: (
   (
     effect: "zoomOut",
     duration: $masonryLayoutAnimationDuration,
-    timingFunction: "ease-in-out",
+    timingFunction: "ease-in-out"
   ),
   "fadeOut"
 ) !default;
@@ -2628,8 +2615,8 @@ $masonryLayoutMoveAnimation: (
     "height",
     "top",
     "left",
-    "right",
-  ),
+    "right"
+  )
 ) !default;
 $masonryLayoutResizeAnimation: (
   effect: "addTransition",
@@ -2640,8 +2627,8 @@ $masonryLayoutResizeAnimation: (
     "height",
     "top",
     "left",
-    "right",
-  ),
+    "right"
+  )
 ) !default;
 $masonryLayoutReorderAnimation: (
   effect: "addTransition",
@@ -2652,8 +2639,8 @@ $masonryLayoutReorderAnimation: (
     "height",
     "top",
     "left",
-    "right",
-  ),
+    "right"
+  )
 ) !default;
 
 // WATERFALL LAYOUT
@@ -2668,20 +2655,20 @@ $waterfallLayoutEntranceAnimation: (
   (
     effect: "fadeIn",
     duration: "300ms",
-    timingFunction: "cubic-bezier(0, 0, 0.2, 1)",
+    timingFunction: "cubic-bezier(0, 0, 0.2, 1)"
   ),
   (
     effect: "slideIn",
     direction: "top",
     offsetY: "300px",
     duration: "300ms",
-    timingFunction: "cubic-bezier(0, 0, 0.2, 1)",
+    timingFunction: "cubic-bezier(0, 0, 0.2, 1)"
   )
 ) !default;
 $waterfallLayoutExitAnimation: (
   effect: "fadeOut",
   duration: "200ms",
-  timingFunction: "cubic-bezier(0, 0, 0.2, 1)",
+  timingFunction: "cubic-bezier(0, 0, 0.2, 1)"
 ) !default;
 
 // SELECTOR WIDTH
@@ -2860,7 +2847,7 @@ $navigationListHorizontalItemContrastLabelColorSelected: $navigationListItemCont
 $navigationListHorizontalAddAnimation: (
   (
     effect: "expand",
-    direction: "width",
+    direction: "width"
   ),
   "fadeIn"
 ) !default;
@@ -2868,43 +2855,43 @@ $navigationListHorizontalRemoveAnimation: (
   (
     effect: "collapse",
     direction: "width",
-    persist: "all",
+    persist: "all"
   ),
   "fadeOut"
 ) !default;
 $navigationListAddAnimation: (
   (
-    effect: "expand",
+    effect: "expand"
   ),
   "fadeIn"
 ) !default;
 $navigationListRemoveAnimation: (
   (
-    effect: "collapse",
+    effect: "collapse"
   ),
   "fadeOut"
 ) !default;
 $navigationListUpdateAnimation: (
-  effect: "fadeIn",
+  effect: "fadeIn"
 ) !default;
 $navigationListExpandAnimation: (
-  effect: "expand",
+  effect: "expand"
 ) !default;
 $navigationListCollapseAnimation: (
-  effect: "collapse",
+  effect: "collapse"
 ) !default;
 $navigationListSliderExpandAnimation: (
   effect: "slideIn",
   direction: "start",
-  duration: "400ms",
+  duration: "400ms"
 ) !default;
 $navigationListSliderCollapseAnimation: (
   effect: "slideIn",
   direction: "end",
-  duration: "400ms",
+  duration: "400ms"
 ) !default;
 $navigationListPointerUpAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 
 // END of NavigationList variables
@@ -3039,7 +3026,7 @@ $tabBarItemContrastLabelColorDisabled: $neutralColor13 !default;
 $tabBarHorizontalAddAnimation: (
   (
     effect: "expand",
-    direction: "width",
+    direction: "width"
   ),
   "fadeIn"
 ) !default;
@@ -3047,27 +3034,27 @@ $tabBarHorizontalRemoveAnimation: (
   (
     effect: "collapse",
     direction: "width",
-    persist: "all",
+    persist: "all"
   ),
   "fadeOut"
 ) !default;
 $tabBarAddAnimation: (
   (
-    effect: "expand",
+    effect: "expand"
   ),
   "fadeIn"
 ) !default;
 $tabBarRemoveAnimation: (
   (
-    effect: "collapse",
+    effect: "collapse"
   ),
   "fadeOut"
 ) !default;
 $tabBarUpdateAnimation: (
-  effect: "fadeIn",
+  effect: "fadeIn"
 ) !default;
 $tabBarPointerUpAnimation: (
-  effect: "none",
+  effect: "none"
 ) !default;
 
 // END of TabBar variables
@@ -3313,7 +3300,12 @@ $iconCircleRed: #e4001e;
 $iconCircleTeal: #008179;
 $iconCircleOrange: #be4800;
 $iconCircleForest: #008323;
+$iconCirclePink: #c44591;
 $iconCircleMauve: #754b9a;
+$iconCircleLilac: #a15ea1;
+$iconCircleBlue: #2c5967;
+$iconCircleGray: #6f757e;
+$iconCircleSlate: #687878;
 
 //avatar
 //----------------------------------
@@ -3367,7 +3359,12 @@ $avatarRed: #e4001e !default;
 $avatarTeal: #008179 !default;
 $avatarGreen: #005a1c !default;
 $avatarForest: #008323 !default;
+$avatarPink: #c44591 !default;
 $avatarMauve: #754b9a !default;
+$avatarSlate: #687878 !default;
+$avatarBlue: #2c5967 !default;
+$avatarLilac: #a15ea1 !default;
+$avatarGray: #6f757e !default;
 
 //card
 //----------------------------------
@@ -3492,7 +3489,7 @@ $oj-css-var-map: (
   "--oj-icon-color-disabled": $iconColorDisabled,
   "--oj-drop-target-1-color": $dropTarget1Color,
   "--oj-drop-target-2-color": $dropTarget2Color,
-  "--oj-color-required": $brandColorDark1,
+  "--oj-color-required": $brandColorDark1
 );
 
 // For quiet forms

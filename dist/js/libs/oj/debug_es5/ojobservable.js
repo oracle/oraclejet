@@ -1,99 +1,91 @@
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['exports'], function (exports) {
+  'use strict';
 
-define([], function()
-{
-  "use strict";
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+  var BehaviorSubject = function BehaviorSubject(value) {
+    this.observers = [];
+    this._value = value;
+  };
 
+  BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onComplete) {
+    var subscriber = onNextOrSubscriber;
 
+    if (typeof subscriber === 'function') {
+      subscriber = {
+        next: onNextOrSubscriber,
+        error: onError,
+        complete: onComplete
+      };
+    } else if (_typeof(subscriber) !== 'object') {
+      subscriber = {};
+    }
 
-/**
- * A behavior subject implementation of observable
- * @class BehaviorSubject
- *
- * @classdesc a internal class behavior subject implementation of observable
- * @constructor
- * @hideconstructor
- * @ojignore
- * @ojtsignore
- * @param {any} value
- * @since 7.0.0
- */
-var BehaviorSubject = function BehaviorSubject(value) {
-  this.observers = [];
-  this._value = value;
-};
+    this.observers.push(subscriber);
+    var subscription = new SubjectSubscription(this, subscriber);
 
-BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onComplete) {
-  var subscriber = onNextOrSubscriber;
+    if (subscription && !subscription.closed) {
+      subscriber.next(this._value);
+    }
 
-  if (typeof subscriber === 'function') {
-    subscriber = {
-      next: onNextOrSubscriber,
-      error: onError,
-      complete: onComplete
-    };
-  } else if (_typeof(subscriber) !== 'object') {
-    subscriber = {};
-  }
+    return subscription;
+  };
 
-  this.observers.push(subscriber);
-  var subscription = new SubjectSubscription(this, subscriber);
+  BehaviorSubject.prototype.next = function (value) {
+    this._value = value;
+    var observers = this.observers;
+    var len = observers.length;
+    var copy = observers.slice();
 
-  if (subscription && !subscription.closed) {
-    subscriber.next(this._value);
-  }
+    for (var i = 0; i < len; i++) {
+      copy[i].next(value);
+    }
+  };
 
-  return subscription;
-};
+  var SubjectSubscription = function SubjectSubscription(subject, subscriber) {
+    this.subject = subject;
+    this.subscriber = subscriber;
+    this.closed = false;
+  };
 
-BehaviorSubject.prototype.next = function (value) {
-  this._value = value;
-  var observers = this.observers;
-  var len = observers.length;
-  var copy = observers.slice();
+  SubjectSubscription.prototype.unsubscribe = function () {
+    if (this.closed) {
+      return;
+    }
 
-  for (var i = 0; i < len; i++) {
-    copy[i].next(value);
-  }
-};
+    this.closed = true;
+    var subject = this.subject;
+    var observers = subject.observers;
+    this.subject = null;
 
-var SubjectSubscription = function SubjectSubscription(subject, subscriber) {
-  this.subject = subject;
-  this.subscriber = subscriber;
-  this.closed = false;
-};
+    if (!observers || observers.length === 0) {
+      return;
+    }
 
-SubjectSubscription.prototype.unsubscribe = function () {
-  if (this.closed) {
-    return;
-  }
+    var subscriberIndex = observers.indexOf(this.subscriber);
 
-  this.closed = true;
-  var subject = this.subject;
-  var observers = subject.observers;
-  this.subject = null;
+    if (subscriberIndex !== -1) {
+      observers.splice(subscriberIndex, 1);
+    }
+  };
 
-  if (!observers || observers.length === 0) {
-    return;
-  }
+  SubjectSubscription.prototype.closed = function () {
+    return this.closed;
+  };
 
-  var subscriberIndex = observers.indexOf(this.subscriber);
-
-  if (subscriberIndex !== -1) {
-    observers.splice(subscriberIndex, 1);
-  }
-};
-
-SubjectSubscription.prototype.closed = function () {
-  return this.closed;
-};
-
-  return {'BehaviorSubject': BehaviorSubject};
+  exports.BehaviorSubject = BehaviorSubject;
+  exports.SubjectSubscription = SubjectSubscription;
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
 });
+
+}())

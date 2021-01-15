@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -457,6 +457,22 @@
     
     .oj-bg-neutral-30 {
       background-color: $neutralColor4 !important;
+    }
+
+    .oj-bg-neutral-170 {
+      background-color: $neutralColor14 !important; 
+    }
+      
+    .oj-bg-neutral-180 {
+      background-color: $neutralColor15 !important; 
+    }
+  
+    .oj-bg-neutral-190 {
+      background-color: $neutralColor16 !important;
+    }
+    
+    .oj-bg-neutral-200 {
+      background-color: $neutralColor17 !important;
     }
     
     .oj-bg-danger-10 {

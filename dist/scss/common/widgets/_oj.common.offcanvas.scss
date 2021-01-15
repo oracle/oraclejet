@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the 
@@ -179,6 +179,7 @@
     .oj-offcanvas-top.oj-offcanvas-open,
     .oj-offcanvas-bottom.oj-offcanvas-open {
       display: block;
+      z-index: $offcanvasZindex;
     }
 
     /* 
@@ -189,16 +190,6 @@
     .oj-offcanvas-top:not(.oj-focus-highlight):focus,
     .oj-offcanvas-bottom:not(.oj-focus-highlight):focus {
       outline: none;
-    }
-
-    /*
-     * applied to the offcanvas on the start edge when displayMode is overlay
-     */
-    .oj-offcanvas-overlay.oj-offcanvas-start {
-      //need to set z-index otherwise the start area is covered by the main content
-
-        z-index: $offcanvasZindex;
-
     }
 
     /*
@@ -237,6 +228,7 @@
 
       transition: opacity 0.5s;
       transition-timing-function: ease-in-out;
+      z-index: $offcanvasZindex;
     }
 
     /*

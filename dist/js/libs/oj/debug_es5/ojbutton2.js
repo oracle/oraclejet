@@ -1,4 +1,5 @@
-(function() {function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+(function() {
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
@@ -20,474 +21,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], function (exports, DomUtils, ojvcomponent, ThemeUtils) {
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-element', 'ojs/ojvmenu', 'ojs/ojvcomponent-binding', 'ojs/ojthemeutils'], function (exports, DomUtils, GestureUtils, ojvcomponentElement, ojvmenu, ojvcomponentBinding, ThemeUtils) {
   'use strict';
-  /**
-   * @license
-   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
-   * @ignore
-   * @ojcomponent oj.ojButton2
-   * @ojtsvcomponent
-   * @ojsignature {target: "Type", value: "class ojButton2 extends JetElement<ojButton2SettableProperties>"}
-   * @since 8.0.0
-   * @ojshortdesc Buttons direct users to initiate or take actions and work with a single tap, click, or keystroke.
-   *
-   * @ojrole button
-   *
-   * @ojpropertylayout {propertyGroup: "common", items: ["chroming", "disabled"]}
-   * @ojvbdefaultcolumns 2
-   * @ojvbmincolumns 1
-   *
-   * @ojuxspecs ['button']
-   *
-   * @classdesc
-   * <h3 id="buttonOverview-section">
-   *   JET Button2
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#buttonOverview-section"></a>
-   * </h3>
-   *
-   * <p>Description: Themeable, WAI-ARIA-compliant push buttons, with appropriate styles for hover, active, checked, and disabled.
-   *
-   * <p>To create toggle buttons, see the [JET Buttonset]{@link oj.ojButtonset}.
-   *
-   * <pre class="prettyprint"><code>&lt;oj-button2 id="myButton">
-   *     &lt;span>My Button&lt;/span>
-   * &lt;/oj-button2>
-   * </code></pre>
-   *
-   * <h3 id="pushButtons-section">
-   *   Push Buttons
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pushButtons-section"></a>
-   * </h3>
-   *
-   * <p>Push buttons are ordinary buttons that do not stay pressed in when clicked.
-   * Push buttons are created from <code class="prettyprint">oj-button2</code> elements.
-   *
-   *
-   * <h3 id="touch-section">
-   *   Touch End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"touchDoc"}
-   *
-   *
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"keyboardDoc"}
-   *
-   *
-   * <h3 id="a11y-section">
-   *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-   * </h3>
-   *
-   * <p>For accessibility, a JET Button2 that doesn't have any text in its default slot (making it an icon-only button) should include an aria-label attribute
-   * that indicate its purpose.
-   *
-   * {@ojinclude "name":"accessibilityCommon"}
-   *
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stylingDoc"}
-   *
-   *
-   * <h3 id="perf-section">
-   *   Performance
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-   * </h3>
-   *
-   * <p>In lieu of stamping a button in a table, dataGrid, or other container, consider placing a single Button outside the
-   * container that acts on the currently selected row or cell.
-   *
-   * <h3 id="state-section">
-   *   Setting Component State
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"stateCommon"}
-   */
-  // SLOTS
-
-  /**
-   * <p>The default slot is the button's text label. The <code class="prettyprint">&lt;oj-button2></code> element accepts plain text or DOM nodes as children for the default slot.
-   * Either the <code class="prettyprint">label</code> attribute or a default slot label is required for all buttons for accessibility purposes.</p>
-   *
-   * <p>If <code class="prettyprint">&lt;oj-bind-text></code> is used to provide the label, it must be wrapped in a <code class="prettyprint">&lt;span></code>.</p>
-   *
-   * <p>The <code class="prettyprint">label</code> attribute is recommended, as it provides additional functionality for icon-only buttons.
-   * The Default slot is ignored when the <code class="prettyprint">label</code> attribute is specified.</p>
-   *
-   * @ojchild Default
-   * @memberof oj.ojButton2
-   * @ojshortdesc The default slot is the button's text label. The oj-button2 element accepts plain text or DOM nodes as children for the default slot.
-   *
-   * @example <caption>Initialize the Button with child content specified:</caption>
-   * &lt;oj-button2>
-   *   &lt;span>myValue&lt;/span>
-   * &lt;/oj-button2>
-   *
-   * @example <caption>Initialize the Button with data-bound child content specified in a span:</caption>
-   * &lt;oj-button2>
-   *   &lt;span data-bind='text: myText'>&lt;/span>
-   * &lt;/oj-button2>
-   *
-   * @example <caption>Initialize the Button with data-bound child content specified without a container element:</caption>
-   * &lt;oj-button2>
-   *   &lt;!-- ko text: myText -->&lt;!--/ko-->
-   * &lt;/oj-button2>
-   */
-
-  /**
-   * <p>The <code class="prettyprint">endIcon</code> slot is the button's end icon. The  <code class="prettyprint">&lt;oj-button2></code> element accepts DOM nodes as children with the endIcon slot.</p>
-   *
-   * @ojslot endIcon
-   * @memberof oj.ojButton2
-   * @ojshortdesc The endIcon slot is the button's end icon. The oj-button2 element accepts DOM nodes as children with the endIcon slot.
-   *
-   * @example <caption>Initialize the Button with child content specified for the endIcon:</caption>
-   * &lt;oj-button2>
-   *   &lt;span>myValue&lt;/span>
-   *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
-   * &lt;/oj-button2>
-   */
-
-  /**
-   * <p>The <code class="prettyprint">startIcon</code> slot is the button's start icon. The  <code class="prettyprint">&lt;oj-button2></code> element accepts DOM nodes as children with the startIcon slot.</p>
-   *
-   * @ojslot startIcon
-   * @memberof oj.ojButton2
-   * @ojshortdesc The startIcon slot is the button's start icon. The oj-button2 element accepts DOM nodes as children with the startIcon slot.
-   *
-   * @example <caption>Initialize the Button with child content specified for the startIcon:</caption>
-   * &lt;oj-button2>
-   *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
-   *   &lt;span>myValue&lt;/span>
-   * &lt;/oj-button2>
-   */
-  // ATTRIBUTES
-
-  /**
-   * {@ojinclude "name":"buttonCommonChroming"}
-   *
-   * @name chroming
-   * @instance
-   * @memberof oj.ojButton2
-   * @type {string}
-   * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
-   * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
-   * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
-   * @ojvalue {string} "callToAction" A Call To Action (CTA) button guides the user to take or complete the action that is the main goal of the page or page section. There should only be one CTA button on a page at any given time.
-   * @ojshortdesc Indicates in what states the button has chrome (background and border).
-   *
-   * @example <caption>Initialize the Button with the <code class="prettyprint">chroming</code> attribute specified:</caption>
-   * &lt;oj-button2 chroming='borderless'>&lt;/oj-button2>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">chroming</code> property after initialization:</caption>
-   * // getter
-   * var chromingValue = myButton.chroming;
-   *
-   * // setter
-   * myButton.chroming = 'borderless';
-   *
-   * @example <caption>Set the default in the theme (SCSS) :</caption>
-   * $buttonChromingOptionDefault: borderless !default;
-   */
-
-  /**
-   * {@ojinclude "name":"buttonCommonDisabled"}
-   *
-   * @name disabled
-   * @memberof oj.ojButton2
-   * @instance
-   * @type {boolean}
-   * @default false
-   * @ojshortdesc Specifies that the button element should be disabled.
-   *
-   * @example <caption>Initialize the Button with the <code class="prettyprint">disabled</code> attribute specified:</caption>
-   * &lt;oj-button2 disabled='true'>&lt;/oj-button2>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
-   * // getter
-   * var disabledValue = myButton.disabled;
-   *
-   * // setter
-   * myButton.disabled = true;
-   */
-
-  /**
-   * {@ojinclude "name":"buttonCommonDisplay"}
-   *
-   * <p>For accessibility, a JET Button must always have a label set via the default slot, even if it is icon-only.
-   *
-   * @name display
-   * @memberof oj.ojButton2
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "all" Display both the label and icons.
-   * @ojvalue {string} "icons" Display only the icons.
-   * @default "all"
-   * @ojshortdesc Specifies whether the button displays label and icons, or just icons.
-   *
-   * @example <caption>Initialize the Button with the <code class="prettyprint">display</code> attribute specified:</caption>
-   * &lt;oj-button2 display='icons'>&lt;/oj-button2>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">display</code> property after initialization:</caption>
-   * // getter
-   * var displayValue = myButton.display;
-   *
-   * // setter
-   * myButton.display = 'icons';
-   */
-
-  /**
-   * <p>Specifies the text label for the button.</p>
-   * <p>If the <code class="prettyprint">display</code> attribute is set to "icons", this attribute also provides the following:
-   * <ol>
-   *   <li>If the custom element doesn't have an aria-label or aria-labelledby attribute specified, this will be used as the aria-label.</li>
-   *   <li>If the custom element doesn't have a tooltip specified, this will be used as the tooltip.</li>
-   * </ol>
-   * </p>
-   * <p>When this attribute has a value, the Default slot will be ignored.</p>
-   *
-   * @name label
-   * @instance
-   * @memberof oj.ojButton2
-   * @type {string}
-   * @ojshortdesc Specifies the text label for the button.
-   *
-   * @example <caption>Initialize the Button with the <code class="prettyprint">label</code> attribute specified:</caption>
-   * &lt;oj-button2 label='Button 1'>&lt;/oj-button2>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">label</code> property after initialization:</caption>
-   * // getter
-   * var labelValue = myButton.label;
-   *
-   * // setter
-   * myButton.label = 'Button 1';
-   */
-  // EVENTS
-
-  /**
-   * <p>Triggered when a button is clicked. This will be triggered by keyboard events as well as mouse/touch events.</p>
-   *
-   * <p>When double-clicking or multi-clicking (as determined by the browser), only the first click will trigger the ojAction event.</p>
-   *
-   * <p>To ensure keyboard accessibility, the only correct, supported way to react to the click of a button is to listen
-   * for this event. Click listeners should not be used.</p>
-   *
-   * @expose
-   * @event
-   * @name action
-   * @memberof oj.ojButton2
-   * @ojshortdesc Triggered when a button is clicked, whether by keyboard, mouse, or touch events.  To meet accessibility requirements, the only supported way to react to the click of a button is to listen for this event.
-   * @instance
-   * @ojcancelable
-   * @ojbubbles
-   * @ojeventgroup common
-   * @since 5.0.0
-   */
-  // METHODS
-
-  /**
-   * Retrieves a value for a property or a single subproperty for complex properties.
-   * @function getProperty
-   * @param {string} property - The property name to get. Supports dot notation for subproperty access.
-   * @return {any}
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @instance
-   *
-   * @example <caption>Get a single subproperty of a complex property:</caption>
-   * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
-   */
-
-  /**
-   * Performs a batch set of properties.
-   * @function setProperties
-   * @param {Object} properties - An object containing the property and value pairs to set.
-   * @return {void}
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @instance
-   *
-   * @example <caption>Set a batch of properties:</caption>
-   * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
-   */
-
-  /**
-   * Sets a property or a single subproperty for complex properties and notifies the component
-   * of the change, triggering a [property]Changed event.
-   *
-   * @function setProperty
-   * @param {string} property - The property name to set. Supports dot notation for subproperty access.
-   * @param {any} value - The new value to set the property to.
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
-   * @instance
-   * @return {void}
-   *
-   * @example <caption>Set a single subproperty of a complex property:</caption>
-   * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
-   */
-  // Fragments:
-
-  /**
-   * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
-   * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
-   * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
-   * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
-   * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
-   * required of enabled content, it cannot be used to convey meaningful information.<p>
-   *
-   * @ojfragment accessibilityCommon
-   * @memberof oj.ojButton2
-   * @instance
-   */
-
-  /**
-   * <p>Built-in KO bindings, like KO's <code class="prettyprint">disable</code> binding, should not be used for state with a JS API, since that is tantamount to
-   * updating the DOM directly.  The component attribute should be bound instead.
-   *
-   * @ojfragment stateCommon
-   * @memberof oj.ojButton2
-   * @instance
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Push Button</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Push the button.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * <p>See also the [Menu]{@link oj.ojMenu} touch gesture doc.
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojButton2
-   * @instance
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Push Button</td>
-   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-   *       <td>Push the button.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojButton2
-   * @instance
-   */
-
-  /**
-   * <p>The following CSS classes can be applied by the page author as needed.
-   *
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Class</th>
-   *       <th>Description</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-button-sm<br>
-   *           oj-button-lg<br>
-   *           oj-button-xl</td>
-   *       <td>Makes the button small, large, or extra large. Is applied to the Button's root element.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-button-confirm</td>
-   *       <td>Identifies an action to confirm. Designed for use with a push button. Is applied to the Button's root element.</td>
-   *       </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojButton2
-   * @instance
-   */
-
-  /**
-   * <p>Indicates in what states the button has chrome (background and border).
-   *
-   * <p>The default chroming varies by theme and containership as follows:
-   * <ul>
-   *   <li>If <code class="prettyprint">$buttonChromingOptionDefault</code> is set in the current theme, then that value is the chroming default.</li>
-   *   <li>Else, the default chroming is <code class="prettyprint">"solid"</code>.</li>
-   * </ul>
-   *
-   * <p>Once a value has been set on this button attribute, that value applies regardless of theme and containership.
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @instance
-   * @since 1.2.0
-   * @ojfragment buttonCommonChroming
-   */
-
-  /**
-   * <p>Disables the button if set to <code class="prettyprint">true</code>.
-   *
-   * <p>After create time, the <code class="prettyprint">disabled</code> state should be set via this API, not by setting the underlying DOM attribute.
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @instance
-   * @ojfragment buttonCommonDisabled
-   */
-
-  /**
-   * <p>Whether to display both the label and icons (<code class="prettyprint">"all"</code>)
-   * or just the icons (<code class="prettyprint">"icons"</code>).  In the latter case, the label is displayed in a tooltip instead, unless a
-   * tooltip was already supplied at create time.
-   *
-   * @expose
-   * @memberof oj.ojButton2
-   * @instance
-   * @ojfragment buttonCommonDisplay
-   */
 
   var __decorate = null && null.__decorate || function (decorators, target, key, desc) {
     var c = arguments.length,
@@ -509,14 +51,14 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
     this.translations = {};
   };
 
-  __decorate([ojvcomponent.dynamicDefault(getChromingDefault)], Props.prototype, "chroming", void 0);
+  __decorate([ojvcomponentElement.dynamicDefault(getChromingDefault)], Props.prototype, "chroming", void 0);
 
   function getChromingDefault() {
     return (ThemeUtils.parseJSONFromFontFamily('oj-button-option-defaults') || {}).chroming || 'solid';
   }
 
-  exports.Button2 = Button2_1 = /*#__PURE__*/function (_ojvcomponent$VCompon) {
-    _inherits(Button2, _ojvcomponent$VCompon);
+  exports.Button2 = Button2_1 = /*#__PURE__*/function (_ojvcomponentElement$) {
+    _inherits(Button2, _ojvcomponentElement$);
 
     var _super = _createSuper(Button2);
 
@@ -527,8 +69,24 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
 
       _this = _super.call(this, props);
 
-      _this._setDefaultSlotRef = function (element) {
-        _this._defaultSlotRef = element;
+      _this._handleContextMenuGesture = function (event, eventType) {
+        var contextMenuEvent = {
+          event: event,
+          eventType: eventType
+        };
+        event.preventDefault();
+
+        _this.updateState({
+          contextMenuTriggerEvent: contextMenuEvent
+        });
+      };
+
+      _this._onCloseCallback = function (event) {
+        if (_this.state.contextMenuTriggerEvent) {
+          _this.updateState({
+            contextMenuTriggerEvent: null
+          });
+        }
       };
 
       _this.state = {};
@@ -538,55 +96,68 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
     _createClass(Button2, [{
       key: "render",
       value: function render() {
-        var _a, _b;
+        var _this2 = this;
 
         var props = this.props;
         var defaultSlot = props.children;
 
-        var startIconContent = this._processIcon((_a = props.startIcon) === null || _a === void 0 ? void 0 : _a.call(props), 'oj-button-icon oj-start');
+        var startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-start');
 
-        var endIconContent = this._processIcon((_b = props.endIcon) === null || _b === void 0 ? void 0 : _b.call(props), 'oj-button-icon oj-end');
+        var endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-end');
 
-        var ariaLabel = null;
-        var ariaLabelledBy = null;
-        var title = null;
+        var ariaLabel = this.props['aria-label'];
+        var ariaLabelledBy = this.props['aria-labelledby'];
+        var hasDefaultAriaAttribute = ariaLabel || ariaLabelledBy;
+        var title = props.title;
         var defaultContent = null;
         var clickHandler = null;
+        var ariaLabelledById = null;
         var buttonLabel = props.label || defaultSlot;
 
         if (buttonLabel) {
-          title = props.title || props.label || this.state.derivedTitle;
+          title = title || props.label || this.state.derivedTitle;
 
           if (props.display === 'icons' && (startIconContent || endIconContent)) {
             if (props.label) {
-              ariaLabel = props.label;
+              if (!hasDefaultAriaAttribute) {
+                ariaLabel = props.label;
+              }
             } else {
-              ariaLabelledBy = this.uniqueId() + '|text';
-              defaultContent = ojvcomponent.h("span", {
+              if (!hasDefaultAriaAttribute) {
+                ariaLabelledById = this.uniqueId() + '|text';
+                ariaLabelledBy = ariaLabelledById;
+              }
+
+              defaultContent = ojvcomponentElement.h("span", {
                 class: 'oj-button-text oj-helper-hidden-accessible',
-                id: ariaLabelledBy
+                id: ariaLabelledById
               }, buttonLabel);
             }
           } else {
-            title = props.title;
-            ariaLabelledBy = this.uniqueId() + '|text';
-            defaultContent = ojvcomponent.h("span", {
+            if (!hasDefaultAriaAttribute) {
+              ariaLabelledById = this.uniqueId() + '|text';
+              ariaLabelledBy = ariaLabelledById;
+            }
+
+            defaultContent = ojvcomponentElement.h("span", {
               class: 'oj-button-text',
-              id: ariaLabelledBy
+              id: ariaLabelledById
             }, buttonLabel);
           }
         }
 
-        defaultContent = ojvcomponent.h("span", {
-          ref: this._setDefaultSlotRef
+        defaultContent = ojvcomponentElement.h("span", {
+          ref: function ref(elem) {
+            return _this2._defaultSlotRef = elem;
+          }
         }, defaultContent);
-        var labelContent = ojvcomponent.h("div", {
+        var labelContent = ojvcomponentElement.h("div", {
           class: 'oj-button-label'
         }, startIconContent, defaultContent, endIconContent);
         var buttonContent;
 
         if (props.disabled) {
-          buttonContent = ojvcomponent.h("button", {
+          buttonContent = ojvcomponentElement.h("button", {
             class: 'oj-button-button',
             "aria-labelledby": ariaLabelledBy,
             "aria-label": ariaLabel,
@@ -594,8 +165,11 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
           }, labelContent);
         } else {
           clickHandler = this._handleClick;
-          buttonContent = ojvcomponent.h("button", {
+          buttonContent = ojvcomponentElement.h("button", {
             class: 'oj-button-button',
+            ref: function ref(elem) {
+              return _this2._buttonRef = elem;
+            },
             "aria-labelledby": ariaLabelledBy,
             "aria-label": ariaLabel,
             onTouchstart: this._handleTouchstart,
@@ -608,31 +182,49 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
             onKeydown: this._handleKeydown,
             onKeyup: this._handleKeyup,
             onFocusin: this._handleFocusin,
-            onFocusout: this._handleFocusout
+            onFocusout: this._handleFocusout,
+            onFocus: this._handleFocus,
+            onBlur: this._handleBlur
           }, labelContent);
         }
 
         var rootClasses = this._getRootClasses(startIconContent, endIconContent);
 
-        return ojvcomponent.h("oj-button2", {
+        return ojvcomponentElement.h("oj-button", {
           class: rootClasses,
           title: title,
-          onClick: clickHandler
-        }, buttonContent);
+          onClick: clickHandler,
+          ref: function ref(elem) {
+            return _this2._rootRef = elem;
+          }
+        }, buttonContent, this._renderContextMenu());
+      }
+    }, {
+      key: "_renderContextMenu",
+      value: function _renderContextMenu() {
+        if (!this.state.contextMenuTriggerEvent || !this.props.contextMenu) {
+          return null;
+        }
+
+        return ojvcomponentElement.h(ojvmenu.VMenu, {
+          eventObj: this.state.contextMenuTriggerEvent,
+          launcherElement: this._buttonRef,
+          onCloseCallback: this._onCloseCallback
+        }, [this.props.contextMenu]);
       }
     }, {
       key: "_processIcon",
       value: function _processIcon(icon, slotClass) {
-        var _this2 = this;
+        var _this3 = this;
 
         var iconContent;
 
         if (Array.isArray(icon)) {
           iconContent = icon.map(function (elem) {
-            return _this2._processIcon(elem, slotClass);
+            return _this3._processIcon(elem, slotClass);
           });
         } else if (icon) {
-          iconContent = ojvcomponent.h("span", {
+          iconContent = ojvcomponentElement.h("span", {
             class: slotClass
           }, icon);
         }
@@ -713,7 +305,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
     }, {
       key: "_addMutationObserver",
       value: function _addMutationObserver() {
-        var _this3 = this;
+        var _this4 = this;
 
         if (this._mutationObserver) {
           return;
@@ -725,10 +317,10 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
         };
 
         var callback = function callback() {
-          var title = _this3._getTextContent();
+          var title = _this4._getTextContent();
 
-          if (title != _this3.state.derivedTitle) {
-            _this3.updateState({
+          if (title != _this4.state.derivedTitle) {
+            _this4.updateState({
               derivedTitle: title
             });
           }
@@ -739,16 +331,57 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
         this._mutationObserver.observe(this._defaultSlotRef, config);
       }
     }, {
+      key: "_needsContextMenuDetection",
+      value: function _needsContextMenuDetection(props) {
+        return props.contextMenu && !props.disabled;
+      }
+    }, {
       key: "mounted",
       value: function mounted() {
-        if (this.props.display === 'icons' && !this.props.label && !this.props.title) {
-          var title = this._getTextContent();
+        this._updateDerivedTitle();
 
+        if (this._needsContextMenuDetection(this.props)) {
+          GestureUtils.startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+        }
+      }
+    }, {
+      key: "updated",
+      value: function updated(oldProps) {
+        this._updateDerivedTitle();
+
+        this._updateContextMenuDetection(oldProps);
+      }
+    }, {
+      key: "_updateDerivedTitle",
+      value: function _updateDerivedTitle() {
+        var props = this.props;
+        var title;
+
+        if (props.display === 'icons' && (props.startIcon || props.endIcon) && !props.label && !props.title) {
+          title = this._getTextContent();
+
+          this._addMutationObserver();
+        }
+
+        if (title != this.state.derivedTitle) {
           this.updateState({
             derivedTitle: title
           });
+        }
+      }
+    }, {
+      key: "_updateContextMenuDetection",
+      value: function _updateContextMenuDetection(oldProps) {
+        var oldNeedsDetect = this._needsContextMenuDetection(oldProps);
 
-          this._addMutationObserver();
+        var newNeedsDetect = this._needsContextMenuDetection(this.props);
+
+        if (oldNeedsDetect != newNeedsDetect) {
+          if (newNeedsDetect) {
+            GestureUtils.startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+          } else {
+            GestureUtils.stopDetectContextMenuGesture(this._rootRef);
+          }
         }
       }
     }, {
@@ -768,7 +401,11 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
       value: function unmounted() {
         if (this._mutationObserver) {
           this._mutationObserver.disconnect();
+
+          this._mutationObserver = null;
         }
+
+        GestureUtils.stopDetectContextMenuGesture(this._rootRef);
       }
     }, {
       key: "_handleTouchstart",
@@ -873,14 +510,60 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
         });
       }
     }, {
+      key: "_handleFocus",
+      value: function _handleFocus(event) {
+        var _a;
+
+        (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', {
+          relatedTarget: event.relatedTarget
+        }));
+      }
+    }, {
+      key: "_handleBlur",
+      value: function _handleBlur(event) {
+        var _a;
+
+        this.updateState({
+          active: false
+        });
+        (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', {
+          relatedTarget: event.relatedTarget
+        }));
+      }
+    }, {
       key: "refresh",
       value: function refresh() {
         this.render();
       }
+    }, {
+      key: "focus",
+      value: function focus() {
+        var _a;
+
+        (_a = this._buttonRef) === null || _a === void 0 ? void 0 : _a.focus();
+      }
+    }, {
+      key: "blur",
+      value: function blur() {
+        var _a;
+
+        (_a = this._buttonRef) === null || _a === void 0 ? void 0 : _a.blur();
+      }
+    }], [{
+      key: "updateStateFromProps",
+      value: function updateStateFromProps(props) {
+        if (props.disabled) {
+          return {
+            contextMenuTriggerEvent: null
+          };
+        }
+
+        return null;
+      }
     }]);
 
     return Button2;
-  }(ojvcomponent.VComponent);
+  }(ojvcomponentElement.ElementVComponent);
 
   exports.Button2._chromingMap = {
     solid: 'oj-button-full-chrome',
@@ -894,13 +577,16 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
     "extension": {
       "_DEFAULTS": Props,
       "_ROOT_PROPS_MAP": {
-        "title": true
+        "title": 1,
+        "aria-label": 1,
+        "aria-labelledby": 1
       }
     },
     "slots": {
       "": {},
       "startIcon": {},
-      "endIcon": {}
+      "endIcon": {},
+      "contextMenu": {}
     },
     "properties": {
       "disabled": {
@@ -921,43 +607,58 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'ojs/ojthemeutils'], fu
       },
       "chroming": {
         "type": "string",
-        "enumValues": ["borderless", "callToAction", "full", "half", "outlined", "solid"]
+        "enumValues": ["borderless", "callToAction", "full", "half", "outlined", "solid"],
+        "binding": {
+          "consume": {
+            "name": "containerChroming"
+          }
+        }
       }
     },
     "events": {
       "ojAction": {
         "bubbles": true
       }
+    },
+    "methods": {
+      "refresh": {},
+      "focus": {},
+      "blur": {}
     }
   };
 
-  __decorate([ojvcomponent.listener({
+  __decorate([ojvcomponentElement.listener({
     passive: true
   })], exports.Button2.prototype, "_handleTouchstart", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleTouchend", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleTouchend", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleMouseenter", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleMouseenter", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleMouseleave", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleMouseleave", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleMousedown", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleMousedown", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleMouseup", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleMouseup", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleClick", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleClick", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleKeydown", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleKeydown", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleKeyup", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleKeyup", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleFocusin", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleFocusin", null);
 
-  __decorate([ojvcomponent.listener()], exports.Button2.prototype, "_handleFocusout", null);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleFocusout", null);
 
-  exports.Button2 = Button2_1 = __decorate([ojvcomponent.customElement('oj-button2')], exports.Button2);
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleFocus", null);
+
+  __decorate([ojvcomponentElement.listener()], exports.Button2.prototype, "_handleBlur", null);
+
+  exports.Button2 = Button2_1 = __decorate([ojvcomponentElement.customElement('oj-button')], exports.Button2);
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
+
 }())

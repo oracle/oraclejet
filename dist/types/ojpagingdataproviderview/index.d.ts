@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,9 @@ import { PagingModel } from '../ojpagingmodel';
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult,
    FetchListParameters } from '../ojdataprovider';
 declare class PagingDataProviderView<K, D> implements DataProvider<K, D>, PagingModel {
-    constructor(dataProvider: DataProvider<K, D>);
+    constructor(dataProvider: DataProvider<K, D>, options?: {
+        rowCountConfidence?: 'exact' | 'approximate';
+    });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     dispatchEvent(evt: Event): boolean;

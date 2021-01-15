@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the
@@ -71,6 +71,8 @@
     .oj-gantt-row {
 
         fill: $dvtGanttRowBgColor;
+        padding-top: 0.3571rem;
+        padding-bottom: 0.3571rem;
 
     }
 
@@ -86,6 +88,8 @@
 
         fill: $headerTextColor;
         font-size: $fontSize;
+        padding-left: 0.5714rem;
+        padding-right: 0.5714rem;
 
     }
 
@@ -93,8 +97,14 @@
     .oj-gantt-task {
 
         fill: $dvtGanttTaskBgColor;
+        filter: url('#ojGanttTaskTintFilter');
+        height: 1.5714rem;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 0;
 
-      filter: url('#ojGanttTaskTintFilter');
     }
 
     /* Styling for all tasks when hover */
@@ -165,6 +175,8 @@
 
         color: $primaryTextColor;
         font-size: $smallFontSize;
+        margin-left: 0.3571rem;
+        margin-right: 0.3571rem;
 
     }
 
@@ -172,6 +184,7 @@
     .oj-gantt-task-progress {
 
         fill: $dvtGanttTaskBgColor;
+        border-radius: 0;
 
     }
 
@@ -181,12 +194,15 @@
         fill: $dvtGanttTaskBgColor;
 
       filter: url('#ojGanttTaskShadeFilter');
+      border-radius: 0;
     }
 
     /* Styling for all baseline bars */
     .oj-gantt-baseline-bar {
 
         fill: $dvtGanttTaskBgColor;
+        height: 0.4286rem;
+        margin-top: 0px;
 
     }
 
@@ -202,6 +218,7 @@
 
           fill: $dvtGanttMajorAxisBgColor;
           stroke: $dvtGanttMajorAxisBorderColor;
+          height: 1.6429rem;
 
     }
 
@@ -226,6 +243,7 @@
 
           fill: $dvtGanttMinorAxisBgColor;
           stroke: $dvtGanttMinorAxisBorderColor;
+          height: 1.6429rem;
 
     }
 
@@ -246,10 +264,20 @@
     }
 
     /* Styling for reference object */
-    .oj-gantt-reference-object {
+    .oj-gantt-reference-object-area {
+      fill: $neutralColor17;
+      opacity: 0.08;
+      shape-rendering: crispEdges;
+    }
 
-          stroke: $dvtTimelineReferenceObjectColor;
+    .oj-gantt-reference-object-line {
+      stroke: $dvtTimelineReferenceObjectColor;
+      shape-rendering: crispEdges;
+    }
 
+    .oj-gantt-reference-object-inner-line {
+      stroke: $neutralColor2;
+      shape-rendering: crispEdges;
     }
 
     /* Styling for the tooltip label */
@@ -316,6 +344,7 @@
         stroke:$dvtGanttDependencyLineColor;
 
       stroke-width:1;
+      marker-end: url('#ojGanttDependencyMarkerEndTriangle');
     }
 
     /* Styling for all dependency lines when focus */
@@ -329,6 +358,25 @@
         fill:$dvtGanttDependencyLineColor;
         stroke:$dvtGanttDependencyLineColor;
       
+    }
+
+    /* Option defaults */
+    $ganttDefaultOptions: ();
+    $ganttTaskDefaultsDefaultOptions: ();
+    $ganttTaskDefaultsBaselineDefaultOptions: ();
+    $ganttTaskDefaultsProgressDefaultOptions: ();
+
+    $ganttTaskDefaultsBaselineDefaultOptions: map-merge($ganttTaskDefaultsBaselineDefaultOptions, (borderRadius: "0"));
+    $ganttTaskDefaultsDefaultOptions: map-merge($ganttTaskDefaultsDefaultOptions, (baseline: $ganttTaskDefaultsBaselineDefaultOptions));
+    
+    $ganttTaskDefaultsProgressDefaultOptions: map-merge($ganttTaskDefaultsProgressDefaultOptions, (borderRadius: "0"));
+    $ganttTaskDefaultsDefaultOptions: map-merge($ganttTaskDefaultsDefaultOptions, (progress: $ganttTaskDefaultsProgressDefaultOptions));
+
+    $ganttTaskDefaultsDefaultOptions: map-merge($ganttTaskDefaultsDefaultOptions, (borderRadius: "0"));
+    $ganttDefaultOptions: map-merge($ganttDefaultOptions, (taskDefaults: $ganttTaskDefaultsDefaultOptions));
+
+    .oj-gantt-option-defaults {
+        font-family: oj-json($ganttDefaultOptions) !important;
     }
   }
 }

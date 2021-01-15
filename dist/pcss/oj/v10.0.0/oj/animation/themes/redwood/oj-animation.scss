@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+@import "_oj-animation.servervars.scss";
+@import "_oj-animation.cssvars.scss";
+
+// import common implementation
+@import "../base/_oj-animation.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";

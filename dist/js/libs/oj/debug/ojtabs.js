@@ -1,18 +1,18 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'ojs/ojmenu', 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdomutils', 'ojs/ojconveyorbelt', 'ojs/ojmenu',
         'jqueryui-amd/widgets/sortable', 'ojs/ojtouchproxy'], 
-function(oj, $, Components)
+function(oj, $, Components, DomUtils)
 {
   "use strict";
 
-/* global Components:false */
+/* global Components:false, DomUtils:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -1283,7 +1283,7 @@ function(oj, $, Components)
             }
 
           // security test
-            if (oj.DomUtils.isValidIdentifier(eventName)) {
+            if (DomUtils.isValidIdentifier(eventName)) {
               events[eventName] = self._eventHandler;
             }
           });
@@ -1567,7 +1567,7 @@ function(oj, $, Components)
 
       // remove listener
         if (this._hasResizeListener) {
-          oj.DomUtils.removeResizeListener(this.element[0], this._resizeHandler);
+          DomUtils.removeResizeListener(this.element[0], this._resizeHandler);
           this._hasResizeListener = false;
           this._originalWidth = undefined;
         }
@@ -1575,7 +1575,7 @@ function(oj, $, Components)
       //  - open/close of tabs leaks sortable
         if (this._sortable) {
         // remove touchListeners
-          if (oj.DomUtils.isTouchSupported()) {
+          if (DomUtils.isTouchSupported()) {
             this._tearDownTouchReorder();
           }
 
@@ -1966,7 +1966,7 @@ function(oj, $, Components)
           var self = this;
 
           //  - ojtabs touch support issues
-          if (oj.DomUtils.isTouchSupported()) {
+          if (DomUtils.isTouchSupported()) {
             this._setupTouchReorder();
           }
 
@@ -2304,7 +2304,7 @@ function(oj, $, Components)
             this._resizeHandler = this._handleResize.bind(this);
           }
 
-          oj.DomUtils.addResizeListener(this.element[0], this._resizeHandler);
+          DomUtils.addResizeListener(this.element[0], this._resizeHandler);
           this._hasResizeListener = true;
 
         // truncation=none and has facet
@@ -2644,7 +2644,7 @@ function(oj, $, Components)
         } else if (typeof idOrIndex === 'string') {
         // security test
           var selector = this._sanitizeSelector(idOrIndex);
-          if (oj.DomUtils.isValidIdentifier(selector)) {
+          if (DomUtils.isValidIdentifier(selector)) {
             var tabOrContent = this.element.find(this._sanitizeIdSelector(selector));
 
             if (tabOrContent.length) {

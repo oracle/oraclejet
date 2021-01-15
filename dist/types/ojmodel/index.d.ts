@@ -1,11 +1,15 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
+// tslint:disable-next-line no-unnecessary-class
+export class ajax {
+    constructor(settings?: object);
+}
 export class Collection {
     changes: number[];
     comparator: null | string | ((param0: Model, param1?: Model) => number);
@@ -67,7 +71,7 @@ export class Collection {
     each(iterator: ((param0: Model) => void), context?: object): undefined;
     fetch(options?: {
         success?: (collection: Collection, response: any, options: object) => void;
-        error?: (collection: Collection, xhr: any, options: object) => void;
+        error?: (collection: Collection, error: any, options: object, xhr?: any, status?: any) => void;
         add?: boolean;
         set?: boolean;
         startIndex?: number;
@@ -94,8 +98,8 @@ export class Collection {
     isRangeLocal(start: number, count: number): boolean;
     last(n?: number, options?: object): Promise<Model> | Model[] | null;
     lastIndexOf(model: Model, fromIndex?: number): number;
-    listenTo(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
-    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenTo(otherObj: Model | Collection, eventType: string, callback: (context: Object, data?: any, data2?: any) => void): undefined;
+    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (context: Object, data?: any, data2?: any) => void): undefined;
     map(iterator: ((param0: Model) => object), context?: object): object[];
     max(iterator: ((param0: Model) => object), context?: object): Model;
     min(iterator: ((param0: Model) => object), context?: object): Model;
@@ -105,9 +109,9 @@ export class Collection {
         error?: (collection: Collection, xhr: any, options: object) => void;
         [propName: string]: any;
     }): object | null;
-    off(eventType?: string | object, callback?: (eventType: string, data: object) => void, context?: object): undefined;
-    on(eventType: string | object, callback: (eventType: string, data: object) => void, context?: object): undefined;
-    once(eventType: string, callback: (eventType: string, data: object) => void, context?: object): undefined;
+    off(eventType?: string | object, callback?: (context: object, data?: any, data2?: any) => void, context?: object): undefined;
+    on(eventType: string | object, callback: (context: Object, data?: any, data2?: any) => void, context?: object): undefined;
+    once(eventType: string, callback: (context: Object, data?: any, data2?: any) => void, context?: object): undefined;
     pluck(attr: string): object[];
     pop(options?: {
         silent?: boolean;
@@ -162,7 +166,7 @@ export class Collection {
     }): Promise<Collection.SetRangeLocalPromise> | null;
     sortBy(iterator: string | ((param0: Model) => string), context?: object): Model[];
     sortedIndex(comparator: string | ((param0: Model, param1?: Model) => object)): number;
-    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
+    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (context: Object, data?: any, data2?: any) => void): undefined;
     sync(method: string, collection: Collection, options?: {
         success?: (response?: any) => void;
         error?: (xhr: any, status: any, error: any) => void;
@@ -187,30 +191,30 @@ export class Collection {
 export namespace Collection {
     // tslint:disable-next-line interface-over-type-literal
     type CustomPagingOptionsReturn = {
-        totalResults?: number;
-        limit?: number;
         count?: number;
-        offset?: number;
         hasMore?: boolean;
+        limit?: number;
+        offset?: number;
+        totalResults?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CustomURLCallbackOptions = {
-        recordID?: string;
+        all?: boolean;
         fetchSize?: number;
-        startIndex?: number;
-        startID?: string;
+        query?: object;
+        recordID?: string;
         since?: string;
-        until?: string;
         sort?: string;
         sortDir?: string;
-        query?: object;
-        all?: boolean;
+        startID?: string;
+        startIndex?: number;
+        until?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SetRangeLocalPromise = {
-        start: number;
         count: number;
         models: Model[];
+        start: number;
     };
 }
 export class Model {
@@ -245,7 +249,7 @@ export class Model {
     }): boolean;
     fetch(options?: {
         success?: (model: Model, response: any, options: object) => void;
-        error?: (model: Model, xhr: any, options: object) => void;
+        error?: (model: Model, error: any, options: object, xhr: any, status: any) => void;
         [propName: string]: any;
     }): object;
     get(property: string): any;
@@ -255,20 +259,20 @@ export class Model {
     isNew(): boolean;
     isValid(): boolean;
     keys(): object[];
-    listenTo(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
-    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (eventType: string, data: object) => void): undefined;
+    listenTo(otherObj: Model | Collection, eventType: string, callback: (context: Object, data?: any, data2?: any) => void): undefined;
+    listenToOnce(otherObj: Model | Collection, eventType: string, callback: (context: Object, data?: any, data2?: any) => void): undefined;
     matches(attrs: object): ((param0: Model) => boolean);
-    off(eventType?: string | object, callback?: (eventType: string, data: object) => void, context?: object): undefined;
+    off(eventType?: string | object, callback?: (context: object, data?: any, data2?: any) => void, context?: object): undefined;
     omit(keys: object[] | object): object;
-    on(eventType: string | object, callback: (eventType: string, data: object) => void, context?: object): undefined;
-    once(eventType: string, callback: (eventType: string, data: object) => void, context?: object): undefined;
+    on(eventType: string | object, callback: (context: Object, data?: any, data2?: any) => void, context?: object): undefined;
+    once(eventType: string, callback: (context: Object, data?: any, data2?: any) => void, context?: object): undefined;
     pairs(): object[];
     pick(keys: object[] | object): object[];
     previous(attr: string): object;
     previousAttributes(): object;
     save(attributes?: object, options?: {
         success?: (model: Model, response: any, options: object) => void;
-        error?: (model: Model, xhr: any, options: object) => void;
+        error?: (model: Model, error: any, options: object, xhr: any, status: any) => void;
         contentType?: string;
         valdiate?: boolean;
         wait?: boolean;
@@ -277,7 +281,7 @@ export class Model {
         [propName: string]: any;
     }): object | boolean;
     set(property: string | object, value?: object, options?: object): Model | boolean;
-    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (eventType: string, data: object) => void): undefined;
+    stopListening(otherObj: Model | Collection, eventType?: string, callback?: (context: Object, data?: any, data2?: any) => void): undefined;
     sync(method: string, model: Model, options?: object): object;
     toJSON(): object;
     trigger(eventType: string): undefined;
@@ -306,4 +310,8 @@ export class OAuth {
 // tslint:disable-next-line no-unnecessary-class
 export class URLError {
     constructor();
+}
+// tslint:disable-next-line no-unnecessary-class
+export class sync {
+    constructor(method: string, model: Model | Collection, options?: object);
 }

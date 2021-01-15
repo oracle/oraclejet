@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -16,11 +16,9 @@
     /* --------------------------------------------------------------- */
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
-    @if $initialVisibility == hidden {
       oj-searchselect:not(.oj-complete) {
         visibility: hidden;
       }
-    }
 
     .oj-searchselect {
       position: relative;
@@ -29,8 +27,8 @@
         max-width: $formControlLargeMaxWidth;
         min-width: $formControlMinWidth;
         // font size needs to be on the root, because max/min width is in em.
-        font-size: $formControlTriggerFontSize;
-        @include oj-form-control-text-size-adjust($formControlTriggerFontSize);
+        font-size: var(--oj-text-field-font-size);
+        @include oj-form-control-text-size-adjust-css-vars();
 
       width: 100%;
 
@@ -63,14 +61,20 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-        background-color: $formControlBgColor;
-        color: $formControlInputValueColor;
-        font-size: $formControlTriggerFontSize;
-        @include oj-box-shadow(none);
-        @include oj-form-control-text-size-adjust($formControlTriggerFontSize);
-        @include oj-placeholder()
-        {
-          color: $formControlPlaceholderColor;
+        background-color: transparent;
+        color: var(--oj-text-field-value-color);
+        font-size: var(--oj-text-field-font-size);
+        box-shadow: none;
+        @include oj-form-control-text-size-adjust-css-vars();
+        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+        &:-ms-input-placeholder {
+          color: var(--oj-text-field-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-text-field-placeholder-font-style);
+        }
+        &::placeholder {
+          color: var(--oj-text-field-placeholder-color);
           // in Firefox the default opacity is not 1 for placeholder
           opacity: 1;
           font-style: $formControlPlaceholderFontStyle;
@@ -134,14 +138,6 @@
         padding-left: 1px;
       }
     }
-    .oj-searchselect .oj-searchselect-filter .oj-inputtext-input {
-      @include oj-ltr() {
-        padding-right: 0;
-      }
-      @include oj-rtl() {
-        padding-left: 0;
-      }
-    }
 
     /* Styling for readonly mode */
 
@@ -172,6 +168,14 @@
     .oj-searchselect-mobile.oj-disabled .oj-searchselect-clear-value,
     .oj-searchselect-mobile:not(.oj-searchselect-no-value):not(.oj-disabled):not(.oj-required) .oj-searchselect-arrow {
       display: none;
+    }
+
+    /*
+     * On desktop, hide the dropdown arrow in the main field when the component has focus
+     * (when the filter field is shown)
+     */
+    .oj-searchselect.oj-focus:not(.oj-searchselect-mobile) .oj-searchselect-main-field .oj-searchselect-arrow {
+      visibility: hidden;
     }
  
     .oj-searchselect-arrow,
@@ -231,6 +235,14 @@
      */
     .oj-select-results {
       @extend .oj-listbox-results-base;
+    }
+
+    /*
+     * Applied to results collection element when the dropdown is initially opened while the
+     * data is being fetched
+     */
+    .oj-listbox-initial-open .oj-select-results {
+      min-height: 10rem; // 160px;
     }
 
     // .oj-listbox-fullscreen .oj-select-results {
@@ -296,11 +308,14 @@
 
     /* Styling on collection selection */
     .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
-    .oj-listbox-searchselect .oj-listview-item.oj-selected,
+    .oj-listbox-searchselect .oj-listview-item.oj-selected {
+      // show hover color instead of selection color
+      background-color: $collectionCellBgColorHover;
+    }
     .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
     .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
       // show hover color instead of selection color
-      background-color: $collectionCellBgColorHover;
+      background-image: linear-gradient($collectionCellBgColorHover, $collectionCellBgColorHover);
     }
 
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should

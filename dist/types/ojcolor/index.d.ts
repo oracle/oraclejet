@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -167,24 +167,24 @@ declare class Color {
 declare namespace Color {
     // tslint:disable-next-line interface-over-type-literal
     type HSLA = {
-        h: number;
-        s: number;
-        l: number;
         a?: number;
+        h: number;
+        l: number;
+        s: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type HSVA = {
+        a?: number;
         h: number;
         s: number;
         v: number;
-        a?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RGBA = {
-        r: number;
-        g: number;
-        b: number;
         a?: number;
+        b: number;
+        g: number;
+        r: number;
     };
 }
 export = Color;

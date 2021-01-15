@@ -1,24 +1,20 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 
-import './oj-jsx-interfaces';
 import './oj-requirejs-plugins';
-import { Model, Collection } from './ojmodel';
 export namespace oj {
     let revision: string;
     let version: string;
-    function ajax(settings?: object): object;
-    function sync(method: string, model: Model | Collection, options?: object): object;
 }
 export interface baseComponent<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends JetElement<SP> {
     translations: object | null;
-    addEventListener<T extends keyof baseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: baseComponentEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof baseComponentEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: baseComponentEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof baseComponentSettableProperties>(property: T): baseComponent<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof baseComponentSettableProperties>(property: T, value: baseComponentSettableProperties[T]): void;
@@ -46,8 +42,8 @@ export interface GenericSetter<SP> {
 export interface JetElement<SP> extends HTMLElement, GenericSetter<SP> {
     set<K extends keyof SP>(propertyName: K, propertyValue: SP[K]): void;
     unset(propertyName: keyof SP): void;
-    addEventListener<T extends keyof HTMLElementEventMap>(type: T, listener: (this: HTMLElement, ev: HTMLElementEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof HTMLElementEventMap>(type: T, listener: (this: HTMLElement, ev: HTMLElementEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof JetSettableProperties>(property: T): JetElement<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof JetSettableProperties>(property: T, value: JetSettableProperties[T]): void;

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -17,69 +17,6 @@
     @if $initialVisibility == hidden {
       oj-action-card:not(.oj-complete) {
         visibility: hidden;
-      }
-    }
-
-    /* Styling for card entrance animation during initial load */
-    .oj-actioncard-initial-entrance-animation {
-      animation-name: actioncard-initial-fade-in;
-      animation-duration: 0.3s;
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;
-    }
-
-    @keyframes actioncard-initial-fade-in {
-      0% {
-        visibility: visible;
-        opacity: 0;
-        transform: translateY(300px);
-      }
-      100% {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Styling for card exit animation when data changed */
-    .oj-actioncard-initial-exit-animation {
-      animation-name: actioncard-initial-fade-out;
-      animation-duration: 0.3s;
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;
-    }
-
-    @keyframes actioncard-initial-fade-out {
-      0% {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0px);
-      }
-      100% {
-        visibility: visible;
-        opacity: 0;
-        transform: translateY(300px);
-      }
-    }
-
-    /* Styling for card entrance animation during load more */
-    .oj-actioncard-loadmore-entrance-animation {
-      animation-name: actioncard-loadmore-fade-in;
-      animation-duration: 0.15s;
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;
-    }
-
-    @keyframes actioncard-loadmore-fade-in {
-      0% {
-        visibility: visible;
-        opacity: 0;
-      }
-      100% {
-        visibility: visible;
-        opacity: 1;
       }
     }
 

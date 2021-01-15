@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,8 +19,8 @@ export interface ojMessage extends JetElement<ojMessageSettableProperties> {
         };
         labelCloseIcon?: string;
     };
-    addEventListener<T extends keyof ojMessageEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessageEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojMessageEventMap>(type: T, listener: (this: HTMLElement, ev: ojMessageEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMessageSettableProperties>(property: T): ojMessage[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojMessageSettableProperties>(property: T, value: ojMessageSettableProperties[T]): void;
@@ -46,15 +46,15 @@ export namespace ojMessage {
     };
     // tslint:disable-next-line interface-over-type-literal
     type Message = {
-        icon?: string;
-        category?: string;
-        severity?: 'error' | 'warning' | 'confirmation' | 'info' | 'none';
-        timestamp?: string;
-        summary?: string;
-        detail?: string;
         autoTimeout?: number;
+        category?: string;
         closeAffordance?: 'none' | 'defaults';
+        detail?: string;
+        icon?: string;
+        severity?: 'error' | 'warning' | 'confirmation' | 'info' | 'none';
         sound?: string;
+        summary?: string;
+        timestamp?: string;
     };
 }
 export interface ojMessageEventMap extends HTMLElementEventMap {

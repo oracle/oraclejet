@@ -1,3 +1,10 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
 define(['exports'], function (exports) { 'use strict';
 
     var TYPE;
@@ -3964,7 +3971,10 @@ define(['exports'], function (exports) { 'use strict';
     */
 
     function _getFormatter(pattern, locale) {
-        return (values) => new IntlMessageFormat(pattern, locale).format(values);
+        return (values) => new IntlMessageFormat(_parsePattern(pattern), locale).format(values);
+    }
+    function _parsePattern(pattern) {
+        return parse(pattern, { ignoreTag: true });
     }
     function convertBundle(bundle, locale) {
         return Object.keys(bundle).reduce((acc, key) => {

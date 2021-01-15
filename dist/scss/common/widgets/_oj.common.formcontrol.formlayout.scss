@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -45,106 +45,10 @@
     
     // When labels are inline, we shouldn't ever wrap as it produces difficult
     // to understand layouts.
-    .oj-formlayout-labels-inline > .oj-flex  {
+    .oj-formlayout-labels-inline > .oj-form > .oj-flex  {
       flex-wrap: nowrap;
     }
 
-    .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:first-child {
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
-    }
-    .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
-      @include oj-ltr {
-        padding-right: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-left: $formLayoutHorizontalMargin;
-      }
-    }
-
-    // this is an oj-form-layout specific case, where the label flex item is set to 0px and the oj-label and
-    // the component share the same
-    // In this case, we need to apply the padding-left to the even (element/value) flex item (beyond the 2)
-    // in the 'across' case where you have multiple fields in the same row you need padding between the 1st 
-    // field and the second label
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd),
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
-        @include oj-ltr {
-        padding-left: 0px;
-      }
-      @include oj-rtl(){
-        padding-right: 0px;
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item,
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
-      @include oj-ltr {
-        padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      }
-      @include oj-rtl(){
-        padding-right:  calc(#{$formLayoutColumnGutter} / 2);
-      }
-    }
-    // The left/right margin goes on the second oj-flex-item element for label comps.
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(2),
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(2) {
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
-    }
-    
-    // For this case, we need the padding applied to the appropriate oj-label-value elements
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
-      padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      padding-right: calc(#{$formLayoutColumnGutter} / 2);
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
-      @include oj-ltr {
-        padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      }
-      @include oj-rtl(){
-        padding-right:  calc(#{$formLayoutColumnGutter} / 2);
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value > .oj-flex > .oj-flex-item:first-child {
-      @include oj-ltr {
-        padding-left: calc(#{$formLayoutHorizontalMargin} / 2);
-      }
-      @include oj-rtl(){
-        padding-right:  calc(#{$formLayoutHorizontalMargin} / 2);
-      }
-    }
-    // we need to remove the padding for the inline label case on the last flex-item div
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:last-child {
-      @include oj-ltr {
-        padding-left: 0px;
-      }
-      @include oj-rtl(){
-        padding-right:  0px;
-      }
-    }
-    // This is the oj-label-value child case
-    // We need to remove the padding here, or oj-label-value can't properly align its content
-    // to the parent oj-form-layout
-    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-labelvalue.oj-flex-item {
-      padding-left: 0px;
-      padding-right: 0px;
-    }
-    .oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
-      @include oj-ltr {
-        padding-left: 0px;
-      }
-      @include oj-rtl(){
-        padding-right: 0px;
-      }
-    }
     // Nested form layout need some horizontal margin/column gutter love as well
     // Get rid of the horizontal marging/column gutter on the parent form layout
     .oj-form-layout > .oj-form > .oj-flex > .oj-formlayout-nested-formlayout > .oj-form-layout > .oj-form,
@@ -152,88 +56,13 @@
       padding-left: 0px;
       padding-right: 0px;
     }
-    // direction == column
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(even) > .oj-form-layout > .oj-form {
-      padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      padding-right: calc(#{$formLayoutColumnGutter} / 2);
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form {
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
-    }
-    // direction == row
-    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across {
-      padding-left: 0px;
-      padding-right: 0px;
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child,
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
-      @include oj-ltr {
-        padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      }
-      @include oj-rtl(){
-        padding-right: calc(#{$formLayoutColumnGutter} / 2);
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-      @include oj-ltr {
-        padding-right: calc(#{$formLayoutColumnGutter} / 2);
-      }
-      @include oj-rtl(){
-        padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child,
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:nth-child(2) > .oj-form-layout > .oj-form.oj-formlayout-form-across:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(2) {
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-formlayout-nested-formlayout.oj-flex-item:last-child > .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-flex-item:last-child {
-      @include oj-ltr {
-        padding-right: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-left: $formLayoutHorizontalMargin;
-      }
-    }
-  
-    // If the oj-label-value is the first or last, use the horizontal margin instead of column gutter
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:first-child{
 
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
-    }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:nth-child(2) > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:last-child{
 
-      @include oj-ltr {
-        padding-left: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-right: $formLayoutHorizontalMargin;
-      }
+    .oj-formlayout-column-gutter {
+      flex-grow: 0;
+      flex-shrink: 1;
+      flex-basis: $formLayoutColumnGutter;
     }
-    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item:last-child > .oj-label-value > .oj-flex > .oj-flex-item:last-child {
-
-      @include oj-ltr {
-        padding-right: $formLayoutHorizontalMargin;
-      }
-      @include oj-rtl(){
-        padding-left: $formLayoutHorizontalMargin;
-      }
-    }
-
 
     // oj-label-value doesn't need the row divider margin, as it isn't a true row, so remove the padding
     .oj-label-value.oj-form > .oj-flex {
@@ -256,15 +85,15 @@
     @if ($formLayoutLabelEdgeDefault != null) {
         $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (labelEdge: $formLayoutLabelEdgeDefault));
     }
-    @if ($formLayoutLabelGenerationDefault != null) {
-      $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (labelGeneration: $formLayoutLabelGenerationDefault));
-    }
     @if ($formLayoutColspanWrapDefault != null) {
       $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, (colspanWrap: $formLayoutColspanWrapDefault));
     }
     @if ($formLayoutDirectionDefault != null){
       $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, ( "direction": $formLayoutDirectionDefault));
     }
+
+    // using the oj-form-layout-option-defaults to pass the column gap
+    $formLayoutDefaultOptions: map-merge($formLayoutDefaultOptions, ("columnGap": $formLayoutColumnGutter));
 
     .oj-form-layout-option-defaults {
         font-family: oj-json-from-map($formLayoutDefaultOptions);

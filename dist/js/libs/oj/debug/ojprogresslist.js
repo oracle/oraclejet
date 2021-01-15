@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,9 +19,9 @@ var __oj_progress_list_metadata =
     }
   },
   "methods": {
-    "setProperty": {},
     "getProperty": {},
     "setProperties": {},
+    "setProperty": {},
     "getNodeBySubId": {},
     "getSubIdByNode": {}
   },
@@ -313,8 +313,8 @@ Composite.register('oj-progress-item',
  * <p>Please see the <code class="prettyprint">ListView</code> for Touch and Keyboard End User Information</p>
  *
  * <p>See {@link oj.ojListView}</p>
- * <p>See {@link oj.DataProvider}</p>
- * <p>See {@link oj.TableDataSource}</p>
+ * <p>See {@link DataProvider}</p>
+ * <p>See {@link TableDataSource}</p>
  * <p>See {@link oj.ProgressItem}</p>
  *
  * <pre class="prettyprint">
@@ -333,8 +333,8 @@ Composite.register('oj-progress-item',
  * @instance
  * @ojshortdesc Data used by the ProgressList.
  * @type {Object|null}
- * @ojsignature [{target: "Type", value: "oj.DataProvider<any, any>|null"},
- *               {target: "Type", value: "oj.DataProvider|oj.TableDataSource|null", consumedBy:"js"}]
+ * @ojsignature [{target: "Type", value: "DataProvider<any, any>|null"},
+ *               {target: "Type", value: "DataProvider|TableDataSource|null", consumedBy:"js"}]
  *
  * @default null
  *

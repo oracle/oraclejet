@@ -1,0 +1,17 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+@import "../../../radio-checkbox/themes/redwood/_oj-radiocheckbox-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.variables.selector") {
+    // enabled indeterminate icon
+    .oj-selector:hover .oj-selector-wrapper.oj-indeterminate,
+    .oj-selector .oj-selector-wrapper.oj-indeterminate,
+    .oj-selector:active .oj-selector-wrapper.oj-indeterminate {
+      @extend .oj-fwk-icon-checkbox-mixed !optional;
+    }
+  }

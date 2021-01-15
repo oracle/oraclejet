@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 @import "oj.common.formcontrol.mixins";
@@ -645,21 +645,11 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            height: 100%;
-
-            padding: $collectionCellPadding;
-
-            position: absolute;
-            top: 0;
-            @include oj-ltr() {
-                right: 0;
-            }
-
-            @include oj-rtl() {
-                left: 0;
-            }
+            height: 2.5em;
+            width: 2em;
+            min-width: 2em;
+            border-radius: var(--oj-button-border-radius);
         }
-
         /* Styling for the gradient for sort icons in the header */
         .oj-datagrid-sort-icon-container.oj-enabled {
 
@@ -688,7 +678,8 @@
 
         /* Styling for disabled sort icons */
         .oj-datagrid-sort-ascending-icon.oj-disabled,
-        .oj-datagrid-sort-descending-icon.oj-disabled {
+        .oj-datagrid-sort-descending-icon.oj-disabled,
+        .oj-datagrid-sort-default-icon.oj-disabled {
             display: none;
         }
 
@@ -775,6 +766,11 @@
             @include oj-rtl() {
               text-align: left;
             }
+        }
+
+        .oj-datagrid-column-header-cell > * {
+            white-space: nowrap;
+            overflow: hidden;
         }
     }
 }

@@ -1,0 +1,21 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.iconcircle") {
+
+:root {
+  // icon circle
+  // ----------------------------
+  --oj-private-icon-pattern-display:                  block;
+
+  --oj-private-icon-circle-xxs-font-size:             0.75rem;
+  --oj-private-icon-circle-xs-font-size:              1rem;
+  --oj-private-icon-circle-sm-font-size:              1.5rem;
+  --oj-private-icon-circle-md-font-size:              2rem;
+  --oj-private-icon-circle-lg-font-size:              2.25rem;
+  --oj-private-icon-circle-xl-font-size:              3.5rem;
+  --oj-private-icon-circle-xxl-font-size:             4.5rem;
+
+  
+}
+
+}

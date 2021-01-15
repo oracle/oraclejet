@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,11 +17,11 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
         drag?: {
             items: {
                 dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
                 dragStart?: ((event: Event, context: {
                     items: D[];
                 }) => void);
-                drag?: ((param0: Event) => void);
-                dragEnd?: ((param0: Event) => void);
             };
         };
         drop?: {
@@ -30,10 +30,10 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
                 dragEnter?: ((event: Event, context: {
                     item: Element;
                 }) => void);
-                dragOver?: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     item: Element;
                 }) => void);
-                dragLeave?: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     item: Element;
                 }) => void);
                 drop: ((param0: Event, param1: ojTreeView.ItemsDropOnDropContext) => void);
@@ -48,11 +48,14 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
         } | void) | null;
         selectable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
     };
+    scrollPolicyOptions: {
+        maxCount: number;
+    };
     selected: KeySet<K>;
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
-    addEventListener<T extends keyof ojTreeViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreeViewEventMap<K, D>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
+    addEventListener<T extends keyof ojTreeViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreeViewEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTreeViewSettableProperties<K, D>>(property: T): ojTreeView<K, D>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojTreeViewSettableProperties<K, D>>(property: T, value: ojTreeViewSettableProperties<K, D>[T]): void;
@@ -75,34 +78,34 @@ export namespace ojTreeView {
     }> {
     }
     interface ojBeforeCollapse<K> extends CustomEvent<{
-        key: K;
         item: Element;
+        key: K;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeCurrentItem<K> extends CustomEvent<{
-        previousKey: K;
-        previousItem: Element;
-        key: K;
         item: Element;
+        key: K;
+        previousItem: Element;
+        previousKey: K;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeExpand<K> extends CustomEvent<{
-        key: K;
         item: Element;
+        key: K;
         [propName: string]: any;
     }> {
     }
     interface ojCollapse<K> extends CustomEvent<{
-        key: K;
         item: Element;
+        key: K;
         [propName: string]: any;
     }> {
     }
     interface ojExpand<K> extends CustomEvent<{
-        key: K;
         item: Element;
+        key: K;
         [propName: string]: any;
     }> {
     }
@@ -117,6 +120,8 @@ export namespace ojTreeView {
     // tslint:disable-next-line interface-over-type-literal
     type itemChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["item"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type selectedChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selected"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectionChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selection"]>;
@@ -130,9 +135,9 @@ export namespace ojTreeView {
         index: number;
         key: K;
         leaf: boolean;
+        metadata: ItemMetadata<K>;
         parentElement: Element;
         parentKey?: K;
-        metadata: ItemMetadata<K>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemsDropOnDropContext = {
@@ -143,9 +148,9 @@ export namespace ojTreeView {
     type ItemTemplateContext = {
         componentElement: Element;
         data: object;
+        depth: number;
         index: number;
         key: any;
-        depth: number;
         leaf: boolean;
         parentkey: any;
     };
@@ -163,6 +168,7 @@ export interface ojTreeViewEventMap<K, D> extends baseComponentEventMap<ojTreeVi
     'dndChanged': JetElementCustomEvent<ojTreeView<K, D>["dnd"]>;
     'expandedChanged': JetElementCustomEvent<ojTreeView<K, D>["expanded"]>;
     'itemChanged': JetElementCustomEvent<ojTreeView<K, D>["item"]>;
+    'scrollPolicyOptionsChanged': JetElementCustomEvent<ojTreeView<K, D>["scrollPolicyOptions"]>;
     'selectedChanged': JetElementCustomEvent<ojTreeView<K, D>["selected"]>;
     'selectionChanged': JetElementCustomEvent<ojTreeView<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojTreeView<K, D>["selectionMode"]>;
@@ -174,11 +180,11 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
         drag?: {
             items: {
                 dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
                 dragStart?: ((event: Event, context: {
                     items: D[];
                 }) => void);
-                drag?: ((param0: Event) => void);
-                dragEnd?: ((param0: Event) => void);
             };
         };
         drop?: {
@@ -187,10 +193,10 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
                 dragEnter?: ((event: Event, context: {
                     item: Element;
                 }) => void);
-                dragOver?: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     item: Element;
                 }) => void);
-                dragLeave?: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     item: Element;
                 }) => void);
                 drop: ((param0: Event, param1: ojTreeView.ItemsDropOnDropContext) => void);
@@ -205,9 +211,12 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
         } | void) | null;
         selectable?: ((itemContext: ojTreeView.ItemContext<K, D>) => boolean);
     };
+    scrollPolicyOptions: {
+        maxCount: number;
+    };
     selected: KeySet<K>;
     selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
+    selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
 }
 export interface ojTreeViewSettablePropertiesLenient<K, D> extends Partial<ojTreeViewSettableProperties<K, D>> {
     [key: string]: any;

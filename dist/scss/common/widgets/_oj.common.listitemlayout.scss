@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -18,22 +18,22 @@
 
   .oj-listitemlayout-grid {
     display: grid;
-    grid-template-areas:
-      "selector leading textslots extra"
-      ".... .... quaternary navigation";
+    grid-template-areas: "selector leading textslots extra" ".... .... quaternary navigation";
     grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: $panelPadding $panelPadding;
     min-height: $collectionRowHeight;
-    @include oj-ltr() {
-      padding-right: $panelPadding;
-    }
-    @include oj-rtl() {
-      padding-left: $panelPadding;
-    }
+    box-sizing: border-box;
+  }
+
+  .oj-listitemlayout-padding-off > .oj-listitemlayout-grid {
+    padding: 0;
   }
 
   .oj-listitemlayout-selector {
     grid-area: selector;
     align-self: center;
+    margin: -0.875rem;
   }
 
   .oj-listitemlayout-leading {
@@ -50,6 +50,8 @@
     grid-area: extra;
     display: grid;
     grid-template-areas: "metadata trailing action";
+    align-self:center;
+    align-items: center;
   }
 
   .oj-listitemlayout-metadata {
@@ -62,20 +64,24 @@
 
   .oj-listitemlayout-action {
     grid-area: action;
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+    margin-top: calc(-1 * #{$panelPadding});
+    margin-bottom: calc(-1 * #{$panelPadding});
   }
 
   .oj-listitemlayout-quaternary {
     grid-area: quaternary;
     justify-self: start;
-    padding-bottom: $panelPadding;
+    padding-top: 0.75rem;
   }
 
   .oj-listitemlayout-navigation {
     grid-area: navigation;
     justify-self: end;
-    padding-bottom: $panelPadding;
+    padding-top: 0.75rem;
+  }
+
+  .oj-listitemlayout-start-padding {
+    padding-left: 1rem;
   }
 
   .oj-listitemlayout-horizontal-padding {
@@ -87,21 +93,7 @@
     }
   }
 
-  .oj-listitemlayout-vertical-padding {
-    padding-bottom: $panelPadding;
-    padding-top: $panelPadding;
-  }
-
-  .oj-listitemlayout-vertical-padding-quaternary {
-    padding-bottom: 0.75rem;
-    padding-top: $panelPadding;
-  }
-
   .oj-listitemlayout-tertiary {
     padding-top: 0.125rem;
-  }
-
-  .oj-listitemlayout-align {
-    align-items: center;
   }
 }

@@ -1,0 +1,16 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+  @include module-include-once("redwood.variables.popup") {
+    :root {
+      --oj-popup-border-color:             var(--oj-core-divider-color);
+      --oj-popup-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0));
+      --oj-popup-border-radius:            var(--oj-core-border-radius-sm);
+      --oj-popup-box-shadow:               var(--oj-core-box-shadow-sm);
+      --oj-popup-padding:          0.5rem;
+    
+      --oj-popup-tail-height:             5px;
+      --oj-popup-tail-width:              10px;
+    }
+  }

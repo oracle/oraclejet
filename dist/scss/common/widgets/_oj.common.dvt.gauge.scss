@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the 
@@ -58,7 +58,7 @@
       display: block;
     }
 
-    .oj-ratinggauge {
+    .oj-rating-gauge-fit {
       width:120px;
       height:25px;
     }
@@ -98,6 +98,21 @@
 
         @include oj-browser-focus-outline-approximation($primaryTextColor);
 
+    }
+
+    .oj-rating-gauge-shape-large {
+      width: 36px;
+      height: 36px;
+    }
+
+    .oj-rating-gauge-shape-medium {
+      width: 20px;
+      height: 20px;
+    }
+
+    .oj-rating-gauge-shape-small {
+      width: 16px;
+      height: 16px;
     }
 
     .oj-rating-gauge-selected {

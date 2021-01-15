@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -110,8 +110,8 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
         stateVisible?: string;
     };
     addEventListener<T extends keyof ojThematicMapEventMap<K1, K2, K3, D1, D2, D3>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapEventMap<K1, K2, K3, D1, D2, D3>[T]) => any,
-       useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+       options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>(property: T): ojThematicMap<K1, K2, K3, D1, D2, D3>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>(property: T, value: ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>[T]): void;
@@ -302,8 +302,8 @@ export namespace ojThematicMap {
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
-        subId: string;
         index: number;
+        subId: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type RendererContext<K1, K2, K3, D1, D2, D3> = {
@@ -316,18 +316,18 @@ export namespace ojThematicMap {
         location: string | null;
         parentElement: Element;
         previousState: {
+            focused: boolean;
             hovered: boolean;
             selected: boolean;
-            focused: boolean;
         };
         renderDefaultFocus: (() => void);
         renderDefaultHover: (() => void);
         renderDefaultSelection: (() => void);
         root: Element | null;
         state: {
+            focused: boolean;
             hovered: boolean;
             selected: boolean;
-            focused: boolean;
         };
         x: number | null;
         y: number | null;
@@ -495,8 +495,8 @@ export interface ojThematicMapArea extends JetElement<ojThematicMapAreaSettableP
     shortDesc: string;
     svgClassName: string;
     svgStyle: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojThematicMapAreaEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojThematicMapAreaEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojThematicMapAreaSettableProperties>(property: T): ojThematicMapArea[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojThematicMapAreaSettableProperties>(property: T, value: ojThematicMapAreaSettableProperties[T]): void;
@@ -572,8 +572,8 @@ export interface ojThematicMapLink extends JetElement<ojThematicMapLinkSettableP
     svgClassName: string;
     svgStyle: CSSStyleDeclaration;
     width: number;
-    addEventListener<T extends keyof ojThematicMapLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojThematicMapLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojThematicMapLinkSettableProperties>(property: T): ojThematicMapLink[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojThematicMapLinkSettableProperties>(property: T, value: ojThematicMapLinkSettableProperties[T]): void;
@@ -661,8 +661,9 @@ export interface ojThematicMapMarker extends JetElement<ojThematicMapMarkerSetta
     width: number;
     x: number | null;
     y: number | null;
-    addEventListener<T extends keyof ojThematicMapMarkerEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapMarkerEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojThematicMapMarkerEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapMarkerEventMap[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojThematicMapMarkerSettableProperties>(property: T): ojThematicMapMarker[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojThematicMapMarkerSettableProperties>(property: T, value: ojThematicMapMarkerSettableProperties[T]): void;

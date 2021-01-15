@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -45,12 +45,20 @@
        $tableDefaultOptions: map-merge($tableDefaultOptions, (display: $tableDisplayOptionDefault));
     }
 
+    @if ($tableHorizontalGridVisibleOptionDefault != null) {
+      $tableDefaultOptions: map-merge($tableDefaultOptions, (horizontalGridVisible: $tableHorizontalGridVisibleOptionDefault));
+    }
+
     @if ($tableLoadIndicator) {
       $tableDefaultOptions: map-merge($tableDefaultOptions, (loadIndicator: $tableLoadIndicator));
     }
 
     @if ($tableEnableSelector) {
       $tableDefaultOptions: map-merge($tableDefaultOptions, (enableSelector: $tableEnableSelector));
+    }
+
+    @if ($tableEnableSticky != null) {
+      $tableDefaultOptions: map-merge($tableDefaultOptions, (enableSticky: $tableEnableSticky));
     }
 
     @if ($loadingIndicatorDelayDuration != null) {
@@ -100,6 +108,32 @@
        overflow: hidden;
     }
 
+    .oj-table-scroller {
+      background-color: inherit;
+      overflow: auto;
+      // enable momentum based scrolling for touch devices
+      -webkit-overflow-scrolling: touch;
+    }
+  
+    .oj-table-stretch .oj-table-scroller {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    .oj-table-hide-vertical-scrollbar .oj-table-scroller {
+      overflow-y: hidden;
+    }
+
+    .oj-table-width-container {
+      position: absolute;
+      top: -1000px;
+      left: -1000px;
+      visibility: hidden;
+    }
+
     /* Styling for HTML table element. */
     table.oj-table-element {
        box-sizing: border-box;
@@ -108,6 +142,10 @@
        border-collapse: collapse;
        border-spacing: 0;
        font-size: inherit;
+    }
+
+    .oj-table-sticky table.oj-table-element {
+      border-collapse: separate;
     }
 
     /* Styling for HTML table element when column resizing. */
@@ -129,8 +167,7 @@
     }
 
     /* Styling for the header element when table has vertical or horizontal scrollbars. */
-    .oj-table-scroll-vertical .oj-table-header,
-    .oj-table-scroll-horizontal .oj-table-header {
+    .oj-table-legacy-scroll .oj-table-header {
       display: block;
       position: relative;
     }
@@ -141,6 +178,11 @@
         background-color: $collectionHeaderBgColor;
         border-bottom: 1px solid $collectionHeaderBorderColor;
 
+    }
+
+    .oj-table-sticky .oj-table-header,
+    .oj-table-grid-display .oj-table-sticky .oj-table-header {
+      border-bottom: none;
     }
 
     /* Styling for the header row element. */
@@ -160,26 +202,16 @@
     }
 
     /* Styling for the header row element when table is scrollable. */
-    .oj-table-scroll .oj-table-header-row {
-
-        min-height: $tableRowHeight;
-
+    .oj-table-legacy-scroll .oj-table-header-row {
+      min-height: $tableRowHeight;
       height: auto;
+      display: block;
+      position: relative;
     }
 
     /* Grid display table styling for the header row element when table is scrollable. */
-    .oj-table-scroll.oj-table-grid-display .oj-table-header-row {
-
-        min-height: $collectionRowHeight;
-
-      height: auto;
-    }
-
-    /* Styling for the header row element when table has vertical or horizontal scrollbars. */
-    .oj-table-scroll-vertical .oj-table-header-row,
-    .oj-table-scroll-horizontal .oj-table-header-row {
-      display: block;
-      position: relative;
+    .oj-table-legacy-scroll.oj-table-grid-display .oj-table-header-row {
+      min-height: $collectionRowHeight;
     }
 
     /* Styling for the column header elements. */
@@ -204,6 +236,14 @@
          text-align: right;
        }
        box-sizing: border-box;
+    }
+
+    .oj-table-sticky .oj-table-column-header-cell:not(.oj-helper-hidden-accessible),
+    .oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible) {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border-bottom: 1px solid var(--oj-collection-border-color);
     }
 
     /* Grid display table styling for the column header elements. */
@@ -244,28 +284,32 @@
     }
 
     /* Styling for the column header elements in selected state when table focused. */
-    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected {
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected,
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-selected {
 
-        background-color: $collectionHeaderBgColorSelected;
+        background-image: linear-gradient($collectionHeaderBgColorSelected, $collectionHeaderBgColorSelected);
 
     }
 
     /* Styling for the column header elements in selected state when table not focused. */
-    .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected {
+    .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected,
+    .oj-table:not(.oj-focus) .oj-table-footer-cell.oj-selected {
 
-        background-color: $collectionHeaderBgColorSelectedInactive;
+      background-image: linear-gradient($collectionHeaderBgColorSelectedInactive, $collectionHeaderBgColorSelectedInactive);
 
     }
 
     /* Styling for the column header element in hover state. */
     .oj-table-column-header-cell.oj-hover {
 
-        background-color: $collectionHeaderBgColorHover;
+      background-image: linear-gradient($collectionHeaderBgColorHover, $collectionHeaderBgColorHover);
 
     }
 
     /* Styling for the column header element in focused state. */
-    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight {
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight,
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-focus-highlight,
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-selector-cell.oj-focus-highligh {
        outline-offset: -1px;
 
          @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -481,6 +525,10 @@
       pointer-events: none;
     }
 
+    .oj-table-sticky .oj-table-column-header-resize-indicator {
+      z-index: 1;
+    }
+
     /* Styling for the data body element. */
     .oj-table-body {
       color: $collectionCellTextColor;
@@ -491,22 +539,22 @@
       overflow: hidden;
     }
 
-    /* Styling for the table body element when table has vertical scrollbars. */
-    .oj-table-scroll-vertical .oj-table-body {
+    /* Styling for the table body element when table is scrollable. */
+    .oj-table-legacy-scroll .oj-table-body {
       display: block;
-      overflow-y: scroll;
       position: relative;
       // enable momentum based scrolling for touch devices
       -webkit-overflow-scrolling: touch;
     }
 
+    /* Styling for the table body element when table has vertical scrollbars. */
+    .oj-table-scroll-vertical:not(.oj-table-sticky) .oj-table-body {
+      overflow-y: scroll;
+    }
+
     /* Styling for the table body element when table has horizontal scrollbars. */
-    .oj-table-scroll-horizontal .oj-table-body {
-      display: block;
+    .oj-table-scroll-horizontal:not(.oj-table-sticky) .oj-table-body {
       overflow-x: scroll;
-      position: relative;
-      // enable momentum based scrolling for touch devices
-      -webkit-overflow-scrolling: touch;
     }
 
     /* Grid display styling for the data body element. */
@@ -523,11 +571,15 @@
       font-size: inherit;
     }
 
-    .oj-table-horizontal-grid .oj-table-body-row {
+    .oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row,
+    .oj-table-sticky.oj-table-horizontal-grid .oj-table-data-cell,
+    .oj-table-sticky.oj-table-horizontal-grid .oj-table-selector-cell {
       border-bottom: 1px solid $collectionCellBorderColor;
-    };
+    }
 
-    .oj-table-horizontal-grid.oj-table-scroll-vertical .oj-table-body-row:last-child {
+    .oj-table-horizontal-grid.oj-table-scroll-vertical:not(.oj-table-sticky) .oj-table-body-row:last-child,
+    .oj-table-sticky.oj-table-horizontal-grid.oj-table-scroll-vertical .oj-table-body-row:last-child .oj-table-data-cell,
+    .oj-table-sticky.oj-table-horizontal-grid.oj-table-scroll-vertical .oj-table-body-row:last-child .oj-table-selector-cell {
       border-bottom: none;
     }
 
@@ -546,20 +598,41 @@
 
     }
 
-    /* Styling for the data row drag indicator before a row. */
-    .oj-table-body-row-drag-indicator-before {
+    /* Styling for drag image of row. */
+    .oj-table-body-row-drag-image {
+      opacity: 0.95;
+      background-color: $collectionCellBgColor;
+      border: 1px solid $collectionCellDragImageBorderColor;
+    }
+
+    /* Styling for drag source when dnd with other component */
+    .oj-table-row-drag-source-opaque {
+      opacity: 0.3;
+    }
+
+    /* Styling for drag source when dnd within component */
+    .oj-table-row-drag-source-hide {
+      display: none;
+    }
+
+    /* Styling for drop target when target table is empty. */
+    .oj-table-drop-target-empty .oj-table-body-row-drag-indicator {
+      background-color: $dropTarget1Color;
+    }
+
+    /* Styling for the data row drag indicator. */
+    .oj-table-body-row-drag-indicator {
 
         height: $collectionRowHeight;
         background-color: $dropTarget2Color;
 
     }
 
-        /* Styling for the data row drag indicator after a row. */
-    .oj-table-body-row-drag-indicator-after {
-
-        height: $collectionRowHeight;
-        background-color: $dropTarget2Color;
-
+    /* Styling for drop target when dnd with other component */
+    .oj-table-body-row-drop-target {
+      width: 100%;
+      height: 2px;
+      background-color: $dropTargetLineColor;
     }
 
     .oj-table-touch-affordance-glass-pane {
@@ -604,7 +677,7 @@
 
          min-width: $fontSize;
          min-height: $fontSize;
-         padding-top: $collectionCellPadding;
+         padding-top: calc(#{$collectionCellPadding} + 1px);
          padding-bottom: $collectionCellPadding;
          padding-left: $tableCellPadding;
          padding-right: $tableCellPadding;
@@ -683,7 +756,7 @@
     /* Styling for the data cell elements in selected state when table focused. */
     .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected {
 
-        background-color: $collectionCellBgColorSelected;
+      background-image: linear-gradient($collectionCellBgColorSelected, $collectionCellBgColorSelected);
 
     }
 
@@ -695,14 +768,14 @@
     /* Styling for the data cell elements in selected state when table not focused. */
     .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
 
-        background-color: $collectionCellBgColorSelectedInactive;
+      background-image: linear-gradient($collectionCellBgColorSelectedInactive, $collectionCellBgColorSelectedInactive);
 
     }
 
     /* Styling for the data cell elements in hover state. */
     .oj-table-data-cell.oj-hover {
 
-        background-color: $collectionCellBgColorHover;
+      background-image: linear-gradient($collectionCellBgColorHover, $collectionCellBgColorHover);
 
     }
 
@@ -724,8 +797,7 @@
     }
 
     /* Styling for the footer when table has vertical or horizontal scrollbars. */
-    .oj-table-scroll-vertical .oj-table-footer,
-    .oj-table-scroll-horizontal .oj-table-footer {
+    .oj-table-legacy-scroll .oj-table-footer {
       display: block;
       position: relative;
     }
@@ -752,30 +824,21 @@
     }
 
     /* Styling for the footer row when table is scrollable. */
-    .oj-table-scroll .oj-table-footer-row {
-
-       min-height: $tableRowHeight;
-
-       height: auto;
-    }
-
-    /* Grid display table styling for the footer row when table is scrollable. */
-    .oj-table-scroll.oj-table-grid-display .oj-table-footer-row {
-
-        min-height: $collectionRowHeight;
-
-       height: auto;
-    }
-
-    /* Styling for the footer row when table has vertical or horizontal scrollbars. */
-    .oj-table-scroll-vertical .oj-table-footer-row,
-    .oj-table-scroll-horizontal .oj-table-footer-row {
+    .oj-table-legacy-scroll .oj-table-footer-row {
+      min-height: $tableRowHeight;
+      height: auto;
       display: block;
       position: relative;
     }
 
+    /* Grid display table styling for the footer row when table is scrollable. */
+    .oj-table-legacy-scroll.oj-table-grid-display .oj-table-footer-row {
+      min-height: $collectionRowHeight;
+    }
+
     /* Styling for the footer cells. */
-    .oj-table-footer-cell {
+    .oj-table-footer-cell,
+    .oj-table-footer-selector-cell {
        float: none;
        height: $tableRowHeight;
 
@@ -788,8 +851,16 @@
        box-sizing: border-box;
     }
 
+    .oj-table-sticky .oj-table-footer-cell,
+    .oj-table-sticky .oj-table-footer-selector-cell {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+    }
+
     /* Grid display table styling for the footer cells. */
-    .oj-table-grid-display .oj-table-footer-cell {
+    .oj-table-grid-display .oj-table-footer-cell,
+    .oj-table-grid-display .oj-table-footer-selector-cell {
 
         height: $collectionRowHeight;
         padding-left: $collectionCellPadding;

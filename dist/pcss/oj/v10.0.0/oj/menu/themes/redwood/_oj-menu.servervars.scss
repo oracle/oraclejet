@@ -1,0 +1,34 @@
+@import "../../../animation/themes/redwood/_oj-animation.servervars.scss";
+// menu animation defaults
+//----------------------------------
+
+// dropdown menu
+$privateMenuDropDownOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $privateAnimationDurationShort) !default;
+$privateMenuDropDownCloseAnimation: (effect: "none") !default;
+
+// sheet menu
+$privateMenuSheetOpenAnimation: (effect: "slideIn", direction: "top", duration: $privateAnimationDurationShort) !default;
+$privateMenuSheetCloseAnimation: (effect: "slideOut", direction: "bottom", duration: $privateAnimationDurationShort) !default;
+
+// submenu
+$privateMenuSubmenuOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $privateAnimationDurationShort) !default;
+$privateMenuSubmenuCloseAnimation: (effect: "none") !default;
+
+
+// Controls whether sheet menus have a "Cancel" menu item automatically added.
+// Valid values are "none" and "menuItem".
+$privateMenuSheetCancelAffordance: "none" !default;
+
+// Controls whether "swipe down to dismiss" is supported for sheet menus.
+// Note that this only applies to swipes starting on the menu, since any touch
+// outside the menu will dismiss, regardless of whether it turns into a swipe.
+// Valid values are "dismiss" and "none".
+$privateMenuSheetSwipeDownBehavior: "dismiss" !default;
+
+// Controls whether a "glass pane" is displayed behind dropDown menus.
+// Valid values are "modal" and "modeless".
+$privateMenuDropDownModality: "modeless" !default;
+
+// Controls whether a "glass pane" is displayed behind sheet menus.
+// Valid values are "modal" and "modeless".
+$privateMenuSheetModality: "modal" !default;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,11 +8,14 @@
 
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
 import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { VComponent } from 'ojs/ojvcomponent';
+import { ElementVComponent } from 'ojs/ojvcomponent-element';
 import { KeySet } from 'ojs/ojkeyset';
 declare class Props<Key> {
     rowKey?: Key | null;
+    indeterminate?: boolean;
     selectedKeys: KeySet<Key> | null;
+    onSelectedKeysChanged?: ElementVComponent.PropertyChanged<KeySet<Key> | null>;
+    onIndeterminateChanged?: ElementVComponent.PropertyChanged<boolean>;
     selectionMode?: 'all' | 'multiple' | 'single';
     'aria-label'?: string;
     'aria-labelledby'?: string;
@@ -20,81 +23,66 @@ declare class Props<Key> {
 declare type State = {
     focus?: boolean;
 };
-export declare class Selector<K> extends VComponent<Props<K>, State> {
+export declare class Selector<K> extends ElementVComponent<Props<K>, State> {
     constructor(props: Readonly<Props<K>>);
     protected render(): any;
-    private _checkboxListener;
     private _handleFocusin;
     private _handleFocusout;
+    private _checkboxListener;
     private _isSelected;
     protected _vprops?: VProps<K>;
 }
 // Custom Element interfaces
-export interface SelectorElement<Key> extends JetElement<SelectorElementSettableProperties<Key>> {
-  /**
-   * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
-   */
-  rowKey?: Props<Key>['rowKey'];
-  /**
-   * Specifies the selectedKeys, should be hooked into the collection component.
-   */
-  selectedKeys: Props<Key>['selectedKeys'];
-  /**
-   * Specifies the selection mode.
-   */
-  selectionMode?: Props<Key>['selectionMode'];
-  addEventListener<T extends keyof SelectorElementEventMap<Key>>(type: T, listener: (this: HTMLElement, ev: SelectorElementEventMap<Key>[T]) => any, useCapture?: boolean): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-  getProperty<T extends keyof SelectorElementSettableProperties<Key>>(property: T): SelectorElement<Key>[T];
+export interface SelectorElement<K> extends JetElement<SelectorElementSettableProperties<K>>, SelectorElementSettableProperties<K> {
+  addEventListener<T extends keyof SelectorElementEventMap<K>>(type: T, listener: (this: HTMLElement, ev: SelectorElementEventMap<K>[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
+  getProperty<T extends keyof SelectorElementSettableProperties<K>>(property: T): SelectorElement<K>[T];
   getProperty(property: string): any;
-  setProperty<T extends keyof SelectorElementSettableProperties<Key>>(property: T, value: SelectorElementSettableProperties<Key>[T]): void;
-  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, SelectorElementSettableProperties<Key>>): void;
-  setProperties(properties: SelectorElementSettablePropertiesLenient<Key>): void;
+  setProperty<T extends keyof SelectorElementSettableProperties<K>>(property: T, value: SelectorElementSettableProperties<K>[T]): void;
+  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, SelectorElementSettableProperties<K>>): void;
+  setProperties(properties: SelectorElementSettablePropertiesLenient<K>): void;
 }
 export namespace SelectorElement {
   // tslint:disable-next-line interface-over-type-literal
-  type rowKeyChanged<Key> = JetElementCustomEvent<SelectorElement<Key>["rowKey"]>;
+  type indeterminateChanged<K> = JetElementCustomEvent<SelectorElement<K>["indeterminate"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectedKeysChanged<Key> = JetElementCustomEvent<SelectorElement<Key>["selectedKeys"]>;
+  type rowKeyChanged<K> = JetElementCustomEvent<SelectorElement<K>["rowKey"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectionModeChanged<Key> = JetElementCustomEvent<SelectorElement<Key>["selectionMode"]>;
+  type selectedKeysChanged<K> = JetElementCustomEvent<SelectorElement<K>["selectedKeys"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type selectionModeChanged<K> = JetElementCustomEvent<SelectorElement<K>["selectionMode"]>;
 }
-export interface SelectorElementEventMap<Key> extends HTMLElementEventMap {
-  'rowKeyChanged': JetElementCustomEvent<SelectorElement<Key>["rowKey"]>;
-  'selectedKeysChanged': JetElementCustomEvent<SelectorElement<Key>["selectedKeys"]>;
-  'selectionModeChanged': JetElementCustomEvent<SelectorElement<Key>["selectionMode"]>;
+export interface SelectorElementEventMap<K> extends HTMLElementEventMap {
+  'indeterminateChanged': JetElementCustomEvent<SelectorElement<K>["indeterminate"]>;
+  'rowKeyChanged': JetElementCustomEvent<SelectorElement<K>["rowKey"]>;
+  'selectedKeysChanged': JetElementCustomEvent<SelectorElement<K>["selectedKeys"]>;
+  'selectionModeChanged': JetElementCustomEvent<SelectorElement<K>["selectionMode"]>;
 }
 export interface SelectorElementSettableProperties<Key> extends JetSettableProperties {
   /**
-   * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
-   */
+  * Visual only state to indicate partial selection
+  */
+  indeterminate?: Props<Key>['indeterminate'];
+  /**
+  * Specifies the row key of each selector. If the selectionMode property is 'all', rowKey is ignored.
+  */
   rowKey?: Props<Key>['rowKey'];
   /**
-   * Specifies the selectedKeys, should be hooked into the collection component.
-   */
+  * Specifies the selectedKeys, should be hooked into the collection component.
+  */
   selectedKeys: Props<Key>['selectedKeys'];
   /**
-   * Specifies the selection mode.
-   */
+  * Specifies the selection mode.
+  */
   selectionMode?: Props<Key>['selectionMode'];
 }
 export interface SelectorElementSettablePropertiesLenient<Key> extends Partial<SelectorElementSettableProperties<Key>> {
   [key: string]: any;
 }
-export type ojSelector<Key> = SelectorElement<Key>
-export namespace ojSelector {
-  // tslint:disable-next-line interface-over-type-literal
-  type rowKeyChanged<Key> = JetElementCustomEvent<ojSelector<Key>["rowKey"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type selectedKeysChanged<Key> = JetElementCustomEvent<ojSelector<Key>["selectedKeys"]>;
-  // tslint:disable-next-line interface-over-type-literal
-  type selectionModeChanged<Key> = JetElementCustomEvent<ojSelector<Key>["selectionMode"]>;
+export interface SelectorProperties<Key> extends Partial<SelectorElementSettableProperties<Key>>, GlobalAttributes {
 }
-export type ojSelectorEventMap<Key> = SelectorElementEventMap<Key>;
-export type ojSelectorSettableProperties<Key> = SelectorElementSettableProperties<Key>;
-export type ojSelectorSettablePropertiesLenient<Key> = SelectorElementSettablePropertiesLenient<Key>;
-export interface SelectorProperties<Key> extends Partial<SelectorElementSettableProperties<Key>>, GlobalAttributes {}
-export interface VProps<Key> extends Props<Key>, GlobalAttributes {}
+export interface VProps<Key> extends Props<Key>, GlobalAttributes {
+}
 declare global {
   namespace JSX {
     interface IntrinsicElements {

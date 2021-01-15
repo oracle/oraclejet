@@ -1,0 +1,73 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example scrollbar/themes/redwood/oj-scrollbar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("common.scrollbar") {
+  * {
+    /* FF 68+ */
+    scrollbar-width: thin;
+    scrollbar-color: transparent;
+  }
+
+  :hover {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-hover) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height:8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: var(--oj-core-border-radius-md);
+  }
+
+  :hover::-webkit-scrollbar-track {
+    background-color: rgba(var(--oj-palette-neutral-rgb-170), .15);
+  }
+
+  :hover::-webkit-scrollbar-thumb {
+    background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  .oj-scrollbar-force,
+  body {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-hover)  var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-scrollbar-force::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-scrollbar-force::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    background-color: var(--oj-scrollbar-thumb-color-hover)
+  }
+
+  .oj-scrollbar-force::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-corner {
+    background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-scrollbar-force:hover::-webkit-scrollbar-thumb {
+    background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+}

@@ -1,0 +1,9 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(["exports","ojs/ojmenu","ojs/ojvcomponent","ojs/ojpopupcore"],function(e,t,n,o){"use strict";class s extends n.VComponent{constructor(e){super(e)}render(){return n.h("div",{style:{display:"none"},ref:e=>this._rootRef=e},this.props.children)}mounted(){this._menuElement||(this._menuElement=this._getMenu(),null!==this._menuElement&&this._openMenu())}_getMenu(){return this._rootRef.firstChild}_openMenu(){const e=this._getOpenOptions();this._menuElement.__openingContextMenu=!0;try{this._menuElement.open(this.props.eventObj.event,e),this._addCloseListener()}catch(e){throw e}finally{this._menuElement.__openingContextMenu=!1}}_addCloseListener(){this.props.onCloseCallback&&this._menuElement.addEventListener("ojClose",this.props.onCloseCallback)}_getOpenOptions(){const e=this.props.eventObj.eventType||"keyboard";return{launcher:this.props.launcherElement,position:Object.assign(Object.assign({},s._MENU_POSITION[e]),{of:"keyboard"===e?this.props.launcherElement:this.props.eventObj.event}),initialFocus:"menu"}}unmounted(){this._rootRef&&o.PopupService.getInstance().close({[o.PopupService.OPTION.POPUP]:this._rootRef}),this._removeCloseListener()}_removeCloseListener(){this._menuElement&&this.props.onCloseCallback&&this._menuElement.removeEventListener("ojClose",this.props.onCloseCallback)}}s._MENU_POSITION={mouse:{my:"start top",at:"start bottom",collision:"flipfit"},touch:{my:"start>40 center",at:"start bottom",collision:"flipfit"},keyboard:{my:"start top",at:"start bottom",collision:"flipfit"}},s.metadata={extension:{_DEFAULTS:class{constructor(){this.launcherElement=null}}}},e.VMenu=s,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=ojvmenu.js.map

@@ -1,7 +1,11 @@
 <?js
   var data = obj;
   this.propsTypeParams = data.propsTypeParams;
+  this.classTypeParams = data.classTypeParams;
+  this.classTypeParamsDeclaration = data.classTypeParamsDeclaration;
+  this.propsClassTypeParams = data.propsClassTypeParams;
   var props = data.properties? Object.keys(data.properties).sort(): undefined;
+  var methods = data.methods? Object.keys(data.methods).sort(): undefined;
 
   if (data.imports){
     for (let i = 0; i < data.imports.length; i++){ ?>
@@ -9,27 +13,35 @@
   <?js
     }
   }?>
-export interface <?js= data.vcomponentNameWithGenerics ?> extends JetElement<<?js= settablePropertiesInterface ?>> {
+export interface <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclaration ?> extends JetElement<<?js= settablePropertiesInterface ?><?js= data.propsTypeParams ?>>, <?js= settablePropertiesInterface ?><?js= data.propsTypeParams ?> {
 <?js
-  if (data.properties){ ?>
+  if (data.properties) {
+    data.propsToInclude = 'readOnly';
+    data.typeParams = this.propsTypeParams;
+    ?>
     <?js= this.partial('properties.tmpl', data) ?>
   <?js
   } ?>
-  addEventListener<T extends keyof <?js= data.eventMapInterface ?>>(type: T, listener: (this: HTMLElement, ev: <?js= data.eventMapInterface ?>[T]) => any, useCapture?: boolean): void;
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
-  getProperty<T extends keyof <?js= data.settablePropertiesInterface ?>>(property: T): <?js= data.vcomponentNameWithGenerics ?>[T];
+  addEventListener<T extends keyof <?js= data.eventMapInterface ?><?js= data.classTypeParams ?>>(type: T, listener: (this: HTMLElement, ev: <?js= data.eventMapInterface ?><?js= data.classTypeParams ?>[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
+  getProperty<T extends keyof <?js= data.settablePropertiesInterface ?><?js= data.propsTypeParams ?>>(property: T): <?js= data.vcomponentName ?><?js= data.classTypeParams ?>[T];
   getProperty(property: string): any;
-  setProperty<T extends keyof <?js= data.settablePropertiesInterface ?>>(property: T, value: <?js= data.settablePropertiesInterface ?>[T]): void;
-  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, <?js= data.settablePropertiesInterface ?>>): void;
-  setProperties(properties: <?js= data.settablePropertiesLenientInterface ?>): void;
+  setProperty<T extends keyof <?js= data.settablePropertiesInterface ?><?js= data.propsTypeParams ?>>(property: T, value: <?js= data.settablePropertiesInterface ?><?js= data.propsTypeParams ?>[T]): void;
+  setProperty<T extends string>(property: T, value: JetSetPropertyType<T, <?js= data.settablePropertiesInterface ?><?js= data.propsTypeParams ?>>): void;
+  setProperties(properties: <?js= data.settablePropertiesLenientInterface ?><?js= data.propsTypeParams ?>): void;
+  <?js
+  for (let m of methods) {?>
+  <?js= m ?>: <?js= data.vcomponentClassName ?><?js= this.classTypeParams ?>['<?js= m ?>'];
+  <?js
+  }?> 
 }
-<?js= this.partial('namespace.tmpl', { data, props, componentName: data.vcomponentName, componentNameWithGenerics:  data.vcomponentNameWithGenerics }) ?>
+<?js= this.partial('namespace.tmpl', { data, props, componentName: data.vcomponentName }) ?>
 export interface <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclaration ?> extends HTMLElementEventMap {
 <?js
 for (let event in data.events) {
   let eventPropEvent = `'${event}': ${data.vcomponentName}.${event}`;
-  const eventDetailType = data.events[event]['reftype'];
-  if (eventDetailType && eventDetailType.indexOf('<') > 0 && eventDetailType.indexOf('>') > 1) {
+  const eventDetailType = data.events[event]['evnDetailTypeParamsDeclaration'];
+  if (eventDetailType && eventDetailType.indexOf('<') > -1 && eventDetailType.indexOf('>') > 1) {
     eventPropEvent = `'${event}': ${data.vcomponentName}.${event}${this.propsTypeParams};`
   } ?>
   <?js= eventPropEvent ?>
@@ -37,26 +49,29 @@ for (let event in data.events) {
 }
 if (props){
   for (let prop of props) {
-    let propEvent = `'${prop}Changed': JetElementCustomEvent<${data.vcomponentNameWithGenerics}["${prop}"]>;`; ?>
+    let propEvent = `'${prop}Changed': JetElementCustomEvent<${data.vcomponentName}${data.classTypeParams}["${prop}"]>;`; ?>
   <?js= propEvent ?>
 <?js
   }
 }?>
 }
-export interface <?js= data.settablePropertiesInterface ?> extends JetSettableProperties {
+export interface <?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParamsDeclaration ?> extends JetSettableProperties {
 <?js
-if (data.properties){ ?>
+if (data.properties) { 
+    data.propsToInclude = 'settable';
+    data.typeParams = propsClassTypeParams;
+  ?>
   <?js= this.partial('properties.tmpl', data) ?>
 <?js
 } ?>
 }
-export interface <?js= data.settablePropertiesLenientInterface ?> extends Partial<<?js= data.settablePropertiesInterface ?>> {
+export interface <?js= data.settablePropertiesLenientInterface ?><?js= data.propsClassTypeParamsDeclaration ?> extends Partial<<?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParams?>> {
   [key: string]: any;
 }
 <?js
 if (data.legacyComponentName){ ?>
-export type <?js= data.legacyComponentNameWithGenerics ?> = <?js= data.vcomponentNameWithGenerics ?>
-<?js= this.partial('namespace.tmpl', { data, props, componentName: data.legacyComponentName, componentNameWithGenerics:  data.legacyComponentNameWithGenerics }) ?>
+export type <?js= data.legacyComponentNameWithGenerics ?> = <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclaration ?>;
+<?js= this.partial('namespace.tmpl', { data, props, componentName: data.legacyComponentName }) ?>
 export type <?js= data.legacyEventMapInterface ?> = <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclaration ?>;
 export type <?js= data.legacySettablePropertiesInterface ?> = <?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParamsDeclaration ?>;
 export type <?js= data.legacySettablePropertiesLenientInterface ?> = <?js= data.settablePropertiesLenientInterface ?><?js= data.propsClassTypeParamsDeclaration ?>;

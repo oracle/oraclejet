@@ -1,0 +1,16 @@
+
+// TABLE
+//-----------------------------------------------------------------------------
+// animations
+$privateTableAddAnimation:                         ((effect: "slideIn", direction:"bottom"), "fadeIn") !default;
+$privateTableRemoveAnimation:                      ((effect: "slideOut", direction:"top"), "fadeOut") !default;
+$privateTableUpdateAnimation:                      (effect: "fadeIn") !default;
+
+// Table Display Option Default
+$privateTableDisplayOptionDefault:                      "list" !default;
+
+// Table horizontal grid visible
+$privateTableHorizontalGridVisibleOptionDefault:    "disabled" !default;
+
+// Table sticky layouts
+$privateTableEnableSticky: true !default;

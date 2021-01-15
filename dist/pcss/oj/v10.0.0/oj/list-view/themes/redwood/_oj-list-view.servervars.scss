@@ -1,0 +1,14 @@
+// LIST VIEW
+//-----------------------------------------------------------------------------
+// animations
+$privateListViewAddAnimation:         ((effect: "expand"), "fadeIn") !default;
+$privateListViewRemoveAnimation:      ((effect: "collapse"), "fadeOut") !default;
+$privateListViewUpdateAnimation:      (effect: "fadeIn") !default;
+$privateListViewExpandAnimation:      (effect: "expand") !default;
+$privateListViewCollapseAnimation:    (effect: "collapse") !default;
+$privateListViewPointerUpAnimation:   (effect: "ripple") !default;
+
+// gridlines
+$privateListViewGridlinesItemOptionDefault:   hidden !default;
+$privateListViewGridlinesTopOptionDefault:    hidden !default;
+$privateListViewGridlinesBottomOptionDefault: hidden !default;

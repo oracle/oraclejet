@@ -1,22 +1,81 @@
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+define(['ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function (ojobservable, UrlPathAdapter, Logger) {
+  'use strict';
 
-define(['ojs/ojcore', 'ojs/ojobservable', 'ojs/ojurlpathadapter', 'ojs/ojlogger'], function(oj, Observable, UrlPathAdapter, Logger) {
-  "use strict";
+  UrlPathAdapter = UrlPathAdapter && Object.prototype.hasOwnProperty.call(UrlPathAdapter, 'default') ? UrlPathAdapter['default'] : UrlPathAdapter;
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+  /**
+   * An interface describing the object used by {@link CoreRouter} to represent
+   * the routes and associated information to which it can navigate.
+   * @interface CoreRouterState
+   * @ojtsnamespace CoreRouter
+   * @ojtsimport knockout
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "interface CoreRouterState<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
+   *                genericParameters: [{"name": "D", "description": "Detail object for the router state"},
+   *                                    {"name": "P", "description": "Parameters object for the router state"}]
+   *               }
+   *              ]
+   */
 
+  /**
+   * The path of the state. This will always be the string used to navigate
+   * to the current state, even if the original path for the route was defined
+   * as a RegExp.
+   * @name path
+   * @memberof CoreRouterState
+   * @instance
+   * @type {string}
+   * @readonly
+   */
 
+  /**
+   * The detail object for the state, if configured.
+   * @name detail
+   * @memberof CoreRouterState
+   * @type {Object}
+   * @instance
+   * @readonly
+   * @ojsignature { target: 'Type', value: 'D'}
+   */
 
-/* global Observable, Promise, UrlPathAdapter, Logger, Map */
-// eslint-disable-next-line no-unused-vars
-var corerouter = function () {
+  /**
+   * Parameters for the state. Parameters are passed to the state via the
+   * {@link CoreRouter.go} method.
+   * @name params
+   * @memberof CoreRouterState
+   * @type {Object}
+   * @instance
+   * @readonly
+   * @ojsignature { target: 'Type', value: 'P'}
+   */
+
+  /**
+   * @license
+   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+   * The Universal Permissive License (UPL), Version 1.0
+   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ignore
+   */
   // Private instances
+
   var rootRouter;
   var urlAdapter; // noHistorySegments is used by non-tracking routers to store transitions,
   // similar to how history-tracking routers use URL segments
@@ -28,6 +87,7 @@ var corerouter = function () {
    * @param {CoreRouter.Route} route1
    * @param {CoreRouter.Route} route2
    * @return {boolean} true if they're equivalent, false otherwise
+   * @ignore
    */
 
   var isEquivalent = function isEquivalent(route1, route2) {
@@ -41,6 +101,7 @@ var corerouter = function () {
    * This method starts with the root router and builds the routes for all active
    * children, then calls urlAdapter to build the URL.
    * @return {string} The full URL for the current state
+   * @ignore
    */
 
 
@@ -62,6 +123,7 @@ var corerouter = function () {
    * last child.
    * @return {Array.<CoreRouter.Route>} An array of all active routes, with the
    * root route as the first element.
+   * @ignore
    */
 
 
@@ -288,14 +350,13 @@ var corerouter = function () {
     this._name = '/'; // _offset is the distance from the root router
 
     this._offset = 0;
-    this.beforeStateChange = new Observable.BehaviorSubject({
+    this.beforeStateChange = new ojobservable.BehaviorSubject({
       accept: function accept() {}
     });
-    this.currentState = new Observable.BehaviorSubject({
+    this.currentState = new ojobservable.BehaviorSubject({
       complete: function complete() {}
-    }); // If parent router is history-skipping, so are all of its descendants
-
-    this._noHistory = parentRouter && parentRouter._noHistory || options.history === 'skip'; // Offset from first no-history tracking router
+    });
+    this._noHistory = options.history === 'skip'; // Offset from first no-history tracking router
 
     this._noHistoryOffset = 0;
     this._parentRouter = parentRouter;
@@ -717,6 +778,10 @@ var corerouter = function () {
       return state;
     });
   };
+  /**
+   * @private
+   */
+
 
   CoreRouter.prototype._setupNavigationListener = function () {
     if (this === rootRouter) {
@@ -728,6 +793,7 @@ var corerouter = function () {
    * Compare the given state with the current state, and test if they are
    * equivalent. States will be equivalent if their path and parameter values
    * are equivalent.
+   * @private
    */
 
 
@@ -747,6 +813,7 @@ var corerouter = function () {
    * state, except will have its own path and params values.
    * @param {CoreRouter.Route} transition The transition for the CoreRouterState
    * @return {CoreRouter.RouterState} The CoreRouterState associated for the transition
+   * @private
    */
 
 
@@ -790,14 +857,18 @@ var corerouter = function () {
    * Create a child router from the current router. The child will be associated
    * with the parent router's state, therefore, the parent must be in a current
    * state (by calling {@link CoreRouter.go} or {@link CoreRouter.sync}). Calling
-   * this method from a parent without a current state, or calling the method twice
-   * for the same state will result in an error.
+   * this method from a parent without a current state will result in an error.
    * <p>
    * Only one child router will be active per parent router, and only in the
    * parent router's current state. When the parent router changes states, and
    * the previous state had a child router, it will be disposed of. This means
    * that child routers should always be recreated each time the state is activated.
    * This is typically done in the viewmodel's constructor/initialize functions.
+   * </p>
+   * <p>
+   * Calling this method multiple times to create history-tracking child routers
+   * (while remaining on the same state) will result in an error. However, multiple
+   * non-history-tracking routers are allowed.
    * </p>
    * <pre class="prettyprint">
    * <code>
@@ -834,14 +905,23 @@ var corerouter = function () {
    */
 
 
-  CoreRouter.prototype.createChildRouter = function (routes, options) {
+  CoreRouter.prototype.createChildRouter = function (routes) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    // If parent router is history-skipping, so are its children
+    if (this._noHistory) {
+      // eslint-disable-next-line no-param-reassign
+      options.history = 'skip';
+    }
+
     var cs = this._activeState;
 
     if (!cs) {
       throw Error('Router(' + this._name + ') has no current state. ' + 'Call sync() on the router first.');
-    }
+    } // Routers can have only one history-tracking child router per state
 
-    if (this._childRouter) {
+
+    if (this._childRouter && options.history !== 'skip') {
       throw Error('Router(' + this._name + ') state(' + cs.path + ') already has a child router');
     }
 
@@ -869,185 +949,136 @@ var corerouter = function () {
       rootRouter = null;
     }
   };
+  /**
+   * An object describing configuration options during the creation of a root
+   * CoreRouter instance.
+   * @typedef {object} CoreRouter.CreateOptions
+   * @property {'skip'=} history Indicate if history tracking should be skipped. By
+   * default, the router will add a new history entry each time {@link CoreRouter.go}
+   * is called. Setting this option to 'skip' will disable that.
+   * @property {CoreRouter.UrlAdapter=} urlAdapter The adapter which handles reading
+   * and writing router states from/to the browser URL. If not specified, this will
+   * default to {@link UrlPathAdapter}.
+   * @ojsignature [{target: "Type", value: "UrlAdapter<P>", for: "urlAdapter"},
+   *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * A route config object configures a path and associated information to which a
+   * router can navigate, and is used to build the {@link CoreRouter.CoreRouterState}
+   * during transitions. This route config type can specify a detail object which
+   * can be referenced in the state.
+   * @typedef {object} CoreRouter.DetailedRouteConfig
+   * @property {string|RegExp} path The path of the route. This may be an exact-
+   * match string, or a regular expression.
+   * @property {object=} detail An optional detail object which is passed to
+   * the route when it is navigated to.
+   * @ojsignature [{target: "Type", value: "D", for: "detail"},
+   *               {target: "Type", value: "<D = {[key: string]: any}>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * A RouteConfig object configures a path and associated information to which a
+   * router can navigate, and is used to build the {@link CoreRouter.CoreRouterState}
+   * during transitions. This route config type can specify a redirect to another
+   * route.
+   * @typedef {object} CoreRouter.RedirectedRouteConfig
+   * @property {string|RegExp} path The path of the route. This may be an exact-
+   * match string, or a regular expression.
+   * @property {string=} redirect An optional name of a route to which paths matching
+   * this route will redirect. The redirected route's path must be of type string.
+   */
+
+  /**
+   * A Route defines the path and optional parameters to which a router will navigate.
+   * The Route.path must match a route config which was passed
+   * to the router via the {@link CoreRouter} constructor or {@link CoreRouter.createChildRouter}.
+   * @interface CoreRouter.Route
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "interface Route<P extends {[key: string]: any} = {[key: string]: any}>",
+   *                genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
+   *               }]
+   */
+
+  /**
+   * The path of the route
+   * @name path
+   * @type {string}
+   * @memberof CoreRouter.Route
+   * @instance
+   */
+
+  /**
+   * The path of the route
+   * @name params
+   * @type {object=}
+   * @memberof CoreRouter.Route
+   * @instance
+   * @ojsignature { target: 'Type', value: 'P' }
+   */
+
+  /**
+   * A URL adapter manages reading/writing router states from/to the browser URL.
+   * @typedef {object} CoreRouter.UrlAdapter
+   * @property {function(Array.<CoreRouter.Route>): string} getUrlForRoutes Get
+   * the full URL for the given routes.
+   * @property {function(): Array.<CoreRouter.Route>} getRoutesForUrl Given the
+   * current browser URL, get all of the routes, starting from the root, down to
+   * the last child.
+   * @ojsignature [{target: 'Type', value: '((routes: Route<P>[]) => string)', for: "getUrlForRoutes"},
+   *               {target: 'Type', value: '(() => Route<P>[])', for: "getRoutesForUrl"},
+   *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * An Observable which can receive subscriptions for new Observers
+   * @typedef {object} CoreRouter.Observable<T>
+   * @property {function(function(T): void): CoreRouter.Observer} subscribe Subscribe to the observable to get
+   * notifications when the value changse. The subscriber callback will receive the
+   * value as its single argument. Calling subscribe will return the subscriber
+   * object, which can be used to unsubscribe from the observable.
+   */
+
+  /**
+   * An Observer is the result of subscribing to an Observable, and can be used to
+   * unsubscribe.
+   * @typedef {object} CoreRouter.Observer
+   * @property {function(): void} unsubscribe Unsubscribe the observable from further
+   * modifications to the value.
+    */
+
+  /**
+   * A wrapper object which contains a state and a <code>complete</code> callback
+   * that can be used by the subscriber to return a Promise for its asynchronous
+   * operations.
+   * @typedef {object} CoreRouter.ActionableState
+   * @property {CoreRouterState} state The CoreRouterState object
+   * @property {function(Promise<any>): null} complete The callback function the subscriber
+   * can use to return a Promise for its asynchronous activities. Invoking this
+   * callback is optional, but allows for the subscriber to delay the completion
+   * of the router state transition until its own asynchronous activities are done.
+   * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
+   *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * A wrapper object which contains a state and an <code>accept</code> callback
+   * that can be used by the subscriber to return a Promise for its acceptance
+   * or rejection of the state transition.
+   * @typedef {object} CoreRouter.VetoableState
+   * @property {CoreRouterState} state The CoreRouterState object
+   * @property {function(Promise<any>): null} accept The callback function the
+   * subscriber can use to return a Promise<boolean> indicating whether the state
+   * transition ought to be accepted (true) or rejected (false). A Promise rejection
+   * will veto the state transition; any Promise resolution (or not invoking the
+   * callback at all) will accept the transition.
+   * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
+   *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
+   */
+
 
   return CoreRouter;
-}();
-/**
- * An object describing configuration options during the creation of a root
- * CoreRouter instance.
- * @typedef {object} CoreRouter.CreateOptions
- * @property {'skip'=} history Indicate if history tracking should be skipped. By
- * default, the router will add a new history entry each time {@link CoreRouter.go}
- * is called. Setting this option to 'skip' will disable that.
- * @property {CoreRouter.UrlAdapter=} urlAdapter The adapter which handles reading
- * and writing router states from/to the browser URL. If not specified, this will
- * default to {@link UrlPathAdapter}.
- * @ojsignature [{target: "Type", value: "UrlAdapter<P>", for: "urlAdapter"},
- *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
- */
-
-/**
- * A route config object configures a path and associated information to which a
- * router can navigate, and is used to build the {@link CoreRouter.CoreRouterState}
- * during transitions. This route config type can specify a detail object which
- * can be referenced in the state.
- * @typedef {object} CoreRouter.DetailedRouteConfig
- * @property {string|RegExp} path The path of the route. This may be an exact-
- * match string, or a regular expression.
- * @property {object=} detail An optional detail object which is passed to
- * the route when it is navigated to.
- * @ojsignature [{target: "Type", value: "D", for: "detail"},
- *               {target: "Type", value: "<D = {[key: string]: any}>", for: "genericTypeParameters"}]
- */
-
-/**
- * A RouteConfig object configures a path and associated information to which a
- * router can navigate, and is used to build the {@link CoreRouter.CoreRouterState}
- * during transitions. This route config type can specify a redirect to another
- * route.
- * @typedef {object} CoreRouter.RedirectedRouteConfig
- * @property {string|RegExp} path The path of the route. This may be an exact-
- * match string, or a regular expression.
- * @property {string=} redirect An optional name of a route to which paths matching
- * this route will redirect. The redirected route's path must be of type string.
- */
-
-/**
- * A Route defines the path and optional parameters to which a router will navigate.
- * The Route.path must match a route config which was passed
- * to the router via the {@link CoreRouter} constructor or {@link CoreRouter.createChildRouter}.
- * @interface CoreRouter.Route
- * @ojsignature [{
- *                target: "Type",
- *                value: "interface Route<P extends {[key: string]: any} = {[key: string]: any}>",
- *                genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
- *               }]
- */
-
-/**
- * The path of the route
- * @name path
- * @type {string}
- * @memberof CoreRouter.Route
- * @instance
- */
-
-/**
- * The path of the route
- * @name params
- * @type {object=}
- * @memberof CoreRouter.Route
- * @instance
- * @ojsignature { target: 'Type', value: 'P' }
- */
-
-/**
- * A URL adapter manages reading/writing router states from/to the browser URL.
- * @typedef {object} CoreRouter.UrlAdapter
- * @property {function(Array.<CoreRouter.Route>): string} getUrlForRoutes Get
- * the full URL for the given routes.
- * @property {function(): Array.<CoreRouter.Route>} getRoutesForUrl Given the
- * current browser URL, get all of the routes, starting from the root, down to
- * the last child.
- * @ojsignature [{target: 'Type', value: '((routes: Route<P>[]) => string)', for: "getUrlForRoutes"},
- *               {target: 'Type', value: '(() => Route<P>[])', for: "getRoutesForUrl"},
- *               {target: "Type", value: "<P = {[key: string]: any}>", for: "genericTypeParameters"}]
- */
-
-/**
- * An Observable which can receive subscriptions for new Observers
- * @typedef {object} CoreRouter.Observable<T>
- * @property {function(function(T): void): CoreRouter.Observer} subscribe Subscribe to the observable to get
- * notifications when the value changse. The subscriber callback will receive the
- * value as its single argument. Calling subscribe will return the subscriber
- * object, which can be used to unsubscribe from the observable.
- */
-
-/**
- * An Observer is the result of subscribing to an Observable, and can be used to
- * unsubscribe.
- * @typedef {object} CoreRouter.Observer
- * @property {function(): void} unsubscribe Unsubscribe the observable from further
- * modifications to the value.
-  */
-
-/**
- * A wrapper object which contains a state and a <code>complete</code> callback
- * that can be used by the subscriber to return a Promise for its asynchronous
- * operations.
- * @typedef {object} CoreRouter.ActionableState
- * @property {CoreRouterState} state The CoreRouterState object
- * @property {function(Promise<any>): null} complete The callback function the subscriber
- * can use to return a Promise for its asynchronous activities. Invoking this
- * callback is optional, but allows for the subscriber to delay the completion
- * of the router state transition until its own asynchronous activities are done.
- * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
- *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
- */
-
-/**
- * A wrapper object which contains a state and an <code>accept</code> callback
- * that can be used by the subscriber to return a Promise for its acceptance
- * or rejection of the state transition.
- * @typedef {object} CoreRouter.VetoableState
- * @property {CoreRouterState} state The CoreRouterState object
- * @property {function(Promise<any>): null} accept The callback function the
- * subscriber can use to return a Promise<boolean> indicating whether the state
- * transition ought to be accepted (true) or rejected (false). A Promise rejection
- * will veto the state transition; any Promise resolution (or not invoking the
- * callback at all) will accept the transition.
- * @ojsignature [{target: "Type", value: "CoreRouterState<D, P>", for: "state"},
- *               {target: "Type", value: "<D = {[key: string]: any}, P = {[key: string]: any}>", for: "genericTypeParameters"}]
- */
-
-
-
-/**
- * An interface describing the object used by {@link CoreRouter} to represent
- * the routes and associated information to which it can navigate.
- * @interface CoreRouterState
- * @ojtsnamespace CoreRouter
- * @ojtsimport knockout
- * @ojsignature [{
- *                target: "Type",
- *                value: "interface CoreRouterState<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",
- *                genericParameters: [{"name": "D", "description": "Detail object for the router state"},
- *                                    {"name": "P", "description": "Parameters object for the router state"}]
- *               }
- *              ]
- */
-
-/**
- * The path of the state. This will always be the string used to navigate
- * to the current state, even if the original path for the route was defined
- * as a RegExp.
- * @name path
- * @memberof CoreRouterState
- * @instance
- * @type {string}
- * @readonly
- */
-
-/**
- * The detail object for the state, if configured.
- * @name detail
- * @memberof CoreRouterState
- * @type {Object}
- * @instance
- * @readonly
- * @ojsignature { target: 'Type', value: 'D'}
- */
-
-/**
- * Parameters for the state. Parameters are passed to the state via the
- * {@link CoreRouter.go} method.
- * @name params
- * @memberof CoreRouterState
- * @type {Object}
- * @instance
- * @readonly
- * @ojsignature { target: 'Type', value: 'P'}
- */
-
-  return corerouter;
 });
+
+}())

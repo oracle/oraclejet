@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("redwood.variables.masonrylayout") {
+
+
+:root {
+
+  --oj-masonry-layout-tile-width:    10rem;                 // width of a 1x1 masonryLayout tile, not including margin
+  --oj-masonry-layout-tile-height:   10rem;                 // height of a 1x1 masonryLayout tile, not including margin
+
+}
+
+}

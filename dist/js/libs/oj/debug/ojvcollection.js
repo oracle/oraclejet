@@ -1,4 +1,15 @@
-define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], function (exports, oj, Logger, DomScroller) { 'use strict';
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-common', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojdomscroller'], function (exports, oj, Logger, DataCollectionUtils, CachedIteratorResultsDataProvider, DomScroller) { 'use strict';
+
+    oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+    CachedIteratorResultsDataProvider = CachedIteratorResultsDataProvider && Object.prototype.hasOwnProperty.call(CachedIteratorResultsDataProvider, 'default') ? CachedIteratorResultsDataProvider['default'] : CachedIteratorResultsDataProvider;
+    DomScroller = DomScroller && Object.prototype.hasOwnProperty.call(DomScroller, 'default') ? DomScroller['default'] : DomScroller;
 
     class DataProviderContentHandler {
         constructor(root, dataProvider, callback) {
@@ -22,6 +33,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
         }
         isFetching() {
             return this.fetching !== 0;
+        }
+        addBusyState(description) {
+            if (this.callback != null) {
+                return this.callback.addBusyState('DataProviderContentHandler ' + description);
+            }
+            return () => { };
         }
         destroy() {
             this.callback = null;
@@ -81,10 +98,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
         VirtualizationStrategy[VirtualizationStrategy["VIEWPORT_ONLY"] = 1] = "VIEWPORT_ONLY";
     })(exports.VirtualizationStrategy || (exports.VirtualizationStrategy = {}));
     class VirtualizeDomScroller {
-        constructor(element, dataProvider, asyncIterator, options) {
+        constructor(element, dataProvider, asyncIterator, callback, options) {
             this.element = element;
             this.dataProvider = dataProvider;
             this.asyncIterator = asyncIterator;
+            this.callback = callback;
             this.options = options;
             this._handleScroll = (event) => {
                 const target = this.element;
@@ -94,16 +112,39 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     this._handleScrollerScrollTop(scrollTop, maxScrollTop);
                 }
             };
+            this._handleModelEvent = (event) => {
+                if (event.type === 'mutate') {
+                    const detail = event['detail'];
+                    if (detail.add) {
+                        let indexes = detail.add.indexes;
+                        const addBeforeKeys = detail.add.addBeforeKeys;
+                        if (addBeforeKeys != null) {
+                            const keys = Array.from(detail.add.keys);
+                            indexes = this._handleModelInsert(addBeforeKeys, keys);
+                        }
+                        if (indexes != null) {
+                            indexes = indexes.sort((a, b) => a - b);
+                            this._handleItemsAddedOrRemoved(indexes, 'added');
+                            this.rowCount = this.rowCount + indexes.length;
+                        }
+                    }
+                    if (detail.remove) {
+                        const keys = Array.from(detail.remove.keys);
+                        let indexes = this._handleModelDelete(keys);
+                        indexes = indexes.sort((a, b) => b - a);
+                        this._handleItemsAddedOrRemoved(indexes, 'removed');
+                        this.rowCount = Math.max(0, this.rowCount - indexes.length);
+                    }
+                }
+            };
             this.initialScrollTop = this.element.scrollTop;
             this.scrollListener = this._handleScroll.bind(this);
             this._getScrollEventElement().addEventListener('scroll', this.scrollListener);
+            this.modelEventListener = this._handleModelEvent.bind(this);
+            dataProvider.addEventListener('mutate', this.modelEventListener);
             this.fetchSize = options.fetchSize > 0 ? options.fetchSize : 25;
             this.maxCount = options.maxCount > 0 ? options.maxCount : 500;
-            this.rowCount = options.initialRowCount > 0 ? options.initialRowCount : 0;
-            this.successCallback = options.success;
-            this.errorCallback = options.error;
-            this.beforeFetchCallback = options.beforeFetchNext;
-            this.beforeFetchByOffsetCallback = options.beforeFetchByOffset;
+            this.rowCount = options.keys != null ? options.keys.length : this.fetchSize;
             this.viewportSize = -1;
             this.viewportPixelSize = this.element.offsetHeight;
             this.currentScrollTop = 0;
@@ -112,10 +153,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                 endIndex: isNaN(this.rowCount) ? this.fetchSize : this.rowCount,
                 maxCountLimit: false,
                 done: false,
-                valid: true
+                keys: options.keys
             };
-            this.renderedPoints = [];
             this.lastFetchTrigger = 0;
+            this.checkViewportCount = 0;
         }
         checkViewport() {
             if (this.currentRenderedPoint.done || this.currentRenderedPoint.maxCountLimit) {
@@ -123,19 +164,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             }
             let flag = this._isRangeValid(0, this.currentRenderedPoint.end);
             if (!flag) {
+                this.checkViewportCount += 1;
+                if (this.checkViewportCount === DataCollectionUtils.CHECKVIEWPORT_THRESHOLD) {
+                    Logger.warn('Viewport not satisfied after multiple fetch, make sure the component is height constrained or specify a scroller.');
+                }
                 this._doFetch();
+            }
+            else {
+                this.checkViewportCount = 0;
             }
             return flag;
         }
-        _isRenderingViewportOnly() {
-            return this.options.strategy === exports.VirtualizationStrategy.VIEWPORT_ONLY;
+        _isRenderingViewportOnly(callback) {
+            return (this.options.strategy === exports.VirtualizationStrategy.VIEWPORT_ONLY &&
+                callback.getIndexForRange !== undefined);
         }
         setViewportRange(start, end) {
             if (this.currentRenderedPoint.start == null || this.currentRenderedPoint.end == null) {
                 this.currentRenderedPoint.start = start;
                 this.currentRenderedPoint.end = end;
-                const renderedPoint = Object.assign({}, this.currentRenderedPoint);
-                this.renderedPoints.push(renderedPoint);
                 this._log('got pixel range: ' +
                     start +
                     ' to ' +
@@ -144,24 +191,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     this.currentRenderedPoint.startIndex +
                     ' ' +
                     this.currentRenderedPoint.endIndex);
-            }
-            else if (this.currentRenderedPoint.valid === false) {
-                this._log('current rendered point was previous marked as invalid before: ' +
-                    this.currentRenderedPoint.start +
-                    ' - ' +
-                    this.currentRenderedPoint.end);
-                this.currentRenderedPoint.start = start;
-                this.currentRenderedPoint.end = end;
-                this.currentRenderedPoint.valid = true;
-                this._log('... and after: ' +
-                    start +
-                    ' to ' +
-                    end +
-                    ' for renderedPoint: ' +
-                    this.currentRenderedPoint.startIndex +
-                    ' ' +
-                    this.currentRenderedPoint.endIndex);
-                this._syncRenderedPointsWithCurrent();
             }
             if (this._checkRenderedPoints()) {
                 this.fetchPromise = null;
@@ -172,6 +201,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
         }
         destroy() {
             this._getScrollEventElement().removeEventListener('scroll', this.scrollListener);
+            this.dataProvider.removeEventListener('mutate', this.modelEventListener);
         }
         _getScrollEventElement() {
             if (this.element === document.body || this.element === document.documentElement) {
@@ -191,7 +221,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             }
             return scrollTop + element.scrollTop;
         }
-        _setRangeLocal(startIndex, endIndex, start, end, maxCountLimit, done, valid) {
+        _setRangeLocal(startIndex, endIndex, start, end, maxCountLimit, done) {
             this._log('rendering row: ' +
                 startIndex +
                 ' to ' +
@@ -200,7 +230,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                 (start == null ? 'unknown' : start) +
                 ' to ' +
                 (end == null ? 'unknown' : end));
-            this.beforeFetchByOffsetCallback(startIndex, endIndex);
+            this.callback.beforeFetchByOffset(startIndex, endIndex);
             this.currentRenderedPoint = {
                 startIndex: startIndex,
                 endIndex: endIndex,
@@ -208,7 +238,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                 end: end,
                 maxCountLimit: maxCountLimit,
                 done: done,
-                valid: valid
+                keys: []
             };
             const options = { offset: startIndex, size: endIndex - startIndex };
             this.fetchByOffsetPromise = this.dataProvider.fetchByOffset(options).then((fetchResults) => {
@@ -224,9 +254,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         ' returned and result is still applicable');
                     let data = [];
                     let metadata = [];
+                    let keys = this.currentRenderedPoint.keys;
                     fetchResults.results.forEach((result) => {
                         data.push(result.data);
                         metadata.push(result.metadata);
+                        keys.push(result.metadata.key);
                     });
                     let ret = {};
                     ret.startIndex = startIndex;
@@ -235,7 +267,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     ret.value = {};
                     ret.value.data = data;
                     ret.value.metadata = metadata;
-                    this.successCallback(ret);
+                    this.callback.fetchSuccess(ret);
+                    this.fetchByOffsetPromise = null;
                 }
                 else {
                     this._log('fetchByOffset ' +
@@ -243,8 +276,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         ' to ' +
                         endIndex +
                         ' returned but result is NO LONGER applicable');
+                    this.fetchByOffsetPromise = null;
+                    this.callback.fetchError('notValid');
+                    this._checkRenderedPoints();
                 }
-                this.fetchByOffsetPromise = null;
             });
         }
         _handleScrollerScrollTop(scrollTop, maxScrollTop) {
@@ -286,65 +321,56 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             if (this._isRangeValid(this.currentRenderedPoint.start, this.currentRenderedPoint.end)) {
                 return true;
             }
-            for (let i = 0; i < this.renderedPoints.length; i++) {
-                const renderedPoint = this.renderedPoints[i];
-                if (this._isRangeValid(renderedPoint.start, renderedPoint.end)) {
-                    this._setRangeLocal(renderedPoint.startIndex, renderedPoint.endIndex, renderedPoint.start, renderedPoint.end, renderedPoint.maxCountLimit, renderedPoint.done, renderedPoint.valid);
+            if (this._isRenderingViewportOnly(this.callback)) {
+                const vCallback = this.callback;
+                const start = Math.max(0, this.currentScrollTop - this.viewportPixelSize);
+                const end = Math.min(this.currentScrollTop + this.viewportPixelSize * 2);
+                const indexRange = vCallback.getIndexForRange(start, end);
+                const startIndex = Math.max(0, indexRange.startIndex);
+                const endIndex = indexRange.endIndex == null ? this.rowCount : Math.min(this.rowCount, indexRange.endIndex);
+                if (startIndex < this.currentRenderedPoint.startIndex ||
+                    endIndex > this.currentRenderedPoint.endIndex) {
+                    const done = endIndex === this.lastIndex;
+                    const maxCountLimit = endIndex === this.maxCount;
+                    this._setRangeLocal(startIndex, endIndex, start, end, maxCountLimit, done);
                     return false;
                 }
             }
-            const scrollTop = this.currentScrollTop;
-            this.viewportPixelSize = this.element.offsetHeight;
-            for (let i = 0; i < this.renderedPoints.length; i++) {
-                const renderedPoint = this.renderedPoints[i];
-                if (scrollTop >= renderedPoint.start && i < this.renderedPoints.length - 1) {
-                    const nextRenderedPoint = this.renderedPoints[i + 1];
-                    if (scrollTop + this.viewportPixelSize <= nextRenderedPoint.end) {
-                        this._setRangeLocal(renderedPoint.startIndex, nextRenderedPoint.endIndex, renderedPoint.start, nextRenderedPoint.end, nextRenderedPoint.maxCountLimit, nextRenderedPoint.done, nextRenderedPoint.valid);
-                        return false;
-                    }
-                }
-            }
-            this._log('scroll position is not covered by at most 2 rendered points');
             return true;
         }
         _doFetch() {
             this._log('fetching next set of rows from asyncIterator');
-            const scrollTop = this.currentScrollTop;
-            let minIndex = this._isRenderingViewportOnly() ? this.beforeFetchCallback(scrollTop) : 0;
-            if (minIndex > -1) {
+            let beforeFetchCallback = this.callback.beforeFetchNext();
+            if (beforeFetchCallback) {
                 if (this.viewportSize === -1) {
                     this.viewportSize =
                         this.currentRenderedPoint.endIndex - this.currentRenderedPoint.startIndex;
                 }
                 this.fetchPromise = this._fetchMoreRows().then((result) => {
-                    let minIndexAfterFetch = this._isRenderingViewportOnly()
-                        ? this.beforeFetchCallback(this.currentScrollTop)
-                        : 0;
-                    if (minIndexAfterFetch >= minIndex) {
-                        if (result.maxCount) {
-                            this._log('reached max count');
-                            let start = result.size > 0 ? null : this.currentRenderedPoint.start;
-                            let end = result.size > 0 ? null : this.currentRenderedPoint.end;
-                            this._setRangeLocal(this.currentRenderedPoint.startIndex, this.maxCount, start, end, true, false, true);
-                            this.fetchPromise = null;
-                            this.asyncIterator = null;
-                        }
-                        else if (result.size > 0 || result.done === true) {
-                            const renderedStartIndex = minIndex;
-                            const renderedEndIndex = this.currentRenderedPoint.endIndex + result.size;
-                            this._setRangeLocal(renderedStartIndex, renderedEndIndex, null, null, false, result.done, true);
-                        }
+                    if (result.maxCountLimit) {
+                        this._log('reached max count');
+                        let start = result.size > 0 ? null : this.currentRenderedPoint.start;
+                        let end = result.size > 0 ? null : this.currentRenderedPoint.end;
+                        this._setRangeLocal(this.currentRenderedPoint.startIndex, this.maxCount, start, end, true, false);
+                        this.fetchPromise = null;
+                        this.asyncIterator = null;
                     }
-                    else {
-                        this._checkRenderedPoints();
+                    else if (result.size > 0 || result.done === true) {
+                        let minIndex = 0;
+                        if (this._isRenderingViewportOnly(this.callback)) {
+                            minIndex = this.callback.getIndexForPosition(this.currentScrollTop);
+                        }
+                        const renderedStartIndex = minIndex;
+                        const renderedEndIndex = this.currentRenderedPoint.endIndex + result.size;
+                        if (result.done) {
+                            this.lastIndex = renderedEndIndex;
+                        }
+                        this._setRangeLocal(renderedStartIndex, renderedEndIndex, null, null, false, result.done);
                     }
                 }, (reason) => {
-                    if (this.errorCallback) {
-                        this.errorCallback(reason);
-                        this.fetchPromise = null;
-                        this.nextFetchTrigger = undefined;
-                    }
+                    this.callback.fetchError(reason);
+                    this.fetchPromise = null;
+                    this.nextFetchTrigger = undefined;
                 });
             }
             else {
@@ -356,7 +382,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             if (!this.fetchPromise) {
                 const remainingCount = this.maxCount - this.rowCount;
                 if (remainingCount > 0) {
-                    if (this.asyncIterator) {
+                    if (!this.currentRenderedPoint.done && this.asyncIterator != null) {
                         this.fetchPromise = this.asyncIterator.next().then((result) => {
                             this.fetchPromise = null;
                             let status;
@@ -372,7 +398,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                                         }
                                     }
                                 }
-                                if (status.done || status.maxCountLimit) {
+                                if (status.maxCountLimit) {
                                     this.asyncIterator = null;
                                 }
                             }
@@ -385,23 +411,47 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             }
             return this.fetchPromise;
         }
-        _syncRenderedPointsWithCurrent() {
-            this.renderedPoints.forEach((renderedPoint) => {
-                if (renderedPoint.startIndex === this.currentRenderedPoint.startIndex) {
-                    renderedPoint.start = this.currentRenderedPoint.start;
-                }
-                if (renderedPoint.endIndex === this.currentRenderedPoint.endIndex) {
-                    renderedPoint.end = this.currentRenderedPoint.end;
-                }
-                if (renderedPoint.startIndex === this.currentRenderedPoint.startIndex &&
-                    renderedPoint.endIndex === this.currentRenderedPoint.endIndex) {
-                    renderedPoint.valid = true;
+        _handleModelInsert(beforeKeys, keys) {
+            const currentKeys = this.currentRenderedPoint.keys;
+            beforeKeys.forEach((beforeKey, i) => {
+                const index = currentKeys.indexOf(beforeKey);
+                const key = keys[i];
+                if (index > -1) {
+                    currentKeys.splice(index, 0, key);
                 }
             });
+            const indexes = [];
+            const currentStartIndex = this.currentRenderedPoint.startIndex;
+            keys.forEach((key) => {
+                const index = currentKeys.indexOf(key);
+                if (index > -1) {
+                    indexes.push(index + currentStartIndex);
+                }
+                else {
+                    this.currentRenderedPoint.done = false;
+                }
+            });
+            return indexes;
+        }
+        _handleModelDelete(keys) {
+            const indexes = [];
+            const currentStartIndex = this.currentRenderedPoint.startIndex;
+            const currentKeys = this.currentRenderedPoint.keys;
+            const keysToRemove = [];
+            keys.forEach((key) => {
+                const index = currentKeys.indexOf(key);
+                if (index > -1) {
+                    indexes.push(currentStartIndex + index);
+                    keysToRemove.push(key);
+                }
+            });
+            keysToRemove.forEach((key) => {
+                currentKeys.splice(currentKeys.indexOf(key), 1);
+            });
+            return indexes;
         }
         _updateRenderedPoint(index, renderedPoint, op) {
-            let invalidateCurrentRenderedPoint = false;
-            if (index <= renderedPoint.startIndex) {
+            if (index < renderedPoint.startIndex) {
                 if (op === 'added') {
                     renderedPoint.startIndex = renderedPoint.startIndex + 1;
                     renderedPoint.endIndex = renderedPoint.endIndex + 1;
@@ -410,7 +460,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     renderedPoint.startIndex = renderedPoint.startIndex - 1;
                     renderedPoint.endIndex = renderedPoint.endIndex - 1;
                 }
-                invalidateCurrentRenderedPoint = true;
             }
             else if (index <= renderedPoint.endIndex) {
                 if (op === 'added') {
@@ -419,43 +468,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                 else if (op === 'removed') {
                     renderedPoint.endIndex = renderedPoint.endIndex - 1;
                 }
-                invalidateCurrentRenderedPoint = true;
             }
-            if (invalidateCurrentRenderedPoint) {
-                renderedPoint.valid = false;
-            }
-        }
-        _updateRenderedPoints(index, op) {
-            this.renderedPoints.forEach((renderedPoint) => {
-                this._updateRenderedPoint(index, renderedPoint, op);
-            });
         }
         _handleItemsAddedOrRemoved(indexes, op) {
             indexes.forEach((index) => {
                 this._updateRenderedPoint(index, this.currentRenderedPoint, op);
-                this._updateRenderedPoints(index, op);
             });
-        }
-        handleItemsAdded(indexes) {
-            this._handleItemsAddedOrRemoved(indexes, 'added');
-            this.rowCount = this.rowCount + indexes.length;
-        }
-        handleItemsRemoved(indexes) {
-            this._handleItemsAddedOrRemoved(indexes, 'removed');
-            this.rowCount = Math.max(0, this.rowCount - indexes.length);
-        }
-        handleItemsUpdated(indexes) {
-            let invalidateCurrentRenderedPoint = false;
-            indexes.forEach((index) => {
-                if (index >= this.currentRenderedPoint.startIndex &&
-                    index <= this.currentRenderedPoint.endIndex) {
-                    invalidateCurrentRenderedPoint = true;
-                }
-            });
-            if (invalidateCurrentRenderedPoint) {
-                this.currentRenderedPoint.start = null;
-                this.currentRenderedPoint.end = null;
-            }
         }
         _log(msg) {
             Logger.info('[VirtualizeDomScroller]=> ' + msg);
@@ -476,6 +494,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
                     this.dataProviderAsyncIterator = this.getDataProvider()
                         .fetchFirst(options)[Symbol.asyncIterator]();
+                    let busyStateResolveFunc = this.addBusyState('call next on iterator');
                     let promise = this.dataProviderAsyncIterator.next();
                     let fetchSize = options.size;
                     let helperFunction = (value) => {
@@ -491,7 +510,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                             value.value.metadata = value.value.metadata.concat(value.value.metadata);
                             return helperFunction(value);
                         }, function (reason) {
-                            this._handleFetchError(reason);
+                            this.fetchError(reason);
                         });
                         return fetchMoreData;
                     };
@@ -499,10 +518,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         .then((value) => {
                         return helperFunction(value);
                     }, (reason) => {
-                        this._handleFetchError(reason);
+                        busyStateResolveFunc();
+                        this.fetchError(reason);
                     })
                         .then((value) => {
                         if (this.isFetching()) {
+                            busyStateResolveFunc();
                             if (this.callback == null) {
                                 return;
                             }
@@ -510,32 +531,39 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                             this.callback.setData(value);
                         }
                     }, (reason) => {
-                        this._handleFetchError(reason);
+                        busyStateResolveFunc();
+                        this.fetchError(reason);
                     });
                 }
             };
-            this._registerDomScroller = () => {
+            this._registerDomScroller = (keys) => {
                 let options = {
                     fetchSize: this.getFetchSize(),
                     maxCount: this._getMaxCount(),
-                    initialRowCount: this.getFetchSize(),
-                    strategy: exports.VirtualizationStrategy.HIGH_WATER_MARK,
-                    success: (result) => {
-                        this.handleFetchSuccess(result);
-                    },
-                    error: (reason) => {
-                        this._handleFetchError(reason);
-                    },
-                    beforeFetchNext: (scrollTop) => {
-                        return this.handleBeforeFetchNext(scrollTop);
-                    },
-                    beforeFetchByOffset: (startIndex, endIndex) => {
-                        this.handleBeforeFetchByOffset(startIndex, endIndex);
-                    }
+                    keys: keys,
+                    strategy: this.isRenderingViewportOnly()
+                        ? exports.VirtualizationStrategy.VIEWPORT_ONLY
+                        : exports.VirtualizationStrategy.HIGH_WATER_MARK
                 };
-                this.domScroller = new VirtualizeDomScroller(this._getScroller(), this.getDataProvider(), this.dataProviderAsyncIterator, options);
+                this.domScroller = new VirtualizeDomScroller(this._getScroller(), this.getDataProvider(), this.dataProviderAsyncIterator, this, options);
             };
             this._clientId = Symbol();
+        }
+        getDataProvider() {
+            if (this.wrappedDataProvider == null) {
+                const capability = this.dataProvider.getCapability('fetchCapability');
+                if (capability == null || capability.caching == null || capability.caching == 'none') {
+                    this.wrappedDataProvider = new CachedIteratorResultsDataProvider(this.dataProvider);
+                }
+                else {
+                    this.wrappedDataProvider = this.dataProvider;
+                }
+            }
+            return this.wrappedDataProvider;
+        }
+        setDataProvider(dataProvider) {
+            this.wrappedDataProvider = null;
+            this.dataProvider = dataProvider;
         }
         postRender() {
             this.initialFetch = false;
@@ -545,6 +573,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             if (this.domScroller) {
                 this.domScroller.destroy();
             }
+        }
+        isRenderingViewportOnly() {
+            return false;
         }
         _isLoadMoreOnScroll() {
             return true;
@@ -567,15 +598,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
             if (this.callback == null) {
                 return;
             }
-            let result = this._renderOutOfRangeData();
+            let result = [];
             const dataObj = this.callback.getData();
             if (dataObj == null || dataObj.value == null) {
                 return result;
             }
             const data = dataObj.value.data;
             const metadata = dataObj.value.metadata;
+            const startIndex = dataObj.startIndex === undefined ? 0 : dataObj.startIndex;
             if (data.length === metadata.length) {
-                result.push(this.renderData(data, metadata));
+                result.push(this.renderData(data, metadata, startIndex));
                 if (this._isLoadMoreOnScroll()) {
                     if (!dataObj.done) {
                         if (data.length === 0) {
@@ -583,7 +615,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         }
                         if (!dataObj.maxCountLimit) {
                             if (this.domScroller == null) {
-                                this._registerDomScroller();
+                                const keys = metadata.map((metadata) => {
+                                    return metadata.key;
+                                });
+                                this._registerDomScroller(keys);
                             }
                             result.push(this.renderSkeletonsForLoadMore());
                         }
@@ -596,21 +631,36 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                 return result;
             }
         }
-        handleBeforeFetchNext(scrollTop) {
+        beforeFetchNext() {
+            if (this.domScrollerFetchResolve != null) {
+                return false;
+            }
+            this.domScrollerFetchResolve = this.addBusyState('dom scroller call next on iterator');
+            return true;
         }
-        handleBeforeFetchByOffset(startIndex, endIndex) {
+        beforeFetchByOffset(startIndex, endIndex) {
+            if (this.domScrollerFetchResolve == null) {
+                this.domScrollerFetchResolve = this.addBusyState('dom scroller call next on iterator');
+            }
+            return true;
         }
-        handleFetchSuccess(result) {
+        fetchSuccess(result) {
+            this.domScrollerFetchResolve();
+            this.domScrollerFetchResolve = null;
             if (result != null) {
                 this.callback.setData(result);
             }
         }
-        _handleFetchError(reason) {
-            Logger.error('an error occurred during data fetch, reason: ' + reason);
+        fetchError(reason) {
+            this.domScrollerFetchResolve();
+            this.domScrollerFetchResolve = null;
+            if (reason !== 'notValid') {
+                Logger.error('an error occurred during data fetch, reason: ' + reason);
+            }
         }
         _handleScrollerMaxRowCount() {
         }
-        renderData(data, metadata) {
+        renderData(data, metadata, startIndex) {
             if (this.callback == null) {
                 return null;
             }
@@ -625,29 +675,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     children = [];
                     break;
                 }
-                let child = this.addItem(metadata[i].key, i, data[i], true);
+                let child = this.addItem(metadata[i].key, i + startIndex, data[i], true);
                 if (child) {
                     children.push(child);
                 }
             }
             return children;
         }
-        _renderOutOfRangeData() {
-            let children = [];
-            let outOfRangeData = this.callback.getOutOfRangeData();
-            if (outOfRangeData != null) {
-                outOfRangeData.forEach((result) => {
-                    const data = result.data;
-                    const metadata = result.metadata;
-                    const child = this.addItem(metadata.key, 0, data, false);
-                    if (child) {
-                        children.push(child);
-                    }
-                });
-            }
-            return children;
-        }
-        _handleItemsMutated(detail, keyField, callback, withinRangeDataCallback, handleOutOfRangeData) {
+        _handleItemsMutated(detail, keyField, withinRangeDataCallback) {
             this.callback.updateData(function (currentData) {
                 let newData = {
                     startIndex: currentData.startIndex,
@@ -657,16 +692,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         metadata: currentData.value.metadata.slice(0)
                     }
                 };
-                let outOfRangeData = [];
                 let indexes = detail.indexes;
                 const keys = Array.from(detail[keyField]);
                 if (indexes == null) {
                     indexes = keys.map((key) => {
                         return this._findIndex(currentData.value.metadata, key);
                     });
-                }
-                if (this.domScroller) {
-                    callback(indexes);
                 }
                 const startIndex = isNaN(currentData.startIndex) ? 0 : currentData.startIndex;
                 const endIndex = Math.max(startIndex + currentData.value.data.length, this.getFetchSize());
@@ -677,16 +708,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     if (index >= startIndex && index <= endIndex) {
                         withinRangeDataCallback(newData, key, index, data, metadata);
                     }
-                    else if (handleOutOfRangeData) {
-                        outOfRangeData.push({
-                            data: data,
-                            metadata: metadata
-                        });
-                    }
                 });
-                if (handleOutOfRangeData) {
-                    return { outOfRangeData: outOfRangeData, renderedData: newData };
-                }
                 return { renderedData: newData };
             }.bind(this));
         }
@@ -716,7 +738,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         metadata: currentData.value.metadata.slice(0)
                     }
                 };
-                let outOfRangeData = [];
                 let indexes = detail.indexes;
                 const addBeforeKeys = detail.addBeforeKeys;
                 const keys = detail.keys;
@@ -732,59 +753,43 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         const data = detail.data[i];
                         const metadata = detail.metadata[i];
                         let index = -1;
-                        if (addBeforeKeys != null && addBeforeKeys[i] != null) {
-                            index = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
-                        }
-                        else if (indexes != null && indexes[i] != null) {
+                        if (indexes != null && indexes[i] != null) {
                             index = indexes[i];
                         }
-                        if (index > -1 && index <= newData.value.data.length) {
+                        else if (addBeforeKeys != null && addBeforeKeys[i] != null) {
+                            index = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
+                        }
+                        if (index > -1 && index < newData.value.data.length) {
                             newData.value.data.splice(index, 0, data);
                             newData.value.metadata.splice(index, 0, metadata);
                         }
-                        else {
-                            if (newData.done && !newData.maxCountLimit) {
-                                newData.value.data.push(data);
-                                newData.value.metadata.push(metadata);
-                            }
-                            else {
-                                outOfRangeData.push({
-                                    data: data,
-                                    metadata: metadata
-                                });
-                            }
+                        else if (newData.done && !newData.maxCountLimit) {
+                            newData.done = false;
                         }
                         i++;
                     }.bind(this));
                 }
-                if (this.domScroller && this.domScroller.handleItemsAdded) {
-                    this.domScroller.handleItemsAdded(indexes);
-                }
-                return { renderedData: newData, outOfRangeData: outOfRangeData };
+                return { renderedData: newData };
             }.bind(this));
             super.handleItemsAdded(detail);
         }
         handleItemsRemoved(detail) {
-            this._handleItemsMutated(detail, 'keys', (indexes) => {
-                this.domScroller.handleItemsRemoved(indexes);
-            }, (newData, key) => {
+            this._handleItemsMutated(detail, 'keys', (newData, key) => {
                 let index = this._findIndex(newData.value.metadata, key);
                 if (index > -1) {
                     newData.value.data.splice(index, 1);
                     newData.value.metadata.splice(index, 1);
                 }
-            }, false);
+            });
             super.handleItemsRemoved(detail);
         }
         handleCurrentRangeItemUpdated(key) { }
         handleItemsUpdated(detail) {
-            this._handleItemsMutated(detail, 'keys', (indexes) => {
-                this.domScroller.handleItemsUpdated(indexes);
-            }, (newData, key, index, data, metadata) => {
+            this._handleItemsMutated(detail, 'keys', (newData, key, index, data, metadata) => {
                 newData.value.data.splice(index, 1, data);
                 newData.value.metadata.splice(index, 1, metadata);
                 this.handleCurrentRangeItemUpdated(key);
-            }, true);
+            });
             super.handleItemsUpdated(detail);
         }
     }
@@ -811,6 +816,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     return Promise.resolve();
                 }
                 this.setFetching(true);
+                let busyStateResolveFunc = this.addBusyState('call next on iterator');
                 let promise = iterator.next();
                 let fetchSize = options.size;
                 let helperFunction = (value) => {
@@ -834,10 +840,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     .then((value) => {
                     return helperFunction(value);
                 }, () => {
+                    busyStateResolveFunc();
                     this._handleFetchError();
                 })
                     .then((value) => {
                     if (this.isFetching()) {
+                        busyStateResolveFunc();
                         this.setFetching(false);
                         if (this.callback == null || value == null) {
                             return;
@@ -849,6 +857,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         return this.handleNextItemInResults(options, key, value, finalResults);
                     }
                 }, () => {
+                    busyStateResolveFunc();
                     this._handleFetchError();
                 });
             };
@@ -908,7 +917,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         iterator = cacheInfo.iterator;
                     }
                     let finalResults = { value: { data: [], metadata: [] } };
-                    return this.handleNextItemInResults(options, key, result, finalResults).then(this._fetchFromAncestors.bind(this, options, key, iterator, finalResults));
+                    return this.handleNextItemInResults(options, key, result, finalResults).then(function () {
+                        let newCacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
+                        let newIterator;
+                        if (newCacheInfo != null) {
+                            newIterator = newCacheInfo.iterator;
+                        }
+                        return this._fetchFromAncestors(options, key, newIterator, finalResults);
+                    }.bind(this));
                 }
                 return Promise.resolve();
             };
@@ -966,8 +982,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     else if (this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey]) {
                         this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache = null;
                     }
-                    finalResults.done = this._checkIteratorAndCache();
-                    return Promise.resolve(finalResults);
+                    if (this._checkFinalResults(options, finalResults) ||
+                        this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].iterator == null) {
+                        finalResults.done = this._checkIteratorAndCache();
+                        return Promise.resolve(finalResults);
+                    }
+                    return this._fetchNextFromIterator(this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].iterator, parentKey, options, finalResults);
                 }
                 let data = results.value.data.shift();
                 let metadata = results.value.metadata.shift();
@@ -1084,8 +1104,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         this.callback.updateSkeletonKeys(key);
                     }
                 }.bind(this), 250);
-                let options = { clientId: this._clientId, size: -1 };
+                let fetchSize = this.getFetchSize();
+                let options = { clientId: this._clientId, size: fetchSize };
                 let iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
+                this._cachedIteratorsAndResults[key] = { iterator: iterator, cache: null };
                 return this._fetchNextFromIterator(iterator, key, options, {
                     value: { data: [], metadata: [] }
                 }).then(function (finalResults) {
@@ -1111,26 +1133,45 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                         let updatedData;
                         let newData = finalResults.value.data;
                         let newMetadata = finalResults.value.metadata;
+                        let recacheData;
+                        let recacheMetadata;
                         if (result) {
                             let data = result.value.data;
                             let metadata = result.value.metadata;
                             let insertIndex = this._getIndexByKey(key, metadata);
                             if (insertIndex !== -1) {
+                                let fetchedCount = newData.length;
+                                let dataToSet = data.slice(0, insertIndex + 1).concat(newData);
+                                let metadataToSet = metadata.slice(0, insertIndex + 1).concat(newMetadata);
+                                let done = result.done;
+                                if (fetchedCount < fetchSize) {
+                                    dataToSet = dataToSet.concat(data.slice(insertIndex + 1));
+                                    metadataToSet = metadataToSet.concat(metadata.slice(insertIndex + 1));
+                                }
+                                else {
+                                    recacheData = data.slice(insertIndex + 1);
+                                    recacheMetadata = metadata.slice(insertIndex + 1);
+                                    if (recacheData.length > 0) {
+                                        done = false;
+                                        if (this.domScroller != null) {
+                                            this.domScroller.setAsyncIterator({ next: this.fetchMoreRows.bind(this) });
+                                        }
+                                    }
+                                }
                                 updatedData = {
                                     value: {
-                                        data: data
-                                            .slice(0, insertIndex + 1)
-                                            .concat(newData, data.slice(insertIndex + 1)),
-                                        metadata: metadata
-                                            .slice(0, insertIndex + 1)
-                                            .concat(newMetadata, metadata.slice(insertIndex + 1))
+                                        data: dataToSet,
+                                        metadata: metadataToSet
                                     },
-                                    done: result.done
+                                    done: done
                                 };
                             }
                         }
                         if (updatedData == null) {
                             updatedData = { value: { data: newData, metadata: newMetadata }, done: true };
+                        }
+                        if (recacheData != null) {
+                            this._recacheData(recacheData, recacheMetadata);
                         }
                         expandingKeys = expandingKeys.delete([key]);
                         return {
@@ -1141,22 +1182,23 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     }.bind(this));
                 }.bind(this));
             };
-            this.collapse = (key, currentData) => {
-                let data = currentData.value.data;
-                let metadata = currentData.value.metadata;
-                let index = this._findIndex(metadata, key);
-                if (index > -1) {
-                    let count = this._getLocalDescendentCount(metadata, index);
-                    data.splice(index + 1, count);
-                    metadata.splice(index + 1, count);
+            this._recacheData = (data, metadata) => {
+                for (let i = data.length - 1; i >= 0; i--) {
+                    let itemData = data[i];
+                    let itemMetadata = metadata[i];
+                    let parentKey = itemMetadata.parentKey;
+                    let currentParentKeyCache = this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache;
+                    if (currentParentKeyCache == null) {
+                        this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache = {
+                            done: false,
+                            value: { data: [itemData], metadata: [itemMetadata] }
+                        };
+                    }
+                    else {
+                        currentParentKeyCache.value.data.unshift(itemData);
+                        currentParentKeyCache.value.metadata.unshift(itemMetadata);
+                    }
                 }
-                return {
-                    value: {
-                        data: data,
-                        metadata: metadata
-                    },
-                    done: currentData.done
-                };
             };
             this._getLocalDescendentCount = (metadata, index) => {
                 let count = 0;
@@ -1522,6 +1564,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdomscroller'], func
                     }.bind(this));
                 }
             }
+        }
+        collapse(keys) {
+            keys.forEach(function (key) {
+                if (this._cachedIteratorsAndResults[key] != null) {
+                    this._cachedIteratorsAndResults[key].iterator = null;
+                    this._cachedIteratorsAndResults[key].cache = null;
+                }
+            }.bind(this));
         }
     }
 

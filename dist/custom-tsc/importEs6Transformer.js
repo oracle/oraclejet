@@ -1,16 +1,31 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const ts = require("typescript");
-let _BUILD_OPTIONS;
-let _FILE_NAME;
+const ts = __importStar(require("typescript"));
 function importTransformer(buildOptions) {
-    _BUILD_OPTIONS = buildOptions;
     function visitor(ctx, sf) {
         var _a;
-        _FILE_NAME = sf.fileName;
-        if (_BUILD_OPTIONS["debug"])
-            console.log(`${_FILE_NAME}: processing imports...`);
-        const moduleToProps = (_a = _BUILD_OPTIONS.importMaps) === null || _a === void 0 ? void 0 : _a.moduleToProps;
+        if (buildOptions["debug"])
+            console.log(`${sf.fileName}: processing imports...`);
+        const moduleToProps = (_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.moduleToProps;
         const sfImports = sf["imports"];
         const numImports = sfImports.length - 1;
         let importCount = 0;
@@ -48,7 +63,7 @@ function importTransformer(buildOptions) {
                     }
                 });
                 if (hasUpdatedImports) {
-                    return ts.updateSourceFileNode(node, newStatements, node.isDeclarationFile, node.referencedFiles, node.typeReferenceDirectives, node.hasNoDefaultLib, node.libReferenceDirectives);
+                    return ts.factory.updateSourceFile(node, newStatements, node.isDeclarationFile, node.referencedFiles, node.typeReferenceDirectives, node.hasNoDefaultLib, node.libReferenceDirectives);
                 }
                 return node;
             }
@@ -76,21 +91,21 @@ function hasNamedImport(importDecl, namedImport) {
 function updateImportStatement(importDecl, newBindingElements) {
     const importClause = importDecl.importClause;
     const namedBindings = importClause.namedBindings;
-    const newNamedBindings = ts.updateNamedImports(namedBindings, namedBindings.elements.concat(newBindingElements));
-    const newImportClause = ts.updateImportClause(importClause, importClause.name, newNamedBindings, importClause.isTypeOnly);
-    return ts.updateImportDeclaration(importDecl, importDecl.decorators, importDecl.modifiers, newImportClause, importDecl.moduleSpecifier);
+    const newNamedBindings = ts.factory.updateNamedImports(namedBindings, namedBindings.elements.concat(newBindingElements));
+    const newImportClause = ts.factory.updateImportClause(importClause, importClause.isTypeOnly, importClause.name, newNamedBindings);
+    return ts.factory.updateImportDeclaration(importDecl, importDecl.decorators, importDecl.modifiers, newImportClause, importDecl.moduleSpecifier);
 }
 function createImportStatement(module, newBindingElements) {
-    const newNamedBindings = ts.createNamedImports(newBindingElements);
-    const importClause = ts.createImportClause(undefined, newNamedBindings, false);
-    return ts.createImportDeclaration(undefined, undefined, importClause, ts.createStringLiteral(module));
+    const newNamedBindings = ts.factory.createNamedImports(newBindingElements);
+    const importClause = ts.factory.createImportClause(false, undefined, newNamedBindings);
+    return ts.factory.createImportDeclaration(undefined, undefined, importClause, ts.factory.createStringLiteral(module));
 }
 function updateOrCreateBindingElements(propClasses, importDecl = null) {
     const newBindingElements = [];
     if (propClasses) {
         propClasses.forEach((propClass) => {
             if (!importDecl || !hasNamedImport(importDecl, propClass)) {
-                newBindingElements.push(ts.createImportSpecifier(undefined, ts.createIdentifier(propClass)));
+                newBindingElements.push(ts.factory.createImportSpecifier(undefined, ts.factory.createIdentifier(propClass)));
             }
         });
     }

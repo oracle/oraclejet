@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,7 +17,6 @@ NumberRangeValidator, __NumberConverter, __ValidationFactoryNumber)
   "use strict";
 
 /* global NumberRangeValidator:false, __NumberConverter:false,
-LengthValidator:false, RegExpValidator:false, RequiredValidator:false,
 __ValidationFactoryNumber:false */
 // These were refactored into their own module which
 // does not register anymore the object into the oj namespace.

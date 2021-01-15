@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,8 +11,8 @@ export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettab
     chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
-    addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojButtonSettableProperties>(property: T): ojButton<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojButtonSettableProperties>(property: T, value: ojButtonSettableProperties[T]): void;
@@ -46,8 +46,8 @@ export interface ojButtonSettablePropertiesLenient extends Partial<ojButtonSetta
     [key: string]: any;
 }
 export interface ojButtonset<SP extends ojButtonsetSettableProperties = ojButtonsetSettableProperties> extends baseComponent<SP> {
-    addEventListener<T extends keyof ojButtonsetEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonsetEventMap<SP>[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojButtonsetEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonsetEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojButtonsetSettableProperties>(property: T): ojButtonset<SP>[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojButtonsetSettableProperties>(property: T, value: ojButtonsetSettableProperties[T]): void;
@@ -73,8 +73,8 @@ export interface ojButtonsetMany extends ojButtonset<ojButtonsetManySettableProp
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any[] | null;
-    addEventListener<T extends keyof ojButtonsetManyEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetManyEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojButtonsetManyEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetManyEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojButtonsetManySettableProperties>(property: T): ojButtonsetMany[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojButtonsetManySettableProperties>(property: T, value: ojButtonsetManySettableProperties[T]): void;
@@ -126,8 +126,8 @@ export interface ojButtonsetOne extends ojButtonset<ojButtonsetOneSettableProper
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any;
-    addEventListener<T extends keyof ojButtonsetOneEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetOneEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojButtonsetOneEventMap>(type: T, listener: (this: HTMLElement, ev: ojButtonsetOneEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojButtonsetOneSettableProperties>(property: T): ojButtonsetOne[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojButtonsetOneSettableProperties>(property: T, value: ojButtonsetOneSettableProperties[T]): void;
@@ -175,8 +175,8 @@ export interface ojMenuButton extends ojButton<ojMenuButtonSettableProperties> {
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
-    addEventListener<T extends keyof ojMenuButtonEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuButtonEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojMenuButtonEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuButtonEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMenuButtonSettableProperties>(property: T): ojMenuButton[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojMenuButtonSettableProperties>(property: T, value: ojMenuButtonSettableProperties[T]): void;

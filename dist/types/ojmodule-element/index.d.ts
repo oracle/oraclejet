@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -49,8 +49,8 @@ export interface ojModule extends JetElement<ojModuleSettableProperties> {
         view: Node[];
         viewModel: ModuleViewModel | null;
     };
-    addEventListener<T extends keyof ojModuleEventMap>(type: T, listener: (this: HTMLElement, ev: ojModuleEventMap[T]) => any, useCapture?: boolean): void;
-    addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
+    addEventListener<T extends keyof ojModuleEventMap>(type: T, listener: (this: HTMLElement, ev: ojModuleEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojModuleSettableProperties>(property: T): ojModule[T];
     getProperty(property: string): any;
     setProperty<T extends keyof ojModuleSettableProperties>(property: T, value: ojModuleSettableProperties[T]): void;
@@ -74,8 +74,8 @@ export namespace ojModule {
     }> {
     }
     interface ojViewDisconnected extends CustomEvent<{
-        viewModel: ModuleViewModel;
         view: Node[];
+        viewModel: ModuleViewModel;
         [propName: string]: any;
     }> {
     }

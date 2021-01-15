@@ -3,14 +3,20 @@ var events = obj;
 for (let event in events){
   // will use the event type from src if exists and will not explode its members
   // will specify the type in the CustomEvent type params
-  const eventDetailType = events[event]['reftype'];
+  const detailTypeWithTypeParamsDeclaration = events[event]['evnDetailTypeParamsDeclaration'];
+  const detailTypeNameWithTypeParams = events[event]['evnDetailNameTypeParams'];
   let eventInterfaceName = event;
-  if (eventDetailType) {
-    // if we have have generics use that in the interface name
-    if (eventDetailType.indexOf('<') > 0 && eventDetailType.indexOf('>') > 1){
-      eventInterfaceName = `${event}${this.propsTypeParams}`;
+  if (detailTypeNameWithTypeParams) {
+    // if we have generics use that in the interface name
+    if (detailTypeNameWithTypeParams.indexOf('<') > -1 && detailTypeNameWithTypeParams.indexOf('>') > 1){
+      eventInterfaceName = `${event}${detailTypeWithTypeParamsDeclaration}`;
     }?>
-  interface <?js= eventInterfaceName ?> extends CustomEvent<<?js= eventDetailType?> & {
+  interface <?js= eventInterfaceName ?> extends CustomEvent<<?js= detailTypeNameWithTypeParams?> & {
+  <?js
+  if (events[event]['cancelable']){?>
+    accept: (param: Promise<void>) => void;
+  <?js
+  }?>
     [propName: string]: any;
   }>{}
   <?js 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 
 //------------------------------------------------------------------------------------------------
@@ -120,10 +120,10 @@
                              $fieldInlineAlign: $formLayoutFieldInlineAlign)
 {
   // nowrap label support
-  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
+  .oj-form > .oj-flex > .oj-flex-item > .#{$selectorPrefix}-label-nowrap,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
-  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp,
-  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-form-control-label-top .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-nocomp,
   .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label {
     white-space: nowrap;
     overflow: hidden;
@@ -131,8 +131,10 @@
   }
 
   // inline label suport
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
+  .oj-formlayout-inline-label > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp,
+  .oj-formlayout-inline-label > .oj-label-nocomp {
     @include oj-inline-label-support-odd($selectorPrefix, 
                                          $labelInlineMarginTop, 
                                          $labelInlineGutter, 
@@ -141,7 +143,7 @@
   }
 
   // inline field suport
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
+  .oj-formlayout-inline-value {
 
       @include oj-bidi-property($property: 'text-align', 
                                 $startOrEnd: $fieldInlineAlign);
@@ -168,7 +170,9 @@
   }
   
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+  .oj-formlayout-inline-label > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp,
+  .oj-formlayout-inline-label > .oj-label-nocomp {
     @include oj-inline-label-support-all($selectorPrefix, 
                                          $labelInlineMarginTop, 
                                          $labelInlineGutter, 
@@ -178,12 +182,16 @@
   
   // when the label should be top aligned
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp.oj-label-for-non-control {
+  .oj-formlayout-inline-label > .oj-label-inline-top,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp.oj-label-for-non-control,
+  .oj-formlayout-inline-label > .oj-label-nocomp.oj-label-for-non-control {
     margin-top: 0;
   }
 
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+  .oj-formlayout-inline-label > .oj-radioset-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label,
+  .oj-flformlayoutex-inline-label > .oj-checkboxset-label {
     @include oj-inline-label-support-radio-checkbox();
   }
   
@@ -194,14 +202,16 @@
   // before checking the values in here
   // line-height is needed so that the label has enough height to show borders.
   // line-height on label itself has no effect.
-  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap  .oj-label-group,
-  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label  .oj-label-group {
+  .oj-form > .oj-flex > .oj-flex-item > .#{$selectorPrefix}-label-nowrap  .oj-label-group,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label  .oj-label-group,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label  .oj-label-group {
     width: inherit;
     overflow: inherit;
     text-overflow: inherit;
   }
   
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label .oj-label-group {
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label .oj-label-group,
+  .oj-formlayout-inline-label > .oj-label .oj-label-group {
     @include oj-inline-label-support-with-modifiers();
   }
 
@@ -215,28 +225,6 @@
     line-height: 1.6em;
   }
 
-  // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
-
-  .#{$selectorPrefix}-form-across.#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) {
-    @include oj-ltr {
-      padding-left: calc(#{$formLayoutColumnGutter} / 2);
-    }
-    @include oj-rtl(){
-      padding-right: calc(#{$formLayoutColumnGutter} / 2);
-    }
-  }
-
-  // Add padding to every even flex item, except the last one.
-  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-
-      @include oj-ltr {
-        padding-right: calc(#{$formLayoutColumnGutter} / 2);
-      }
-      @include oj-rtl(){
-        padding-left: calc(#{$formLayoutColumnGutter} / 2);
-      }
-
-  }
   // For alta/redwood
   .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:first-child {
 
@@ -425,6 +413,13 @@
 
     }
 
+    // if columns attribute is specified, we want the exact number of columns specified
+    // so we need to remove the minimum column width setting.
+    .oj-form-layout-no-min-column-width .oj-form-cols,
+    .oj-form-layout-no-min-column-width .oj-form-cols-labels-inline {
+      column-width: auto;
+    }
+
     // set the max number of columns to 2
     .oj-form-cols-max2 { 
       column-count: 2;
@@ -434,7 +429,9 @@
     // show up in the first column but its associated field will show 
     // up in the second column.
     .oj-form-cols > .oj-flex,
-    .oj-form-cols-labels-inline > .oj-flex { 
+    .oj-form-cols-labels-inline > .oj-flex,
+    .oj-form-cols > .oj-flex > .oj-flex-item,
+    .oj-form-cols-labels-inline > .oj-flex > .oj-flex-item { 
 
      // -moz-column-break-inside doesn't work on FF 24 on windows
      // try adding page-break-inside as well
@@ -500,17 +497,18 @@
     // For the nested form layout case, the padding is coming from the form layout and is not
     // possible to remove due to column direction case, so we don't want the margin applied here
     // for that case.
-    .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):nth-child(even),
-    .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):last-child {
+    .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
+      margin: 0 0 calc(#{$formLayoutMarginBottom} - #{$wrappableMarginBottom}) 0;
+    }
 
-        margin: 0 0 calc(#{$formLayoutMarginBottom} - #{$wrappableMarginBottom}) 0;
-
+    // oj-label-value still has an oj-label in its own div, which should never have a margin bottom
+    // For oj-label-value, the first-child is the label and the last-child is the value
+    .oj-form.oj-label-value>.oj-flex>.oj-flex-item:first-child {
+      margin: 0;
     }
 
     .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
-
         margin-bottom: $wrappableMarginBottom;
-
     }
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2020, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -75,7 +75,7 @@
     width: 100%;
     height: 100%;
   }
-
+  
    .oj-colorpalette-swatch-none-icon {
      /* Color Hardcoded because this value is not related to theming and regardless of theme the swatch for none will be white */
      background-color: #ffffff;
@@ -88,6 +88,9 @@
      //tell the browser to print the background-image
      -webkit-print-color-adjust: exact;
    }
+
+
+
   
    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
      width:  $colorPaletteGridSwatchLargeSize;

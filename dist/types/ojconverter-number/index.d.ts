@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -18,21 +18,21 @@ export class IntlNumberConverter extends NumberConverter {
 export namespace IntlNumberConverter {
     // tslint:disable-next-line interface-over-type-literal
     type ConverterOptions = {
-        style?: 'decimal' | 'currency' | 'percent' | 'unit';
         currency?: string;
-        unit?: 'byte' | 'bit';
         currencyDisplay?: 'code' | 'symbol' | 'name';
-        decimalFormat?: 'standard' | 'short' | 'long';
         currencyFormat?: 'standard' | 'short' | 'long';
-        minimumIntegerDigits?: number;
-        minimumFractionDigits?: number;
-        maximumFractionDigits?: number;
-        useGrouping?: boolean;
-        pattern?: string;
-        roundingMode?: 'HALF_UP' | 'HALF_DOWN' | 'HALF_EVEN' | 'UP' | 'DOWN' | 'CEILING' | 'FLOOR';
-        roundDuringParse?: boolean;
-        separators?: Separators;
+        decimalFormat?: 'standard' | 'short' | 'long';
         lenientParse?: 'full' | 'none';
+        maximumFractionDigits?: number;
+        minimumFractionDigits?: number;
+        minimumIntegerDigits?: number;
+        pattern?: string;
+        roundDuringParse?: boolean;
+        roundingMode?: 'HALF_UP' | 'HALF_DOWN' | 'HALF_EVEN' | 'UP' | 'DOWN' | 'CEILING' | 'FLOOR';
+        separators?: Separators;
+        style?: 'decimal' | 'currency' | 'percent' | 'unit';
+        unit?: 'byte' | 'bit';
+        useGrouping?: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Separators = {

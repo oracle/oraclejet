@@ -1,4 +1,5 @@
-(function() {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+(function() {
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -24,467 +25,18 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcontext', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation'], function (exports, ojvcomponent, DataCollectionUtils, Context, ojvcollection, oj, KeySet, ojtreedataprovider, AnimationUtils) {
+/**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ * @ignore
+ */
+define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, Context, ThemeUtils, DomUtils) {
   'use strict';
-  /**
-   * @license
-   * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
-  /**
-   * @ojcomponent oj.ojStreamList
-   * @ojtsvcomponent
-   * @augments oj.baseComponent
-   * @since 9.0.0
-   * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "ItemMetadata"]}
-   * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
-   * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
-   * @ojsignature [{
-   *                target: "Type",
-   *                value: "class ojStreamList<K extends (string | number), D> extends baseComponent<ojStreamListSettableProperties<K,D>>",
-   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
-   *               },
-   *               {
-   *                target: "Type",
-   *                value: "ojStreamListSettableProperties<K,D> extends baseComponentSettableProperties",
-   *                for: "SettableProperties"
-   *               }
-   *              ]
-   *
-   * @ojunsupportedthemes ["Alta"]
-   *
-   * @ojshortdesc A stream list displays data in an activity stream feed.
-   * @ojrole list
-   *
-   * @ojuxspecs ['activity-stream']
-   *
-   * @classdesc
-   * <h3 id="streamListOverview-section">
-   *   JET StreamList
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#streamListOverview-section"></a>
-   * </h3>
-   * <p>Description: The JET StreamList displays data in an activity stream feed.</p>
-   * <pre class="prettyprint">
-   * <code>//StreamList with a DataProvider
-   *&lt;oj-stream-list data="[[dataProvider]]">
-   * &lt;/oj-stream-list>
-   *</code></pre>
-   *  <h3 id="a11y-section">
-   *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-   *  </h3>
-   *
-   * <h3 id="touch-section">
-   *   Touch End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"touchDoc"}
-   *
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"keyboardDoc"}
-   *
-   */
-  // Fragments
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Item</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Focus on the item.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojStreamList
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td rowspan="6" nowrap>Item</td>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Move focus to the previous item according to the data order.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Move focus to the next item according to the data order.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>F2</kbd></td>
-   *       <td>Enters Actionable mode.  This enables keyboard action on elements inside the item, including navigate between focusable elements inside the item.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Esc</kbd></td>
-   *       <td>Exits Actionable mode.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Tab</kbd></td>
-   *       <td>When in Actionable Mode, navigates to next focusable element within the item.  If the last focusable element is reached, shift focus back to the first focusable element.
-   *           When not in Actionable Mode, navigates to next focusable element on the page (outside of the component).</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift+Tab</kbd></td>
-   *       <td>When in Actionable Mode, navigates to previous focusable element within the item.  If the first focusable element is reached, shift focus back to the last focusable element.
-   *           When not in Actionable Mode, navigates to previous focusable element on the page (outside of the component).</td>
-   *     </tr>
-   *     <tr>
-   *       <td rowspan="2" nowrap>Group Item</td>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Collapse the current item if it is expanded and is collapsible.  For non-hierarchical data, do nothing.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Expand the current item if it has children and is expandable.  For non-hierarchical data, do nothing.</td>
-   *     </tr>
-   *   </tbody>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojStreamList
-   */
-
-  /**
-   * The data for StreamList. Must be of type <a href="DataProvider.html">DataProvider</a> or <a href="TreeDataProvider.html">TreeDataProvider</a>.
-   *
-   * @ojshortdesc Specifies the data for the component. See the Help documentation for more information.
-   * @expose
-   * @name data
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @type {Object}
-   * @default null
-   *
-   * @example <caption>Initialize the StreamList with the <code class="prettyprint">data</code> attribute specified:</caption>
-   * &lt;oj-stream-list data='{{myDataProvider}}'>&lt;/oj-stream-list>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">data</code> property after initialization:</caption>
-   * // getter
-   * var dataValue = myStreamList.data;
-   *
-   * // setter
-   * myStreamList.data = myDataProvider;
-   * @ojsignature [{target: "Type", value: "oj.DataProvider<K, D>|oj.TreeDataProvider<K, D>|null"}]
-   */
-
-  /**
-   * Specifies the key set containing the keys of the items that should be expanded.
-   *
-   * Use the <a href="KeySetImpl.html">KeySetImpl</a> class to specify items to expand.
-   * Use the <a href="AllKeySetImpl.html">AllKeySetImpl</a> class to expand all items.
-   *
-   * @ojshortdesc Specifies the key set containing the keys of the items that should be expanded.
-   * @expose
-   * @name expanded
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @default new KeySetImpl();
-   * @type {KeySet}
-   * @ojsignature {target:"Type", value:"oj.KeySet<K>"}
-   *
-   * @ojwriteback
-   *
-   * @example <caption>Initialize the StreamList with specific items expanded:</caption>
-   * myStreamList.expanded = new KeySetImpl(['item1', 'item2']);
-   *
-   * @example <caption>Initialize the ListView with all items expanded:</caption>
-   * myStreamList.expanded = new AllKeySetImpl();
-   */
-
-  /**
-   * Specifies the mechanism used to scroll the data inside the StreamList. Possible values are: "loadMoreOnScroll", and "loadAll".
-   * When "loadMoreOnScroll" is specified, additional data is fetched when the user scrolls to the bottom of the StreamList.  Note that
-   * the component must have a height specified or inside a height constraint element so that the component element is scrollable.
-   * When "loadAll" is specified, StreamList will fetch all the data when it is initially rendered.
-   *
-   * @ojshortdesc Specifies how data are fetched as user scrolls towards the bottom of the list.
-   * @expose
-   * @name scrollPolicy
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @type {string|null}
-   * @default "loadMoreOnScroll"
-   * @ojvalue {string} "loadAll" Fetch and render all data.
-   * @ojvalue {string} "loadMoreOnScroll" Additional data is fetched when the user scrolls towards the bottom of the list.
-   *
-   * @example <caption>Initialize the StreamList with the <code class="prettyprint">scroll-policy</code> attribute specified:</caption>
-   * &lt;oj-stream-list scroll-policy='loadMoreOnScroll'>&lt;/oj-stream-list>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPolicy</code> property after initialization:</caption>
-   * // getter
-   * var scrollPolicyValue = myStreamList.scrollPolicy;
-   *
-   * // setter
-   * myStreamList.scrollPolicy = 'loadMoreOnScroll';
-   */
-
-  /**
-   * scrollPolicy options.
-   * <p>
-   * The following options are supported:
-   * <ul>
-   *   <li>fetchSize: The number of items fetched each time when scroll to the end.</li>
-   *   <li>maxCount: Maximum rows which will be displayed before fetching more rows will be stopped.</li>
-   *   <li>scroller: The element which StreamList uses to determine the scroll position as well as the maximum scroll position where scroll to the end will trigger a fetch.  If not specified then the oj-stream-list element is used.</li>
-   * </ul>
-   * When scrollPolicy is loadMoreOnScroll, the next block of rows is fetched
-   * when the user scrolls to the end of the component. The fetchSize option
-   * determines how many rows are fetched in each block.
-   *
-   * @ojshortdesc Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
-   * @expose
-   * @name scrollPolicyOptions
-   * @instance
-   * @memberof! oj.ojStreamList
-   * @type {Object.<string, any>|null}
-   *
-   * @example <caption>Initialize the StreamList with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
-   * &lt;oj-stream-list scroll-policy-options.fetch-size='30'>&lt;/oj-stream-list>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scroll-policy-options</code> attribute after initialization:</caption>
-   * // getter
-   * var fetchSizeValue = myStreamList.scrollPolicyOptions.fetchSize;
-   *
-   * // setter
-   * myStreamList.scrollPolicyOptions.fetchSize = 30;
-   *
-   * @example <caption>Initialize the StreamList with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
-   * &lt;!-- Using dot notation -->
-   * &lt;oj-stream-list scroll-policy-options.fetch-size='30' scroll-policy-options.max-count='1000'>&lt;/oj-stream-list>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPolicyOptions</code> property after initialization:</caption>
-   * // Get one
-   * var fetchSizeValue = myStreamList.scrollPolicyOptions.fetchSize;
-   *
-   * // Get all
-   * var scrollPolicyOptionsValues = myStreamList.scrollPolicyOptions;
-   *
-   * // Set one, leaving the others intact
-   * myStreamList.setProperty('scrollPolicyOptions.fetchSize', 30);
-   *
-   * // Set all.
-   * myStreamList.scrollPolicyOptions = {fetchSize: 30, maxCount: 1000};
-   */
-
-  /**
-   * The number of items to fetch in each block.
-   * @expose
-   * @name scrollPolicyOptions.fetchSize
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @type {number}
-   * @default 25
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-   * The maximum total number of items to fetch.
-   * @expose
-   * @name scrollPolicyOptions.maxCount
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @type {number}
-   * @default 500
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-   * The element which StreamList uses to determine the scroll position as well as the maximum scroll position.
-   * @expose
-   * @name scrollPolicyOptions.scroller
-   * @ojshortdesc The element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
-   * @memberof! oj.ojStreamList
-   * @instance
-   * @type {Element}
-   * @default null
-   * @ojsignature { target: "Type",
-   *                value: "?"}
-   */
-
-  /**
-  * @typedef {Object} oj.ojStreamList.ScrollPositionType
-  * @property {number=} y The vertical position in pixels.
-  * @property {any=} key The key of the item.  If DataProvider is used for <a href="#data">data</a> and the key does not exists in the
-  * DataProvider or if the item has not been fetched yet, then the value is ignored.
-  * @property {number=} offsetY The vertical offset in pixels relative to the item identified by key.
-  * @property {any=} parentKey The key of the parent if tree data.
-  * @ojsignature [{target:"Type", value:"K", for:"key"},
-  *               {target:"Type", value:"K", for:"parentKey"},
-  *               {target:"Type", value:"<K>", for:"genericTypeParameters"}]
-  */
-
-  /**
-   * The current scroll position of StreamList. The scroll position is updated when the vertical scroll position
-   * (or its scroller, as specified in scrollPolicyOptions.scroller) has changed.  The value contains the y scroll position, the key of
-   * the item closest to the top of the viewport, as well as vertical offset from the position of the item to the actual scroll position.
-   * <p>
-   * The default value contains just the scroll position.  Once data is fetched the 'key' and 'offsetY' sub-properties will be added.
-   * If there is no data then the 'key' sub-properties will not be available.
-   * </p>
-   * <p>
-   * When setting the scrollPosition property, applications can change any combination of the sub-properties.
-   * If both key and y sub-properties are set at once then key will take precedent.
-   * If offsetY is specified, it will be used to adjust the scroll position from the position where the key of the item is located.
-   * </p>
-   * <p>
-   * If a sparse object is set the other sub-properties will be populated and updated once StreamList has scrolled to that position.
-   * </p>
-   * <p>
-   * Also, if <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' and the scrollPosition is set to a value outside
-   * of the currently rendered region, then the value of scrollPosition will be ignored.
-   * </p>
-   * Lastly, when a re-rendered is triggered by a <a href="oj.DataProviderRefreshEvent.html">refresh event</a> from the DataProvider,
-   * or if the value for <a href="#data">data</a> attribute has changed, then the scrollPosition will by default remain at the top.
-   * </p>
-   *
-   * @ojshortdesc Specifies the current scroll position of the StreamList. See the Help documentation for more information.
-   * @expose
-   * @name scrollPosition
-   * @instance
-   * @memberof! oj.ojStreamList
-   * @type {Object.<string, any>}
-   * @default {"y": 0}
-   * @property {number=} y The vertical position in pixels.
-   * @property {any=} key The key of the item.  If DataProvider is used for <a href="#data">data</a> and the key does not exists in the
-   * DataProvider or if the item has not been fetched yet, then the value is ignored.
-   * @property {number=} offsetY The vertical offset in pixels relative to the item identified by key.
-   * @property {any=} parentKey The key of the parent if tree data.
-   * @ojsignature [{target: "Type", value: "oj.ojStreamList.ScrollPositionType<K> | null"}, {target:"type", value:"K", for:"key"}, {target:"type", value:"K", for:"parentKey"}]
-   *
-   * @ojwriteback
-   * @example <caption>Initialize the StreamList with the <code class="prettyprint">scroll-position</code> attribute specified:</caption>
-   * &lt;!-- Using dot notation -->
-   * &lt;oj-stream-list scroll-position.y='10'>&lt;/oj-stream-list>
-   *
-   * &lt;!-- Using JSON notation -->
-   * &lt;oj-stream-list scroll-position='{"y": 10}'>&lt;/oj-stream-list>
-   *
-   * @example <caption>Get or set the <code class="prettyprint">scrollPosition</code> property after initialization:</caption>
-   * // Get one
-   * var scrollPositionValue = myStreamList.scrollPosition.key;
-   *
-   * // Set one, leaving the others intact
-   * myStreamList.setProperty('scrollPosition.key', 'id10');
-   *
-   * // Get all
-   * var scrollPositionValues = myStreamList.scrollPosition;
-   *
-   * // Set all.  Those not listed will be lost until the scroll completes and the remaining fields are populated.
-   * myStreamList.scrollPosition = {y: 150};
-   */
-
-  /**
-   * @typedef {Object} oj.ojStreamList.ItemTemplateContext
-   * @property {any} data The data for the current item being rendered.
-   * @property {any} key The key of the current item being rendered.
-   * @property {number=} depth The zero-based depth of the current item, null if not a TreeDataProvider.
-   * @property {any=} parentKey The key of the parent current item being rendered, null if not a TreeDataProvider.
-   * @property {boolean=} leaf If the current item has children, null if not a TreeDataProvider.
-   * @ojsignature [{target:"Type", value:"D", for:"data"},
-   *               {target:"Type", value:"K", for:"key"},
-   *               {target:"Type", value:"K", for:"parentKey"},
-   *               {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
-   */
-  // Slots
-
-  /**
-   * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot content must be a &lt;template> element.
-   * <p>This slot is required or there will be no default rendering. If a <code class="prettyprint">groupTemplate</code> is not specified the <code class="prettyprint">itemTemplate</code> will be used as a fallback.
-   * <p>The content inside the template must have a single <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a> as the root node. It cannot have multiple root nodes,
-   *    incluidng Text and Comment nodes.  The root node also cannot be a <a href="http://jet.us.oracle.com/jsdocs/BindingOverview.html">JET Binding Element</a>, you must wrap it with an Element node.
-   *    If the content do contain multiple nodes, StreamList will take the first Element node it encountered and ignore the rest.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojStreamList.ItemTemplateContext]{@link oj.ojStreamList.ItemTemplateContext})</li>
-   * </ul>
-   *
-   * @ojslot itemTemplate
-   * @ojshortdesc The itemTemplate slot is used to specify the template for rendering each item in the component. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojStreamList
-   * @ojslotitemprops oj.ojStreamList.ItemTemplateContext
-   *
-   * @example <caption>Initialize the StreamList with an inline item template specified:</caption>
-   * &lt;oj-stream-list>
-   *   &lt;template slot='itemTemplate'>
-   *     &lt;span>&lt;oj-bind-text value='[[$current.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-stream-list>
-   */
-
-  /**
-   * <p>The <code class="prettyprint">groupTemplate</code> slot is used to specify the template for rendering each non-leaf item in the list. The slot content must be a &lt;template> element.
-   * <p>If a <code class="prettyprint">groupTemplate</code> is not specified the <code class="prettyprint">itemTemplate</code> will be used as a fallback.
-   * <p>The content inside the template must have a single <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a> as the root node. It cannot have multiple root nodes,
-   *    incluidng Text and Comment nodes.  The root node also cannot be a <a href="http://jet.us.oracle.com/jsdocs/BindingOverview.html">JET Binding Element</a>, you must wrap it with an Element node.
-   *    If the content do contain multiple nodes, StreamList will take the first Element node it encountered and ignore the rest.</p>
-   * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
-   * <ul>
-   *   <li>$current - an object that contains information for the current item. (See [oj.ojStreamList.ItemTemplateContext]{@link oj.ojStreamList.ItemTemplateContext})</li>
-   * </ul>
-   *
-   * @ojslot groupTemplate
-   * @ojshortdesc The groupTemplate slot is used to specify the template for rendering each item in the component. See the Help documentation for more information.
-   * @ojmaxitems 1
-   * @memberof oj.ojStreamList
-   * @ojslotitemprops oj.ojStreamList.ItemTemplateContext
-   *
-   * @example <caption>Initialize the StreamList with an inline item template specified:</caption>
-   * &lt;oj-stream-list>
-   *   &lt;template slot='groupTemplate'>
-   *     &lt;span>&lt;oj-bind-text value='[[$current.data.name]]'>&lt;/span>
-   *   &lt;template>
-   * &lt;/oj-stream-list>
-   */
-  // Override contextMenu slot definition to remove it from the jsdoc as it is not yet supported
-
-  /**
-  * @ojslot contextMenu
-  * @memberof oj.ojStreamList
-  * @ignore
-  */
-
-  /**
-   * @name refresh
-   * @memberof oj.ojStreamList
-   * @instance
-   * @ignore
-   */
-
-  /**
-   * @name translations
-   * @memberof oj.ojStreamList
-   * @instance
-   * @ignore
-   */
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+  Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
   var StreamListContentHandler = /*#__PURE__*/function (_ojvcollection$Iterat) {
     _inherits(StreamListContentHandler, _ojvcollection$Iterat);
@@ -505,26 +57,21 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
       _this.postRender = function () {
         _this.vnodesCache = _this.newVnodesCache;
         _this.newVnodesCache = new Map();
-        var itemsRoot = _this.root.lastElementChild;
 
-        if (itemsRoot) {
-          var busyContext = Context.getContext(itemsRoot).getBusyContext();
-          busyContext.whenReady().then(function () {
-            if (_this.callback) {
-              if (_this.domScroller) {
-                var items = itemsRoot.querySelectorAll('.oj-stream-list-item');
-                var rootOffsetTop = _this.root.offsetTop;
-                var start = items[0].offsetTop - rootOffsetTop;
-                var end = items[items.length - 1].offsetTop + items[items.length - 1].offsetHeight - rootOffsetTop;
+        if (_this.callback) {
+          if (_this.domScroller) {
+            var itemsRoot = _this.root.lastElementChild;
+            var items = itemsRoot.querySelectorAll('.oj-stream-list-item');
+            var rootOffsetTop = _this.root.offsetTop;
+            var start = items[0].offsetTop - rootOffsetTop;
+            var end = items[items.length - 1].offsetTop + items[items.length - 1].offsetHeight - rootOffsetTop;
 
-                _this.domScroller.setViewportRange(start, end);
-              }
+            _this.domScroller.setViewportRange(start, end);
+          }
 
-              if (_this.domScroller && !_this.domScroller.checkViewport()) {
-                return;
-              }
-            }
-          });
+          if (_this.domScroller && !_this.domScroller.checkViewport()) {
+            return;
+          }
         }
       };
 
@@ -535,13 +82,13 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     }
 
     _createClass(StreamListContentHandler, [{
-      key: "handleFetchSuccess",
-      value: function handleFetchSuccess(result) {
+      key: "fetchSuccess",
+      value: function fetchSuccess(result) {
         if (result != null) {
           this.newItemsTracker.clear();
         }
 
-        _get(_getPrototypeOf(StreamListContentHandler.prototype), "handleFetchSuccess", this).call(this, result);
+        _get(_getPrototypeOf(StreamListContentHandler.prototype), "fetchSuccess", this).call(this, result);
       }
     }, {
       key: "handleItemsUpdated",
@@ -625,24 +172,13 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         if (contentRoot != null) {
           vnode.key = key;
           contentRoot.key = key;
-          contentRoot.setAttribute('key', JSON.stringify(key));
           contentRoot.setAttribute('role', 'listitem');
           contentRoot.setAttribute('tabIndex', '-1');
           var styleClasses = this.getItemStyleClass(visible, this.newItemsTracker.has(key), initialFetch);
           styleClasses.forEach(function (styleClass) {
             contentRoot.classList.add(styleClass);
           });
-          var inlineStyle = this.getItemInlineStyle(visible, index, initialFetch);
-          Object.keys(inlineStyle).forEach(function (prop) {
-            contentRoot.style[prop] = inlineStyle[prop];
-          });
         }
-      }
-    }, {
-      key: "getItemInlineStyle",
-      value: function getItemInlineStyle(visible, index, animate) {
-        var style = {};
-        return style;
       }
     }, {
       key: "getItemStyleClass",
@@ -686,10 +222,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var itemsRoot = _this2.root.lastElementChild;
 
         if (itemsRoot) {
-          var busyContext = Context.getContext(itemsRoot).getBusyContext();
-          busyContext.whenReady().then(function () {
-            _this2.checkViewport();
-          });
+          _this2.checkViewport();
         }
       };
 
@@ -808,16 +341,11 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         if (contentRoot != null) {
           vnode.key = metadata.key;
           contentRoot.key = metadata.key;
-          contentRoot.setAttribute('key', JSON.stringify(metadata.key));
           contentRoot.setAttribute('role', 'listitem');
           contentRoot.setAttribute('tabIndex', '-1');
           var styleClasses = this.getItemStyleClass(metadata, visible, this.newItemsTracker.has(metadata.key), initialFetch);
           styleClasses.forEach(function (styleClass) {
             contentRoot.classList.add(styleClass);
-          });
-          var inlineStyle = this.getItemInlineStyle(metadata, visible, index, initialFetch);
-          Object.keys(inlineStyle).forEach(function (prop) {
-            contentRoot.style[prop] = inlineStyle[prop];
           });
 
           if (!metadata.isLeaf) {
@@ -831,12 +359,6 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             }
           }
         }
-      }
-    }, {
-      key: "getItemInlineStyle",
-      value: function getItemInlineStyle(metadata, visible, index, animate) {
-        var style = {};
-        return style;
       }
     }, {
       key: "getItemStyleClass",
@@ -884,7 +406,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     _classCallCheck(this, Props);
 
     this.data = null;
-    this.expanded = new KeySet.KeySetImpl();
+    this.expanded = new ojkeyset.KeySetImpl();
     this.scrollPolicy = 'loadMoreOnScroll';
     this.scrollPolicyOptions = {
       fetchSize: 25,
@@ -896,8 +418,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     };
   };
 
-  exports.StreamList = StreamList_1 = /*#__PURE__*/function (_ojvcomponent$VCompon) {
-    _inherits(StreamList, _ojvcomponent$VCompon);
+  exports.StreamList = StreamList_1 = /*#__PURE__*/function (_ojvcomponentElement$) {
+    _inherits(StreamList, _ojvcomponentElement$);
 
     var _super3 = _createSuper(StreamList);
 
@@ -910,6 +432,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
       _this3.restoreFocus = false;
       _this3.actionableMode = false;
       _this3.skeletonHeight = 0;
+      _this3.height = 0;
 
       _this3.setRootElement = function (element) {
         _this3.root = element;
@@ -918,12 +441,12 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
       _this3.state = {
         renderedData: null,
         outOfRangeData: null,
-        initialSkeleton: true,
+        initialSkeleton: false,
         initialSkeletonCount: 1,
-        expandedToggleKeys: new KeySet.KeySetImpl(),
-        expandedSkeletonKeys: new KeySet.KeySetImpl(),
-        expandingKeys: new KeySet.KeySetImpl(),
-        height: 0
+        expandedToggleKeys: new ojkeyset.KeySetImpl(),
+        expandedSkeletonKeys: new ojkeyset.KeySetImpl(),
+        expandingKeys: new ojkeyset.KeySetImpl(),
+        toCollapse: []
       };
       return _this3;
     }
@@ -938,6 +461,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
         if (item && this._isFocusable(target, item)) {
           this._enterActionableMode(target);
+        } else if (this.currentItem && !this.actionableMode) {
+          this.focusInHandler(this.currentItem);
         }
       }
     }, {
@@ -980,6 +505,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
       key: "_handleToggleExpanded",
       value: function _handleToggleExpanded(key, expanded) {
         this.updateState(function (state, props) {
+          var _a, _b;
+
           var expandedToggleKeys = state.expandedToggleKeys;
 
           if (!expandedToggleKeys.has(key)) {
@@ -992,9 +519,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 newExpanded = newExpanded.add([key]);
               }
             });
-
-            this._updateProperty('expanded', newExpanded, true);
-
+            (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newExpanded);
             return {
               expandedToggleKeys: expandedToggleKeys
             };
@@ -1009,16 +534,18 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         if (this.currentItem) {
           var next;
 
-          switch (event.keyCode) {
-            case 37:
-            case 39:
+          switch (event.key) {
+            case DataCollectionUtils.KEYBOARD_KEYS._LEFT:
+            case DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE:
+            case DataCollectionUtils.KEYBOARD_KEYS._RIGHT:
+            case DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE:
               {
                 if (this.currentItem.classList.contains(this.getGroupStyleClass())) {
                   var group = this.currentItem;
                   var key = group.key;
                   var expanded = this.props.expanded.has(key);
 
-                  if (event.keyCode === 39 && !expanded || event.keyCode === 37 && expanded) {
+                  if ((event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT || event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE) && !expanded || (event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT || event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE) && expanded) {
                     this._handleToggleExpanded(key, expanded);
                   }
                 }
@@ -1026,7 +553,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 break;
               }
 
-            case 38:
+            case DataCollectionUtils.KEYBOARD_KEYS._UP:
+            case DataCollectionUtils.KEYBOARD_KEYS._UP_IE:
               {
                 if (this.actionableMode === false) {
                   next = this.currentItem.previousElementSibling;
@@ -1039,7 +567,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 break;
               }
 
-            case 40:
+            case DataCollectionUtils.KEYBOARD_KEYS._DOWN:
+            case DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE:
               {
                 if (this.actionableMode === false) {
                   next = this.currentItem.nextElementSibling;
@@ -1052,7 +581,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 break;
               }
 
-            case 113:
+            case DataCollectionUtils.KEYBOARD_KEYS._F2:
               {
                 if (this.actionableMode === false) {
                   this._enterActionableMode();
@@ -1061,7 +590,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 break;
               }
 
-            case 27:
+            case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE:
+            case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE:
               {
                 if (this.actionableMode === true) {
                   this._exitActionableMode(true);
@@ -1070,7 +600,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                 break;
               }
 
-            case 9:
+            case DataCollectionUtils.KEYBOARD_KEYS._TAB:
               {
                 if (this.actionableMode === true && this.currentItem) {
                   if (event.shiftKey) {
@@ -1084,11 +614,6 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
                   }
                 }
 
-                break;
-              }
-
-            default:
-              {
                 break;
               }
           }
@@ -1122,15 +647,15 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           } else if (data != null) {
             content = this.contentHandler.render();
 
-            if (this.currentItem && this.currentItem.contains(document.activeElement)) {
+            if (this.currentItem && this.currentItem.contains(document.activeElement) && !this.actionableMode) {
               this.restoreFocus = true;
             }
           }
         }
 
-        return ojvcomponent.h("oj-stream-list", {
+        return ojvcomponentElement.h("oj-stream-list", {
           ref: this.setRootElement
-        }, ojvcomponent.h("div", {
+        }, ojvcomponentElement.h("div", {
           role: 'list',
           "data-oj-context": true,
           onClick: this._handleClick,
@@ -1148,7 +673,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         }
 
         if (this.currentItem) {
-          this.currentItem.classList.remove('oj-focus');
+          this.focusOutHandler(this.currentItem);
         }
       }
     }, {
@@ -1211,22 +736,24 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           className += ' oj-stream-list-child-skeleton';
         }
 
-        return ojvcomponent.h("div", {
+        return ojvcomponentElement.h("div", {
           class: className,
           key: key
-        }, ojvcomponent.h("div", {
+        }, ojvcomponentElement.h("div", {
           class: 'oj-stream-list-skeleton-content oj-animation-skeleton'
         }));
       }
     }, {
       key: "_applySkeletonExitAnimation",
       value: function _applySkeletonExitAnimation(skeletons) {
+        var resolveFunc = this.addBusyState('apply skeleton exit animations');
         return new Promise(function (resolve, reject) {
           var promises = [];
           skeletons.forEach(function (skeleton) {
             promises.push(AnimationUtils.fadeOut(skeleton));
           });
           Promise.all(promises).then(function () {
+            resolveFunc();
             resolve(true);
           });
         });
@@ -1262,12 +789,20 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           this.contentHandler.postRender();
         }
 
-        this.actionableMode = false;
         var items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
 
         this._disableAllTabbableElements(items);
 
         this._restoreCurrentItem(items);
+      }
+    }, {
+      key: "_getScrollPolicyOptions",
+      value: function _getScrollPolicyOptions() {
+        return {
+          fetchSize: this.props.scrollPolicyOptions.fetchSize,
+          maxCount: this.props.scrollPolicyOptions.maxCount,
+          scroller: this._getScroller()
+        };
       }
     }, {
       key: "mounted",
@@ -1277,23 +812,19 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var data = this.props.data;
 
         if (this._isTreeData()) {
-          this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this.props.scrollPolicyOptions);
+          this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this._getScrollPolicyOptions());
         } else if (data != null) {
-          this.contentHandler = new StreamListContentHandler(this.root, data, this, this.props.scrollPolicyOptions);
+          this.contentHandler = new StreamListContentHandler(this.root, data, this, this._getScrollPolicyOptions());
         }
 
         this.contentHandler.fetchRows();
-        var rootHeight = this.root.clientHeight;
-        this.updateState({
-          height: rootHeight
-        });
+        this.height = this.root.clientHeight;
         var skeleton = this.root.querySelector('.oj-stream-list-skeleton');
 
         if (skeleton) {
           this.skeletonHeight = this.outerHeight(skeleton);
-          this.updateState({
-            initialSkeletonCount: Math.max(1, Math.floor(rootHeight / this.skeletonHeight))
-          });
+
+          this._delayShowSkeletons();
         }
 
         if (window['ResizeObserver']) {
@@ -1301,13 +832,15 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           var resizeObserver = new window['ResizeObserver'](function (entries) {
             entries.forEach(function (entry) {
               if (entry.target === root && entry.contentRect) {
-                var currHeight = _this4.state.height;
+                var currHeight = _this4.height;
                 var newHeight = Math.round(entry.contentRect.height);
 
                 if (Math.abs(newHeight - currHeight) > 1) {
-                  _this4.updateState({
-                    height: newHeight
-                  });
+                  _this4.height = newHeight;
+
+                  if (_this4.contentHandler && _this4.contentHandler.domScroller) {
+                    _this4.contentHandler.domScroller.checkViewport();
+                  }
                 }
               }
             });
@@ -1315,6 +848,15 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           resizeObserver.observe(root);
           this.resizeObserver = resizeObserver;
         }
+
+        DomUtils.makeFocusable({
+          applyHighlight: true,
+          setupHandlers: function setupHandlers(focusInHandler, focusOutHandler) {
+            var noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+            _this4.focusInHandler = noJQHandlers.focusIn;
+            _this4.focusOutHandler = noJQHandlers.focusOut;
+          }
+        });
 
         this._postRender();
       }
@@ -1346,9 +888,45 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
         this.resizeObserver = null;
 
-        if (this.scrollListener && this._getScroller() != null) {
-          this._getScroller().removeEventListener('scroll', this.scrollListener);
+        this._unregisterScrollHandler();
+      }
+    }, {
+      key: "_delayShowSkeletons",
+      value: function _delayShowSkeletons() {
+        var _this5 = this;
+
+        window.setTimeout(function () {
+          var data = _this5.getData();
+
+          if (data == null) {
+            _this5.updateState(function (state) {
+              return {
+                initialSkeletonCount: Math.max(1, Math.floor(_this5.height / _this5.skeletonHeight))
+              };
+            });
+          }
+        }, this._getShowSkeletonsDelay());
+      }
+    }, {
+      key: "_getOptionDefaults",
+      value: function _getOptionDefaults() {
+        if (this.defaultOptions == null) {
+          this.defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-streamlist-option-defaults');
         }
+
+        return this.defaultOptions;
+      }
+    }, {
+      key: "_getShowSkeletonsDelay",
+      value: function _getShowSkeletonsDelay() {
+        var defaultOptions = this._getOptionDefaults();
+
+        if (defaultOptions == null) {
+          return 0;
+        }
+
+        var delay = parseInt(defaultOptions.showIndicatorDelay, 10);
+        return isNaN(delay) ? 0 : delay;
       }
     }, {
       key: "getRootElement",
@@ -1358,6 +936,10 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     }, {
       key: "updated",
       value: function updated(oldProps, oldState) {
+        if (this._isTreeData() && this.contentHandler.collapse) {
+          this.contentHandler.collapse(this.state.toCollapse);
+        }
+
         var oldExpandingKeys = oldState.expandingKeys;
         var expandingKeys = this.state.expandingKeys;
         expandingKeys.values().forEach(function (key) {
@@ -1377,23 +959,25 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             outOfRangeData: null,
             initialSkeleton: true,
             initialSkeletonCount: this.state.initialSkeletonCount,
-            expandedToggleKeys: new KeySet.KeySetImpl(),
-            expandedSkeletonKeys: new KeySet.KeySetImpl(),
-            expandingKeys: new KeySet.KeySetImpl()
+            expandedToggleKeys: new ojkeyset.KeySetImpl(),
+            expandedSkeletonKeys: new ojkeyset.KeySetImpl(),
+            expandingKeys: new ojkeyset.KeySetImpl()
           });
 
           if (this._isTreeData()) {
-            this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this.props.scrollPolicyOptions);
+            this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this._getScrollPolicyOptions());
           } else if (this.props.data != null) {
-            this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this.props.scrollPolicyOptions);
+            this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this._getScrollPolicyOptions());
           }
 
           this.contentHandler.fetchRows();
+
+          this._delayShowSkeletons();
         }
 
         this._postRender();
 
-        if (this.props.scrollPosition != oldProps.scrollPosition) {
+        if (!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) && !oj.Object.compareValues(this.props.scrollPosition, this.lastInternalScrollPositionUpdate)) {
           this._syncScrollTopWithProps();
         }
       }
@@ -1430,6 +1014,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     }, {
       key: "_updateScrollPosition",
       value: function _updateScrollPosition() {
+        var _a, _b;
+
         var scrollPosition = {};
 
         var scrollTop = this._getScroller().scrollTop;
@@ -1441,7 +1027,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         if (result != null) {
           var elem = result.elem;
           scrollPosition.offsetY = result.offsetY;
-          scrollPosition.key = elem.getAttribute('key');
+          scrollPosition.key = elem.key;
 
           if (this._isTreeData() && elem.classList.contains('oj-stream-list-item')) {
             scrollPosition.parentKey = this._getParentKey(elem);
@@ -1450,7 +1036,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
           }
         }
 
-        this._updateProperty('scrollPosition', scrollPosition);
+        this.lastInternalScrollPositionUpdate = scrollPosition;
+        (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
       }
     }, {
       key: "_syncScrollTopWithProps",
@@ -1512,8 +1099,9 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
+          var itemKey = item.key;
 
-          if (item === key) {
+          if (itemKey === key) {
             if (parentKey == null || this._getParentKey(item) === parentKey) {
               return item;
             }
@@ -1526,6 +1114,10 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var scroller = this.props.scrollPolicyOptions.scroller;
 
         if (scroller != null) {
+          if (typeof scroller === 'string') {
+            scroller = document.querySelector(scroller);
+          }
+
           if (scroller === document.body || scroller === document.documentElement) {
             return window;
           }
@@ -1541,6 +1133,14 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var scroller = this.props.scrollPolicyOptions.scroller;
 
         if (scroller != null) {
+          if (typeof scroller === 'string') {
+            scroller = document.querySelector(scroller);
+          }
+
+          if (scroller === document.documentElement && scroller !== document.scrollingElement) {
+            return document.body;
+          }
+
           return scroller;
         }
 
@@ -1588,18 +1188,6 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         return elementDetail;
       }
     }, {
-      key: "_getExpandSkeletonsForKey",
-      value: function _getExpandSkeletonsForKey(key) {
-        var skeletonsForKey = [];
-        var allSkeletons = this.getRootElement().querySelectorAll('.oj-stream-list-child-skeleton');
-        allSkeletons.forEach(function (skeleton) {
-          if (skeleton.getAttribute('key') == key) {
-            skeletonsForKey.push(skeleton);
-          }
-        });
-        return skeletonsForKey;
-      }
-    }, {
       key: "isAvailable",
       value: function isAvailable() {
         return this.contentHandler != null;
@@ -1642,7 +1230,9 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     }, {
       key: "setExpanded",
       value: function setExpanded(set) {
-        this._updateProperty('expanded', set);
+        var _a, _b;
+
+        (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, set);
       }
     }, {
       key: "updateExpand",
@@ -1726,6 +1316,15 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         return 'oj-stream-list-group';
       }
     }, {
+      key: "addBusyState",
+      value: function addBusyState(description) {
+        var root = this.getRootElement();
+        var componentBusyContext = Context.getContext(root).getBusyContext();
+        return componentBusyContext.addBusyState({
+          description: description
+        });
+      }
+    }, {
       key: "_handleTouchOrClickEvent",
       value: function _handleTouchOrClickEvent(event) {
         var target = event.target;
@@ -1785,12 +1384,12 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
       }
     }, {
       key: "_resetFocus",
-      value: function _resetFocus(item) {
-        if (this.actionableMode) {
+      value: function _resetFocus(item, resetActionable) {
+        if (this.actionableMode && resetActionable) {
           this._exitActionableMode(false);
         }
 
-        item.classList.remove('oj-focus');
+        this.focusOutHandler(item);
         item.tabIndex = -1;
       }
     }, {
@@ -1799,7 +1398,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         item.tabIndex = 0;
 
         if (shouldFocus) {
-          item.classList.add('oj-focus');
+          this.focusInHandler(item);
           item.focus();
         }
       }
@@ -1809,12 +1408,12 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         var lastCurrentItem = this.currentItem;
         var newCurrentItem = item;
 
-        this._resetFocus(lastCurrentItem);
-
-        this._setFocus(newCurrentItem, shouldFocus);
+        this._resetFocus(lastCurrentItem, true);
 
         this.currentItem = newCurrentItem;
         this.setCurrentItem(newCurrentItem.key);
+
+        this._setFocus(newCurrentItem, shouldFocus);
       }
     }, {
       key: "_isInViewport",
@@ -1824,7 +1423,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
         var scrollTop = this._getScroller().scrollTop;
 
-        return top >= scrollTop && top <= scrollTop + this.state.height;
+        return top >= scrollTop && top <= scrollTop + this.height;
       }
     }, {
       key: "_restoreCurrentItem",
@@ -1839,9 +1438,9 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
                 return;
               } else {
-                this._setFocus(elem, false);
-
                 this.currentItem = elem;
+
+                this._setFocus(elem, false);
               }
 
               break;
@@ -1871,6 +1470,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
           if (target == null && elems && elems.length > 0) {
             elems[0].focus();
+
+            this._resetFocus(this.currentItem, false);
           }
         }
       }
@@ -1897,6 +1498,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             expandingKeys = state.expandingKeys,
             renderedData = state.renderedData,
             expandedSkeletonKeys = state.expandedSkeletonKeys;
+        var toCollapse = [];
         var newExpanded = props.expanded;
 
         if (oldProps && newExpanded !== oldProps.expanded) {
@@ -1906,7 +1508,6 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
               expandedToggleKeys = expandedToggleKeys.delete([key]);
             }
           });
-          var toCollapse = [];
           renderedData.value.metadata.forEach(function (itemMetadata) {
             var key = itemMetadata.key;
             var itemExpanded = itemMetadata.expanded;
@@ -1929,9 +1530,14 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             renderedData: renderedData,
             expandingKeys: expandingKeys,
             expandedToggleKeys: expandedToggleKeys,
-            expandedSkeletonKeys: expandedSkeletonKeys
+            expandedSkeletonKeys: expandedSkeletonKeys,
+            toCollapse: toCollapse
           };
         }
+
+        return {
+          toCollapse: toCollapse
+        };
       }
     }, {
       key: "_findIndex",
@@ -1947,7 +1553,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
     }]);
 
     return StreamList;
-  }(ojvcomponent.VComponent);
+  }(ojvcomponentElement.ElementVComponent);
 
   exports.StreamList.collapse = function (key, currentData) {
     var data = currentData.value.data;
@@ -1992,7 +1598,9 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
 
   exports.StreamList.metadata = {
     "extension": {
-      "_DEFAULTS": Props
+      "_DEFAULTS": Props,
+      "_WRITEBACK_PROPS": ["expanded", "scrollPosition"],
+      "_READ_ONLY_PROPS": []
     },
     "properties": {
       "data": {
@@ -2000,9 +1608,8 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
         "value": null
       },
       "expanded": {
-        "type": "object",
-        "writeback": true,
-        "readOnly": false
+        "type": "any",
+        "writeback": true
       },
       "scrollPolicy": {
         "type": "string",
@@ -2021,7 +1628,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             "value": 500
           },
           "scroller": {
-            "type": "Element|null",
+            "type": "Element|string|null",
             "value": null
           }
         }
@@ -2043,33 +1650,37 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojcon
             "type": "any"
           }
         },
-        "writeback": true,
-        "readOnly": false
+        "writeback": true
       }
     },
     "slots": {
-      "groupTemplate": {},
-      "itemTemplate": {}
+      "groupTemplate": {
+        "data": {}
+      },
+      "itemTemplate": {
+        "data": {}
+      }
     }
   };
 
-  __decorate([ojvcomponent.listener()], exports.StreamList.prototype, "_handleFocusIn", null);
+  __decorate([ojvcomponentElement.listener()], exports.StreamList.prototype, "_handleFocusIn", null);
 
-  __decorate([ojvcomponent.listener()], exports.StreamList.prototype, "_handleFocusOut", null);
+  __decorate([ojvcomponentElement.listener()], exports.StreamList.prototype, "_handleFocusOut", null);
 
-  __decorate([ojvcomponent.listener()], exports.StreamList.prototype, "_handleClick", null);
+  __decorate([ojvcomponentElement.listener()], exports.StreamList.prototype, "_handleClick", null);
 
-  __decorate([ojvcomponent.listener()], exports.StreamList.prototype, "_handleKeyDown", null);
+  __decorate([ojvcomponentElement.listener()], exports.StreamList.prototype, "_handleKeyDown", null);
 
-  __decorate([ojvcomponent.listener({
+  __decorate([ojvcomponentElement.listener({
     passive: true
   })], exports.StreamList.prototype, "_touchStartHandler", null);
 
-  __decorate([ojvcomponent.listener()], exports.StreamList.prototype, "scrollListener", null);
+  __decorate([ojvcomponentElement.listener()], exports.StreamList.prototype, "scrollListener", null);
 
-  exports.StreamList = StreamList_1 = __decorate([ojvcomponent.customElement('oj-stream-list')], exports.StreamList);
+  exports.StreamList = StreamList_1 = __decorate([ojvcomponentElement.customElement('oj-stream-list')], exports.StreamList);
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
 });
+
 }())

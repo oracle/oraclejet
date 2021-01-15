@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,7 +10,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatas
 {
   "use strict";
 
-/* global Promise:false, ko:false, KnockoutUtils:false */
+/* global ko:false, KnockoutUtils:false */
 
 /* jslint browser: true,devel:true*/
 /**
@@ -20,9 +20,9 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatas
  * @export
  * @class oj.CollectionPagingDataSource
  * @classdesc Implementation of PagingModel using an oj.Collection
- * @extends oj.DataSource
- * @implements oj.PagingModel
- * @param {oj.Collection} collection the collection to use as source data for this paging control
+ * @extends DataSource
+ * @implements PagingModel
+ * @param {Collection} collection the collection to use as source data for this paging control
  * @constructor
  * @final
  * @since 1.0

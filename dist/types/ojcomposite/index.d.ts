@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -22,23 +22,23 @@ export type PropertiesType = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type PropertyChangedContext<P extends PropertiesType = PropertiesType> = {
-    property: keyof P;
-    value: P[keyof P];
     previousValue: P[keyof P];
-    updatedFrom: 'external' | 'internal';
+    property: keyof P;
     subproperty?: {
         path: string;
-        value: any;
         previousValue: any;
+        value: any;
     };
+    updatedFrom: 'external' | 'internal';
+    value: P[keyof P];
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ViewModel<P extends PropertiesType = PropertiesType> = {
     activated?: ((context: ViewModelContext<P>) => Promise<any> | void);
-    connected?: ((context: ViewModelContext<P>) => void);
     bindingsApplied?: ((context: ViewModelContext<P>) => void);
-    propertyChanged?: ((context: PropertyChangedContext<P>) => void);
+    connected?: ((context: ViewModelContext<P>) => void);
     disconnected?: ((element: Element) => void);
+    propertyChanged?: ((context: PropertyChangedContext<P>) => void);
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ViewModelContext<P extends PropertiesType = PropertiesType> = {

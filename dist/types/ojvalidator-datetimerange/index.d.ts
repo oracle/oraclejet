@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,22 +17,22 @@ declare namespace DateTimeRangeValidator {
     // tslint:disable-next-line interface-over-type-literal
     type ValidatorOptions = {
         converter: DateTimeConverter;
-        min?: string;
-        max?: string;
         hint?: {
+            inRange?: string;
             max?: string;
             min?: string;
-            inRange?: string;
         };
-        translationKey?: string;
+        max?: string;
         messageDetail?: {
-            rangeUnderflow?: string;
             rangeOverflow?: string;
+            rangeUnderflow?: string;
         };
         messageSummary?: {
-            rangeUnderflow?: string;
             rangeOverflow?: string;
+            rangeUnderflow?: string;
         };
+        min?: string;
+        translationKey?: string;
     };
 }
 export = DateTimeRangeValidator;

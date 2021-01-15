@@ -1,14 +1,30 @@
 <?js
 const data = obj;
-const componentPropertyInterfaceWithGenerics = data.componentPropertyInterface + data.propsTypeParams;
-const propsClassNameWithGenerics = data.propsClassName + data.propsTypeParams;
-const vpropsClassNameWithGenerics = data.vpropsClassName + data.propsTypeParams;
+const componentPropertyInterfaceWithGenerics = data.componentPropertyInterface + data.propsClassTypeParamsDeclaration;
+const propsClassNameWithGenerics = data.propsClassName + data.propsClassTypeParams;
+const vpropsClassNameWithGenerics = data.vpropsClassName + data.propsClassTypeParamsDeclaration;
+const readOnlyProps = obj.readOnlyProps;
 if (data.propsClassName) {
+  if (readOnlyProps) {
 ?>
-
-export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?>>, GlobalAttributes {}
+export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParams ?>>, GlobalAttributes {
+<?js
+for (let prop of readOnlyProps) {
+?>
+  <?js= `${prop}?: never;` ?>
+<?js } ?>
+}
+export interface <?js= vpropsClassNameWithGenerics ?> extends <?js= propsClassNameWithGenerics ?>, GlobalAttributes {
+<?js
+for (let prop of readOnlyProps) {
+?>
+  <?js= `${prop}?: never;` ?>
+<?js } ?>
+}
+<?js } else { ?>
+export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParams ?>>, GlobalAttributes {}
 export interface <?js= vpropsClassNameWithGenerics ?> extends <?js= propsClassNameWithGenerics ?>, GlobalAttributes {}
-
+<?js } ?>
 declare global {
   namespace JSX {
     interface IntrinsicElements {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,38 +9,43 @@
 // tslint:disable-next-line no-unnecessary-class
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadata = {
-    name: string;
-    version: string;
-    jetVersion: string;
-    properties?: {
-        [key: string]: ComponentMetadataProperties;
-    };
-    methods?: {
-        [key: string]: ComponentMetadataMethods;
-    };
-    events?: {
-        [key: string]: ComponentMetadataEvents;
-    };
-    slots?: {
-        [key: string]: ComponentMetadataSlots;
-    };
     dependencies?: {
         [key: string]: string;
     };
     description?: string;
     displayName?: string;
+    dynamicSlots?: {
+        [key: string]: ComponentMetadataSlots;
+    };
+    events?: {
+        [key: string]: ComponentMetadataEvents;
+    };
     extension?: object;
     help?: string;
     icon?: Icon;
+    implements?: string[];
+    jetVersion: string;
     license?: string;
+    methods?: {
+        [key: string]: ComponentMetadataMethods;
+    };
+    name: string;
     pack?: string;
     paths?: {
         cdn: Paths;
     };
+    properties?: {
+        [key: string]: ComponentMetadataProperties;
+    };
     propertyLayout?: PropertyLayoutGroup[];
+    slots?: {
+        [key: string]: ComponentMetadataSlots;
+    };
     status?: Status[];
     styleClasses?: StyleClassItem[] | StyleGroup[];
+    subcomponentType?: 'data' | 'patternImpl' | 'packPrivate';
     type?: 'composite' | 'core' | 'pack' | 'reference' | 'resource';
+    version: string;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadataEvents = {
@@ -59,11 +64,11 @@ export type ComponentMetadataEvents = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadataMethods = {
-    internalName?: string;
     description?: string;
     displayName?: string;
     extension?: object;
     help?: string;
+    internalName?: string;
     params?: MethodParam[];
     return?: string;
     status?: Status[];
@@ -71,17 +76,11 @@ export type ComponentMetadataMethods = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadataProperties = {
-    enumValues?: string[];
-    properties?: {
-        [key: string]: ComponentMetadataProperties;
-    };
-    readOnly?: boolean;
-    type: string;
-    value?: any[] | object | boolean | number | null | string;
     binding?: PropertyBinding;
-    writeback?: boolean;
     description?: string;
     displayName?: string;
+    dynamicSlotDef?: string;
+    enumValues?: string[];
     eventGroup?: string;
     exclusiveMaximum?: number | string;
     exclusiveMinimum?: number | string;
@@ -89,19 +88,26 @@ export type ComponentMetadataProperties = {
     format?: string;
     help?: string;
     maximum?: number | string;
-    minimum?: number | string;
     minCapabilities?: MinCapabilities;
+    minimum?: number | string;
     pattern?: string;
     placeholder?: string;
+    properties?: {
+        [key: string]: ComponentMetadataProperties;
+    };
     propertyEditorValues?: {
         [key: string]: PropertyEditorValue;
     };
     propertyGroup?: string;
+    readOnly?: boolean;
     required?: boolean;
     status?: Status[];
     translatable?: boolean;
+    type: string;
     units?: string;
+    value?: any[] | object | boolean | number | null | string;
     visible?: boolean;
+    writeback?: boolean;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ComponentMetadataSlots = {
@@ -114,15 +120,16 @@ export type ComponentMetadataSlots = {
     help?: string;
     maxItems?: number;
     minItems?: number;
+    preferredContent?: string[];
     status?: Status[];
     visible?: boolean;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type EventDetailItem = {
     description?: string;
-    type: string;
-    status?: Status[];
     eventGroup?: string;
+    status?: Status[];
+    type: string;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type FilterCapabilities = {
@@ -130,9 +137,9 @@ export type FilterCapabilities = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type Icon = {
+    hoverIconPath?: string;
     iconPath?: string;
     selectedIconPath?: string;
-    hoverIconPath?: string;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type MethodParam = {
@@ -147,8 +154,8 @@ export type MinCapabilities = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type Paths = {
-    min?: string;
     debug?: string;
+    min?: string;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type PropertyBinding = {
@@ -165,14 +172,14 @@ export type PropertyEditorValue = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type PropertyLayoutGroup = {
-    propertyGroup: string;
     displayName?: string;
     items: Array<string | PropertyLayoutGroup>;
+    propertyGroup: string;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type ProvideProperty = {
-    name: string;
     default?: string | number | boolean | null;
+    name: string;
     transform?: Record<string, string | number | boolean | null>;
 };
 // tslint:disable-next-line interface-over-type-literal
@@ -183,20 +190,20 @@ export type SlotDataVariable = {
 };
 // tslint:disable-next-line interface-over-type-literal
 export type Status = {
-    type?: 'deprecated';
-    since?: string;
     description?: string;
+    since?: string;
     target?: 'propertyType' | 'propertyValue' | 'parameterType' | 'returnType';
+    type?: 'deprecated';
     value?: string[];
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleClass = {
-    name: string;
-    kind: 'class';
-    displayName?: string;
     description?: string;
+    displayName?: string;
     extension?: object;
     help?: string;
+    kind: 'class';
+    name: string;
     status?: Status[];
     styleSelector?: string;
 };
@@ -204,45 +211,45 @@ export type StyleClass = {
 export type StyleClassItem = StyleClass | StyleSet | StyleTemplate;
 // tslint:disable-next-line interface-over-type-literal
 export type StyleGroup = {
-    styleGroup?: string[];
     description?: string;
+    styleGroup?: string[];
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleSet = {
-    name: string;
-    kind: 'set';
-    displayName?: string;
     description?: string;
+    displayName?: string;
     extension?: object;
     help?: string;
+    kind: 'set';
+    name: string;
     status?: Status[];
-    styleRelation: 'exclusive' | 'inclusive';
     styleItems: Array<(StyleClass | StyleSet | StyleTemplate)>;
+    styleRelation: 'exclusive' | 'inclusive';
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleTemplate = {
-    name: string;
-    kind: 'template';
-    displayName?: string;
     description?: string;
+    displayName?: string;
     extension?: object;
     help?: string;
+    kind: 'template';
+    name: string;
     status?: Status[];
     styleSelector?: string;
     tokens: Array<(StyleTemplateToken)>;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleTemplateToken = {
-    name: string;
-    displayName?: string;
     description?: string;
+    displayName?: string;
+    name: string;
     styleRelation: 'exclusive' | 'inclusive';
     values: Array<(StyleTemplateTokenValue)>;
 };
 // tslint:disable-next-line interface-over-type-literal
 export type StyleTemplateTokenValue = {
-    name: string;
-    displayName?: string;
     description?: string;
+    displayName?: string;
+    name: string;
     status?: Status[];
 };
