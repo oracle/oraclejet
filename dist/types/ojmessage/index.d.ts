@@ -79,3 +79,21 @@ export interface ojMessageSettableProperties extends JetSettableProperties {
 export interface ojMessageSettablePropertiesLenient extends Partial<ojMessageSettableProperties> {
     [key: string]: any;
 }
+export type MessageElement = ojMessage;
+export namespace MessageElement {
+    interface ojClose extends CustomEvent<{
+        message: ojMessage.Message;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojMessage["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messageChanged = JetElementCustomEvent<ojMessage["message"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type translationsChanged = JetElementCustomEvent<ojMessage["translations"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DisplayOptions = {
+        category?: 'header' | 'none' | 'auto';
+    };
+}

@@ -88,7 +88,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
 
 
   ThemeUtils.clearCache = function () {
-    this._cache = null;
+    ThemeUtils._cache = null;
   };
   /**
    *
@@ -161,22 +161,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
     //  class applied after page load.
     //     http://codepen.io/gabrielle/pen/OVOwev
     // if needed create the cache and initialize some things
-    if (this._cache == null) {
-      this._cache = {}; // magic value that means null in the cache
+    if (ThemeUtils._cache == null) {
+      ThemeUtils._cache = {}; // magic value that means null in the cache
 
-      this._null_cache_value = {}; // font family is inherited, so even if no selector/json
+      ThemeUtils._null_cache_value = {}; // font family is inherited, so even if no selector/json
       // is sent down we will get a string like
       // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element.
       // So save off the font family from the head
       // element to compare to what we read off our generated element.
 
-      this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
+      ThemeUtils._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
     } // see if we already have a map for this component's option defaults
 
 
-    var jsonval = this._cache[selector]; // if there's something already cached return it
+    var jsonval = ThemeUtils._cache[selector]; // if there's something already cached return it
 
-    if (jsonval === this._null_cache_value) {
+    if (jsonval === ThemeUtils._null_cache_value) {
       return null;
     } else if (jsonval != null) {
       return jsonval;
@@ -200,7 +200,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
     if (rawfontstring != null) {
       // if the raw font string is the same value as the saved header
       // font value then log a warning that no value was sent down.
-      if (rawfontstring === this._headfontstring) {
+      if (rawfontstring === ThemeUtils._headfontstring) {
         Logger.warn('parseJSONFromFontFamily: When the selector ', selector, ' is applied the font-family read off the dom element is ', rawfontstring, '. The parent dom elment has the same font-family value.', ' This is interpreted to mean that no value was sent down for selector ', selector, '. Null will be returned.');
       } else {
         // remove inconsistent quotes
@@ -243,39 +243,70 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
     document.head.removeChild(elem); // cache the result
 
     if (jsonval == null) {
-      this._cache[selector] = this._null_cache_value;
+      ThemeUtils._cache[selector] = ThemeUtils._null_cache_value;
     } else {
-      this._cache[selector] = jsonval;
-    } // console.log(this._cache);
+      ThemeUtils._cache[selector] = jsonval;
+    } // console.log(ThemeUtils._cache);
 
 
     return jsonval;
   };
+  /**
+   * Validates the CSS version against the JS version the first time it's called.
+   * @ignore
+   * @static
+   * @method verifyThemeVersion
+   * @return {void}
+   * @memberof oj.ThemeUtils
+   */
 
-  if (typeof window !== 'undefined' && true) {
-    // Compare JET version with theme version
-    var jetVersions = oj.version.split('.');
-    var themeMap = (ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {}).jetReleaseVersion;
-    var themeVersions = (themeMap || '').replace(/^v/, '') // Remove leading 'v'
-    .split('.'); // Log error if major/minor mismatch, warning for patch mismatch
 
-    var message = "\n    Your CSS file is compatible with JET version ".concat(themeMap, ", but you are using JET version ").concat(oj.version, ".\n    Please update your CSS to match the version of JET being used.\n    ");
+  ThemeUtils.verifyThemeVersion = function () {
+    // Using an IIFE here to store verified in closure scope
+    // The returned function will get called when custom elements
+    // try to resolve their binding provider Promises (and will
+    // only do anything interesting the first time it's called
+    // since it will short-circuit on verified for subsuquent calls).
+    var verified = false;
+    return function () {
+      if (!verified && typeof window !== 'undefined' && true) {
+        verified = true; // Compare JET version with theme version
 
-    if (jetVersions[0] !== themeVersions[0] || jetVersions[1] !== themeVersions[1]) {
-      Logger.error(message);
-    } else if (jetVersions[2] !== themeVersions[2]) {
-      Logger.warn(message);
-    }
-  }
+        var jetVersions = oj.version.split('.');
+        var themeMap;
 
-  var clearCache = ThemeUtils.clearCache.bind(ThemeUtils);
-  var getThemeName = ThemeUtils.getThemeName.bind(ThemeUtils);
-  var getThemeTargetPlatform = ThemeUtils.getThemeTargetPlatform.bind(ThemeUtils);
-  var parseJSONFromFontFamily = ThemeUtils.parseJSONFromFontFamily.bind(ThemeUtils);
+        try {
+          themeMap = (ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {}).jetReleaseVersion;
+        } catch (err) {
+          // Either CSS wasn't found at all, or the CSS is old enough to not contain oj-theme-json
+          // Setting themeMap to undefined will let this fall through to the Logger.error case below
+          themeMap = undefined;
+        }
+
+        var themeVersions = (themeMap || '').replace(/^v/, '') // Remove leading 'v'
+        .split('.'); // Log error if major/minor mismatch, warning for patch mismatch
+
+        var message = "Your CSS file is incompatible with this version of JET (".concat(oj.version, ").\n  Please see the Migration section of the Developer's Guide for how to update it.\n      ");
+
+        if (jetVersions[0] !== themeVersions[0] || jetVersions[1] !== themeVersions[1]) {
+          Logger.error(message);
+        } else if (jetVersions[2] !== themeVersions[2]) {
+          Logger.warn(message);
+        }
+      }
+    };
+  }();
+
+  var clearCache = ThemeUtils.clearCache;
+  var getThemeName = ThemeUtils.getThemeName;
+  var getThemeTargetPlatform = ThemeUtils.getThemeTargetPlatform;
+  var parseJSONFromFontFamily = ThemeUtils.parseJSONFromFontFamily;
+  var verifyThemeVersion = ThemeUtils.verifyThemeVersion;
   exports.clearCache = clearCache;
   exports.getThemeName = getThemeName;
   exports.getThemeTargetPlatform = getThemeTargetPlatform;
   exports.parseJSONFromFontFamily = parseJSONFromFontFamily;
+  exports.verifyThemeVersion = verifyThemeVersion;
   Object.defineProperty(exports, '__esModule', {
     value: true
   });

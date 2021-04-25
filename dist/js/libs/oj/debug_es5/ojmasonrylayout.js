@@ -71,6 +71,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthe
 
   (function () {
     __oj_masonry_layout_metadata.extension._WIDGET_NAME = 'ojMasonryLayout';
+    __oj_masonry_layout_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-masonry-layout', {
       metadata: __oj_masonry_layout_metadata
     });

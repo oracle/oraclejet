@@ -713,3 +713,159 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
 export interface ojInputTimeSettablePropertiesLenient extends Partial<ojInputTimeSettableProperties> {
     [key: string]: any;
 }
+export type DatePickerElement = ojDatePicker;
+export type DateTimePickerElement = ojDateTimePicker;
+export type InputDateElement<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = ojInputDate<SP>;
+export type InputDateTimeElement<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = ojInputDateTime<SP>;
+export type InputTimeElement = ojInputTime;
+export namespace DatePickerElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojDatePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojDatePicker["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged = JetElementCustomEvent<ojDatePicker["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojDatePicker["value"]>;
+}
+export namespace DateTimePickerElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojDateTimePicker["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojDateTimePicker["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged = JetElementCustomEvent<ojDateTimePicker["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojDateTimePicker["value"]>;
+}
+export namespace InputDateElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type datePickerChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["datePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dayFormatterChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayFormatter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dayMetaDataChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["dayMetaData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type keyboardEditChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<SP extends ojInputDateSettableProperties = ojInputDateSettableProperties> = JetElementCustomEvent<ojInputDate<SP>["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DayFormatterInput = {
+        date: number;
+        fullYear: number;
+        month: number;
+    };
+}
+export namespace InputDateTimeElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type timePickerChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["timePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<SP extends ojInputDateTimeSettableProperties = ojInputDateTimeSettableProperties> = JetElementCustomEvent<ojInputDateTime<SP>["value"]>;
+}
+export namespace InputTimeElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojInputTime["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type keyboardEditChanged = JetElementCustomEvent<ojInputTime["keyboardEdit"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojInputTime["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojInputTime["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pickerAttributesChanged = JetElementCustomEvent<ojInputTime["pickerAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type renderModeChanged = JetElementCustomEvent<ojInputTime["renderMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type timePickerChanged = JetElementCustomEvent<ojInputTime["timePicker"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojInputTime["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojInputTime["value"]>;
+}

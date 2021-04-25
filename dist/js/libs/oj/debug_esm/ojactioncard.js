@@ -56,8 +56,6 @@ let ActionCard = class ActionCard extends ElementVComponent {
         if (!this._isFromActiveSource(event)) {
             if (this.state.active) {
                 this.updateState({ active: false });
-                event.preventDefault();
-                event.stopPropagation();
                 (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
             }
         }
@@ -85,8 +83,6 @@ let ActionCard = class ActionCard extends ElementVComponent {
         var _a, _b;
         if (!this._isFromActiveSource(event)) {
             if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                event.stopPropagation();
                 this.updateState({ active: false });
                 (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
             }
@@ -101,8 +97,6 @@ let ActionCard = class ActionCard extends ElementVComponent {
         var _a, _b;
         if (!this._isFromActiveSource(event)) {
             if (this.state.active) {
-                event.preventDefault();
-                event.stopPropagation();
                 this.updateState({ active: false });
                 (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
             }

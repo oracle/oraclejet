@@ -558,3 +558,137 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
 export interface ojDataGridSettablePropertiesLenient<K, D> extends Partial<ojDataGridSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type DataGridElement<K, D> = ojDataGrid<K, D>;
+export namespace DataGridElement {
+    interface ojBeforeCurrentCell<K> extends CustomEvent<{
+        currentCell: ojDataGrid.CurrentCell<K>;
+        previousCurrentCell: ojDataGrid.CurrentCell<K>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeEdit<K, D> extends CustomEvent<{
+        cellContext: ojDataGrid.CellContext<K, D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeEditEnd<K, D> extends CustomEvent<{
+        cancelEdit: boolean;
+        cellContext: ojDataGrid.CellContext<K, D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize extends CustomEvent<{
+        header: string | number;
+        newDimensions: {
+            height: number;
+            width: number;
+        };
+        oldDimensions: {
+            height: number;
+            width: number;
+        };
+        [propName: string]: any;
+    }> {
+    }
+    interface ojScroll extends CustomEvent<{
+        scrollX: number;
+        scrollY: number;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSort extends CustomEvent<{
+        direction: 'ascending' | 'descending';
+        header: any;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type bandingIntervalChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type cellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["cell"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type gridlinesChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type headerChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["header"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["scrollToKey"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type CellContext<K, D> = {
+        cell: D;
+        componentElement: Element;
+        data: D;
+        datasource: DataProvider<K, D> | null;
+        extents: {
+            column: number;
+            row: number;
+        };
+        indexFromParent: number;
+        indexes: {
+            column: number;
+            row: number;
+        };
+        isLeaf: boolean;
+        keys: {
+            column: K;
+            row: K;
+        };
+        mode: 'edit' | 'navigation';
+        parentElement: Element;
+        parentKey: K;
+        treeDepth: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type HeaderContext<K, D> = {
+        axis: 'column' | 'columnEnd' | 'row' | 'rowEnd';
+        componentElement: Element;
+        data: D;
+        datasource: DataProvider<K, D> | null;
+        depth: number;
+        extent: number;
+        index: number;
+        indexFromParent: number;
+        isLeaf: boolean;
+        key: K;
+        level: number;
+        parentElement: Element;
+        parentKey: K;
+        treeDepth: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Selection<K> = {
+        startIndex?: {
+            row: number;
+            column?: number;
+        };
+        startKey?: {
+            row: K;
+            column?: K;
+        };
+        endIndex?: {
+            row: number;
+            column?: number;
+        };
+        endKey?: {
+            row: K;
+            column?: K;
+        };
+    };
+}

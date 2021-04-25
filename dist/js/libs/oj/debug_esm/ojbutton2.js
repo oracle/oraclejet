@@ -341,9 +341,10 @@ Button2._chromingMap = {
     borderless: 'oj-button-half-chrome',
     full: 'oj-button-full-chrome',
     half: 'oj-button-half-chrome',
-    callToAction: 'oj-button-cta-chrome'
+    callToAction: 'oj-button-cta-chrome',
+    danger: 'oj-button-danger-chrome oj-button-full-chrome'
 };
-Button2.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "title": 1, "aria-label": 1, "aria-labelledby": 1 } }, "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean", "value": false }, "display": { "type": "string", "enumValues": ["all", "icons"], "value": "all" }, "label": { "type": "string" }, "translations": { "type": "object|null", "value": {} }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
+Button2.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "title": 1, "aria-label": 1, "aria-labelledby": 1 } }, "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean", "value": false }, "display": { "type": "string", "enumValues": ["all", "icons"], "value": "all" }, "label": { "type": "string" }, "translations": { "type": "object|null", "value": {} }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
 __decorate([
     listener({ passive: true })
 ], Button2.prototype, "_handleTouchstart", null);

@@ -81,6 +81,10 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
   // eslint-disable-next-line no-unused-vars
   const CspExpressionEvaluator = function (options) {
     var _parser = new ojexpparser.ExpParser();
+    var _options = Object.assign({}, options);
+    if (!(_options.globalScope && _options.globalScope.Object)) {
+      _options.globalScope = Object.assign({ Object: Object }, _options.globalScope);
+    }
 
     /**
      * Creates expression evaluator
@@ -97,7 +101,7 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
       } catch (e) {
         _throwErrorWithExpression(e, expressionText);
       }
-      var extraScope = options ? options.globalScope : null;
+      var extraScope = _options.globalScope;
       return { evaluate: function (contexts) {
         var ret;
         var scopes = contexts;

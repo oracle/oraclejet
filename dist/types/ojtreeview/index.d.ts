@@ -221,3 +221,91 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
 export interface ojTreeViewSettablePropertiesLenient<K, D> extends Partial<ojTreeViewSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type TreeViewElement<K, D> = ojTreeView<K, D>;
+export namespace TreeViewElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: 'expand' | 'collapse';
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: 'expand' | 'collapse';
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCollapse<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCurrentItem<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        previousItem: Element;
+        previousKey: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["item"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojTreeView<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemContext<K, D> = {
+        componentElement: Element;
+        data?: D;
+        depth: number;
+        index: number;
+        key: K;
+        leaf: boolean;
+        metadata: ItemMetadata<K>;
+        parentElement: Element;
+        parentKey?: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        depth: number;
+        index: number;
+        key: any;
+        leaf: boolean;
+        parentkey: any;
+    };
+}

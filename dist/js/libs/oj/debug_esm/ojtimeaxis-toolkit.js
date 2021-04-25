@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, BaseComponentDefaults, CSSStyle, Agent, ClipPath, Rect, Stroke, Container, TextUtils, OutputText, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
+import { Obj, BaseComponentDefaults, CSSStyle, Agent, ClipPath, Path, PathUtils, ToolkitUtils, Stroke, Container, TextUtils, OutputText, Line, BaseComponent } from 'ojs/ojdvt-toolkit';
 
 /**
  * @license
@@ -787,15 +787,48 @@ DvtTimeAxisRenderer._renderAxisBlock = function(timeAxis, axisStart, axisSize, s
     var cp = new ClipPath();
     if (timeAxis.isVertical())
     {
-      timeAxis._axis = new Rect(context, axisStart, -timeAxis.getBorderWidth('top'), axisSize, timeAxis.getAxisLength(), 'axis');
+      timeAxis._axis = new Path(context,
+        PathUtils.roundedRectangle(
+          axisStart,
+          -timeAxis.getBorderWidth('top'),
+          axisSize,
+          timeAxis.getAxisLength(),
+          0, 0, 0, 0
+        ),
+        'axis'
+      );
       cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
     }
     else
     {
-      timeAxis._axis = new Rect(context, -timeAxis.getBorderWidth('left'), axisStart, timeAxis.getAxisLength(), axisSize, 'axis');
+      timeAxis._axis = new Path(context,
+        PathUtils.roundedRectangle(
+          -timeAxis.getBorderWidth('left'),
+          axisStart,
+          timeAxis.getAxisLength(),
+          axisSize,
+          0, 0, 0, 0
+        ),
+        'axis'
+      );
       cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
     }
     timeAxis._axis.setCSSStyle(timeAxis._axisStyle);
+    // setCSSStyle doesn't actually apply styles for dvt.Path. Adopt the logic from dvt.Rect:
+    var elem = timeAxis._axis.getElem();
+    var val = timeAxis._axisStyle.getStyle('background-color');
+    if (val) {
+      ToolkitUtils.setAttrNullNS(elem, 'fill', val);
+    }
+    val = timeAxis._axisStyle.getStyle('border-color');
+    if (val) {
+      ToolkitUtils.setAttrNullNS(elem, 'stroke', val);
+    }
+    val = timeAxis._axisStyle.getStyle('border-width');
+    if (val) {
+      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', val);
+    }
+
     timeAxis._axis.setPixelHinting(true);
     timeAxis._axis.setClipPath(cp);
 
@@ -811,18 +844,28 @@ DvtTimeAxisRenderer._renderAxisBlock = function(timeAxis, axisStart, axisSize, s
     cp = new ClipPath();
     if (timeAxis.isVertical())
     {
-      timeAxis._axis.setX(axisStart);
-      timeAxis._axis.setY(-timeAxis.getBorderWidth('top'));
-      timeAxis._axis.setWidth(axisSize);
-      timeAxis._axis.setHeight(timeAxis.getAxisLength());
+      timeAxis._axis.setCmds(
+        PathUtils.roundedRectangle(
+          axisStart,
+          -timeAxis.getBorderWidth('top'),
+          axisSize,
+          timeAxis.getAxisLength(),
+          0, 0, 0, 0
+        )
+      );
       cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
     }
     else
     {
-      timeAxis._axis.setX(-timeAxis.getBorderWidth('left'));
-      timeAxis._axis.setY(axisStart);
-      timeAxis._axis.setWidth(timeAxis.getAxisLength());
-      timeAxis._axis.setHeight(axisSize);
+      timeAxis._axis.setCmds(
+        PathUtils.roundedRectangle(
+          -timeAxis.getBorderWidth('left'),
+          axisStart,
+          timeAxis.getAxisLength(),
+          axisSize,
+          0, 0, 0, 0
+        )
+      );
       cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
     }
     timeAxis._axis.setClipPath(cp);

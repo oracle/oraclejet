@@ -60,3 +60,14 @@ export interface ojLabelSettableProperties extends baseComponentSettableProperti
 export interface ojLabelSettablePropertiesLenient extends Partial<ojLabelSettableProperties> {
     [key: string]: any;
 }
+export type LabelElement = ojLabel;
+export namespace LabelElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type forChanged = JetElementCustomEvent<ojLabel["for"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = JetElementCustomEvent<ojLabel["help"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelIdChanged = JetElementCustomEvent<ojLabel["labelId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type showRequiredChanged = JetElementCustomEvent<ojLabel["showRequired"]>;
+}

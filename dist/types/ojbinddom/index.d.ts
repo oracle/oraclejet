@@ -16,3 +16,11 @@ export namespace ojBindDom {
         view: Node[];
     };
 }
+export type BindDomElement<D> = ojBindDom<D>;
+export namespace BindDomElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type Config<D> = {
+        data: D;
+        view: Node[];
+    };
+}

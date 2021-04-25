@@ -379,7 +379,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'oj
         var options = this.options;
         var icon = options.expanded ? OPEN_ICON : CLOSE_ICON;
         var iconTag = this._isDisabled() ? $('<span>') : $('<a tabindex="0">');
-        iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon).attr('aria-labelledby', this.header.attr('id')).prependTo(this.header); // @HTMLUpdateOK
+        iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon).attr('aria-describedby', this.header.attr('id')).prependTo(this.header); // @HTMLUpdateOK
       },
 
       /**

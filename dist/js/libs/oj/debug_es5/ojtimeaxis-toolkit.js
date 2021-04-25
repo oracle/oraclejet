@@ -688,14 +688,35 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
       var cp = new dvt.ClipPath();
 
       if (timeAxis.isVertical()) {
-        timeAxis._axis = new dvt.Rect(context, axisStart, -timeAxis.getBorderWidth('top'), axisSize, timeAxis.getAxisLength(), 'axis');
+        timeAxis._axis = new dvt.Path(context, dvt.PathUtils.roundedRectangle(axisStart, -timeAxis.getBorderWidth('top'), axisSize, timeAxis.getAxisLength(), 0, 0, 0, 0), 'axis');
         cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
       } else {
-        timeAxis._axis = new dvt.Rect(context, -timeAxis.getBorderWidth('left'), axisStart, timeAxis.getAxisLength(), axisSize, 'axis');
+        timeAxis._axis = new dvt.Path(context, dvt.PathUtils.roundedRectangle(-timeAxis.getBorderWidth('left'), axisStart, timeAxis.getAxisLength(), axisSize, 0, 0, 0, 0), 'axis');
         cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
       }
 
-      timeAxis._axis.setCSSStyle(timeAxis._axisStyle);
+      timeAxis._axis.setCSSStyle(timeAxis._axisStyle); // setCSSStyle doesn't actually apply styles for dvt.Path. Adopt the logic from dvt.Rect:
+
+
+      var elem = timeAxis._axis.getElem();
+
+      var val = timeAxis._axisStyle.getStyle('background-color');
+
+      if (val) {
+        dvt.ToolkitUtils.setAttrNullNS(elem, 'fill', val);
+      }
+
+      val = timeAxis._axisStyle.getStyle('border-color');
+
+      if (val) {
+        dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke', val);
+      }
+
+      val = timeAxis._axisStyle.getStyle('border-width');
+
+      if (val) {
+        dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke-width', val);
+      }
 
       timeAxis._axis.setPixelHinting(true);
 
@@ -710,23 +731,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
       cp = new dvt.ClipPath();
 
       if (timeAxis.isVertical()) {
-        timeAxis._axis.setX(axisStart);
-
-        timeAxis._axis.setY(-timeAxis.getBorderWidth('top'));
-
-        timeAxis._axis.setWidth(axisSize);
-
-        timeAxis._axis.setHeight(timeAxis.getAxisLength());
+        timeAxis._axis.setCmds(dvt.PathUtils.roundedRectangle(axisStart, -timeAxis.getBorderWidth('top'), axisSize, timeAxis.getAxisLength(), 0, 0, 0, 0));
 
         cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
       } else {
-        timeAxis._axis.setX(-timeAxis.getBorderWidth('left'));
-
-        timeAxis._axis.setY(axisStart);
-
-        timeAxis._axis.setWidth(timeAxis.getAxisLength());
-
-        timeAxis._axis.setHeight(axisSize);
+        timeAxis._axis.setCmds(dvt.PathUtils.roundedRectangle(-timeAxis.getBorderWidth('left'), axisStart, timeAxis.getAxisLength(), axisSize, 0, 0, 0, 0));
 
         cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
       }

@@ -55,3 +55,14 @@ export interface ojRefresherSettableProperties extends baseComponentSettableProp
 export interface ojRefresherSettablePropertiesLenient extends Partial<ojRefresherSettableProperties> {
     [key: string]: any;
 }
+export type RefresherElement = ojRefresher;
+export namespace RefresherElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type refreshContentChanged = JetElementCustomEvent<ojRefresher["refreshContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type targetChanged = JetElementCustomEvent<ojRefresher["target"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textChanged = JetElementCustomEvent<ojRefresher["text"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thresholdChanged = JetElementCustomEvent<ojRefresher["threshold"]>;
+}

@@ -76,3 +76,29 @@ export interface ojSwitchSettableProperties extends editableValueSettablePropert
 export interface ojSwitchSettablePropertiesLenient extends Partial<ojSwitchSettableProperties> {
     [key: string]: any;
 }
+export type SwitchElement = ojSwitch;
+export namespace SwitchElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojSwitch["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojSwitch["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojSwitch["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojSwitch["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSwitch["value"]>;
+}

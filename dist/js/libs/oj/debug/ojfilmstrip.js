@@ -113,6 +113,7 @@ var __oj_film_strip_metadata =
   /* global __oj_film_strip_metadata:false */
   (function () {
     __oj_film_strip_metadata.extension._WIDGET_NAME = 'ojFilmStrip';
+    __oj_film_strip_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-film-strip', { metadata: __oj_film_strip_metadata });
   }());
 

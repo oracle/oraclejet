@@ -1335,7 +1335,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
 
   ConveyorBeltCommon.prototype._getCurrScroll = function () {
     var container = this._overflowContainer;
-    return this._isHorizontal() ? this._convertScrollBrowserToLogical(container.scrollLeft) : container.scrollTop;
+    return this._isHorizontal() ? Math.round(this._convertScrollBrowserToLogical(container.scrollLeft)) : Math.round(container.scrollTop);
   };
   /**
    * Determine if the conveyor needs to show scroll buttons.

@@ -133,3 +133,64 @@ export interface ojPopupSettableProperties extends baseComponentSettableProperti
 export interface ojPopupSettablePropertiesLenient extends Partial<ojPopupSettableProperties> {
     [key: string]: any;
 }
+export type PopupElement = ojPopup;
+export namespace PopupElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeClose extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeOpen extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    interface ojClose extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    interface ojFocus extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    interface ojOpen extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type autoDismissChanged = JetElementCustomEvent<ojPopup["autoDismiss"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type chromeChanged = JetElementCustomEvent<ojPopup["chrome"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialFocusChanged = JetElementCustomEvent<ojPopup["initialFocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type modalityChanged = JetElementCustomEvent<ojPopup["modality"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojPopup["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tailChanged = JetElementCustomEvent<ojPopup["tail"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Position = {
+        at?: ojPopup.PositionAlign;
+        collision?: 'flip' | 'fit' | 'flipfit' | 'flipcenter' | 'none';
+        my?: ojPopup.PositionAlign;
+        of?: string | ojPopup.PositionPoint;
+        offset?: ojPopup.PositionPoint;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionPoint = {
+        x?: number;
+        y?: number;
+    };
+}

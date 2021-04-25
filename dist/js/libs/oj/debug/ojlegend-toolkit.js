@@ -745,7 +745,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @override
    */
   DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
-    return {'sections': {'items': {'_dataContext': true}} };
+    return {'sections': {'items': {'_getDataContext': true}} };
   };
 
   /**
@@ -1012,7 +1012,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtLegendEventManager.prototype.GetDragSourceType = function(event) {
     var obj = this.DragSource.getDragObject();
-    if (obj instanceof DvtLegendObjPeer && obj.getData()['_dataContext'] != null)
+    if (obj instanceof DvtLegendObjPeer && obj.getData()['_getDataContext'] != null)
       return 'series';
     return null;
   };
@@ -1023,7 +1023,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   DvtLegendEventManager.prototype.GetDragDataContexts = function(bSanitize) {
     var obj = this.DragSource.getDragObject();
     if (obj instanceof DvtLegendObjPeer) {
-      var dataContext = obj.getData()['_dataContext'];
+      var dataContext = obj.getData()['_getDataContext']();
       if (bSanitize) {
         dataContext = dvt.JsonUtils.clone(dataContext, null, {component: true, componentElement: true});
         dvt.ToolkitUtils.cleanDragDataContext(dataContext);

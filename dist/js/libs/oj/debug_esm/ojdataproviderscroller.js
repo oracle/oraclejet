@@ -621,7 +621,7 @@ DataProviderContentHandler.prototype.getIndex = function (keys, index) {
  */
 DataProviderContentHandler.prototype.handleModelAddEvent = function (event) {
   // if listview is busy, queue it for processing later
-  if (!this.IsReadyForMutation()) {
+  if (!this.IsReady()) {
     this._pushToEventQueue({ type: event.type, event: event });
     return;
   }
@@ -775,12 +775,16 @@ DataProviderContentHandler.prototype._handleAddTransitionEnd =
 
     var hasFocus = elem.classList.contains('oj-focus') &&
       elem.classList.contains('oj-focus-highlight');
+    var isCardAnimated = elem.classList.contains('oj-listview-card-animated');
     // restore class name
     // eslint-disable-next-line no-param-reassign
     elem.className = elem._className;
     if (hasFocus) {
       elem.classList.add('oj-focus');
       elem.classList.add('oj-focus-highlight');
+    }
+    if (isCardAnimated) {
+      elem.classList.add('oj-listview-card-animated');
     }
 
     // add classes that might have been added during custom animation callback
@@ -823,8 +827,8 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
     return false;
   }
 
-    // if listview is busy, hold that off until later
-  if (!this.IsReadyForMutation()) {
+  // if listview is busy, hold that off until later
+  if (!this.IsReady()) {
     this._pushToEventQueue({ type: event.type, event: event });
     return false;
   }
@@ -907,11 +911,23 @@ DataProviderContentHandler.prototype._removeItem = function (elem) {
 
   this.signalTaskStart('kick off animation to remove an item'); // signal remove item animation start. Ends in handleRemoveTransitionEnd()
 
+  // to workaround removing element caused scrolling by resize listener
+  // ideally we should be using ResizeObserver, but that caused issues in qunit
+  // tests due to https://bugs.chromium.org/p/chromium/issues/detail?id=809574
+  this.m_widget.disableResizeListener();
+
   var promise = this.m_widget.StartAnimation(item, action);
 
   // now hide it
   promise.then(function () {
     self.handleRemoveTransitionEnd(elem, restoreFocus);
+    if (self.m_widget) {
+      self.m_widget.enableResizeListener();
+    }
+  }, function () {
+    if (self.m_widget) {
+      self.m_widget.enableResizeListener();
+    }
   });
 
   this.signalTaskEnd(); // signal method task end
@@ -942,7 +958,7 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
     }
 
     // invoke hook before actually removing the item
-    this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus);
+    var currentItemUpdated = this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus);
 
     // template engine should have already been loaded
     var templateEngine = this.getTemplateEngine();
@@ -964,7 +980,7 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
     }
 
     // this should focus on the current item, set by itemRemoveComplete
-    if (restoreFocus && !this.m_root.contains(document.activeElement)) {
+    if (currentItemUpdated && restoreFocus && !this.m_root.contains(document.activeElement)) {
       this.m_root.focus();
     }
 
@@ -1401,7 +1417,8 @@ IteratingDataProviderContentHandler.prototype.shouldHandleResize = function () {
 
 IteratingDataProviderContentHandler.prototype.HandleResize = function (width, height) {
   // we only care about the high-water mark scrolling case, and if height changes
-  if (!this._isLoadMoreOnScroll()) {
+  // or we are animating which could cause resize
+  if (!this._isLoadMoreOnScroll() || this.m_animationPromise != null) {
     return;
   }
 
@@ -1532,7 +1549,11 @@ IteratingDataProviderContentHandler.prototype._getScroller = function () {
 IteratingDataProviderContentHandler.prototype._getScrollerOffsetTop = function () {
   if (this._scrollerOffsetTop === undefined) {
     var scroller = this._getScroller();
-    this._scrollerOffsetTop = DomScroller.calculateOffsetTop(scroller, this.m_root);
+    if (scroller === this.m_widget.GetRootElement()[0]) {
+      this._scrollerOffsetTop = 0;
+    } else {
+      this._scrollerOffsetTop = DomScroller.calculateOffsetTop(scroller, this.m_root);
+    }
   }
   return this._scrollerOffsetTop;
 };
@@ -1545,12 +1566,6 @@ IteratingDataProviderContentHandler.prototype._getScrollerOffsetTop = function (
 IteratingDataProviderContentHandler.prototype._getFetchTrigger = function () {
   if (this._fetchTrigger === undefined) {
     this._fetchTrigger = this._getLoadingIndicatorHeight();
-
-    var scroller = this._getScroller();
-    if (scroller !== this.m_widget.GetRootElement()[0]) {
-      // eslint-disable-next-line no-param-reassign
-      this._fetchTrigger += this._getScrollerOffsetTop();
-    }
   }
   return this._fetchTrigger;
 };
@@ -1641,7 +1656,9 @@ IteratingDataProviderContentHandler.prototype.createSkeleton = function (initial
       if (this.m_defaultLoadMoreSkeleton === undefined) {
         var card = this._createSkeletonCard();
         var dim = this._getCardDimension();
-        this._adjustSkeletonCardContent(card, dim.width, dim.height);
+        if (dim) {
+          this._adjustSkeletonCardContent(card, dim.width, dim.height);
+        }
         this.m_defaultLoadMoreSkeleton = card;
       }
       defaultSkeleton = this.m_defaultLoadMoreSkeleton;
@@ -1732,14 +1749,21 @@ IteratingDataProviderContentHandler.LOAD_MORE_SKELETONS_ROW_COUNT = 3;
  * Adjust the load more skeleton in the case of component resize/reattach
  * @private
  */
-IteratingDataProviderContentHandler.prototype._adjustLoadMoreSkeletons = function (width) {
-  var margin = this._getMargin();
-  var newColCount = Math.floor(width / (this._getCardDimension().width + margin));
-  var container = this.m_loadingIndicator.get(0).firstElementChild;
-  var currentColCount = container.childElementCount;
-  var diff = newColCount - currentColCount;
-  if (diff === 0) {
+IteratingDataProviderContentHandler.prototype._adjustLoadMoreSkeletons = function (width, force) {
+  var cardDim = this._getCardDimension();
+  if (cardDim == null || cardDim.width === 0) {
     return;
+  }
+
+  if (!force) {
+    var margin = this._getMargin();
+    var newColCount = Math.floor(width / (cardDim.width + margin));
+    var container = this.m_loadingIndicator.get(0).firstElementChild;
+    var currentColCount = container.childElementCount;
+    var diff = newColCount - currentColCount;
+    if (diff === 0) {
+      return;
+    }
   }
 
   // remove all skeletons.  note it's better to just recreate the skeletons instead of maniulate them
@@ -1750,6 +1774,7 @@ IteratingDataProviderContentHandler.prototype._adjustLoadMoreSkeletons = functio
   }
   this.m_loadingIndicator = null;
   this.m_fillerSkeletons = null;
+  this.m_defaultLoadMoreSkeleton = undefined;
 
   // repopulate the skeletons
   this._appendLoadingIndicator();
@@ -1814,14 +1839,14 @@ IteratingDataProviderContentHandler.prototype._renderSkeletons = function (count
  * @private
  */
 IteratingDataProviderContentHandler.prototype._fillEmptySpaceWithSkeletons = function () {
-  // first check how many do we need
-  var lastItem = this.m_root.lastElementChild;
-  var cardWidth = this._getCardDimension().width;
-  if (cardWidth === 0) {
+  var cardDim = this._getCardDimension();
+  if (cardDim == null || cardDim.width === 0) {
     return;
   }
 
-  var cardWidthWithMargin = cardWidth + this._getMargin();
+  // first check how many do we need
+  var lastItem = this.m_root.lastElementChild;
+  var cardWidthWithMargin = cardDim.width + this._getMargin();
   var width = this._getRootElementWidth(true);
   var count = Math.floor((width - lastItem.offsetLeft - cardWidthWithMargin)
     / cardWidthWithMargin);
@@ -1887,7 +1912,8 @@ IteratingDataProviderContentHandler.prototype._appendLoadingIndicator = function
   }
 
   this.m_appendLoadingindicator = true;
-  if (this.isSkeletonSupport() && this.isCardLayout() && this._getCardDimension().width === 0) {
+  if (this.isSkeletonSupport() && this.isCardLayout() && this._getCardDimension() != null
+    && this._getCardDimension().width === 0) {
     var self = this;
     var busyContext = Context.getContext(this.m_root).getBusyContext();
     busyContext.whenReady().then(function () {
@@ -2090,9 +2116,8 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
       }
       // skip additional fetching if done, or if fetchSize is not -1.
       // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
-      if (updatedScrollToKey == null && (values[0].done ||
-          self.fetchSize !== -1 ||
-          typeof self.getDataProvider().getPageCount === 'function')) {
+      if (values[0].done || (updatedScrollToKey == null &&
+        (self.fetchSize !== -1 || typeof self.getDataProvider().getPageCount === 'function'))) {
         return values;
       }
       var nextPromise = self.m_dataProviderAsyncIterator.next();
@@ -2326,12 +2351,14 @@ IteratingDataProviderContentHandler.prototype._isLastItemInViewport = function (
 
   if (lastItem) {
     var lastItemBounds = lastItem.getBoundingClientRect();
-    if (lastItemBounds.top >= 0 && lastItemBounds.bottom <= document.documentElement.clientHeight) {
-      return false;
+    if (!(lastItemBounds.top >= 0 &&
+      lastItemBounds.bottom <= document.documentElement.clientHeight)) {
+      return true;
     }
   }
 
-  return true;
+  // no items or last item is not inbound
+  return false;
 };
 
 /**
@@ -2432,6 +2459,13 @@ IteratingDataProviderContentHandler.prototype.handleDomScrollerFetchedData =
         this.signalTaskStart('dummy task'); // start a dummy task to be paired with the fetchEnd() call below if no new data were fetched.
       }
 
+      // in card layout mode, the root is an additional element created by ListView, and that will be disassociated by ListView when
+      // it is empty, re-append it to the root ul (the superRoot)
+      if (this.isCardLayout() && this.m_superRoot && this.m_root.childNodes.length === 0
+        && this.m_root.parentNode) {
+        this.m_superRoot.appendChild(this.m_root.parentNode);
+      }
+
       this._handleFetchedData(result, this.getTemplateEngine(), false); // will call fetchEnd(), which signals a task end. Started either in fetchRows() or in a dummy task not involving data fetch.
 
       if (result.value && result.value.data) {
@@ -2464,6 +2498,7 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
   var options = {
     fetchSize: this._getFetchSize(),
     fetchTrigger: this._getFetchTrigger(),
+    offsetTop: this._getScrollerOffsetTop(),
     maxCount: this._getMaxCount(),
     asyncIterator: this.m_dataProviderAsyncIterator,
     initialRowCount: this.m_root.childElementCount,
@@ -2530,6 +2565,13 @@ IteratingDataProviderContentHandler.prototype._clearEventQueue = function () {
   }
 };
 
+IteratingDataProviderContentHandler.prototype.handleModelMutateEvent = function (event) {
+  if (this.m_dataProviderAsyncIterator === undefined) {
+    return;
+  }
+  IteratingDataProviderContentHandler.superclass.handleModelMutateEvent.call(this, event);
+};
+
 /**
  * Model add event handler.
  * @param {Object} event the model add event
@@ -2594,6 +2636,12 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
 
     var promises = [];
     for (var i = 0; i < data.length; i++) {
+      // ignore if the item with key already exists
+      if (this.FindElementByKey(keys[i]) != null) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
       this.signalTaskStart('handling model add event for item: ' + keys[i]); // signal add item start
       // indexes takes precedence
       var index;
@@ -2848,7 +2896,14 @@ IteratingDataProviderContentHandler.prototype.disableAllTabbableElements = funct
  */
 IteratingDataProviderContentHandler.prototype.afterItemsInserted = function (checkViewport) {
   if (this.m_widget) {
+    var self = this;
     var _animationPromise = this.m_widget.renderComplete();
+    if (_animationPromise) {
+      _animationPromise.then(function () {
+        self.m_animationPromise = null;
+      });
+    }
+    this.m_animationPromise = _animationPromise;
 
     // process any outstanding events
     this._processEventQueue();
@@ -2861,14 +2916,22 @@ IteratingDataProviderContentHandler.prototype.afterItemsInserted = function (che
         // so that we have the correct height before checking viewport.  For example, we want to avoid excessive
         // fetch if the height expanded which causes overflow.  On the other hand, if the height contracted then
         // we could potentially have an underflow that requires an additional fetch.
-        var self = this;
         var busyContext = Context.getContext(self.m_root).getBusyContext();
         var viewportCheckPromise = busyContext.whenReady();
         viewportCheckPromise.then(function () {
-          if (self.m_viewportCheckPromise != null) {
-            promise = self.checkViewport(_animationPromise);
-            if (promise == null) {
-              self._clearInsertOutOfRangeKeys();
+          if (self.m_widget) {
+            // card dimension could be not available until now where the card is fully rendered
+            // adjust loadmore skeletons that were previously rendered
+            if (self.isCardLayout() && self.m_cardDim === undefined &&
+              self.m_loadingIndicator != null) {
+              self._adjustLoadMoreSkeletons(self._getRootElementWidth(true), true);
+            }
+
+            if (self.m_viewportCheckPromise != null) {
+              promise = self.checkViewport(_animationPromise);
+              if (promise == null) {
+                self._clearInsertOutOfRangeKeys();
+              }
             }
           }
         });

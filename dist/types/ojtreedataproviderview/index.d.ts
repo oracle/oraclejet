@@ -11,9 +11,7 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
    FetchAttribute } from '../ojdataprovider';
 declare class TreeDataProviderView<K, D, Kin, Din> implements TreeDataProvider<K, D> {
     dataMapping?: DataMapping<K, D, Kin, Din>;
-    constructor(dataProvider: TreeDataProvider<K, D>, options?: {
-        dataMapping?: DataMapping<K, D, Kin, Din>;
-    });
+    constructor(dataProvider: TreeDataProvider<K, D>, options?: TreeDataProviderView.Options<K, D, Kin, Din>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     dispatchEvent(evt: Event): boolean;
@@ -25,5 +23,11 @@ declare class TreeDataProviderView<K, D, Kin, Din> implements TreeDataProvider<K
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
+}
+declare namespace TreeDataProviderView {
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<K, D, Kin, Din> = {
+        dataMapping?: DataMapping<K, D, Kin, Din>;
+    };
 }
 export = TreeDataProviderView;

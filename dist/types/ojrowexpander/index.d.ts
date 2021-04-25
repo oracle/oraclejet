@@ -75,3 +75,30 @@ export interface ojRowExpanderSettableProperties<K, D> extends baseComponentSett
 export interface ojRowExpanderSettablePropertiesLenient<K, D> extends Partial<ojRowExpanderSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type RowExpanderElement<K, D> = ojRowExpander<K, D>;
+export namespace RowExpanderElement {
+    interface ojCollapse extends CustomEvent<{
+        rowKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand<K> extends CustomEvent<{
+        rowKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type contextChanged<K, D> = JetElementCustomEvent<ojRowExpander<K, D>["context"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Context<K, D> = {
+        datasource: DataProvider<K, D> | null;
+        isLeaf: boolean;
+        key: K;
+        keys: {
+            column: K;
+            row: K;
+        };
+        parentKey: K;
+        treeDepth: number;
+    };
+}

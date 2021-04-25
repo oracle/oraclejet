@@ -10,12 +10,7 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
    FetchListParameters } from '../ojdataprovider';
 declare class MutableArrayDataProvider<K, D> implements DataProvider<K, D> {
     data: D[];
-    constructor(data?: any[], options?: {
-        sortComparators?: MutableArrayDataProvider.SortComparators<D>;
-        implicitSort?: Array<SortCriterion<D>>;
-        keyAttributes?: string | string[];
-        textFilterAttributes?: string[];
-    });
+    constructor(data?: any[], options?: MutableArrayDataProvider.Options<D>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
@@ -31,8 +26,15 @@ declare class MutableArrayDataProvider<K, D> implements DataProvider<K, D> {
 }
 declare namespace MutableArrayDataProvider {
     // tslint:disable-next-line interface-over-type-literal
+    type Options<D> = {
+        implicitSort?: Array<SortCriterion<D>>;
+        keyAttributes?: string | string[];
+        sortComparators?: SortComparators<D>;
+        textFilterAttributes?: string[];
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type SortComparators<D> = {
-        comparators: object;
+        comparators: Map<keyof D, (a: any, b: any) => number>;
     };
 }
 export = MutableArrayDataProvider;

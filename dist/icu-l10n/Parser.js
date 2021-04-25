@@ -72,7 +72,7 @@ function convertBundle(bundle, locale, targetFile, dtsFile, moduleType) {
   fsx.ensureDirSync(targetDir);
   fsx.writeFileSync(
     targetFile,
-    `${pluralSelect}${wrapInModule(moduleType, contents)};`
+    wrapInModule(moduleType, contents, pluralSelect)
   );
   if (dtsFile) {
     fsx.writeFileSync(
@@ -82,11 +82,11 @@ function convertBundle(bundle, locale, targetFile, dtsFile, moduleType) {
   }
 }
 
-function wrapInModule(moduleType, contents) {
+function wrapInModule(moduleType, contents, pluralSelect) {
   if (moduleType === 'esm') {
-    return `export const bundle = ${contents}`;
+    return `${pluralSelect}\nexport const bundle = ${contents}`;
   } else if (moduleType === 'amd') {
-    return `define(${contents})`;
+    return `(function() {\n${pluralSelect}\ndefine(${contents})\n}())`;
   }
 }
 

@@ -2367,6 +2367,24 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcustomelement', 'ojs/ojda
     },
 
     /**
+     * Invoked by ContentHandler
+     */
+    disableResizeListener: function disableResizeListener() {
+      var container = this.getListContainer()[0];
+
+      this._unregisterResizeListener(container);
+    },
+
+    /**
+     * Invoked by ContentHandler
+     */
+    enableResizeListener: function enableResizeListener() {
+      var container = this.getListContainer()[0];
+
+      this._registerResizeListener(container);
+    },
+
+    /**
      * Returns DnD Context, needed to override in navigationlist
      * @protected
      */
@@ -3417,7 +3435,8 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcustomelement', 'ojs/ojda
      * @param {boolean} restoreFocus true if focus should be restore, false otherwise
      */
     itemRemoveComplete: function itemRemoveComplete(elem, restoreFocus) {
-      // if it's the current focus item, try to focus on the next/prev item.  If there are none, then focus on the root element
+      var currentItemUpdated = false; // if it's the current focus item, try to focus on the next/prev item.  If there are none, then focus on the root element
+
       if (this.m_active != null && oj.Object.compareValues(this.m_active.key, this.GetKey(elem))) {
         // make sure we exit actionable mode, otherwise focus will be lost
         this._setActionableMode(false, true);
@@ -3434,6 +3453,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcustomelement', 'ojs/ojda
 
         if (next != null && $(next).hasClass(this.getItemElementStyleClass())) {
           this.SetCurrentItem($(next), null, !restoreFocus);
+          currentItemUpdated = true;
         }
       } // disassociate element from key map
 
@@ -3445,6 +3465,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcustomelement', 'ojs/ojda
 
       this.m_clientHeight = null;
       this.m_scrollHeight = null;
+      return currentItemUpdated;
     },
 
     /**
@@ -4806,6 +4827,12 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcustomelement', 'ojs/ojda
       }
 
       if (this._isActionableMode()) {
+        // checks if the focusout event is triggered by popup originated from within listview
+        // if it is don't do anything as we do not want to exit actionable mode.
+        if (DataCollectionUtils.getLogicalChildPopup(this.getListContainer()) != null) {
+          return;
+        }
+
         this._setFocusoutBusyState(); // set timeout to stay in editable/actionable mode if focus comes back into the listview
 
 

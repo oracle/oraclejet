@@ -77,3 +77,18 @@ export interface ojFilmStripSettableProperties extends baseComponentSettableProp
 export interface ojFilmStripSettablePropertiesLenient extends Partial<ojFilmStripSettableProperties> {
     [key: string]: any;
 }
+export type FilmStripElement = ojFilmStrip;
+export namespace FilmStripElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type arrowPlacementChanged = JetElementCustomEvent<ojFilmStrip["arrowPlacement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type arrowVisibilityChanged = JetElementCustomEvent<ojFilmStrip["arrowVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged = JetElementCustomEvent<ojFilmStrip["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type loopingChanged = JetElementCustomEvent<ojFilmStrip["looping"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxItemsPerPageChanged = JetElementCustomEvent<ojFilmStrip["maxItemsPerPage"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojFilmStrip["orientation"]>;
+}

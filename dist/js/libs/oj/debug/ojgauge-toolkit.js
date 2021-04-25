@@ -1230,7 +1230,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    */
   DvtGaugeEventManager.prototype.OnMouseDown = function(event) {
     // Set the editing flag so moves are tracked
-    if (this._isInteractive()) {
+    if (this._gauge.IsInteractive()) {
       this.IsMouseEditing = true;
       this.hideTooltip();
       var coords = this.GetRelativePosition(event.pageX, event.pageY);
@@ -1283,7 +1283,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    * @override
    */
   DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
-    if (dvt.TouchEvent.TOUCHSTART === event.type && this._isInteractive()) {
+    if (dvt.TouchEvent.TOUCHSTART === event.type && this._gauge.IsInteractive()) {
       // Set the editing flag so moves are tracked
       this.IsMouseEditing = true;
       var coords = this.GetRelativePosition(event.touches[0].pageX, event.touches[0].pageY);
@@ -1374,13 +1374,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     this.IsMouseEditing = false;
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processValueChangeEnd(coords.x, coords.y);
-  };
-
-  /**
-   * Returns whether the gauge is interactive or not.
-   */
-  DvtGaugeEventManager.prototype._isInteractive = function() {
-    return this._gauge.getOptions()['readOnly'] === false;
   };
 
   /**
@@ -2290,7 +2283,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       var tooltip = DvtGaugeRenderer.getTooltipString(this);
       if (this.IsParentRoot()) {
         var translations = this.Options.translations;
-        if (this.Options['readOnly']) {
+        if (!this.IsInteractive()) {
           this.getCtx().setAriaRole('img');
           this.getCtx().setAriaLabel(dvt.ResourceUtils.format(translations.labelAndValue,
               [translations.labelDataVisualization,
@@ -2304,11 +2297,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
               [translations.labelDataVisualization, dvt.AriaUtils.processAriaLabel(this.GetComponentDescription())]));
         }
       }
-      else if (this.Options['readOnly']) {
+      else if (!this.IsInteractive()) {
         this.setAriaRole('img');
         this.setAriaProperty('label', dvt.Displayable.generateAriaLabel(dvt.AriaUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
       }
     }
+  };
+
+  /**
+   * Checks if the gauge is interactive.
+   */
+  DvtGauge.prototype.IsInteractive = function () {
+    return !this.Options.readOnly;
   };
 
   /**
@@ -3027,7 +3027,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    */
   DvtRatingGaugeEventManager.prototype.OnMouseOver = function (event) {
     // Only editable gauges
-    if (this._isInteractive()) {
+    if (this._gauge.IsInteractive()) {
       var coords = this.GetRelativePosition(event.pageX, event.pageY);
       this._gauge.__processValueChangeStart(coords.x, coords.y);
       this.IsMouseEditing = true;
@@ -3043,7 +3043,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    */
   DvtRatingGaugeEventManager.prototype.OnMouseOut = function (event) {
     // Only editable gauges
-    if (this._isInteractive()) {
+    if (this._gauge.IsInteractive()) {
       var coords = this.GetRelativePosition(event.pageX, event.pageY);
       this._gauge.__processHoverEnd(coords.x, coords.y);
       this.IsMouseEditing = false;
@@ -3060,7 +3060,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
 
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     var isDisabled = this._gauge.getOptions()['disabled'] === true;
-    if (this._isInteractive() && !this.IsMouseEditing &&
+    if (this._gauge.IsInteractive() && !this.IsMouseEditing &&
         this._gauge.getOptions()['value'] !== this._gauge.GetValueAt(coords.x, coords.y)) {
       this.IsMouseEditing = true;
     }
@@ -3109,16 +3109,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    */
   DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function () {
     return true;
-  };
-
-  /**
-   * Checks if the gauge is interactive
-   * @override
-   */
-  DvtRatingGaugeEventManager.prototype._isInteractive = function () {
-    var isReadOnly = this._gauge.getOptions()['readOnly'] === true;
-    var isDisabled = this._gauge.getOptions()['disabled'] === true;
-    return !(isDisabled || isReadOnly);
   };
 
   /**
@@ -3711,6 +3701,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
    */
   RatingGauge.prototype.CreateEventManager = function() {
     return new DvtRatingGaugeEventManager(this);
+  };
+
+  /**
+   * @override
+   */
+  RatingGauge.prototype.IsInteractive = function () {
+    if (this.Options.disabled) {
+      return false;
+    }
+    return RatingGauge.superclass.IsInteractive.call(this);
   };
 
   /**

@@ -36,3 +36,10 @@ export interface ojOptionSettableProperties extends JetSettableProperties {
 export interface ojOptionSettablePropertiesLenient extends Partial<ojOptionSettableProperties> {
     [key: string]: any;
 }
+export type OptionElement = ojOption;
+export namespace OptionElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojOption["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojOption["value"]>;
+}

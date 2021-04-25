@@ -116,3 +116,70 @@ export interface ojMasonryLayoutSettableProperties extends baseComponentSettable
 export interface ojMasonryLayoutSettablePropertiesLenient extends Partial<ojMasonryLayoutSettableProperties> {
     [key: string]: any;
 }
+export type MasonryLayoutElement = ojMasonryLayout;
+export namespace MasonryLayoutElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeInsert extends CustomEvent<{
+        index: number;
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeRemove extends CustomEvent<{
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeReorder extends CustomEvent<{
+        fromIndex: number;
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeResize extends CustomEvent<{
+        previousSizeStyleClass: string;
+        sizeStyleClass: string;
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojInsert extends CustomEvent<{
+        index: number;
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojRemove extends CustomEvent<{
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojReorder extends CustomEvent<{
+        fromIndex: number;
+        tile: Element;
+        toIndex: number;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize extends CustomEvent<{
+        previousSizeStyleClass: string;
+        sizeStyleClass: string;
+        tile: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type reorderHandleChanged = JetElementCustomEvent<ojMasonryLayout["reorderHandle"]>;
+}

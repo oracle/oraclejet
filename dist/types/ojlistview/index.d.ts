@@ -384,3 +384,131 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
 export interface ojListViewSettablePropertiesLenient<K, D> extends Partial<ojListViewSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type ListViewElement<K, D> = ojListView<K, D>;
+export namespace ListViewElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCollapse<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCurrentItem<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        previousItem: Element;
+        previousKey: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCopy extends CustomEvent<{
+        items: Element[];
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCut extends CustomEvent<{
+        items: Element[];
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand<K> extends CustomEvent<{
+        item: Element;
+        key: K;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojItemAction<K, D> extends CustomEvent<{
+        context: CommonTypes.ItemContext<K, D>;
+        originalEvent: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojPaste extends CustomEvent<{
+        item: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojReorder extends CustomEvent<{
+        items: Element[];
+        position: string;
+        reference: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillModeChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["drillMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type firstSelectedItemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["firstSelectedItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type gridlinesChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["gridlines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupHeaderPositionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["groupHeaderPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["item"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["scrollToKey"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojListView<K, D>["selectionRequired"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ContextByNode<K> = {
+        group?: boolean;
+        index: number;
+        key: K;
+        parent?: Element;
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemsDropContext = {
+        item: Element;
+        position: 'before' | 'after' | 'inside';
+        reorder: boolean;
+    };
+}

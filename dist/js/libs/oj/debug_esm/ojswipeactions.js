@@ -259,6 +259,7 @@ var __oj_swipe_actions_metadata =
               self._close(_offcanvas);
             }
             defaultActionTriggered = false;
+            self._updateOptionClass(event.target, '.oj-sm-align-self-center', 'oj-flex-bar-center-absolute');
             self._releaseBusyState();
           },
           ojclose: function (event, _offcanvas) {
@@ -267,6 +268,8 @@ var __oj_swipe_actions_metadata =
             if (accLink.length > 0) {
               accLink[0].parentNode.removeChild(accLink[0]);
             }
+            var className = this._getOptionClass(event.target);
+            self._updateOptionClass(event.target, '.oj-flex-bar-center-absolute', className);
             self._releaseBusyState();
           }
         });
@@ -713,7 +716,8 @@ var __oj_swipe_actions_metadata =
         });
 
         var inner = document.createElement('div');
-        inner.className = 'oj-flex-bar-center-absolute';
+        inner.className = this._getOptionClass(option.parentElement);
+
         container.appendChild(inner); // @HTMLUpdateOK append trusted new DOM
 
         var textIconContainer = document.createElement('div');
@@ -731,11 +735,11 @@ var __oj_swipe_actions_metadata =
           );
         }
 
-        var text = document.createElement('div');
-        text.className = 'oj-flex-item oj-swipeactions-action-text';
-        textIconContainer.appendChild(text); // @HTMLUpdateOK append trusted new DOM
         var textSlot = slotMap[''];
         if (textSlot) {
+          var text = document.createElement('div');
+          text.className = 'oj-flex-item oj-swipeactions-action-text';
+          textIconContainer.appendChild(text); // @HTMLUpdateOK append trusted new DOM
           textSlot.forEach(
             function (node) {
               text.appendChild(node); // @HTMLUpdateOK reparent trusted child DOM in menu item
@@ -744,6 +748,27 @@ var __oj_swipe_actions_metadata =
         }
 
         $(option).prepend(container); // @HTMLUpdateOK append trusted new DOM
+      },
+
+      /**
+       * @private
+       */
+      _updateOptionClass: function (element, selectorClass, className) {
+        var options = element.querySelectorAll(selectorClass);
+        options.forEach(function (el) {
+          var option = el;
+          option.className = className;
+        });
+      },
+
+      /**
+       * @private
+       */
+      _getOptionClass: function (element) {
+        // determine alignment of icons based on pull direction
+        return element.classList.contains('oj-offcanvas-end') ?
+          'oj-flex-bar-start oj-sm-align-self-center' :
+          'oj-flex-bar-end oj-sm-align-self-center';
       },
 
       /**

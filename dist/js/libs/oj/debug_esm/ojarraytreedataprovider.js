@@ -82,33 +82,14 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *
  * @param {(Array|function():Array)} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
- * @param {Object=} options Options for the ArrayTreeDataProvider
- * @param {SortComparators=} options.sortComparators Optional {@link SortComparator} to use for sort.
- * @param {Array.<SortCriterion>=} options.implicitSort Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
- * @param {(string | Array.<string>)=} options.keyAttributes Optional attribute name(s) which stores the key in the data. Can be a string denoting a single key attribute or an array
- *                                                         of strings for multiple key attributes.  Dot notation can be used to specify nested attribute (e.g. 'attr.id').<br><br>
- *                      If specified, caller must ensure that the keyAttributes contains values that are either unique within the entire tree,
- *                        or unique among the siblings of each node.  In the latter case, Caller must also set the keyAttributesScope option to 'siblings'.<br>
- *                      If keyAttributes is specified and keyAttributesScope is 'global', the attribute value will be used as the key.<br>
- *                      If keyAttributes is specified and keyAttributesScope is 'siblings', a path array of the attribute values, starting from the root node, will be used as the key.<br>
- *                      If keyAttributes is not specified, a path array of node index, starting from the root node, will be used as the key.
- * @param {('global'|'siblings')=} options.keyAttributesScope Optional scope of the key values in the fields specified by keyAttributes.  Supported values:<br>
- *                                           <ul>
- *                                             <li>'global': the key values are unique within the entire tree.
- *                                             <li>'siblings': the key values are unique among the siblings of each node.
- *                                           </ul>
- *                                           Default is 'global'.
- * @param {string=} options.childrenAttribute Optional field name which stores the children of nodes in the data.  Dot notation can be used to specify nested attribute.
- *                                                  If this is not specified, the default is "children".
+ * @param {ArrayTreeDataProvider.Options=} options Options for the ArrayTreeDataProvider
  * @ojsignature [{target: "Type",
  *               value: "class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
- *               value: "Array<SortCriterion<D>>",
- *               for: "options.implicitSort"},
- *               {target: "Type",
- *               value: "ArrayDataProvider.SortComparators<D>",
- *               for: "options.sortComparators"}]
+ *               value: "ArrayTreeDataProvider.Options<D>",
+ *               for: "options"}
+ * ]
  * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
  * @ojtsimport {module: "ojarraydataprovider", type: "AMD", importName: "ArrayDataProvider"}
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion",
@@ -138,6 +119,35 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *
  * // Then create an ArrayTreeDataProvider object with the array
  * var dataprovider = new ArrayTreeDataProvider(treeData, {keyAttributes: 'attr.id'});
+ */
+
+/**
+ * @typedef {Object} ArrayTreeDataProvider.Options
+ * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
+ * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * This is used for cases where we would like display some indication that the data is already sorted.
+ * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+ * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
+ * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
+ * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  use all attributes as key. @index is the default.
+ *                                                  <p>With "@index", the key generation is based on the item index only initially.  The key for an item, once assigned,
+ *                                                  will not change even if the item index changes (e.g. by inserting/removing items from the array).  Assigned keys will
+ *                                                  never be reassigned.  If the array is replaced with new items, the new items will be assigned keys that are different
+ *                                                  from their indices.  In general, caller should specify keyAttributes whenever possible and should never assume that the
+ *                                                  generated keys are the same as the item indices.</p>
+ *                                                  <p>This option is ignored if the "keys" option is specified.</p>
+ * @property {string=} keyAttributesScope - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+ * @property {string=} childrenAttribute - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+ * @ojsignature [
+ *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+ *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+ *  {target: "Type", value: "string | Array<string>", for: "keyAttributes"},
+ *  {target: "Type", value: "'sibling' | 'global'", for: "keyAttributesScope"},
+ *  {target: "Type", value: "string", for: "childrenAttribute"},
+ * ]
  */
 
 /**
@@ -715,7 +725,7 @@ class ArrayTreeDataProvider {
     }
     _setUseIndexAsKey(value) {
         let rootDataProvider = this._getRootDataProvider();
-        return rootDataProvider._useIndexAsKey = value;
+        return (rootDataProvider._useIndexAsKey = value);
     }
     _getLeafNodeFilter(filter) {
         let attributeFilter = filter;

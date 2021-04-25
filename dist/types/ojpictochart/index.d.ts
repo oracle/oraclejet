@@ -338,3 +338,125 @@ export interface ojPictoChartItemSettableProperties extends JetSettablePropertie
 export interface ojPictoChartItemSettablePropertiesLenient extends Partial<ojPictoChartItemSettableProperties> {
     [key: string]: any;
 }
+export type PictoChartElement<K, D extends ojPictoChart.Item<K> | any> = ojPictoChart<K, D>;
+export type PictoChartItemElement = ojPictoChartItem;
+export namespace PictoChartElement {
+    interface ojDrill extends CustomEvent<{
+        id: any;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnCountChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["columnCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnWidthChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["columnWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorDelayChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["hoverBehaviorDelay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutOriginChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["layoutOrigin"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowCountChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["rowCount"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowHeightChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["rowHeight"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojPictoChart.Item<K> | any> = JetElementCustomEvent<ojPictoChart<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Item<K> = {
+        borderColor?: string;
+        borderWidth?: number;
+        categories?: string[];
+        color?: string;
+        columnSpan?: number;
+        count?: number;
+        drilling?: 'inherit' | 'off' | 'on';
+        id?: K;
+        name?: string;
+        rowSpan?: number;
+        shape?: 'ellipse' | 'square' | 'circle' | 'diamond' | 'triangleUp' | 'triangleDown' | 'star' | 'plus' | 'human' | 'none' | 'rectangle' | string;
+        shortDesc?: string;
+        source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        componentElement: Element;
+        count: number;
+        id: K;
+        name: string;
+        parentElement: Element;
+    };
+}
+export namespace PictoChartItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojPictoChartItem["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojPictoChartItem["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojPictoChartItem["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojPictoChartItem["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnSpanChanged = JetElementCustomEvent<ojPictoChartItem["columnSpan"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type countChanged = JetElementCustomEvent<ojPictoChartItem["count"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojPictoChartItem["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nameChanged = JetElementCustomEvent<ojPictoChartItem["name"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowSpanChanged = JetElementCustomEvent<ojPictoChartItem["rowSpan"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shapeChanged = JetElementCustomEvent<ojPictoChartItem["shape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojPictoChartItem["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceChanged = JetElementCustomEvent<ojPictoChartItem["source"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverChanged = JetElementCustomEvent<ojPictoChartItem["sourceHover"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverSelectedChanged = JetElementCustomEvent<ojPictoChartItem["sourceHoverSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceSelectedChanged = JetElementCustomEvent<ojPictoChartItem["sourceSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojPictoChartItem["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojPictoChartItem["svgStyle"]>;
+}

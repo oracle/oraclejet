@@ -99,3 +99,33 @@ export interface ojColorPaletteSettableProperties extends editableValueSettableP
 export interface ojColorPaletteSettablePropertiesLenient extends Partial<ojColorPaletteSettableProperties> {
     [key: string]: any;
 }
+export type ColorPaletteElement = ojColorPalette;
+export namespace ColorPaletteElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojColorPalette["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelDisplayChanged = JetElementCustomEvent<ojColorPalette["labelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojColorPalette["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged = JetElementCustomEvent<ojColorPalette["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type paletteChanged = JetElementCustomEvent<ojColorPalette["palette"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type swatchSizeChanged = JetElementCustomEvent<ojColorPalette["swatchSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojColorPalette["value"]>;
+}

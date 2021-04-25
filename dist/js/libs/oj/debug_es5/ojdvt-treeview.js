@@ -2554,13 +2554,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
 
   DvtSunburstNode.prototype.animateUpdate = function (handler, oldNode) {
     if (this.isRootNode() && (oldNode._getOuterRadius() != this._getOuterRadius() || oldNode.getId() != this.getId())) this._removeRootNodeContentOverlay();
+    var oldNodeRendered = oldNode._hasLayout && oldNode._angleExtent > 0;
+    var nodeRendered = this._hasLayout && this._angleExtent > 0;
 
-    if (oldNode._hasLayout && oldNode._angleExtent > 0) {
-      // Old node existed and was visible, show the update animation
+    if (oldNodeRendered && nodeRendered) {
+      // Current and old node exist and is visible, show the update animation
       DvtSunburstNode.superclass.animateUpdate.call(this, handler, oldNode);
-    } else {
+    } else if (nodeRendered) {
       // Old node did not exist or was not visible, treat as insert
       this.animateInsert(handler);
+    } else if (oldNodeRendered) {
+      // Current node is not visible, treat as delete
+      this.animateDelete(handler, handler.getDeleteContainer());
     }
   };
   /**
@@ -2577,9 +2582,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
    */
 
 
-  DvtSunburstNode.prototype.animateDelete = function (handler, oldNode) {
+  DvtSunburstNode.prototype.animateDelete = function (handler, container) {
     if (this.isRootNode()) this._removeRootNodeContentOverlay();
-    DvtSunburstNode.superclass.animateDelete.call(this, handler, oldNode);
+    DvtSunburstNode.superclass.animateDelete.call(this, handler, container);
   };
   /**
    * @override
@@ -4005,13 +4010,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
   DvtTreemapNode.prototype.animateUpdate = function (handler, oldNode) {
     this._removeAllNodeContent();
 
-    if (this.GetDepth() == 0 || oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0) {
-      // Old node existed and was visible, show the update animation
+    var oldNodeRendered = oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0;
+    var nodeRendered = this._hasLayout && this._width > 0 && this._height > 0;
+
+    if (this.GetDepth() == 0 || oldNodeRendered && nodeRendered) {
+      // Current and old node exist and is visible, show the update animation
       // this.GetDepth() check since root will not have a size
       return DvtTreemapNode.superclass.animateUpdate.call(this, handler, oldNode);
-    } else {
+    } else if (nodeRendered) {
       // Old node did not exist or was not visible, treat as insert
       return this.animateInsert(handler);
+    } else if (oldNodeRendered) {
+      // Current node is not visible, treat as delete
+      return this.animateDelete(handler, handler.getDeleteContainer());
     }
   };
   /**
@@ -4029,10 +4040,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
    */
 
 
-  DvtTreemapNode.prototype.animateDelete = function (handler, oldNode) {
+  DvtTreemapNode.prototype.animateDelete = function (handler, container) {
     this._removeAllNodeContent();
 
-    DvtTreemapNode.superclass.animateDelete.call(this, handler, oldNode);
+    DvtTreemapNode.superclass.animateDelete.call(this, handler, container);
   };
   /**
    * Creates and return the shape object for this node.

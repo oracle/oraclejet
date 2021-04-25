@@ -2309,7 +2309,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     // Update the visual feedback
     if (this.isSelected()) {
-      
+
       // Apply the selection effect to the shape
       this._shape.setSelected(true);
 
@@ -2659,13 +2659,18 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     if (this.isRootNode() && (oldNode._getOuterRadius() != this._getOuterRadius() || oldNode.getId() != this.getId()))
       this._removeRootNodeContentOverlay();
 
-    if (oldNode._hasLayout && oldNode._angleExtent > 0) {
-      // Old node existed and was visible, show the update animation
+    var oldNodeRendered = oldNode._hasLayout && oldNode._angleExtent > 0;
+    var nodeRendered = this._hasLayout && this._angleExtent> 0;
+    if (oldNodeRendered  && nodeRendered) {
+      // Current and old node exist and is visible, show the update animation
       DvtSunburstNode.superclass.animateUpdate.call(this, handler, oldNode);
     }
-    else {
+    else if (nodeRendered) {
       // Old node did not exist or was not visible, treat as insert
       this.animateInsert(handler);
+    } else if (oldNodeRendered) {
+      // Current node is not visible, treat as delete
+      this.animateDelete(handler, handler.getDeleteContainer());
     }
   };
 
@@ -2682,12 +2687,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   /**
    * @override
    */
-  DvtSunburstNode.prototype.animateDelete = function(handler, oldNode) {
+  DvtSunburstNode.prototype.animateDelete = function(handler, container) {
     if (this.isRootNode())
       this._removeRootNodeContentOverlay();
 
-    DvtSunburstNode.superclass.animateDelete.call(this, handler, oldNode);
+    DvtSunburstNode.superclass.animateDelete.call(this, handler, container);
   };
+
 
 
   /**
@@ -2829,7 +2835,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     shape.setStroke(new dvt.Stroke(borderColor, 1, borderWidth));
     if (shape.getCtx().getThemeBehavior() !== 'redwood') {
       shape.setHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
-      shape.setSelectedStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1.5), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));  
+      shape.setSelectedStroke(new dvt.Stroke(nodeDefaults['selectedInnerColor'], 1, 1.5), new dvt.Stroke(nodeDefaults['selectedOuterColor'], 1, 3.5));
       shape.setSelectedHoverStroke(new dvt.Stroke(nodeDefaults['hoverColor'], 1, 3));
     }
     else {
@@ -3808,7 +3814,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     var nodeDefaults = this.getView().getOptions()['nodeDefaults'];
     var nodeHeaderDefaults = nodeDefaults['header'];
-    
+
     // : Do not show the hover effect if the node is not within the isolated subtree.  When a child of an
     // isolated node is selected, it is move to the front of the z-order.  During this move, the node behind it will
     // recieve a mouseOver event, which we should not show a hover effect for.
@@ -3868,7 +3874,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         x = this._x + DvtTreemapNode.NODE_SELECTION_WIDTH / 2;
         y = this._y + DvtTreemapNode.NODE_SELECTION_WIDTH / 2;
         w = this._width - DvtTreemapNode.NODE_SELECTION_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
-        h = this._height - DvtTreemapNode.NODE_SELECTION_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;  
+        h = this._height - DvtTreemapNode.NODE_SELECTION_WIDTH - DvtTreemapNode._LINE_FUDGE_FACTOR;
         stroke = new dvt.Stroke(nodeDefaults['hoverColor'], DvtTreemapNode.NODE_HOVER_OPACITY, DvtTreemapNode.NODE_SELECTION_WIDTH);
       }
       //  - treemap visualization issues
@@ -4230,14 +4236,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtTreemapNode.prototype.animateUpdate = function(handler, oldNode) {
     this._removeAllNodeContent();
-    if (this.GetDepth() == 0 || (oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0)) {
-      // Old node existed and was visible, show the update animation
+    var oldNodeRendered = oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0;
+    var nodeRendered = this._hasLayout && this._width > 0 && this._height > 0;
+    if (this.GetDepth() == 0 || ( oldNodeRendered && nodeRendered)) {
+      // Current and old node exist and is visible, show the update animation
       // this.GetDepth() check since root will not have a size
       return DvtTreemapNode.superclass.animateUpdate.call(this, handler, oldNode);
     }
-    else {
+    else if (nodeRendered) {
       // Old node did not exist or was not visible, treat as insert
       return this.animateInsert(handler);
+    } else if (oldNodeRendered) {
+      // Current node is not visible, treat as delete
+      return this.animateDelete(handler, handler.getDeleteContainer());
     }
   };
 
@@ -4253,10 +4264,10 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   /**
    * @override
    */
-  DvtTreemapNode.prototype.animateDelete = function(handler, oldNode) {
+  DvtTreemapNode.prototype.animateDelete = function(handler, container) {
     this._removeAllNodeContent();
 
-    DvtTreemapNode.superclass.animateDelete.call(this, handler, oldNode);
+    DvtTreemapNode.superclass.animateDelete.call(this, handler, container);
   };
 
   /**

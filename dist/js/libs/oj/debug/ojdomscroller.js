@@ -35,9 +35,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     this._asyncIterator = options.asyncIterator;
     this._element = $(element)[0];
     this._contentElement = options.contentElement;
-    if (this._contentElement == null) {
-      this._contentElement = this._element;
-    }
     this._fetchSize = options.fetchSize;
     this._fetchSize = this._fetchSize > 0 ? this._fetchSize : 25;
     this._maxCount = options.maxCount;
@@ -55,6 +52,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     if (this._fetchTrigger == null || isNaN(this._fetchTrigger)) {
       this._fetchTrigger = 0;
     }
+    this._offsetTop = isNaN(options.offsetTop) ? 0 : options.offsetTop;
     this._initialScrollTop = this._element.scrollTop;
     this._lastFetchTrigger = 0;
     this._isScrollTriggeredByMouseWheel = false;
@@ -65,8 +63,13 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
       if (this._beforeScrollCallback) {
         this._beforeScrollCallback();
       }
-      var scrollTop = this._getScrollTop(this._element);
-      var maxScrollTop = this._contentElement.scrollHeight - this._element.clientHeight;
+      var scrollTop = this._element.scrollTop;
+      // scrollHeight can't be use in cases where the scroller contains a element that is taller
+      // than the actual content itself, in which case we'll use the content's clientHeight to
+      // determine the scroll height
+      var maxScrollTop = this._contentElement ? this._offsetTop +
+        this._contentElement.clientHeight : this._element.scrollHeight;
+      maxScrollTop -= this._element.clientHeight;
       if (maxScrollTop > 0) {
         this._handleScrollerScrollTop(scrollTop, maxScrollTop);
       }
@@ -132,32 +135,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   };
 
   /**
-   * Gets the scroll top of the element
-   * @param {Element} element the element
-   * @return {number} scroll top
-   * @private
-   */
-  DomScroller.prototype._getScrollTop = function (element) {
-    var scrollTop = this._fetchTrigger;
-
-    if (element === document.documentElement) {
-      // to ensure it works across all browsers.  See https://bugs.webkit.org/show_bug.cgi?id=106133
-      // for firefox we should use documentElement.scrollTop, for Chrome and IE use body.scrollTop
-      // detect this by checking initial scrollTop is the same as current scrolltop, if it's the same then the scrollTop is not
-      // returning the correct value and we should use body.scrollTop
-      if (this._useBodyScrollTop === undefined) {
-        this._useBodyScrollTop = (this._initialScrollTop === element.scrollTop);
-      }
-
-      if (this._useBodyScrollTop) {
-        return scrollTop + document.body.scrollTop;
-      }
-    }
-
-    return scrollTop + element.scrollTop;
-  };
-
-  /**
    * Destroys the dom scroller, unregister any event handlers.
    * @export
    * @expose
@@ -176,6 +153,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
 
   /**
    * Check the viewport to see if a fetch needs to be done to fill it. Fetch if it does.
+   * @param {boolean=} forceFetch true if a fetch should be forced even if overflow is detected
    * @return {Promise} Return a Promise which contains either the content of the fetch
    *                   or maxCount information if it has reached maxCount. Promise resolves to null if no fetch was done.
    * @throws {Error}
@@ -184,14 +162,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
    * @memberof! oj.DomScroller
    * @instance
    */
-  DomScroller.prototype.checkViewport = function () {
+  DomScroller.prototype.checkViewport = function (forceFetch) {
     if (this._asyncIterator && this._element.clientHeight > 0 &&
-        !this.isOverflow()) {
+        (forceFetch || !this.isOverflow())) {
       this._checkViewportCount += 1;
       if (this._checkViewportCount === DataCollectionUtils.CHECKVIEWPORT_THRESHOLD) {
         Logger.warn('Viewport not satisfied after multiple fetch, make sure the component is height constrained or specify a scroller.');
       }
-      if (this._beforeFetchCallback(this._getScrollTop(this._element) - this._fetchTrigger, true)) {
+      if (this._beforeFetchCallback(this._element.scrollTop, true)) {
         return this._fetchMoreRows();
       }
     }
@@ -239,7 +217,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
     if (!this._fetchPromise && this._asyncIterator) {
       if (maxScrollTop !== this._lastMaxScrollTop) {
-        this._nextFetchTrigger = Math.max(0, (maxScrollTop - scrollTop) / 2);
+        this._nextFetchTrigger = this._offsetTop +
+          Math.max(0, (maxScrollTop - this._fetchTrigger - this._offsetTop - scrollTop) / 2);
         this._lastMaxScrollTop = maxScrollTop;
       }
 
@@ -253,7 +232,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
       }
     }
 
-    if (maxScrollTop - scrollTop < 1 && scrollTop > this._fetchTrigger) {
+    if (this._isEndReached(maxScrollTop, scrollTop) && scrollTop > this._fetchTrigger) {
       if (this._fetchPromise) {
         // at the bottom but fetch has not return yet, in which case we will block UI via requestCallback
         if (this._asyncIterator) {
@@ -271,6 +250,23 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   };
 
   /**
+   * @private
+   */
+  DomScroller.prototype._isEndReached = function (maxScrollTop, scrollTop) {
+    if (maxScrollTop - scrollTop < 1) {
+      return true;
+    }
+
+    if ((this._element.scrollHeight - this._element.clientHeight - this._element.scrollTop)
+      < Math.max(1, this._fetchTrigger)) {
+      // this could happen if the offsetTop is not correct
+      return true;
+    }
+
+    return false;
+  };
+
+  /**
    * Check whether the scroll DOM has overflowed
    * @return {boolean} true if overflowed, false otherwise
    */
@@ -279,8 +275,9 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
       return this._isOverflowCallback();
     }
 
-    var element = this._element;
-    var diff = this._contentElement.scrollHeight - (element.clientHeight + this._fetchTrigger);
+    var scrollHeight = this._contentElement ? this._contentElement.scrollHeight :
+      this._element.scrollHeight;
+    var diff = scrollHeight - (this._element.clientHeight + this._fetchTrigger);
     if (diff === 1 && oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
       // hitting Edge , see https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/21405284/
       // note this will only happen with non-height-bounded ListView with loadMoreOnScroll, see 

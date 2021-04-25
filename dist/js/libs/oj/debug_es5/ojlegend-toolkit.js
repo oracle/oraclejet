@@ -746,7 +746,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
     return {
       'sections': {
         'items': {
-          '_dataContext': true
+          '_getDataContext': true
         }
       }
     };
@@ -1001,7 +1001,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
 
   DvtLegendEventManager.prototype.GetDragSourceType = function (event) {
     var obj = this.DragSource.getDragObject();
-    if (obj instanceof DvtLegendObjPeer && obj.getData()['_dataContext'] != null) return 'series';
+    if (obj instanceof DvtLegendObjPeer && obj.getData()['_getDataContext'] != null) return 'series';
     return null;
   };
   /**
@@ -1013,7 +1013,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) {
     var obj = this.DragSource.getDragObject();
 
     if (obj instanceof DvtLegendObjPeer) {
-      var dataContext = obj.getData()['_dataContext'];
+      var dataContext = obj.getData()['_getDataContext']();
 
       if (bSanitize) {
         dataContext = dvt.JsonUtils.clone(dataContext, null, {

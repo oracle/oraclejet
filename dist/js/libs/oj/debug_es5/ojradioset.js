@@ -171,6 +171,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'o
     __oj_radioset_metadata.extension._ALIASED_PROPS = {
       readonly: 'readOnly'
     };
+    __oj_radioset_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-radioset', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_radioset_metadata, {
         properties: {
@@ -1143,9 +1144,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'o
        * @since 5.0.0
        */
       GetFocusElement: function GetFocusElement() {
+        // JET-43430 - dynamic form focus issue for radio buttonset
+        // When tabbing through, the input element that is currently checked will be focused if
+        // one is available. Otherwise the first input element will be given focus. We need to
+        // follow the same behavior when programtically setting focus.
         // We need :disabled here so that we don't try to focus on an element that isn't focusable.
         // :focusable doesn't work because this is called before the custom element is fully upgraded
         // and is still hidden in the DOM.
+        var firstCheckedInputElement = this._GetContentElement().not(':disabled').filter(':checked')[0];
+
+        if (firstCheckedInputElement) {
+          return firstCheckedInputElement;
+        } // If there is no checked inputs, simply return the first enabled input
+
+
         return this._GetContentElement().not(':disabled').first()[0];
       },
 

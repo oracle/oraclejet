@@ -1148,6 +1148,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
     var /** @const */ OJD_FOOTER_CLASS = '.oj-dialog-footer';
     var /** @const */ OJD_BODY_CLASS = '.oj-dialog-body';
 
+    var /** @const */ OJ_RESIZABLE = 'oj-resizable';
     var /** @const */ OJ_RESIZABLE_N = 'oj-resizable-n';
     var /** @const */ OJ_RESIZABLE_E = 'oj-resizable-e';
     var /** @const */ OJ_RESIZABLE_S = 'oj-resizable-s';
@@ -3124,6 +3125,17 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         oj.PopupService.getInstance().triggerOnDescendents(this.element,
                                                            oj.PopupService.EVENT.POPUP_REFRESH);
       },
+      _adjustPosition: function () {
+        var isDraggable = this.element.hasClass(OJ_DRAGGABLE);
+        var isResizable = this.element.hasClass(OJ_RESIZABLE);
+        // do not adjust position for resizable, movable and big dialogs
+        if (isDraggable || isResizable || this.element.width() > window.innerWidth
+            || this.element.height() > window.innerHeight) {
+          this._positionDescendents();
+        } else {
+          this._position();
+        }
+      },
       _setOption: function (key, value, flags) {
         /* jshint maxcomplexity:15*/
         var isDraggable;
@@ -3392,7 +3404,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
 
           events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
           events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REFRESH] = this._position.bind(this);
+          events[oj.PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
           events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
           events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
           events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);

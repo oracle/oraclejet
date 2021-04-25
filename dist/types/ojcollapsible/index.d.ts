@@ -69,3 +69,36 @@ export interface ojCollapsibleSettableProperties extends baseComponentSettablePr
 export interface ojCollapsibleSettablePropertiesLenient extends Partial<ojCollapsibleSettableProperties> {
     [key: string]: any;
 }
+export type CollapsibleElement = ojCollapsible;
+export namespace CollapsibleElement {
+    interface ojBeforeCollapse extends CustomEvent<{
+        content: Element;
+        header: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand extends CustomEvent<{
+        content: Element;
+        header: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse extends CustomEvent<{
+        content: Element;
+        header: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand extends CustomEvent<{
+        content: Element;
+        header: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojCollapsible["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandAreaChanged = JetElementCustomEvent<ojCollapsible["expandArea"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged = JetElementCustomEvent<ojCollapsible["expanded"]>;
+}

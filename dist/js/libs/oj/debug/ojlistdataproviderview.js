@@ -36,14 +36,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
      * for certain operations. e.g supports {@link DataProvider#fetchFirst} starting at arbitrary key or index offset, sortCriteria,
      * and field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
      * @param {DataProvider} dataProvider the DataProvider.
-     * @param {Object=} options Options for the ListDataProviderView
-     * @param {any=} options.from key to start fetching from. This will be applied first before offset is applied.
-     * @param {number=} options.offset offset to start fetching from.
-     * @param {Array.<SortCriterion>=} options.sortCriteria {@link SortCriterion} to apply to the data.
-     * @param {DataMapping=} options.dataMapping mapping to apply to the data.
-     * @param {Array<string | FetchAttribute>=} options.attributes fetch attributes to apply
-     * @param {DataFilter.Filter=} options.filterCriterion filter criterion to apply. If the DataProvider does not support filtering then
-     *        ListDataProviderView will do local filtering of the data.
+     * @param {ListDataProviderView.Options=} options Options for the ListDataProviderView
      * @ojsignature [{target: "Type",
      *               value: "class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>",
      *               genericParameters: [{"name": "K", "description": "Type of output key"}, {"name": "D", "description": "Type of output data"},
@@ -52,23 +45,31 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
      *               value: "DataProvider<Kin, Din>",
      *               for: "dataProvider"},
      *               {target: "Type",
-     *               value: "Kin",
-     *               for: "options.from"},
-     *               {target: "Type",
-     *               value: "Array<SortCriterion<D>>",
-     *               for: "options.sortCriteria"},
-     *               {target: "Type",
-     *               value: "DataMapping<K, D, Kin, Din>",
-     *               for: "options.dataMapping"},
-     *               {target: "Type",
-     *               value: "Array<string | FetchAttribute>",
-     *               for: "options.attributes"},
-     *               {target: "Type",
-     *               value: "DataFilter.Filter<D>",
-     *               for: "options.filterCriterion"}]
+     *                value: "ListDataProviderView.Options<K, D, Kin, Din>",
+     *                for: "options"}]
      * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
      *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults", "DataMapping",
      *   "FetchListResult","FetchListParameters", "FetchAttribute", "DataFilter"]}
+     */
+
+    /**
+     * @typedef {Object} ListDataProviderView.Options
+     * @property {any=} from - key to start fetching from. This will be applied first before offset is applied.
+     * @property {number=} offset - offset to start fetching from.
+     * @property {Array=} sortCriteria - {@link SortCriterion} to apply to the data.
+     * @property {DataMapping=} dataMapping - mapping to apply to the data.
+     * @property {Array=} attributes - fetch attributes to apply
+     * @property {DataFilter.Filter=} filterCriterion - filter criterion to apply. If the DataProvider does not support filtering then
+     *        ListDataProviderView will do local filtering of the data.
+     * @ojsignature [
+     *  {target: "Type", value: "<K, D, Kin, Din>", for: "genericTypeParameters"},
+     *  {target: "Type", value: "any=", for: "from"},
+     *  {target: "Type", value: "Kin=", for: "offset"},
+     *  {target: "Type", value: "Array.<SortCriterion<D>>", for: "sortCriteria"},
+     *  {target: "Type", value: "DataMapping<K, D, Kin, Din>", for: "dataMapping"},
+     *  {target: "Type", value: "Array<string | FetchAttribute>", for: "attributes"},
+     *  {target: "Type", value: "DataFilter.Filter<D>=", for: "filterCriterion"}
+     * ]
      */
 
     /**
@@ -80,11 +81,42 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget'], function 
      */
 
     /**
-     * @inheritdoc
+     * Get an AsyncIterable object for iterating the data.
+     * <p>
+     * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+     * AsyncIterator contains a “next” method for fetching the next block of data.
+     * </p><p>
+     * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+     * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+     * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+     * may or may not return more rows for a mutable data source.
+     * </p>
+     * <p>
+     * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+     * more information on custom implementations.
+     * </p>
+     *
+     * @param {FetchListParameters=} params fetch parameters
+     * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
+     * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
+     * @export
+     * @expose
      * @memberof ListDataProviderView
      * @instance
      * @method
      * @name fetchFirst
+     * @ojsignature {target: "Type",
+     *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+     * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+     * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+     * let result = await asyncIterator.next();
+     * let value = result.value;
+     * let data = value.data;
+     * let keys = value.metadata.map(function(val) {
+     *   return val.key;
+     * });
+     * // true or false for done
+     * let done = result.done;
      */
 
     /**

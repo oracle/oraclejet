@@ -4096,8 +4096,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/o
         this._drawMonth = newDate.month;
       }
 
-      this._currentYear = newDate.fullYear;
-      this._drawYear = this._currentYear;
+      this._currentYear = newDate.fullYear; // if we have a multi-month calendar, and the _drawMonth is greater than the newDate.month
+      // we need to adjust the _drawYear to be the previous year otherwise we will be ahead by
+      // one year and not be displaying the correct newDate.month
+
+      if (this._currentMonth < this._drawMonth) {
+        this._drawYear = this._currentYear - 1;
+      } else {
+        this._drawYear = this._currentYear;
+      }
 
       this._adjustInstDate();
     },
@@ -4112,6 +4119,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/o
       return !this._IsDisabled() && (evt.type === 'click' || evt.type === 'keydown' && (evt.keyCode === 32 || evt.keyCode === 13));
     },
     _gotoPrev: function _gotoPrev(stepMonths) {
+      // This will keep the user from pressing Enter on the previous key
+      // over and over while the month is animating out. This flag tells us
+      // that it is still animating.
+      if (this._animationResolve != null) {
+        return;
+      }
+
       if (this._currentView === 'year') {
         this._adjustDate(-10, 'Y', true, 'year', 'previous');
       } else if (this._currentView === 'month') {
@@ -4121,6 +4135,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/o
       }
     },
     _gotoNext: function _gotoNext(stepMonths) {
+      // This will keep the user from pressing Enter on the previous key
+      // over and over while the month is animating out. This flag tells us
+      // that it is still animating.
+      if (this._animationResolve != null) {
+        return;
+      }
+
       if (this._currentView === 'year') {
         this._adjustDate(+10, 'Y', true, 'year', 'next');
       } else if (this._currentView === 'month') {
@@ -11974,10 +11995,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojinputtext', 'ojs/o
       if (this._timePicker) {
         // note that min + max are not passed through since it should be taken care of by ojInputDateTime and not ojInputTime
         // as it needs to use the fulle datetime
+        // adding value so that the time picker will update its value when the datetimepicker's value changes.
         var timeInvoker = {
           disabled: true,
           readOnly: true,
-          keyboardEdit: true
+          keyboardEdit: true,
+          value: true
         };
 
         if (key in timeInvoker) {

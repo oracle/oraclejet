@@ -46,3 +46,12 @@ export interface ojProgressSettableProperties extends baseComponentSettablePrope
 export interface ojProgressSettablePropertiesLenient extends Partial<ojProgressSettableProperties> {
     [key: string]: any;
 }
+export type ProgressElement = ojProgress;
+export namespace ProgressElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojProgress["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojProgress["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojProgress["value"]>;
+}

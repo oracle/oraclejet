@@ -97,3 +97,26 @@ export interface ojTimeAxisSettableProperties extends dvtBaseComponentSettablePr
 export interface ojTimeAxisSettablePropertiesLenient extends Partial<ojTimeAxisSettableProperties> {
     [key: string]: any;
 }
+export type TimeAxisElement = ojTimeAxis;
+export namespace TimeAxisElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojTimeAxis["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged = JetElementCustomEvent<ojTimeAxis["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scaleChanged = JetElementCustomEvent<ojTimeAxis["scale"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged = JetElementCustomEvent<ojTimeAxis["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Converters = {
+        days?: Converter<string>;
+        default?: Converter<string>;
+        hours?: Converter<string>;
+        minutes?: Converter<string>;
+        months?: Converter<string>;
+        quarters?: Converter<string>;
+        seconds?: Converter<string>;
+        weeks?: Converter<string>;
+        years?: Converter<string>;
+    };
+}

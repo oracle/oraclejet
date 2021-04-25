@@ -5,12 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number', 'ojs/ojlogger', 'ojs/ojmap', 'ojs/ojchart-toolkit'], function (oj, DvtAttributeUtils, ojcomponentcore, $, ConverterUtils, NumberConverter, Logger, ojMap, ojchartToolkit) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number', 'ojs/ojlogger', 'ojs/ojchart-toolkit'], function (oj, DvtAttributeUtils, ojcomponentcore, $, ConverterUtils, NumberConverter, Logger, ojchartToolkit) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   DvtAttributeUtils = DvtAttributeUtils && Object.prototype.hasOwnProperty.call(DvtAttributeUtils, 'default') ? DvtAttributeUtils['default'] : DvtAttributeUtils;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
-  ojMap = ojMap && Object.prototype.hasOwnProperty.call(ojMap, 'default') ? ojMap['default'] : ojMap;
 
   /**
    * @license
@@ -6156,386 +6155,239 @@ var __oj_spark_chart_item_metadata =
    * @ignore
    */
 
-   /**
-   * Handler for DataProvider generated content for chart
-   * @constructor
+  /**
    * @ignore
+   * @param {*} component
+   * @param {*} templateEngine
+   * @param {*} items
+   * @param {*} dataProperty
    */
-  const ChartDataProviderHandler = function (component, templateEngine, items, dataProperty) {
-    this._component = component;
-    this._templateEngine = templateEngine;
-    this._items = items;
-    this._dataProperty = dataProperty;
+  const createGroupsAndSeries = (component, templateEngine, items, dataProperty) => {
+    const parentElement = component.element[0];
+    const templateHandler = component._TemplateHandler;
+    const templates = templateHandler.getTemplates();
+    const seriesTemplate = templates.seriesTemplate ? templates.seriesTemplate[0] : null;
+    const groupTemplate = templates.groupTemplate ? templates.groupTemplate[0] : null;
+    const seriesComparator = component.options.seriesComparator;
+    const groupComparator = component.options.groupComparator;
 
-    this.Init();
-  };
+    // Hierarchical Map of the group tree containing unique Symbols for each group
+    const groupMap = new Map();
+    // Map for each group Symbol containing indices of belonging items
+    // Only populated if groupTemplate or groupComparator is specified
+    const groupItemMap = (groupTemplate || groupComparator) ? new Map() : null;
+    // 2-D map keyed by seriesId, groupSymbol containing item indices
+    const seriesMap = new Map();
 
-  // Subclass from oj.Object
-  oj.Object.createSubclass(ChartDataProviderHandler, oj.Object, 'oj.ChartDataProviderHandler');
-
-
-  /**
-   * Initializes the instance.
-   * @protected
-   */
-  ChartDataProviderHandler.prototype.Init = function () {
-    this._parentElement = this._component.element[0];
-    this._templateHandler = this._component._TemplateHandler;
-    this._templates = this._templateHandler.getTemplates();
-    this._seriesTemplate = this._templates.seriesTemplate ? this._templates.seriesTemplate[0] : null;
-    this._groupTemplate = this._templates.groupTemplate ? this._templates.groupTemplate[0] : null;
-    this._seriesComparator = this._component.options.seriesComparator;
-    this._groupComparator = this._component.options.groupComparator;
-
-    // item map. key: series+group ids, value: corresponding item
-    this._itemMap = new Map();
-    // seriesContexts: conatins series context for each series
-    this._seriesContexts = new Map();
-    // groupContexts: contains the group context for a each level of each group
-    this._groupContexts = new Map();
-
-    // Generate chart data
-    var numSeries = 0;
-    var numOuterGroups = 0;
-
-    // stamp out chart item templates and collect chart item nodes
-    this._chartDataItems = [];
-    for (var i = 0; i < this._items.length; i++) {
-      var item = this._items[i];
-      // only process unique rows. ie item keys not seen yet
-      if (!this._itemMap.has(item.seriesId) ||
-        !this._itemMap.get(item.seriesId).has(item.groupId)) {
-        this._chartDataItems.push(item);
-        var itemContext = {
-          data: item._itemData,
-          key: item.id,
-          index: i
-        };
-
-        // Pull out each seriesId and generate/update seriesContext for that series
-        var seriesId = item.seriesId;
-        if (!this._seriesContexts.has(seriesId)) {
-          var seriesContext = {};
-          seriesContext = {
-            componentElement: this._parentElement,
-            id: seriesId,
-            items: [],
-            index: numSeries
-          };
-          this._seriesContexts.set(seriesId, seriesContext);
-          numSeries += 1;
-        }
-        this._seriesContexts.get(seriesId).items.push(itemContext);
-
-        // While processing each data row, pull out each groupId and generate/update groupContext for each group/nested group
-        var groupId = item.groupId;
-        var count = numOuterGroups;
-        if (!this._groupContexts.has(groupId.slice(0, groupId.length - 1))) {
-          numOuterGroups += 1;
-        }
-        this._addToGroupContexts(itemContext, groupId, 1, count);
-
-        // make a map of series+group ids to their corresponding items
-        if (!this._itemMap.has(item.seriesId)) {
-          // eslint-disable-next-line new-cap
-          this._itemMap.set(item.seriesId, new ojMap()); // ojMap will do an array content match when matching keys(groupId)
-        }
-        this._itemMap.get(item.seriesId).set(item.groupId, item);
-      }
-    }
-
-    if (this._chartDataItems.length > 0) {
-      // Create chart groups
-      this._groups = this._createGroups();
-      // Sort groups
-      if (this._groupComparator) {
-        // eslint-disable-next-line no-param-reassign
-        this._sortGroups(this._groups);
-      }
-      this._series = this._createSeries(this._groups);
-      // Sort series
-      if (this._seriesComparator) {
-        // eslint-disable-next-line no-param-reassign
-        this._sortSeries(this._series);
-      }
-    }
-  };
-
-  /**
-   * This returns the chart series array derived from the data provider
-   * @return {Array} The series array
-   */
-  ChartDataProviderHandler.prototype.getSeries = function () {
-    return this._series || [];
-  };
-
-  /**
-   * This returns the chart groups array derived from the data provider
-   * @return {Array} The group array
-   */
-  ChartDataProviderHandler.prototype.getGroups = function () {
-    return this._groups || [];
-  };
-
-  /* GROUPS AND SERIES HELPERS */
-
-  /**
-   * Update the groupContext of all groups at each depth in the groupId path, creating new groupContext if we have a new group
-   * @param {Object} itemContext The item context for item to be added to the group context
-   * @param {Array} groupId The array of groupIds that correspond to current group/nested group we are updating the context for
-   * @param {number} depth The depth of the current group/nested group we are updating the context for
-   * @param {number} count The index of the current group/nested group we are updating the context for, in relation to that group's parent
-   * @private
-   */
-  ChartDataProviderHandler.prototype._addToGroupContexts = function (itemContext,
-    groupId, depth, count) {
-    var groupIndex = depth - 1;
-    if (groupIndex < groupId.length) {
-      var currentId = groupId[groupIndex]; // id for the group a the current depth
-      var currentContext = this._groupContexts.get(currentId);
-      if (!currentContext) {
-        // eslint-disable-next-line no-param-reassign
-        this._groupContexts.set(currentId, {
-          ids: groupId,
-          componentElement: this._parentElement,
-          items: [itemContext],
-          depth: depth,
-          leaf: depth === groupId.length,
-          index: count });
-      } else {
-        // a groupContext will have the data rows and keys for all of its descdendants
-        currentContext.items.push(itemContext);
-      }
-      var _count = currentContext ? currentContext.items.length - 1 : 0;
-      this._addToGroupContexts(itemContext, groupId, depth + 1, _count);
-    }
-  };
-
-  /**
-   * Iterate through the previously created series ids, and create the series array
-   * @param {Array} chartGroupsData The current chart groups array
-   * @return {Array} The series array
-   * @private
-   */
-  ChartDataProviderHandler.prototype._createSeries = function (chartGroupsData) {
-    var seriesArray = [];
-    var hasError = false;
-    this._seriesContexts.forEach(function (seriesContext, seriesId) {
-      try {
-        if (!hasError) {
-          var _chartDataSeries;
-          if (this._seriesTemplate) {
-            _chartDataSeries = this._templateHandler.processNodeTemplate(this._dataProperty,
-              this._templateEngine, this._seriesTemplate, 'oj-chart-series',
-              seriesContext, seriesId);
-          } else {
-            _chartDataSeries = {};
+    const addGroup = (groupId) => {
+      let currentMap = groupMap;
+      const symbols = [];
+      for (let i = 0; i < groupId.length; i++) {
+        const gid = groupId[i];
+        let group = currentMap.get(gid);
+        if (!group) {
+          // gid isn't necessarily globally unique, but still helpful for debugging
+          group = { value: Symbol(gid) };
+          if (i !== groupId.length - 1) {
+            group.groups = new Map();
           }
-          _chartDataSeries.id = seriesId;
-          _chartDataSeries.name = _chartDataSeries.name || (seriesId + '');
-          seriesArray.push(_chartDataSeries);
+          currentMap.set(gid, group);
+        }
+        symbols.push(group.value);
+        currentMap = group.groups;
+      }
+      return symbols;
+    };
+
+    const addItemIfUnique = (seriesId, groupSymbols, itemIndex) => {
+      let itemMap = seriesMap.get(seriesId);
+      if (!itemMap) {
+        itemMap = new Map();
+        seriesMap.set(seriesId, itemMap);
+      }
+      const leafSymbol = groupSymbols[groupSymbols.length - 1];
+      if (itemMap.get(leafSymbol) === undefined) {
+        itemMap.set(leafSymbol, itemIndex);
+        // add the itemIndex to all groups if the groupItemMap was passed
+        if (groupItemMap) {
+          groupSymbols.forEach(groupSymbol => {
+            let groupItems = groupItemMap.get(groupSymbol);
+            if (!groupItems) {
+              groupItems = [];
+              groupItemMap.set(groupSymbol, groupItems);
+            }
+            groupItems.push(itemIndex);
+          });
+        }
+      }
+    };
+
+    const processItems = () => {
+      items.forEach((item, index) => {
+        const groupSymbols = addGroup(item.groupId);
+        addItemIfUnique(item.seriesId, groupSymbols, index);
+      });
+    };
+
+    const createGroupContext = (groupSymbol, groupIds, index, leaf) => {
+      const context = {
+        ids: groupIds,
+        componentElement: parentElement,
+        depth: groupIds.length,
+        leaf: leaf,
+        index: index
+      };
+      Object.defineProperty(context, 'items', {
+        get: () => {
+          return groupItemMap.get(groupSymbol).map(itemIndex => {
+            const item = items[itemIndex];
+            return {
+              data: item._itemData,
+              key: item.id,
+              index: itemIndex
+            };
+          });
+        }
+      });
+      return context;
+    };
+
+    const createGroupLevel = (mapLevel, prefix) => {
+      const gids = [...mapLevel.keys()];
+      const groupContexts = new Map();
+      const groups = gids.map((gid, index) => {
+        let group;
+        const value = mapLevel.get(gid);
+        const groupSymbol = value.value;
+        const subGroups = value.groups;
+        let groupContext;
+        if (groupTemplate || groupComparator) {
+          groupContext = createGroupContext(groupSymbol, [...prefix, gid], index, !subGroups);
+          groupContexts.set(gid, groupContext);
+        }
+        if (groupTemplate) {
+          group = templateHandler.processNodeTemplate(dataProperty,
+            templateEngine, groupTemplate, 'oj-chart-group',
+            groupContext, groupSymbol);
+        } else {
+          group = {};
+        }
+        group.id = gid;
+        group.name = group.name == null ? gid : group.name;
+        if (subGroups) {
+          group.groups = createGroupLevel(subGroups, [...prefix, gid]);
+        } else {
+          Object.defineProperty(group, 'symbol', {
+            value: groupSymbol,
+            enumerable: false
+          });
+        }
+        return group;
+      });
+      if (groupComparator) {
+        groups.sort((a, b) =>
+          groupComparator(groupContexts.get(a.id), groupContexts.get(b.id)));
+      }
+      return groups;
+    };
+
+    const createGroups = () => {
+      try {
+        return createGroupLevel(groupMap, []);
+      } catch (error) {
+        Logger.error(error);
+        return [];
+      }
+    };
+
+    const createSeriesContext = (seriesId, index, groupSymbols, itemMap) => {
+      const context = {
+        componentElement: parentElement,
+        id: seriesId,
+        index: index
+      };
+      Object.defineProperty(context, 'items', {
+        get: () => {
+          const itemContexts = [];
+          groupSymbols.forEach(symbol => {
+            const itemIndex = itemMap.get(symbol);
+            if (itemIndex != null) {
+              const item = items[itemIndex];
+              itemContexts.push({
+                data: item._itemData,
+                key: item.id,
+                index: itemIndex
+              });
+            }
+            return undefined;
+          });
+          return itemContexts;
+        }
+      });
+      return context;
+    };
+
+    const getGroupSymbols = (groups) => {
+      const symbols = [];
+      groups.forEach(group => {
+        if (group.groups) {
+          symbols.push(...getGroupSymbols(group.groups));
+        } else {
+          symbols.push(group.symbol);
+        }
+      });
+      return symbols;
+    };
+
+    const createSeries = (groups) => {
+      let arSeries;
+      try {
+        const seriesContexts = new Map();
+        const groupSymbols = getGroupSymbols(groups);
+        const sids = [...seriesMap.keys()];
+        arSeries = sids.map((sid, index) => {
+          const itemMap = seriesMap.get(sid);
+          let seriesContext;
+          if (seriesTemplate || seriesComparator) {
+            seriesContext = createSeriesContext(sid, index, groupSymbols, itemMap);
+            seriesContexts.set(sid, seriesContext);
+          }
+          let series;
+          if (seriesTemplate) {
+            series = templateHandler.processNodeTemplate(dataProperty,
+              templateEngine, seriesTemplate, 'oj-chart-series',
+              seriesContext, sid);
+          } else {
+            series = {};
+          }
+          series.id = sid;
+          series.name = series.name == null ? String(sid) : series.name;
+          series.items = groupSymbols.map(symbol => {
+            let item = null;
+            const itemIndex = itemMap.get(symbol);
+            if (itemIndex != null) {
+              item = items[itemIndex];
+            }
+            return item;
+          });
+          return series;
+        });
+        if (seriesComparator) {
+          arSeries.sort((a, b) =>
+            seriesComparator(seriesContexts.get(a.id), seriesContexts.get(b.id)));
         }
       } catch (error) {
         Logger.error(error);
-        seriesArray = [];
-        hasError = true;
+        arSeries = [];
       }
-    }, this);
-
-    this._addItemsToSeries(seriesArray, chartGroupsData);
-    return seriesArray;
-  };
-
-  /**
-   * Populates the items into the various series.
-   * @return {Array} The chart series array
-   * @return {Array} The chart group array
-   * @private
-   */
-  ChartDataProviderHandler.prototype._addItemsToSeries = function (
-    chartSeriesData, chartGroupsData) {
-    var getGroupKeys = function (group) {
-      if (!group.groups) {
-        return [group.id];
-      }
-
-      var groupKeys = [];
-      for (var _i = 0; _i < group.groups.length; _i++) {
-        var subGroups = getGroupKeys(group.groups[_i]);
-        for (var _j = 0; _j < subGroups.length; _j++) {
-          var groupsArray = [group.id];
-          if (Array.isArray(subGroups[_j])) {
-            groupsArray = groupsArray.concat(subGroups[_j]);
-          } else {
-            groupsArray.push(subGroups[_j]);
-          }
-          groupKeys.push(groupsArray);
-        }
-      }
-      return groupKeys;
+      return arSeries;
     };
 
-    var groupKeys = [];
-    var i;
-    // get group keys. the groupKeys indices corresponds to chart item indices
-    for (i = 0; i < chartGroupsData.length; i++) {
-      var group = chartGroupsData[i];
-      var subGroupKeys = getGroupKeys(group);
-      groupKeys = groupKeys.concat(subGroupKeys);
-    }
+    processItems();
+    const groups = createGroups();
+    const series = createSeries(groups);
 
-    for (i = 0; i < chartSeriesData.length; i++) {
-      var series = chartSeriesData[i];
-      var seriesItems = [];
-      for (var j = 0; j < groupKeys.length; j++) {
-        var groupId = Array.isArray(groupKeys[j]) ? groupKeys[j] : [groupKeys[j]];
-        var item = this._itemMap.get(series.id).get(groupId) || null; // get corresponding item from map.
-        if (item) {
-          delete item.groupId;
-          delete item.seriesId;
-        }
-        seriesItems.push(item);
-      }
-      // eslint-disable-next-line no-param-reassign
-      chartSeriesData[i].items = seriesItems;
-    }
-  };
-
-  /**
-   * Iterate through the previously created chart data items, and create the groups array
-   * @return {Array} The groups array
-   * @private
-   */
-  ChartDataProviderHandler.prototype._createGroups = function () {
-    var chartGroupItems = {};
-    var i;
-    var hasError = false;
-    this._groupContexts.forEach(function (groupContext, currentGroupId) {
-      try {
-        if (!hasError) {
-          var groupItem;
-          if (this._groupTemplate) {
-            groupItem = this._templateHandler.processNodeTemplate(this._dataProperty,
-              this._templateEngine, this._groupTemplate, 'oj-chart-group',
-              groupContext, currentGroupId);
-          } else {
-            groupItem = {};
-          }
-          groupItem.id = currentGroupId;
-          groupItem.name = groupItem.name || (currentGroupId + '');
-          chartGroupItems[currentGroupId] = groupItem;
-        }
-      } catch (error) {
-        Logger.error(error);
-        chartGroupItems = {};
-        hasError = true;
-      }
-    }, this);
-
-    var groupsArray = [];
-    if (!hasError) {
-      for (i = 0; i < this._chartDataItems.length; i++) {
-        var item = this._chartDataItems[i];
-        groupsArray = this._addGroupItem(item, item.groupId, groupsArray, chartGroupItems);
-      }
-    }
-
-    return groupsArray;
-  };
-
-  /**
-   * Given a data item and its groupId array, we build the nested groups if needed, and add the item
-   * to its leaf group
-   * @param {Object} item The chart dataitem to add
-   * @param {Array} groupId The array of groupIds for the leaf we will add the item to
-   * @param {Array} groupsArray The current groups array object
-   * @param {Object} templateEngine The template engine to be used to stamp out the groups properties.
-   * @param {Object} chartGroupItems A map of group ids to resolved group properties
-   * @return {Array} The groups array, with the given item added to the proper group leaf
-   * @private
-   */
-  ChartDataProviderHandler.prototype._addGroupItem = function (
-    item, groupId, groupsArray, chartGroupItems) {
-    if (!groupsArray) {
-      // eslint-disable-next-line no-param-reassign
-      groupsArray = [];
-    }
-
-    var currentGroupId = groupId[0];
-
-    // check to see if we're adding to an existing group
-    var index = null;
-    for (var i = 0; i < groupsArray.length; i++) {
-      if (groupsArray[i].id === currentGroupId) {
-        index = i;
-      }
-    }
-
-    var groupItem;
-    if (index != null) { // we are adding to an existing group
-      groupItem = groupsArray[index];
-    } else { // create new group
-      groupItem = chartGroupItems[currentGroupId];
-      groupsArray.push(groupItem);
-    }
-
-    if (groupId.length > 1) { // not a leaf, add the next level of groups
-      groupItem.groups = this._addGroupItem(item, groupId.slice(1),
-                                            groupItem.groups,
-                                            chartGroupItems);
-    }
-
-    return groupsArray;
-  };
-
-  /**
-   * Sort the series
-   * @param {Array} seriesArray The current series array
-   * @private
-   */
-  ChartDataProviderHandler.prototype._sortSeries = function (seriesArray) {
-    var sortFunction = function (seriesContexts, seriesComparator) {
-      return function (a, b) {
-        return seriesComparator(seriesContexts.get(a.id), seriesContexts.get(b.id));
-      };
-    };
-
-    seriesArray.sort(sortFunction(this._seriesContexts, this._seriesComparator));
-    // Update seriesContext indices after sort
-    for (var i = 0; i < seriesArray.length; i++) {
-      var seriesId = seriesArray[i].id;
-      this._seriesContexts.get(seriesId).index = i;
-    }
-  };
-
-  /**
-   * Sort the groups
-   * @param {Array} groupsArray The current groups array
-   * @private
-   */
-  ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
-    var sortFunction = function (groupContexts, groupComparator) {
-      return function (a, b) {
-        var id1 = a.id;
-        var id2 = b.id;
-        var context1 = groupContexts.get(id1);
-        var context2 = groupContexts.get(id2);
-        return groupComparator(context1, context2);
-      };
-    };
-
-    groupsArray.sort(sortFunction(this._groupContexts, this._groupComparator));
-    for (var i = 0; i < groupsArray.length; i++) {
-      var groupId = groupsArray[i].id;
-
-      // Update group context indices after sorting
-      this._groupContexts.get(groupId).index = i;
-
-      // Sort nested groups if they exist
-      if (groupsArray[i].groups) {
-        this._sortGroups(groupsArray[i].groups);
-      }
-    }
+    return { groups, series };
   };
 
   /**
@@ -7576,9 +7428,9 @@ var __oj_spark_chart_item_metadata =
           // Support for dataprovider and chart templates
           var items = this._super(dataProperty, data, templateEngine, isTreeData,
             parentKey, isRoot, updateChildren);
-          var chartOptions = new ChartDataProviderHandler(this, templateEngine,
-            items.values[0], dataProperty);
-          results = { paths: ['series', 'groups'], values: [chartOptions.getSeries(), chartOptions.getGroups()] };
+          var groupsAndSeries =
+            createGroupsAndSeries(this, templateEngine, items.values[0], dataProperty);
+          results = { paths: ['series', 'groups'], values: [groupsAndSeries.series, groupsAndSeries.groups] };
           if (isRoot) {
             this._TemplateHandler.setComponentResults(dataProperty, results);
           }
@@ -7598,7 +7450,10 @@ var __oj_spark_chart_item_metadata =
         };
       },
 
-      //* * @inheritdoc */
+      _UseObjectAssignForShapedData: function () {
+        return true;
+      },
+
       _ProcessOptions: function () {
         this._super();
 

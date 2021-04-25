@@ -31,3 +31,8 @@ export interface ojToolbarSettableProperties extends baseComponentSettableProper
 export interface ojToolbarSettablePropertiesLenient extends Partial<ojToolbarSettableProperties> {
     [key: string]: any;
 }
+export type ToolbarElement = ojToolbar;
+export namespace ToolbarElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojToolbar["chroming"]>;
+}

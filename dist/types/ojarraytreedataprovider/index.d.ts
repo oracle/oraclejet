@@ -11,13 +11,7 @@ import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults
 import ArrayDataProvider = require('../ojarraydataprovider');
 import TreeDataProvider = require('../ojtreedataprovider');
 declare class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
-    constructor(data: any[] | (() => any[]), options?: {
-        sortComparators?: ArrayDataProvider.SortComparators<D>;
-        implicitSort?: Array<SortCriterion<D>>;
-        keyAttributes?: string | string[];
-        keyAttributesScope?: 'global' | 'siblings';
-        childrenAttribute?: string;
-    });
+    constructor(data: any[] | (() => any[]), options?: ArrayTreeDataProvider.Options<D>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
@@ -31,5 +25,15 @@ declare class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D> {
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
+}
+declare namespace ArrayTreeDataProvider {
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<D> = {
+        childrenAttribute?: string;
+        implicitSort?: Array<SortCriterion<D>>;
+        keyAttributes?: string | string[];
+        keyAttributesScope?: 'sibling' | 'global';
+        sortComparators?: ArrayDataProvider.SortComparators<D>;
+    };
 }
 export = ArrayTreeDataProvider;

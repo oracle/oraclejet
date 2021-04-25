@@ -68,7 +68,7 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
    *                  {"name": "D", "description": "Type of returned data"},
    *                  {"name": "BD", "description": "Type of base data"}]},
    *               {target: "Type", value: "DataProvider<K, BD>", for: "baseDataProvider"},
-   *               {target: "Type", value: "JoiningDataProvider.DataProviderOptions<D, BD>", for: "options"}]
+   *               {target: "Type", value: "JoiningDataProvider.Options<D, BD> | JoiningDataProvider.DataProviderOptions<D, BD>", for: "options"}]
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "FetchByKeysParameters",
    *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults", "DataMapping",
    *   "FetchListResult","FetchListParameters", "FetchAttribute"]}
@@ -111,12 +111,22 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
    */
 
   /**
+   * @typedef {Object} JoiningDataProvider.Options
+   * @property {Object} joins - <p>A map of attribute name to information about DataProviders to join in.</p>
+   * <p>The returned data for each row from the joined DataProvider will be merged as an object under the attribute name in the JoiningDataProvider.
+   * </p>
+   * @ojsignature [{target: "Type", value: "<D, BD>", for: "genericTypeParameters"},
+   *               {target: "Type", value: "Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>", for: "joins"}]
+   */
+
+  /**
    * @typedef {Object} JoiningDataProvider.DataProviderOptions
    * @property {Object} joins - <p>A map of attribute name to information about DataProviders to join in.</p>
    * <p>The returned data for each row from the joined DataProvider will be merged as an object under the attribute name in the JoiningDataProvider.
    * </p>
    * @ojsignature [{target: "Type", value: "<D, BD>", for: "genericTypeParameters"},
    *               {target: "Type", value: "Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>", for: "joins"}]
+   * @ojdeprecated {since: '10.1.0', description: 'Use type Options instead of object for options'}
    */
 
   /**
@@ -144,11 +154,42 @@ define(['ojs/ojmap', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojlogger'], function
    */
 
   /**
-   * @inheritdoc
+   * Get an AsyncIterable object for iterating the data.
+   * <p>
+   * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+   * AsyncIterator contains a “next” method for fetching the next block of data.
+   * </p><p>
+   * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+   * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+   * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+   * may or may not return more rows for a mutable data source.
+   * </p>
+   * <p>
+   * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+   * more information on custom implementations.
+   * </p>
+   *
+   * @param {FetchListParameters=} params fetch parameters
+   * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
+   * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
+   * @export
+   * @expose
    * @memberof JoiningDataProvider
    * @instance
    * @method
    * @name fetchFirst
+   * @ojsignature {target: "Type",
+   *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+   * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+   * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+   * let result = await asyncIterator.next();
+   * let value = result.value;
+   * let data = value.data;
+   * let keys = value.metadata.map(function(val) {
+   *   return val.key;
+   * });
+   * // true or false for done
+   * let done = result.done;
    */
 
   /**

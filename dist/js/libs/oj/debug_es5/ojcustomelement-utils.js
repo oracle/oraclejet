@@ -12,7 +12,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcontext', 'ojs/ojlogger'], function (exports, Context, Logger) {
+define(['exports', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils'], function (exports, Context, Logger, ThemeUtils) {
   'use strict';
 
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -599,6 +599,8 @@ define(['exports', 'ojs/ojcontext', 'ojs/ojlogger'], function (exports, Context,
         var _a, _b;
 
         if (!this._bindingProviderPromise) {
+          ThemeUtils.verifyThemeVersion();
+
           var name = this._walkBindingProviders(this.Element);
 
           if (name === 'none') {

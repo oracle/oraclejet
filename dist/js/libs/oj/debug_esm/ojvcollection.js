@@ -594,6 +594,11 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     isInitialFetch() {
         return this.initialFetch;
     }
+    checkViewport() {
+        if (this.domScroller) {
+            this.domScroller.checkViewport();
+        }
+    }
     renderSkeletonsForLoadMore() { }
     renderFetchedData() {
         if (this.callback == null) {
@@ -809,7 +814,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 let iterator = this.getDataProvider().fetchFirst(options)[Symbol.asyncIterator]();
                 this._cachedIteratorsAndResults['root'] = { iterator: iterator, cache: null };
                 let finalResults = { value: { data: [], metadata: [] } };
-                this._fetchNextFromIterator(iterator, null, options, finalResults).then(this._setNewData);
+                this._fetchNextFromIterator(iterator, null, options, finalResults).then((result) => {
+                    this._setNewData(result);
+                }, () => {
+                    this._setNewData(null);
+                });
             }
         };
         this._fetchNextFromIterator = (iterator, key, options, finalResults) => {
@@ -833,16 +842,15 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     value.value.metadata = value.value.metadata.concat(value.value.metadata);
                     return helperFunction(value);
                 }, function (reason) {
-                    this._handleFetchError(reason);
+                    return Promise.reject(reason);
                 });
                 return fetchMoreData;
             };
             return promise
                 .then((value) => {
                 return helperFunction(value);
-            }, () => {
-                busyStateResolveFunc();
-                this._handleFetchError();
+            }, (reason) => {
+                return Promise.reject(reason);
             })
                 .then((value) => {
                 if (this.isFetching()) {
@@ -857,9 +865,10 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     }
                     return this.handleNextItemInResults(options, key, value, finalResults);
                 }
-            }, () => {
+            }, (reason) => {
                 busyStateResolveFunc();
-                this._handleFetchError();
+                this._handleFetchError(reason);
+                return Promise.reject(reason);
             });
         };
         this._setNewData = (result) => {
@@ -868,12 +877,23 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             }
             this.callback.updateData(function (data) {
                 let final;
-                let dataToSet = result.value.data;
-                let metadataToSet = result.value.metadata;
+                let dataToSet;
+                let metadataToSet;
+                let done;
+                if (result == null) {
+                    dataToSet = [];
+                    metadataToSet = [];
+                    done = true;
+                }
+                else {
+                    dataToSet = result.value.data;
+                    metadataToSet = result.value.metadata;
+                    done = this._checkIteratorAndCache();
+                }
                 if (data == null) {
                     final = {
                         value: { data: dataToSet, metadata: metadataToSet },
-                        done: this._checkIteratorAndCache()
+                        done: done
                     };
                 }
                 else {
@@ -882,7 +902,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             data: data.value.data.concat(dataToSet),
                             metadata: data.value.metadata.concat(metadataToSet)
                         },
-                        done: this._checkIteratorAndCache()
+                        done: done
                     };
                 }
                 return { renderedData: final };
@@ -918,14 +938,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     iterator = cacheInfo.iterator;
                 }
                 let finalResults = { value: { data: [], metadata: [] } };
-                return this.handleNextItemInResults(options, key, result, finalResults).then(function () {
+                return this.handleNextItemInResults(options, key, result, finalResults).then(() => {
                     let newCacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
                     let newIterator;
                     if (newCacheInfo != null) {
                         newIterator = newCacheInfo.iterator;
                     }
                     return this._fetchFromAncestors(options, key, newIterator, finalResults);
-                }.bind(this));
+                }, (reason) => {
+                    return Promise.reject(reason);
+                });
             }
             return Promise.resolve();
         };
@@ -951,7 +973,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }
                 return this.handleNextItemInResults(options, lastEntryParentKey, result, finalResults).then(this._fetchFromAncestors.bind(this, options, lastEntryParentKey, parentIterator, finalResults));
             };
-            return this._fetchNextFromIterator(iterator, key, options, finalResults).then(handleFetchFromAncestors.bind(this, key, finalResults));
+            return this._fetchNextFromIterator(iterator, key, options, finalResults).then(handleFetchFromAncestors.bind(this, key, finalResults), (reason) => {
+                return Promise.reject(reason);
+            });
         };
         this._getLastEntryMetadata = () => {
             let result = this.callback.getData();
@@ -1226,11 +1250,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 initialRowCount: this.getFetchSize(),
                 strategy: VirtualizationStrategy.HIGH_WATER_MARK,
                 isOverflow: this._getOverflowFunc(),
-                success: (result) => {
-                    this.handleFetchSuccess(result);
-                },
+                success: this.handleFetchSuccess.bind(this),
                 error: () => {
-                    this._handleFetchError();
+                    this._setNewData(null);
                 },
                 beforeFetch: () => {
                     return this.handleBeforeFetchNext();
@@ -1336,8 +1358,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             this._setNewData(result);
         }
     }
-    _handleFetchError() {
+    _handleFetchError(reason) {
         this.setFetching(false);
+        error('iterating dataprovider content handler fetch error :' + reason);
     }
     _handleScrollerMaxRowCount() {
     }
@@ -1473,8 +1496,16 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                 index = beforeIndex;
                             }
                             else {
-                                index =
-                                    this._findIndex(newData.value.metadata, this._getLastItemByParentKey(parentKey).metadata.key) + 1;
+                                let lastItem = this._getLastItemByParentKey(parentKey, newData);
+                                if (lastItem) {
+                                    index = this._findIndex(newData.value.metadata, lastItem.metadata.key);
+                                    if (index > -1) {
+                                        index += 1;
+                                    }
+                                }
+                                if (lastItem == null || index === -1) {
+                                    return;
+                                }
                             }
                         }
                         else if (indexes != null) {

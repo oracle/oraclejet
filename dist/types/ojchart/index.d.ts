@@ -1991,3 +1991,900 @@ export interface ojSparkChartItemSettableProperties extends JetSettablePropertie
 export interface ojSparkChartItemSettablePropertiesLenient extends Partial<ojSparkChartItemSettableProperties> {
     [key: string]: any;
 }
+export type ChartElement<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = ojChart<K, D, I, C>;
+export type ChartGroupElement = ojChartGroup;
+export type ChartItemElement = ojChartItem;
+export type ChartSeriesElement = ojChartSeries;
+export type SparkChartElement<K, D extends ojSparkChart.Item | any> = ojSparkChart<K, D>;
+export type SparkChartItemElement = ojSparkChartItem;
+export namespace ChartElement {
+    interface ojDrill<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        data: ojChart.Item<K, I> | number | null;
+        group: string;
+        groupData: ojChart.Group[] | null;
+        id: string;
+        itemData: D;
+        series: string;
+        seriesData: ojChart.Series<K, I> | null;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojGroupDrill<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        group: string | string[];
+        groupData: ojChart.Group[];
+        id: string;
+        items: Array<ojChart.DrillItem<K, D, I>>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojItemDrill<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        data: ojChart.Item<K, I> | number;
+        group: string | string[];
+        groupData: ojChart.Group[];
+        id: string;
+        itemData: D;
+        series: string;
+        seriesData: ojChart.Series<K, I>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMultiSeriesDrill<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        items: Array<ojChart.DrillItem<K, D, I>>;
+        series: string[];
+        seriesData: ojChart.Series<K, I>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSelectInput<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        endGroup: string;
+        items: string[];
+        selectionData: Array<{
+            data: ojChart.Item<K, I> | number;
+            groupData: ojChart.Group[];
+            itemData: D;
+            seriesData: ojChart.Series<K, I>;
+        }>;
+        startGroup: string;
+        xMax: number;
+        xMin: number;
+        yMax: number;
+        yMin: number;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSeriesDrill<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> extends CustomEvent<{
+        id: string;
+        items: Array<ojChart.DrillItem<K, D, I>>;
+        series: string;
+        seriesData: ojChart.Series<K, I>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojViewportChange extends CustomEvent<{
+        endGroup: string;
+        startGroup: string;
+        xMax: number;
+        xMin: number;
+        yMax: number;
+        yMin: number;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojViewportChangeInput extends CustomEvent<{
+        endGroup: string;
+        startGroup: string;
+        xMax: number;
+        xMin: number;
+        yMax: number;
+        yMin: number;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D, I,
+       C>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type coordinateSystemChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["coordinateSystem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataCursorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["dataCursor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataCursorBehaviorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["dataCursorBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataCursorPositionChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["dataCursorPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataLabelChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["dataLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dragModeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["dragMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupComparatorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["groupComparator"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hideAndShowBehaviorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["hideAndShowBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialZoomingChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["initialZooming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type legendChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["legend"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type multiSeriesDrillingChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["multiSeriesDrilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type otherThresholdChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["otherThreshold"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pieCenterChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["pieCenter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type plotAreaChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["plotArea"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type polarGridShapeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["polarGridShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type seriesComparatorChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["seriesComparator"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sortingChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["sorting"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type splitDualYChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["splitDualY"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type splitterPositionChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["splitterPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stackChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["stack"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stackLabelChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["stackLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type timeAxisTypeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["timeAxisType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueFormatsChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["valueFormats"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type xAxisChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["xAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type y2AxisChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K,
+       D, I, C>["y2Axis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type yAxisChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> | null> = JetElementCustomEvent<ojChart<K, D,
+       I, C>["yAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomAndScrollChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["zoomAndScroll"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomDirectionChanged<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
+       null> = JetElementCustomEvent<ojChart<K, D, I, C>["zoomDirection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type AxisLine = {
+        lineColor?: string;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type BoxPlotDefaults = {
+        medianSvgClassName?: string;
+        medianSvgStyle?: CSSStyleDeclaration;
+        whiskerEndLength?: string;
+        whiskerEndSvgClassName?: string;
+        whiskerEndSvgStyle?: CSSStyleDeclaration;
+        whiskerSvgClassName?: string;
+        whiskerSvgStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type CategoricalValueFormat<T extends string | number = string | number> = {
+        converter?: (Converter<T>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataCursorDefaults = {
+        lineColor?: string;
+        lineStyle?: ojChart.LineStyle;
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'off' | 'on';
+        markerSize?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataItem<I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: ojChart.BoxPlotStyle;
+        categories?: string[];
+        close?: number;
+        color?: string;
+        drilling?: 'on' | 'off' | 'inherit';
+        groupId: Array<(string | number)>;
+        high?: number;
+        label?: string | string[];
+        labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        low?: number;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        open?: number;
+        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
+           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
+        q1?: number;
+        q2?: number;
+        q3?: number;
+        seriesId: string | number;
+        shortDesc?: string;
+        source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        targetValue?: number;
+        value?: number;
+        volume?: number;
+        x?: number | string;
+        y?: number;
+        z?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDragConfig<T> = {
+        dataTypes?: string | string[];
+        drag?: ((param0: Event) => void);
+        dragEnd?: ((param0: Event) => void);
+        dragStart?: ((event: Event, context: T) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDrop = {
+        x: number | null;
+        y: number | null;
+        y2: number | null;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndDropConfigs = {
+        legend?: ojChart.DndDropConfig;
+        plotArea?: ojChart.DndDropConfig;
+        xAxis?: ojChart.DndDropConfig;
+        y2Axis?: ojChart.DndDropConfig;
+        yAxis?: ojChart.DndDropConfig;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DndItem<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        item: Array<ojChart.DataLabelContext<K, D, I>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DrillItem<K, D, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        data: ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null> | number;
+        group: string | string[];
+        id: K;
+        itemData: D;
+        series: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupContext = {
+        indexPath: any[];
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type GroupTemplateContext<D> = {
+        componentElement: Element;
+        depth: number;
+        ids: string[];
+        index: number;
+        items: Array<{
+            data: D;
+            index: number;
+            key: any;
+        }>;
+        leaf: boolean;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Item<K, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: ojChart.BoxPlotStyle;
+        categories?: string[];
+        close?: number;
+        color?: string;
+        drilling?: 'on' | 'off' | 'inherit';
+        high?: number;
+        id: K;
+        items?: I;
+        label?: string | string[];
+        labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        low?: number;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        open?: number;
+        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
+           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
+        q1?: number;
+        q2?: number;
+        q3?: number;
+        shortDesc?: string;
+        source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        targetValue?: number;
+        value?: number;
+        volume?: number;
+        x?: number | string;
+        y?: number;
+        z?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Legend = {
+        backgroundColor?: string;
+        borderColor?: string;
+        maxSize?: string;
+        position?: 'start' | 'end' | 'bottom' | 'top' | 'auto';
+        referenceObjectSection?: ojChart.LegendReferenceObjectSection;
+        rendered?: 'on' | 'off' | 'auto';
+        scrolling?: 'off' | 'asNeeded';
+        sections?: ojChart.LegendSection[];
+        seriesSection?: ojChart.LegendSeriesSection;
+        size?: string;
+        symbolHeight?: number;
+        symbolWidth?: number;
+        textStyle?: CSSStyleDeclaration;
+        title: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LegendItemContext = {
+        itemIndex: number;
+        sectionIndexPath: any[];
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LegendSection = {
+        items?: ojChart.LegendItem[];
+        sections?: ojChart.LegendSection[];
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LineStyle = 'dotted' | 'dashed' | 'solid';
+    // tslint:disable-next-line interface-over-type-literal
+    type MajorTick = {
+        baselineColor?: 'inherit' | 'auto' | string;
+        baselineStyle?: ojChart.LineStyle;
+        baselineWidth?: number;
+        lineColor?: string;
+        lineStyle?: ojChart.LineStyle;
+        lineWidth?: number;
+        rendered?: 'off' | 'on' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NumericValueFormat = {
+        converter?: (Converter<number>);
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+        tooltipDisplay?: 'off' | 'auto';
+        tooltipLabel?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PieCenter = {
+        converter?: (Converter<number>);
+        label?: number | string;
+        labelStyle?: CSSStyleDeclaration;
+        renderer?: dvtBaseComponent.PreventableDOMRendererFunction<ojChart.PieCenterContext>;
+        scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PieCenterLabelContext = {
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObject = {
+        axis: 'xAxis' | 'yAxis' | 'y2Axis';
+        index: number;
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Series<K, I extends Array<ojChart.Item<any, null>> | number[] | null> = {
+        areaColor?: string;
+        areaSvgClassName?: string;
+        areaSvgStyle?: CSSStyleDeclaration;
+        assignedToY2?: 'on' | 'off';
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: ojChart.BoxPlotStyle;
+        categories?: string[];
+        color?: string;
+        displayInLegend?: 'on' | 'off' | 'auto';
+        drilling?: 'on' | 'off' | 'inherit';
+        id?: string | number;
+        items?: (Array<ojChart.Item<K, Array<ojChart.Item<any, null>> | number[] | null>> | number[]);
+        lineStyle?: ojChart.LineStyle;
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        markerSvgClassName?: string;
+        markerSvgStyle?: CSSStyleDeclaration;
+        name?: string;
+        pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
+           'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
+        pieSliceExplode?: number;
+        shortDesc?: string;
+        source?: string;
+        sourceHover?: string;
+        sourceHoverSelected?: string;
+        sourceSelected?: string;
+        stackCategory?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type SeriesTemplateContext<D> = {
+        componentElement: Element;
+        id: string;
+        index: number;
+        items: Array<{
+            data: D;
+            index: number;
+            key: any;
+        }>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type StyleDefaults = {
+        animationDownColor?: string;
+        animationDuration?: number;
+        animationIndicators?: 'none' | 'all';
+        animationUpColor?: string;
+        barGapRatio?: number;
+        borderColor?: string;
+        borderWidth?: number;
+        boxPlot?: ojChart.BoxPlotDefaults;
+        colors?: string[];
+        dataCursor?: ojChart.DataCursorDefaults;
+        dataItemGaps?: string;
+        dataLabelCollision?: 'fitInBounds' | 'none';
+        dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
+        dataLabelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        funnelBackgroundColor?: string;
+        groupSeparators?: ojChart.GroupSeparatorDefaults;
+        hoverBehaviorDelay?: number;
+        lineStyle?: ojChart.LineStyle;
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+        lineWidth?: number;
+        markerColor?: string;
+        markerDisplayed?: 'on' | 'off' | 'auto';
+        markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
+        markerSize?: number;
+        marqueeBorderColor?: string;
+        marqueeColor?: string;
+        maxBarWidth?: number;
+        otherColor?: string;
+        patterns?: string[];
+        pieFeelerColor?: string;
+        pieInnerRadius?: number;
+        selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
+        seriesEffect?: 'color' | 'pattern' | 'gradient';
+        shapes?: string[];
+        stackLabelStyle?: CSSStyleDeclaration;
+        stockFallingColor?: string;
+        stockRangeColor?: string;
+        stockRisingColor?: string;
+        stockVolumeColor?: string;
+        threeDEffect?: 'on' | 'off';
+        tooltipLabelStyle?: CSSStyleDeclaration;
+        tooltipValueStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ValueFormats = {
+        close?: ojChart.NumericValueFormat;
+        group?: ojChart.GroupValueFormat;
+        high?: ojChart.NumericValueFormat;
+        label?: ojChart.LabelValueFormat;
+        low?: ojChart.NumericValueFormat;
+        open?: ojChart.NumericValueFormat;
+        q1?: ojChart.NumericValueFormat;
+        q2?: ojChart.NumericValueFormat;
+        q3?: ojChart.NumericValueFormat;
+        series?: ojChart.SeriesValueFormat;
+        targetValue?: ojChart.NumericValueFormat;
+        value?: ojChart.NumericValueFormat;
+        volume?: ojChart.NumericValueFormat;
+        x?: ojChart.CategoricalValueFormat;
+        y?: ojChart.NumericValueFormat;
+        y2?: ojChart.NumericValueFormat;
+        z?: ojChart.NumericValueFormat;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type XReferenceObject<T extends number | string = number | string> = {
+        categories?: string[];
+        color?: string;
+        displayInLegend?: 'on' | 'off';
+        high?: T;
+        id?: string;
+        lineStyle?: ojChart.LineStyle;
+        lineWidth?: number;
+        location?: 'front' | 'back';
+        low?: T;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        text?: string;
+        type?: 'area' | 'line';
+        value?: T;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Y2Axis = {
+        alignTickMarks?: 'off' | 'on';
+        axisLine?: ojChart.AxisLine;
+        baselineScaling?: 'min' | 'zero';
+        dataMax?: number;
+        dataMin?: number;
+        majorTick?: ojChart.MajorTick;
+        max?: number;
+        maxSize?: string;
+        min?: number;
+        minStep?: number;
+        minorStep?: number;
+        minorTick?: ojChart.MinorTick;
+        position?: 'start' | 'end' | 'top' | 'bottom' | 'auto';
+        referenceObjects?: ojChart.YReferenceObject[];
+        rendered?: 'off' | 'on';
+        scale?: 'log' | 'linear';
+        size?: string;
+        step?: number;
+        tickLabel?: ojChart.YTickLabel;
+        title?: string;
+        titleStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type YReferenceObject = {
+        categories?: string[];
+        color?: string;
+        displayInLegend?: 'on' | 'off';
+        high?: number;
+        id?: string;
+        items?: ojChart.ReferenceObjectItem[];
+        lineStyle?: ojChart.LineStyle;
+        lineType?: ojChart.LineType;
+        lineWidth?: number;
+        location?: 'front' | 'back';
+        low?: number;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        text?: string;
+        type?: 'area' | 'line';
+        value?: number;
+    };
+}
+export namespace ChartGroupElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojChartGroup["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojChartGroup["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nameChanged = JetElementCustomEvent<ojChartGroup["name"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojChartGroup["shortDesc"]>;
+}
+export namespace ChartItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojChartItem["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojChartItem["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type boxPlotChanged = JetElementCustomEvent<ojChartItem["boxPlot"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojChartItem["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type closeChanged = JetElementCustomEvent<ojChartItem["close"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojChartItem["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojChartItem["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupIdChanged = JetElementCustomEvent<ojChartItem["groupId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highChanged = JetElementCustomEvent<ojChartItem["high"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemsChanged = JetElementCustomEvent<ojChartItem["items"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojChartItem["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelPositionChanged = JetElementCustomEvent<ojChartItem["labelPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojChartItem["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lowChanged = JetElementCustomEvent<ojChartItem["low"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerDisplayedChanged = JetElementCustomEvent<ojChartItem["markerDisplayed"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerShapeChanged = JetElementCustomEvent<ojChartItem["markerShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged = JetElementCustomEvent<ojChartItem["markerSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type openChanged = JetElementCustomEvent<ojChartItem["open"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type patternChanged = JetElementCustomEvent<ojChartItem["pattern"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type q1Changed = JetElementCustomEvent<ojChartItem["q1"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type q2Changed = JetElementCustomEvent<ojChartItem["q2"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type q3Changed = JetElementCustomEvent<ojChartItem["q3"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type seriesIdChanged = JetElementCustomEvent<ojChartItem["seriesId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojChartItem["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceChanged = JetElementCustomEvent<ojChartItem["source"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverChanged = JetElementCustomEvent<ojChartItem["sourceHover"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverSelectedChanged = JetElementCustomEvent<ojChartItem["sourceHoverSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceSelectedChanged = JetElementCustomEvent<ojChartItem["sourceSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojChartItem["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojChartItem["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type targetValueChanged = JetElementCustomEvent<ojChartItem["targetValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojChartItem["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type volumeChanged = JetElementCustomEvent<ojChartItem["volume"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type xChanged = JetElementCustomEvent<ojChartItem["x"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type yChanged = JetElementCustomEvent<ojChartItem["y"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zChanged = JetElementCustomEvent<ojChartItem["z"]>;
+}
+export namespace ChartSeriesElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type areaColorChanged = JetElementCustomEvent<ojChartSeries["areaColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaSvgClassNameChanged = JetElementCustomEvent<ojChartSeries["areaSvgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaSvgStyleChanged = JetElementCustomEvent<ojChartSeries["areaSvgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type assignedToY2Changed = JetElementCustomEvent<ojChartSeries["assignedToY2"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojChartSeries["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojChartSeries["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type boxPlotChanged = JetElementCustomEvent<ojChartSeries["boxPlot"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojChartSeries["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojChartSeries["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayInLegendChanged = JetElementCustomEvent<ojChartSeries["displayInLegend"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojChartSeries["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineStyleChanged = JetElementCustomEvent<ojChartSeries["lineStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineTypeChanged = JetElementCustomEvent<ojChartSeries["lineType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineWidthChanged = JetElementCustomEvent<ojChartSeries["lineWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerColorChanged = JetElementCustomEvent<ojChartSeries["markerColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerDisplayedChanged = JetElementCustomEvent<ojChartSeries["markerDisplayed"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerShapeChanged = JetElementCustomEvent<ojChartSeries["markerShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged = JetElementCustomEvent<ojChartSeries["markerSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSvgClassNameChanged = JetElementCustomEvent<ojChartSeries["markerSvgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSvgStyleChanged = JetElementCustomEvent<ojChartSeries["markerSvgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nameChanged = JetElementCustomEvent<ojChartSeries["name"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type patternChanged = JetElementCustomEvent<ojChartSeries["pattern"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pieSliceExplodeChanged = JetElementCustomEvent<ojChartSeries["pieSliceExplode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojChartSeries["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceChanged = JetElementCustomEvent<ojChartSeries["source"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverChanged = JetElementCustomEvent<ojChartSeries["sourceHover"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverSelectedChanged = JetElementCustomEvent<ojChartSeries["sourceHoverSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceSelectedChanged = JetElementCustomEvent<ojChartSeries["sourceSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stackCategoryChanged = JetElementCustomEvent<ojChartSeries["stackCategory"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojChartSeries["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojChartSeries["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojChartSeries["type"]>;
+}
+export namespace SparkChartElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaColorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["areaColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaSvgClassNameChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["areaSvgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaSvgStyleChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["areaSvgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type barGapRatioChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["barGapRatio"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type baselineScalingChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["baselineScaling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type firstColorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["firstColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highColorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["highColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lastColorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["lastColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineStyleChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["lineStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineTypeChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["lineType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineWidthChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["lineWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lowColorChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["lowColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerShapeChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["markerShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["markerSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type referenceObjectsChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["referenceObjects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type visualEffectsChanged<K, D extends ojSparkChart.Item | any> = JetElementCustomEvent<ojSparkChart<K, D>["visualEffects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Item = {
+        borderColor: string;
+        color: string;
+        date: Date;
+        high: number;
+        low: number;
+        markerDisplayed: 'on' | 'off';
+        markerShape: 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | 'auto' | string;
+        markerSize: number;
+        svgClassName: string;
+        svgStyle: CSSStyleDeclaration;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext = {
+        color: string;
+        componentElement: Element;
+        parentElement: Element;
+    };
+}
+export namespace SparkChartItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojSparkChartItem["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojSparkChartItem["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dateChanged = JetElementCustomEvent<ojSparkChartItem["date"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highChanged = JetElementCustomEvent<ojSparkChartItem["high"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lowChanged = JetElementCustomEvent<ojSparkChartItem["low"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerDisplayedChanged = JetElementCustomEvent<ojSparkChartItem["markerDisplayed"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerShapeChanged = JetElementCustomEvent<ojSparkChartItem["markerShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged = JetElementCustomEvent<ojSparkChartItem["markerSize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojSparkChartItem["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojSparkChartItem["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSparkChartItem["value"]>;
+}

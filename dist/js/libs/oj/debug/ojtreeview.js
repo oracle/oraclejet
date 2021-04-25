@@ -3669,7 +3669,8 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
           var items;
 
           // Call the super to update the property values
-          if (!this._isLeafOnlySelectionEnabled()) {
+          if (!this._isLeafOnlySelectionEnabled() ||
+          (this._isLeafOnlySelectionEnabled() && (key !== 'selected' || key !== 'selection'))) {
             this._superApply(arguments);
           }
 
@@ -4139,7 +4140,7 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
         _removeSkeleton: function (parentKey) {
           return new Promise(function (resolve) {
             var self = this;
-            var busyResolve = self._addBusyState('removing skeleton', parentKey);
+            var skeletonBusyResolve = self._addBusyState('removing skeleton', parentKey);
             var skeletonContainer;
             if (parentKey === null) {
               skeletonContainer = this._getSkeletonContainer(self.element[0]);
@@ -4147,21 +4148,17 @@ define(['require', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeuti
               skeletonContainer = this._getSkeletonContainer(this._getItemByKey(parentKey));
             }
             if (!skeletonContainer) {
-              busyResolve();
+              skeletonBusyResolve();
               resolve();
             } else {
-              var animatedElements = skeletonContainer.getElementsByClassName('oj-animation-skeleton');
-              for (var i = 0; i < animatedElements.length; i++) {
-                animatedElements[i].classList.remove('oj-animation-skeleton');
-              }
-              skeletonContainer.classList.add('oj-animation-skeleton-fade-out');
-              skeletonContainer.addEventListener('animationend', function () {
+              ojanimation.fadeOut(skeletonContainer, { duration: '100ms' }).then(function () {
                 if (skeletonContainer.parentElement) {
                   skeletonContainer.parentElement.removeChild(skeletonContainer);
                 }
-                busyResolve();
+                skeletonBusyResolve();
                 resolve();
-              });
+              }
+              );
             }
           }.bind(this));
         },

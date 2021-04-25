@@ -67,3 +67,8 @@ export interface ojIndexerSettableProperties extends baseComponentSettableProper
 export interface ojIndexerSettablePropertiesLenient extends Partial<ojIndexerSettableProperties> {
     [key: string]: any;
 }
+export type IndexerElement = ojIndexer;
+export namespace IndexerElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged = JetElementCustomEvent<ojIndexer["data"]>;
+}

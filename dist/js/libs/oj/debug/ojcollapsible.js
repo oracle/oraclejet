@@ -381,7 +381,7 @@ var __oj_collapsible_metadata =
           var iconTag = this._isDisabled() ? $('<span>') : $('<a tabindex="0">');
 
           iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
-          .attr('aria-labelledby', this.header.attr('id'))
+          .attr('aria-describedby', this.header.attr('id'))
           .prependTo(this.header); // @HTMLUpdateOK
         },
 

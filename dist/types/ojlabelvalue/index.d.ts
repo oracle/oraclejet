@@ -41,3 +41,12 @@ export interface ojLabelValueSettableProperties extends JetSettableProperties {
 export interface ojLabelValueSettablePropertiesLenient extends Partial<ojLabelValueSettableProperties> {
     [key: string]: any;
 }
+export type LabelValueElement = ojLabelValue;
+export namespace LabelValueElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type colspanChanged = JetElementCustomEvent<ojLabelValue["colspan"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojLabelValue["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWidthChanged = JetElementCustomEvent<ojLabelValue["labelWidth"]>;
+}

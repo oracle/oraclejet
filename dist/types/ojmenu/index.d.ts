@@ -115,3 +115,59 @@ export interface ojMenuSettableProperties extends baseComponentSettablePropertie
 export interface ojMenuSettablePropertiesLenient extends Partial<ojMenuSettableProperties> {
     [key: string]: any;
 }
+export type MenuElement = ojMenu;
+export namespace MenuElement {
+    interface ojAction extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateEnd extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeOpen extends CustomEvent<{
+        openOptions: ojMenu.OpenOptions;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojClose extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojMenuAction extends CustomEvent<{
+        selectedValue: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojOpen extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojMenu["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type openOptionsChanged = JetElementCustomEvent<ojMenu["openOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type OpenOptions = {
+        display?: string;
+        initialFocus?: string;
+        launcher?: string | Element;
+        position?: ojMenu.Position;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionAlign = {
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        vertical?: 'top' | 'bottom' | 'center';
+    };
+}

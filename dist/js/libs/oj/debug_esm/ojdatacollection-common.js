@@ -5,7 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import $ from 'jquery';
 import oj from 'ojs/ojcore-base';
+import { getLogicalParent } from 'ojs/ojdomutils';
 
 /**
  * @license
@@ -564,7 +566,7 @@ DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetai
       for (i = eventKeys.length - 1; i >= 0; i--) {
         eventKey = eventKeys[i];
         // ensure the key does not already exist in the data set.
-        if (!DataCollectionUtils._containsKey(returnKeys, eventKey)) {
+        if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
           beforeKey = eventBeforeKeys[i];
           if (beforeKey != null) {
             beforeIndex = DataCollectionUtils._indexOfKey(returnKeys, beforeKey);
@@ -590,7 +592,7 @@ DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetai
     for (i = 0; i < eventKeys.length; i++) {
       eventKey = eventKeys[i];
       // ensure the key does not already exist in the data set
-      if (!DataCollectionUtils._containsKey(returnKeys, eventKey)) {
+      if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
         eventIndex = eventIndexes[i];
         if (eventIndex != null) {
           var added = false;
@@ -630,7 +632,7 @@ DataCollectionUtils.getAddEventKeysResult = function (initialKeys, addEventDetai
 /**
  * @private
  */
-DataCollectionUtils._containsKey = function (array, key) {
+DataCollectionUtils.containsKey = function (array, key) {
   for (var i = 0; i < array.length; i++) {
     if (oj.KeyUtils.equals(array[i], key)) {
       return true;
@@ -651,9 +653,36 @@ DataCollectionUtils._indexOfKey = function (array, key) {
   return -1;
 };
 
+/**
+ * Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
+ * focusout, but components don't want to exit actionable/edit mode in those cases.
+ * This method should be used inside the component's focusout handler.
+ * @param elem the component element
+ * @return the logical popup element if one has been launched from within the component, null otherwise.
+ */
+DataCollectionUtils.getLogicalChildPopup = function (componentElement) {
+  var popups = oj.ZOrderUtils.findOpenPopups();
+  for (var i = 0; i < popups.length; i++) {
+    // Get the launcher of the popup.
+    // popups[i] is just a wrapper with the real popup as its child.
+    var popupElem = popups[i].firstElementChild;
+    var launcher = getLogicalParent($(popupElem));
+
+    // Check if the component contains the launcher
+    if (launcher != null && $(componentElement).has(launcher.get(0)).length > 0) {
+      // only return the popup if the child popup is currently open
+      if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
+        return popupElem;
+      }
+    }
+  }
+  return null;
+};
+
 const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
 const applyStyleObj = DataCollectionUtils.applyStyleObj;
 const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
+const containsKey = DataCollectionUtils.containsKey;
 const convertStringToStyleObj = DataCollectionUtils.convertStringToStyleObj;
 const disableElement = DataCollectionUtils.disableElement;
 const disableAllFocusableElements = DataCollectionUtils.disableAllFocusableElements;
@@ -663,6 +692,7 @@ const getAddEventKeysResult = DataCollectionUtils.getAddEventKeysResult;
 const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
 const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
 const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
+const getLogicalChildPopup = DataCollectionUtils.getLogicalChildPopup;
 const getNoJQFocusHandlers = DataCollectionUtils.getNoJQFocusHandlers;
 const handleActionablePrevTab = DataCollectionUtils.handleActionablePrevTab;
 const handleActionableTab = DataCollectionUtils.handleActionableTab;
@@ -683,4 +713,4 @@ const isTabKeyEvent = DataCollectionUtils.isTabKeyEvent;
 const KEYBOARD_KEYS = DataCollectionUtils.KEYBOARD_KEYS;
 const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getAddEventKeysResult, getDefaultScrollBarWidth, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isHomeKeyEvent, isMobileTouchDevice, isSpaceBarKeyEvent, isTabKeyEvent };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getAddEventKeysResult, getDefaultScrollBarWidth, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isHomeKeyEvent, isMobileTouchDevice, isSpaceBarKeyEvent, isTabKeyEvent };

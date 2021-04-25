@@ -12,7 +12,7 @@
    * The Universal Permissive License (UPL), Version 1.0
    * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
-   */var o={};"undefined"!=typeof window?o=window:"undefined"!=typeof self&&(o=self);var i=o.oj,s={version:"10.0.0",revision:"2021-01-07_13-00-34",noConflict:function(){o.oj=i},_registerLegacyNamespaceProp:function(e,t){this[e]=t}};o.oj=s;
+   */var o={};"undefined"!=typeof window?o=window:"undefined"!=typeof self&&(o=self);var i=o.oj,s={version:"10.1.0",revision:"2021-04-17_08-43-39",noConflict:function(){o.oj=i},_registerLegacyNamespaceProp:function(e,t){this[e]=t}};o.oj=s;
 /**
    * @license
    * Copyright (c) 2004 2021, Oracle and/or its affiliates.

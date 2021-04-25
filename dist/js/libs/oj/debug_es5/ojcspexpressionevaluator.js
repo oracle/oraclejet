@@ -83,6 +83,14 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
 
   var CspExpressionEvaluator = function CspExpressionEvaluator(options) {
     var _parser = new ojexpparser.ExpParser();
+
+    var _options = Object.assign({}, options);
+
+    if (!(_options.globalScope && _options.globalScope.Object)) {
+      _options.globalScope = Object.assign({
+        Object: Object
+      }, _options.globalScope);
+    }
     /**
      * Creates expression evaluator
      * @param {string} expressionText expression associated  with the returned evaluator
@@ -102,7 +110,7 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
         _throwErrorWithExpression(e, expressionText);
       }
 
-      var extraScope = options ? options.globalScope : null;
+      var extraScope = _options.globalScope;
       return {
         evaluate: function evaluate(contexts) {
           var ret;

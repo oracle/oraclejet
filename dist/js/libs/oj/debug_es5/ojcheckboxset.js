@@ -172,6 +172,7 @@ define(['ojs/ojcomponentcore', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'oj
     __oj_checkboxset_metadata.extension._ALIASED_PROPS = {
       readonly: 'readOnly'
     };
+    __oj_checkboxset_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-checkboxset', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_checkboxset_metadata, {
         properties: {

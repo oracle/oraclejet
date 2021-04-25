@@ -544,3 +544,123 @@ export interface ojTimelineSeriesSettableProperties extends JetSettablePropertie
 export interface ojTimelineSeriesSettablePropertiesLenient extends Partial<ojTimelineSeriesSettableProperties> {
     [key: string]: any;
 }
+export type TimelineElement<K, D extends ojTimeline.DataItem | any> = ojTimeline<K, D>;
+export type TimelineItemElement = ojTimelineItem;
+export type TimelineSeriesElement = ojTimelineSeries;
+export namespace TimelineElement {
+    interface ojViewportChange extends CustomEvent<{
+        minorAxisScale: string;
+        viewportEnd: string;
+        viewportStart: string;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type majorAxisChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["majorAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minorAxisChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["minorAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type referenceObjectsChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["referenceObjects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueFormatsChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["valueFormats"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type viewportEndChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportEnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type viewportStartChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportStart"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DataItem = {
+        description?: string;
+        durationFillColor?: string;
+        end?: string;
+        seriesId: string;
+        shortDesc?: string;
+        start: string;
+        svgStyle?: CSSStyleDeclaration;
+        thumbnail?: string;
+        title?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ReferenceObject = {
+        value?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type SeriesItem<K> = {
+        description?: string;
+        durationFillColor?: string;
+        end?: string;
+        id: K;
+        shortDesc?: string;
+        start: string;
+        svgStyle?: CSSStyleDeclaration;
+        thumbnail?: string;
+        title?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K, D> = {
+        color: string;
+        componentElement: Element;
+        data: ojTimeline.SeriesItem<K>;
+        itemData: D;
+        parentElement: Element;
+        seriesData: ojTimeline.Series<K>;
+    };
+}
+export namespace TimelineItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type descriptionChanged = JetElementCustomEvent<ojTimelineItem["description"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type durationFillColorChanged = JetElementCustomEvent<ojTimelineItem["durationFillColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged = JetElementCustomEvent<ojTimelineItem["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojTimelineItem["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type seriesIdChanged = JetElementCustomEvent<ojTimelineItem["seriesId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojTimelineItem["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged = JetElementCustomEvent<ojTimelineItem["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojTimelineItem["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type thumbnailChanged = JetElementCustomEvent<ojTimelineItem["thumbnail"]>;
+}
+export namespace TimelineSeriesElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type emptyTextChanged = JetElementCustomEvent<ojTimelineSeries["emptyText"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemLayoutChanged = JetElementCustomEvent<ojTimelineSeries["itemLayout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojTimelineSeries["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojTimelineSeries["svgStyle"]>;
+}

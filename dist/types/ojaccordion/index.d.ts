@@ -70,3 +70,34 @@ export interface ojAccordionSettableProperties extends baseComponentSettableProp
 export interface ojAccordionSettablePropertiesLenient extends Partial<ojAccordionSettableProperties> {
     [key: string]: any;
 }
+export type AccordionElement = ojAccordion;
+export namespace AccordionElement {
+    interface ojBeforeCollapse extends CustomEvent<{
+        fromCollapsible: Element;
+        toCollapsible: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand extends CustomEvent<{
+        fromCollapsible: Element;
+        toCollapsible: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse extends CustomEvent<{
+        fromCollapsible: Element;
+        toCollapsible: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand extends CustomEvent<{
+        fromCollapsible: Element;
+        toCollapsible: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged = JetElementCustomEvent<ojAccordion["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type multipleChanged = JetElementCustomEvent<ojAccordion["multiple"]>;
+}

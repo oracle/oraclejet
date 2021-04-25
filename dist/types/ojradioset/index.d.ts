@@ -133,3 +133,48 @@ export interface ojRadiosetSettableProperties<K, D, V> extends editableValueSett
 export interface ojRadiosetSettablePropertiesLenient<K, D, V> extends Partial<ojRadiosetSettableProperties<K, D, V>> {
     [key: string]: any;
 }
+export type RadiosetElement<K, D, V = any> = ojRadioset<K, D, V>;
+export namespace RadiosetElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["optionRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionsChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["options"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["optionsKeys"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readOnlyChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["readOnly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<K, D, V = any> = JetElementCustomEvent<ojRadioset<K, D, V>["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Option = {
+        disabled?: boolean;
+        label?: string;
+        value: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type OptionsKeys = {
+        label?: string;
+        value?: string;
+    };
+}

@@ -13,7 +13,7 @@ import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { enableAllFocusableElements, disableAllFocusableElements, _DATA_OJ_TABMOD, isClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { enableAllFocusableElements, disableAllFocusableElements, _DATA_OJ_TABMOD, getLogicalChildPopup, isClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { slideOut, fadeOut, slideIn, fadeIn, startAnimation } from 'ojs/ojanimation';
 import { info, error, warn } from 'ojs/ojlogger';
 import { KeySet, KeySetImpl, KeySetUtils } from 'ojs/ojkeyset';
@@ -2363,6 +2363,22 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   },
 
   /**
+   * Invoked by ContentHandler
+   */
+  disableResizeListener: function () {
+    var container = this.getListContainer()[0];
+    this._unregisterResizeListener(container);
+  },
+
+  /**
+   * Invoked by ContentHandler
+   */
+  enableResizeListener: function () {
+    var container = this.getListContainer()[0];
+    this._registerResizeListener(container);
+  },
+
+  /**
    * Returns DnD Context, needed to override in navigationlist
    * @protected
    */
@@ -3399,6 +3415,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    * @param {boolean} restoreFocus true if focus should be restore, false otherwise
    */
   itemRemoveComplete: function (elem, restoreFocus) {
+    var currentItemUpdated = false;
+
     // if it's the current focus item, try to focus on the next/prev item.  If there are none, then focus on the root element
     if (this.m_active != null && oj.Object.compareValues(this.m_active.key, this.GetKey(elem))) {
       // make sure we exit actionable mode, otherwise focus will be lost
@@ -3414,6 +3432,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
 
       if (next != null && $(next).hasClass(this.getItemElementStyleClass())) {
         this.SetCurrentItem($(next), null, !restoreFocus);
+        currentItemUpdated = true;
       }
     }
 
@@ -3425,6 +3444,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     // clear cached height
     this.m_clientHeight = null;
     this.m_scrollHeight = null;
+
+    return currentItemUpdated;
   },
 
   /**
@@ -4720,6 +4741,12 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
       this._focusOutHandler($(event.target));
     }
     if (this._isActionableMode()) {
+      // checks if the focusout event is triggered by popup originated from within listview
+      // if it is don't do anything as we do not want to exit actionable mode.
+      if (getLogicalChildPopup(this.getListContainer()) != null) {
+        return;
+      }
+
       this._setFocusoutBusyState();
       // set timeout to stay in editable/actionable mode if focus comes back into the listview
       this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK

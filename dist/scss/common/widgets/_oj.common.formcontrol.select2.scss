@@ -245,10 +245,9 @@
       min-height: 10rem; // 160px;
     }
 
-    // .oj-listbox-fullscreen .oj-select-results {
-    //   max-height: 100%;
-    //   flex-grow: 1;
-    // }
+    .oj-listbox-fullscreen .oj-select-results {
+      max-height: none;
+    }
 
 
 

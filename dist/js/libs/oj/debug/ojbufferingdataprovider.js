@@ -159,11 +159,42 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      */
 
     /**
-     * @inheritdoc
+     * Get an AsyncIterable object for iterating the data.
+     * <p>
+     * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+     * AsyncIterator contains a “next” method for fetching the next block of data.
+     * </p><p>
+     * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+     * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+     * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+     * may or may not return more rows for a mutable data source.
+     * </p>
+     * <p>
+     * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+     * more information on custom implementations.
+     * </p>
+     *
+     * @param {FetchListParameters=} params fetch parameters
+     * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
+     * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
+     * @export
+     * @expose
      * @memberof BufferingDataProvider
      * @instance
      * @method
      * @name fetchFirst
+     * @ojsignature {target: "Type",
+     *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+     * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+     * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+     * let result = await asyncIterator.next();
+     * let value = result.value;
+     * let data = value.data;
+     * let keys = value.metadata.map(function(val) {
+     *   return val.key;
+     * });
+     * // true or false for done
+     * let done = result.done;
      */
 
     /**
@@ -594,12 +625,13 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     this._parent = _parent;
                     this._baseIterator = _baseIterator;
                     this._params = _params;
-                    this.itemArray = [];
                     this.firstBaseKey = null;
                     this.mergedAddKeySet = new ojSet();
-                    this.mergedRemoveKeySet = new ojSet();
-                    this.mergedMetadataArray = [];
-                    this.mergedDataArray = [];
+                    this.mergedItemArray = [];
+                    this.nextOffset = 0;
+                    if (this._params == null) {
+                        this._params = {};
+                    }
                 }
                 _fetchNext() {
                     return this._baseIterator.next().then((result) => {
@@ -609,51 +641,47 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         if (result.value.fetchParameters && result.value.fetchParameters.sortCriteria) {
                             this._parent.lastSortCriteria = result.value.fetchParameters.sortCriteria;
                         }
-                        const editBuffer = this._parent.editBuffer;
-                        if (!editBuffer.isEmpty()) {
-                            let baseItemArray = result.value.data.map((val, index) => {
-                                return { data: result.value.data[index], metadata: result.value.metadata[index] };
-                            });
-                            let newItemArray = this.itemArray.slice();
-                            this.itemArray = [];
-                            this._parent._mergeEdits(baseItemArray, newItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
-                            const params = this._params || {};
-                            if ((params.size && newItemArray.length < params.size) ||
-                                (params.size == null && newItemArray.length === 0)) {
-                                if (!result.done) {
-                                    this.itemArray = newItemArray;
-                                    return this._fetchNext();
+                        let baseItemArray = result.value.data.map((val, index) => {
+                            return { data: result.value.data[index], metadata: result.value.metadata[index] };
+                        });
+                        this._parent._mergeEdits(baseItemArray, this.mergedItemArray, this._params.filterCriterion, this._parent.lastSortCriteria, true, this.mergedAddKeySet, result.done);
+                        let actualReturnSize = this.mergedItemArray.length - this.nextOffset;
+                        for (let i = this.nextOffset; i < this.mergedItemArray.length; i++) {
+                            const item = this.mergedItemArray[i];
+                            if (this._parent._isItemRemoved(item.metadata.key)) {
+                                --actualReturnSize;
+                            }
+                        }
+                        const params = this._params || {};
+                        if ((params.size && actualReturnSize < params.size) ||
+                            (params.size == null && actualReturnSize === 0)) {
+                            if (!result.done) {
+                                return this._fetchNext();
+                            }
+                        }
+                        let newDataArray = [];
+                        let newMetaArray = [];
+                        let idx;
+                        for (idx = this.nextOffset; idx < this.mergedItemArray.length; idx++) {
+                            ++this.nextOffset;
+                            const item = this.mergedItemArray[idx];
+                            if (!this._parent._isItemRemoved(item.metadata.key)) {
+                                newDataArray.push(item.data);
+                                newMetaArray.push(item.metadata);
+                                if (params.size && newDataArray.length === params.size) {
+                                    break;
                                 }
                             }
-                            if (params.size && newItemArray.length > params.size) {
-                                this.itemArray = newItemArray.splice(params.size);
-                            }
-                            const done = result.done && this.itemArray.length === 0;
-                            let newDataArray = newItemArray.map((item) => {
-                                return item.data;
-                            });
-                            let newMetaArray = newItemArray.map((item) => {
-                                return item.metadata;
-                            });
-                            return {
-                                done: done,
-                                value: { fetchParameters: this._params, data: newDataArray, metadata: newMetaArray }
-                            };
                         }
-                        return result;
+                        const done = result.done && newDataArray.length === 0;
+                        return {
+                            done: done,
+                            value: { fetchParameters: this._params, data: newDataArray, metadata: newMetaArray }
+                        };
                     });
                 }
                 ['next']() {
-                    const promise = this._fetchNext();
-                    return promise.then((result) => {
-                        const metadata = result.value.metadata;
-                        const data = result.value.data;
-                        for (let i = 0; i < metadata.length; i++) {
-                            this.mergedMetadataArray.push(metadata[i]);
-                            this.mergedDataArray.push(data[i]);
-                        }
-                        return result;
-                    });
+                    return this._fetchNext();
                 }
             };
             this._addEventListeners(dataProvider);
@@ -751,6 +779,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 }
                 else {
                     if (editItem.operation === 'remove') {
+                        newItemArray.push(baseItem);
                     }
                     else if (editItem.operation === 'update') {
                         if (!filterObj || filterObj.filter(editItem.item.data)) {
@@ -776,8 +805,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         sortCriteria = params.sortCriteria;
                     }
                     this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new ojSet(), baseResults.done);
-                    if ((params.size && newItemArray.length < params.size) ||
-                        (params.size == null && newItemArray.length === 0)) {
+                    let actualReturnSize = newItemArray.length;
+                    for (let i = 0; i < newItemArray.length; i++) {
+                        if (this._isItemRemoved(newItemArray[i].metadata.key)) {
+                            --actualReturnSize;
+                        }
+                    }
+                    if ((params.size && actualReturnSize < params.size) ||
+                        (params.size == null && actualReturnSize === 0)) {
                         if (!baseResults.done) {
                             const nextParams = {
                                 attributes: params.attributes,
@@ -788,6 +823,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 sortCriteria: params.sortCriteria
                             };
                             return this._fetchFromOffset(nextParams, newItemArray);
+                        }
+                    }
+                    for (let i = 0; i < newItemArray.length; i++) {
+                        if (this._isItemRemoved(newItemArray[i].metadata.key)) {
+                            newItemArray.splice(i, 1);
+                            --i;
                         }
                     }
                     if (params.size && newItemArray.length > params.size) {
@@ -893,20 +934,24 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             }
             return isEmpty;
         }
+        _isItemRemoved(key) {
+            const editItem = this.editBuffer.getItem(key);
+            return editItem != null && editItem.operation === 'remove';
+        }
         _addToMergedArrays(item) {
             let addBeforeKey = null;
             if (this.lastIterator) {
                 const sortCriteria = this.lastSortCriteria;
                 if (sortCriteria && sortCriteria.length) {
-                    let mergedMetadataArray = this.lastIterator.mergedMetadataArray;
-                    let mergedDataArray = this.lastIterator.mergedDataArray;
-                    let mergedRemoveKeySet = this.lastIterator.mergedRemoveKeySet;
-                    for (let i = 0; i < mergedDataArray.length; i++) {
-                        if (this._compareItem(item.data, mergedDataArray[i], sortCriteria) < 0 &&
-                            !mergedRemoveKeySet.has(mergedMetadataArray[i].key)) {
-                            addBeforeKey = mergedMetadataArray[i].key;
-                            mergedMetadataArray.splice(i, 0, item.metadata);
-                            mergedDataArray.splice(i, 0, item.data);
+                    const mergedItemArray = this.lastIterator.mergedItemArray;
+                    for (let i = 0; i < mergedItemArray.length; i++) {
+                        if (this._compareItem(item.data, mergedItemArray[i].data, sortCriteria) < 0 &&
+                            !this._isItemRemoved(mergedItemArray[i].metadata.key)) {
+                            addBeforeKey = mergedItemArray[i].metadata.key;
+                            mergedItemArray.splice(i, 0, item);
+                            if (i < this.lastIterator.nextOffset) {
+                                ++this.lastIterator.nextOffset;
+                            }
                             break;
                         }
                     }
@@ -932,28 +977,30 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             this.dispatchEvent(event);
             this._dispatchSubmittableChangeEvent();
         }
-        _removeFromMergedArrays(key) {
+        _removeFromMergedArrays(key, fromBaseDP) {
             if (this.lastIterator) {
-                let mergedMetadataArray = this.lastIterator.mergedMetadataArray;
-                let mergedDataArray = this.lastIterator.mergedDataArray;
-                let mergedAddKeySet = this.lastIterator.mergedAddKeySet;
-                let mergedRemoveKeySet = this.lastIterator.mergedRemoveKeySet;
-                const keyIdx = this._findKeyInMetadata(key, mergedMetadataArray);
+                const mergedItemArray = this.lastIterator.mergedItemArray;
+                const mergedAddKeySet = this.lastIterator.mergedAddKeySet;
+                const keyIdx = this._findKeyInItems(key, mergedItemArray);
                 if (keyIdx !== -1) {
-                    if (mergedAddKeySet.has(key)) {
-                        mergedMetadataArray.splice(keyIdx, 1);
-                        mergedDataArray.splice(keyIdx, 1);
+                    if (fromBaseDP || mergedAddKeySet.has(key)) {
+                        mergedItemArray.splice(keyIdx, 1);
                         mergedAddKeySet.delete(key);
+                        if (keyIdx < this.lastIterator.nextOffset) {
+                            --this.lastIterator.nextOffset;
+                        }
                     }
                     else {
-                        mergedRemoveKeySet.add(key);
+                        if (keyIdx === this.lastIterator.nextOffset - 1) {
+                            --this.lastIterator.nextOffset;
+                        }
                     }
                     if (oj.KeyUtils.equals(this.lastIterator.firstBaseKey, key)) {
                         this.lastIterator.firstBaseKey = null;
-                        if (mergedMetadataArray.length > keyIdx) {
-                            for (let i = keyIdx; i < mergedMetadataArray.length; i++) {
-                                let newKey = mergedMetadataArray[i].key;
-                                if (!mergedRemoveKeySet.has(newKey)) {
+                        if (mergedItemArray.length > keyIdx) {
+                            for (let i = keyIdx; i < mergedItemArray.length; i++) {
+                                let newKey = mergedItemArray[i].metadata.key;
+                                if (!this._isItemRemoved(newKey)) {
                                     this.lastIterator.firstBaseKey = newKey;
                                     break;
                                 }
@@ -965,7 +1012,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         removeItem(item) {
             this.editBuffer.removeItem(item);
-            this._removeFromMergedArrays(item.metadata.key);
+            this._removeFromMergedArrays(item.metadata.key, false);
             const detail = {
                 remove: {
                     data: item.data ? [item.data] : null,
@@ -1038,6 +1085,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 let resultItem;
                 editItemMap.forEach((editItem, key) => {
                     if (editItem.operation === 'add') {
+                        this._removeFromMergedArrays(editItem.item.metadata.key, false);
                         this._addEventDetail(detail, 'remove', editItem.item);
                     }
                     else if (editItem.operation === 'remove') {
@@ -1045,13 +1093,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         if (resultItem) {
                             let addBeforeKey = null;
                             if (this.lastIterator) {
-                                let mergedMetadataArray = this.lastIterator.mergedMetadataArray;
-                                let mergedRemoveKeySet = this.lastIterator.mergedRemoveKeySet;
-                                const keyIdx = this._findKeyInMetadata(key, mergedMetadataArray);
+                                let mergedItemArray = this.lastIterator.mergedItemArray;
+                                const keyIdx = this._findKeyInItems(key, mergedItemArray);
                                 if (keyIdx !== -1) {
-                                    for (let i = keyIdx + 1; i < mergedMetadataArray.length; i++) {
-                                        if (!mergedRemoveKeySet.has(mergedMetadataArray[i].key)) {
-                                            addBeforeKey = mergedMetadataArray[i].key;
+                                    for (let i = keyIdx + 1; i < mergedItemArray.length; i++) {
+                                        if (!this._isItemRemoved(mergedItemArray[i].metadata.key)) {
+                                            addBeforeKey = mergedItemArray[i].metadata.key;
                                             break;
                                         }
                                     }
@@ -1088,6 +1135,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             if (metadata) {
                 for (let i = 0; i < metadata.length; i++) {
                     if (oj.KeyUtils.equals(key, metadata[i].key)) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+        _findKeyInItems(key, items) {
+            if (items) {
+                for (let i = 0; i < items.length; i++) {
+                    if (oj.KeyUtils.equals(key, items[i].metadata.key)) {
                         return i;
                     }
                 }
@@ -1177,7 +1234,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         _handleMutateEvent(event) {
             if (event.detail.remove) {
                 event.detail.remove.keys.forEach((key) => {
-                    this._removeFromMergedArrays(key);
+                    this._removeFromMergedArrays(key, true);
                 });
             }
             const detailAdd = event.detail.add;

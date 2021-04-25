@@ -199,7 +199,7 @@ define(['ojs/ojoption', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojth
       "properties": {
         "chroming": {
           "type": "string",
-          "enumValues": ["borderless", "callToAction", "full", "half", "outlined", "solid"]
+          "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"]
         },
         "disabled": {
           "type": "boolean",
@@ -263,14 +263,15 @@ define(['ojs/ojoption', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojth
 
     var STATE_CLASSES = 'oj-hover oj-active oj-selected';
     var TYPE_CLASSES = 'oj-button-icons-only oj-button-icon-only oj-button-text-icons oj-button-text-icon-start oj-button-text-icon-end oj-button-text-only';
-    var CHROMING_CLASSES = 'oj-button-full-chrome oj-button-half-chrome oj-button-outlined-chrome oj-button-cta-chrome';
+    var CHROMING_CLASSES = 'oj-button-full-chrome oj-button-half-chrome oj-button-outlined-chrome oj-button-cta-chrome oj-button-danger-chrome';
     var _chromingMap = {
       solid: 'oj-button-full-chrome',
       outlined: 'oj-button-outlined-chrome',
       borderless: 'oj-button-half-chrome',
       full: 'oj-button-full-chrome',
       half: 'oj-button-half-chrome',
-      callToAction: 'oj-button-cta-chrome'
+      callToAction: 'oj-button-cta-chrome',
+      danger: 'oj-button-danger-chrome oj-button-full-chrome'
     };
     var _interestingContainers = {
       button: ['ojButtonset', 'ojToolbar'],
@@ -390,6 +391,7 @@ define(['ojs/ojoption', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojth
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
          * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
          * @ojvalue {string} "callToAction" A Call To Action (CTA) button guides the user to take or complete the action that is the main goal of the page or page section. There should only be one CTA button on a page at any given time.
+         * @ojvalue {string} "danger" A Danger button alerts the user to a dangerous situation.
          * @ojvalue {string} "full" Please use solid instead. In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojshortdesc Indicates in what states the button has chrome (background and border).

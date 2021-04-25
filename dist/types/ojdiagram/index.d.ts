@@ -1240,3 +1240,216 @@ export interface ojDiagramNodeSettableProperties extends JetSettableProperties {
 export interface ojDiagramNodeSettablePropertiesLenient extends Partial<ojDiagramNodeSettableProperties> {
     [key: string]: any;
 }
+export type DiagramElement<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = ojDiagram<K1, K2, D1, D2>;
+export type DiagramLinkElement = ojDiagramLink;
+export type DiagramNodeElement = ojDiagramNode;
+export namespace DiagramElement {
+    interface ojBeforeCollapse<K1> extends CustomEvent<{
+        nodeId: K1;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand<K1> extends CustomEvent<{
+        nodeId: K1;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse<K1> extends CustomEvent<{
+        nodeId: K1;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand<K1> extends CustomEvent<{
+        nodeId: K1;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusRendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["focusRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverRendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["hoverRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkContentChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkDataChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkHighlightModeChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["linkHighlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxZoomChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["maxZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minZoomChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["minZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeContentChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeDataChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeHighlightModeChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["nodeHighlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panDirectionChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panDirection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panningChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["panning"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type promotedLinkBehaviorChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["promotedLinkBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["renderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["selectionRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomRendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomingChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DndNodeContext<K1, D1> = {
+        componentElement: Element;
+        data: ojDiagram.Node<K1>;
+        id: K1;
+        itemData: D1;
+        label: string;
+        nodeOffset: {
+            x: number;
+            y: number;
+        };
+        type: 'node';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LinkItemContext<K1, K2, D2> = {
+        componentElement: Element;
+        data: ojDiagram.Link<K2, K1>;
+        id: K2;
+        itemData: D2;
+        label: string;
+        type: 'link';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LinkTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        index: number;
+        subId: 'oj-diagram-link' | 'oj-diagram-node';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        data: object;
+        index: number;
+        key: any;
+        parentData: any[];
+        parentKey: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RendererContext<K1, D1> = {
+        componentElement: Element;
+        content: {
+            element: Element;
+            height: number;
+            width: number;
+        };
+        data: ojDiagram.Node<K1>;
+        id: K1;
+        itemData: D1;
+        parentElement: Element;
+        previousState: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        renderDefaultFocus: (() => void);
+        renderDefaultHover: (() => void);
+        renderDefaultSelection: (() => void);
+        rootElement: Element | null;
+        state: {
+            expanded: boolean;
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+            zoom: number;
+        };
+        type: string;
+    };
+}
+export namespace DiagramLinkElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojDiagramLink["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojDiagramLink["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["endConnectorType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endNodeChanged = JetElementCustomEvent<ojDiagramLink["endNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojDiagramLink["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojDiagramLink["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojDiagramLink["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojDiagramLink["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["startConnectorType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startNodeChanged = JetElementCustomEvent<ojDiagramLink["startNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojDiagramLink["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojDiagramLink["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type widthChanged = JetElementCustomEvent<ojDiagramLink["width"]>;
+}
+export namespace DiagramNodeElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojDiagramNode["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type descendantsConnectivityChanged = JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type iconChanged = JetElementCustomEvent<ojDiagramNode["icon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojDiagramNode["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojDiagramNode["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overviewChanged = JetElementCustomEvent<ojDiagramNode["overview"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojDiagramNode["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojDiagramNode["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type showDisclosureChanged = JetElementCustomEvent<ojDiagramNode["showDisclosure"]>;
+}

@@ -373,6 +373,7 @@
       overflow: inherit;
       text-overflow: inherit;
       vertical-align: top;
+      width: 100%;
     }
 
     .oj-table-column-header-cell.oj-table-sort .oj-table-column-header-text {
@@ -569,6 +570,10 @@
         height: $tableRowHeight;
 
       font-size: inherit;
+    }
+
+    .oj-table-body-scroll-buffer {
+      height: 0px;
     }
 
     .oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row,

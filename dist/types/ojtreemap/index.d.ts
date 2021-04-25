@@ -476,3 +476,139 @@ export interface ojTreemapNodeSettableProperties extends JetSettableProperties {
 export interface ojTreemapNodeSettablePropertiesLenient extends Partial<ojTreemapNodeSettableProperties> {
     [key: string]: any;
 }
+export type TreemapElement<K, D extends ojTreemap.Node<K> | any> = ojTreemap<K, D>;
+export type TreemapNodeElement = ojTreemapNode;
+export namespace TreemapElement {
+    interface ojBeforeDrill<K, D> extends CustomEvent<{
+        data: ojTreemap.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojDrill<K, D> extends CustomEvent<{
+        data: ojTreemap.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationUpdateColorChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["animationUpdateColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorLabelChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["colorLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayLevelsChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["displayLevels"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupGapsChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["groupGaps"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorDelayChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["hoverBehaviorDelay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type isolatedNodeChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["isolatedNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeContentChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["nodeContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeDefaultsChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["nodeDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeSeparatorsChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["nodeSeparators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rootNodeChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["rootNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sizeLabelChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["sizeLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sortingChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["sorting"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DataContext = {
+        color: string;
+        label: string;
+        selected: boolean;
+        size: number;
+        tooltip: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContentContext<K, D> = {
+        bounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        componentElement: Element;
+        data: ojTreemap.Node<K>;
+        id: K;
+        itemData: D;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        parentData: any[];
+        parentKey: any;
+    };
+}
+export namespace TreemapNodeElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojTreemapNode["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojTreemapNode["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojTreemapNode["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupLabelDisplayChanged = JetElementCustomEvent<ojTreemapNode["groupLabelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type headerChanged = JetElementCustomEvent<ojTreemapNode["header"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojTreemapNode["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelDisplayChanged = JetElementCustomEvent<ojTreemapNode["labelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHalignChanged = JetElementCustomEvent<ojTreemapNode["labelHalign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojTreemapNode["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelValignChanged = JetElementCustomEvent<ojTreemapNode["labelValign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type patternChanged = JetElementCustomEvent<ojTreemapNode["pattern"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojTreemapNode["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojTreemapNode["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojTreemapNode["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojTreemapNode["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojTreemapNode["value"]>;
+}

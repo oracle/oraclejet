@@ -5,10 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, Context, ThemeUtils, DomUtils) { 'use strict';
+define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcontext', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, Context, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
 
-    oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
+    oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     class StreamListContentHandler extends ojvcollection.IteratingDataProviderContentHandler {
         constructor(root, dataProvider, callback, scrollPolicyOptions) {
@@ -159,6 +159,30 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         handleModelRefresh() {
             this.vnodesCache.clear();
             super.handleModelRefresh();
+        }
+        checkViewport() {
+            if (this.viewportResolveFunc) {
+                return;
+            }
+            this.viewportResolveFunc = this.addBusyState('checking viewport');
+            const itemsRoot = this.root.lastElementChild;
+            if (itemsRoot) {
+                const busyContext = Context.getContext(itemsRoot).getBusyContext();
+                busyContext.whenReady().then(() => {
+                    if (this.callback != null) {
+                        super.checkViewport();
+                        if (this.viewportResolveFunc) {
+                            this.viewportResolveFunc();
+                        }
+                        this.viewportResolveFunc = null;
+                    }
+                }, () => {
+                    if (this.viewportResolveFunc) {
+                        this.viewportResolveFunc();
+                    }
+                    this.viewportResolveFunc = null;
+                });
+            }
         }
         addItem(metadata, index, data, visible) {
             const initialFetch = this.isInitialFetch();
@@ -479,7 +503,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         _renderInitialSkeletons(count, shouldScroll) {
             if (shouldScroll) {
                 const scroller = this._getScroller();
-                if (scroller != null) {
+                if (scroller != null && scroller === this.root) {
                     scroller.scrollTop = 0;
                 }
             }
@@ -577,8 +601,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                             const newHeight = Math.round(entry.contentRect.height);
                             if (Math.abs(newHeight - currHeight) > 1) {
                                 this.height = newHeight;
-                                if (this.contentHandler && this.contentHandler.domScroller) {
-                                    this.contentHandler.domScroller.checkViewport();
+                                if (this.contentHandler) {
+                                    this.contentHandler.checkViewport();
                                 }
                             }
                         }
@@ -747,7 +771,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         }
         scrollListener() {
             var self = this;
-            if (!this._ticking) {
+            if (this.getData() != null && !this._ticking) {
                 window.requestAnimationFrame(function () {
                     self._updateScrollPosition();
                     self._ticking = false;

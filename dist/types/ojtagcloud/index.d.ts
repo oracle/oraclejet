@@ -255,3 +255,81 @@ export interface ojTagCloudItemSettableProperties extends JetSettableProperties 
 export interface ojTagCloudItemSettablePropertiesLenient extends Partial<ojTagCloudItemSettableProperties> {
     [key: string]: any;
 }
+export type TagCloudElement<K, D extends ojTagCloud.Item<K> | any> = ojTagCloud<K, D>;
+export type TagCloudItemElement = ojTagCloudItem;
+export namespace TagCloudElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Item<K> = {
+        categories?: string[];
+        color?: string;
+        id?: K;
+        label: string;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        url?: string;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemTemplateContext<K> = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        componentElement: Element;
+        id: K;
+        label: string;
+        parentElement: Element;
+        value: number;
+    };
+}
+export namespace TagCloudItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojTagCloudItem["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojTagCloudItem["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojTagCloudItem["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojTagCloudItem["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojTagCloudItem["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojTagCloudItem["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type urlChanged = JetElementCustomEvent<ojTagCloudItem["url"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojTagCloudItem["value"]>;
+}

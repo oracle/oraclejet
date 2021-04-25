@@ -17,7 +17,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -464,6 +464,32 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
         };
       }
     }, {
+      key: "_adjustIteratorOffset",
+      value: function _adjustIteratorOffset(removeIndexes, addIndexes) {
+        var offset = this._startIndex;
+        var deleteCount = 0;
+
+        if (removeIndexes) {
+          removeIndexes.forEach(function (index) {
+            if (index < offset) {
+              ++deleteCount;
+            }
+          });
+        }
+
+        offset -= deleteCount;
+
+        if (addIndexes) {
+          addIndexes.forEach(function (index) {
+            if (index < offset) {
+              ++offset;
+            }
+          });
+        }
+
+        this._startIndex = offset;
+      }
+    }, {
       key: "_handleSync",
       value: function _handleSync(event) {
         var self = this;
@@ -513,6 +539,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
     }, {
       key: "_handleAdd",
       value: function _handleAdd(event) {
+        var _a;
+
         var self = this;
 
         var metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
@@ -528,10 +556,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
         var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
         var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
         self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
+
+        this._adjustIteratorOffset(null, (_a = mutationEventDetail.add) === null || _a === void 0 ? void 0 : _a.indexes);
       }
     }, {
       key: "_handleRemove",
       value: function _handleRemove(event) {
+        var _a;
+
         var self = this;
 
         var metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
@@ -547,6 +579,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
         var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
         var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
         self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
+
+        this._adjustIteratorOffset((_a = mutationEventDetail.remove) === null || _a === void 0 ? void 0 : _a.indexes, null);
       }
     }, {
       key: "_handleReset",

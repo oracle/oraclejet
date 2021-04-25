@@ -93,3 +93,26 @@ export interface ojMessagesSettableProperties extends JetSettableProperties {
 export interface ojMessagesSettablePropertiesLenient extends Partial<ojMessagesSettableProperties> {
     [key: string]: any;
 }
+export type MessagesElement = ojMessages;
+export namespace MessagesElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojMessages["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojMessages["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesChanged = JetElementCustomEvent<ojMessages["messages"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojMessages["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type translationsChanged = JetElementCustomEvent<ojMessages["translations"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type MessageTemplateContext = {
+        componentElement: Element;
+        data: ojMessage.Message;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionAlign = {
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        vertical?: 'top' | 'bottom' | 'center';
+    };
+}

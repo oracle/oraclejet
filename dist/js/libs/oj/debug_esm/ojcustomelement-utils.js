@@ -7,6 +7,7 @@
  */
 import Context from 'ojs/ojcontext';
 import { warn } from 'ojs/ojlogger';
+import { verifyThemeVersion } from 'ojs/ojthemeutils';
 
 const _SUPPORTED_TYPES_MAP = {};
 class ElementUtils {
@@ -435,6 +436,7 @@ class ElementState {
     getBindingProviderPromise() {
         var _a, _b;
         if (!this._bindingProviderPromise) {
+            verifyThemeVersion();
             const name = this._walkBindingProviders(this.Element);
             if (name === 'none') {
                 (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);

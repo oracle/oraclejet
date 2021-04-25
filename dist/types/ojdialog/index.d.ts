@@ -163,3 +163,98 @@ export interface ojDialogSettableProperties extends baseComponentSettablePropert
 export interface ojDialogSettablePropertiesLenient extends Partial<ojDialogSettableProperties> {
     [key: string]: any;
 }
+export type DialogElement = ojDialog;
+export namespace DialogElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: 'open' | 'close';
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeClose extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeOpen extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojClose extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojFocus extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojOpen extends CustomEvent<{
+        event: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize extends CustomEvent<{
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResizeStart extends CustomEvent<{
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResizeStop extends CustomEvent<{
+        originalEvent: object;
+        originalPosition: object;
+        originalSize: object;
+        position: object;
+        size: object;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type cancelBehaviorChanged = JetElementCustomEvent<ojDialog["cancelBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dialogTitleChanged = JetElementCustomEvent<ojDialog["dialogTitle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dragAffordanceChanged = JetElementCustomEvent<ojDialog["dragAffordance"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialVisibilityChanged = JetElementCustomEvent<ojDialog["initialVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type modalityChanged = JetElementCustomEvent<ojDialog["modality"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type positionChanged = JetElementCustomEvent<ojDialog["position"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type resizeBehaviorChanged = JetElementCustomEvent<ojDialog["resizeBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Position = {
+        at?: ojDialog.PositionAlign;
+        collision?: 'flip' | 'fit' | 'flipfit' | 'none';
+        my?: ojDialog.PositionAlign;
+        of?: string | ojDialog.PositionPoint;
+        offset?: ojDialog.PositionPoint;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type PositionPoint = {
+        x?: number;
+        y?: number;
+    };
+}

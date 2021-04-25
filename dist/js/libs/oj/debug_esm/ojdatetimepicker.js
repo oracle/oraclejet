@@ -3999,7 +3999,14 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
 
     this._currentYear = newDate.fullYear;
-    this._drawYear = this._currentYear;
+    // if we have a multi-month calendar, and the _drawMonth is greater than the newDate.month
+    // we need to adjust the _drawYear to be the previous year otherwise we will be ahead by
+    // one year and not be displaying the correct newDate.month
+    if (this._currentMonth < this._drawMonth) {
+      this._drawYear = this._currentYear - 1;
+    } else {
+      this._drawYear = this._currentYear;
+    }
     this._adjustInstDate();
   },
 
@@ -4019,6 +4026,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   },
 
   _gotoPrev: function (stepMonths) {
+    // This will keep the user from pressing Enter on the previous key
+    // over and over while the month is animating out. This flag tells us
+    // that it is still animating.
+    if (this._animationResolve != null) {
+      return;
+    }
     if (this._currentView === 'year') {
       this._adjustDate(-10, 'Y', true, 'year', 'previous');
     } else if (this._currentView === 'month') {
@@ -4029,6 +4042,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   },
 
   _gotoNext: function (stepMonths) {
+    // This will keep the user from pressing Enter on the previous key
+    // over and over while the month is animating out. This flag tells us
+    // that it is still animating.
+    if (this._animationResolve != null) {
+      return;
+    }
     if (this._currentView === 'year') {
       this._adjustDate(+10, 'Y', true, 'year', 'next');
     } else if (this._currentView === 'month') {
@@ -11648,7 +11667,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     if (this._timePicker) {
       // note that min + max are not passed through since it should be taken care of by ojInputDateTime and not ojInputTime
       // as it needs to use the fulle datetime
-      var timeInvoker = { disabled: true, readOnly: true, keyboardEdit: true };
+      // adding value so that the time picker will update its value when the datetimepicker's value changes.
+      var timeInvoker = { disabled: true, readOnly: true, keyboardEdit: true, value: true };
 
       if (key in timeInvoker) {
         this._timePicker.ojInputTime('option', key, value);

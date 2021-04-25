@@ -220,3 +220,71 @@ export interface ojSliderSettableProperties extends editableValueSettablePropert
 export interface ojSliderSettablePropertiesLenient extends Partial<ojSliderSettableProperties> {
     [key: string]: any;
 }
+export type RangeSliderElement = ojRangeSlider;
+export type SliderElement = ojSlider;
+export namespace RangeSliderElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojRangeSlider["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojRangeSlider["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojRangeSlider["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojRangeSlider["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojRangeSlider["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojRangeSlider["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojRangeSlider["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojRangeSlider["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojRangeSlider["value"]>;
+}
+export namespace SliderElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojSlider["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojSlider["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojSlider["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojSlider["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojSlider["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojSlider["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojSlider["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojSlider["type"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSlider["value"]>;
+}

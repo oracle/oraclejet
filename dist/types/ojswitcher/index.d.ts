@@ -31,3 +31,8 @@ export interface ojSwitcherSettableProperties extends JetSettableProperties {
 export interface ojSwitcherSettablePropertiesLenient extends Partial<ojSwitcherSettableProperties> {
     [key: string]: any;
 }
+export type SwitcherElement = ojSwitcher;
+export namespace SwitcherElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSwitcher["value"]>;
+}

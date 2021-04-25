@@ -11,7 +11,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -183,11 +183,42 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
    */
 
   /**
-   * @inheritdoc
+   * Get an AsyncIterable object for iterating the data.
+   * <p>
+   * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+   * AsyncIterator contains a “next” method for fetching the next block of data.
+   * </p><p>
+   * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+   * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+   * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+   * may or may not return more rows for a mutable data source.
+   * </p>
+   * <p>
+   * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+   * more information on custom implementations.
+   * </p>
+   *
+   * @param {FetchListParameters=} params fetch parameters
+   * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
+   * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
+   * @export
+   * @expose
    * @memberof BufferingDataProvider
    * @instance
    * @method
    * @name fetchFirst
+   * @ojsignature {target: "Type",
+   *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+   * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+   * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+   * let result = await asyncIterator.next();
+   * let value = result.value;
+   * let data = value.data;
+   * let keys = value.metadata.map(function(val) {
+   *   return val.key;
+   * });
+   * // true or false for done
+   * let done = result.done;
    */
 
   /**
@@ -673,12 +704,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
           this._parent = _parent;
           this._baseIterator = _baseIterator;
           this._params = _params;
-          this.itemArray = [];
           this.firstBaseKey = null;
           this.mergedAddKeySet = new ojSet();
-          this.mergedRemoveKeySet = new ojSet();
-          this.mergedMetadataArray = [];
-          this.mergedDataArray = [];
+          this.mergedItemArray = [];
+          this.nextOffset = 0;
+
+          if (this._params == null) {
+            this._params = {};
+          }
         }
 
         _createClass(_class2, [{
@@ -695,74 +728,66 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 _this._parent.lastSortCriteria = result.value.fetchParameters.sortCriteria;
               }
 
-              var editBuffer = _this._parent.editBuffer;
-
-              if (!editBuffer.isEmpty()) {
-                var baseItemArray = result.value.data.map(function (val, index) {
-                  return {
-                    data: result.value.data[index],
-                    metadata: result.value.metadata[index]
-                  };
-                });
-
-                var newItemArray = _this.itemArray.slice();
-
-                _this.itemArray = [];
-
-                _this._parent._mergeEdits(baseItemArray, newItemArray, _this._params.filterCriterion, _this._parent.lastSortCriteria, true, _this.mergedAddKeySet, result.done);
-
-                var params = _this._params || {};
-
-                if (params.size && newItemArray.length < params.size || params.size == null && newItemArray.length === 0) {
-                  if (!result.done) {
-                    _this.itemArray = newItemArray;
-                    return _this._fetchNext();
-                  }
-                }
-
-                if (params.size && newItemArray.length > params.size) {
-                  _this.itemArray = newItemArray.splice(params.size);
-                }
-
-                var done = result.done && _this.itemArray.length === 0;
-                var newDataArray = newItemArray.map(function (item) {
-                  return item.data;
-                });
-                var newMetaArray = newItemArray.map(function (item) {
-                  return item.metadata;
-                });
+              var baseItemArray = result.value.data.map(function (val, index) {
                 return {
-                  done: done,
-                  value: {
-                    fetchParameters: _this._params,
-                    data: newDataArray,
-                    metadata: newMetaArray
-                  }
+                  data: result.value.data[index],
+                  metadata: result.value.metadata[index]
                 };
+              });
+
+              _this._parent._mergeEdits(baseItemArray, _this.mergedItemArray, _this._params.filterCriterion, _this._parent.lastSortCriteria, true, _this.mergedAddKeySet, result.done);
+
+              var actualReturnSize = _this.mergedItemArray.length - _this.nextOffset;
+
+              for (var i = _this.nextOffset; i < _this.mergedItemArray.length; i++) {
+                var item = _this.mergedItemArray[i];
+
+                if (_this._parent._isItemRemoved(item.metadata.key)) {
+                  --actualReturnSize;
+                }
               }
 
-              return result;
+              var params = _this._params || {};
+
+              if (params.size && actualReturnSize < params.size || params.size == null && actualReturnSize === 0) {
+                if (!result.done) {
+                  return _this._fetchNext();
+                }
+              }
+
+              var newDataArray = [];
+              var newMetaArray = [];
+              var idx;
+
+              for (idx = _this.nextOffset; idx < _this.mergedItemArray.length; idx++) {
+                ++_this.nextOffset;
+                var _item = _this.mergedItemArray[idx];
+
+                if (!_this._parent._isItemRemoved(_item.metadata.key)) {
+                  newDataArray.push(_item.data);
+                  newMetaArray.push(_item.metadata);
+
+                  if (params.size && newDataArray.length === params.size) {
+                    break;
+                  }
+                }
+              }
+
+              var done = result.done && newDataArray.length === 0;
+              return {
+                done: done,
+                value: {
+                  fetchParameters: _this._params,
+                  data: newDataArray,
+                  metadata: newMetaArray
+                }
+              };
             });
           }
         }, {
           key: 'next',
           value: function next() {
-            var _this2 = this;
-
-            var promise = this._fetchNext();
-
-            return promise.then(function (result) {
-              var metadata = result.value.metadata;
-              var data = result.value.data;
-
-              for (var i = 0; i < metadata.length; i++) {
-                _this2.mergedMetadataArray.push(metadata[i]);
-
-                _this2.mergedDataArray.push(data[i]);
-              }
-
-              return result;
-            });
+            return this._fetchNext();
           }
         }]);
 
@@ -779,12 +804,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     _createClass(BufferingDataProvider, [{
       key: "_fetchByKeysFromBuffer",
       value: function _fetchByKeysFromBuffer(params) {
-        var _this3 = this;
+        var _this2 = this;
 
         var results = new ojMap();
         var unresolvedKeys = new ojSet();
         params.keys.forEach(function (key) {
-          var editItem = _this3.editBuffer.getItem(key);
+          var editItem = _this2.editBuffer.getItem(key);
 
           if (editItem) {
             switch (editItem.operation) {
@@ -821,7 +846,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "_insertAddEdits",
       value: function _insertAddEdits(editItems, filterObj, sortCriteria, itemArray, mergedAddKeySet, lastBlock) {
-        var _this4 = this;
+        var _this3 = this;
 
         editItems.forEach(function (editItem, key) {
           if (editItem.operation === 'add' && !mergedAddKeySet.has(key)) {
@@ -830,7 +855,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 var inserted = false;
 
                 for (var i = 0; i < itemArray.length; i++) {
-                  if (_this4._compareItem(editItem.item.data, itemArray[i].data, sortCriteria) < 0) {
+                  if (_this3._compareItem(editItem.item.data, itemArray[i].data, sortCriteria) < 0) {
                     itemArray.splice(i, 0, editItem.item);
                     mergedAddKeySet.add(key);
                     inserted = true;
@@ -884,7 +909,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
           if (!editItem) {
             newItemArray.push(baseItem);
           } else {
-            if (editItem.operation === 'remove') {} else if (editItem.operation === 'update') {
+            if (editItem.operation === 'remove') {
+              newItemArray.push(baseItem);
+            } else if (editItem.operation === 'update') {
               if (!filterObj || filterObj.filter(editItem.item.data)) {
                 newItemArray.push(editItem.item);
               }
@@ -899,10 +926,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "_fetchFromOffset",
       value: function _fetchFromOffset(params, newItemArray) {
-        var _this5 = this;
+        var _this4 = this;
 
         return this.dataProvider.fetchByOffset(params).then(function (baseResults) {
-          var editBuffer = _this5.editBuffer;
+          var editBuffer = _this4.editBuffer;
 
           if (!editBuffer.isEmpty()) {
             var baseItemArray = baseResults.results;
@@ -914,9 +941,17 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
               sortCriteria = params.sortCriteria;
             }
 
-            _this5._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new ojSet(), baseResults.done);
+            _this4._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new ojSet(), baseResults.done);
 
-            if (params.size && newItemArray.length < params.size || params.size == null && newItemArray.length === 0) {
+            var actualReturnSize = newItemArray.length;
+
+            for (var i = 0; i < newItemArray.length; i++) {
+              if (_this4._isItemRemoved(newItemArray[i].metadata.key)) {
+                --actualReturnSize;
+              }
+            }
+
+            if (params.size && actualReturnSize < params.size || params.size == null && actualReturnSize === 0) {
               if (!baseResults.done) {
                 var nextParams = {
                   attributes: params.attributes,
@@ -926,7 +961,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                   size: params.size,
                   sortCriteria: params.sortCriteria
                 };
-                return _this5._fetchFromOffset(nextParams, newItemArray);
+                return _this4._fetchFromOffset(nextParams, newItemArray);
+              }
+            }
+
+            for (var _i = 0; _i < newItemArray.length; _i++) {
+              if (_this4._isItemRemoved(newItemArray[_i].metadata.key)) {
+                newItemArray.splice(_i, 1);
+                --_i;
               }
             }
 
@@ -1047,12 +1089,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "getTotalSize",
       value: function getTotalSize() {
-        var _this6 = this;
+        var _this5 = this;
 
         return this.dataProvider.getTotalSize().then(function (totalSize) {
           if (totalSize > -1) {
-            totalSize += _this6._calculateSizeChange(_this6.editBuffer.getSubmittingItems());
-            totalSize += _this6._calculateSizeChange(_this6.editBuffer.getUnsubmittedItems());
+            totalSize += _this5._calculateSizeChange(_this5.editBuffer.getSubmittingItems());
+            totalSize += _this5._calculateSizeChange(_this5.editBuffer.getUnsubmittedItems());
           }
 
           return totalSize;
@@ -1084,6 +1126,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         return isEmpty;
       }
     }, {
+      key: "_isItemRemoved",
+      value: function _isItemRemoved(key) {
+        var editItem = this.editBuffer.getItem(key);
+        return editItem != null && editItem.operation === 'remove';
+      }
+    }, {
       key: "_addToMergedArrays",
       value: function _addToMergedArrays(item) {
         var addBeforeKey = null;
@@ -1092,15 +1140,17 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
           var sortCriteria = this.lastSortCriteria;
 
           if (sortCriteria && sortCriteria.length) {
-            var mergedMetadataArray = this.lastIterator.mergedMetadataArray;
-            var mergedDataArray = this.lastIterator.mergedDataArray;
-            var mergedRemoveKeySet = this.lastIterator.mergedRemoveKeySet;
+            var mergedItemArray = this.lastIterator.mergedItemArray;
 
-            for (var i = 0; i < mergedDataArray.length; i++) {
-              if (this._compareItem(item.data, mergedDataArray[i], sortCriteria) < 0 && !mergedRemoveKeySet.has(mergedMetadataArray[i].key)) {
-                addBeforeKey = mergedMetadataArray[i].key;
-                mergedMetadataArray.splice(i, 0, item.metadata);
-                mergedDataArray.splice(i, 0, item.data);
+            for (var i = 0; i < mergedItemArray.length; i++) {
+              if (this._compareItem(item.data, mergedItemArray[i].data, sortCriteria) < 0 && !this._isItemRemoved(mergedItemArray[i].metadata.key)) {
+                addBeforeKey = mergedItemArray[i].metadata.key;
+                mergedItemArray.splice(i, 0, item);
+
+                if (i < this.lastIterator.nextOffset) {
+                  ++this.lastIterator.nextOffset;
+                }
+
                 break;
               }
             }
@@ -1133,32 +1183,35 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
       }
     }, {
       key: "_removeFromMergedArrays",
-      value: function _removeFromMergedArrays(key) {
+      value: function _removeFromMergedArrays(key, fromBaseDP) {
         if (this.lastIterator) {
-          var mergedMetadataArray = this.lastIterator.mergedMetadataArray;
-          var mergedDataArray = this.lastIterator.mergedDataArray;
+          var mergedItemArray = this.lastIterator.mergedItemArray;
           var mergedAddKeySet = this.lastIterator.mergedAddKeySet;
-          var mergedRemoveKeySet = this.lastIterator.mergedRemoveKeySet;
 
-          var keyIdx = this._findKeyInMetadata(key, mergedMetadataArray);
+          var keyIdx = this._findKeyInItems(key, mergedItemArray);
 
           if (keyIdx !== -1) {
-            if (mergedAddKeySet.has(key)) {
-              mergedMetadataArray.splice(keyIdx, 1);
-              mergedDataArray.splice(keyIdx, 1);
+            if (fromBaseDP || mergedAddKeySet.has(key)) {
+              mergedItemArray.splice(keyIdx, 1);
               mergedAddKeySet.delete(key);
+
+              if (keyIdx < this.lastIterator.nextOffset) {
+                --this.lastIterator.nextOffset;
+              }
             } else {
-              mergedRemoveKeySet.add(key);
+              if (keyIdx === this.lastIterator.nextOffset - 1) {
+                --this.lastIterator.nextOffset;
+              }
             }
 
             if (oj.KeyUtils.equals(this.lastIterator.firstBaseKey, key)) {
               this.lastIterator.firstBaseKey = null;
 
-              if (mergedMetadataArray.length > keyIdx) {
-                for (var i = keyIdx; i < mergedMetadataArray.length; i++) {
-                  var newKey = mergedMetadataArray[i].key;
+              if (mergedItemArray.length > keyIdx) {
+                for (var i = keyIdx; i < mergedItemArray.length; i++) {
+                  var newKey = mergedItemArray[i].metadata.key;
 
-                  if (!mergedRemoveKeySet.has(newKey)) {
+                  if (!this._isItemRemoved(newKey)) {
                     this.lastIterator.firstBaseKey = newKey;
                     break;
                   }
@@ -1173,7 +1226,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
       value: function removeItem(item) {
         this.editBuffer.removeItem(item);
 
-        this._removeFromMergedArrays(item.metadata.key);
+        this._removeFromMergedArrays(item.metadata.key, false);
 
         var detail = {
           remove: {
@@ -1256,7 +1309,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "resetUnsubmittedItem",
       value: function resetUnsubmittedItem(key) {
-        var _this7 = this;
+        var _this6 = this;
 
         var unsubmittedItems = this.editBuffer.getUnsubmittedItems();
         var keySet = new ojSet();
@@ -1278,43 +1331,44 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
           var resultItem;
           editItemMap.forEach(function (editItem, key) {
             if (editItem.operation === 'add') {
-              _this7._addEventDetail(detail, 'remove', editItem.item);
+              _this6._removeFromMergedArrays(editItem.item.metadata.key, false);
+
+              _this6._addEventDetail(detail, 'remove', editItem.item);
             } else if (editItem.operation === 'remove') {
               resultItem = resultObj.results.get(key);
 
               if (resultItem) {
                 var addBeforeKey = null;
 
-                if (_this7.lastIterator) {
-                  var mergedMetadataArray = _this7.lastIterator.mergedMetadataArray;
-                  var mergedRemoveKeySet = _this7.lastIterator.mergedRemoveKeySet;
+                if (_this6.lastIterator) {
+                  var mergedItemArray = _this6.lastIterator.mergedItemArray;
 
-                  var keyIdx = _this7._findKeyInMetadata(key, mergedMetadataArray);
+                  var keyIdx = _this6._findKeyInItems(key, mergedItemArray);
 
                   if (keyIdx !== -1) {
-                    for (var i = keyIdx + 1; i < mergedMetadataArray.length; i++) {
-                      if (!mergedRemoveKeySet.has(mergedMetadataArray[i].key)) {
-                        addBeforeKey = mergedMetadataArray[i].key;
+                    for (var i = keyIdx + 1; i < mergedItemArray.length; i++) {
+                      if (!_this6._isItemRemoved(mergedItemArray[i].metadata.key)) {
+                        addBeforeKey = mergedItemArray[i].metadata.key;
                         break;
                       }
                     }
                   }
                 }
 
-                _this7._addEventDetail(detail, 'add', resultItem, addBeforeKey);
+                _this6._addEventDetail(detail, 'add', resultItem, addBeforeKey);
               }
             } else {
               resultItem = resultObj.results.get(key);
 
               if (resultItem) {
-                _this7._addEventDetail(detail, 'update', resultItem);
+                _this6._addEventDetail(detail, 'update', resultItem);
               } else {
-                _this7._addEventDetail(detail, 'remove', editItem.item);
+                _this6._addEventDetail(detail, 'remove', editItem.item);
               }
             }
           });
 
-          _this7.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(detail));
+          _this6.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(detail));
         });
       }
     }, {
@@ -1347,6 +1401,19 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         return -1;
       }
     }, {
+      key: "_findKeyInItems",
+      value: function _findKeyInItems(key, items) {
+        if (items) {
+          for (var i = 0; i < items.length; i++) {
+            if (oj.KeyUtils.equals(key, items[i].metadata.key)) {
+              return i;
+            }
+          }
+        }
+
+        return -1;
+      }
+    }, {
       key: "_initDetailProp",
       value: function _initDetailProp(detail, newDetail, propName, initValue) {
         if (detail[propName]) {
@@ -1363,7 +1430,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "_getOperationDetail",
       value: function _getOperationDetail(detail, isRemoveDetail) {
-        var _this8 = this;
+        var _this7 = this;
 
         if (detail) {
           var newDetail = {};
@@ -1401,16 +1468,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 newDetail.keys.add(key);
 
                 if (detail.metadata) {
-                  var idx = _this8._findKeyInMetadata(key, detail.metadata);
+                  var idx = _this7._findKeyInMetadata(key, detail.metadata);
 
                   if (idx > -1) {
-                    _this8._pushDetailProp(detail, newDetail, 'data', idx);
+                    _this7._pushDetailProp(detail, newDetail, 'data', idx);
 
-                    _this8._pushDetailProp(detail, newDetail, 'metadata', idx);
+                    _this7._pushDetailProp(detail, newDetail, 'metadata', idx);
 
-                    _this8._pushDetailProp(detail, newDetail, 'addBeforeKeys', idx);
+                    _this7._pushDetailProp(detail, newDetail, 'addBeforeKeys', idx);
 
-                    _this8._pushDetailProp(detail, newDetail, 'parentKeys', idx);
+                    _this7._pushDetailProp(detail, newDetail, 'parentKeys', idx);
                   }
                 }
               }
@@ -1432,7 +1499,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "_handleRefreshEvent",
       value: function _handleRefreshEvent(event) {
-        var _this9 = this;
+        var _this8 = this;
 
         var unsubmittedItems = this.editBuffer.getUnsubmittedItems();
         var keySet = new ojSet();
@@ -1453,7 +1520,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
               unsubmittedItems.delete(key);
             });
 
-            _this9.dispatchEvent(event);
+            _this8.dispatchEvent(event);
           });
         } else {
           this.dispatchEvent(event);
@@ -1462,11 +1529,11 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
     }, {
       key: "_handleMutateEvent",
       value: function _handleMutateEvent(event) {
-        var _this10 = this;
+        var _this9 = this;
 
         if (event.detail.remove) {
           event.detail.remove.keys.forEach(function (key) {
-            _this10._removeFromMergedArrays(key);
+            _this9._removeFromMergedArrays(key, true);
           });
         }
 
@@ -1474,7 +1541,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
 
         if (detailAdd && detailAdd.metadata && detailAdd.data) {
           detailAdd.metadata.forEach(function (metadata, idx) {
-            _this10._addToMergedArrays({
+            _this9._addToMergedArrays({
               metadata: detailAdd.metadata[idx],
               data: detailAdd.data[idx]
             });

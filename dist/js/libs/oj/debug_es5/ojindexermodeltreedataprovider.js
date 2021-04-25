@@ -38,32 +38,13 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
    *            See the Indexer - Basic demo for an example.<br><br>
    *            Refer to {@link TreeDataProvider} for other data providers that represent hierarachical data.
    * @param {Array.<any>} data an array of data used for Indexer and ListView
-   * @param {Object=} options the options set on this IndexerModelTreeProvider
-   * @param {(string|Array.<string>)=} options.keyAttributes the field of the data that uniquely identifies the data.  Can be a string denoting a single key attribute or an array of strings for multiple key attributes.
-   *                 If not specified, then one will be created.
-   * @param {(Array.<string>|Array.<Object>)=} options.sections the set of sections to use with the Indexer.  If not specified, then the sections are derived from the alphabet of the current locale.
-   * @param {(function(Object)|function(string))=} options.sectionChangeHandler a callback function that handles when a section becomes current (user clicks on the section in the Indexer).
-   *                   the function takes the section that is going to become current and must return a Promise which when resolve returns the section that actually becomes current.
-   * @param {string=} options.groupingAttribute the attribute of the data where grouping is based on, mandatory if no groupingStrategy is specified.
-   * @param {function(Object)=} options.groupingStrategy a callback function that takes a data and returns the section that the data belongs to.  If no groupingStrategy is specified,
-   *                   then the default grouping strategy based on the first letter of the data is used.
-   * @param {SortComparators=} options.sortComparators a comparator function that is used to sort data within a section.
-   * @param {Array.<SortCriterion>=} options.implicitSort array of SortCriterion used to specify sort information when the data loaded into the DataProvider is already sorted.
+   * @param {IndexerModelTreeDataProvider.Options=} options the options set on this IndexerModelTreeProvider
    * @ojsignature [{target: "Type",
    *               value: "class IndexerModelTreeDataProvider<K, D> implements IndexerModel, TreeDataProvider<K, D>",
    *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
    *             {target: "Type",
-   *               value: "(section: oj.IndexerModel.Section)=> Promise<oj.IndexerModel.Section>",
-   *               for: "options.sectionChangeHandler"},
-   *             {target: "Type",
-   *               value: "(data: D)=> oj.IndexerModel.Section",
-   *               for: "options.groupingStrategy"},
-   *             {target: "Type",
-   *               value: "ArrayDataProvider.SortComparators<D>",
-   *               for: "options.sortComparators"},
-   *             {target: "Type",
-   *               value: "Array.<SortCriterion<D>>",
-   *               for: "options.implicitSort"}]
+   *               value: "IndexerModelTreeDataProvider.Options<D>",
+   *               for: "options"}]
    *
    * @constructor
    * @final
@@ -77,6 +58,29 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
    * @ojtsimport {module: "ojindexer", type: "AMD", imported: ["IndexerModel"]}
    * @ojtsimport {module: "ojarraydataprovider", type: "AMD", importName: "ArrayDataProvider"}
    * @ojtsmodule
+   */
+
+  /**
+   * @typedef {Object=} IndexerModelTreeDataProvider.Options
+   * @property {string=} keyAttributes - the field of the data that uniquely identifies the data.  Can be a string denoting a single key attribute or an array of strings for multiple key attributes.
+   *                 If not specified, then one will be created.
+   * @property {Array=} sections - the set of sections to use with the Indexer.  If not specified, then the sections are derived from the alphabet of the current locale.
+   * @property {function=} sectionChangeHandler - a callback function that handles when a section becomes current (user clicks on the section in the Indexer).
+   *                   the function takes the section that is going to become current and must return a Promise which when resolve returns the section that actually becomes current.
+   * @property {string=} groupingAttribute - the attribute of the data where grouping is based on, mandatory if no groupingStrategy is specified.
+   * @property {function=} groupingStrategy - a callback function that takes a data and returns the section that the data belongs to.  If no groupingStrategy is specified,
+   *                   then the default grouping strategy based on the first letter of the data is used.
+   * @property {SortComparators=} sortComparators - a comparator function that is used to sort data within a section.
+   * @property {Array=} implicitSort - array of SortCriterion used to specify sort information when the data loaded into the DataProvider is already sorted.
+   * @ojsignature [
+   *             {target: "Type", value: "<D>", for: "genericTypeParameters"},
+   *             {target: "Type", value: "string | Array.<string>", for: "keyAttributes"},
+   *             {target: "Type", value: "string | Array.<string>", for: "sections"},
+   *             {target: "Type", value: "((section: oj.IndexerModel.Section)=> Promise<oj.IndexerModel.Section>)", for: "sectionChangeHandler"},
+   *             {target: "Type", value: "string", for: "groupingAttribute"},
+   *             {target: "Type", value: "(data: D)=> oj.IndexerModel.Section", for: "groupingStrategy"},
+   *             {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+   *             {target: "Type", value: "Array.<SortCriterion<D>>", for: "implicitSort"}]
    */
 
   /** **************** IndexerModel *******************/

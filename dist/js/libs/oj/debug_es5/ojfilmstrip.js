@@ -102,6 +102,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojcomponen
 
   (function () {
     __oj_film_strip_metadata.extension._WIDGET_NAME = 'ojFilmStrip';
+    __oj_film_strip_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-film-strip', {
       metadata: __oj_film_strip_metadata
     });

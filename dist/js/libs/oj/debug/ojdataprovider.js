@@ -224,13 +224,95 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojeventtarget'], function (exports, o
      * It is for convenience and may not provide the most efficient implementation for your data provider.
      * Classes that implement the DataProvider interface are encouraged to provide a more efficient implementation.
      * </p>
+     * <p>
+     * In order for JET components to work correctly, DataProvider implementations should ensure that:
+     * <ul>
+     *   <li>
+     *     The iterator accounts for data mutations when returning the next block of data, and that no row is duplicated or skipped.
+     *     For example, an offset-based implementation may need to adjust the offset from which the next block of data starts if rows
+     *     have been added or removed in the returned data.
+     *   </li>
+     *   <li>
+     *     JET components may call "next" on the iterator even after the iterator has returned done:true.  If new data is available after
+     *     the last returned row, the iterator is expected to return the new data and set "done" to false.
+     *     This differs from the AsyncIterator spec for performance reasons.
+     *   </li>
+     * </ul>
+     * </p>
+     * <p>Assuming that a DataProvider has returned rows indexed 0 to 9. Normally it should start the next block at index 10. Now consider
+     *    the following distinct mutation cases:</p>
+     * <ul>
+     *   <li>If a row is added at index 5, the DataProvider should fire a "mutate" event with the added row, and starts the
+     *       next block at index 11.</li>
+     *   <li>On the other hand, if a row is removed at index 5, the DataProvider should fire a "mutate" event with the removed row, and starts the
+     *       next block at index 9.</li>
+     * </ul>
+     * <i>Example of adjusting the offset upon mutations for a DataProvider implementation that keeps track of its own offset.
+     * This is just an illustration of what some implementations might do. The necessary adjustment is highly dependent of the
+     * individual implementation.
+     * </i>
+     * <pre class="prettyprint"><code>
+     * // offset is the current offset to start the next fetch
+     * // removeIndexes is an array of indexes for removed items relative to the original dataset
+     * // addIndexes is an array of indexes for added items relative to the dataset after the mutations
+     * function getNewOffset(offset, removeIndexes, addIndexes) {
+     *   let removeCount = 0;
+     *
+     *   if (removeIndexes) {
+     *     removeIndexes.forEach(function (index) {
+     *       // only count the changes below the last offset
+     *       if (index < offset) {
+     *         ++removeCount;
+     *       }
+     *     });
+     *   }
+     *
+     *   offset -= removeCount;
+     *   if (addIndexes) {
+     *     addIndexes.forEach(function (index) {
+     *       // only count the changes below the last offset
+     *       if (index < offset) {
+     *         ++offset;
+     *       }
+     *     });
+     *   }
+     *
+     *   return offset;
+     * }
+     * </code></pre>
      */
     oj.DataProvider = function () {
     };
 
     /**
-     * Get an asyncIterator which can be used to fetch a block of data.
-     *
+     * Get an AsyncIterable object for iterating the data.
+     * <p>
+     * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+     * AsyncIterator contains a “next” method for fetching the next block of data.
+     * </p><p>
+     * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+     * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+     * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+     * may or may not return more rows for a mutable data source.
+     * </p><p>
+     * In order for JET components to work correctly, DataProvider implementations should ensure that:
+     * </p>
+     * <ul>
+     *   <li>
+     *     The iterator accounts for data mutations when returning the next block of data, and that no row is duplicated or skipped.
+     *     For example, an offset-based implementation may need to adjust the offset from which the next block of data starts if rows
+     *     have been added or removed in the returned data.
+     *   </li>
+     *   <li>
+     *     JET components may call "next" on the iterator even after the iterator has returned done:true.  If new data is available after
+     *     the last returned row, the iterator is expected to return the new data and set "done" to false.
+     *     This differs from the AsyncIterator spec for performance reasons.
+     *   </li>
+     * </ul>
+     * <p>
+     * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+     * more information on custom implementations.
+     * </p>
      *
      * @since 4.2.0
      * @param {FetchListParameters=} params fetch parameters

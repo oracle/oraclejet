@@ -1206,6 +1206,9 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
     OJD_BODY_CLASS = '.oj-dialog-body';
     var
     /** @const */
+    OJ_RESIZABLE = 'oj-resizable';
+    var
+    /** @const */
     OJ_RESIZABLE_N = 'oj-resizable-n';
     var
     /** @const */
@@ -3281,6 +3284,16 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
         // trigger refresh of descendents
         oj.PopupService.getInstance().triggerOnDescendents(this.element, oj.PopupService.EVENT.POPUP_REFRESH);
       },
+      _adjustPosition: function _adjustPosition() {
+        var isDraggable = this.element.hasClass(OJ_DRAGGABLE);
+        var isResizable = this.element.hasClass(OJ_RESIZABLE); // do not adjust position for resizable, movable and big dialogs
+
+        if (isDraggable || isResizable || this.element.width() > window.innerWidth || this.element.height() > window.innerHeight) {
+          this._positionDescendents();
+        } else {
+          this._position();
+        }
+      },
       _setOption: function _setOption(key, value, flags) {
         /* jshint maxcomplexity:15*/
         var isDraggable; // don't allow a dialog to be disabled.
@@ -3595,7 +3608,7 @@ define(['ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/mouse', 'jquery
           var events = {};
           events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
           events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-          events[oj.PopupService.EVENT.POPUP_REFRESH] = this._position.bind(this);
+          events[oj.PopupService.EVENT.POPUP_REFRESH] = this._adjustPosition.bind(this);
           events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
           events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
           events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);

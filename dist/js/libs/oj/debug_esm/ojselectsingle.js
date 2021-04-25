@@ -9,6 +9,7 @@ import { EditableValueUtils } from 'ojs/ojeditablevalue';
 import 'ojs/ojlistview';
 import 'ojs/ojpopupcore';
 import 'ojs/ojinputtext';
+import 'ojs/ojhighlighttext';
 import oj$1 from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
@@ -17,7 +18,6 @@ import { warn, error } from 'ojs/ojlogger';
 import { getDeviceType, getDeviceRenderMode, __getTemplateEngine } from 'ojs/ojconfig';
 import FocusUtils from 'ojs/ojfocusutils';
 import { KeySetImpl } from 'ojs/ojkeyset';
-import { stringToNodeArray } from 'ojs/ojhtmlutils';
 import { setDefaultOptions } from 'ojs/ojcomponentcore';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import CachingDataProvider from 'ojs/ojcachingdataprovider';
@@ -1069,7 +1069,7 @@ LovDropdown.prototype.init = function (options) {
   // change the size of the dropdown before calculating the position, because changing
   // the size of the dropdown before positioning may reset the results' scroll position and
   // prevent the user from scrolling down.
-  this._dropdownPositioningProxyElem = this._createDropdownPositioningProxyElem(options);
+  this._dropdownPositioningProxyContainer = this._createDropdownPositioningProxyElem(options);
 
   var renderPromiseResolve;
   var renderPromiseReject;
@@ -1240,18 +1240,26 @@ LovDropdown.prototype._createDropdownPositioningProxyElem = function (options) {
   // change the size of the dropdown before calculating the position, because changing
   // the size of the dropdown before positioning may reset the results' scroll position and
   // prevent the user from scrolling down.
+  // JET-42675 - combobox drop down not aligned correctly for wide browser windows in jet 10
+  // Wrap everything in a non-overflowing absolute container. This will prevent
+  // any unwanted overflow while calculating the position.
+  var containerDiv = document.createElement('div');
+  containerDiv.style.visibility = 'hidden';
+  containerDiv.style.position = 'absolute';
+  containerDiv.style.overflow = 'hidden';
+
   var outerDiv = document.createElement('div');
   outerDiv.setAttribute('data-oj-containerid', options.parentId);
   outerDiv.setAttribute('data-oj-context', '');
   outerDiv.setAttribute('id', 'lovDropdownPositioningProxy_' + idSuffix);
   outerDiv.setAttribute('class', 'oj-listbox-drop oj-listbox-searchselect');
-  outerDiv.style.visibility = 'hidden';
+  containerDiv.appendChild(outerDiv); // @HTMLUpdateOK
 
   var resultsProxyElem = document.createElement('div');
   resultsProxyElem.setAttribute('class', 'oj-select-results');
   outerDiv.appendChild(resultsProxyElem); // @HTMLUpdateOK
 
-  return $(outerDiv);
+  return $(containerDiv);
 };
 
 /**
@@ -1268,21 +1276,6 @@ LovDropdown.prototype._createDropdownPositioningProxyElem = function (options) {
 
 //   return wrapper;
 // };
-
-LovDropdown._highlighter = function (unhighlightedText, searchText) {
-  if (searchText && searchText.length > 0) {
-    // Escape the search text to use it for RegExp
-    // JET-34448 - LOV should escape search text used for highlighting
-    var escSearchText = LovDropdown._escapeRegExp(searchText);
-    return unhighlightedText.replace(new RegExp(escSearchText, 'gi'),
-      '<span class="oj-listbox-highlighter">$&</span>');
-  }
-  return unhighlightedText;
-};
-
-LovDropdown._escapeRegExp = function (text) {
-  return text.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
-};
 
 LovDropdown.prototype._defaultItemRenderer = function (listViewItemContext) {
   // TODO: Can/should we expect to write directly to the <li> when using an item template or
@@ -1302,14 +1295,20 @@ LovDropdown.prototype._defaultItemRenderer = function (listViewItemContext) {
   // only highlight matches for leaf nodes when data is hierarchical
   // the leaf property will be absent for flat data
   var isParent = listViewItemContext.leaf === false;
-  var str = isParent ?
-    formatted :
-    LovDropdown._highlighter(formatted, this._collectionContext.searchText);
-  var nodes = stringToNodeArray('<span>' + str + '</span>');
-  for (var i = 0; i < nodes.length; i++) {
-    // label.appendChild(nodes[i]);
-    li.appendChild(nodes[i]);
+  // JET-43702 - Special characters in oj-select-single dropdown are not escaped
+  // set text content of node or use oj-highlight-text so that displayed text is correctly escaped
+  var childNode;
+  if (isParent) {
+    // add text content directly
+    childNode = document.createElement('span');
+    $(childNode).text(formatted);
+  } else {
+    // create oj-highlight-text
+    childNode = document.createElement('oj-highlight-text');
+    childNode.setAttribute('text', formatted);
+    childNode.setAttribute('match-text', this._collectionContext.searchText);
   }
+  li.appendChild(childNode);
 
   // li.appendChild(label);
   // return li;
@@ -1988,12 +1987,12 @@ LovDropdown.prototype.open = function () {
     // change the size of the dropdown before calculating the position, because changing
     // the size of the dropdown before positioning may reset the results' scroll position and
     // prevent the user from scrolling down.
-    this._bodyElem.append(this._dropdownPositioningProxyElem); // @HTMLUpdateOK
+    this._bodyElem.append(this._dropdownPositioningProxyContainer); // @HTMLUpdateOK
     this._dispatchEvent('adjustDropdownPosition', {
       popupElem: containerElem[0],
-      positioningProxyElem: this._dropdownPositioningProxyElem[0]
+      positioningProxyElem: this._dropdownPositioningProxyContainer.children()[0]
     });
-    this._dropdownPositioningProxyElem.detach();
+    this._dropdownPositioningProxyContainer.detach();
   }.bind(this);
   psEvents[oj$1.PopupService.EVENT.POPUP_AFTER_OPEN] = function (event) {
     var dropdownElem = event.popup[0];
@@ -2004,12 +2003,12 @@ LovDropdown.prototype.open = function () {
     // change the size of the dropdown before calculating the position, because changing
     // the size of the dropdown before positioning may reset the results' scroll position and
     // prevent the user from scrolling down.
-    this._bodyElem.append(this._dropdownPositioningProxyElem); // @HTMLUpdateOK
+    this._bodyElem.append(this._dropdownPositioningProxyContainer); // @HTMLUpdateOK
     this._dispatchEvent('adjustDropdownPosition', {
       popupElem: dropdownElem,
-      positioningProxyElem: this._dropdownPositioningProxyElem[0]
+      positioningProxyElem: this._dropdownPositioningProxyContainer.children()[0]
     });
-    this._dropdownPositioningProxyElem.detach();
+    this._dropdownPositioningProxyContainer.detach();
 
     if (this._fullScreenPopup) {
       dropdownElem.scrollIntoView();
@@ -4979,6 +4978,7 @@ oj$1.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
     filterInputText.setAttribute('autocomplete', 'off');
     filterInputText.setAttribute('aria-autocomplete', 'list');
     filterInputText.setAttribute('data-oj-internal', '');
+    filterInputText.setAttribute('data-oj-context', '');
     filterInputText.setAttribute('data-oj-binding-provider', 'none');
     if (options.placeholder) {
       filterInputText.setAttribute('placeholder', options.placeholder);
@@ -5362,6 +5362,15 @@ oj$1.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
       }
     }
 
+    // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
+    // remember whether the filter field is shown before processing the new options so that
+    // we can restore it afterwards, if necessary
+    var showFilterField = false;
+    if (!this._fullScreenPopup && this._lovEnabled &&
+        this._filterInputText.style.visibility !== 'hidden') {
+      showFilterField = true;
+    }
+
     try {
       this._super(options, flags);
 
@@ -5388,6 +5397,17 @@ oj$1.__registerWidget('oj.ojSelect2', $.oj.editableValue, {
         // if setting new data and the current valueItem was set internally, then it needs to be
         // updated for the new data, which will happen when we re-set the existing value
         this._setOption('value', this.options.value);
+      }
+
+      // JET-42353 - SELECT SINGLE FOCUS LOST ON CHANGE OF THE DEPENDENT VALUE
+      // if the filter field was shown before processing the new options, but is no longer shown,
+      // show it again
+      if (showFilterField && this._filterInputText.style.visibility === 'hidden') {
+        // need to wait for the new filter oj-input-text to be upgraded
+        var busyContext = Context.getContext(this._filterInputText).getBusyContext();
+        busyContext.whenReady().then(function () {
+          this._showFilterField();
+        }.bind(this));
       }
     } finally {
       if (resolveBusyState) {

@@ -154,10 +154,12 @@ describe('AMD output', () => {
     const bundleContents = fs.readFileSync(path.join(outputDir, filepath)).toString();
     // Create a 'define' method in the context which returns the object passed in
     const script = new vm.Script(bundleContents, "");
+    let bundle;
     const context = vm.createContext({
-      define: ((obj) => obj)
+      define: ((obj) => bundle = obj)
     });
-    return script.runInContext(context);
+    script.runInContext(context);
+    return bundle;
   }
 
   before(() => {

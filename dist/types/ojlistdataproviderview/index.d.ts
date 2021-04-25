@@ -15,14 +15,7 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
     from?: Kin;
     offset?: number;
     sortCriteria?: Array<SortCriterion<D>>;
-    constructor(dataProvider: DataProvider<Kin, Din>, options?: {
-        from?: Kin;
-        offset?: number;
-        sortCriteria?: Array<SortCriterion<D>>;
-        dataMapping?: DataMapping<K, D, Kin, Din>;
-        attributes?: Array<string | FetchAttribute>;
-        filterCriterion?: DataFilter.Filter<D>;
-    });
+    constructor(dataProvider: DataProvider<Kin, Din>, options?: ListDataProviderView.Options<K, D, Kin, Din>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     dispatchEvent(evt: Event): boolean;
@@ -33,5 +26,16 @@ declare class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>
     getTotalSize(): Promise<number>;
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
+}
+declare namespace ListDataProviderView {
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<K, D, Kin, Din> = {
+        attributes?: Array<string | FetchAttribute>;
+        dataMapping?: DataMapping<K, D, Kin, Din>;
+        filterCriterion?: DataFilter.Filter<D>;
+        from?: any;
+        offset?: Kin;
+        sortCriteria?: Array<SortCriterion<D>>;
+    };
 }
 export = ListDataProviderView;

@@ -845,11 +845,6 @@ DvtChartDataUtils.getRawDataItem = function(chart, seriesIndex, groupIndex) {
   var clonedData = Object.assign({}, dataItem);
   clonedData['itemData'] = dataItem['_itemData'];
   delete clonedData['_itemData'];
-  var noTemplate = dataItem._noTemplate;
-  if (noTemplate) {
-    delete clonedData['_dvtNoClone'];
-    delete clonedData['_noTemplate'];
-  }
   return clonedData;
 };
 
@@ -1789,7 +1784,6 @@ DvtChartDataUtils.getSeriesDataForContext = function (chart, seriesIndex) {
  var seriesData = rawOptions['series'][seriesIndex];
  var clonedSeriesData = Object.assign({}, seriesData);
  clonedSeriesData.items = []; // Object.assign doesn't clone array properties
- var noTemplate = seriesData.items[0] && seriesData.items[0]._noTemplate;
  for (var i = 0; i < seriesData.items.length; i++) {
    var item;
    var seriesItem = seriesData.items[i];
@@ -1800,10 +1794,6 @@ DvtChartDataUtils.getSeriesDataForContext = function (chart, seriesIndex) {
    }
    if (item && typeof(item) === 'object' ) {
      delete item['_itemData'];
-     if (noTemplate) {
-       delete item['_dvtNoClone'];
-       delete item['_noTemplate'];
-     }
    }
    clonedSeriesData.items.push(item);
   }
@@ -28246,7 +28236,7 @@ DvtChartLegendRenderer._createLegendItem = function(chart, seriesIndex) {
     'text': seriesLabel,
     'categories': DvtChartDataUtils.getCategories(chart, seriesIndex),
     'categoryVisibility': DvtChartDataUtils.isSeriesRendered(chart, seriesIndex) ? 'visible' : 'hidden',
-    '_dataContext': DvtChartStyleUtils.getDataContext(chart, seriesIndex, -1) // for dnd callback
+    '_getDataContext': DvtChartStyleUtils.getDataContext.bind(null, chart, seriesIndex, -1) // for dnd callback
   };
 
   // Shape varies by chart type

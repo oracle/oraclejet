@@ -1230,8 +1230,9 @@ var __oj_conveyor_belt_metadata =
    */
   ConveyorBeltCommon.prototype._getCurrScroll = function () {
     var container = this._overflowContainer;
-    return this._isHorizontal() ? this._convertScrollBrowserToLogical(container.scrollLeft) :
-                                  container.scrollTop;
+    return this._isHorizontal() ?
+           Math.round(this._convertScrollBrowserToLogical(container.scrollLeft)) :
+           Math.round(container.scrollTop);
   };
 
   /**

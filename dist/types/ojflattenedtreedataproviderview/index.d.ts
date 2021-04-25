@@ -8,12 +8,10 @@
 
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult,
    FetchListParameters } from '../ojdataprovider';
-import { KeySet, ExpandedKeySet, ExpandAllKeySet } from '../ojkeyset';
+import { KeySet, AllKeySetImpl, KeySetImpl } from '../ojkeyset';
 import TreeDataProvider = require('../ojtreedataprovider');
 declare class FlattenedTreeDataProviderView<K, D> implements DataProvider<K, D> {
-    constructor(dataProvider: TreeDataProvider<K, D>, options?: {
-        expanded?: KeySet<K>;
-    });
+    constructor(dataProvider: TreeDataProvider<K, D>, options?: FlattenedTreeDataProviderView.Options<K>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;
@@ -36,5 +34,11 @@ declare class FlattenedTreeDataProviderView<K, D> implements DataProvider<K, D> 
     isEmpty(): 'yes' | 'no' | 'unknown';
     removeEventListener(eventType: string, listener: EventListener): void;
     setExpanded(keySet: KeySet<K>): void;
+}
+declare namespace FlattenedTreeDataProviderView {
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<K> = {
+        expanded?: KeySetImpl<K> | AllKeySetImpl<K>;
+    };
 }
 export = FlattenedTreeDataProviderView;

@@ -48,3 +48,19 @@ export interface ojMenuSelectManySettableProperties extends JetSettablePropertie
 export interface ojMenuSelectManySettablePropertiesLenient extends Partial<ojMenuSelectManySettableProperties> {
     [key: string]: any;
 }
+export type MenuSelectManyElement = ojMenuSelectMany;
+export namespace MenuSelectManyElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojMenuSelectMany["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionsChanged = JetElementCustomEvent<ojMenuSelectMany["options"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojMenuSelectMany["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Option = {
+        disabled?: boolean;
+        id?: string;
+        label: string;
+        value: any;
+    };
+}

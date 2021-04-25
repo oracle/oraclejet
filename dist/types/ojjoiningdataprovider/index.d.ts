@@ -17,6 +17,10 @@ declare namespace JoiningDataProvider {
     type DataProviderOptions<D, BD> = {
         joins: Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<D, BD> = {
+        joins: Record<keyof Omit<D, keyof BD>, DataProviderJoinInfo<D, any, any>>;
+    };
     interface MultipleForeignKeys<BD, FK extends keyof BD, JK> {
         foreignKeys: FK;
         transform: (key: object) => FK;
@@ -27,7 +31,7 @@ declare namespace JoiningDataProvider {
     }
 }
 declare class JoiningDataProvider<K, D extends BD, BD> implements DataProvider<K, D> {
-    constructor(baseDataProvider: DataProvider<K, BD>, options: JoiningDataProvider.DataProviderOptions<D, BD>);
+    constructor(baseDataProvider: DataProvider<K, BD>, options: JoiningDataProvider.Options<D, BD> | JoiningDataProvider.DataProviderOptions<D, BD>);
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;

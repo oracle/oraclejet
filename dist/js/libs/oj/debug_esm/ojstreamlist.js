@@ -8,11 +8,11 @@
 import { ElementVComponent, h, listener, customElement } from 'ojs/ojvcomponent-element';
 import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getFocusableElementsIncludingDisabled, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
 import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
+import Context from 'ojs/ojcontext';
 import oj from 'ojs/ojcore-base';
 import { KeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojtreedataprovider';
 import { fadeOut } from 'ojs/ojanimation';
-import Context from 'ojs/ojcontext';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { makeFocusable } from 'ojs/ojdomutils';
 
@@ -165,6 +165,30 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
     handleModelRefresh() {
         this.vnodesCache.clear();
         super.handleModelRefresh();
+    }
+    checkViewport() {
+        if (this.viewportResolveFunc) {
+            return;
+        }
+        this.viewportResolveFunc = this.addBusyState('checking viewport');
+        const itemsRoot = this.root.lastElementChild;
+        if (itemsRoot) {
+            const busyContext = Context.getContext(itemsRoot).getBusyContext();
+            busyContext.whenReady().then(() => {
+                if (this.callback != null) {
+                    super.checkViewport();
+                    if (this.viewportResolveFunc) {
+                        this.viewportResolveFunc();
+                    }
+                    this.viewportResolveFunc = null;
+                }
+            }, () => {
+                if (this.viewportResolveFunc) {
+                    this.viewportResolveFunc();
+                }
+                this.viewportResolveFunc = null;
+            });
+        }
     }
     addItem(metadata, index, data, visible) {
         const initialFetch = this.isInitialFetch();
@@ -485,7 +509,7 @@ let StreamList = StreamList_1 = class StreamList extends ElementVComponent {
     _renderInitialSkeletons(count, shouldScroll) {
         if (shouldScroll) {
             const scroller = this._getScroller();
-            if (scroller != null) {
+            if (scroller != null && scroller === this.root) {
                 scroller.scrollTop = 0;
             }
         }
@@ -583,8 +607,8 @@ let StreamList = StreamList_1 = class StreamList extends ElementVComponent {
                         const newHeight = Math.round(entry.contentRect.height);
                         if (Math.abs(newHeight - currHeight) > 1) {
                             this.height = newHeight;
-                            if (this.contentHandler && this.contentHandler.domScroller) {
-                                this.contentHandler.domScroller.checkViewport();
+                            if (this.contentHandler) {
+                                this.contentHandler.checkViewport();
                             }
                         }
                     }
@@ -753,7 +777,7 @@ let StreamList = StreamList_1 = class StreamList extends ElementVComponent {
     }
     scrollListener() {
         var self = this;
-        if (!this._ticking) {
+        if (this.getData() != null && !this._ticking) {
             window.requestAnimationFrame(function () {
                 self._updateScrollPosition();
                 self._ticking = false;

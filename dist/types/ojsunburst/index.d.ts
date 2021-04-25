@@ -482,3 +482,174 @@ export interface ojSunburstNodeSettableProperties extends JetSettableProperties 
 export interface ojSunburstNodeSettablePropertiesLenient extends Partial<ojSunburstNodeSettableProperties> {
     [key: string]: any;
 }
+export type SunburstElement<K, D extends ojSunburst.Node<K> | any> = ojSunburst<K, D>;
+export type SunburstNodeElement = ojSunburstNode;
+export namespace SunburstElement {
+    interface ojBeforeCollapse<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeDrill<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojDrill<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand<K, D> extends CustomEvent<{
+        data: ojSunburst.Node<K>;
+        id: K;
+        itemData: D;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojRotateInput extends CustomEvent<{
+        value: number;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationUpdateColorChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["animationUpdateColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorLabelChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["colorLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayLevelsChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["displayLevels"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorDelayChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["hoverBehaviorDelay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type nodeDefaultsChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["nodeDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rootNodeChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["rootNode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rootNodeContentChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["rootNodeContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rotationChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["rotation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sizeLabelChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["sizeLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sortingChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["sorting"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startAngleChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["startAngle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K, D extends ojSunburst.Node<K> | any> = JetElementCustomEvent<ojSunburst<K, D>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DataContext = {
+        color: string;
+        label: string;
+        selected: boolean;
+        size: number;
+        tooltip: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        indexPath: number[];
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RootNodeContext<K, D> = {
+        componentElement: Element;
+        data: ojSunburst.Node<K>;
+        id: K;
+        innerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+        itemData: D;
+        outerBounds: {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+        };
+    };
+}
+export namespace SunburstNodeElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojSunburstNode["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojSunburstNode["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojSunburstNode["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojSunburstNode["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojSunburstNode["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojSunburstNode["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelDisplayChanged = JetElementCustomEvent<ojSunburstNode["labelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHalignChanged = JetElementCustomEvent<ojSunburstNode["labelHalign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojSunburstNode["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type patternChanged = JetElementCustomEvent<ojSunburstNode["pattern"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type radiusChanged = JetElementCustomEvent<ojSunburstNode["radius"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojSunburstNode["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojSunburstNode["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type showDisclosureChanged = JetElementCustomEvent<ojSunburstNode["showDisclosure"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojSunburstNode["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojSunburstNode["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojSunburstNode["value"]>;
+}

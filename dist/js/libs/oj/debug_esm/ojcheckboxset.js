@@ -188,6 +188,7 @@ var __oj_checkboxset_metadata =
 };
   __oj_checkboxset_metadata.extension._WIDGET_NAME = 'ojCheckboxset';
   __oj_checkboxset_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_checkboxset_metadata.extension._TRACK_CHILDREN = 'immediate';
 
   oj.CustomElementBridge.register('oj-checkboxset', {
     metadata:

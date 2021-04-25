@@ -606,13 +606,16 @@ define(['./impl/logger'], function (logger) {
     return {keys: unmappedIdArray, data: unmappedDataArray};
   };
 
-  function _mapFindQuery(findQuery, dataMapping) {
+  function _mapFindQuery(findQuery, dataMapping, sortingInput) {
     if (findQuery  && dataMapping) {
       var filterCriterion = _transformFindQuerySelectorToFilterCriterion(findQuery.selector);
 
       if (filterCriterion) {
         findQuery.selector = _transformFilterCriterionToFindQuerySelector(dataMapping.mapFilterCriterion(filterCriterion));
       }
+    }
+    if(sortingInput && sortingInput.length) {
+      findQuery.sort = sortingInput;
     }
     return findQuery;
   };

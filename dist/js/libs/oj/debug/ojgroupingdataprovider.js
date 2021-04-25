@@ -26,9 +26,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *
      * @export
      * @final
-     * @class oj.GroupingDataProvider
-     * @implements oj.TreeDataProvider
-     * @classdesc This class implements {@link oj.TreeDataProvider}.
+     * @class GroupingDataProvider
+     * @implements TreeDataProvider
+     * @classdesc This class implements {@link TreeDataProvider}.
      *            Wraps a flat {@link DataProvider} and groups the contents into tree data.
      * @param {DataProvider} dataProvider The {@link DataProvider} to be wrapped.
      *                                      <p>This DataProvider must provide flat data that are sorted in some order.</p>
@@ -38,27 +38,17 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      * @param {function(K): D} sectionRenderer The section renderer function
      *                                      <p>This function takes in a section key and returns data that will be provided to the view.
      *                                      </p>
-     * @param {Object=} options the optional parameters.
-     * @param {function(D):Array.<string>=} options.groupByStrategy The grouping mechanism.
-     *                                      <p>Optional grouping mechanism. This allows for either a grouping function
-     *                                      that will take in data and return a path Array of section keys from the root node
-     *                                      to the item. The grouping mechanism can also be a string attribute of the data
-     *                                      that will contain the path Array of section keys.</p>
-     * @param {(string | Array.<string>)=} options.keyAttributes Optional attribute name(s) which stores the key in the data.
-     *                                      <p>Can be a string denoting a single key attribute or an array
-     *                                      of strings for multiple key attributes.  Dot notation can be used to specify nested attribute (e.g. 'attr.id').<br><br>
-     *                                      If specified, caller must ensure that the keyAttributes contains values that are either unique within the entire tree,
-     *                                      or unique among the siblings of each node.  In the latter case, Caller must also set the keyAttributesScope option to 'siblings'.<br>
-     *                                      If keyAttributes is specified and keyAttributesScope is 'global', the attribute value will be used as the key.<br>
-     *                                      If keyAttributes is specified and keyAttributesScope is 'siblings', a path array of the attribute values,
-     *                                      starting from the root node, will be used as the key.<br>
-     *                                      If keyAttributes is not specified, a path array of node index, starting from the root node, will be used as the key.</p>
+     * @param {GroupingDataProvider.Options=} options the optional parameters.
      *
      * @ojsignature [{target: "Type",
-     *               value: "class GroupingDataProvider<K, D> implements TreeDataProvider<K, D>"},
+     *               value: "class GroupingDataProvider<K, D> implements TreeDataProvider<K, D>",
+     *               genericParameters: [{"name": "K", "description": "Type of output key"}, {"name": "D", "description": "Type of output data"}]},
      *               {target: "Type",
      *               value: "DataProvider<K, D>",
-     *               for: "dataProvider"}]
+     *               for: "dataProvider"},
+     *               {target: "Type",
+     *               value: "GroupingDataProvider.Options<D>",
+     *               for: "options"}]
      * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
      * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
      * "FetchListResult","FetchListParameters"]}
@@ -68,15 +58,37 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      */
 
     /**
+     * @typedef {Object} GroupingDataProvider.Options
+     * @property {function(D):Array.<string>=} groupByStrategy - The grouping mechanism.
+     *                                      <p>Optional grouping mechanism. This allows for either a grouping function
+     *                                      that will take in data and return a path Array of section keys from the root node
+     *                                      to the item. The grouping mechanism can also be a string attribute of the data
+     *                                      that will contain the path Array of section keys.</p>
+     * @property {string=} keyAttributes - Optional attribute name(s) which stores the key in the data.
+     *                                      <p>Can be a string denoting a single key attribute or an array
+     *                                      of strings for multiple key attributes.  Dot notation can be used to specify nested attribute (e.g. 'attr.id').<br><br>
+     *                                      If specified, caller must ensure that the keyAttributes contains values that are either unique within the entire tree,
+     *                                      or unique among the siblings of each node.  In the latter case, Caller must also set the keyAttributesScope option to 'siblings'.<br>
+     *                                      If keyAttributes is specified and keyAttributesScope is 'global', the attribute value will be used as the key.<br>
+     *                                      If keyAttributes is specified and keyAttributesScope is 'siblings', a path array of the attribute values,
+     *                                      starting from the root node, will be used as the key.<br>
+     *                                      If keyAttributes is not specified, a path array of node index, starting from the root node, will be used as the key.</p>
+     * @ojsignature [
+     *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
+     *  {target: "Type", value: "string | Array.<string>", for: "keyAttributes"}
+     * ]
+     */
+
+    /**
      * Check if rows are contained by keys (default: local dataset)
      * FetchByKeysParameter scope may be set to "global" to check in global dataset
      *
      *
-     * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
-     * @return {Promise.<oj.ContainsKeysResults>} Promise which resolves to {@link oj.ContainsKeysResults}
+     * @param {FetchByKeysParameters} params Fetch by keys parameters
+     * @return {Promise.<ContainsKeysResults>} Promise which resolves to {@link ContainsKeysResults}
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name containsKeys
@@ -87,11 +99,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
     /**
      * Fetch rows by keys (default: local dataset)
      *
-     * @param {oj.FetchByKeysParameters} params Fetch by keys parameters
-     * @return {Promise.<oj.FetchByKeysResults>} Promise which resolves to {@link oj.FetchByKeysResults}
+     * @param {FetchByKeysParameters} params Fetch by keys parameters
+     * @return {Promise.<FetchByKeysResults>} Promise which resolves to {@link FetchByKeysResults}
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name fetchByKeys
@@ -103,11 +115,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      * Fetch rows by offset.
      *
      *
-     * @param {oj.FetchByOffsetParameters} params Fetch by offset parameters
-     * @return {Promise.<oj.FetchByOffsetResults>} Promise which resolves to {@link oj.FetchByOffsetResults}
+     * @param {FetchByOffsetParameters} params Fetch by offset parameters
+     * @return {Promise.<FetchByOffsetResults>} Promise which resolves to {@link FetchByOffsetResults}
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name fetchByOffset
@@ -115,21 +127,43 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
      */
 
-
     /**
-     * Fetch the first block of data.
+     * Get an AsyncIterable object for iterating the data.
+     * <p>
+     * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+     * AsyncIterator contains a “next” method for fetching the next block of data.
+     * </p><p>
+     * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+     * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+     * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+     * may or may not return more rows for a mutable data source.
+     * </p>
+     * <p>
+     * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+     * more information on custom implementations.
+     * </p>
      *
-     * @param {oj.FetchListParameters=} params Fetch parameters
-     * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
+     * @param {FetchListParameters=} params fetch parameters
+     * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
      * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name fetchFirst
      * @ojsignature {target: "Type",
-     *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+     *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+     * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+     * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+     * let result = await asyncIterator.next();
+     * let value = result.value;
+     * let data = value.data;
+     * let keys = value.metadata.map(function(val) {
+     *   return val.key;
+     * });
+     * // true or false for done
+     * let done = result.done;
      */
 
     /**
@@ -139,13 +173,13 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *                  "fetchByKeys", "fetchByOffset", and "sort".
      * @return {Object} capability information or null if unsupported
      * <ul>
-     *   <li>If capabilityName is "fetchByKeys", returns a {@link oj.FetchByKeysCapability} object.</li>
-     *   <li>If capabilityName is "fetchByOffset", returns a {@link oj.FetchByOffsetCapability} object.</li>
-     *   <li>If capabilityName is "sort", returns a {@link oj.SortCapability} object.</li>
+     *   <li>If capabilityName is "fetchByKeys", returns a {@link FetchByKeysCapability} object.</li>
+     *   <li>If capabilityName is "fetchByOffset", returns a {@link FetchByOffsetCapability} object.</li>
+     *   <li>If capabilityName is "sort", returns a {@link SortCapability} object.</li>
      * </ul>
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name getCapability
@@ -159,7 +193,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows.
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name getTotalSize
@@ -174,7 +208,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *                  "unknown": it is not known if this data provider is empty until a fetch is made.
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name isEmpty
@@ -188,7 +222,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *   Use the <code class="prettyprint">isEmpty</code> method on the returned TreeDataProvider to determine if it currently has children.
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name getChildDataProvider
@@ -201,7 +235,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name addEventListener
@@ -217,7 +251,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name removeEventListener
@@ -233,7 +267,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
      *
      * @export
      * @expose
-     * @memberof oj.GroupingDataProvider
+     * @memberof GroupingDataProvider
      * @instance
      * @method
      * @name dispatchEvent
@@ -274,8 +308,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         currentFetchedRootOffset = Object.keys(self._parent._sections).indexOf(self._parent._currentRootSection);
                     }
                     let skipFetch = self._parent._currentBaseOffset < currentFetchedRootOffset;
+                    let doneOrSkip = skipFetch || self._parent._dataFetchComplete;
                     return this._parent
-                        ._getDataFromDataProvider(this._params, 'root', skipFetch)
+                        ._getDataFromDataProvider(this._params, 'root', doneOrSkip)
                         .then(function () {
                         self._parent._updateSectionIndex();
                         let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, self._parent._currentBaseOffset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
@@ -314,9 +349,10 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     let internalOffset = self._parent._getIteratorOffset(self);
                     let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset.offset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
                     let totalSectionSize = self._parent._sections[self._parentKey].children().length;
-                    let skipFetch = totalSectionSize - internalOffset.offset > 0;
+                    let skipFetch = (totalSectionSize - internalOffset.offset > 0);
+                    let doneOrSkip = skipFetch || self._parent._dataFetchComplete;
                     return this._parent
-                        ._getDataFromDataProvider(this._params, this._parentKey, skipFetch)
+                        ._getDataFromDataProvider(this._params, this._parentKey, doneOrSkip)
                         .then(function (value) {
                         if (value === undefined) {
                             self._parent._updateSectionIndex();
@@ -329,7 +365,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                             });
                             let metadata = result.map(function (value) {
                                 return self._parent._getNodeMetadata(value['data']);
-                                ;
                             });
                             if (self._isParentSection) {
                                 for (let i = 0; i < metadata.length; i++) {
@@ -610,9 +645,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             originalValue.offset = newOffset;
             this._iteratorOffsets.set(dataprovider, originalValue);
         }
-        _unregisterIteratorOffset(dataprovider) {
-            this._iteratorOffsets.delete(dataprovider);
-        }
         _getRootDataProvider() {
             return this;
         }
@@ -623,28 +655,36 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             }
             if (!self._internalIterator) {
                 self._internalIterator = this._dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
+                self._previousTotalSize = 0;
+                self._internalIteratorCacheLength = 0;
             }
-            let helperFunction = function () {
-                return self._internalIterator.next().then(function (result) {
+            if (self._previousTotalSize != self._treeData.length) {
+                self._internalIteratorCacheLength = 0;
+            }
+            let helperFunction = (storedDataLength) => {
+                return self._internalIterator.next().then((result) => {
                     self._treeData = self._treeData.concat(result['value']['data']);
                     self._treeMetadata = self._treeMetadata.concat(result['value']['metadata']);
                     result['value']['metadata'].forEach(function (val) {
                         self._treeKeyMap.push(val.key);
                     });
+                    storedDataLength += result['value']['data'].length;
                     if (result['done']) {
                         self._dataFetchComplete = true;
                     }
                     else {
                         self._dataFetchComplete = false;
                     }
-                    if (result['done'] ||
-                        result['value']['data'].length == result['value']['fetchParameters']['size']) {
+                    if (result['done'] || storedDataLength >= result['value']['fetchParameters']['size']) {
+                        let remainder = storedDataLength - result['value']['fetchParameters']['size'];
+                        self._internalIteratorCacheLength = Math.max(0, remainder);
+                        self._previousTotalSize = self._treeData.length;
                         return;
                     }
-                    return helperFunction();
+                    return helperFunction(storedDataLength);
                 });
             };
-            return helperFunction();
+            return helperFunction(self._internalIteratorCacheLength);
         }
         _inCurrentFetchingSection(source) {
             if (source === 'root') {
@@ -679,7 +719,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
         }
         _processNode(node, parentKeyPath, nodeKey) {
             let self = this;
-            let keyObj = { 'key': null, 'keyPath': null };
+            let keyObj = { key: null, keyPath: null };
             if (nodeKey != null) {
                 keyObj.key = nodeKey;
                 keyObj.keyPath = parentKeyPath;
@@ -933,7 +973,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         this._currentBaseOffset++;
                     }
                     if (!this._dataFetchComplete) {
-                        for (let [key, value] of this._internalIterator) {
+                        for (let [key, value] of this._iteratorOffsets) {
                             if (value.parentKey === parentKey && value.offset > index) {
                                 value.offset++;
                             }
@@ -967,7 +1007,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             if (this._sections[parent] && this._sections[parent].children.indexOf(sectionKey) != -1) {
                 let childIndex = this._sections[parent].children.indexOf(sectionKey);
                 if (!this._dataFetchComplete) {
-                    for (let [key, value] of this._internalIterator) {
+                    for (let [key, value] of this._iteratorOffsets) {
                         if (value.parentKey === parent && value.offset > childIndex) {
                             value.offset--;
                         }

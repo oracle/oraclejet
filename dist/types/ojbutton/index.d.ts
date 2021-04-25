@@ -8,7 +8,7 @@
 
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponent<SP> {
-    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'full' | 'half';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
     addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -38,7 +38,7 @@ export interface ojButtonEventMap<SP extends ojButtonSettableProperties = ojButt
     'displayChanged': JetElementCustomEvent<ojButton<SP>["display"]>;
 }
 export interface ojButtonSettableProperties extends baseComponentSettableProperties {
-    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'full' | 'half';
+    chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
 }
@@ -208,4 +208,65 @@ export interface ojMenuButtonSettableProperties extends ojButtonSettableProperti
 }
 export interface ojMenuButtonSettablePropertiesLenient extends Partial<ojMenuButtonSettableProperties> {
     [key: string]: any;
+}
+export type ButtonElement<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = ojButton<SP>;
+export type ButtonsetElement<SP extends ojButtonsetSettableProperties = ojButtonsetSettableProperties> = ojButtonset<SP>;
+export type ButtonsetManyElement = ojButtonsetMany;
+export type ButtonsetOneElement = ojButtonsetOne;
+export type MenuButtonElement = ojMenuButton;
+export namespace ButtonElement {
+    interface ojAction extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["display"]>;
+}
+export namespace ButtonsetManyElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojButtonsetMany["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojButtonsetMany["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojButtonsetMany["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojButtonsetMany["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusManagementChanged = JetElementCustomEvent<ojButtonsetMany["focusManagement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojButtonsetMany["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojButtonsetMany["value"]>;
+}
+export namespace ButtonsetOneElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojButtonsetOne["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = JetElementCustomEvent<ojButtonsetOne["describedBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojButtonsetOne["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojButtonsetOne["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusManagementChanged = JetElementCustomEvent<ojButtonsetOne["focusManagement"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojButtonsetOne["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojButtonsetOne["value"]>;
+}
+export namespace MenuButtonElement {
+    interface ojAction extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type chromingChanged = JetElementCustomEvent<ojMenuButton["chroming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojMenuButton["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged = JetElementCustomEvent<ojMenuButton["display"]>;
 }

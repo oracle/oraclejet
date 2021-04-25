@@ -869,3 +869,241 @@ export interface ojGanttTaskSettableProperties extends JetSettableProperties {
 export interface ojGanttTaskSettablePropertiesLenient extends Partial<ojGanttTaskSettableProperties> {
     [key: string]: any;
 }
+export type GanttElement<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = ojGantt<K1, K2, D1, D2>;
+export type GanttDependencyElement = ojGanttDependency;
+export type GanttRowElement = ojGanttRow;
+export type GanttTaskElement = ojGanttTask;
+export namespace GanttElement {
+    interface ojMove<K2, D2> extends CustomEvent<{
+        baselineEnd: string;
+        baselineStart: string;
+        end: string;
+        rowContext: {
+            rowData: ojGantt.Row<K2>;
+            componentElement: Element;
+        };
+        start: string;
+        taskContexts: Array<{
+            data: ojGantt.RowTask<K2>;
+            rowData: ojGantt.Row<K2>;
+            itemData: D2 | null;
+            color: string;
+        }>;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize<K2, D2> extends CustomEvent<{
+        end: string;
+        start: string;
+        taskContexts: Array<{
+            data: ojGantt.RowTask<K2>;
+            rowData: ojGantt.Row<K2>;
+            itemData: D2 | null;
+            color: string;
+        }>;
+        type: string;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojViewportChange extends CustomEvent<{
+        majorAxisScale: string;
+        minorAxisScale: string;
+        viewportEnd: string;
+        viewportStart: string;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type axisPositionChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["axisPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dependencyDataChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dependencyData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dragModeChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["dragMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type gridlinesChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["gridlines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type majorAxisChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["majorAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minorAxisChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["minorAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type referenceObjectsChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["referenceObjects"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowAxisChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["rowAxis"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowDefaultsChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["rowDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type taskDataChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["taskData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type taskDefaultsChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["taskDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueFormatsChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["valueFormats"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type viewportEndChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["viewportEnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type viewportStartChanged<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2 extends ojGantt.DataTask | any> = JetElementCustomEvent<ojGantt<K1, K2, D1, D2>["viewportStart"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type DataTask = {
+        baseline?: {
+            borderRadius?: string;
+            end?: string;
+            height?: number;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+        };
+        borderRadius?: string;
+        end?: string;
+        height?: number;
+        label?: string;
+        labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
+        labelStyle?: CSSStyleDeclaration;
+        overlap?: {
+            behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
+        };
+        progress?: {
+            borderRadius?: string;
+            height?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            value?: number;
+        };
+        rowId?: any;
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        type?: 'normal' | 'milestone' | 'summary' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DependencyTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Row<K2> = {
+        id?: any;
+        label?: string;
+        labelStyle?: CSSStyleDeclaration;
+        tasks?: Array<ojGantt.RowTask<K2>>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowTask<K2> = {
+        baseline?: {
+            borderRadius?: string;
+            end?: string;
+            height?: number;
+            start?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+        };
+        borderRadius?: string;
+        end?: string;
+        height?: number;
+        id: K2;
+        label?: string;
+        labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
+        labelStyle?: CSSStyleDeclaration;
+        overlap?: {
+            behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
+        };
+        progress?: {
+            borderRadius?: string;
+            height?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            value?: number;
+        };
+        shortDesc?: string;
+        start?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        type?: 'normal' | 'milestone' | 'summary' | 'auto';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TaskTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+        parentData: object[];
+        parentKey: any;
+    };
+}
+export namespace GanttDependencyElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type predecessorTaskIdChanged = JetElementCustomEvent<ojGanttDependency["predecessorTaskId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojGanttDependency["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type successorTaskIdChanged = JetElementCustomEvent<ojGanttDependency["successorTaskId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojGanttDependency["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojGanttDependency["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojGanttDependency["type"]>;
+}
+export namespace GanttRowElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojGanttRow["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojGanttRow["labelStyle"]>;
+}
+export namespace GanttTaskElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type baselineChanged = JetElementCustomEvent<ojGanttTask["baseline"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderRadiusChanged = JetElementCustomEvent<ojGanttTask["borderRadius"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endChanged = JetElementCustomEvent<ojGanttTask["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type heightChanged = JetElementCustomEvent<ojGanttTask["height"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojGanttTask["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelPositionChanged = JetElementCustomEvent<ojGanttTask["labelPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojGanttTask["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overlapChanged = JetElementCustomEvent<ojGanttTask["overlap"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type progressChanged = JetElementCustomEvent<ojGanttTask["progress"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowIdChanged = JetElementCustomEvent<ojGanttTask["rowId"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojGanttTask["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startChanged = JetElementCustomEvent<ojGanttTask["start"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojGanttTask["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojGanttTask["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type typeChanged = JetElementCustomEvent<ojGanttTask["type"]>;
+}

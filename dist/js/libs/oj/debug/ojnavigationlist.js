@@ -580,7 +580,7 @@ var __oj_tab_bar_metadata =
       // eslint-disable-next-line no-unused-vars
       itemRemoveComplete: function (elem, restoreFocus) {
         this.m_listHandler.ItemRemoveComplete(elem);
-        _ojNavigationListView.superclass.itemRemoveComplete.apply(this, arguments);
+        return _ojNavigationListView.superclass.itemRemoveComplete.apply(this, arguments);
       },
       /**
        * Restore content while restroying list
@@ -6793,6 +6793,13 @@ var __oj_tab_bar_metadata =
   SlidingNavListHandler.prototype.IsSelectable = function (item) {
     // Slider items don't have Aria-selected tag, overrding selction for slider navlist
     var itemSelectionMarkerAttr = 'aria-selected';
+    var prevAnchorTag;
+    var anchor = this.m_widget.getFocusItem($(item))[0];
+    var collapseClass = this.m_widget.getCollapseIconStyleClass();
+    prevAnchorTag = anchor.previousElementSibling;
+   if (prevAnchorTag && prevAnchorTag.classList.contains(collapseClass)) {
+      return false;
+   }
     return (this.m_widget.getFocusItem($(item))[0].getAttribute('role') === 'menuitem' &&
      !this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr));
   };

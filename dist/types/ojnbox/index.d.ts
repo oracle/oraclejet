@@ -619,3 +619,195 @@ export interface ojNBoxNodeSettableProperties extends JetSettableProperties {
 export interface ojNBoxNodeSettablePropertiesLenient extends Partial<ojNBoxNodeSettableProperties> {
     [key: string]: any;
 }
+export type NBoxElement<K, D extends ojNBox.Node<K> | any> = ojNBox<K, D>;
+export type NBoxNodeElement = ojNBoxNode;
+export namespace NBoxElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDataChangeChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["animationOnDataChange"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type cellContentChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["cellContent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type cellMaximizeChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["cellMaximize"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type cellsChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["cells"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["columns"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsTitleChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["columnsTitle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type countLabelChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["countLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupAttributesChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["groupAttributes"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupBehaviorChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["groupBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelTruncationChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["labelTruncation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maximizedColumnChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["maximizedColumn"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maximizedRowChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["maximizedRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type otherColorChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["otherColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type otherThresholdChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["otherThreshold"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowsChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["rows"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowsTitleChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["rowsTitle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K, D extends ojNBox.Node<K> | any> = JetElementCustomEvent<ojNBox<K, D>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Cell = {
+        column: string;
+        label?: string;
+        labelHalign?: string;
+        labelStyle?: CSSStyleDeclaration;
+        maximizedSvgClassName?: string;
+        maximizedSvgStyle?: CSSStyleDeclaration;
+        minimizedSvgClassName?: string;
+        minimizedSvgStyle?: CSSStyleDeclaration;
+        row: string;
+        shortDesc?: string;
+        showCount?: 'on' | 'off' | 'auto';
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Column = {
+        id: string;
+        label?: string;
+        labelStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DialogContext = {
+        subId: 'oj-nbox-dialog';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Node<K> = {
+        borderColor?: string;
+        borderWidth?: number;
+        categories?: string[];
+        color?: string;
+        column: string;
+        groupCategory?: string;
+        icon?: {
+            background: 'neutral' | 'red' | 'orange' | 'forest' | 'green' | 'teal' | 'mauve' | 'purple';
+            borderColor?: string;
+            borderRadius?: string;
+            borderWidth?: number;
+            color?: string;
+            height?: number;
+            initials?: string;
+            opacity?: number;
+            pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
+               'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            source?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
+        };
+        id?: K;
+        indicatorColor?: string;
+        indicatorIcon?: {
+            borderColor?: string;
+            borderRadius?: string;
+            borderWidth?: number;
+            color?: string;
+            height?: number;
+            opacity?: number;
+            pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
+               'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            source?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
+        };
+        label?: string;
+        row: string;
+        secondaryLabel?: string;
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        xPercentage?: number;
+        yPercentage?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K> = {
+        color: string;
+        column: string;
+        componentElement: Element;
+        id: K;
+        indicatorColor: string;
+        label: string;
+        parentElement: Element;
+        row: string;
+        secondaryLabel: string;
+    };
+}
+export namespace NBoxNodeElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojNBoxNode["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojNBoxNode["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojNBoxNode["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojNBoxNode["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnChanged = JetElementCustomEvent<ojNBoxNode["column"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type groupCategoryChanged = JetElementCustomEvent<ojNBoxNode["groupCategory"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type iconChanged = JetElementCustomEvent<ojNBoxNode["icon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type indicatorColorChanged = JetElementCustomEvent<ojNBoxNode["indicatorColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type indicatorIconChanged = JetElementCustomEvent<ojNBoxNode["indicatorIcon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojNBoxNode["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowChanged = JetElementCustomEvent<ojNBoxNode["row"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type secondaryLabelChanged = JetElementCustomEvent<ojNBoxNode["secondaryLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojNBoxNode["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojNBoxNode["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojNBoxNode["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type xPercentageChanged = JetElementCustomEvent<ojNBoxNode["xPercentage"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type yPercentageChanged = JetElementCustomEvent<ojNBoxNode["yPercentage"]>;
+}

@@ -40,9 +40,35 @@ define(['ojs/ojcore'], function (oj) { 'use strict';
 	 *               value: "(parentKey: K): TreeDataProvider<K, D> | null"}
 	 */
 
-	 /**
-	 * Get an asyncIterator which can be used to fetch a block of data.
-	 *
+	/**
+	 * Get an AsyncIterable object for iterating the data.
+	 * <p>
+	 * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+	 * AsyncIterator contains a “next” method for fetching the next block of data.
+	 * </p><p>
+	 * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+	 * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+	 * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+	 * may or may not return more rows for a mutable data source.
+	 * </p><p>
+	 * In order for JET components to work correctly, DataProvider implementations should ensure that:
+	 * </p>
+	 * <ul>
+	 *   <li>
+	 *     The iterator accounts for data mutations when returning the next block of data, and that no row is duplicated or skipped.
+	 *     For example, an offset-based implementation may need to adjust the offset from which the next block of data starts if rows
+	 *     have been added or removed in the returned data.
+	 *   </li>
+	 *   <li>
+	 *     JET components may call "next" on the iterator even after the iterator has returned done:true.  If new data is available after
+	 *     the last returned row, the iterator is expected to return the new data and set "done" to false.
+	 *     This differs from the AsyncIterator spec for performance reasons.
+	 *   </li>
+	 * </ul>
+	 * <p>
+	 * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+	 * more information on custom implementations.
+	 * </p>
 	 *
 	 * @since 4.2.0
 	 * @param {FetchListParameters=} params fetch parameters

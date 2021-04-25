@@ -10690,11 +10690,6 @@ HtmlTooltipManager.prototype.showTooltip = function (x, y, text, shape, bTrackMo
 
   if (this._timerIsRunning) return;
 
-  var tooltipElem = document.createElement('span');
-  tooltipElem.className = 'OraDVTTooltipText';
-  tooltipElem.innerHTML = text; //@HTMLUpdateOK
-  tooltipElem.style.color = HtmlTooltipManager._FONT_COLOR;
-
   if (!borderColor) {
     borderColor = HtmlTooltipManager._BORDER_COLOR;
   }
@@ -10900,8 +10895,8 @@ HtmlTooltipManager.prototype.getCustomTooltip = function (tooltipFunc, dataConte
  */
 HtmlTooltipManager._restoreTag = function (text, tag) {
   // Match the following: <tag...>, </tag...>, and <tag.../>
-  var regExp = new RegExp('&lt;(/?)' + tag + '([^&]*)(/?)&gt;', 'g');
-  return text.replace(regExp, '<$1' + tag + '$2$3>');
+  var regExp = new RegExp('&lt;(/?)(' + tag + ')(?=[\\s&/])([^&]*)(/?)&gt;', 'g');
+  return text.replace(regExp, '<$1' + tag + '$3$4>');
 };
 
 /**
@@ -20685,6 +20680,8 @@ Context._id = 0;
 
 /** @const */
 Context.DEFAULT_FONT_SIZE = CSSStyle.DEFAULT_FONT_SIZE;
+/** @const */
+const COMP_ARIA_LABEL = Symbol('componentAriaLabel');
 
 /**
  * Initializes this context object with the platform dependent objects.
@@ -21205,7 +21202,8 @@ Context._generateActiveElementId = function (displayable) {
  */
 Context.prototype.setAriaLabel = function (ariaLabel) {
   // Don't overwrite application set aria-label
-  if (!this._parentDiv.getAttribute('aria-label')) {
+  if (!this._parentDiv.getAttribute('aria-label') || this._parentDiv[COMP_ARIA_LABEL]) {
+    this._parentDiv[COMP_ARIA_LABEL] = true;
     if (ariaLabel) {
       this._parentDiv.setAttribute('aria-label', AriaUtils.processAriaLabel(ariaLabel));
     } else this._parentDiv.removeAttribute('aria-label');
@@ -24491,7 +24489,13 @@ DataAnimationHandler.prototype.constructAnimation = function (oldList, newList) 
       newList[i].animateInsert(this);
   }
 };
-
+/**
+ * Returns the container where deleted elements go.
+ * @return {dvt.Container} The container where deleted elements go.
+ */
+DataAnimationHandler.prototype.getDeleteContainer = function () {
+  return this._deleteContainer;
+};
 /**
  * Adds the specified playable to this handler's animation.
  * @param {dvt.Playable} playable The playable to add to this animation.

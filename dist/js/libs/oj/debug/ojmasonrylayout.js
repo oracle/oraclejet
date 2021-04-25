@@ -70,6 +70,7 @@ var __oj_masonry_layout_metadata =
    /* global __oj_masonry_layout_metadata:false */
   (function () {
     __oj_masonry_layout_metadata.extension._WIDGET_NAME = 'ojMasonryLayout';
+    __oj_masonry_layout_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-masonry-layout', { metadata: __oj_masonry_layout_metadata });
   }());
 

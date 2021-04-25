@@ -39,3 +39,8 @@ export namespace ProgressItem {
     type EventType = "loadstart" | "progress" | "abort" | "error" | "load" | "timeout" | "loadend";
     type Status = "queued" | "loadstarted" | "aborted" | "errored" | "timedout" | "loaded";
 }
+export type ProgressListElement = ojProgressList;
+export namespace ProgressListElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged = JetElementCustomEvent<ojProgressList["data"]>;
+}

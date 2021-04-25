@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcontext', 'ojs/ojlogger'], function (exports, Context, Logger) { 'use strict';
+define(['exports', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojthemeutils'], function (exports, Context, Logger, ThemeUtils) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
@@ -436,6 +436,7 @@ define(['exports', 'ojs/ojcontext', 'ojs/ojlogger'], function (exports, Context,
         getBindingProviderPromise() {
             var _a, _b;
             if (!this._bindingProviderPromise) {
+                ThemeUtils.verifyThemeVersion();
                 const name = this._walkBindingProviders(this.Element);
                 if (name === 'none') {
                     (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);

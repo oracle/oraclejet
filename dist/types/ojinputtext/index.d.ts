@@ -346,3 +346,75 @@ export interface ojTextAreaSettableProperties<V = any> extends inputBaseSettable
 export interface ojTextAreaSettablePropertiesLenient<V = any> extends Partial<ojTextAreaSettableProperties<V>> {
     [key: string]: any;
 }
+export type InputPasswordElement<V = string> = ojInputPassword<V>;
+export type InputTextElement<V = any> = ojInputText<V>;
+export type TextAreaElement<V = any> = ojTextArea<V>;
+export namespace InputPasswordElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type maskIconChanged<V = string> = JetElementCustomEvent<ojInputPassword<V>["maskIcon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<V = string> = JetElementCustomEvent<ojInputPassword<V>["value"]>;
+}
+export namespace InputTextElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type clearIconChanged<V = any> = JetElementCustomEvent<ojInputText<V>["clearIcon"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<V = any> = JetElementCustomEvent<ojInputText<V>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lengthChanged<V = any> = JetElementCustomEvent<ojInputText<V>["length"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type listChanged<V = any> = JetElementCustomEvent<ojInputText<V>["list"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged<V = any> = JetElementCustomEvent<ojInputText<V>["virtualKeyboard"]>;
+}
+export namespace TextAreaElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lengthChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["length"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxRowsChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["maxRows"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type resizeBehaviorChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["resizeBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowsChanged<V = any> = JetElementCustomEvent<ojTextArea<V>["rows"]>;
+}

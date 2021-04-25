@@ -1121,9 +1121,10 @@ DataProviderHandler.prototype._fireEvent = function (type, detail) {
  * @constructor
  * @ignore
  */
-const TemplateHandler = function (component, configs) {
+const TemplateHandler = function (component, configs, useObjectAssign) {
   this._component = component;
   this._configMap = configs;
+  this._useObjectAssign = useObjectAssign;
   this._init();
 };
 
@@ -1409,9 +1410,23 @@ TemplateHandler.prototype.processTemplates = function (dataProperty, data, templ
             processedDatum = self.processNodeTemplate(dataProperty, templateEngine,
               template, templateElementName, context, nodeKey, true);
           } else {
-            processedDatum = Object.create(nodeData);
-            processedDatum._noTemplate = true;
-            processedDatum._dvtNoClone = true;
+            if (self._useObjectAssign) {
+              processedDatum = Object.assign({}, nodeData);
+              Object.defineProperties(processedDatum, {
+                _noTemplate: {
+                  value: true,
+                  enumerable: false
+                },
+                _dvtNoClone: {
+                  value: true,
+                  enumerable: false
+                }
+              });
+            } else {
+              processedDatum = Object.create(nodeData);
+              processedDatum._noTemplate = true;
+              processedDatum._dvtNoClone = true;
+            }
             nodeDataMap.set(nodeKey, { data: processedDatum, context: context });
           }
           processedDatum.id = nodeKey;
@@ -1618,7 +1633,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._optionsCopy = null;
     this._dataValuePromise = {};
     this._templateMap = {};
-    this._TemplateHandler = new TemplateHandler(this, this._GetSimpleDataProviderConfigs());
+    this._TemplateHandler = new TemplateHandler(this, this._GetSimpleDataProviderConfigs(),
+      this._UseObjectAssignForShapedData());
     this._DataProviderHandler = new DataProviderHandler(this,
       this._GetSimpleDataProviderConfigs());
 
@@ -2640,6 +2656,22 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    */
   _GetSimpleDataProviderConfigs: function () {
     return {};
+  },
+
+
+  /**
+   * Allows components to switch from an Object.create-based approach to Object.assign-based approach in the TemplateHandler
+   * when dealing with a DataProvider with shaped data.  Object.assign with non-enumerable _noTemplate and _dvtNoClone properties
+   * appears to perform better, but the non-enumerable props can trip up component logic that does its own cloning (or JsonUtils.merge).
+   * As a result, making this an opt-in for now
+   *
+   * @return {boolean}
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _UseObjectAssignForShapedData: function () {
+    return false;
   },
 
   /**

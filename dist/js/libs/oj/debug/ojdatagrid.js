@@ -20916,10 +20916,10 @@ var __oj_data_grid_metadata =
 
     if (targetContext.cell) {
       this.setHeaderSelectionFrontier(axis, endpoint, endpoint, this.m_selectionFrontier.level,
-                                      /** @type {Element} */ (target), true);
+                                      /** @type {Element} */ (targetElement), true);
     } else {
       this.setHeaderSelectionFrontier(axis, endpoint, targetContext.index, targetContext.level,
-                                      /** @type {Element} */ (target), true);
+                                      /** @type {Element} */ (targetElement), true);
     }
 
     if (!isDeselect) {

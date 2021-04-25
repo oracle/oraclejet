@@ -314,6 +314,7 @@ var __oj_combobox_one_metadata =
   __oj_combobox_one_metadata.extension._INNER_ELEM = 'input';
   __oj_combobox_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_combobox_one_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_combobox_one_metadata.extension._TRACK_CHILDREN = 'immediate';
   oj.CustomElementBridge.register('oj-combobox-one', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_combobox_one_metadata,
       bindingMeta)
@@ -571,6 +572,7 @@ var __oj_combobox_many_metadata =
   __oj_combobox_many_metadata.extension._INNER_ELEM = 'input';
   __oj_combobox_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_combobox_many_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_combobox_many_metadata.extension._TRACK_CHILDREN = 'immediate';
   oj.CustomElementBridge.register('oj-combobox-many', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_combobox_many_metadata,
       bindingMeta)
@@ -816,6 +818,7 @@ var __oj_select_one_metadata =
   __oj_select_one_metadata.extension._INNER_ELEM = 'select';
   __oj_select_one_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_select_one_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_select_one_metadata.extension._TRACK_CHILDREN = 'immediate';
   oj.CustomElementBridge.register('oj-select-one', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_select_one_metadata,
       bindingMeta)
@@ -1053,6 +1056,7 @@ var __oj_select_many_metadata =
   __oj_select_many_metadata.extension._INNER_ELEM = 'select';
   __oj_select_many_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-controls', 'aria-label', 'tabindex'];
   __oj_select_many_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_select_many_metadata.extension._TRACK_CHILDREN = 'immediate';
   oj.CustomElementBridge.register('oj-select-many', {
     metadata: oj.CollectionUtils.mergeDeep(__oj_select_many_metadata,
       bindingMeta)
@@ -3087,17 +3091,26 @@ const _ComboUtils = {
     // change the size of the dropdown before calculating the position, because changing
     // the size of the dropdown before positioning may reset the results' scroll position and
     // prevent the user from scrolling down.
-    var outerDiv = document.createElement('div');
+
+    // JET-42675 - combobox drop down not aligned correctly for wide browser windows in jet 10
+    // Wrap everything in a non-overflowing absolute container. This will prevent
+    // any unwanted overflow while calculating the position.
+    const containerDiv = document.createElement('div');
+    containerDiv.style.visibility = 'hidden';
+    containerDiv.style.position = 'absolute';
+    containerDiv.style.overflow = 'hidden';
+
+    const outerDiv = document.createElement('div');
     outerDiv.setAttribute('data-oj-containerid', containerId);
     outerDiv.setAttribute('data-oj-context', '');
     outerDiv.setAttribute('class', 'oj-listbox-drop');
-    outerDiv.style.visibility = 'hidden';
+    containerDiv.appendChild(outerDiv); // @HTMLUpdateOK
 
-    var resultsProxyElem = document.createElement('ul');
+    const resultsProxyElem = document.createElement('ul');
     resultsProxyElem.setAttribute('class', 'oj-listbox-results');
     outerDiv.appendChild(resultsProxyElem); // @HTMLUpdateOK
 
-    return $(outerDiv);
+    return $(containerDiv);
   }
 };
 
@@ -3204,7 +3217,7 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
 
       // We will be using a proxy dropdown element for positioning the dropdown, we do this because
       // changing the real dropdown size will reset user scroll position
-      this._dropdownPositioningProxyElem = _ComboUtils.createProxyDropdownElement(containerId);
+      this._dropdownPositioningProxyContainer = _ComboUtils.createProxyDropdownElement(containerId);
 
       results = this.container.find(resultsSelector);
       this.results = results;
@@ -3634,7 +3647,7 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
     },
 
     /**
-     * Syncs the aria-label of the content elemnt with the dropdown
+     * Syncs the aria-label of the content element with the dropdown
      *
      * @memberof! _AbstractOjChoice
      * @instance
@@ -3657,6 +3670,25 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
       } else {
         // Update dropdown
         this.results.removeAttr('aria-label');
+      }
+    },
+
+    /**
+     * Syncs the labelled-by of the content element with the dropdown
+     *
+     * @param {string} ariaLabelledBy The aria-labelledby generated from the labelled-by attribute
+     *
+     * @memberof! _AbstractOjChoice
+     * @instance
+     * @public
+     * @ignore
+     */
+    updateAriaLabelledByIfNeeded: function (ariaLabelledBy) {
+      // Update the aria attributes of the dropdown.
+      if (ariaLabelledBy) {
+        this.results.attr('aria-labelledby', ariaLabelledBy);
+      } else {
+        this.results.removeAttr('aria-labelledby');
       }
     },
 
@@ -4701,18 +4733,21 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
 
       // Here we will be using the proxy element with the maximum height set for
       // the initial positioning
-      const $proxyElem = this._dropdownPositioningProxyElem;
-      const $proxyResultElem = $proxyElem.find('.oj-listbox-results');
+      const $proxyContainer = this._dropdownPositioningProxyContainer;
+      const $proxyOuterDiv = $proxyContainer.children();
+      const $proxyResultElem = $proxyOuterDiv.find('.oj-listbox-results');
 
-      $proxyElem.appendTo(this.body()); // @HTMLUpdateOK
-      $proxyElem.css({
+      $proxyContainer.appendTo(this.body()); // @HTMLUpdateOK
+
+      $proxyOuterDiv.css({
         width: $dropdown.outerWidth()
       });
       $proxyResultElem.css({
         height: $proxyResultElem.css('max-height')
       });
-      $proxyElem.position(position);
-      $proxyElem.detach();
+      $proxyOuterDiv.position(position);
+
+      $proxyContainer.detach();
     },
 
     // _AbstractOjChoice
@@ -11226,8 +11261,21 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
       this._super();
 
       if (this._IsCustomElement()) {
-        this._initInputIdLabelForConnection(
-          this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
+        const contentElement = this._GetContentElement()[0];
+        const containerId = this.OuterWrapper.id;
+        const labelledBy = this.options.labelledBy;
+
+        this._initInputIdLabelForConnection(contentElement, containerId, labelledBy);
+        // JET-42350 - As a part of the fix, components with oj-option children are updated with _TRACK_CHILDREN metadata.
+        // This resulted in these components to be created asynchronously. Previously, when oj-label asynchronously set
+        // labelled-by attribute, these components would have already been created. So, at that point, _setOption would have
+        // been called and necessary updates are done there. But now, since these components are created asynchronously, oj-label
+        // might have already set the labelled-by property and hence setOption will not be called. So, we need to do the
+        // necessary updates when creating the component, if that is the case.
+        if (labelledBy) {
+          // Update the aria attributes based on the labelled-by attribute
+          this._labelledByUpdatedForInputComp(labelledBy, contentElement.id);
+        }
 
         // need to apply the oj-focus marker selector for control of the floating label.
         var rootElement = this._getRootElement();
@@ -11331,16 +11379,12 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
     // eslint-disable-next-line no-unused-vars
     _labelledByUpdatedForInputComp: function (labelledBy, contentElementId) {
       EditableValueUtils._labelledByUpdatedForInputComp.apply(this, arguments);
-      if (this.combobox.results == null) {
-        return;
-      }
+
       // Update the aria-labelledby attribute of the results container
       // Fix  - Acc error in the OATB tool
-      var defaultLabelId = this.uuid + '_Label';
-      var ariaLabelledBy =
-        EditableValueUtils._getOjLabelAriaLabelledBy(
-          labelledBy, defaultLabelId);
-      this.combobox.results.attr('aria-labelledby', ariaLabelledBy);
+      const ariaLabelledBy = EditableValueUtils._getOjLabelAriaLabelledBy(
+          labelledBy, `${this.uuid}_Label`);
+      this.combobox.updateAriaLabelledByIfNeeded(ariaLabelledBy);
     },
     /**
      * @memberof! oj.ojCombobox
@@ -16711,26 +16755,20 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
      * @memberof! oj.ojSelect
      */
       _AfterCreate: function () {
-        var ariaLabelledBy;
         this._super();
 
       // For custom element syntax, we need to get the label id and
       // set aria-labelledby on the focusable element.
         if (this._IsCustomElement()) {
+          // JET-42350 - As a part of the fix, components with oj-option children are updated with _TRACK_CHILDREN metadata.
+          // This resulted in these components to be created asynchronously. Previously, when oj-label asynchronously set
+          // labelled-by attribute, these components would have already been created. So, at that point, _setOption would have
+          // been called and necessary updates are done there. But now, since these components are created asynchronously, oj-label
+          // might have already set the labelled-by property and hence setOption will not be called. So, we need to do the
+          // necessary updates when creating the component, if that is the case.
           if (this.options.labelledBy) {
-            var defaultLabelId = this.uuid + '_Label';
-            ariaLabelledBy =
-            EditableValueUtils._getOjLabelAriaLabelledBy(
-              this.options.labelledBy, defaultLabelId);
-            // Readonly support
-            if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
-              this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
-            }
-            // update the required translation text
-            if (this._IsRequired() && this.options.translations.required) {
-              this._implicitReqValidator = null;
-              this._getImplicitRequiredValidator();
-            }
+            // Update the aria attributes based on the labelled-by attribute
+            this._labelledByUpdatedForSelectComp();
           }
           // need to apply the oj-focus marker selector for control of the floating label.
           var rootElement = this._getRootElement();
@@ -16814,6 +16852,42 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       _IsRequired: function () {
         return this.options.required;
       },
+
+    /**
+     * This method handles the labelled-by attribute change
+     *
+     * @memberof! oj.ojSelect
+     * @instance
+     * @private
+     */
+    // eslint-disable-next-line no-unused-vars
+    _labelledByUpdatedForSelectComp: function () {
+      const labelledBy = this.options.labelledBy;
+      const requiredText = this.options.translations.required;
+
+      if (!labelledBy) {
+        // If no labelledby is present return doing nothing
+        return;
+      }
+
+      const ariaLabelledBy = EditableValueUtils._getOjLabelAriaLabelledBy(labelledBy, `${this.uuid}_Label`);
+      // Readonly support
+      if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
+        this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
+      }
+
+      // update the required translation text
+      if (this._IsRequired() && requiredText) {
+        this._implicitReqValidator = null;
+        this._getImplicitRequiredValidator();
+      }
+
+      // Update the aria-labelledby attribute of the results container
+      // Fix  - Acc error in the OATB tool
+      if (this.select) {
+        this.select.updateAriaLabelledByIfNeeded(ariaLabelledBy);
+      }
+    },
 
     /**
      * Performs post processing after required option is set by taking the following steps.
@@ -18064,26 +18138,7 @@ const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
         } else if (key === 'multiple' && !this._IsCustomElement()) {
           this.multiple = value;
         } else if (key === 'labelledBy') {
-          if (this.options.labelledBy) {
-            var defaultLabelId = this.uuid + '_Label';
-            var ariaLabelledBy =
-            EditableValueUtils._getOjLabelAriaLabelledBy(
-              this.options.labelledBy, defaultLabelId);
-            // Readonly support
-            if (ariaLabelledBy && (!this.multiple || !_ComboUtils.isReadonly(this))) {
-              this._GetContentElement().attr('aria-labelledby', ariaLabelledBy);
-            }
-            // Update the aria-labelledby attribute of the results container
-            // Fix  - Acc error in the OATB tool
-            if (this.select != null && this.select.results != null) {
-              this.select.results.attr('aria-labelledby', ariaLabelledBy);
-            }
-            // update the required translation text
-            if (this._IsRequired() && this.options.translations.required) {
-              this._implicitReqValidator = null;
-              this._getImplicitRequiredValidator();
-            }
-          }
+          this._labelledByUpdatedForSelectComp();
         }
       },
 

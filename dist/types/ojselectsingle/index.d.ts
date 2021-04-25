@@ -166,3 +166,57 @@ export interface ojSelectSingleSettableProperties<V, D> extends editableValueSet
 export interface ojSelectSingleSettablePropertiesLenient<V, D> extends Partial<ojSelectSingleSettableProperties<V, D>> {
     [key: string]: any;
 }
+export type SelectSingleElement<V, D> = ojSelectSingle<V, D>;
+export namespace SelectSingleElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojValueAction<V, D> extends CustomEvent<{
+        itemContext: CommonTypes.ItemContext<V, D>;
+        previousValue: V | null;
+        value: V | null;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemTextChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readOnlyChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["readOnly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueItemChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["valueItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["virtualKeyboard"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type CollectionTemplateContext<V, D> = {
+        currentRow: {
+            rowKey: V;
+        };
+        data: DataProvider<V, D>;
+        handleRowAction: ((event: Event, context: CommonTypes.ItemContext<V, D>) => void);
+        searchText: string;
+        selected: KeySet<V>;
+        selectedItem: CommonTypes.ItemContext<V, D>;
+    };
+}

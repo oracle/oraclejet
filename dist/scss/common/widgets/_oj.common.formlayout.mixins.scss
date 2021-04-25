@@ -441,7 +441,20 @@
       page-break-inside: avoid; 
     } 
 
-
+    // Due to a difference of implementation with Safari and how they deal with
+    // fragmentainers that aren't direct children of the multi-column layout element,
+    // this work around was found to work with Safari and not cause any issues with
+    // other browsers. See JET-42692
+    // I'm limiting this to direction="column" and column="1" to minimize any
+    // potential regression, but I think it is very unlikely to cause any issues.
+    .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
+      display: inline;
+    }
+    // Unfortunately, the safari work around does nothing to help Firefox and this fix
+    // can't be limited to one column but is limited to direction="column". See JET-42692
+    .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
+      display: inline;
+    }
 
     // headers inside a form layout have different margins than regular headers
     .oj-form > hr,

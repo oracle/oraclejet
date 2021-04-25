@@ -397,3 +397,203 @@ export interface ojTabBarSettableProperties<K, D> extends baseComponentSettableP
 export interface ojTabBarSettablePropertiesLenient<K, D> extends Partial<ojTabBarSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type NavigationListElement<K, D> = ojNavigationList<K, D>;
+export type TabBarElement<K, D> = ojTabBar<K, D>;
+export namespace NavigationListElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCollapse extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCurrentItem extends CustomEvent<{
+        item: Element;
+        key: any;
+        previousItem: Element;
+        previousKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeExpand extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeSelect extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapse extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpand extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillModeChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["drillMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type edgeChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["edge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hierarchyMenuThresholdChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["hierarchyMenuThreshold"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["item"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overflowChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["overflow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rootLabelChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["rootLabel"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojNavigationList<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemContext<K, D> = {
+        componentElement: Element;
+        data: any;
+        datasource?: DataProvider<K, D>;
+        depth?: number;
+        index: number;
+        key: any;
+        leaf?: boolean;
+        parentElement: Element;
+        parentKey?: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext<K> = {
+        group: boolean;
+        index: number;
+        key: K;
+        parent?: Element;
+        subId: string;
+    };
+}
+export namespace TabBarElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCurrentItem extends CustomEvent<{
+        item: Element;
+        key: any;
+        previousItem: Element;
+        previousKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeDeselect extends CustomEvent<{
+        fromItem: Element;
+        fromKey: any;
+        toItem: Element;
+        toKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeRemove extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeSelect extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojDeselect extends CustomEvent<{
+        fromItem: Element;
+        fromKey: any;
+        toItem: Element;
+        toKey: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojRemove extends CustomEvent<{
+        item: Element;
+        key: any;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojReorder extends CustomEvent<{
+        item: Element;
+        position: 'before' | 'after';
+        reference: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentItemChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["currentItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type edgeChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["edge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["item"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overflowChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["overflow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type reorderableChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["reorderable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type truncationChanged<K, D> = JetElementCustomEvent<ojTabBar<K, D>["truncation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemContext<K, D> = {
+        componentElement: Element;
+        data: D;
+        datasource?: DataProvider<K, D>;
+        index: number;
+        key: K;
+        parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext<K> = {
+        index: number;
+        key: K;
+        subId: string;
+    };
+}

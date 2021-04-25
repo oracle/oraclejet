@@ -32,21 +32,15 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
      *                                      <p>This can be either any DataProvider or a wrapped
      *                                      DataSource with a TableDataSourceAdapter. Paging DataProvider View does
      *                                      not handle DataProviders with unknown total sizes.</p>
-     * @param {Object=} options Options for the PagingDataProviderView
-     * @param {("exact"|"approximate")=} options.rowCountConfidence Optional enum {"exact", "approximate"} to specify exact or approximate
-     *                                             rowcount for CollectionDataProviders. "exact" should only be used when
-     *                                             the totalSize is fully specified by the CollectionDataProvider and is
-     *                                             not expected to change. If totalSize is defined as -1, "exact" will
-     *                                             have the same behavior as approximate. The default value is approximate.
-     *
+     * @param {PagingDataProviderView.Options=} options Options for the PagingDataProviderView
      * @ojsignature [{target: "Type",
      *               value: "class PagingDataProviderView<K, D> implements DataProvider<K, D>, PagingModel"},
      *               {target: "Type",
      *               value: "DataProvider<K, D>",
      *               for: "dataProvider"},
      *               {target: "Type",
-     *               value: "'exact'|'approximate'",
-     *               for: "options.rowCountConfidence"}]
+     *               value: "PagingDataProviderView.Options",
+     *               for: "options"}]
      * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
      * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
      * "FetchListResult","FetchListParameters"]}
@@ -54,6 +48,17 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
      * @ojtsmodule
      */
 
+    /**
+     * @typedef {Object} PagingDataProviderView.Options
+     * @property {string=} rowCountConfidence - Optional enum {"exact", "approximate"} to specify exact or approximate
+     *                                             rowcount for CollectionDataProviders. "exact" should only be used when
+     *                                             the totalSize is fully specified by the CollectionDataProvider and is
+     *                                             not expected to change. If totalSize is defined as -1, "exact" will
+     *                                             have the same behavior as approximate. The default value is approximate.
+     *
+     * @ojsignature [{target: "Type", value: "'exact'|'approximate'", for: "rowCountConfidence"}]
+
+     */
     /**
      * @inheritdoc
      * @memberof PagingDataProviderView
@@ -63,11 +68,42 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
      */
 
     /**
-     * @inheritdoc
+     * Get an AsyncIterable object for iterating the data.
+     * <p>
+     * AsyncIterable contains a Symbol.asyncIterator method that returns an AsyncIterator.
+     * AsyncIterator contains a “next” method for fetching the next block of data.
+     * </p><p>
+     * The "next" method returns a promise that resolves to an object, which contains a "value" property for the data and a "done" property
+     * that is set to true when there is no more data to be fetched.  The "done" property should be set to true only if there is no "value"
+     * in the result.  Note that "done" only reflects whether the iterator is done at the time "next" is called.  Future calls to "next"
+     * may or may not return more rows for a mutable data source.
+     * </p>
+     * <p>
+     * Please see the <a href="DataProvider.html#custom-implementations-section">DataProvider documentation</a> for
+     * more information on custom implementations.
+     * </p>
+     *
+     * @param {FetchListParameters=} params fetch parameters
+     * @return {AsyncIterable.<FetchListResult>} AsyncIterable with {@link FetchListResult}
+     * @see {@link https://github.com/tc39/proposal-async-iteration} for further information on AsyncIterable.
+     * @export
+     * @expose
      * @memberof PagingDataProviderView
      * @instance
      * @method
      * @name fetchFirst
+     * @ojsignature {target: "Type",
+     *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
+     * @ojtsexample <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+     * let asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+     * let result = await asyncIterator.next();
+     * let value = result.value;
+     * let data = value.data;
+     * let keys = value.metadata.map(function(val) {
+     *   return val.key;
+     * });
+     * // true or false for done
+     * let done = result.done;
      */
 
     /**
@@ -688,7 +724,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
             return this._endItemIndex;
         }
         getPageCount() {
-            return this._pageCount;
+            if (this._totalSizeConfidence == 'atLeast') {
+                return this._pageCount + 1;
+            }
+            else {
+                return this._pageCount;
+            }
         }
         totalSize() {
             return this._totalSize;
@@ -882,7 +923,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
         }
         _isExactMode() {
             if (this.options) {
-                if (this.options.rowCountConfidence && this.options.rowCountConfidence === RowCountConfidence.EXACT) {
+                if (this.options.rowCountConfidence &&
+                    this.options.rowCountConfidence === RowCountConfidence.EXACT) {
                     return true;
                 }
             }
@@ -956,6 +998,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 self._fetchMore = false;
                 let resultSize = self._currentResults.length;
                 let newSize = self._offset + resultSize;
+                let totalSize = self._mutatingTotalSize === null ? self._totalSize : self._mutatingTotalSize;
                 if (result['done']) {
                     self._pageCount = Math.ceil(newSize / self._pageSize);
                     if (self._totalSizeConfidence) {
@@ -963,24 +1006,23 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                     }
                 }
                 else if (!result['done'] &&
-                    newSize >= self._totalSize &&
-                    self._totalSize > -1 &&
+                    newSize >= totalSize &&
+                    totalSize > -1 &&
                     params.size === self._pageSize) {
                     if (!self._isExactMode()) {
                         self._totalSizeConfidence = 'atLeast';
                     }
-                    self._pageCount = self._pageCount + 1;
                 }
                 else if (!result['done'] && resultSize < self._pageSize) {
                     self._fetchMore = true;
                     let newParams = new self.FetchByOffsetParameters(self, newSize, self._pageSize - resultSize, self._currentSortCriteria, self._currentFilterCriteria);
                     return self._fetchByOffsetHelper(newParams);
                 }
-                else if (!result['done'] && self._totalSize === -1) {
+                else if (!result['done'] && totalSize === -1) {
                     self._isUnknownRowCount = true;
                 }
                 if (self._pageSize == self._currentResults.length ||
-                    (newSize >= self._totalSize && self._totalSize > -1)) {
+                    (newSize >= totalSize && totalSize > -1)) {
                     self._currentIsDone = true;
                 }
                 if (resultSize > self._pageSize) {
@@ -1189,7 +1231,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojeventtarget'], function (oj, jquery,
                 }
                 else {
                     self._isFetchingForMutation = true;
-                    self._currentResultsForMutation = self._currentPageData;
+                    self._currentResultsForMutation = self._currentPageData != null ? self._currentPageData : [];
                     self._hasMutated = true;
                     self._mutationEventDataFetcher(function (result) {
                         self._isFetchingForMutation = false;

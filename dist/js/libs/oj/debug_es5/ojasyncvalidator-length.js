@@ -21,7 +21,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -140,6 +140,11 @@ define(['require', 'ojs/ojasyncvalidator-adapter'], function (require, SyncValid
     }
 
     _createClass(AsyncLengthValidator, [{
+      key: "hint",
+      get: function get() {
+        return _get(_getPrototypeOf(AsyncLengthValidator.prototype), "_GetHint", this).call(this);
+      }
+    }, {
       key: "_InitLoadingPromise",
       value: function _InitLoadingPromise() {
         if (!this._loadingPromise) {
@@ -149,11 +154,6 @@ define(['require', 'ojs/ojasyncvalidator-adapter'], function (require, SyncValid
             }, reject);
           });
         }
-      }
-    }, {
-      key: "hint",
-      get: function get() {
-        return _get(_getPrototypeOf(AsyncLengthValidator.prototype), "_GetHint", this).call(this);
       }
     }]);
 

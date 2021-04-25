@@ -683,3 +683,203 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
 export interface ojTableSettablePropertiesLenient<K, D> extends Partial<ojTableSettableProperties<K, D>> {
     [key: string]: any;
 }
+export type TableElement<K, D> = ojTable<K, D>;
+export namespace TableElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: 'add' | 'remove' | 'update';
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: 'add' | 'remove' | 'update';
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeCurrentRow<K> extends CustomEvent<{
+        currentRow: ojTable.CurrentRow<K>;
+        previousCurrentRow: ojTable.CurrentRow<K>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeRowEdit<K, D> extends CustomEvent<{
+        rowContext: {
+            componentElement: Element;
+            datasource: DataProvider<K, D> | null;
+            item: Item<K, D>;
+            mode: 'edit' | 'navigation';
+            parentElement: Element;
+            status: ojTable.ContextStatus<K>;
+        };
+        [propName: string]: any;
+    }> {
+    }
+    interface ojBeforeRowEditEnd<K, D> extends CustomEvent<{
+        cancelEdit: boolean;
+        rowContext: {
+            componentElement: Element;
+            datasource: DataProvider<K, D> | null;
+            item: Item<K, D>;
+            mode: 'edit' | 'navigation';
+            parentElement: Element;
+            status: ojTable.ContextStatus<K>;
+        };
+        [propName: string]: any;
+    }> {
+    }
+    interface ojRowAction<K, D> extends CustomEvent<{
+        context: CommonTypes.ItemContext<K, D>;
+        originalEvent: Event;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojSort extends CustomEvent<{
+        direction: 'ascending' | 'descending';
+        header: Element;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type accessibilityChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columns"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsDefaultChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type currentRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["currentRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editModeChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["editMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type editRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["editRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type firstSelectedRowChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["firstSelectedRow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type horizontalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["horizontalGridVisible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type layoutChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["layout"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rowRendererChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["rowRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPolicyOptionsChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollPositionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollToKey"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectedChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type verticalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type CellTemplateContext<K, D> = {
+        columnIndex: number;
+        columnKey: keyof D;
+        componentElement: Element;
+        data: D[keyof D];
+        datasource: DataProvider<K, D> | null;
+        index: number;
+        item: Item<K, D>;
+        key: any;
+        mode: 'edit' | 'navigation';
+        row: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnSelectionStart<K> = {
+        startIndex: {
+            column: number;
+        };
+        startKey?: {
+            column: K;
+        };
+    } | {
+        startIndex?: {
+            column: number;
+        };
+        startKey: {
+            column: K;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ContextStatus<K> = {
+        currentRow: ojTable.CurrentRow<K>;
+        rowIndex: number;
+        rowKey: K;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DragRowContext<K, D> = {
+        rows: Array<{
+            data: D;
+            index: number;
+            key: K;
+        }>;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DropRowContext = {
+        rowIndex: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type FooterRendererContext<K, D> = {
+        columnIndex: number;
+        componentElement: Element;
+        footerContext: {
+            datasource: DataProvider<K, D> | null;
+        };
+        parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type HeaderRendererContext<K, D> = {
+        columnHeaderDefaultRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
+        columnHeaderSortableIconRenderer?: ((param0: object, param1: ((param0: Element) => void)) => void);
+        columnIndex: number;
+        componentElement: Element;
+        data: string;
+        headerContext: {
+            datasource: DataProvider<K, D> | null;
+        };
+        parentElement: Element;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowRendererContext<K, D> = {
+        componentElement: Element;
+        data: D;
+        parentElement: Element;
+        rowContext: {
+            datasource: DataProvider<K, D> | null;
+            mode: 'edit' | 'navigation';
+            status: ojTable.ContextStatus<K>;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RowSelectionStart<K> = {
+        startIndex: {
+            row: number;
+        };
+        startKey?: {
+            row: K;
+        };
+    } | {
+        startIndex?: {
+            row: number;
+        };
+        startKey: {
+            row: K;
+        };
+    };
+}

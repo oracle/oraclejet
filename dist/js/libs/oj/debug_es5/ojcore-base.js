@@ -59,13 +59,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @global
      * @member {string} version JET version numberr
      */
-    version: '10.0.0',
+    version: '10.1.0',
 
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2021-01-07_13-00-34',
+    revision: '2021-04-17_08-43-39',
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate
     noConflict: function noConflict() {

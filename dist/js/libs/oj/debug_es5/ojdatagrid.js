@@ -21978,11 +21978,11 @@ define(['touchr', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/
     if (targetContext.cell) {
       this.setHeaderSelectionFrontier(axis, endpoint, endpoint, this.m_selectionFrontier.level,
       /** @type {Element} */
-      target, true);
+      targetElement, true);
     } else {
       this.setHeaderSelectionFrontier(axis, endpoint, targetContext.index, targetContext.level,
       /** @type {Element} */
-      target, true);
+      targetElement, true);
     }
 
     if (!isDeselect) {

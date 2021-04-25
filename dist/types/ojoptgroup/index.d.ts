@@ -36,3 +36,10 @@ export interface ojOptgroupSettableProperties extends JetSettableProperties {
 export interface ojOptgroupSettablePropertiesLenient extends Partial<ojOptgroupSettableProperties> {
     [key: string]: any;
 }
+export type OptgroupElement = ojOptgroup;
+export namespace OptgroupElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = JetElementCustomEvent<ojOptgroup["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojOptgroup["label"]>;
+}

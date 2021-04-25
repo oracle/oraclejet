@@ -336,6 +336,26 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                 });
             };
         }
+        _adjustIteratorOffset(removeIndexes, addIndexes) {
+            let offset = this._startIndex;
+            let deleteCount = 0;
+            if (removeIndexes) {
+                removeIndexes.forEach(function (index) {
+                    if (index < offset) {
+                        ++deleteCount;
+                    }
+                });
+            }
+            offset -= deleteCount;
+            if (addIndexes) {
+                addIndexes.forEach(function (index) {
+                    if (index < offset) {
+                        ++offset;
+                    }
+                });
+            }
+            this._startIndex = offset;
+        }
         _handleSync(event) {
             let self = this;
             if (self._ignoreDataSourceEvents.length > 0) {
@@ -376,6 +396,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             self._requestEventTriggered = false;
         }
         _handleAdd(event) {
+            var _a;
             let self = this;
             let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
@@ -387,8 +408,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             let operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
             let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
             self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
+            this._adjustIteratorOffset(null, (_a = mutationEventDetail.add) === null || _a === void 0 ? void 0 : _a.indexes);
         }
         _handleRemove(event) {
+            var _a;
             let self = this;
             let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
@@ -400,6 +423,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             let operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
             let mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
             self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
+            this._adjustIteratorOffset((_a = mutationEventDetail.remove) === null || _a === void 0 ? void 0 : _a.indexes, null);
         }
         _handleReset(event) {
             let self = this;

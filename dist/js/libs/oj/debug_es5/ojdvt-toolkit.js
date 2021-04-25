@@ -1,7 +1,7 @@
 (function() {
 function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
@@ -10899,11 +10899,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) {
 
     this._trackMouse = bTrackMouse;
     if (this._timerIsRunning) return;
-    var tooltipElem = document.createElement('span');
-    tooltipElem.className = 'OraDVTTooltipText';
-    tooltipElem.innerHTML = text; //@HTMLUpdateOK
-
-    tooltipElem.style.color = HtmlTooltipManager._FONT_COLOR;
 
     if (!borderColor) {
       borderColor = HtmlTooltipManager._BORDER_COLOR;
@@ -11107,8 +11102,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) {
 
   HtmlTooltipManager._restoreTag = function (text, tag) {
     // Match the following: <tag...>, </tag...>, and <tag.../>
-    var regExp = new RegExp('&lt;(/?)' + tag + '([^&]*)(/?)&gt;', 'g');
-    return text.replace(regExp, '<$1' + tag + '$2$3>');
+    var regExp = new RegExp('&lt;(/?)(' + tag + ')(?=[\\s&/])([^&]*)(/?)&gt;', 'g');
+    return text.replace(regExp, '<$1' + tag + '$3$4>');
   };
   /**
    * Creates an HTML element with the specified tag name.  Also applies optional style and text content.
@@ -20913,6 +20908,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) {
   /** @const */
 
   Context.DEFAULT_FONT_SIZE = CSSStyle.DEFAULT_FONT_SIZE;
+  /** @const */
+
+  var COMP_ARIA_LABEL = Symbol('componentAriaLabel');
   /**
    * Initializes this context object with the platform dependent objects.
    * @param  {DOMElement} root
@@ -21463,7 +21461,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) {
 
   Context.prototype.setAriaLabel = function (ariaLabel) {
     // Don't overwrite application set aria-label
-    if (!this._parentDiv.getAttribute('aria-label')) {
+    if (!this._parentDiv.getAttribute('aria-label') || this._parentDiv[COMP_ARIA_LABEL]) {
+      this._parentDiv[COMP_ARIA_LABEL] = true;
+
       if (ariaLabel) {
         this._parentDiv.setAttribute('aria-label', AriaUtils.processAriaLabel(ariaLabel));
       } else this._parentDiv.removeAttribute('aria-label');
@@ -24825,6 +24825,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) {
       if (newList[i] && (!newList[i].getId() || !updates.has(newList[i].getId()))) // must be valid object for insert
         newList[i].animateInsert(this);
     }
+  };
+  /**
+   * Returns the container where deleted elements go.
+   * @return {dvt.Container} The container where deleted elements go.
+   */
+
+
+  DataAnimationHandler.prototype.getDeleteContainer = function () {
+    return this._deleteContainer;
   };
   /**
    * Adds the specified playable to this handler's animation.

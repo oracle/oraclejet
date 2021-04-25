@@ -75,41 +75,14 @@ import { warn } from 'ojs/ojlogger';
  *
  * @param {(Array|function():Array)} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
- * @param {Object=} options Options for the ArrayDataProvider
- * @param {SortComparators=} options.sortComparators Optional {@link sortComparator} to use for sort.
- * @param {Array.<SortCriterion>=} options.implicitSort Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
- * This is used for cases where we would like display some indication that the data is already sorted.
- * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
- * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
- * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
- * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key.
- *                                                 <p>If this option is specified, the caller is responsible for maintaining both the keys and data arrays to keep them in sync.
- *                                                 When the data need to be changed, the corresponding changes must be made to the keys array first before the data change.</p>
- * @param {(string | Array.<string>)=} options.idAttribute <span class="important">Deprecated: this option is deprecated and will be removed in the future.
- *                                                  Please use the keyAttributes option instead.</span><br><br>
- *                                                  Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. Dot notation can be used to specify nested attribute (e.g. 'attr.id'). Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations.
- *                                                  @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
- *                                                  use all attributes as key. @index is the default.
- * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
- *                                                  use all attributes as key. @index is the default.
- *                                                  <p>With "@index", the key generation is based on the item index only initially.  The key for an item, once assigned,
- *                                                  will not change even if the item index changes (e.g. by inserting/removing items from the array).  Assigned keys will
- *                                                  never be reassigned.  If the array is replaced with new items, the new items will be assigned keys that are different
- *                                                  from their indices.  In general, caller should specify keyAttributes whenever possible and should never assume that the
- *                                                  generated keys are the same as the item indices.</p>
- *                                                  <p>This option is ignored if the "keys" option is specified.</p>
- * @param {(Array.<string>)=} options.textFilterAttributes Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+ * @param {ArrayDataProvider.DeprecatedOptions=} options Options for the ArrayDataProvider
  * @ojsignature [{target: "Type",
  *               value: "class ArrayDataProvider<K, D> implements DataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
- *               value: "Array<SortCriterion<D>>",
- *               for: "options.implicitSort"},
- *               {target: "Type",
- *               value: "ArrayDataProvider.SortComparators<D>",
- *               for: "options.sortComparators"}]
+ *               value: "ArrayDataProvider.Options<K, D> | ArrayDataProvider.DeprecatedOptions<D>",
+ *               for: "options"}
+ * ]
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters"]}
@@ -142,6 +115,76 @@ import { warn } from 'ojs/ojlogger';
  *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
  * var keysArray = [10, 20, 30];
  * var dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
+ */
+
+/**
+ * @typedef {Object} ArrayDataProvider.Options
+ * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
+ * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * This is used for cases where we would like display some indication that the data is already sorted.
+ * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+ * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
+ * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
+ * @property {any=} keys - Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key.
+ *                                                 <p>If this option is specified, the caller is responsible for maintaining both the keys and data arrays to keep them in sync.
+ *                                                 When the data need to be changed, the corresponding changes must be made to the keys array first before the data change.</p>
+ * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  use all attributes as key. @index is the default.
+ *                                                  <p>With "@index", the key generation is based on the item index only initially.  The key for an item, once assigned,
+ *                                                  will not change even if the item index changes (e.g. by inserting/removing items from the array).  Assigned keys will
+ *                                                  never be reassigned.  If the array is replaced with new items, the new items will be assigned keys that are different
+ *                                                  from their indices.  In general, caller should specify keyAttributes whenever possible and should never assume that the
+ *                                                  generated keys are the same as the item indices.</p>
+ *                                                  <p>This option is ignored if the "keys" option is specified.</p>
+ * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+ * @ojsignature [
+ *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+ *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+ *  {target: "Type", value: "K[] | (() => K[])", for: "keys"},
+ *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
+ *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+ * ]
+ */
+
+/**
+ * @typedef {Object} ArrayDataProvider.DeprecatedOptions
+ * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
+ * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+ * This is used for cases where we would like display some indication that the data is already sorted.
+ * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+ * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
+ * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
+ * @property {any=} keys - Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key.
+ *                                                 <p>If this option is specified, the caller is responsible for maintaining both the keys and data arrays to keep them in sync.
+ *                                                 When the data need to be changed, the corresponding changes must be made to the keys array first before the data change.</p>
+ * @property {string=} idAttribute - <span class="important">Deprecated: this option is deprecated and will be removed in the future.
+ *                                                  Please use the keyAttributes option instead.</span><br><br>
+ *                                                  Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
+ *                                                  of strings for multiple key attributes. Dot notation can be used to specify nested attribute (e.g. 'attr.id'). Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations.
+ *                                                  @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  use all attributes as key. @index is the default.
+ * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  use all attributes as key. @index is the default.
+ *                                                  <p>With "@index", the key generation is based on the item index only initially.  The key for an item, once assigned,
+ *                                                  will not change even if the item index changes (e.g. by inserting/removing items from the array).  Assigned keys will
+ *                                                  never be reassigned.  If the array is replaced with new items, the new items will be assigned keys that are different
+ *                                                  from their indices.  In general, caller should specify keyAttributes whenever possible and should never assume that the
+ *                                                  generated keys are the same as the item indices.</p>
+ *                                                  <p>This option is ignored if the "keys" option is specified.</p>
+ * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+ * @ojsignature [
+ *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
+ *  {target: "Type", value: "ArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+ *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+ *  {target: "Type", value: "any", for: "keys"},
+ *  {target: "Type", value: "string|string[]", for: "idAttribute"},
+ *  {target: "Type", value: "string|string[]", for: "keyAttributes"},
+ *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+ * ]
+ * @ojdeprecated {since: '10.1.0', description: 'Use type Options instead of object for options'}
  */
 
 /**

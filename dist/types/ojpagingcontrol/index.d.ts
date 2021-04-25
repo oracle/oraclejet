@@ -151,3 +151,18 @@ export interface ojPagingControlSettableProperties extends baseComponentSettable
 export interface ojPagingControlSettablePropertiesLenient extends Partial<ojPagingControlSettableProperties> {
     [key: string]: any;
 }
+export type PagingControlElement = ojPagingControl;
+export namespace PagingControlElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged = JetElementCustomEvent<ojPagingControl["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type loadMoreOptionsChanged = JetElementCustomEvent<ojPagingControl["loadMoreOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type modeChanged = JetElementCustomEvent<ojPagingControl["mode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type overflowChanged = JetElementCustomEvent<ojPagingControl["overflow"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pageOptionsChanged = JetElementCustomEvent<ojPagingControl["pageOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type pageSizeChanged = JetElementCustomEvent<ojPagingControl["pageSize"]>;
+}

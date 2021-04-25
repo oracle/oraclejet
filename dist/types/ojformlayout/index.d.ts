@@ -71,3 +71,24 @@ export interface ojFormLayoutSettableProperties extends JetSettableProperties {
 export interface ojFormLayoutSettablePropertiesLenient extends Partial<ojFormLayoutSettableProperties> {
     [key: string]: any;
 }
+export type FormLayoutElement = ojFormLayout;
+export namespace FormLayoutElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type colspanWrapChanged = JetElementCustomEvent<ojFormLayout["colspanWrap"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type columnsChanged = JetElementCustomEvent<ojFormLayout["columns"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type directionChanged = JetElementCustomEvent<ojFormLayout["direction"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = JetElementCustomEvent<ojFormLayout["labelEdge"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWidthChanged = JetElementCustomEvent<ojFormLayout["labelWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelWrappingChanged = JetElementCustomEvent<ojFormLayout["labelWrapping"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxColumnsChanged = JetElementCustomEvent<ojFormLayout["maxColumns"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojFormLayout["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = JetElementCustomEvent<ojFormLayout["userAssistanceDensity"]>;
+}

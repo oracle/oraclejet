@@ -779,3 +779,253 @@ export interface ojThematicMapMarkerSettableProperties extends JetSettableProper
 export interface ojThematicMapMarkerSettablePropertiesLenient extends Partial<ojThematicMapMarkerSettableProperties> {
     [key: string]: any;
 }
+export type ThematicMapElement<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> | any> = ojThematicMap<K1, K2,
+   K3, D1, D2, D3>;
+export type ThematicMapAreaElement = ojThematicMapArea;
+export type ThematicMapLinkElement = ojThematicMapLink;
+export type ThematicMapMarkerElement = ojThematicMapMarker;
+export namespace ThematicMapElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type animationDurationChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["animationDuration"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type animationOnDisplayChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["animationOnDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type areaDataChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["areaData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type focusRendererChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["focusRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightMatchChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["highlightMatch"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverRendererChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["hoverRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type initialZoomingChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["initialZooming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type isolatedItemChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["isolatedItem"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelDisplayChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["labelDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelTypeChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["labelType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type linkDataChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["linkData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type mapProviderChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["mapProvider"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerDataChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["markerData"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerZoomBehaviorChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["markerZoomBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxZoomChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["maxZoom"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type panningChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["panning"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rendererChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["renderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["selection"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionModeChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["selectionMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectionRendererChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["selectionRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type styleDefaultsChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["styleDefaults"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["tooltip"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type tooltipDisplayChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["tooltipDisplay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type touchResponseChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["touchResponse"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type zoomingChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["zooming"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Area<K> = {
+        categories?: string[];
+        color?: string;
+        id?: K;
+        label?: string;
+        labelStyle?: CSSStyleDeclaration;
+        location: string;
+        opacity?: number;
+        selectable?: 'auto' | 'off';
+        shortDesc?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type DataContext = {
+        color: string;
+        label: string;
+        selected: boolean;
+        tooltip: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type LinkTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type MarkerTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type RendererContext<K1, K2, K3, D1, D2, D3> = {
+        color: string;
+        componentElement: Element;
+        data: ojThematicMap.Area<K1> | ojThematicMap.Link<K2, K1 | K3> | ojThematicMap.Marker<K3>;
+        id: K1 | K2 | K3;
+        itemData: D1 | D2 | D3 | null;
+        label: string;
+        location: string | null;
+        parentElement: Element;
+        previousState: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        renderDefaultFocus: (() => void);
+        renderDefaultHover: (() => void);
+        renderDefaultSelection: (() => void);
+        root: Element | null;
+        state: {
+            focused: boolean;
+            hovered: boolean;
+            selected: boolean;
+        };
+        x: number | null;
+        y: number | null;
+    };
+}
+export namespace ThematicMapAreaElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojThematicMapArea["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojThematicMapArea["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojThematicMapArea["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojThematicMapArea["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type locationChanged = JetElementCustomEvent<ojThematicMapArea["location"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type opacityChanged = JetElementCustomEvent<ojThematicMapArea["opacity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojThematicMapArea["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojThematicMapArea["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapArea["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojThematicMapArea["svgStyle"]>;
+}
+export namespace ThematicMapLinkElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojThematicMapLink["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojThematicMapLink["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type endLocationChanged = JetElementCustomEvent<ojThematicMapLink["endLocation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojThematicMapLink["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojThematicMapLink["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type startLocationChanged = JetElementCustomEvent<ojThematicMapLink["startLocation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapLink["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojThematicMapLink["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type widthChanged = JetElementCustomEvent<ojThematicMapLink["width"]>;
+}
+export namespace ThematicMapMarkerElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojThematicMapMarker["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderStyleChanged = JetElementCustomEvent<ojThematicMapMarker["borderStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type borderWidthChanged = JetElementCustomEvent<ojThematicMapMarker["borderWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojThematicMapMarker["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojThematicMapMarker["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type heightChanged = JetElementCustomEvent<ojThematicMapMarker["height"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = JetElementCustomEvent<ojThematicMapMarker["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelPositionChanged = JetElementCustomEvent<ojThematicMapMarker["labelPosition"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelStyleChanged = JetElementCustomEvent<ojThematicMapMarker["labelStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type locationChanged = JetElementCustomEvent<ojThematicMapMarker["location"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type opacityChanged = JetElementCustomEvent<ojThematicMapMarker["opacity"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rotationChanged = JetElementCustomEvent<ojThematicMapMarker["rotation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type selectableChanged = JetElementCustomEvent<ojThematicMapMarker["selectable"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shapeChanged = JetElementCustomEvent<ojThematicMapMarker["shape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojThematicMapMarker["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceChanged = JetElementCustomEvent<ojThematicMapMarker["source"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHover"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceHoverSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHoverSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceSelected"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapMarker["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojThematicMapMarker["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojThematicMapMarker["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type widthChanged = JetElementCustomEvent<ojThematicMapMarker["width"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type xChanged = JetElementCustomEvent<ojThematicMapMarker["x"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type yChanged = JetElementCustomEvent<ojThematicMapMarker["y"]>;
+}

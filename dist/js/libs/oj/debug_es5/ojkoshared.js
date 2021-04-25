@@ -161,6 +161,8 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
 
       _patchKoRenderTemplateSource();
 
+      _patchKoTemplateSourceDomElement();
+
       _patchKoComponentsLoaders();
 
       _patchKoEvaluatorForCSP(_KoBindingCache);
@@ -347,7 +349,8 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
 
       return ret;
     } // Patches renderTemplateSource() to ensure that the template is parsed with the current document.
-    // Otherwise, the custom elements are not being upgraded synchronously
+    // Otherwise, the custom elements are not being upgraded synchronously.
+    // This method addresses an issue when JET components are defined inside of a <script> element.
 
 
     function _patchKoRenderTemplateSource() {
@@ -360,10 +363,25 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
         /* use current document if none is provided*/
         );
       };
+    } // Patches ko.templateSources.domElement.nodes() method to ensure that custom elements are upgraded synchronously.
+    // This method addresses an issue when JET components are defined inside of an external <template> element.
+
+
+    function _patchKoTemplateSourceDomElement() {
+      var proto = ko.templateSources.domElement.prototype;
+      var method = 'nodes';
+      var delegate = proto[method];
+
+      proto[method] = function () {
+        var nodes = delegate.apply(this, arguments);
+        return nodes && nodes.nodeType === 11 ? document.importNode(nodes, true) : nodes;
+      };
     } // This method adds custom KO component loader that overrides defaultLoader.loadTemplate().
     // This is done to ensure that the template is parsed with the current document in order
     // to upgrade custom elements synchronously
     // The custom loader takes precedence over the default loader.
+    // This method addresses an issue when a knockout native component is used as a part of a JET component,
+    // e.g. when items for oj-list-view contain a KO registered component.
 
 
     function _patchKoComponentsLoaders() {

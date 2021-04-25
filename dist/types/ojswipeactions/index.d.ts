@@ -41,3 +41,10 @@ export interface ojSwipeActionsSettableProperties extends baseComponentSettableP
 export interface ojSwipeActionsSettablePropertiesLenient extends Partial<ojSwipeActionsSettableProperties> {
     [key: string]: any;
 }
+export type SwipeActionsElement = ojSwipeActions;
+export namespace SwipeActionsElement {
+    interface ojAction extends CustomEvent<{
+        [propName: string]: any;
+    }> {
+    }
+}

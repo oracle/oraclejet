@@ -5,8 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
+define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exports, $, oj, DomUtils) { 'use strict';
 
+  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
@@ -566,7 +567,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
         for (i = eventKeys.length - 1; i >= 0; i--) {
           eventKey = eventKeys[i];
           // ensure the key does not already exist in the data set.
-          if (!DataCollectionUtils._containsKey(returnKeys, eventKey)) {
+          if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
             beforeKey = eventBeforeKeys[i];
             if (beforeKey != null) {
               beforeIndex = DataCollectionUtils._indexOfKey(returnKeys, beforeKey);
@@ -592,7 +593,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
       for (i = 0; i < eventKeys.length; i++) {
         eventKey = eventKeys[i];
         // ensure the key does not already exist in the data set
-        if (!DataCollectionUtils._containsKey(returnKeys, eventKey)) {
+        if (!DataCollectionUtils.containsKey(returnKeys, eventKey)) {
           eventIndex = eventIndexes[i];
           if (eventIndex != null) {
             var added = false;
@@ -632,7 +633,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
   /**
    * @private
    */
-  DataCollectionUtils._containsKey = function (array, key) {
+  DataCollectionUtils.containsKey = function (array, key) {
     for (var i = 0; i < array.length; i++) {
       if (oj.KeyUtils.equals(array[i], key)) {
         return true;
@@ -653,9 +654,36 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
     return -1;
   };
 
+  /**
+   * Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
+   * focusout, but components don't want to exit actionable/edit mode in those cases.
+   * This method should be used inside the component's focusout handler.
+   * @param elem the component element
+   * @return the logical popup element if one has been launched from within the component, null otherwise.
+   */
+  DataCollectionUtils.getLogicalChildPopup = function (componentElement) {
+    var popups = oj.ZOrderUtils.findOpenPopups();
+    for (var i = 0; i < popups.length; i++) {
+      // Get the launcher of the popup.
+      // popups[i] is just a wrapper with the real popup as its child.
+      var popupElem = popups[i].firstElementChild;
+      var launcher = DomUtils.getLogicalParent($(popupElem));
+
+      // Check if the component contains the launcher
+      if (launcher != null && $(componentElement).has(launcher.get(0)).length > 0) {
+        // only return the popup if the child popup is currently open
+        if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
+          return popupElem;
+        }
+      }
+    }
+    return null;
+  };
+
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
   const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
+  const containsKey = DataCollectionUtils.containsKey;
   const convertStringToStyleObj = DataCollectionUtils.convertStringToStyleObj;
   const disableElement = DataCollectionUtils.disableElement;
   const disableAllFocusableElements = DataCollectionUtils.disableAllFocusableElements;
@@ -665,6 +693,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
   const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
   const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
   const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
+  const getLogicalChildPopup = DataCollectionUtils.getLogicalChildPopup;
   const getNoJQFocusHandlers = DataCollectionUtils.getNoJQFocusHandlers;
   const handleActionablePrevTab = DataCollectionUtils.handleActionablePrevTab;
   const handleActionableTab = DataCollectionUtils.handleActionableTab;
@@ -690,6 +719,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
   exports.applyMergedInlineStyles = applyMergedInlineStyles;
   exports.applyStyleObj = applyStyleObj;
   exports.areKeySetsEqual = areKeySetsEqual;
+  exports.containsKey = containsKey;
   exports.convertStringToStyleObj = convertStringToStyleObj;
   exports.disableAllFocusableElements = disableAllFocusableElements;
   exports.disableDefaultBrowserStyling = disableDefaultBrowserStyling;
@@ -699,6 +729,7 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
   exports.getDefaultScrollBarWidth = getDefaultScrollBarWidth;
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
   exports.getFocusableElementsIncludingDisabled = getFocusableElementsIncludingDisabled;
+  exports.getLogicalChildPopup = getLogicalChildPopup;
   exports.getNoJQFocusHandlers = getNoJQFocusHandlers;
   exports.handleActionablePrevTab = handleActionablePrevTab;
   exports.handleActionableTab = handleActionableTab;

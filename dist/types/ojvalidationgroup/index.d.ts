@@ -32,3 +32,8 @@ export interface ojValidationGroupSettableProperties extends JetSettableProperti
 export interface ojValidationGroupSettablePropertiesLenient extends Partial<ojValidationGroupSettableProperties> {
     [key: string]: any;
 }
+export type ValidationGroupElement = ojValidationGroup;
+export namespace ValidationGroupElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = JetElementCustomEvent<ojValidationGroup["valid"]>;
+}

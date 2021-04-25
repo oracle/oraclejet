@@ -21,7 +21,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -32,11 +32,11 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, Context, ThemeUtils, DomUtils) {
+define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcontext', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, Context, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) {
   'use strict';
 
-  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   var StreamListContentHandler = /*#__PURE__*/function (_ojvcollection$Iterat) {
     _inherits(StreamListContentHandler, _ojvcollection$Iterat);
@@ -271,6 +271,39 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         _get(_getPrototypeOf(StreamListTreeContentHandler.prototype), "handleModelRefresh", this).call(this);
       }
     }, {
+      key: "checkViewport",
+      value: function checkViewport() {
+        var _this3 = this;
+
+        if (this.viewportResolveFunc) {
+          return;
+        }
+
+        this.viewportResolveFunc = this.addBusyState('checking viewport');
+        var itemsRoot = this.root.lastElementChild;
+
+        if (itemsRoot) {
+          var busyContext = Context.getContext(itemsRoot).getBusyContext();
+          busyContext.whenReady().then(function () {
+            if (_this3.callback != null) {
+              _get(_getPrototypeOf(StreamListTreeContentHandler.prototype), "checkViewport", _this3).call(_this3);
+
+              if (_this3.viewportResolveFunc) {
+                _this3.viewportResolveFunc();
+              }
+
+              _this3.viewportResolveFunc = null;
+            }
+          }, function () {
+            if (_this3.viewportResolveFunc) {
+              _this3.viewportResolveFunc();
+            }
+
+            _this3.viewportResolveFunc = null;
+          });
+        }
+      }
+    }, {
       key: "addItem",
       value: function addItem(metadata, index, data, visible) {
         var initialFetch = this.isInitialFetch();
@@ -424,21 +457,21 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
     var _super3 = _createSuper(StreamList);
 
     function StreamList(props) {
-      var _this3;
+      var _this4;
 
       _classCallCheck(this, StreamList);
 
-      _this3 = _super3.call(this, props);
-      _this3.restoreFocus = false;
-      _this3.actionableMode = false;
-      _this3.skeletonHeight = 0;
-      _this3.height = 0;
+      _this4 = _super3.call(this, props);
+      _this4.restoreFocus = false;
+      _this4.actionableMode = false;
+      _this4.skeletonHeight = 0;
+      _this4.height = 0;
 
-      _this3.setRootElement = function (element) {
-        _this3.root = element;
+      _this4.setRootElement = function (element) {
+        _this4.root = element;
       };
 
-      _this3.state = {
+      _this4.state = {
         renderedData: null,
         outOfRangeData: null,
         initialSkeleton: false,
@@ -448,7 +481,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         expandingKeys: new ojkeyset.KeySetImpl(),
         toCollapse: []
       };
-      return _this3;
+      return _this4;
     }
 
     _createClass(StreamList, [{
@@ -695,7 +728,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         if (shouldScroll) {
           var scroller = this._getScroller();
 
-          if (scroller != null) {
+          if (scroller != null && scroller === this.root) {
             scroller.scrollTop = 0;
           }
         }
@@ -807,7 +840,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
     }, {
       key: "mounted",
       value: function mounted() {
-        var _this4 = this;
+        var _this5 = this;
 
         var data = this.props.data;
 
@@ -832,14 +865,14 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
           var resizeObserver = new window['ResizeObserver'](function (entries) {
             entries.forEach(function (entry) {
               if (entry.target === root && entry.contentRect) {
-                var currHeight = _this4.height;
+                var currHeight = _this5.height;
                 var newHeight = Math.round(entry.contentRect.height);
 
                 if (Math.abs(newHeight - currHeight) > 1) {
-                  _this4.height = newHeight;
+                  _this5.height = newHeight;
 
-                  if (_this4.contentHandler && _this4.contentHandler.domScroller) {
-                    _this4.contentHandler.domScroller.checkViewport();
+                  if (_this5.contentHandler) {
+                    _this5.contentHandler.checkViewport();
                   }
                 }
               }
@@ -853,8 +886,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
           applyHighlight: true,
           setupHandlers: function setupHandlers(focusInHandler, focusOutHandler) {
             var noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
-            _this4.focusInHandler = noJQHandlers.focusIn;
-            _this4.focusOutHandler = noJQHandlers.focusOut;
+            _this5.focusInHandler = noJQHandlers.focusIn;
+            _this5.focusOutHandler = noJQHandlers.focusOut;
           }
         });
 
@@ -893,15 +926,15 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
     }, {
       key: "_delayShowSkeletons",
       value: function _delayShowSkeletons() {
-        var _this5 = this;
+        var _this6 = this;
 
         window.setTimeout(function () {
-          var data = _this5.getData();
+          var data = _this6.getData();
 
           if (data == null) {
-            _this5.updateState(function (state) {
+            _this6.updateState(function (state) {
               return {
-                initialSkeletonCount: Math.max(1, Math.floor(_this5.height / _this5.skeletonHeight))
+                initialSkeletonCount: Math.max(1, Math.floor(_this6.height / _this6.skeletonHeight))
               };
             });
           }
@@ -1002,7 +1035,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
       value: function scrollListener() {
         var self = this;
 
-        if (!this._ticking) {
+        if (this.getData() != null && !this._ticking) {
           window.requestAnimationFrame(function () {
             self._updateScrollPosition();
 

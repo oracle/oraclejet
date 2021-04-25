@@ -50,3 +50,12 @@ export interface ojConveyorBeltSettableProperties extends baseComponentSettableP
 export interface ojConveyorBeltSettablePropertiesLenient extends Partial<ojConveyorBeltSettableProperties> {
     [key: string]: any;
 }
+export type ConveyorBeltElement = ojConveyorBelt;
+export namespace ConveyorBeltElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type arrowVisibilityChanged = JetElementCustomEvent<ojConveyorBelt["arrowVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type contentParentChanged = JetElementCustomEvent<ojConveyorBelt["contentParent"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged = JetElementCustomEvent<ojConveyorBelt["orientation"]>;
+}

@@ -1231,7 +1231,7 @@ Obj.createSubclass(DvtGaugeEventManager, EventManager);
  */
 DvtGaugeEventManager.prototype.OnMouseDown = function(event) {
   // Set the editing flag so moves are tracked
-  if (this._isInteractive()) {
+  if (this._gauge.IsInteractive()) {
     this.IsMouseEditing = true;
     this.hideTooltip();
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
@@ -1284,7 +1284,7 @@ DvtGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
  * @override
  */
 DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
-  if (TouchEvent.TOUCHSTART === event.type && this._isInteractive()) {
+  if (TouchEvent.TOUCHSTART === event.type && this._gauge.IsInteractive()) {
     // Set the editing flag so moves are tracked
     this.IsMouseEditing = true;
     var coords = this.GetRelativePosition(event.touches[0].pageX, event.touches[0].pageY);
@@ -1375,13 +1375,6 @@ DvtGaugeEventManager.prototype.StopMouseEditing = function (event) {
   this.IsMouseEditing = false;
   var coords = this.GetRelativePosition(event.pageX, event.pageY);
   this._gauge.__processValueChangeEnd(coords.x, coords.y);
-};
-
-/**
- * Returns whether the gauge is interactive or not.
- */
-DvtGaugeEventManager.prototype._isInteractive = function() {
-  return this._gauge.getOptions()['readOnly'] === false;
 };
 
 /**
@@ -2291,7 +2284,7 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
     var tooltip = DvtGaugeRenderer.getTooltipString(this);
     if (this.IsParentRoot()) {
       var translations = this.Options.translations;
-      if (this.Options['readOnly']) {
+      if (!this.IsInteractive()) {
         this.getCtx().setAriaRole('img');
         this.getCtx().setAriaLabel(ResourceUtils.format(translations.labelAndValue,
             [translations.labelDataVisualization,
@@ -2305,11 +2298,18 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
             [translations.labelDataVisualization, AriaUtils.processAriaLabel(this.GetComponentDescription())]));
       }
     }
-    else if (this.Options['readOnly']) {
+    else if (!this.IsInteractive()) {
       this.setAriaRole('img');
       this.setAriaProperty('label', Displayable.generateAriaLabel(AriaUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
     }
   }
+};
+
+/**
+ * Checks if the gauge is interactive.
+ */
+DvtGauge.prototype.IsInteractive = function () {
+  return !this.Options.readOnly;
 };
 
 /**
@@ -3028,7 +3028,7 @@ Obj.createSubclass(DvtRatingGaugeEventManager, DvtGaugeEventManager);
  */
 DvtRatingGaugeEventManager.prototype.OnMouseOver = function (event) {
   // Only editable gauges
-  if (this._isInteractive()) {
+  if (this._gauge.IsInteractive()) {
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processValueChangeStart(coords.x, coords.y);
     this.IsMouseEditing = true;
@@ -3044,7 +3044,7 @@ DvtRatingGaugeEventManager.prototype.OnMouseOver = function (event) {
  */
 DvtRatingGaugeEventManager.prototype.OnMouseOut = function (event) {
   // Only editable gauges
-  if (this._isInteractive()) {
+  if (this._gauge.IsInteractive()) {
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processHoverEnd(coords.x, coords.y);
     this.IsMouseEditing = false;
@@ -3061,7 +3061,7 @@ DvtRatingGaugeEventManager.prototype.OnMouseMove = function (event){
 
   var coords = this.GetRelativePosition(event.pageX, event.pageY);
   var isDisabled = this._gauge.getOptions()['disabled'] === true;
-  if (this._isInteractive() && !this.IsMouseEditing &&
+  if (this._gauge.IsInteractive() && !this.IsMouseEditing &&
       this._gauge.getOptions()['value'] !== this._gauge.GetValueAt(coords.x, coords.y)) {
     this.IsMouseEditing = true;
   }
@@ -3110,16 +3110,6 @@ DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function (event) {
  */
 DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function () {
   return true;
-};
-
-/**
- * Checks if the gauge is interactive
- * @override
- */
-DvtRatingGaugeEventManager.prototype._isInteractive = function () {
-  var isReadOnly = this._gauge.getOptions()['readOnly'] === true;
-  var isDisabled = this._gauge.getOptions()['disabled'] === true;
-  return !(isDisabled || isReadOnly);
 };
 
 /**
@@ -3712,6 +3702,16 @@ RatingGauge.prototype.__getRatingGaugeItem = function(index) {
  */
 RatingGauge.prototype.CreateEventManager = function() {
   return new DvtRatingGaugeEventManager(this);
+};
+
+/**
+ * @override
+ */
+RatingGauge.prototype.IsInteractive = function () {
+  if (this.Options.disabled) {
+    return false;
+  }
+  return RatingGauge.superclass.IsInteractive.call(this);
 };
 
 /**

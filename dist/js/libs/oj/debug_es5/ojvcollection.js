@@ -19,7 +19,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -825,6 +825,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
         return this.initialFetch;
       }
     }, {
+      key: "checkViewport",
+      value: function checkViewport() {
+        if (this.domScroller) {
+          this.domScroller.checkViewport();
+        }
+      }
+    }, {
       key: "renderSkeletonsForLoadMore",
       value: function renderSkeletonsForLoadMore() {}
     }, {
@@ -1135,7 +1142,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             }
           };
 
-          _this11._fetchNextFromIterator(iterator, null, options, finalResults).then(_this11._setNewData);
+          _this11._fetchNextFromIterator(iterator, null, options, finalResults).then(function (result) {
+            _this11._setNewData(result);
+          }, function () {
+            _this11._setNewData(null);
+          });
         }
       };
 
@@ -1163,17 +1174,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             value.value.metadata = value.value.metadata.concat(value.value.metadata);
             return helperFunction(value);
           }, function (reason) {
-            this._handleFetchError(reason);
+            return Promise.reject(reason);
           });
           return fetchMoreData;
         };
 
         return promise.then(function (value) {
           return helperFunction(value);
-        }, function () {
-          busyStateResolveFunc();
-
-          _this11._handleFetchError();
+        }, function (reason) {
+          return Promise.reject(reason);
         }).then(function (value) {
           if (_this11.isFetching()) {
             busyStateResolveFunc();
@@ -1192,10 +1201,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
 
             return _this11.handleNextItemInResults(options, key, value, finalResults);
           }
-        }, function () {
+        }, function (reason) {
           busyStateResolveFunc();
 
-          _this11._handleFetchError();
+          _this11._handleFetchError(reason);
+
+          return Promise.reject(reason);
         });
       };
 
@@ -1206,8 +1217,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
 
         _this11.callback.updateData(function (data) {
           var final;
-          var dataToSet = result.value.data;
-          var metadataToSet = result.value.metadata;
+          var dataToSet;
+          var metadataToSet;
+          var done;
+
+          if (result == null) {
+            dataToSet = [];
+            metadataToSet = [];
+            done = true;
+          } else {
+            dataToSet = result.value.data;
+            metadataToSet = result.value.metadata;
+            done = this._checkIteratorAndCache();
+          }
 
           if (data == null) {
             final = {
@@ -1215,7 +1237,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                 data: dataToSet,
                 metadata: metadataToSet
               },
-              done: this._checkIteratorAndCache()
+              done: done
             };
           } else {
             final = {
@@ -1223,7 +1245,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                 data: data.value.data.concat(dataToSet),
                 metadata: data.value.metadata.concat(metadataToSet)
               },
-              done: this._checkIteratorAndCache()
+              done: done
             };
           }
 
@@ -1275,15 +1297,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             }
           };
           return _this11.handleNextItemInResults(options, key, result, finalResults).then(function () {
-            var newCacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
+            var newCacheInfo = _this11._cachedIteratorsAndResults[key === null ? 'root' : key];
             var newIterator;
 
             if (newCacheInfo != null) {
               newIterator = newCacheInfo.iterator;
             }
 
-            return this._fetchFromAncestors(options, key, newIterator, finalResults);
-          }.bind(_assertThisInitialized(_this11)));
+            return _this11._fetchFromAncestors(options, key, newIterator, finalResults);
+          }, function (reason) {
+            return Promise.reject(reason);
+          });
         }
 
         return Promise.resolve();
@@ -1318,7 +1342,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
           return this.handleNextItemInResults(options, lastEntryParentKey, result, finalResults).then(this._fetchFromAncestors.bind(this, options, lastEntryParentKey, parentIterator, finalResults));
         };
 
-        return _this11._fetchNextFromIterator(iterator, key, options, finalResults).then(handleFetchFromAncestors.bind(_assertThisInitialized(_this11), key, finalResults));
+        return _this11._fetchNextFromIterator(iterator, key, options, finalResults).then(handleFetchFromAncestors.bind(_assertThisInitialized(_this11), key, finalResults), function (reason) {
+          return Promise.reject(reason);
+        });
       };
 
       _this11._getLastEntryMetadata = function () {
@@ -1684,11 +1710,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
           initialRowCount: _this11.getFetchSize(),
           strategy: exports.VirtualizationStrategy.HIGH_WATER_MARK,
           isOverflow: _this11._getOverflowFunc(),
-          success: function success(result) {
-            _this11.handleFetchSuccess(result);
-          },
+          success: _this11.handleFetchSuccess.bind(_assertThisInitialized(_this11)),
           error: function error() {
-            _this11._handleFetchError();
+            _this11._setNewData(null);
           },
           beforeFetch: function beforeFetch() {
             return _this11.handleBeforeFetchNext();
@@ -1844,8 +1868,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
       }
     }, {
       key: "_handleFetchError",
-      value: function _handleFetchError() {
+      value: function _handleFetchError(reason) {
         this.setFetching(false);
+        Logger.error('iterating dataprovider content handler fetch error :' + reason);
       }
     }, {
       key: "_handleScrollerMaxRowCount",
@@ -2020,7 +2045,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
 
                     index = beforeIndex;
                   } else {
-                    index = this._findIndex(newData.value.metadata, this._getLastItemByParentKey(parentKey).metadata.key) + 1;
+                    var lastItem = this._getLastItemByParentKey(parentKey, newData);
+
+                    if (lastItem) {
+                      index = this._findIndex(newData.value.metadata, lastItem.metadata.key);
+
+                      if (index > -1) {
+                        index += 1;
+                      }
+                    }
+
+                    if (lastItem == null || index === -1) {
+                      return;
+                    }
                   }
                 } else if (indexes != null) {
                   var parentIndex = this._findIndex(newData.value.metadata, parentKey);

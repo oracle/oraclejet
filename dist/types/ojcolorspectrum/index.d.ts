@@ -84,3 +84,27 @@ export interface ojColorSpectrumSettableProperties extends editableValueSettable
 export interface ojColorSpectrumSettablePropertiesLenient extends Partial<ojColorSpectrumSettableProperties> {
     [key: string]: any;
 }
+export type ColorSpectrumElement = ojColorSpectrum;
+export namespace ColorSpectrumElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojColorSpectrum["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojColorSpectrum["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojColorSpectrum["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojColorSpectrum["value"]>;
+}

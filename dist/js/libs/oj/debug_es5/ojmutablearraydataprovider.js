@@ -85,26 +85,14 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
    *  Mutations to the original array will not be reflected in MutableArrayDataProvider.
    *  The only way to mutate the data in MutableArrayDataProvider is by setting the "data" property to another array.
    *  </p>
-   * @param {Object=} options Options for the MutableArrayDataProvider
-   * @param {SortComparators=} options.sortComparators Optional {@link sortComparators} to use for sort.
-   * @param {Array.<SortCriterion>=} options.implicitSort Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
-   * This is used for cases where we would like display some indication that the data is already sorted.
-   * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
-   * This option is not used for cases where we want the MutableArrayDataProvider to apply a sort on initial fetch.
-   * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
-   * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
-   *                                                  of strings for multiple key attributes. Please note that the ids in MutableArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes MutableArrayDataProvider to use index as key and @value will cause MutableArrayDataProvider to
-   *                                                  use all attributes as key. @index is the default.
-   * @param {(Array.<string>)=} options.textFilterAttributes Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+   * @param {MutableArrayDataProvider.Options=} options Options for the ArrayDataProvider
    * @ojsignature [{target: "Type",
    *               value: "class MutableArrayDataProvider<K, D> implements DataProvider<K, D>",
-   *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
+   *               genericTypeParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
    *               {target: "Type",
-   *               value: "Array<SortCriterion<D>>",
-   *               for: "options.implicitSort"},
-   *               {target: "Type",
-   *               value: "MutableArrayDataProvider.SortComparators<D>",
-   *               for: "options.sortComparators"}]
+   *               value: "MutableArrayDataProvider.Options<D>",
+   *               for: "options"}]
+   *
    * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
    * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
    * "FetchListResult","FetchListParameters"]}
@@ -130,7 +118,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
    * @property {Object} comparators - Sort comparators. Map of attribute to comparator function.
    * @ojsignature [
    *   {target: "Type", value: "<D>", for: "genericTypeParameters"},
-   *   {target: "Type", value: "Map<keyof D, (a: any, b: any) => number>", for: "cimparators"}]
+   *   {target: "Type", value: "Map<keyof D, (a: any, b: any) => number>", for: "comparators"}]
    */
 
   /**
@@ -157,12 +145,33 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
    */
 
   /**
-  * @inheritdoc
-  * @memberof MutableArrayDataProvider
-  * @instance
-  * @method
-  * @name containsKeys
+  * @typedef {Object} MutableArrayDataProvider.Options
+  * @property {MutableArrayDataProvider.SortComparators=} sortComparators - Optional sortComparators to use for sort.
+  * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+  * This is used for cases where we would like display some indication that the data is already sorted.
+  * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+  * This option is not used for cases where we want the MutableArrayDataProvider to apply a sort on initial fetch.
+  * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
+  * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+  *                                                  of strings for multiple key attributes. Please note that the ids in MutableArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes MutableArrayDataProvider to use index as key and @value will cause MutableArrayDataProvider to
+  *                                                  use all attributes as key. @index is the default.
+  * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+  * @ojsignature [
+  *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
+  *  {target: "Type", value: "MutableArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+  *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+  *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
+  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+  * ]
   */
+
+  /**
+   * @inheritdoc
+   * @memberof MutableArrayDataProvider
+   * @instance
+   * @method
+   * @name containsKeys
+   */
 
   /**
    * @inheritdoc
@@ -525,6 +534,44 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     }
 
     _createClass(MutableArrayDataProvider, [{
+      key: "data",
+      get: function get() {
+        return this._data;
+      },
+      set: function set(value) {
+        var oldData = this._data == undefined ? [] : this._data.slice();
+
+        if (Array.isArray(value)) {
+          if (Object.isFrozen(value)) {
+            this._data = value;
+          } else {
+            this._data = value.slice();
+            Object.freeze(this._data);
+          }
+        } else {
+          this._data = value == undefined ? [] : [].concat(value);
+        }
+
+        if ((oldData == undefined || oldData.length == 0) && this._data != undefined && this._data.length > 0 || (this._data == undefined || this._data.length == 0) && oldData != undefined && oldData.length > 0) {
+          this._keys = null;
+
+          this._dataRefreshed(this._data);
+        } else {
+          this._changes = this.compareArrays(oldData, this._data, false);
+
+          if (this._changes != null && this._changes.length > 0) {
+            this._dataMutated(this._changes);
+
+            this._dataRefreshed(this._data);
+          }
+        }
+      }
+    }, {
+      key: "dataChanges",
+      get: function get() {
+        return this._changes;
+      }
+    }, {
       key: "containsKeys",
       value: function containsKeys(params) {
         var self = this;
@@ -1458,44 +1505,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
           },
           enumerable: true
         });
-      }
-    }, {
-      key: "data",
-      set: function set(value) {
-        var oldData = this._data == undefined ? [] : this._data.slice();
-
-        if (Array.isArray(value)) {
-          if (Object.isFrozen(value)) {
-            this._data = value;
-          } else {
-            this._data = value.slice();
-            Object.freeze(this._data);
-          }
-        } else {
-          this._data = value == undefined ? [] : [].concat(value);
-        }
-
-        if ((oldData == undefined || oldData.length == 0) && this._data != undefined && this._data.length > 0 || (this._data == undefined || this._data.length == 0) && oldData != undefined && oldData.length > 0) {
-          this._keys = null;
-
-          this._dataRefreshed(this._data);
-        } else {
-          this._changes = this.compareArrays(oldData, this._data, false);
-
-          if (this._changes != null && this._changes.length > 0) {
-            this._dataMutated(this._changes);
-
-            this._dataRefreshed(this._data);
-          }
-        }
-      },
-      get: function get() {
-        return this._data;
-      }
-    }, {
-      key: "dataChanges",
-      get: function get() {
-        return this._changes;
       }
     }], [{
       key: "_getFetchCapability",

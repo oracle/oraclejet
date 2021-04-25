@@ -133,3 +133,48 @@ export interface ojCheckboxsetSettableProperties<K, D, V> extends editableValueS
 export interface ojCheckboxsetSettablePropertiesLenient<K, D, V> extends Partial<ojCheckboxsetSettableProperties<K, D, V>> {
     [key: string]: any;
 }
+export type CheckboxsetElement<K, D, V = any> = ojCheckboxset<K, D, V>;
+export namespace CheckboxsetElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["disabled"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionRendererChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["optionRenderer"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionsChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["options"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type optionsKeysChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["optionsKeys"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readOnlyChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["readOnly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged<K, D, V = any> = JetElementCustomEvent<ojCheckboxset<K, D, V>["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Option = {
+        disabled?: boolean;
+        label?: string;
+        value: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type OptionsKeys = {
+        label?: string;
+        value?: string;
+    };
+}

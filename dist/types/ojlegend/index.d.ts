@@ -360,3 +360,133 @@ export interface ojLegendSectionSettableProperties extends JetSettableProperties
 export interface ojLegendSectionSettablePropertiesLenient extends Partial<ojLegendSectionSettableProperties> {
     [key: string]: any;
 }
+export type LegendElement<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = ojLegend<K, D>;
+export type LegendItemElement = ojLegendItem;
+export type LegendSectionElement = ojLegendSection;
+export namespace LegendElement {
+    interface ojDrill extends CustomEvent<{
+        id: any;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type asChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["as"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type expandedChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["expanded"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type halignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["halign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hiddenCategoriesChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["hiddenCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hideAndShowBehaviorChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["hideAndShowBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type highlightedCategoriesChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["highlightedCategories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["hoverBehavior"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type hoverBehaviorDelayChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["hoverBehaviorDelay"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type orientationChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["orientation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type scrollingChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["scrolling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type symbolHeightChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolHeight"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type symbolWidthChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textStyleChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Item<K> = {
+        borderColor?: string;
+        categories?: string[];
+        categoryVisibility?: 'hidden' | 'visible';
+        color?: string;
+        drilling?: 'off' | 'on' | 'inherit';
+        id?: K;
+        lineStyle?: 'dashed' | 'dotted' | 'solid';
+        lineWidth?: number;
+        markerColor?: string;
+        markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+        markerSvgClassName?: string;
+        markerSvgStyle?: CSSStyleDeclaration;
+        pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
+           'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
+        shortDesc?: string;
+        source?: string;
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
+        text?: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        itemIndex: number;
+        sectionIndexPath: number[];
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Section<K> = {
+        collapsible?: 'on' | 'off';
+        expanded?: 'off' | 'on';
+        id: K;
+        items?: Array<ojLegend.Item<K>>;
+        sections?: Array<ojLegend.Section<K>>;
+        title?: string;
+        titleHalign?: 'center' | 'end' | 'start';
+        titleStyle?: CSSStyleDeclaration;
+    };
+}
+export namespace LegendItemElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type borderColorChanged = JetElementCustomEvent<ojLegendItem["borderColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoriesChanged = JetElementCustomEvent<ojLegendItem["categories"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type categoryVisibilityChanged = JetElementCustomEvent<ojLegendItem["categoryVisibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type colorChanged = JetElementCustomEvent<ojLegendItem["color"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type drillingChanged = JetElementCustomEvent<ojLegendItem["drilling"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineStyleChanged = JetElementCustomEvent<ojLegendItem["lineStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type lineWidthChanged = JetElementCustomEvent<ojLegendItem["lineWidth"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerColorChanged = JetElementCustomEvent<ojLegendItem["markerColor"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerShapeChanged = JetElementCustomEvent<ojLegendItem["markerShape"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSvgClassNameChanged = JetElementCustomEvent<ojLegendItem["markerSvgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSvgStyleChanged = JetElementCustomEvent<ojLegendItem["markerSvgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type patternChanged = JetElementCustomEvent<ojLegendItem["pattern"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type shortDescChanged = JetElementCustomEvent<ojLegendItem["shortDesc"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sourceChanged = JetElementCustomEvent<ojLegendItem["source"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgClassNameChanged = JetElementCustomEvent<ojLegendItem["svgClassName"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type svgStyleChanged = JetElementCustomEvent<ojLegendItem["svgStyle"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type symbolTypeChanged = JetElementCustomEvent<ojLegendItem["symbolType"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textChanged = JetElementCustomEvent<ojLegendItem["text"]>;
+}
+export namespace LegendSectionElement {
+    // tslint:disable-next-line interface-over-type-literal
+    type collapsibleChanged = JetElementCustomEvent<ojLegendSection["collapsible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textChanged = JetElementCustomEvent<ojLegendSection["text"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textHalignChanged = JetElementCustomEvent<ojLegendSection["textHalign"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type textStyleChanged = JetElementCustomEvent<ojLegendSection["textStyle"]>;
+}

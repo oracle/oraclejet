@@ -27,3 +27,4 @@ export interface ojDeferSettableProperties extends JetSettableProperties {
 export interface ojDeferSettablePropertiesLenient extends Partial<ojDeferSettableProperties> {
     [key: string]: any;
 }
+export type DeferElement = ojDefer;

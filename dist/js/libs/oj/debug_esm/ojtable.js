@@ -18,14 +18,14 @@ import ListDataProviderView from 'ojs/ojlistdataproviderview';
 import 'ojs/ojselector';
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
-import { unwrap, addResizeListener, removeResizeListener, getReadingDirection, setScrollLeft, getLogicalParent, isMetaKeyPressed } from 'ojs/ojdomutils';
+import { unwrap, addResizeListener, removeResizeListener, getReadingDirection, setScrollLeft, isMetaKeyPressed } from 'ojs/ojdomutils';
 import { error, warn, info } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { applyParameters } from 'ojs/ojtranslation';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, subtreeDetached, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { disableAllFocusableElements, isMobileTouchDevice, getDefaultScrollBarWidth, getAddEventKeysResult, applyMergedInlineStyles, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isEventClickthroughDisabled, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { disableAllFocusableElements, isMobileTouchDevice, getDefaultScrollBarWidth, containsKey, getAddEventKeysResult, applyMergedInlineStyles, getLogicalChildPopup, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isEventClickthroughDisabled, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { startAnimation } from 'ojs/ojanimation';
 import DomScroller from 'ojs/ojdomscroller';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
@@ -1611,6 +1611,7 @@ Table.prototype._handleDataFetchStart = function () {
  */
 Table.prototype._setDataWaitingState = function (showMessage) {
   if (showMessage !== false) {
+    this._clearScrollBuffer();
     this._showStatusMessage();
     this._hideNoDataMessage();
   }
@@ -1824,6 +1825,8 @@ Table.prototype._cleanComponent = function (isDestroy) {
   this._clearAllComponentTimeouts();
   // remove any pending busy states
   this._clearAllComponentBusyStates();
+  // remove any descendant popup focus listeners
+  this._clearOpenPopupListeners();
   // clear any pending animation frames
   this._clearIdleCallback();
   // clear any existing DomScroller references
@@ -1908,6 +1911,13 @@ Table.prototype._setFinalTask = function (task) {
  * @private
  */
 Table.prototype._hasPendingTasks = function () {
+  return this._taskCount > 0;
+};
+
+/**
+ * @private
+ */
+Table.prototype._hasAdditionalPendingTasks = function () {
   return this._taskCount > 1;
 };
 
@@ -2407,7 +2417,7 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
     for (i = 0; i < rowsCount; i++) {
       this._renderRow(rows[i], tableBodyDocFrag, startIndex);
     }
-    tableBody.appendChild(tableBodyDocFrag); // @HTMLUpdateOK
+    this._appendElementToTableBody(tableBodyDocFrag, tableBody);
     return this._afterRowsRendered(tableBody);
   }
   return Promise.resolve();
@@ -2778,7 +2788,7 @@ Table.prototype._showProgressiveLoading = function () {
         tempCell.appendChild(this._createSkeletonRow()); // @HTMLUpdateOK
       }
       tempSkeletonRow.appendChild(tempCell); // @HTMLUpdateOK
-      this._getTableBody().appendChild(tempSkeletonRow);
+      this._appendElementToTableBody(tempSkeletonRow, this._getTableBody());
       this._skeletonHWMSFadeInEndListener = function () {
         tempSkeletonRow.classList.remove('oj-animation-skeleton-fade-in');
         var skeletonRows = tempSkeletonRow.querySelectorAll('.oj-table-skeleton-row');
@@ -2875,7 +2885,7 @@ Table.prototype._showNoDataMessage = function () {
       if (tableContainer.classList.contains(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS)) {
         noDataContentRow.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_ROW_CLASS);
       }
-      tableBody.appendChild(noDataContentRow); // @HTMLUpdateOK
+      this._appendElementToTableBody(noDataContentRow, tableBody);
       var noDataContentCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
       var columnCount = this._getColumnDefs().length;
       if (this._isDefaultSelectorEnabled()) {
@@ -3637,7 +3647,11 @@ Table.prototype._getRowRenderer = function () {
  * @private
  */
 Table.prototype._isOverflow = function () {
-  return this._isLoadMoreOnScroll() && this._domScroller && this._domScroller.isOverflow();
+  if (this._isLoadMoreOnScroll() && this._domScroller) {
+    var scrollBuffer = this._getTableBodyScrollBuffer();
+    return (scrollBuffer == null && this._domScroller.isOverflow());
+  }
+  return false;
 };
 
 /**
@@ -3654,6 +3668,7 @@ Table.prototype._registerDomScroller = function () {
       if (result.maxCountLimit) {
         this._noMoreData = true;
         this._handleScrollerMaxRowCount();
+        this._clearScrollBuffer();
         this._syncScrollPosition();
       } else {
         var value = result[Table._CONST_VALUE];
@@ -3702,13 +3717,16 @@ Table.prototype._registerDomScroller = function () {
           }.bind(this));
         } else if (result.done) {
           this._noMoreData = true;
+          this._clearScrollBuffer();
           this._syncScrollPosition();
         } else {
+          this._clearScrollBuffer();
           this._syncScrollPosition(null, this._scrollPosition != null);
         }
       }
     } else {
       // for case where result != null, the syncPosition would be done in final task
+      this._clearScrollBuffer();
       this._syncScrollPosition();
     }
   }.bind(this);
@@ -3834,7 +3852,7 @@ Table.prototype._renderRowsWhenIdle = function (rows, tableBody, startIndex, res
   function afterRowsProcessed() {
     window.requestAnimationFrame(function () {
       self._getLayoutManager().handleAfterRowsProcessed(tableBodyDocFrag);
-      tableBody.appendChild(tableBodyDocFrag); // @HTMLUpdateOK
+      self._appendElementToTableBody(tableBodyDocFrag, tableBody);
       self._renderRowsWhenIdle(rows, tableBody, startIndex + rowProcessed, resolve,
         reject, isMouseWheel);
 
@@ -4008,15 +4026,49 @@ Table.prototype._syncTableSizing = function (skipSizingRequiredCheck) {
       (skipSizingRequiredCheck || layoutManager.isSizingRefreshRequired())) {
     layoutManager.refreshTableDimensions();
   }
+  var scrollBufferHeight = this._updateScrollBufferHeight();
   // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
   if (this._isLoadMoreOnScroll() && !this._dataFetching && this._domScroller) {
     this._setDataWaitingState(false);
-    this._domScroller.checkViewport().then(this._domScrollerSuccessFunc,
-                                           this._checkViewportRejected.bind(this));
+    this._domScroller.checkViewport(scrollBufferHeight > 0).then(
+      this._domScrollerSuccessFunc, this._checkViewportRejected.bind(this));
     // syncScrollPosition would be invoked after data are fetched and new rows are rendered
   } else {
     // syncScrollPosition must be done after sizing is done (refreshTableDimensions is invoked)
     this._syncScrollPosition();
+  }
+};
+
+/**
+ * @private
+ */
+Table.prototype._updateScrollBufferHeight = function () {
+  var scrollBufferHeight = 0;
+  var layoutManager = this._getLayoutManager();
+  var scrollBuffer = this._getTableBodyScrollBuffer();
+  if (scrollBuffer != null) {
+    scrollBufferHeight = scrollBuffer.offsetHeight;
+    if (scrollBufferHeight > 0) {
+      var bottomOverflowDiff = layoutManager.getRowBottomOverflowDiff(scrollBuffer);
+      var newScrollBufferHeight =
+        Math.min(Math.max(0, scrollBufferHeight - bottomOverflowDiff), scrollBufferHeight);
+      if (newScrollBufferHeight !== scrollBufferHeight) {
+        scrollBufferHeight = newScrollBufferHeight;
+        scrollBuffer.style[Table.CSS_PROP._HEIGHT] = scrollBufferHeight + Table.CSS_VAL._PX;
+      }
+    }
+  }
+  return scrollBufferHeight;
+};
+
+/**
+ * @private
+ */
+Table.prototype._clearScrollBuffer = function () {
+  var scrollBuffer = this._getTableBodyScrollBuffer();
+  if (scrollBuffer != null) {
+    this._getTableBody().removeChild(scrollBuffer);
+    this._clearDomCache(Table.CSS_CLASSES._TABLE_BUFFER_ROW_CLASS);
   }
 };
 
@@ -4058,7 +4110,7 @@ Table.prototype._animateVisibleRows = function (tableBodyRows, rowIdxArray, acti
   // eslint-disable-next-line no-param-reassign
   action = this._animationActionOverride == null ? action : this._animationActionOverride;
 
-  if (!this._hasPendingTasks()) {
+  if (!this._hasAdditionalPendingTasks()) {
     this._animationActionOverride = null;
     var visibleRowIdxArray = this._getVisibleRowIdxs();
     var nonVisibleRowIdxArray = [];
@@ -4424,11 +4476,10 @@ Table.prototype._invokeDataFetchRows = function (options) {
         if (scrollToKey == null || this._containsKey(scrollToKey, currentMetadata)) {
           updatedScrollToKey = null;
         }
-        // skip additional fetching if done, or if fetchSize is not -1.
+        // skip additional fetching if done, or are no longer searching for a row with loadMoreOnScroll
         // if it has getPageCount method, it is a pagingTableDataSource so skip this fetch process.
-        if (updatedScrollToKey == null && (result.done ||
-            updatedOptions[Table._CONST_PAGESIZE] !== -1 ||
-            typeof dataprovider.getPageCount === 'function')) {
+        if (result.done || (updatedScrollToKey == null &&
+            (this._isLoadMoreOnScroll() || typeof dataprovider.getPageCount === 'function'))) {
           return result;
         }
 
@@ -5747,6 +5798,13 @@ oj.Object.createSubclass(TableLayoutManager, oj.Object, 'TableLayoutManager');
 /**
  * @private
  */
+TableLayoutManager.prototype.unregisterListeners = function () {
+  this.unregisterScrollListeners();
+};
+
+/**
+ * @private
+ */
 TableLayoutManager.prototype._getSizingState = function () {
   if (this._sizingState == null) {
     this._sizingState = {
@@ -5839,17 +5897,11 @@ TableLayoutManager.prototype._finalizeTableDimensions = function (scrollTop, scr
       // Do not set to maxScrollTop or we will cause another fetch
       newScrollTop -= 1;
     }
-    // set flag so that scroll() will not cause an scrollPosition update
-    this._table._skipScrollUpdate = true;
     this.getScroller().scrollTop = newScrollTop;
-    $(this.getScroller()).scroll();
   }
 
   if (scrollLeft != null) {
-    // set flag so that scroll() will not cause an scrollPosition update
-    this._table._skipScrollUpdate = true;
-    setScrollLeft(this.getScroller(), scrollLeft);
-    $(this.getScroller()).scroll();
+    this._restoreScrollLeft(scrollLeft);
   }
 
   // cache the final dimensions
@@ -5859,6 +5911,7 @@ TableLayoutManager.prototype._finalizeTableDimensions = function (scrollTop, scr
 
   this._clearTableUpdates();
   this._enableTableVisibility();
+  this.registerScrollListeners();
 };
 
 /**
@@ -5869,12 +5922,99 @@ TableLayoutManager.prototype.handleAfterRowsProcessed = function () { };
 /**
  * @private
  */
-TableLayoutManager.prototype.handleScrollerScrollLeft = function () { };
+TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
+  this._table._scrollLeft = scrollLeft;
+};
+
+/**
+ * Handle scrollTop on scroller
+ * @private
+ */
+TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
+  // if no domScroller is set, make sure scroll pos busy state is cleared here
+  if (!this._table._domScroller) {
+    this._table._clearScrollPosBusyState();
+  }
+  if (scrollTop < 0) {
+    // eslint-disable-next-line no-param-reassign
+    scrollTop = 0;
+  }
+  this._table._scrollTop = scrollTop;
+  // keep track when scrollTop is triggered internally (syncScrollPosition)
+  this._table._scrollY = this._table._skipScrollUpdate ? scrollTop : null;
+
+  // update mobile touch selection affordance if present
+  this._table._moveTableBodyRowTouchSelectionAffordanceTop();
+  this._table._moveTableBodyRowTouchSelectionAffordanceBottom();
+
+  // ensure scroll buffer height is updated as vertical scrolling occurs
+  this._table._updateScrollBufferHeight();
+};
 
 /**
  * @private
  */
-TableLayoutManager.prototype.registerScrollListeners = function () { };
+TableLayoutManager.prototype.registerScrollListeners = function () {
+  var scroller = this.getScroller();
+  if (scroller != null) {
+    // if width or height is defined then we can have scrollbars so register scroll event listeners
+    if (this._scrollEventListener == null) {
+      this._scrollEventListener = (function (event) {
+        var newScrollLeft = this._table._getElementScrollLeft(event.target);
+        var newScrollTop = event.target.scrollTop;
+        if (newScrollLeft === this._table._scrollLeft && newScrollTop === this._table._scrollTop) {
+          // discard bogus scroll event
+          return;
+        }
+
+        this._handleScrollerScrollLeft(newScrollLeft);
+        this._handleScrollerScrollTop(newScrollTop);
+
+        // do not update scrollPosition if we are already adjusting
+        if (this._table._isScrollPositionAdjusted()) {
+          return;
+        }
+
+        if (!this._table._skipScrollUpdate && !this._ticking) {
+          window.requestAnimationFrame(function () {
+            // scrollPosition could have been adjusted or a new value is set while waiting for animation frame
+            if (!this._table._isScrollPositionAdjusted() && !this._table._skipScrollUpdate) {
+              this._table.option('scrollPosition', this._table._getCurrentScrollPosition(), {
+                _context: {
+                  originalEvent: event,
+                  internalSet: true
+                }
+              });
+            }
+            this._ticking = false;
+          }.bind(this));
+          this._ticking = true;
+        }
+        this._table._skipScrollUpdate = false;
+      }.bind(this));
+    }
+    // remove the event listener before adding to make sure only one is active at a time
+    scroller.removeEventListener('scroll', this._scrollEventListener);
+    scroller.addEventListener('scroll', this._scrollEventListener, false);
+  }
+};
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.unregisterScrollListeners = function () {
+  var scroller = this.getScroller();
+  if (scroller != null && this._scrollEventListener != null) {
+    scroller.removeEventListener('scroll', this._scrollEventListener);
+  }
+};
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype._restoreScrollLeft = function (scrollLeft) {
+  setScrollLeft(this.getScroller(), scrollLeft);
+};
 
 /**
  * @param {Element} cell
@@ -6084,6 +6224,11 @@ TableLayoutManager.prototype.clearCachedDimensions = function () {
 /**
  * @private
  */
+TableLayoutManager.prototype.getRowScrollTop = function () { };
+
+/**
+ * @private
+ */
 TableLayoutManager.prototype.getScrollWidth = function () {
   if (this._scrollWidth == null) {
     this._scrollWidth = this.getScroller().scrollWidth;
@@ -6126,6 +6271,8 @@ TableLayoutManager.prototype.getClientHeight = function () {
  * @private
  */
 TableLayoutManager.prototype._removeTableDimensionsStyling = function () {
+  this.unregisterScrollListeners();
+
   var tableElem = this._table._getTable();
   var tableHeader = this._table._getTableHeader();
   var tableHeaderRow = this._table._getTableHeaderRow();
@@ -6452,7 +6599,8 @@ TableLegacyLayoutManager.prototype.handleAfterRowsProcessed = function (tableBod
 /**
  * @private
  */
-TableLegacyLayoutManager.prototype.handleScrollerScrollLeft = function (scrollLeft) {
+TableLegacyLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
+  TableLegacyLayoutManager.superclass._handleScrollerScrollLeft.call(this, scrollLeft);
   var tableHeaderRow = this._table._getTableHeaderRow();
   if (tableHeaderRow) {
     setScrollLeft(tableHeaderRow.parentNode, scrollLeft);
@@ -6467,12 +6615,14 @@ TableLegacyLayoutManager.prototype.handleScrollerScrollLeft = function (scrollLe
  * @private
  */
 TableLegacyLayoutManager.prototype.registerScrollListeners = function () {
+  TableLegacyLayoutManager.superclass.registerScrollListeners.call(this);
+
   // although header region does not contain scrollbars, browser may auto-scroll when contents gain focus
   var tableHeaderRow = this._table._getTableHeaderRow();
   if (tableHeaderRow != null) {
     var tableHeader = tableHeaderRow.parentNode;
-    if (this._table._headerScrollEventListener == null) {
-      this._table._headerScrollEventListener = (function (event) {
+    if (this._headerScrollEventListener == null) {
+      this._headerScrollEventListener = (function (event) {
         var scrollLeft = this._table._getElementScrollLeft(event.target);
         if (this._table._scrollLeft !== scrollLeft) {
           this._table._setScrollX(scrollLeft);
@@ -6480,8 +6630,58 @@ TableLegacyLayoutManager.prototype.registerScrollListeners = function () {
       }.bind(this));
     }
     // remove the event listener before adding to make sure only one is active at a time
-    tableHeader.removeEventListener('scroll', this._table._headerScrollEventListener);
-    tableHeader.addEventListener('scroll', this._table._headerScrollEventListener, false);
+    tableHeader.removeEventListener('scroll', this._headerScrollEventListener);
+    tableHeader.addEventListener('scroll', this._headerScrollEventListener, false);
+  }
+  // although footer region does not contain scrollbars, browser may auto-scroll when contents gain focus
+  var tableFooterRow = this._table._getTableFooterRow();
+  if (tableFooterRow != null) {
+    var tableFooter = tableFooterRow.parentNode;
+    if (this._footerScrollEventListener == null) {
+      this._footerScrollEventListener = (function (event) {
+        var scrollLeft = this._table._getElementScrollLeft(event.target);
+        if (this._table._scrollLeft !== scrollLeft) {
+          this._table._setScrollX(scrollLeft);
+        }
+      }.bind(this));
+    }
+    // remove the event listener before adding to make sure only one is active at a time
+    tableFooter.removeEventListener('scroll', this._footerScrollEventListener);
+    tableFooter.addEventListener('scroll', this._footerScrollEventListener, false);
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.unregisterScrollListeners = function () {
+  TableLegacyLayoutManager.superclass.unregisterScrollListeners.call(this);
+
+  var tableHeaderRow = this._table._getTableHeaderRow();
+  if (tableHeaderRow != null && this._headerScrollEventListener != null) {
+    var tableHeader = tableHeaderRow.parentNode;
+    tableHeader.removeEventListener('scroll', this._headerScrollEventListener);
+  }
+
+  var tableFooterRow = this._table._getTableFooterRow();
+  if (tableFooterRow != null && this._footerScrollEventListener != null) {
+    var tableFooter = tableFooterRow.parentNode;
+    tableFooter.removeEventListener('scroll', this._footerScrollEventListener);
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._restoreScrollLeft = function (scrollLeft) {
+  setScrollLeft(this.getScroller(), scrollLeft);
+  var tableHeaderRow = this._table._getTableHeaderRow();
+  if (tableHeaderRow) {
+    setScrollLeft(tableHeaderRow.parentNode, scrollLeft);
+  }
+  var tableFooterRow = this._table._getTableFooterRow();
+  if (tableFooterRow) {
+    setScrollLeft(tableFooterRow.parentNode, scrollLeft);
   }
 };
 
@@ -6492,6 +6692,13 @@ TableLegacyLayoutManager.prototype.registerScrollListeners = function () {
  */
 TableLegacyLayoutManager.prototype.getScroller = function () {
   return this._table._getTableBody();
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.getRowScrollTop = function (row) {
+  return row.offsetTop;
 };
 
 /**
@@ -7048,6 +7255,19 @@ TableStickyLayoutManager.prototype.getScroller = function () {
 };
 
 /**
+ * @private
+ */
+TableStickyLayoutManager.prototype.getRowScrollTop = function (row) {
+  if (!this._table._isTableHeaderless()) {
+    var tableHeader = this._table._getTableHeader();
+    if (tableHeader != null) {
+      return row.offsetTop - tableHeader.offsetHeight;
+    }
+  }
+  return row.offsetTop;
+};
+
+/**
  * Determines the number of pixels the Table would need to scroll down to align
  * the top of the given row with the top of the viewport.
  * @param {Element} tableBodyRow The row to be scrolled.
@@ -7147,12 +7367,22 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
 
   this.clearCachedDimensions();
   this._removeTableDimensionsStyling();
+
+  var overallWidth;
+  // this shouldn't be necessary, but safari has a bug where it does not recalculate the table column widths
+  // correctly when the DOM surrounding it is cleaned up without doing something to force a reflow on the table
+  if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI) {
+    tableElem.classList.remove(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
+    overallWidth = tableElem.offsetWidth;
+    tableElem.classList.add(Table.CSS_CLASSES._TABLE_ELEMENT_CLASS);
+  }
+
   this._table._styleTableContainer(tableContainer);
 
   this._initializeColumnLayouts();
   this._setupTableHeight(bottomSlotHeight);
 
-  var overallWidth = this._determineColumnWidths();
+  overallWidth = this._determineColumnWidths();
   tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
   tableElem.style['table-layout'] = 'fixed';
 
@@ -7318,12 +7548,14 @@ TableStickyLayoutManager.prototype._savePreferredColWidths = function () {
   if (this._selectorColWidth == null && this._table._isDefaultSelectorEnabled()) {
     var headerSelector = this._table._getTableSelectorColumn();
     if (headerSelector != null) {
-      this._selectorColWidth = headerSelector.offsetWidth;
+      // offsetWidth does not include partial px values, so bounding rect should be used
+      this._selectorColWidth = headerSelector.getBoundingClientRect().width;
     } else {
       var tableBodyRow = this._table._getTableBodyRow(0);
       var selectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
       if (selectorCell != null) {
-        this._selectorColWidth = selectorCell.offsetWidth;
+        // offsetWidth does not include partial px values, so bounding rect should be used
+        this._selectorColWidth = selectorCell.getBoundingClientRect().width;
       }
     }
   }
@@ -7338,12 +7570,14 @@ TableStickyLayoutManager.prototype._savePreferredColWidths = function () {
       // find column header cell width
       var headerCell = this._table._getTableHeaderColumn(i);
       if (headerCell != null) {
-        this._columnInitWidths[i] = headerCell.offsetWidth;
+        // offsetWidth does not include partial px values, so bounding rect should be used
+        this._columnInitWidths[i] = headerCell.getBoundingClientRect().width;
       } else {
         // find column table body cell widths
         var tableBodyCell = this._table._getTableBodyCell(0, i, null);
         if (tableBodyCell != null) {
-          this._columnInitWidths[i] = tableBodyCell.offsetWidth;
+          // offsetWidth does not include partial px values, so bounding rect should be used
+          this._columnInitWidths[i] = tableBodyCell.getBoundingClientRect().width;
         }
       }
     }
@@ -7766,12 +8000,35 @@ Table.prototype._beforeDataRefresh = function () {
  * @private
  */
 Table.prototype._removeRowsAfterLastValidRow = function (lastValidKey) {
+  if (this._getCurrentScrollPosition().y > 0) {
+    this._bufferScrollerForLastRow(lastValidKey);
+  }
   var lastValidItemIdx = this._getRowIdxForRowKey(lastValidKey);
   if (lastValidItemIdx >= 0) {
     var tableBodyRows = this._getTableBodyRows();
     var tableBodyRowsCount = tableBodyRows.length;
     for (var i = tableBodyRowsCount - 1; i > lastValidItemIdx; i--) {
       this._removeTableBodyRow(i);
+    }
+  }
+};
+
+/**
+ * Sets the height of the scroller buffer to ensure browser does not adjust scroll position while waiting for data.
+ * @private
+ */
+Table.prototype._bufferScrollerForLastRow = function (lastValidKey) {
+  var layoutManager = this._getLayoutManager();
+  var rowIndex = this._getRowIdxForRowKey(lastValidKey);
+  if (rowIndex != null) {
+    var tableBodyRow = this._getTableBodyRow(rowIndex);
+    var bottomOverflowDiff = layoutManager.getRowBottomOverflowDiff(tableBodyRow);
+    // if bottom of the final row is above the bottom of the vieport, increase scroll buffer to account for the difference
+    if (bottomOverflowDiff < 0) {
+      var scrollBuffer = this._createTableBodyScrollBuffer();
+      // need to add 1px to the difference to prevent browser underscroll when things align exactly
+      scrollBuffer.style[Table.CSS_PROP._HEIGHT] =
+        (Math.abs(bottomOverflowDiff) + 1) + Table.CSS_VAL._PX;
     }
   }
 };
@@ -7851,6 +8108,7 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
       // first check if we are removing all rows. If so, we can do a removeAll
       var remainingRowIdxArray = [];
       var rowIdxArray = [];
+      var rowKeyArray = [];
       var removedTableBodyRows = [];
       var rowsCount = rows.length;
       var removeAll = false;
@@ -7866,6 +8124,7 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
         for (i = 0; i < rowsCount; i++) {
           rowIdx = rows[i].rowIdx;
           rowIdxArray.push(rowIdx);
+          rowKeyArray.push(rows[i].row.key);
           for (var j = 0; j < remainingRowIdxArray.length; j++) {
             if (remainingRowIdxArray[j] === rowIdx) {
               tableBodyRow = self._getTableBodyRow(rowIdx);
@@ -7906,10 +8165,39 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
         }
       }
 
+      // update edit state based on row removals before rows are removed to ensure row context is available
+      if (self._hasEditableRow()) {
+        var editRowKey = self._getEditableRowKey();
+        if (containsKey([...eventDetail[Table._CONST_KEYS]], editRowKey)) {
+          // exit edit mode if editable row is deleted - treat as cancelling the edit
+          self._setTableEditable(false, true);
+        }
+      }
+
       function _removeRows() {
-        for (var ii = 0; ii < rowsCount; ii++) {
-          var _rowIdx = rows[ii].rowIdx;
-          self._removeTableBodyRow(_rowIdx);
+        var ii;
+        var _rowIdx;
+        if (self._getCurrentScrollPosition().y > 0) {
+          var totalRowHeight = 0;
+          var tableBodyRowsToRemove = [];
+          for (ii = 0; ii < rowsCount; ii++) {
+            _rowIdx = rows[ii].rowIdx;
+            var tableBodyRowToRemove = self._getTableBodyRow(_rowIdx);
+            if (tableBodyRowToRemove != null) {
+              totalRowHeight += tableBodyRowToRemove.offsetHeight;
+              tableBodyRowsToRemove.push(tableBodyRowToRemove);
+            }
+          }
+          var scrollBuffer = self._createTableBodyScrollBuffer();
+          scrollBuffer.style[Table.CSS_PROP._HEIGHT] = totalRowHeight + Table.CSS_VAL._PX;
+          for (var ij = 0; ij < tableBodyRowsToRemove.length; ij++) {
+            self._removeTableBodyRow(null, tableBodyRowsToRemove[ij]);
+          }
+        } else {
+          for (ii = 0; ii < rowsCount; ii++) {
+            _rowIdx = rows[ii].rowIdx;
+            self._removeTableBodyRow(_rowIdx);
+          }
         }
       }
 
@@ -7929,7 +8217,7 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
               removeAll ||
               currentRowIndex >= tableBodyRows.length) {
             self._setCurrentRow(null, null, false);
-          } else {
+          } else if (!self._isTableActionableMode() || rowKeyArray.indexOf(currentRowKey) !== -1) {
             self._setCurrentRow({ rowIndex: currentRowIndex, rowKey: null }, null, false);
           }
         }
@@ -8057,7 +8345,7 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
             if (tableBodyRowBefore != null) {
               tableBody.insertBefore(tableBodyDocFrag, tableBodyRowBefore);// @HTMLUpdateOK
             } else {
-              tableBody.appendChild(tableBodyDocFrag, null);// @HTMLUpdateOK
+              this._appendElementToTableBody(tableBodyDocFrag, tableBody);
             }
           }
           this._clearCachedDomRowData();
@@ -8150,7 +8438,8 @@ Table.prototype._getRowsFromEventDetailAdd = function (eventDetail) {
   for (var i = 0; i < eventDataCount; i++) {
     var eventKey = eventKeys[i];
     var rowIdx = finalRowKeys.indexOf(eventKey);
-    if (rowIdx !== -1) {
+    // only add row if key is present in final set but not in initial set
+    if (rowIdx !== -1 && initialKeys.indexOf(eventKey) === -1) {
       var metadata;
       if (metadataSource && metadataSource._getMetadata) {
         metadata = metadataSource._getMetadata(rowIdx);
@@ -8730,6 +9019,33 @@ Table.prototype._createTableBody = function () {
 };
 
 /**
+ * Create an empty row for scroll buffering in the table body
+ * @private
+ */
+Table.prototype._createTableBodyScrollBuffer = function () {
+  var bufferRow = this._getTableBodyScrollBuffer();
+  if (bufferRow == null) {
+    bufferRow = this._createTableBodyRow();
+    bufferRow.classList.add(Table.CSS_CLASSES._TABLE_BUFFER_ROW_CLASS);
+    this._getTableBody().appendChild(bufferRow);
+    this._clearDomCache(Table.CSS_CLASSES._TABLE_BUFFER_ROW_CLASS);
+  }
+  return bufferRow;
+};
+
+/**
+ * @private
+ */
+Table.prototype._appendElementToTableBody = function (element, tableBody) {
+  var scrollBuffer = this._getTableBodyScrollBuffer();
+  if (scrollBuffer != null) {
+    tableBody.insertBefore(element, scrollBuffer); // @HTMLUpdateOK
+  } else {
+    tableBody.appendChild(element); // @HTMLUpdateOK
+  }
+};
+
+/**
  * Create an empty td element with appropriate styling
  * @param {number} rowIdx  row index
  * @param {number} columnIdx  column index
@@ -8848,7 +9164,7 @@ Table.prototype._createTableBodyMessageRow = function (columnCount, message) {
   tableBodyMessageRow.classList.add(Table.CSS_CLASSES._TABLE_BODY_MESSAGE_ROW_CLASS);
   this._createTableBodyMessageCell(tableBodyMessageRow, columnCount, message);
 
-  tableBody.appendChild(tableBodyMessageRow); // @HTMLUpdateOK
+  this._appendElementToTableBody(tableBodyMessageRow, tableBody);
   return tableBodyMessageRow;
 };
 
@@ -9485,6 +9801,14 @@ Table.prototype._getTableBody = function () {
 };
 
 /**
+ * Return the table body scroll buffer element
+ * @private
+ */
+Table.prototype._getTableBodyScrollBuffer = function () {
+  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_BUFFER_ROW_CLASS);
+};
+
+/**
  * Return the cell element
  * @param {number} rowIdx  row index
  * @param {number} columnIdx  column index
@@ -9494,9 +9818,6 @@ Table.prototype._getTableBody = function () {
  */
 Table.prototype._getTableBodyCell = function (rowIdx, columnIdx, tableBodyRow) {
   var tableBodyCells = this._getTableBodyCells(rowIdx, tableBodyRow);
-  if (!tableBodyCells) {
-    return null;
-  }
 
   if (tableBodyCells.length > columnIdx) {
     return tableBodyCells[columnIdx];
@@ -9514,9 +9835,6 @@ Table.prototype._getTableBodyCell = function (rowIdx, columnIdx, tableBodyRow) {
  */
 Table.prototype._getTableBodyLogicalCells = function (rowIdx, tableBodyRow) {
   var tableBodyCells = this._getTableBodyCells(rowIdx, tableBodyRow);
-  if (!tableBodyCells) {
-    return null;
-  }
 
   return this._getColspanLogicalElements(tableBodyCells);
 };
@@ -9532,20 +9850,11 @@ Table.prototype._getTableBodyCells = function (rowIdx, tableBodyRow) {
   if (!tableBodyRow) {
     // eslint-disable-next-line no-param-reassign
     tableBodyRow = this._getTableBodyRow(rowIdx);
+    if (!tableBodyRow) {
+      return [];
+    }
   }
-
-  if (!tableBodyRow) {
-    return null;
-  }
-
-  var tableBodyCellElements = this._getTableElementsByClassName(tableBodyRow,
-    Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
-
-  if (tableBodyCellElements.length > 0) {
-    return tableBodyCellElements;
-  }
-
-  return null;
+  return this._getTableElementsByClassName(tableBodyRow, Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
 };
 
 /**
@@ -9979,7 +10288,7 @@ Table.prototype._insertTableBodyRow = function (rowIdx, tableBodyRow, row, docFr
       var previousRow = tableBodyRows[rowIdx - 1];
       previousRow.parentNode.insertBefore(tableBodyRow, previousRow.nextSibling); // @HTMLUpdateOK
     } else {
-      tableBody.appendChild(tableBodyRow); // @HTMLUpdateOK
+      this._appendElementToTableBody(tableBodyRow, tableBody);
     }
   } else {
     docFrag.appendChild(tableBodyRow); // @HTMLUpdateOK
@@ -10301,10 +10610,16 @@ Table.prototype._removeDragOverIndicatorRow = function () {
 /**
  * Remove a tr element from the tbody DOM
  * @param {number} rowIdx  row index
+ * @param {Element=} rowElement the row element to remove
  * @private
  */
-Table.prototype._removeTableBodyRow = function (rowIdx) {
-  var tableBodyRow = this._getTableBodyRow(rowIdx);
+Table.prototype._removeTableBodyRow = function (rowIdx, rowElement) {
+  var tableBodyRow;
+  if (rowElement != null) {
+    tableBodyRow = rowElement;
+  } else {
+    tableBodyRow = this._getTableBodyRow(rowIdx);
+  }
   if (tableBodyRow != null) {
     subtreeDetached(tableBodyRow);
 
@@ -11313,6 +11628,7 @@ Table.CSS_CLASSES = {
   _COLUMN_HEADER_RESIZING_CLASS: 'oj-table-column-header-resizing',
   _COLUMN_HEADER_RESIZE_INDICATOR_CLASS: 'oj-table-column-header-resize-indicator',
   _TABLE_BODY_CLASS: 'oj-table-body',
+  _TABLE_BUFFER_ROW_CLASS: 'oj-table-body-scroll-buffer',
   _TABLE_DATA_ROW_CLASS: 'oj-table-body-row',
   _TABLE_DATA_ROW_DRAG_INDICATOR_CLASS: 'oj-table-body-row-drag-indicator',
   _TABLE_TOUCH_AFFORDANCE_GLASS_PANE_CLASS: 'oj-table-touch-affordance-glass-pane',
@@ -11483,76 +11799,91 @@ Table.MARKER_STYLE_CLASSES = {
  * @ignore
  */
 
+
 /**
- * @override
  * @private
  */
-Table.prototype._events = {
-  /*
-   * Reset the keyboard state on focusout and set the inactive
-   * selected rows
-   */
-  focusout: function (event) {
-    this._clearFocusoutTimeout();
+Table.prototype._clearOpenPopupListeners = function () {
+  if (this._openPopup != null) {
+    this._openPopup.removeEventListener('focusin', this._handlePopupFocusinListener);
+    this._openPopup.removeEventListener('focusout', this._handlePopupFocusoutListener);
+    this._openPopup = null;
+  }
+  this._handlePopupFocusinListener = null;
+  this._handlePopupFocusoutListener = null;
+};
 
-    var table = this._getTable();
+/**
+ * @private
+ */
+Table.prototype._handlePopupFocusout = function (event) {
+  this._handleFocusout(event, true);
+};
 
+/**
+ * @private
+ */
+Table.prototype._handlePopupFocusin = function (event) {
+  this._handleFocusin(event, true);
+};
+
+/**
+ * @private
+ */
+Table.prototype._handleFocusout = function (event, isPopupFocusout) {
+  this._clearFocusoutTimeout();
+  var table = this._getTable();
+
+  if (!isPopupFocusout) {
     // Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
     // focusout, but we don't want to change mode in those cases since the user is still editing.
-    var popups = oj.ZOrderUtils.findOpenPopups();
-    for (var i = 0; i < popups.length; i++) {
-      // Get the launcher of the popup.
-      // popups[i] is just a wrapper with the real popup as its child.
-      var popupElem = popups[i].firstElementChild;
-      var launcher = getLogicalParent($(popupElem));
-
-      // Check if the table contains the launcher
-      if ($(table).has(launcher.get(0)).length > 0) {
-        // only skip focusout handling if the child popup is currently open
-        if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
-          return;
-        }
-      }
+    this._clearOpenPopupListeners();
+    var openPopup = getLogicalChildPopup(table);
+    if (openPopup != null) {
+      // setup focus listeners on popup
+      this._openPopup = openPopup;
+      this._handlePopupFocusinListener = this._handlePopupFocusin.bind(this);
+      this._handlePopupFocusoutListener = this._handlePopupFocusout.bind(this);
+      openPopup.addEventListener('focusin', this._handlePopupFocusinListener);
+      openPopup.addEventListener('focusout', this._handlePopupFocusoutListener);
+      return;
     }
-    this._setFocusoutBusyState();
+  }
+  this._setFocusoutBusyState();
 
-    // set timeout to stay in editable/actionable mode if focus comes back into the table
-    this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
-      this._accFirstFocus = true;
-      this._focusOutHandler($(table));
-      this._focusOutHandler($(this._getTableContainer()));
-      this._clearKeyboardKeys();
-      this._clearFocusedHeaderColumn();
-      this._clearFocusedFooterColumn();
-      this._clearFocusedRow(false);
-      this._clearTableHeaderColumnsResize();
-      this._setTableEditable(false, false, 0, true, event, true);
+  // set timeout to stay in editable/actionable mode if focus comes back into the table
+  this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
+    this._clearOpenPopupListeners();
+    this._accFirstFocus = true;
+    this._focusOutHandler($(table));
+    this._focusOutHandler($(this._getTableContainer()));
+    this._clearKeyboardKeys();
+    this._clearFocusedHeaderColumn();
+    this._clearFocusedFooterColumn();
+    this._clearFocusedRow(false);
+    this._clearTableHeaderColumnsResize();
+    this._setTableEditable(false, false, 0, true, event, true);
 
-      // clear styling on previous editable data cell if necessary
-      if (this._focusEditCell) {
-        this._focusEditCell.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
-        this._focusEditCell = null;
-      }
-      this._setTableActionableMode(false, true);
-      this._clearFocusoutBusyState();
-    }.bind(this), 100);
-  },
-
-  /*
-   * Check the keyboard state on focus
-   */
-  focus: function (event) {
-    this._checkRowOrHeaderColumnFocus(event);
-  },
-
-  /*
-   * Handle focus on child row elements
-   */
-  focusin: function (event) {
-    // reset focusout timeout and busy state
-    this._clearFocusoutTimeout();
+    // clear styling on previous editable data cell if necessary
+    if (this._focusEditCell) {
+      this._focusEditCell.classList.remove(Table.CSS_CLASSES._TABLE_DATA_CELL_EDIT_CLASS);
+      this._focusEditCell = null;
+    }
+    this._setTableActionableMode(false, true);
     this._clearFocusoutBusyState();
+  }.bind(this), 100);
+};
 
+/**
+ * @private
+ */
+Table.prototype._handleFocusin = function (event, isPopupFocusin) {
+  // reset focusout timeout and busy state
+  this._clearFocusoutTimeout();
+  this._clearFocusoutBusyState();
+
+  if (!isPopupFocusin) {
+    this._clearOpenPopupListeners();
     var table = this._getTable();
     var tableBody = this._getTableBody();
     var tableContainer = this._getTableContainer();
@@ -11582,6 +11913,34 @@ Table.prototype._events = {
         table.focus();
       }, 0);
     }
+  }
+};
+
+/**
+ * @override
+ * @private
+ */
+Table.prototype._events = {
+  /*
+   * Reset the keyboard state on focusout and set the inactive
+   * selected rows
+   */
+  focusout: function (event) {
+    this._handleFocusout(event);
+  },
+
+  /*
+   * Check the keyboard state on focus
+   */
+  focus: function (event) {
+    this._checkRowOrHeaderColumnFocus(event);
+  },
+
+  /*
+   * Handle focus on child row elements
+   */
+  focusin: function (event) {
+    this._handleFocusin(event);
   },
 
   /*
@@ -12909,9 +13268,6 @@ Table.prototype._setCellInRowFocus = function (rowIdx, columnIdx, forwardSearch)
     return;
   }
   var tableBodyCells = this._getTableBodyCells(rowIdx);
-  if (!tableBodyCells) {
-    return;
-  }
 
   var tableBodyCellsCount = tableBodyCells.length;
   for (var i = 0; i < tableBodyCellsCount; i++) {
@@ -13209,9 +13565,10 @@ Table.prototype._updateColumnStateCellsClass = function (columnIdx, selected) {
  */
 Table.prototype._updateRowStateCellsClass = function (rowIdx, state) {
   var tableBodyCells = this._getTableBodyCells(rowIdx);
-  if (!tableBodyCells) {
+  if (tableBodyCells.length === 0) {
     return;
   }
+
   if (this._isDefaultSelectorEnabled()) {
     var tableBodyRow = this._getTableBodyRow(rowIdx);
     var selectorCell = this._getTableBodySelectorCell(tableBodyRow);
@@ -13619,15 +13976,9 @@ Table.prototype._getScrollTopByIndex = function (rowIndex) {
     return undefined;
   }
   var tableBodyRows = this._getTableBodyRows();
-  var elem = tableBodyRows[rowIndex];
-  if (elem != null) {
-    if (this._isStickyLayoutEnabled() && !this._isTableHeaderless()) {
-      var tableHeader = this._getTableHeader();
-      if (tableHeader != null) {
-        return elem.offsetTop - tableHeader.offsetHeight;
-      }
-    }
-    return elem.offsetTop;
+  var row = tableBodyRows[rowIndex];
+  if (row != null) {
+    return this._getLayoutManager().getRowScrollTop(row);
   }
   // we got here because one of the following happened:
   // 1) item has not been fetched yet
@@ -13647,13 +13998,7 @@ Table.prototype._getScrollTopByIndex = function (rowIndex) {
 Table.prototype._getScrollTopByKey = function (rowKey) {
   var row = this._findRowElementByKey(rowKey);
   if (row != null) {
-    if (this._isStickyLayoutEnabled() && !this._isTableHeaderless()) {
-      var tableHeader = this._getTableHeader();
-      if (tableHeader != null) {
-        return row.offsetTop - tableHeader.offsetHeight;
-      }
-    }
-    return row.offsetTop;
+    return this._getLayoutManager().getRowScrollTop(row);
   }
   // we got here because one of the following happened:
   // 1) item has not been fetched yet
@@ -13841,6 +14186,7 @@ Table.prototype._getColumnLocations = function () {
   * @private
   */
 Table.prototype._findClosestElementToTop = function (scrollPosition, currScrollTop) {
+  var layoutManager = this._getLayoutManager();
   var rows = this._getTableBodyRows();
   if (rows.length === 0) {
     return null;
@@ -13861,13 +14207,8 @@ Table.prototype._findClosestElementToTop = function (scrollPosition, currScrollT
   // ensure estimated index is valid
   index = Math.min(Math.max(index, 0), rows.length - 1);
 
-  var offsetTop;
   var elem = rows[index];
-  if (index === 0) {
-    offsetTop = 0;
-  } else {
-    offsetTop = elem.offsetTop - rows[0].offsetTop;
-  }
+  var offsetTop = layoutManager.getRowScrollTop(elem);
   var scrollTop = scrollPosition.y;
   var diff = scrollTop - offsetTop;
   var result = { index: index, elem: elem, offsetTop: offsetTop, offset: diff };
@@ -13890,7 +14231,7 @@ Table.prototype._findClosestElementToTop = function (scrollPosition, currScrollT
   while (!found && index >= 0 && index < rows.length) {
     var prevOffsetTop = offsetTop;
     elem = rows[index];
-    offsetTop = elem.offsetTop;
+    offsetTop = layoutManager.getRowScrollTop(elem);
     diff = Math.abs(scrollTop - offsetTop);
 
     found = (diff < 1) || (forward ? scrollTop <= offsetTop : scrollTop >= offsetTop);
@@ -13917,85 +14258,11 @@ Table.prototype._findClosestElementToTop = function (scrollPosition, currScrollT
 };
 
 /**
- * Handle scrollLeft on scroller
- * @private
- */
-Table.prototype._handleScrollerScrollLeft = function (scrollLeft) {
-  this._scrollLeft = scrollLeft;
-  this._getLayoutManager().handleScrollerScrollLeft(scrollLeft);
-};
-
-/**
- * Handle scrollTop on scroller
- * @private
- */
-Table.prototype._handleScrollerScrollTop = function (scrollTop) {
-  // if no domScroller is set, make sure scroll pos busy state is cleared here
-  if (!this._domScroller) {
-    this._clearScrollPosBusyState();
-  }
-  if (scrollTop < 0) {
-    // eslint-disable-next-line no-param-reassign
-    scrollTop = 0;
-  }
-  this._scrollTop = scrollTop;
-  // keep track when scrollTop is triggered internally (syncScrollPosition)
-  this._scrollY = this._skipScrollUpdate ? scrollTop : null;
-
-  // update mobile touch selection affordance if present
-  this._moveTableBodyRowTouchSelectionAffordanceTop();
-  this._moveTableBodyRowTouchSelectionAffordanceBottom();
-};
-
-/**
  * Register event listeners which need to be registered directly on the DOM element.
  * @private
  */
 Table.prototype._registerDomEventListeners = function () {
-  var layoutManager = this._getLayoutManager();
-  var scroller = layoutManager.getScroller();
-  if (scroller != null) {
-    // if width or height is defined then we can have scrollbars so register scroll event listeners
-    if (this._scrollEventListener == null) {
-      this._scrollEventListener = (function (event) {
-        var newScrollLeft = this._getElementScrollLeft(event.target);
-        var newScrollTop = event.target.scrollTop;
-        if (newScrollLeft === this._scrollLeft && newScrollTop === this._scrollTop) {
-          // discard bogus scroll event
-          return;
-        }
-
-        this._handleScrollerScrollLeft(newScrollLeft);
-        this._handleScrollerScrollTop(newScrollTop);
-
-        // do not update scrollPosition if we are already adjusting
-        if (this._isScrollPositionAdjusted()) {
-          return;
-        }
-
-        if (!this._skipScrollUpdate && !this._ticking) {
-          window.requestAnimationFrame(function () {
-            // scrollPosition could have been adjusted or a new value is set while waiting for animation frame
-            if (!this._isScrollPositionAdjusted() && !this._skipScrollUpdate) {
-              this.option('scrollPosition', this._getCurrentScrollPosition(), {
-                _context: {
-                  originalEvent: event,
-                  internalSet: true
-                }
-              });
-            }
-            this._ticking = false;
-          }.bind(this));
-          this._ticking = true;
-        }
-        this._skipScrollUpdate = false;
-      }.bind(this));
-    }
-    // remove the event listener before adding to make sure only one is active at a time
-    scroller.removeEventListener('scroll', this._scrollEventListener);
-    scroller.addEventListener('scroll', this._scrollEventListener, false);
-  }
-  layoutManager.registerScrollListeners();
+  this._getLayoutManager().registerScrollListeners();
 };
 
 /**
@@ -17105,7 +17372,7 @@ TableFixedLayoutManager.prototype._resetTableElementStyling = function () {
  * @private
  */
 TableFixedLayoutManager.prototype._removeTableDimensionsStyling = function () {
-  // no-op for fixed layout
+  this.unregisterScrollListeners();
 };
 
 /**
@@ -20412,6 +20679,9 @@ Table.prototype._getLayoutManager = function () {
  * @private
  */
 Table.prototype._clearLayoutManager = function () {
+  if (this._layoutManager != null) {
+    this._layoutManager.unregisterListeners();
+  }
   this._layoutManager = null;
 };
 

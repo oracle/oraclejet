@@ -201,3 +201,53 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
 export interface ojInputNumberSettablePropertiesLenient extends Partial<ojInputNumberSettableProperties> {
     [key: string]: any;
 }
+export type InputNumberElement = ojInputNumber;
+export namespace InputNumberElement {
+    interface ojAnimateEnd extends CustomEvent<{
+        action: string;
+        element: Element;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojAnimateStart extends CustomEvent<{
+        action: string;
+        element: Element;
+        endCallback: (() => void);
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type asyncValidatorsChanged = JetElementCustomEvent<ojInputNumber["asyncValidators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autocompleteChanged = JetElementCustomEvent<ojInputNumber["autocomplete"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type autofocusChanged = JetElementCustomEvent<ojInputNumber["autofocus"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type converterChanged = JetElementCustomEvent<ojInputNumber["converter"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type displayOptionsChanged = JetElementCustomEvent<ojInputNumber["displayOptions"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged = JetElementCustomEvent<ojInputNumber["labelledBy"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type maxChanged = JetElementCustomEvent<ojInputNumber["max"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type minChanged = JetElementCustomEvent<ojInputNumber["min"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged = JetElementCustomEvent<ojInputNumber["placeholder"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type rawValueChanged = JetElementCustomEvent<ojInputNumber["rawValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged = JetElementCustomEvent<ojInputNumber["readonly"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged = JetElementCustomEvent<ojInputNumber["required"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type stepChanged = JetElementCustomEvent<ojInputNumber["step"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type transientValueChanged = JetElementCustomEvent<ojInputNumber["transientValue"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validatorsChanged = JetElementCustomEvent<ojInputNumber["validators"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type valueChanged = JetElementCustomEvent<ojInputNumber["value"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged = JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
+}
