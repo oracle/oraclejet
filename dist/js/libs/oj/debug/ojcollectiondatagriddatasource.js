@@ -5,19 +5,11 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger', 'jquery'], function (exports, oj$1, ojdatasourceCommon, Logger, jquery) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger', 'jquery'], function (exports, oj, ojdatasourceCommon, Logger, jquery) { 'use strict';
 
-  oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
+  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-   /**
    * @export
    * @class CollectionCellSet
    * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
@@ -36,7 +28,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    */
   const CollectionCellSet = function (startRow, endRow, startColumn, endColumn, columns) {
     // assert startRow/startColumn are number
-    oj$1.Assert.assertArrayOrNull(columns);
+    oj.Assert.assertArrayOrNull(columns);
 
     this.m_startRow = startRow;
     this.m_endRow = endRow;
@@ -44,7 +36,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     this.m_endColumn = endColumn;
     this.m_columns = columns;
   };
-  oj$1._registerLegacyNamespaceProp('CollectionCellSet', CollectionCellSet);
+  oj._registerLegacyNamespaceProp('CollectionCellSet', CollectionCellSet);
 
   /**
    * Sets the models used in this cell set.
@@ -53,7 +45,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @private
    */
   CollectionCellSet.prototype.setModels = function (models) {
-    oj$1.Assert.assertArray(models);
+    oj.Assert.assertArray(models);
     // make sure the array size is valid
     if (models != null && models.length === this.getCount('row')) {
       this.m_models = models;
@@ -118,7 +110,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     var column = indexes.column;
 
     var keys = {
-      row: oj$1.CollectionDataGridUtils._getModelKey(model),
+      row: oj.CollectionDataGridUtils._getModelKey(model),
       column: this.m_columns[column]
     };
     return { keys: keys };
@@ -135,14 +127,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
       return null;
     }
 
-    oj$1.Assert.assertObject(indexes);
+    oj.Assert.assertObject(indexes);
 
       // extract row and column index
     var row = indexes.row;
     var column = indexes.column;
 
       // make sure index are valid
-    oj$1.Assert.assert(row >= this.m_startRow &&
+    oj.Assert.assert(row >= this.m_startRow &&
                      row <= this.m_endRow &&
                      column >= this.m_startColumn &&
                      column <= this.m_endColumn);
@@ -254,14 +246,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class CollectionDataGridDataSource
    * @classdesc A Collection based implementation of the DataGridDataSource.
    * @see Collection
@@ -288,9 +272,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     CollectionDataGridDataSource.superclass.constructor.call(this);
   };
 
-  oj$1._registerLegacyNamespaceProp('CollectionDataGridDataSource', CollectionDataGridDataSource);
+  oj._registerLegacyNamespaceProp('CollectionDataGridDataSource', CollectionDataGridDataSource);
   // subclass of DataGridDataSource
-  oj$1.Object.createSubclass(CollectionDataGridDataSource, oj$1.DataGridDataSource,
+  oj.Object.createSubclass(CollectionDataGridDataSource, oj.DataGridDataSource,
                            'oj.CollectionDataGridDataSource');
 
   /**
@@ -420,10 +404,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     // still fetching, just store the callback info
     if (callbacks != null) {
       var axis = headerRange.axis;
-      var callback = {};
-      callback.headerRange = headerRange;
-      callback.callbacks = callbacks;
-      callback.callbackObjects = callbackObjects;
+      var callback = { headerRange: headerRange,
+        callbacks: callbacks,
+        callbackObjects: callbackObjects };
       this.pendingHeaderCallback[axis] = callback;
     }
   };
@@ -462,7 +445,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
       // column headers, this.columns should be populated by now
       if (this.columns != null) {
         end = Math.min(this.columns.length, start + count);
-        headerSet = new oj$1.CollectionHeaderSet(start, end, this.columns, undefined, this._sortInfo);
+        headerSet = new oj.CollectionHeaderSet(start, end, this.columns, undefined, this._sortInfo);
       }
     } else if (axis === 'row') {
       // row headers, return non-empty header set if row header is specified
@@ -473,7 +456,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
         }
         end = Math.min(this._size(), start + count);
 
-        headerSet = new oj$1.CollectionHeaderSet(start, end, this.columns, this.rowHeader);
+        headerSet = new oj.CollectionHeaderSet(start, end, this.columns, this.rowHeader);
         // resolve any promises before invoking callbacks
         this._resolveModels(start, end, headerSet, headerRange, callbacks, callbackObjects);
 
@@ -561,7 +544,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     var colEnd = Math.min(this.columns == null ? 0 : this.columns.length, colStart + ranges.colCount);
 
     // resolves models at row range
-    var cellSet = new oj$1.CollectionCellSet(rowStart, rowEnd, colStart, colEnd, this.columns);
+    var cellSet = new oj.CollectionCellSet(rowStart, rowEnd, colStart, colEnd, this.columns);
     this._resolveModels(rowStart, rowEnd, cellSet, cellRanges, callbacks, callbackObjects);
   };
 
@@ -863,7 +846,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
         if (rowModel == null) {
           resolve({ row: null, column: null });
         } else {
-          var rowKey = oj$1.CollectionDataGridUtils._getModelKey(rowModel);
+          var rowKey = oj.CollectionDataGridUtils._getModelKey(rowModel);
           if (self.columns == null) {
             self._setupColumns(rowModel);
           }
@@ -1189,11 +1172,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
   CollectionDataGridDataSource.prototype._getModelEvent = function (
     operation, rowKey, columnKey, rowIndex, columnIndex
   ) {
-    var event = {};
-    event.source = this;
-    event.operation = operation;
-    event.keys = { row: rowKey, column: columnKey };
-    event.indexes = { row: rowIndex, column: columnIndex };
+    var event = { source: this,
+      operation: operation,
+      keys: { row: rowKey, column: columnKey },
+      indexes: { row: rowIndex, column: columnIndex } };
     return event;
   };
 
@@ -1207,7 +1189,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    */
   // eslint-disable-next-line no-unused-vars
   CollectionDataGridDataSource.prototype._handleModelAdded = function (model, collection, args) {
-    var rowKey = oj$1.CollectionDataGridUtils._getModelKey(model);
+    var rowKey = oj.CollectionDataGridUtils._getModelKey(model);
     var event = this._getModelEvent('insert', rowKey, null, model.index, -1);
     this.handleEvent('change', event);
   };
@@ -1221,7 +1203,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @memberof CollectionDataGridDataSource
    */
   CollectionDataGridDataSource.prototype._handleModelDeleted = function (model, collection, args) {
-    var rowKey = oj$1.CollectionDataGridUtils._getModelKey(model);
+    var rowKey = oj.CollectionDataGridUtils._getModelKey(model);
     var event = this._getModelEvent('delete', rowKey, null, args.index, -1);
     this.handleEvent('change', event);
   };
@@ -1237,7 +1219,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
   // eslint-disable-next-line no-unused-vars
   CollectionDataGridDataSource.prototype._handleModelChanged = function (model, collection, args) {
     // pass the indexes into the grid on model change
-    var rowKey = oj$1.CollectionDataGridUtils._getModelKey(model);
+    var rowKey = oj.CollectionDataGridUtils._getModelKey(model);
     var event = this._getModelEvent('update', rowKey, null, model.index, -1);
     this.handleEvent('change', event);
   };
@@ -1328,21 +1310,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * This class contains all utility methods used by the data grid collection model.
    * @constructor
    * @private
    */
   const CollectionDataGridUtils = function () {
   };
-  oj$1._registerLegacyNamespaceProp('CollectionDataGridUtils', CollectionDataGridUtils);
+  oj._registerLegacyNamespaceProp('CollectionDataGridUtils', CollectionDataGridUtils);
 
   /**
    * Returns the key of the model. It is the id if one is set otherwise
@@ -1358,14 +1332,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     }
     return key;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @export
@@ -1386,7 +1352,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    */
   const CollectionHeaderSet = function (start, end, headers, rowHeader, sortInfo) {
     // assert start/end are number
-    oj$1.Assert.assertArrayOrNull(headers);
+    oj.Assert.assertArrayOrNull(headers);
 
     this.m_start = start;
     this.m_end = end;
@@ -1394,7 +1360,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     this.m_rowHeader = rowHeader;
     this.m_sortInfo = sortInfo;
   };
-  oj$1._registerLegacyNamespaceProp('CollectionHeaderSet', CollectionHeaderSet);
+  oj._registerLegacyNamespaceProp('CollectionHeaderSet', CollectionHeaderSet);
+
+  /**
+   * @ignore
+   */
+  CollectionHeaderSet.INDEX_OUT_OF_BOUNDS = 'index out of bounds';
+
+  /**
+   * @ignore
+   */
+  CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS = 'level out of bounds';
 
   /**
    * Sets the models used in this header set.
@@ -1403,7 +1379,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @memberof CollectionHeaderSet
    */
   CollectionHeaderSet.prototype.setModels = function (models) {
-    oj$1.Assert.assertArray(models);
+    oj.Assert.assertArray(models);
     // make sure the array size is valid
     if (models != null && models.length === this.getCount()) {
       this.m_models = models;
@@ -1426,8 +1402,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     var model;
 
     // make sure index/level are valid
-    oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+    oj.Assert.assert(index <= this.m_end && index >= this.m_start,
+      CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+    oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
 
     // row or column header
     if (this.m_rowHeader != null) {
@@ -1458,8 +1435,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @memberof CollectionHeaderSet
    */
   CollectionHeaderSet.prototype.getMetadata = function (index, level) {
-    oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+    oj.Assert.assert(index <= this.m_end && index >= this.m_start,
+      CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+    oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
 
     // row header case
     if (this.m_rowHeader != null) {
@@ -1468,7 +1446,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
       }
 
       var model = this.m_models[index - this.m_start];
-      return { key: oj$1.CollectionDataGridUtils._getModelKey(model) };
+      return { key: oj.CollectionDataGridUtils._getModelKey(model) };
     }
 
     var data = this.getData(index, level);
@@ -1518,8 +1496,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @memberof CollectionHeaderSet
    */
   CollectionHeaderSet.prototype.getExtent = function (index, level) {
-    oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+    oj.Assert.assert(index <= this.m_end && index >= this.m_start,
+      CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+    oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
     return { extent: 1, more: { before: false, after: false } };
   };
 
@@ -1550,8 +1529,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
    * @memberof CollectionHeaderSet
    */
   CollectionHeaderSet.prototype.getDepth = function (index, level) {
-    oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+    oj.Assert.assert(index <= this.m_end && index >= this.m_start,
+      CollectionHeaderSet.INDEX_OUT_OF_BOUNDS);
+    oj.Assert.assert(level == null || level === 0, CollectionHeaderSet.LEVEL_OUT_OF_BOUNDS);
     return 1;
   };
 
@@ -1610,25 +1590,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger',
     return this.m_rowHeader;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
-
-  var CollectionDataGridDataSource$1 = {};
-  CollectionDataGridDataSource$1.CollectionDataGridDataSource = oj.CollectionDataGridDataSource;
-  CollectionDataGridDataSource$1.CollectionHeaderSet = oj.CollectionHeaderSet;
-  CollectionDataGridDataSource$1.CollectionCellSet = oj.CollectionCellSet;
-
   exports.CollectionCellSet = CollectionCellSet;
   exports.CollectionDataGridDataSource = CollectionDataGridDataSource;
   exports.CollectionDataGridUtils = CollectionDataGridUtils;
   exports.CollectionHeaderSet = CollectionHeaderSet;
-  exports.default = CollectionDataGridDataSource$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -12,14 +12,6 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/ojdiagr
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
    * @ignore
    */
@@ -48,7 +40,18 @@ var __oj_diagram_metadata =
       "value": ""
     },
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "dnd": {
       "type": "object",
@@ -245,7 +248,18 @@ var __oj_diagram_metadata =
       }
     },
     "linkData": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "linkHighlightMode": {
       "type": "string",
@@ -287,7 +301,18 @@ var __oj_diagram_metadata =
       }
     },
     "nodeData": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "nodeHighlightMode": {
       "type": "string",
@@ -832,7 +857,7 @@ var __oj_diagram_node_metadata =
       "value": "auto"
     },
     "shortDesc": {
-      "type": "string",
+      "type": "string|function",
       "value": ""
     },
     "showDisclosure": {
@@ -919,7 +944,7 @@ var __oj_diagram_link_metadata =
       "value": "auto"
     },
     "shortDesc": {
-      "type": "string",
+      "type": "string|function",
       "value": ""
     },
     "startConnectorType": {
@@ -959,24 +984,8 @@ var __oj_diagram_link_metadata =
     });
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   oj._registerLegacyNamespaceProp('DiagramUtils', DiagramUtils);
   // bleed DiagramUtils into oj to keep backward compatibility
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Internal implementation of the oj.DiagramDataSource dedicated to convert
@@ -1111,14 +1120,6 @@ var __oj_diagram_link_metadata =
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojDiagram
    * @augments oj.dvtBaseComponent
    * @since 1.1.0
@@ -1178,7 +1179,7 @@ var __oj_diagram_link_metadata =
    * See {@link oj.ojDiagram#layout} for additional information on layout API.</p>
    *
    * <p>In the case when the node positions are known in advance or derived from an external layout engine,
-   * the layout can be generated using [layout helper utility]{@link oj.DiagramUtils}.</p>
+   * the layout can be generated using [layout helper utility]{@link DiagramUtils}.</p>
    *
    * {@ojinclude "name":"a11yKeyboard"}
    *
@@ -1234,7 +1235,7 @@ var __oj_diagram_link_metadata =
          * @name animationOnDataChange
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -1259,7 +1260,7 @@ var __oj_diagram_link_metadata =
          * @name animationOnDisplay
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -1285,7 +1286,7 @@ var __oj_diagram_link_metadata =
          * @name dnd
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          *
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">dnd</code> attribute specified:</caption>
@@ -1318,7 +1319,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           drag: null,
           /**
@@ -1328,7 +1329,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.nodes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" option, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
@@ -1337,7 +1338,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.nodes.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1347,7 +1348,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.nodes.drag
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event)}
+           * @type {(function(Event))=}
            * @default null
            */
           /**
@@ -1357,7 +1358,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.nodes.dragEnd
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event)}
+           * @type {(function(Event))=}
            * @default null
            */
           /**
@@ -1372,7 +1373,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.nodes.dragStart
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {nodes: oj.ojDiagram.DndNodeContext<K1,D1>[]}) => void)", jsdocOverride: true}
            */
@@ -1383,7 +1384,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            * An optional callback function for customizing link feedback based on a starting node and a port.
@@ -1408,7 +1409,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.linkStyle
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object)}
+           * @type {(function(Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: CSSStyleDeclaration, svgClassName?: string} | null))", jsdocOverride: true}
            */
@@ -1419,7 +1420,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.selector
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @default null
            */
           /**
@@ -1429,7 +1430,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1439,7 +1440,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.drag
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event)}
+           * @type {(function(Event))=}
            * @default null
            */
           /**
@@ -1449,7 +1450,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.dragEnd
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event)}
+           * @type {(function(Event))=}
            * @default null
            */
           /**
@@ -1468,7 +1469,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drag.ports.dragStart
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {ports: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}}) => void)", jsdocOverride: true}
            */
@@ -1478,7 +1479,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           drop: null
           /**
@@ -1487,7 +1488,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            * An array of MIME data types the Diagram background can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -1496,7 +1497,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1508,7 +1509,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background.dragEnter
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
            */
@@ -1521,7 +1522,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background.dragOver
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
            */
@@ -1533,7 +1534,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background.dragLeave
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
            */
@@ -1546,7 +1547,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.background.drop
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number}) => void)", jsdocOverride: true}
            */
@@ -1556,7 +1557,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            *  An array of MIME data types the Diagram nodes can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -1565,7 +1566,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1577,7 +1578,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes.dragEnter
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
            */
@@ -1590,7 +1591,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes.dragOver
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
            */
@@ -1602,7 +1603,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes.dragLeave
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
            */
@@ -1615,7 +1616,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.nodes.drop
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, nodeContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => void)", jsdocOverride: true}
            */
@@ -1625,7 +1626,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            * An array of MIME data types the Diagram links can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
@@ -1634,7 +1635,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1646,7 +1647,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links.dragEnter
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {
            *  target: "Type",
@@ -1662,7 +1663,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links.dragOver
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {
            *  target: "Type",
@@ -1677,7 +1678,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links.dragLeave
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {
            *  target: "Type",
@@ -1693,7 +1694,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.links.drop
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {
            *  target: "Type",
@@ -1706,7 +1707,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           /**
            * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
@@ -1725,7 +1726,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports.dataTypes
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string|Array.<string>}
+           * @type {(string|Array.<string>)=}
            * @default null
            */
           /**
@@ -1737,7 +1738,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports.dragEnter
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
            */
@@ -1750,7 +1751,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports.dragOver
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
            */
@@ -1762,7 +1763,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports.dragLeave
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
            */
@@ -1775,7 +1776,7 @@ var __oj_diagram_link_metadata =
            * @name dnd.drop.ports.drop
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Event, Object)}
+           * @type {(function(Event, Object))=}
            * @default null
            * @ojsignature {target: "Type", value: "((event: Event, context: {x: number, y: number, nodeX: number, nodeY: number, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>, portElement: Element}) => void)", jsdocOverride: true}
            */
@@ -1790,7 +1791,7 @@ var __oj_diagram_link_metadata =
          * @name expanded
          * @memberof oj.ojDiagram
          * @instance
-         * @type {KeySet}
+         * @type {KeySet=}
          * @default new KeySetImpl()
          * @ojsignature {target:"Type", value:"oj.KeySet<K1>"}
          * @ojwriteback
@@ -1808,7 +1809,7 @@ var __oj_diagram_link_metadata =
          * @name selection
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Array.<any>}
+         * @type {(Array.<any>)=}
          * @ojsignature {target:"Type", value:"Array<K1|K2>"}
          * @default []
          * @ojwriteback
@@ -1843,7 +1844,7 @@ var __oj_diagram_link_metadata =
          * @memberof oj.ojDiagram
          * @ojshortdesc Specifies the selection behavior on the diagram. See the Help documentation for more information.
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "none" Selection is disabled.
          * @ojvalue {string} "single" Only a single item can be selected at a time.
          * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
@@ -1868,7 +1869,7 @@ var __oj_diagram_link_metadata =
          * @name panning
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "fixed" {"description": "Panning is restricted to the visible region when the diagram is rendered at minZoom."}
          * @ojvalue {string} "centerContent" {"description": "Panning is restricted based on the current zoom level to allow any area of the content to be centered. If an overview is being rendered, the overview.fitArea property should also be set to 'content' in most situations."}
          * @ojvalue {string} "none" {"description": "Panning is not allowed."}
@@ -1894,7 +1895,7 @@ var __oj_diagram_link_metadata =
          * @name panDirection
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "x"
          * @ojvalue {string} "y"
          * @ojvalue {string} "auto"
@@ -1919,7 +1920,7 @@ var __oj_diagram_link_metadata =
          * @name tooltip
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          *
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">tooltip</code> attribute specified:</caption>
@@ -1968,7 +1969,7 @@ var __oj_diagram_link_metadata =
          * @name zooming
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -1996,7 +1997,7 @@ var __oj_diagram_link_metadata =
          * @name minZoom
          * @memberof oj.ojDiagram
          * @instance
-         * @type {number}
+         * @type {number=}
          * @default 0.0
          *
          * @example <caption>Initialize the diagram with the
@@ -2022,7 +2023,7 @@ var __oj_diagram_link_metadata =
          * @name maxZoom
          * @memberof oj.ojDiagram
          * @instance
-         * @type {number}
+         * @type {number=}
          * @default 1.0
          *
          * @example <caption>Initialize the diagram with the
@@ -2045,7 +2046,7 @@ var __oj_diagram_link_metadata =
          * @name hiddenCategories
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Array.<string>}
+         * @type {(Array.<string>)=}
          * @default []
          * @ojwriteback
          *
@@ -2071,7 +2072,7 @@ var __oj_diagram_link_metadata =
          * @name hoverBehavior
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "dim"
          * @ojvalue {string} "none"
          * @default "none"
@@ -2096,7 +2097,7 @@ var __oj_diagram_link_metadata =
          * @name highlightedCategories
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Array.<string>}
+         * @type {(Array.<string>)=}
          * @default []
          * @ojwriteback
          *
@@ -2124,7 +2125,7 @@ var __oj_diagram_link_metadata =
          * @name highlightMatch
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "any"
          * @ojvalue {string} "all"
          * @default "all"
@@ -2148,7 +2149,7 @@ var __oj_diagram_link_metadata =
          * @name nodeHighlightMode
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "nodeAndIncomingLinks"
          * @ojvalue {string} "nodeAndOutgoingLinks"
          * @ojvalue {string} "nodeAndLinks"
@@ -2174,7 +2175,7 @@ var __oj_diagram_link_metadata =
          * @name linkHighlightMode
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "linkAndNodes"
          * @ojvalue {string} "link"
          * @default "link"
@@ -2198,7 +2199,7 @@ var __oj_diagram_link_metadata =
          * @name linkContent
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">link-content</code> attribute specified:</caption>
          * <!-- Using dot notation -->
@@ -2272,7 +2273,7 @@ var __oj_diagram_link_metadata =
            * @name linkContent.hoverRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):Object|null}
+           * @type {(function(Object):Object|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2293,7 +2294,7 @@ var __oj_diagram_link_metadata =
            * @name linkContent.selectionRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):Object|null}
+           * @type {(function(Object):Object|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2315,7 +2316,7 @@ var __oj_diagram_link_metadata =
            * @name linkContent.focusRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):Object|null}
+           * @type {(function(Object):Object|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.LinkRendererContext<K1,K2,D2>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2327,7 +2328,7 @@ var __oj_diagram_link_metadata =
          * @name nodeContent
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">node-content</code> attribute specified:</caption>
          * <!-- Using dot notation -->
@@ -2388,7 +2389,7 @@ var __oj_diagram_link_metadata =
            * @name nodeContent.hoverRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):(Object|void)|null}
+           * @type {(function(Object):(Object|void)|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2410,7 +2411,7 @@ var __oj_diagram_link_metadata =
            * @name nodeContent.selectionRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):(Object|void)|null}
+           * @type {(function(Object):(Object|void)|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2432,7 +2433,7 @@ var __oj_diagram_link_metadata =
            * @name nodeContent.focusRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):(Object|void)|null}
+           * @type {(function(Object):(Object|void)|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2454,7 +2455,7 @@ var __oj_diagram_link_metadata =
            * @name nodeContent.zoomRenderer
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {function(Object):(Object|void)|null}
+           * @type {(function(Object):(Object|void)|null)=}
            * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
            * @default null
            */
@@ -2473,7 +2474,7 @@ var __oj_diagram_link_metadata =
          * @name renderer
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(Object):(Object)}
+         * @type {(function(Object):(Object))=}
          * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => ({insert: SVGElement}))", jsdocOverride: true}
          * @default null
          *
@@ -2504,7 +2505,7 @@ var __oj_diagram_link_metadata =
          * @name hoverRenderer
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(Object):(Object|void)|null}
+         * @type {(function(Object):(Object|void)|null)=}
          * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
          * @default null
          *
@@ -2535,7 +2536,7 @@ var __oj_diagram_link_metadata =
          * @name selectionRenderer
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(Object):(Object|void)|null}
+         * @type {(function(Object):(Object|void)|null)=}
          * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
          * @default null
          *
@@ -2567,7 +2568,7 @@ var __oj_diagram_link_metadata =
          * @name focusRenderer
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(Object):(Object|void)|null}
+         * @type {(function(Object):(Object|void)|null)=}
          * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
          * @default null
          *
@@ -2598,7 +2599,7 @@ var __oj_diagram_link_metadata =
          * @name zoomRenderer
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(Object):(Object|void)|null}
+         * @type {(function(Object):(Object|void)|null)=}
          * @ojsignature {target: "Type", value: "((context: oj.ojDiagram.RendererContext<K1,D1>) => {insert: SVGElement}|void)|null", jsdocOverride: true}
          * @default null
          *
@@ -2614,7 +2615,7 @@ var __oj_diagram_link_metadata =
          */
         zoomRenderer: null,
         /**
-         * The data source for the Diagram element. See <a href="oj.DiagramDataSource.html">oj.DiagramDataSource</a> for details.
+         * The data source for the Diagram element. See <a href="DiagramDataSource.html">oj.DiagramDataSource</a> for details.
          * @ojshortdesc Specifies the data for the component.
          * @ojdeprecated {since: '6.0.0', description: 'Use nodeData and linkData instead.'}
          * @ojtsignore
@@ -2624,6 +2625,8 @@ var __oj_diagram_link_metadata =
          * @instance
          * @type {Object}
          * @default null
+         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the diagram with the <code class="prettyprint">data</code> attribute specified:</caption>
          * &lt;oj-diagram data='{{myDataSource}}'>&lt;/oj-diagram>
@@ -2642,15 +2645,18 @@ var __oj_diagram_link_metadata =
          * The row key will be used as the id for diagram links. Note that when
          * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
          * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-link> element must be specified
-         * in the linkTemplate slot or it can have oj.ojDiagram.Link{@link oj.ojDiagram#Link} as its data shape, in which case no template is required.
+         * in the linkTemplate slot or it can have oj.ojDiagram.Link{@link oj.ojDiagram.Link} as its data shape, in which case no template is required.
          * @expose
          * @name linkData
          * @ojshortdesc Specifies the DataProvider for the diagram links. See the Help documentation for more information.
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object|null}
+         * @type {(Object|null)=}
          * @ojsignature {target: "Type", value: "DataProvider<K2, D2>|null", jsdocOverride:true}
          * @default null
+         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+         *
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">link-data</code> attribute specified:</caption>
          * &lt;oj-diagram link-data='[[linkDataProvider]]' node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
@@ -2669,7 +2675,7 @@ var __oj_diagram_link_metadata =
          * The row key will be used as the id for diagram nodes. Note that when
          * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
          * The DataProvider can either have an arbitrary data shape, in which case an <oj-diagram-node> element must be specified
-         * in the nodeTemplate slot or it can have oj.ojDiagram.Node{@link oj.ojDiagram#Node} as its data shape, in which case no template is required.
+         * in the nodeTemplate slot or it can have oj.ojDiagram.Node{@link oj.ojDiagram.Node} as its data shape, in which case no template is required.
          * @expose
          * @name nodeData
          * @ojshortdesc Specifies the DataProvider for the diagram nodes. See the Help documentation for more information.
@@ -2678,6 +2684,9 @@ var __oj_diagram_link_metadata =
          * @type {Object|null}
          * @ojsignature {target: "Type", value: "DataProvider<K1, D1>|null", jsdocOverride:true}
          * @default null
+         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+         *
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">node-data</code> attribute specified:</caption>
          * &lt;oj-diagram node-data='[[nodeDataProvider]]'>&lt;/oj-diagram>
@@ -2698,7 +2707,7 @@ var __oj_diagram_link_metadata =
         * @memberof oj.ojDiagram
         * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate or linkTemplate slots.
         * @instance
-        * @type {string}
+        * @type {string=}
         * @default ""
         * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
         **/
@@ -2731,7 +2740,7 @@ var __oj_diagram_link_metadata =
          * @name linkProperties
          * @memberof oj.ojDiagram
          * @instance
-         * @type {null|function(Object):Object}
+         * @type {(null|function(Object):Object)=}
          * @default null
          */
         linkProperties: null,
@@ -2787,7 +2796,7 @@ var __oj_diagram_link_metadata =
          * @name nodeProperties
          * @memberof oj.ojDiagram
          * @instance
-         * @type {null|function(Object):Object}
+         * @type {(null|function(Object):Object)=}
          * @default null
          */
         nodeProperties: null,
@@ -2799,7 +2808,7 @@ var __oj_diagram_link_metadata =
          * @name promotedLinkBehavior
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "none"
          * @ojvalue {string} "full"
          * @ojvalue {string} "lazy"
@@ -2824,7 +2833,7 @@ var __oj_diagram_link_metadata =
          * @name overview
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          *
          * @example <caption>Initialize the diagram with the
          * <code class="prettyprint">overview</code> attribute specified:</caption>
@@ -2858,7 +2867,7 @@ var __oj_diagram_link_metadata =
            * @ojshortdesc Specifies whether the overview scrollbar is rendered.
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "on"
            * @ojvalue {string} "off"
            * @default "off"
@@ -2870,7 +2879,7 @@ var __oj_diagram_link_metadata =
            * @name overview.fitArea
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "content" {"description": "The bounding box of the Diagram nodes will be scaled to fit within the overview."}
            * @ojvalue {string} "canvas" {"description": "The canvas (the <a href='oj.ojDiagram.html#panning'>pannable</a> area when the diagram is at minZoom) will be scaled to fit within the overview. The diagram panning property should also be set to 'fixed' in most situations."}
            * @default "content"
@@ -2882,7 +2891,7 @@ var __oj_diagram_link_metadata =
            * @name overview.preserveAspectRatio
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "none" {"description": "The aspect ratio of the fit area may not be preserved as it is scaled to fit the overview."}
            * @ojvalue {string} "meet" {"description": "The aspect ratio of the fit area will be preserved as it is scaled to fit the overview."}
            * @default "meet"
@@ -2896,7 +2905,7 @@ var __oj_diagram_link_metadata =
            * @name overview.width
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {number}
+           * @type {number=}
            * @default 200
            */
           width: 200,
@@ -2908,7 +2917,7 @@ var __oj_diagram_link_metadata =
            * @name overview.height
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {number}
+           * @type {number=}
            * @default 100
            */
           height: 100,
@@ -2918,7 +2927,7 @@ var __oj_diagram_link_metadata =
            * @name overview.halign
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "start"
            * @ojvalue {string} "end"
            * @ojvalue {string} "center"
@@ -2931,7 +2940,7 @@ var __oj_diagram_link_metadata =
            * @name overview.valign
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "top"
            * @ojvalue {string} "bottom"
            * @ojvalue {string} "middle"
@@ -2945,7 +2954,7 @@ var __oj_diagram_link_metadata =
          * @name styleDefaults
          * @memberof oj.ojDiagram
          * @instance
-         * @type {Object}
+         * @type {Object=}
          *
          * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
          * property after initialization:</caption>
@@ -2972,7 +2981,7 @@ var __oj_diagram_link_metadata =
            * @name styleDefaults.animationDuration
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {number}
+           * @type {number=}
            * @ojunits milliseconds
            */
           /**
@@ -2982,7 +2991,7 @@ var __oj_diagram_link_metadata =
            * @ojshortdesc Specifies initial hover delay in milliseconds for highlighting data items.
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {number}
+           * @type {number=}
            * @default 200
            * @ojunits milliseconds
            */
@@ -2993,7 +3002,7 @@ var __oj_diagram_link_metadata =
            * @name styleDefaults.nodeDefaults
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           nodeDefaults: {
             /**
@@ -3004,7 +3013,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.nodeDefaults.labelStyle
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {Object}
+             * @type {Object=}
              * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              * @default {}
              */
@@ -3015,7 +3024,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.nodeDefaults.showDisclosure
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "off"
              * @ojvalue {string} "on"
              * @default "on"
@@ -3027,7 +3036,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.nodeDefaults.icon
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {Object}
+             * @type {Object=}
              */
             icon: {
               /**
@@ -3036,7 +3045,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.borderColor
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                * @ojformat color
                */
               /**
@@ -3046,7 +3055,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.borderRadius
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                */
               /**
                * Default border width of the icon in pixels.
@@ -3054,7 +3063,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.borderWidth
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {number}
+               * @type {number=}
                * @ojunits pixels
                */
               /**
@@ -3063,7 +3072,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.color
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                * @ojformat color
                */
               /**
@@ -3072,7 +3081,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.pattern
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                * @ojvalue {string} "smallChecker"
                * @ojvalue {string} "smallCrosshatch"
                * @ojvalue {string} "smallDiagonalLeft"
@@ -3106,7 +3115,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.source
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                */
               /**
                * The optional URI of the node hover image. If not defined, the source image will be used.
@@ -3115,7 +3124,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.sourceHover
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                */
               /**
                * The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
@@ -3124,7 +3133,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.sourceHoverSelected
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                */
               /**
                * The optional URI of the selected image. If not defined, the source image will be used.
@@ -3133,7 +3142,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.sourceSelected
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                */
               /**
                * Default icon width.
@@ -3141,7 +3150,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.width
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {number}
+               * @type {number=}
                * @default 10
                * @ojunits pixels
                */
@@ -3152,7 +3161,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.height
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {number}
+               * @type {number=}
                * @default 10
                * @ojunits pixels
                */
@@ -3165,7 +3174,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.svgStyle
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {Object}
+               * @type {Object=}
                * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
                * @default {}
                */
@@ -3175,7 +3184,7 @@ var __oj_diagram_link_metadata =
                * @name styleDefaults.nodeDefaults.icon.svgClassName
                * @memberof! oj.ojDiagram
                * @instance
-               * @type {string}
+               * @type {string=}
                * @default ""
                */
               svgClassName: ''
@@ -3187,7 +3196,7 @@ var __oj_diagram_link_metadata =
            * @name styleDefaults.linkDefaults
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           linkDefaults: {
             /**
@@ -3197,7 +3206,7 @@ var __oj_diagram_link_metadata =
              * @ojshortdesc Default link color.
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             /**
@@ -3208,7 +3217,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.svgStyle
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {Object}
+             * @type {Object=}
              * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              * @default {}
              */
@@ -3218,7 +3227,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.svgClassName
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @default ""
              */
             svgClassName: '',
@@ -3228,7 +3237,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.width
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {number}
+             * @type {number=}
              * @ojunits pixels
              * @default 1.0
              */
@@ -3242,7 +3251,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.labelStyle
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {Object}
+             * @type {Object=}
              * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              */
             labelStyle: {},
@@ -3252,7 +3261,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.startConnectorType
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "arrowOpen"
              * @ojvalue {string} "arrow"
              * @ojvalue {string} "arrowConcave"
@@ -3269,7 +3278,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.linkDefaults.endConnectorType
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "arrowOpen"
              * @ojvalue {string} "arrow"
              * @ojvalue {string} "arrowConcave"
@@ -3287,7 +3296,7 @@ var __oj_diagram_link_metadata =
            * @name styleDefaults.promotedLink
            * @memberof! oj.ojDiagram
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           promotedLink: {
             /**
@@ -3296,7 +3305,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.color
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             color: '#778999',
@@ -3308,7 +3317,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.svgStyle
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {Object}
+             * @type {Object=}
              * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              * @default {}
              */
@@ -3318,7 +3327,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.svgClassName
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @default ""
              */
             svgClassName: '',
@@ -3328,7 +3337,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.width
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {number}
+             * @type {number=}
              * @ojunits pixels
              * @default 1.0
              */
@@ -3339,7 +3348,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.startConnectorType
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "arrowOpen"
              * @ojvalue {string} "arrow"
              * @ojvalue {string} "arrowConcave"
@@ -3356,7 +3365,7 @@ var __oj_diagram_link_metadata =
              * @name styleDefaults.promotedLink.endConnectorType
              * @memberof! oj.ojDiagram
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "arrowOpen"
              * @ojvalue {string} "arrow"
              * @ojvalue {string} "arrowConcave"
@@ -3377,7 +3386,7 @@ var __oj_diagram_link_metadata =
          * @name touchResponse
          * @memberof oj.ojDiagram
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "touchStart"
          * @ojvalue {string} "auto"
          * @default "auto"
@@ -3402,7 +3411,7 @@ var __oj_diagram_link_metadata =
          * @name layout
          * @memberof oj.ojDiagram
          * @instance
-         * @type {function(DvtDiagramLayoutContext):void}
+         * @type {(function(DvtDiagramLayoutContext):void)=}
          * @see <a href="oj.DvtDiagramLayoutContext.html">DvtDiagramLayoutContext</a>
          * @see <a href="oj.DvtDiagramLayoutContextLink.html">DvtDiagramLayoutContextLink</a>
          * @see <a href="oj.DvtDiagramLayoutContextNode.html">DvtDiagramLayoutContextNode</a>
@@ -3464,7 +3473,7 @@ var __oj_diagram_link_metadata =
         collapse: null
       },
 
-      //* * @inheritdoc */
+
       _InitOptions: function (originalDefaults, constructorOptions) {
         this._super(originalDefaults, constructorOptions);
 
@@ -3475,7 +3484,7 @@ var __oj_diagram_link_metadata =
         this.options.styleDefaults = styleDefaults;
       },
 
-      //* * @inheritdoc */
+
       _ProcessOptions: function () {
         this._super();
         this.options._logger = Logger;
@@ -3530,14 +3539,14 @@ var __oj_diagram_link_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _IsDraggable: function () {
         var dragObj = this.options.dnd ? this.options.dnd.drag : null;
         return (dragObj.nodes && Object.keys(dragObj.nodes).length > 0) ||
           (dragObj.ports && Object.keys(dragObj.ports).length > 0);
       },
 
-      //* * @inheritdoc */
+
       _GetComponentRendererOptions: function () {
         return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
                 { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' },
@@ -3551,7 +3560,7 @@ var __oj_diagram_link_metadata =
                 { path: 'linkContent/selectionRenderer', slot: 'linkContentTemplate' }];
       },
 
-      //* * @inheritdoc */
+
       _SetupResources: function () {
         this._super();
         if (this._component) {
@@ -3559,7 +3568,7 @@ var __oj_diagram_link_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _ReleaseResources: function () {
         this._super();
         if (this._component) {
@@ -3683,12 +3692,12 @@ var __oj_diagram_link_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _CreateDvtComponent: function (context, callback, callbackObj) {
         return ojdiagramToolkit.Diagram.newInstance(context, callback, callbackObj);
       },
 
-      //* * @inheritdoc */
+
       _ConvertLocatorToSubId: function (locator) {
         var subId = locator.subId;
 
@@ -3708,7 +3717,7 @@ var __oj_diagram_link_metadata =
         return subId;
       },
 
-      //* * @inheritdoc */
+
       _ConvertSubIdToLocator: function (subId) {
         var locator = {};
 
@@ -3727,14 +3736,14 @@ var __oj_diagram_link_metadata =
         return locator;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses.push('oj-diagram');
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetChildStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses['oj-dvtbase oj-diagram'] = { path: 'styleDefaults/animationDuration', property: 'ANIM_DUR' };
@@ -3772,12 +3781,12 @@ var __oj_diagram_link_metadata =
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetEventTypes: function () {
         return ['optionChange', 'beforeExpand', 'beforeCollapse', 'expand', 'collapse'];
       },
 
-      //* * @inheritdoc */
+
       _HandleEvent: function (event) {
         var type = event.type;
         if (type === 'beforeExpand') {
@@ -3798,7 +3807,7 @@ var __oj_diagram_link_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _RemoveKeys: function (removedKeys) {
         this._super(removedKeys);
         var expandedChanged;
@@ -3816,7 +3825,7 @@ var __oj_diagram_link_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _LoadResources: function () {
         // Ensure the resources object exists
         if (this.options._resources == null) {
@@ -3841,7 +3850,7 @@ var __oj_diagram_link_metadata =
         };
       },
 
-      //* * @inheritdoc */
+
       _GetComponentNoClonePaths: function () {
         var noClonePaths = this._super();
         noClonePaths.data = true;
@@ -3850,12 +3859,12 @@ var __oj_diagram_link_metadata =
         return noClonePaths;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentDeferredDataPaths: function () {
         return { root: ['nodeData', 'linkData'] };
       },
 
-      //* * @inheritdoc */
+
       _GetSimpleDataProviderConfigs: function () {
         var configs = {
           nodeData: { templateName: 'nodeTemplate', templateElementName: 'oj-diagram-node', resultPath: 'nodes' },
@@ -3869,7 +3878,7 @@ var __oj_diagram_link_metadata =
         return configs;
       },
 
-      //* * @inheritdoc */
+
       _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
         var templateDataSet = this._TemplateHandler.getDataSet(templateName);
 
@@ -3923,7 +3932,7 @@ var __oj_diagram_link_metadata =
         return origRenderer;
       },
 
-      //* * @inheritdoc */
+
       _OptionChangeHandler: function (options) {
         var hasProperty = Object.prototype.hasOwnProperty.bind(options);
         if (hasProperty('expanded') || hasProperty('data')) {
@@ -4134,13 +4143,6 @@ var __oj_diagram_link_metadata =
   });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * <table class="keyboard-table">
    *   <thead>
    *     <tr>
@@ -4317,7 +4319,7 @@ var __oj_diagram_link_metadata =
    * @ojimportmembers oj.ojDiagramNodeProperties
    * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
    * @ojsignature [{target: "Type", value: "K1", for: "id"},
-   *               {target: "Type", value: "<K1>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<K1,D1=any>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -4327,7 +4329,7 @@ var __oj_diagram_link_metadata =
    * @ojsignature [{target: "Type", value: "K1", for: "id"},
    *               {target: "Type", value: "K2", for: "endNode"},
    *               {target: "Type", value: "K2", for: "startNode"},
-   *               {target: "Type", value: "<K2, K1>", for: "genericTypeParameters"}]
+   *               {target: "Type", value: "<K1, K2, D2=any>", for: "genericTypeParameters"}]
    */
 
   /**
@@ -4340,7 +4342,28 @@ var __oj_diagram_link_metadata =
    *               {target: "Type", value: "oj.ojDiagram.Node<K1>|oj.ojDiagram.Link<K2, K1>|oj.ojDiagram.Link<K2, K1>[]", for: "data"},
    *               {target: "Type", value: "<K1,K2,D1,D2>", for: "genericTypeParameters"}]
    */
-
+  /**
+   * @typedef {Object} oj.ojDiagram.NodeShortDescContext
+   * @property {any} id The id of the node
+   * @property {string} label The label of the node
+   * @property {Object} data Relevant data for the node
+   * @property {Object} itemData The The row data object for the node. This will only be set if an oj.DataProvider is being used.
+   * @ojsignature [{target: "Type", value: "K1", for: "id"},
+   *               {target: "Type", value: "D1", for: "itemData"},
+   *               {target: "Type", value: "oj.ojDiagram.Node<K1>", for: "data"},
+   *               {target: "Type", value: "<K1,D1>", for: "genericTypeParameters"}]
+   */
+  /**
+   * @typedef {Object} oj.ojDiagram.LinkShortDescContext
+   * @property {any} id The id of the link
+   * @property {string} label The label of the link
+   * @property {Object|Array.<Object>} data Relevant data for the link
+   * @property {Object|Array.<Object>} itemData The The row data object for the link. This will only be set if an oj.DataProvider is being used.
+   * @ojsignature [{target: "Type", value: "K2", for: "id"},
+   *               {target: "Type", value: "D2|D2[]", for: "itemData"},
+   *               {target: "Type", value: "oj.ojDiagram.Link<K2, K1>|oj.ojDiagram.Link<K2, K1>[]", for: "data"},
+   *               {target: "Type", value: "<K1,K2,D2>", for: "genericTypeParameters"}]
+   */
   /**
    * @typedef {Object} oj.ojDiagram.NodeItemContext
    * @ojimportmembers oj.ojDiagramItemContextProperties
@@ -5280,17 +5303,21 @@ var __oj_diagram_link_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojDiagramNode
    * @ojshortdesc The oj-diagram-node element is used to declare properties for diagram nodes. See the Help documentation for more information.
    * @ojimportmembers oj.ojDiagramNodeProperties
-   * @ojsignature {target: "Type", value:"class ojDiagramNode extends JetElement<ojDiagramNodeSettableProperties>"}
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojDiagramNode<K1=any, D1=any> extends dvtBaseComponent<ojDiagramNodeSettableProperties<K1, D1>>",
+   *                genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"},
+   *                 {"name": "D1", "description": "Type of data from the nodeData dataprovider"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojDiagramNodeSettableProperties<K1=any, D1=any> extends dvtBaseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *               ]
    * @ojslotcomponent
    * @ojsubcomponenttype data
    * @since 6.0.0
@@ -5321,17 +5348,22 @@ var __oj_diagram_link_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojDiagramLink
    * @ojshortdesc The oj-diagram-link element is used to declare properties for diagram links. See the Help documentation for more information.
    * @ojimportmembers oj.ojDiagramLinkProperties
-   * @ojsignature {target: "Type", value:"class ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties>"}
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojDiagramLink<K1=any, K2=any, D2=any> extends dvtBaseComponent<ojDiagramLinkSettableProperties<K1, K2, D2>>",
+   *                genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"},
+   *                  {"name": "K2", "description": "Type of key of the linkData dataprovider"},
+   *                  {"name": "D2", "description": "Type of data from the linkData dataprovider"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojDiagramLinkSettableProperties<K1=any, K2=any, D2=any> extends dvtBaseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *               ]
    * @ojslotcomponent
    * @ojsubcomponenttype data
    * @since 6.0.0
@@ -5361,13 +5393,6 @@ var __oj_diagram_link_metadata =
    * </pre>
    */
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * <p>Pluggable layout code must conform to the pluggable layout contract. The following steps outline a simple pluggable layout.</p>
    * <ol>
@@ -5551,7 +5576,7 @@ var __oj_diagram_link_metadata =
    * @return {Object} event data object
    * @property {string} type Event type - "add", "remove" or "change".
    * @property {Object} data Event payload object for the event -
-   *            see <a href="oj.DiagramDataSource.html#EventType">EventType</a> for event details.
+   *            see <a href="DiagramDataSource.html#EventType">EventType</a> for event details.
    * @memberof oj.DvtDiagramLayoutContext
    * @since 4.0.0
    * @export
@@ -5559,13 +5584,6 @@ var __oj_diagram_link_metadata =
    * @ojtsignore
    */
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * The DvtDiagramLayoutContextLink interface defines the link context for a layout call.
    *
@@ -5890,14 +5908,6 @@ var __oj_diagram_link_metadata =
    * @return {boolean} true if the link is promoted
    * @memberof oj.DvtDiagramLayoutContextLink
    * @export
-   */
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
    */
 
   /**

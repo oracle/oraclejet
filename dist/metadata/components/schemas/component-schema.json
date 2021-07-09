@@ -18,6 +18,9 @@
         },
         "themes": {
           "$ref": "#/definitions/extensionThemesDef"
+        },
+        "webelement": {
+          "$ref": "#/definitions/extensionWebElementExceptionStatusDef"
         }
       }
     },
@@ -42,7 +45,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["Alta", "Redwood"]
+            "enum": ["Alta", "Redwood", "Stable"]
           }
         }
       }
@@ -96,6 +99,9 @@
         },
         "themes": {
           "$ref": "#/definitions/extensionThemesDef"
+        },
+        "webelement": {
+          "$ref": "#/definitions/extensionWebElementExceptionStatusDef"
         }
       }
     },
@@ -154,6 +160,30 @@
             },
             "version": {
               "$ref": "#/definitions/semverRangeDef"
+            }
+          }
+        }
+      }
+    },
+
+    "extensionWebElementExceptionStatusDef": {
+      "type": "object",
+      "properties": {
+        "exceptionStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["deprecated", "unsupported"]
+              },
+              "since": {
+                "$ref": "#/definitions/semverExactDef"
+              },
+              "description": {
+                "type": "string"
+              }
             }
           }
         }
@@ -749,6 +779,10 @@
         "help": {
           "type": "string"
         },
+        "scope": {
+          "type": "string",
+          "enum": ["public", "protected"]
+        },
         "status": {
           "$ref": "#/definitions/statusDef"
         },
@@ -798,6 +832,10 @@
         "help": {
           "type": "string"
         },
+        "scope": {
+          "type": "string",
+          "enum": ["public", "protected"]
+        },
         "status": {
           "$ref": "#/definitions/statusDef"
         },
@@ -832,6 +870,10 @@
         },
         "help": {
           "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["public", "protected"]
         },
         "status": {
           "$ref": "#/definitions/statusDef"
@@ -878,6 +920,10 @@
         },
         "help": {
           "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["public", "protected"]
         },
         "status": {
           "$ref": "#/definitions/statusDef"
@@ -958,6 +1004,45 @@
           "type": "string"
         }
       },
+      "additionalProperties": false
+    },
+
+    "styleVariableDef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "extension": {
+          "$ref": "#/definitions/extensionDef"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["color", "font_weight", "length", "number", "percentage", "rgb_values", "time"]
+          }
+        },
+        "help": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/statusDef"
+        }
+      },
+      "required": ["name"],
       "additionalProperties": false
     }
 
@@ -1105,13 +1190,19 @@
         "$ref": "#/definitions/styleClassItemDef"
       }
     },
+    "styleVariables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/styleVariableDef"
+      }
+    },
     "subcomponentType": {
       "type": "string",
       "enum": ["data", "patternImpl", "packPrivate"]
     },
     "type": {
       "type": "string",
-      "enum": ["composite", "core", "pack", "reference", "resource", "demo", "vbcs-pattern", "vbcs-template", "vbcs-action"]
+      "enum": ["composite", "core", "pack", "reference", "resource", "demo", "stripe", "vbcs-pattern", "vbcs-template", "vbcs-action"]
     }
   },
   "patternProperties": {
@@ -1248,6 +1339,25 @@
             "additionalProperties": {
               "$ref": "#/definitions/semverRangeDef"
             }
+          }
+        }
+      }
+    },
+
+    {
+      "$comment": "if the component type is explicitly set to 'stripe', then 'pack' property is invalid (stripe components are always singletons)",
+      "if": {
+        "properties": {
+          "type": {
+            "const": "stripe"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "propertyNames": {
+          "not": {
+            "enum": ["pack"]
           }
         }
       }

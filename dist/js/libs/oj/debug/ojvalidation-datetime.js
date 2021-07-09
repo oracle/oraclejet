@@ -16,6 +16,7 @@ DateRestrictionValidator, __ConverterDateTime, __ValidationFactoryDateTime)
 {
   "use strict";
 
+
 /* global DateTimeRangeValidator:false, DateRestrictionValidator:false, __ConverterDateTime:false, __ValidationFactoryDateTime:false */
 // These were refactored into their own module which
 // does not register anymore the object into the oj namespace.

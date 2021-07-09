@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojvcomponent-element', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection', 'ojs/ojdomutils'], function (exports, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, ojvcomponentElement, Context, Logger, ojvcollection, DomUtils) { 'use strict';
+define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvcollection', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, oj, DataCollectionUtils, AnimationUtils, ThemeUtils, Context, Logger, ojvcollection, DomUtils) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -45,13 +45,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
         _populatePositions(arr, startIndex, keyFunc, cacheHitFunc, cacheMissFunc, resultFunc) {
             for (let k = 0; k < arr.length; k++) {
-                let key = keyFunc(arr[k]);
+                const key = keyFunc(arr[k]);
                 if (key == null) {
                     continue;
                 }
                 const index = k + startIndex;
                 const colIndex = index % this.columnsInfo.length;
-                let itemHeight = undefined;
+                let itemHeight;
                 const cachedPos = this.cache.get(key);
                 if (cachedPos && !isNaN(cachedPos.height)) {
                     itemHeight = cachedPos.height;
@@ -70,7 +70,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 let val;
                 if (index < this.columnsInfo.length) {
                     left += colIndex * (this.itemWidth + this.gutterWidth);
-                    val = { top: this.gutterWidth, left: left, height: itemHeight, valid: true };
+                    val = { top: this.gutterWidth, left, height: itemHeight, valid: true };
                     this.columnsInfo[colIndex] = itemHeight + this.gutterWidth * 2;
                     this.bottom = Math.max(this.bottom, itemHeight);
                 }
@@ -80,7 +80,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     });
                     const minIndex = this.columnsInfo.indexOf(minTop);
                     left += minIndex * (this.itemWidth + this.gutterWidth);
-                    val = { top: minTop, left: left, height: itemHeight, valid: true };
+                    val = { top: minTop, left, height: itemHeight, valid: true };
                     this.columnsInfo[minIndex] = this.columnsInfo[minIndex] + itemHeight + this.gutterWidth;
                     this.bottom = Math.max(this.bottom, minTop + itemHeight);
                 }
@@ -106,7 +106,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
         }
         getPositionForItems(items, startIndex) {
-            let positions = new Map();
+            const positions = new Map();
             if (this.itemWidth == null && items.length > 0) {
                 this.itemWidth = items[0].element.offsetWidth;
             }
@@ -123,31 +123,31 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 positions.set(key, val);
             });
             let start = 0;
-            let posSet = new Set();
-            let posArray = Array.from(positions.values());
-            for (let i = 0; i < posArray.length; i++) {
-                let key = posArray[i].left;
+            const posSet = new Set();
+            const posArray = Array.from(positions.values());
+            for (const curr of posArray) {
+                const key = curr.left;
                 if (!posSet.has(key)) {
                     posSet.add(key);
-                }
-                start = Math.max(start, posArray[i].top);
-                if (posSet.size === this.columnsInfo.length) {
-                    break;
+                    start = Math.max(start, curr.top);
+                    if (posSet.size === this.columnsInfo.length) {
+                        break;
+                    }
                 }
             }
             posSet.clear();
             let end = Number.MAX_VALUE;
             for (let j = posArray.length - 1; j >= 0; j--) {
-                let key = posArray[j].left;
+                const key = posArray[j].left;
                 if (!posSet.has(key)) {
                     posSet.add(key);
-                }
-                end = Math.min(end, posArray[j].top + posArray[j].height);
-                if (posSet.size === this.columnsInfo.length) {
-                    break;
+                    end = Math.min(end, posArray[j].top + posArray[j].height);
+                    if (posSet.size === this.columnsInfo.length) {
+                        break;
+                    }
                 }
             }
-            return { start: start, end: end, positions: positions };
+            return { start, end, positions };
         }
         getItemWidth() {
             return this.itemWidth;
@@ -217,7 +217,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 const index = this.keys.indexOf(key);
                 if (index > -1) {
                     minIndex = Math.min(minIndex, index + 1);
-                    let position = this.getPosition(key);
+                    const position = this.getPosition(key);
                     if (position) {
                         position.top = undefined;
                         position.left = undefined;
@@ -230,7 +230,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
         _invalidatePositions(fromIndex) {
             for (let i = fromIndex; i < this.keys.length; i++) {
-                let position = this.cache.get(this.keys[i]);
+                const position = this.cache.get(this.keys[i]);
                 if (position != null) {
                     position.valid = false;
                 }
@@ -264,11 +264,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
     }
 
     class WaterfallLayoutContentHandler extends ojvcollection.IteratingDataProviderContentHandler {
-        constructor(root, dataProvider, callback, scrollPolicyOptions, gutterWidth) {
-            super(root, dataProvider, callback, scrollPolicyOptions);
+        constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions, gutterWidth) {
+            super(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions);
             this.root = root;
             this.dataProvider = dataProvider;
             this.callback = callback;
+            this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.gutterWidth = gutterWidth;
             this.postRender = () => {
@@ -319,7 +320,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 return { key: this.getKey(elem), element: elem };
             });
             if (adjusted) {
-                return { done: true, items: items };
+                return { done: true, items };
             }
             const startIndex = this.callback.getData().startIndex;
             const positions = this.getLayout().getPositionForItems(items, isNaN(startIndex) ? 0 : startIndex);
@@ -328,7 +329,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             if (this.domScroller) {
                 this.domScroller.setViewportRange(positions.start, positions.end);
             }
-            return { done: false, items: items };
+            return { done: false, items };
         }
         handleResizeWidth(newWidth) {
             this.initialFetch = false;
@@ -362,7 +363,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
             const initialFetch = this.isInitialFetch();
             const currentItem = this.callback.getCurrentItem();
-            if (currentItem == null && initialFetch && index == 0) {
+            if (currentItem == null && index == 0) {
                 this.callback.setCurrentItem(key);
             }
             const vnodes = this.renderItem(key, index, data);
@@ -370,63 +371,44 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             return vnodes;
         }
         renderItem(key, index, data) {
-            const node = this.vnodesCache.get(key);
-            if (node) {
-                if (node.index === index) {
-                    return node.vnodes;
-                }
-                else {
-                    this.vnodesCache.clear();
-                }
-            }
             const renderer = this.callback.getItemRenderer();
-            const vnodes = renderer({ data: data, index: index, key: key });
-            this.vnodesCache.set(key, { index: index, vnodes: vnodes });
+            const vnodes = renderer({ data, index, key });
+            this.vnodesCache.set(key, { index, vnodes });
             return vnodes;
         }
         decorateItem(vnodes, key, x, y, initialFetch, visible) {
             let vnode;
-            let contentRoot;
-            for (let i = 0; i < vnodes.length; i++) {
-                vnode = vnodes[i];
-                const node = vnode._node;
-                if (node.nodeType === 1) {
-                    contentRoot = node;
+            for (const curr of vnodes) {
+                if (curr.props) {
+                    vnode = curr;
                     break;
                 }
             }
-            if (contentRoot != null) {
-                contentRoot.key = key;
-                contentRoot.setAttribute('role', 'gridcell');
-                contentRoot.setAttribute('tabIndex', '-1');
-                contentRoot.setAttribute('data-oj-positioned', x != -1 && y != -1 ? 'true' : 'false');
+            if (vnode != null) {
+                vnode.key = key;
+                vnode.props.role = 'gridcell';
+                vnode.props.tabIndex = -1;
+                vnode.props['data-oj-positioned'] = x != -1 && y != -1 ? 'true' : 'false';
+                vnode.props['data-oj-key'] = key;
                 const styleClasses = this.getItemStyleClass(visible, x, y, this.newItemsTracker.has(key), initialFetch);
-                styleClasses.forEach((styleClass) => {
-                    contentRoot.classList.add(styleClass);
-                });
+                const classProp = vnode.props.className ? 'className' : 'class';
+                const currentClasses = vnode.props[classProp]
+                    ? [vnode.props[classProp], ...styleClasses]
+                    : styleClasses;
+                vnode.props[classProp] = currentClasses.join(' ');
                 const inlineStyle = this.getItemInlineStyle(visible, x, y, initialFetch);
-                Object.keys(inlineStyle).forEach((prop) => {
-                    contentRoot.style[prop] = inlineStyle[prop];
-                });
+                vnode.props.style = vnode.props.style ? vnode.props.style + ';' + inlineStyle : inlineStyle;
             }
         }
         getItemInlineStyle(visible, x, y, animate) {
-            let style = {};
-            if (x === -1 || y === -1) {
-                style.top = 0;
-                style.left = 0;
-            }
-            else {
-                style.left = x + 'px';
-                style.top = y + 'px';
-            }
+            let style = x === -1 || y === -1 ? 'top:0;left:0' : 'top:' + y + 'px;left:' + x + 'px';
             if (visible && x != -1 && y != -1 && !animate) {
-                style.visibility = 'visible';
+                style = style + ';visibility:visible';
             }
             return style;
         }
         getItemStyleClass(visible, x, y, isNew, animate) {
-            let styleClass = [];
+            const styleClass = [];
             if (visible) {
                 styleClass.push('oj-waterfalllayout-item');
                 if (x != -1 && y != -1 && !animate && isNew) {
@@ -445,8 +427,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }));
             if (maxTop > 0) {
                 const endPos = maxTop + 100;
-                this.callback.setContentHeight(endPos);
-                let positions = columnsInfo.map((columnInfo) => {
+                const positions = columnsInfo.map((columnInfo) => {
                     return {
                         left: columnInfo.left,
                         top: columnInfo.top,
@@ -459,7 +440,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             return skeletons;
         }
         handleCurrentRangeItemUpdated(key) {
-            let position = this.getLayout().getPosition(key);
+            const position = this.getLayout().getPosition(key);
             if (position) {
                 position.top = undefined;
                 position.left = undefined;
@@ -494,27 +475,87 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var WaterfallLayout_1;
-    class Props {
+    exports.WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends preact.Component {
         constructor() {
-            this.data = null;
-            this.scrollPolicy = 'loadMoreOnScroll';
-            this.scrollPolicyOptions = {
-                fetchSize: 25,
-                maxCount: 500,
-                scroller: null
-            };
-            this.scrollPosition = { y: 0 };
-        }
-    }
-    exports.WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends ojvcomponentElement.ElementVComponent {
-        constructor(props) {
-            super(props);
-            this.restoreFocus = false;
+            super();
             this.actionableMode = false;
             this.renderCompleted = false;
             this.ticking = false;
+            this._handleFocusIn = (event) => {
+                if (this.currentItem) {
+                    this.focusInHandler(this.currentItem);
+                }
+            };
+            this._handleFocusOut = (event) => {
+                if (this.currentItem) {
+                    this.focusOutHandler(this.currentItem);
+                }
+            };
+            this._handleClick = (event) => {
+                this._handleTouchOrClickEvent(event);
+            };
+            this._handleKeyDown = (event) => {
+                if (this.currentItem) {
+                    let next;
+                    switch (event.key) {
+                        case 'ArrowLeft':
+                        case 'Left': {
+                            next = this.currentItem.previousElementSibling;
+                            break;
+                        }
+                        case 'ArrowRight':
+                        case 'Right': {
+                            next = this.currentItem.nextElementSibling;
+                            break;
+                        }
+                        case 'F2': {
+                            if (this.actionableMode === false) {
+                                this._enterActionableMode();
+                            }
+                            break;
+                        }
+                        case 'Escape':
+                        case 'Esc': {
+                            if (this.actionableMode === true) {
+                                this._exitActionableMode();
+                            }
+                            break;
+                        }
+                        case 'Tab': {
+                            if (this.actionableMode === true && this.currentItem) {
+                                if (event.shiftKey) {
+                                    DataCollectionUtils.handleActionablePrevTab(event, this.currentItem);
+                                }
+                                else {
+                                    DataCollectionUtils.handleActionableTab(event, this.currentItem);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (this.actionableMode === false &&
+                        next != null &&
+                        next.classList.contains(this.getItemStyleClass())) {
+                        this._updateCurrentItem(next);
+                    }
+                }
+            };
+            this._touchStartHandler = (event) => {
+                this._handleTouchOrClickEvent(event);
+            };
             this.setRootElement = (element) => {
                 this.root = element;
+            };
+            this.scrollListener = (event) => {
+                if (!this.ticking) {
+                    window.requestAnimationFrame(() => {
+                        if (this.isAvailable()) {
+                            this._updateScrollPosition();
+                        }
+                        this.ticking = false;
+                    });
+                    this.ticking = true;
+                }
             };
             this.state = {
                 renderedData: null,
@@ -525,68 +566,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 contentHeight: 0
             };
         }
-        _handleFocusIn(event) {
-            if (this.currentItem) {
-                this.focusInHandler(this.currentItem);
-            }
-        }
-        _handleFocusOut(event) {
-            if (this.currentItem) {
-                this.focusOutHandler(this.currentItem);
-            }
-        }
-        _handleClick(event) {
-            this._handleTouchOrClickEvent(event);
-        }
-        _handleKeyDown(event) {
-            if (this.currentItem) {
-                let next;
-                switch (event.key) {
-                    case 'ArrowLeft':
-                    case 'Left': {
-                        next = this.currentItem.previousElementSibling;
-                        break;
-                    }
-                    case 'ArrowRight':
-                    case 'Right': {
-                        next = this.currentItem.nextElementSibling;
-                        break;
-                    }
-                    case 'F2': {
-                        if (this.actionableMode === false) {
-                            this._enterActionableMode();
-                        }
-                        break;
-                    }
-                    case 'Escape':
-                    case 'Esc': {
-                        if (this.actionableMode === true) {
-                            this._exitActionableMode();
-                        }
-                        break;
-                    }
-                    case 'Tab': {
-                        if (this.actionableMode === true && this.currentItem) {
-                            if (event.shiftKey) {
-                                DataCollectionUtils.handleActionablePrevTab(event, this.currentItem);
-                            }
-                            else {
-                                DataCollectionUtils.handleActionableTab(event, this.currentItem);
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (this.actionableMode === false &&
-                    next != null &&
-                    next.classList.contains(this.getItemStyleClass())) {
-                    this._updateCurrentItem(next);
-                }
-            }
-        }
-        _touchStartHandler(event) {
-            this._handleTouchOrClickEvent(event);
-        }
         render() {
             let content;
             if (this.contentHandler == null) {
@@ -596,13 +575,16 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 const data = this.getData();
                 const positions = this.state.skeletonPositions;
                 if (data) {
-                    if (positions != null && this.contentHandler.isInitialFetch()) {
-                        content = this._renderInitialSkeletons(positions.positions);
+                    if (data && data.value && data.value.data.length === 0) {
+                        content = [];
                     }
                     else {
-                        content = this.contentHandler.render();
-                        if (this.currentItem && this.currentItem.contains(document.activeElement)) {
-                            this.restoreFocus = true;
+                        if (positions != null && this.contentHandler.isInitialFetch()) {
+                            const skeletons = this._renderInitialSkeletons(positions.positions);
+                            content = skeletons.concat(this.contentHandler.render(data));
+                        }
+                        else {
+                            content = this.contentHandler.render(data);
                         }
                     }
                 }
@@ -610,9 +592,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     content = this._renderInitialSkeletons(positions.positions);
                 }
             }
-            return (ojvcomponentElement.h("oj-waterfall-layout", { ref: this.setRootElement, style: this._getRootElementStyle() },
-                ojvcomponentElement.h("div", { onClick: this._handleClick, onKeydown: this._handleKeyDown, onTouchstart: this._touchStartHandler, onFocusin: this._handleFocusIn, onFocusout: this._handleFocusOut, role: 'grid', "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                    ojvcomponentElement.h("div", { role: 'row', style: this._getContentDivStyle(), "data-oj-context": true }, content))));
+            return (preact.h(ojvcomponent.Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                preact.h("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: 'grid', "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                    preact.h("div", { role: 'row', style: this._getContentDivStyle(), "data-oj-context": true }, content))));
         }
         _getScrollPolicyOptions() {
             return {
@@ -621,16 +603,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 scroller: this._getScroller()
             };
         }
-        mounted() {
+        _debounce(callback, wait) {
+            let timeout = null;
+            return (...args) => {
+                const next = () => callback(...args);
+                clearTimeout(timeout);
+                timeout = setTimeout(next, wait);
+            };
+        }
+        componentDidMount() {
             const root = this.getRootElement();
+            root.addEventListener('touchStart', this._touchStartHandler, { passive: true });
             if (this.props.data) {
-                this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
-                this.contentHandler.fetchRows();
+                this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
             }
             const rootWidth = root.clientWidth;
             const rootHeight = root.clientHeight;
-            this.updateState({ width: rootWidth, height: rootHeight });
-            let skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
+            this.setState({ width: rootWidth, height: rootHeight });
+            const skeleton = root.querySelector('.oj-waterfalllayout-skeleton');
             if (skeleton) {
                 this.skeletonWidth = skeleton.clientWidth;
                 if (this.contentHandler) {
@@ -638,13 +628,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 }
             }
             if (window['ResizeObserver']) {
-                const resizeObserver = new window['ResizeObserver']((entries) => {
+                const resizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
                     entries.forEach((entry) => {
                         if (entry.target === root && entry.contentRect) {
                             const currWidth = this.state.width;
                             const newWidth = Math.round(entry.contentRect.width);
                             if (Math.abs(newWidth - currWidth) > WaterfallLayout_1.minResizeWidthThreshold) {
-                                this.updateState({ width: newWidth });
+                                this.setState({ width: newWidth });
                                 if (this.getSkeletonPositions() != null) {
                                     this._updatePositionsForSkeletons(newWidth);
                                 }
@@ -658,18 +648,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                             const currHeight = this.state.height;
                             const newHeight = Math.round(entry.contentRect.height);
                             if (Math.abs(newHeight - currHeight) > 1 && newHeight !== this.state.contentHeight) {
-                                this.updateState({ height: newHeight });
+                                this.setState({ height: newHeight });
                             }
                         }
                     });
-                });
+                }, WaterfallLayout_1.debounceThreshold));
                 resizeObserver.observe(root);
                 this.resizeObserver = resizeObserver;
             }
             DomUtils.makeFocusable({
                 applyHighlight: true,
                 setupHandlers: (focusInHandler, focusOutHandler) => {
-                    let noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+                    const noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
                     this.focusInHandler = noJQHandlers.focusIn;
                     this.focusOutHandler = noJQHandlers.focusOut;
                 }
@@ -677,33 +667,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             this._getScroller().addEventListener('scroll', this.scrollListener);
         }
         _handleNewData() {
-            this.updateState({ renderedData: null, positions: null });
+            this.setState({ renderedData: null, positions: null });
             if (this.contentHandler) {
                 this.contentHandler.destroy();
             }
             this.currentKey = null;
             this.currentItem = null;
             const root = this.getRootElement();
-            this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
-            this.contentHandler.fetchRows();
+            this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
             this._delayShowSkeletons();
         }
-        updated(oldProps, oldState) {
+        componentDidUpdate(oldProps, oldState) {
             const data = this.getData();
             if (data != null) {
-                if (oldState.renderedData == null) {
-                    const skeletons = this._findSkeletons();
-                    if (skeletons.length > 0) {
-                        this._applySkeletonExitAnimation(skeletons).then(() => {
-                            this.updateState({ skeletonPositions: null });
-                        });
-                    }
-                    else {
-                        this.updateState({ skeletonPositions: null });
-                        this.contentHandler.postRender();
-                    }
-                }
-                else if (this.props.data != oldProps.data) {
+                if (this.props.data != oldProps.data) {
                     const resolveFunc = this.addBusyState('apply exit animations on existing items');
                     this._applyExitAnimation().then(() => {
                         resolveFunc();
@@ -711,6 +688,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     });
                 }
                 else if (oldState.positions == null && this.state.positions != null) {
+                    if (this.state.skeletonPositions != null) {
+                        const skeletons = this._findSkeletons();
+                        if (skeletons.length > 0) {
+                            this._applySkeletonExitAnimation(skeletons).then(() => {
+                                this.setState({ skeletonPositions: null });
+                            });
+                        }
+                    }
+                    else {
+                        this._applyEntranceAnimation();
+                        if (!this.renderCompleted && this.contentHandler) {
+                            this.contentHandler.postRender();
+                        }
+                    }
+                }
+                else if (oldState.skeletonPositions != null && this.state.skeletonPositions == null) {
                     this._applyEntranceAnimation();
                     if (!this.renderCompleted && this.contentHandler) {
                         this.contentHandler.postRender();
@@ -725,11 +718,26 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     }
                 }
                 else if (this.contentHandler) {
-                    this.contentHandler.postRender();
+                    if (oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition)) {
+                        this.contentHandler.postRender();
+                    }
                 }
                 if (!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) &&
                     !oj.Object.compareValues(this.props.scrollPosition, this.lastInternalScrollPositionUpdate)) {
                     this._syncScrollTopWithProps();
+                }
+                if (this.state.skeletonPositions == null && this.props.scrollPolicyOptions.scroller != null) {
+                    const contentDiv = this._getContentDiv();
+                    const skeleton = this.getRootElement().querySelector('.oj-waterfalllayout-skeleton');
+                    if (skeleton) {
+                        const bottom = parseInt(skeleton.style.top) + parseInt(skeleton.style.height);
+                        if (this.state.contentHeight !== bottom) {
+                            contentDiv.style.height = bottom + 'px';
+                        }
+                    }
+                    else if (parseInt(contentDiv.style.height) != this.state.contentHeight) {
+                        contentDiv.style.height = this.state.contentHeight + 'px';
+                    }
                 }
             }
             else {
@@ -738,7 +746,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 }
             }
         }
-        unmounted() {
+        componentWillUnmount() {
             if (this.contentHandler) {
                 this.contentHandler.destroy();
             }
@@ -761,28 +769,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
         _updatePositionsForSkeletons(width) {
             const positions = this._getPositionsForSkeletons(50, width, this.skeletonWidth);
-            this.updateState({ skeletonPositions: positions });
+            this.setState({ skeletonPositions: positions });
         }
         _getOptionDefaults() {
             if (this.defaultOptions == null) {
-                this.defaultOptions = ThemeUtils.parseJSONFromFontFamily('oj-waterfalllayout-option-defaults');
+                this.defaultOptions = this._getStyleValues();
             }
             return this.defaultOptions;
         }
+        _getStyleValues() {
+            const defaultOptions = {};
+            Object.entries(WaterfallLayout_1._CSS_Vars).forEach(([key, value]) => {
+                defaultOptions[key] = ThemeUtils.getCachedCSSVarValues([value])[0];
+            });
+            return defaultOptions;
+        }
         _getShowSkeletonsDelay() {
             const defaultOptions = this._getOptionDefaults();
-            const delay = parseInt(defaultOptions.showIndicatorDelay, 10);
+            const delay = DomUtils.getCSSTimeUnitAsMillis(defaultOptions.showIndicatorDelay, 10);
+            return isNaN(delay) ? 0 : delay;
+        }
+        _getCardEntranceAnimationDelay() {
+            const defaultOptions = this._getOptionDefaults();
+            const delay = DomUtils.getCSSTimeUnitAsMillis(defaultOptions.cardAnimationDelay, 10);
             return isNaN(delay) ? 0 : delay;
         }
         addBusyState(description) {
             const root = this.getRootElement();
             const componentBusyContext = Context.getContext(root).getBusyContext();
-            return componentBusyContext.addBusyState({ description: description });
-        }
-        _isReady() {
-            const root = this.getRootElement();
-            const componentBusyContext = Context.getContext(root).getBusyContext();
-            return componentBusyContext.isReady();
+            return componentBusyContext.addBusyState({ description });
         }
         _findSkeletons() {
             const skeletons = this.getRootElement().querySelectorAll('.oj-waterfalllayout-skeleton');
@@ -807,34 +822,34 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             if (data != null) {
                 this.renderCompleted = false;
             }
-            this.updateState({ renderedData: data });
+            this.setState({ renderedData: data });
             const skeletons = this._findSkeletons();
             if (data == null || skeletons.length === 0) {
-                this.updateState({ skeletonPositions: null });
+                this.setState({ skeletonPositions: null });
             }
         }
         updateData(updater) {
-            this.updateState(function (state) {
-                let currentData = state.renderedData;
-                let returnVal = updater(currentData);
-                return returnVal;
+            this.renderCompleted = false;
+            this.setState(function (state) {
+                const currentData = state.renderedData;
+                return updater(currentData);
             }.bind(this));
         }
         getSkeletonPositions() {
             return this.state.skeletonPositions;
         }
         setSkeletonPositions(positions) {
-            this.updateState({ skeletonPositions: positions });
+            this.setState({ skeletonPositions: positions });
         }
         getPositions() {
             return this.state.positions;
         }
         setPositions(positions) {
-            this.updateState({ positions: positions });
+            this.setState({ positions });
         }
         setContentHeight(height) {
             if (this.props.scrollPolicyOptions.scroller != null) {
-                this.updateState({ contentHeight: height });
+                this.setState({ contentHeight: height });
             }
         }
         getItemRenderer() {
@@ -867,19 +882,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
             const promises = [];
             items.forEach((item, index) => {
-                let elem = item;
+                const elem = item;
                 elem.style.visibility = 'visible';
                 const currentTransition = elem.style.transition;
                 elem.style.transition = 'none';
-                const delay = Math.min(1000, index * 50) + 'ms';
+                const delay = Math.min(1000, index * this._getCardEntranceAnimationDelay()) + 'ms';
                 const duration = '300ms';
                 const promise = AnimationUtils.slideIn(item, {
                     offsetY: '300px',
-                    delay: delay,
-                    duration: duration
+                    delay,
+                    duration
                 });
                 promises.push(promise);
-                promises.push(AnimationUtils.fadeIn(item, { delay: delay, duration: duration }));
+                promises.push(AnimationUtils.fadeIn(item, { delay, duration }));
                 promise.then(() => {
                     elem.style.transition = currentTransition;
                 });
@@ -895,8 +910,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             const promises = [];
             items.forEach((item) => {
                 const duration = '300ms';
-                promises.push(AnimationUtils.slideOut(item, { offsetY: '300px', duration: duration, persist: 'all' }));
-                promises.push(AnimationUtils.fadeOut(item, { duration: duration, persist: 'all' }));
+                promises.push(AnimationUtils.slideOut(item, { offsetY: '300px', duration, persist: 'all' }));
+                promises.push(AnimationUtils.fadeOut(item, { duration, persist: 'all' }));
             });
             return Promise.all(promises);
         }
@@ -913,17 +928,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             });
             return Promise.all(promises);
         }
-        scrollListener(event) {
-            if (!this.ticking) {
-                window.requestAnimationFrame(() => {
-                    if (this.isAvailable()) {
-                        this._updateScrollPosition();
-                    }
-                    this.ticking = false;
-                });
-                this.ticking = true;
-            }
-        }
         _updateScrollPosition() {
             var _a, _b;
             const scrollTop = this._getScroller().scrollTop;
@@ -932,9 +936,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             let key;
             let maxTop = 0;
             while (!result.done) {
-                let entry = result.value;
+                const entry = result.value;
                 result = iterator.next();
-                let top = entry[1].top;
+                const top = entry[1].top;
                 if (top > scrollTop) {
                     if (key === undefined) {
                         key = entry[0];
@@ -949,14 +953,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             const offsetY = Math.abs(scrollTop - maxTop);
             const scrollPosition = {
                 y: scrollTop,
-                key: key,
-                offsetY: offsetY
+                key,
+                offsetY
             };
             this.lastInternalScrollPositionUpdate = scrollPosition;
             (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
         }
         _syncScrollTopWithProps() {
-            let scrollPosition = this.props.scrollPosition;
+            const scrollPosition = this.props.scrollPosition;
             let scrollTop;
             const key = scrollPosition.key;
             if (key) {
@@ -986,9 +990,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
             this._getScroller().scrollTop = scrollTop;
         }
+        handleItemRemoved(key) { }
         _handleTouchOrClickEvent(event) {
-            let target = event.target;
-            let item = target.closest('.' + this.getItemStyleClass());
+            const target = event.target;
+            const item = target.closest('.' + this.getItemStyleClass());
             this._updateCurrentItem(item);
         }
         _resetFocus(elem) {
@@ -1004,12 +1009,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
         }
         _updateCurrentItem(item) {
             if (this.currentItem) {
-                let currentElem = this.currentItem;
+                const currentElem = this.currentItem;
                 this._resetFocus(currentElem);
             }
             this.currentItem = item;
             const elem = item;
-            this.currentKey = elem.key;
+            this.currentKey = this.contentHandler.getKey(elem);
             this._setFocus(elem, true);
             this._scrollToVisible(elem);
         }
@@ -1032,6 +1037,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             }
             return scroller != null ? scroller : this.getRootElement();
         }
+        _getContentDiv() {
+            return this.getRootElement().firstElementChild.firstElementChild;
+        }
         _getContentDivStyle() {
             return { height: this.state.contentHeight + 'px' };
         }
@@ -1044,57 +1052,48 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                 scroller.scrollTop = 0;
             }
             if (positions == null) {
-                return this._renderSkeleton(null);
+                return [this._renderSkeleton(null)];
             }
             else {
                 const count = positions.size;
-                let skeletons = [];
+                const skeletons = [];
                 for (let i = 0; i < count; i++) {
-                    let position = positions.get(i);
+                    const position = positions.get(i);
                     skeletons.push(this._renderSkeleton(position));
                 }
-                return ojvcomponentElement.h("div", { role: 'row' }, skeletons);
+                return skeletons;
             }
         }
         _getPositionsForSkeletons(count, rootWidth, skeletonWidth) {
-            let items = [];
-            let cache = new Map();
+            const items = [];
+            const cache = new Map();
             for (let i = 0; i < count; i++) {
                 const height = 150 + (i % 3) * 100;
-                cache.set(i, {
-                    height: height
-                });
+                cache.set(i, { height });
                 items.push({
                     key: i
                 });
             }
-            let layout = new DefaultLayout(null, rootWidth, WaterfallLayout_1.gutterWidth, skeletonWidth, cache);
-            let positions = layout.getPositionForItems(items, 0);
-            return positions;
-        }
-        _isInViewport(item) {
-            let itemElem = item;
-            let top = parseInt(itemElem.style.top, 10);
-            let scrollTop = this._getScroller().scrollTop;
-            return top >= scrollTop && top <= scrollTop + this.state.height;
+            const layout = new DefaultLayout(null, rootWidth, WaterfallLayout_1.gutterWidth, skeletonWidth, cache);
+            return layout.getPositionForItems(items, 0);
         }
         _restoreCurrentItem(items) {
             if (this.currentKey != null) {
-                for (let i = 0; i < items.length; i++) {
-                    if (oj.KeyUtils.equals(items[i].key, this.currentKey)) {
-                        const elem = items[i].element;
-                        if (this.restoreFocus && this._isInViewport(elem)) {
-                            this._updateCurrentItem(elem);
-                        }
-                        else {
-                            this._setFocus(elem, false);
-                            this.currentItem = elem;
-                        }
+                for (const curr of items) {
+                    if (this.contentHandler.getKey(curr) == this.currentKey) {
+                        const elem = curr.element;
+                        this._setFocus(elem, false);
+                        this.currentItem = elem;
                         break;
                     }
                 }
+                if ((this.currentItem == null || this.currentItem.parentNode == null) && items.length > 0) {
+                    this.currentKey = this.contentHandler.getKey(items[0]);
+                    const elem = items[0].element;
+                    this._setFocus(elem, false);
+                    this.currentItem = elem;
+                }
             }
-            this.restoreFocus = false;
         }
         _disableAllTabbableElements(items) {
             items.forEach((item) => {
@@ -1124,7 +1123,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
             this._restoreCurrentItem(items);
         }
         renderSkeletons(positions) {
-            let skeletons = [];
+            const skeletons = [];
             positions.forEach((position) => {
                 skeletons.push(this._renderSkeleton(position));
             });
@@ -1145,33 +1144,30 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdatacollection-common', 'ojs/ojanim
                     style.width = position.width + 'px';
                 }
             }
-            return (ojvcomponentElement.h("div", { class: 'oj-waterfalllayout-skeleton', style: style },
-                ojvcomponentElement.h("div", { class: 'oj-waterfalllayout-skeleton-content oj-animation-skeleton' })));
+            return (preact.h("div", { class: 'oj-waterfalllayout-skeleton', style: style },
+                preact.h("div", { class: 'oj-waterfalllayout-skeleton-content oj-animation-skeleton' })));
         }
+    };
+    exports.WaterfallLayout.defaultProps = {
+        data: null,
+        scrollPolicy: 'loadMoreOnScroll',
+        scrollPolicyOptions: {
+            fetchSize: 25,
+            maxCount: 500,
+            scroller: null
+        },
+        scrollPosition: { y: 0 }
     };
     exports.WaterfallLayout.gutterWidth = 20;
     exports.WaterfallLayout.minResizeWidthThreshold = 10;
-    exports.WaterfallLayout.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-label": 1, "aria-labelledby": 1 }, "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [] }, "properties": { "data": { "type": "object|null", "value": null }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"], "value": "loadMoreOnScroll" }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number", "value": 25 }, "maxCount": { "type": "number", "value": 500 }, "scroller": { "type": "Element|string|null", "value": null } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number", "value": 0 }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true } }, "slots": { "itemTemplate": { "data": {} } } };
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.WaterfallLayout.prototype, "_handleFocusIn", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.WaterfallLayout.prototype, "_handleFocusOut", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.WaterfallLayout.prototype, "_handleClick", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.WaterfallLayout.prototype, "_handleKeyDown", null);
-    __decorate([
-        ojvcomponentElement.listener({ passive: true })
-    ], exports.WaterfallLayout.prototype, "_touchStartHandler", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.WaterfallLayout.prototype, "scrollListener", null);
+    exports.WaterfallLayout.debounceThreshold = 100;
+    exports.WaterfallLayout._CSS_Vars = {
+        showIndicatorDelay: '--oj-private-core-global-loading-indicator-delay-duration',
+        cardAnimationDelay: '--oj-private-animation-global-card-entrance-delay-increment'
+    };
+    exports.WaterfallLayout.metadata = { "properties": { "data": { "type": "object|null" }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "Element|string|null" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" } }, "writeback": true } }, "slots": { "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["scrollPosition"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "aria-labelledby"] } };
     exports.WaterfallLayout = WaterfallLayout_1 = __decorate([
-        ojvcomponentElement.customElement('oj-waterfall-layout')
+        ojvcomponent.customElement('oj-waterfall-layout')
     ], exports.WaterfallLayout);
 
     Object.defineProperty(exports, '__esModule', { value: true });

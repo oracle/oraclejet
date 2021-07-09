@@ -24,7 +24,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
         }
         getChildDataProvider(parentKey) {
             if (this._parentInfoMap.has(parentKey)) {
-                let childDataProvider = new TreeDataSourceAdapter(this.treeDataSource);
+                const childDataProvider = new TreeDataSourceAdapter(this.treeDataSource);
                 childDataProvider._parentKey = parentKey;
                 childDataProvider._parentInfoMap = this._parentInfoMap;
                 return childDataProvider;
@@ -38,42 +38,42 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
             return Promise.resolve(this.treeDataSource.getChildCount(this._parentKey));
         }
         isEmpty() {
-            var count = this.treeDataSource.getChildCount();
+            const count = this.treeDataSource.getChildCount();
             if (count === -1) {
                 return 'unknown';
             }
             return count > 0 ? 'no' : 'yes';
         }
         getCapability(capabilityName) {
-            if (capabilityName == TreeDataSourceAdapter._SORT &&
-                this.treeDataSource.getCapability(capabilityName) == 'full') {
+            if (capabilityName === TreeDataSourceAdapter._SORT &&
+                this.treeDataSource.getCapability(capabilityName) === 'full') {
                 return { attributes: 'multiple' };
             }
-            else if (capabilityName == 'fetchByKeys') {
+            else if (capabilityName === 'fetchByKeys') {
                 return { implementation: 'iteration' };
             }
-            else if (capabilityName == 'fetchByOffset') {
+            else if (capabilityName === 'fetchByOffset') {
                 return { implementation: 'iteration' };
             }
             return null;
         }
         _getFetchFunc(params) {
-            let self = this;
+            const self = this;
             if (params != null && params[TreeDataSourceAdapter._SORTCRITERIA] != null) {
-                let attribute = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._ATTRIBUTE];
-                let direction = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._DIRECTION];
+                const attribute = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._ATTRIBUTE];
+                const direction = params[TreeDataSourceAdapter._SORTCRITERIA][0][TreeDataSourceAdapter._DIRECTION];
                 return (function (attribute, direction) {
                     return function (params, fetchFirst) {
                         if (fetchFirst) {
-                            let sortParam = {};
+                            const sortParam = {};
                             sortParam[TreeDataSourceAdapter._KEY] = attribute;
                             sortParam[TreeDataSourceAdapter._DIRECTION] = direction;
                             return new Promise(function (resolve, reject) {
                                 self.treeDataSource.sort(sortParam, {
-                                    success: function () {
+                                    success() {
                                         resolve(self._getTreeDataSourceFetch(params)(params));
                                     },
-                                    error: function (err) {
+                                    error(err) {
                                         reject(err);
                                     }
                                 });
@@ -90,25 +90,25 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
             }
         }
         _getTreeDataSourceFetch(params) {
-            let self = this;
-            return function (params, fetchFirst) {
-                let sortCriteria = self.treeDataSource.getSortCriteria();
-                if (sortCriteria != null &&
+            const self = this;
+            return function (params) {
+                const sortCriteria = self.treeDataSource.getSortCriteria();
+                if (sortCriteria !== null &&
                     sortCriteria[TreeDataSourceAdapter._DIRECTION] != 'none' &&
                     params[TreeDataSourceAdapter._SORTCRITERIA] == null) {
                     params[TreeDataSourceAdapter._SORTCRITERIA] = [];
-                    let sortCriterion = new self.SortCriterion(self, sortCriteria[TreeDataSourceAdapter._KEY], sortCriteria[TreeDataSourceAdapter._DIRECTION]);
+                    const sortCriterion = new self.SortCriterion(self, sortCriteria[TreeDataSourceAdapter._KEY], sortCriteria[TreeDataSourceAdapter._DIRECTION]);
                     params[TreeDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
                 }
                 self._isFetching = true;
                 return new Promise(function (resolve, reject) {
                     self.treeDataSource.fetchChildren(self._parentKey, { start: 0, end: -1 }, {
-                        success: function (nodeSet) {
+                        success(nodeSet) {
                             self._isFetching = false;
-                            let resultData = [];
-                            let resultMetadata = [];
-                            let start = nodeSet.getStart();
-                            let count = nodeSet.getCount();
+                            const resultData = [];
+                            const resultMetadata = [];
+                            const start = nodeSet.getStart();
+                            const count = nodeSet.getCount();
                             let i, data, metadata;
                             for (i = 0; i < count; i++) {
                                 data = nodeSet.getData(start + i);
@@ -121,7 +121,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
                             }
                             resolve(new self.AsyncIteratorReturnResult(self, new self.FetchListResult(self, params, resultData, resultMetadata)));
                         },
-                        error: function (error) {
+                        error(error) {
                             self._isFetching = false;
                             reject(error);
                         }
@@ -139,7 +139,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
             this.removeListener('refresh');
         }
         _handleChange(event) {
-            let operation = event[TreeDataSourceAdapter._OPERATION];
+            const operation = event[TreeDataSourceAdapter._OPERATION];
             if (operation === 'insert') {
                 this._handleInsert(event);
             }
@@ -151,31 +151,31 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovideradapter-base', 'ojs/ojdataprovider
             }
         }
         _handleInsert(event) {
-            let data = event[TreeDataSourceAdapter._DATA];
-            let index = event[TreeDataSourceAdapter._INDEX];
-            let key = event[TreeDataSourceAdapter._KEY];
-            let parentKey = event[TreeDataSourceAdapter._PARENT];
-            let itemMetadata = new this.ItemMetadata(this, key);
-            let keySet = new Set();
+            const data = event[TreeDataSourceAdapter._DATA];
+            const index = event[TreeDataSourceAdapter._INDEX];
+            const key = event[TreeDataSourceAdapter._KEY];
+            const parentKey = event[TreeDataSourceAdapter._PARENT];
+            const itemMetadata = new this.ItemMetadata(this, key);
+            const keySet = new Set();
             keySet.add(key);
-            let metadata = event[TreeDataSourceAdapter._METADATA];
+            const metadata = event[TreeDataSourceAdapter._METADATA];
             if (metadata != null && metadata[TreeDataSourceAdapter._LEAF]) {
                 this._parentInfoMap.set(key, metadata);
             }
-            let operationEventDetail = new this.DataProviderAddOperationEventDetail(this, keySet, null, null, [parentKey], [itemMetadata], [data], [index]);
-            let mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationEventDetail, null, null);
+            const operationEventDetail = new this.DataProviderAddOperationEventDetail(this, keySet, null, null, [parentKey], [itemMetadata], [data], [index]);
+            const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationEventDetail, null, null);
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
         }
         _handleDelete(event) {
-            let data = event[TreeDataSourceAdapter._DATA];
-            let index = event[TreeDataSourceAdapter._INDEX];
-            let key = event[TreeDataSourceAdapter._KEY];
-            let itemMetadata = new this.ItemMetadata(this, key);
-            let keySet = new Set();
+            const data = event[TreeDataSourceAdapter._DATA];
+            const index = event[TreeDataSourceAdapter._INDEX];
+            const key = event[TreeDataSourceAdapter._KEY];
+            const itemMetadata = new this.ItemMetadata(this, key);
+            const keySet = new Set();
             keySet.add(key);
             this._parentInfoMap.delete(key);
-            let operationEventDetail = new this.DataProviderOperationEventDetail(this, keySet, [itemMetadata], [data], [index]);
-            let mutationEventDetail = new this.DataProviderMutationEventDetail(this, null, operationEventDetail, null);
+            const operationEventDetail = new this.DataProviderOperationEventDetail(this, keySet, [itemMetadata], [data], [index]);
+            const mutationEventDetail = new this.DataProviderMutationEventDetail(this, null, operationEventDetail, null);
             this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
         }
         _handleUpdate(event) {

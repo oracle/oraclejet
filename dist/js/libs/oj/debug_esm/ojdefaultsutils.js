@@ -8,7 +8,7 @@
 import { deepFreeze, getDefaultValues } from 'ojs/ojmetadatautils';
 
 function getFrozenDefault(property, constr, metadata) {
-    var defaults = getDefaults(constr, metadata, true);
+    const defaults = getDefaults(constr, metadata, true);
     return deepFreeze(defaults[property]);
 }
 function getDefaults(constr, metadata, shouldFreeze) {
@@ -30,7 +30,7 @@ function getStaticDefaults(constr, metadata, shouldFreeze) {
             const propertiesMetadata = metadata.properties;
             const PropDefaults = (_a = metadata.extension) === null || _a === void 0 ? void 0 : _a._DEFAULTS;
             if (PropDefaults) {
-                var defaultsInstance = new PropDefaults();
+                const defaultsInstance = new PropDefaults();
                 defaults = Object.create(defaultsInstance);
             }
             else if (propertiesMetadata) {

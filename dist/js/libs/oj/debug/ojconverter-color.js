@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojconverter', 'ojs/ojvalida
   Converter = Converter && Object.prototype.hasOwnProperty.call(Converter, 'default') ? Converter['default'] : Converter;
 
   /**
-   * @license
-   * Copyright (c) 2016 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * ColorConverter Contract.
    * @ignore
    */
@@ -40,8 +32,8 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojconverter', 'ojs/ojvalida
      *                jsdocOverride: true}
      *              ]
 
-     * @classdesc An {@link oj.Color} object format converter.
-     * @desc Creates a Converter that allows any color format to be obtained from an {@link oj.Color} object.
+     * @classdesc An {@link Color} object format converter.
+     * @desc Creates a Converter that allows any color format to be obtained from an {@link Color} object.
      * @since 0.6.0
      * @param {Object=} options - an object literal used to provide optional information to
      * initialize the converter.
@@ -83,7 +75,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojconverter', 'ojs/ojvalida
     /**
      * Formats the color using the options provided into a string.
      *
-     * @param {oj.Color} color the {@link oj.Color} instance to be formatted to a color specification string
+     * @param {oj.Color} color the {@link Color} instance to be formatted to a color specification string
      * @return {(string | null)} the color value formatted to the color specification defined in the options.
      * @throws {Error} a ConverterError if formatting fails, or the color option is invalid.
      * @export
@@ -118,7 +110,7 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojconverter', 'ojs/ojvalida
      * (Note that the "format" option used to create the Converter is not used
      * by this method, since the oj.Color object created is color agnostic.)
      * @param {string} value The color specification string to parse.
-     * @return {oj.Color} the parsed value as an {@link oj.Color} object.
+     * @return {oj.Color} the parsed value as an {@link Color} object.
      * @throws {Error} a ConverterError if parsing fails
      * @export
      * @memberof oj.ColorConverter

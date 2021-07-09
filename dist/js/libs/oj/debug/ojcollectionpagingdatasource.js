@@ -10,6 +10,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout-model', 'ojs/ojdatas
 {
   "use strict";
 
+
 /* global ko:false, KnockoutUtils:false */
 
 /* jslint browser: true,devel:true*/
@@ -299,9 +300,6 @@ oj.CollectionPagingDataSource.prototype._processSuccess = function (opts) {
   if (options.success) {
     options.success();
   }
-/*    else if (this.fetchCallback) {
-        this.fetchCallback();
-    }*/
 };
 
 oj.CollectionPagingDataSource.prototype.handleEvent = function (eventType, event) {
@@ -327,11 +325,6 @@ oj.CollectionPagingDataSource.prototype._hasMore = function () {
 oj.CollectionPagingDataSource.prototype._setPageSize = function (n) {
   this.pageSize = n;
   this.currentPageSize = n;
-/*  if (!this._noInit) {
-    var self = this;
-    return this._refreshDataWindow().then(function() {
-                self._processSuccess(null)});
-  }*/
 };
 
 oj.CollectionPagingDataSource.prototype.setFetchCallback = function (callback) {

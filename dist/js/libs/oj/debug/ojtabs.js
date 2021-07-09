@@ -12,6 +12,7 @@ function(oj, $, Components, DomUtils)
 {
   "use strict";
 
+
 /* global Components:false, DomUtils:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -173,6 +174,28 @@ function(oj, $, Components, DomUtils)
   var _CLOSE_ICON_SIZE = 28;
   var _ID_PREFIX = 'ojtabs-id_';
   var _DELETE_KEY = 46;
+  const _OJ_DISABLED = 'oj-disabled';
+  const _ARIA_SEL = 'aria-selected';
+  const _OJ_TABS_SEL = '.oj-tabs-selected';
+  const _OJ_SEL = 'oj-selected';
+  const _ARIA_EXP = 'aria-expanded';
+  const _ARIA_HIDDEN = 'aria-hidden';
+  const _OJ_FIRST = 'oj-first-child-selected';
+  const _OJ_TABS = 'oj-tabs-conveyorbelt-wrapper';
+  const _OJ_TABS_FACET = '.oj-tabs-facet';
+  const _OJ_TABS_TABS = 'oj-tabs-tab';
+  const _OJ_TABS_CONTENT = 'oj-tabs-tab-content';
+  const _DATA_CONTENT = 'data-content';
+  const _ARIA_LABELLEDBY = 'aria-labelledby';
+  const _FIRST_CHILD = '> :first-child';
+  const _TABS_NAV_ROOT = '.oj-tabs-nav-root';
+  const _ARIA_CONTROLS = 'aria-controls';
+  const _ARIA_DISABLED = 'aria-disabled';
+  const _TABS_GENA = 'oj-tabs-gen-a';
+  const _CONV = 'oj-conveyorbelt';
+  const _TABS_PANEL = 'oj-tabs-panel';
+  const _TABS_TITLE = '.oj-tabs-title';
+  const _TABS_CLOSE = 'oj-tabs-close';
 
   // Context Menu: menu item id's
   var /** @const */ _arMenuCmdMap = {
@@ -741,16 +764,16 @@ function(oj, $, Components, DomUtils)
 
           if (this._menu.$elemRemove) {
           // if tab is disable or not removable and if "remove" is only item,  dont display context menu
-            var isDisabled = tab.hasClass('oj-disabled');
+            var isDisabled = tab.hasClass(_OJ_DISABLED);
             if ((isDisabled || this._getCloseIcons(tab).length === 0) &&
               this._menu.$container.children().length === 1) {
               event.preventDefault();
               return;
             }
             if (isDisabled || !this._isTabRemovable(tab)) {
-              this._menu.$elemRemove.addClass('oj-disabled');
+              this._menu.$elemRemove.addClass(_OJ_DISABLED);
             } else {
-              this._menu.$elemRemove.removeClass('oj-disabled');
+              this._menu.$elemRemove.removeClass(_OJ_DISABLED);
             }
           }
 
@@ -758,15 +781,15 @@ function(oj, $, Components, DomUtils)
         // previous "cut"
           if (this._menu.$elemPasteBefore || this._menu.$elemPasteAfter) {
             var disabledState = (!this._menu.cutTab);
-            var state = this._menu.$elemPasteBefore.hasClass('oj-disabled');
+            var state = this._menu.$elemPasteBefore.hasClass(_OJ_DISABLED);
 
             if (state !== disabledState) {
               if (disabledState) {
-                this._menu.$elemPasteBefore.addClass('oj-disabled');
-                this._menu.$elemPasteAfter.addClass('oj-disabled');
+                this._menu.$elemPasteBefore.addClass(_OJ_DISABLED);
+                this._menu.$elemPasteAfter.addClass(_OJ_DISABLED);
               } else {
-                this._menu.$elemPasteBefore.removeClass('oj-disabled');
-                this._menu.$elemPasteAfter.removeClass('oj-disabled');
+                this._menu.$elemPasteBefore.removeClass(_OJ_DISABLED);
+                this._menu.$elemPasteAfter.removeClass(_OJ_DISABLED);
               }
               this._menu.$container.ojMenu('refresh');
             }
@@ -833,8 +856,8 @@ function(oj, $, Components, DomUtils)
         // Update aria-selected immediately so that AT think the tab is already selected.
         // Otherwise AT may confuse the user by stating that they need to select the tab,
         // but the tab will already be selected by the time the announcement finishes.
-          focusedTab.attr('aria-selected', 'false');
-          selTab.attr('aria-selected', 'true');
+          focusedTab.attr(_ARIA_SEL, 'false'); // @HTMLUpdateOK
+          selTab.attr(_ARIA_SEL, 'true'); // @HTMLUpdateOK
 
           var self = this;
           this.activating = this._delay(function () {
@@ -851,8 +874,8 @@ function(oj, $, Components, DomUtils)
 
       _panelKeydown: function (event) {
       // In the nested tabs case, handle keydown for the closest tabs only
-        if ($(event.target).closest('.oj-tabs-selected').attr('id') !==
-            this.element.children('.oj-tabs-selected').attr('id')) {
+        if ($(event.target).closest(_OJ_TABS_SEL).attr('id') !==
+            this.element.children(_OJ_TABS_SEL).attr('id')) {
           return;
         }
 
@@ -885,7 +908,7 @@ function(oj, $, Components, DomUtils)
 
       _isTabDisabled: function (index) {
         if (index >= 0 && index < this.tabs.length) {
-          return $(this.tabs[index]).hasClass('oj-disabled');
+          return $(this.tabs[index]).hasClass(_OJ_DISABLED);
         }
         return false;
       },
@@ -976,9 +999,8 @@ function(oj, $, Components, DomUtils)
         if (key === 'reorderable') {
           if (value !== this.options.reorderable) {
             this._super(key, value, flags);
-//          this._setupReorder();
 
-          //  - if reorderable option is changed to true programmatically,
+          // if reorderable option is changed to true programmatically,
           // it doesn't take affect
             this.refresh();
           }
@@ -1053,7 +1075,7 @@ function(oj, $, Components, DomUtils)
         this._refresh();
 
       // set selected if needed
-        if (!this.element.children('.oj-tabs-selected').length) {
+        if (!this.element.children(_OJ_TABS_SEL).length) {
           var selected = this._getNextEnabledTab(-1);
           if (selected >= 0) {
             this._fireSelectEvents(selected);
@@ -1063,7 +1085,7 @@ function(oj, $, Components, DomUtils)
 
       _refresh: function () {
         // check for length avoids error when initializing empty list
-        var selectedPanel = this.element.children('.oj-tabs-selected');
+        var selectedPanel = this.element.children(_OJ_TABS_SEL);
         if (selectedPanel.length) {
           this.active = this.tablist.children('.oj-selected');
         } else {
@@ -1088,15 +1110,15 @@ function(oj, $, Components, DomUtils)
 
         // Make sure one tab is in the tab order
         if (this.active.length) {
-          this.active.addClass('oj-selected').attr(
+          this.active.addClass(_OJ_SEL).attr(
             {
               'aria-selected': 'true',
               tabIndex: '0'
             });
 
           selectedPanel.show()
-          .attr('aria-expanded', 'true')
-          .removeAttr('aria-hidden');
+          .attr(_ARIA_EXP, 'true') // @HTMLUpdateOK
+          .removeAttr(_ARIA_HIDDEN);
         } else {
           $(this.tabs[0]).attr('tabIndex', '0');
         }
@@ -1116,9 +1138,9 @@ function(oj, $, Components, DomUtils)
 
         if (this.options.selected === undefined ||
             this._getSelectedIndex() === 0) {
-          this.element.addClass('oj-first-child-selected');
+          this.element.addClass(_OJ_FIRST);
         } else {
-          this.element.removeClass('oj-first-child-selected');
+          this.element.removeClass(_OJ_FIRST);
         }
 
       //  - After a tab is deleted, reorder does not work
@@ -1136,7 +1158,7 @@ function(oj, $, Components, DomUtils)
           }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
 
         var cparent = this.conveyor.parent();
-        if (cparent.hasClass('oj-tabs-conveyorbelt-wrapper')) {
+        if (cparent.hasClass(_OJ_TABS)) {
           var flex = '0 1 ' + this._getConveyorWrapperMaxWidth() + 'px';
           cparent.css('flex', flex);
           cparent.css('-webkit-flex', flex);
@@ -1166,7 +1188,7 @@ function(oj, $, Components, DomUtils)
 
         //  - er for placing buttons alongside tabs
         // add oj-start class to the facets before the tab bar
-        this.element.children('.oj-tabs-facet').each(
+        this.element.children(_OJ_TABS_FACET).each(
         function () {
           var facet = $(this);
           if (facet.index() < tabbarIndex) {
@@ -1206,15 +1228,15 @@ function(oj, $, Components, DomUtils)
       //  - tabs lose selection when moved (sortable tabs)
         this.tablist.children('li').each(function () {
           var tab = $(this)
-          .addClass('oj-tabs-tab')
+          .addClass(_OJ_TABS_TABS)
           .attr({
             role: 'tab',
             tabIndex: '-1'
           })
-          .removeAttr('aria-hidden');
+          .removeAttr(_ARIA_HIDDEN);
 
           var div = tab.children();
-          div.addClass('oj-tabs-tab-content');
+          div.addClass(_OJ_TABS_CONTENT);
 
           var anchor = div.children();
           anchor.addClass('oj-tabs-anchor')
@@ -1225,22 +1247,14 @@ function(oj, $, Components, DomUtils)
 
           anchor.children()
             .addClass('oj-tabs-title')
-            .removeAttr('aria-hidden');
+            .removeAttr(_ARIA_HIDDEN);
 
           self.tabs = self.tabs.add(tab);
 
           var anchorId = anchor.uniqueId().attr('id');
-          var panelId = tab.attr('data-content');
+          var panelId = tab.attr(_DATA_CONTENT);
           var panel = self.element.find(self._sanitizeIdSelector(panelId));
 
-/*
-        if (tab.hasClass("oj-disabled"))
-        {
-          tab.attr("aria-disabled", "true");
-          // - clicking on disabled tab takes user to the top of the page
-          anchor.removeAttr("href");
-        }
-*/
           tab.attr(
             {
               'aria-controls': panelId,
@@ -1249,8 +1263,8 @@ function(oj, $, Components, DomUtils)
 
           self.panels = self.panels.add(panel);
 
-          panel.attr('aria-labelledby', anchorId)
-             .attr('role', 'tabpanel');
+          panel.attr(_ARIA_LABELLEDBY, anchorId) // @HTMLUpdateOK
+             .attr('role', 'tabpanel'); // @HTMLUpdateOK
         });
 
         if (edge === 'start' || edge === 'end') {
@@ -1373,7 +1387,7 @@ function(oj, $, Components, DomUtils)
         event.preventDefault();
 
         var oEvent = flags || event;
-        if (tab.hasClass('oj-disabled') ||
+        if (tab.hasClass(_OJ_DISABLED) ||
 
           // can't switch durning an animation
           this.running ||
@@ -1434,12 +1448,12 @@ function(oj, $, Components, DomUtils)
         }
 
         function show() {
-          toTab.addClass('oj-selected');
+          toTab.addClass(_OJ_SEL);
           if (self._isHorizontal() && self.tabs.length > 0) {
             if (toTab.index() === 0) {
-              self.element.addClass('oj-first-child-selected');
+              self.element.addClass(_OJ_FIRST);
             } else {
-              self.element.removeClass('oj-first-child-selected');
+              self.element.removeClass(_OJ_FIRST);
             }
           }
 
@@ -1453,7 +1467,7 @@ function(oj, $, Components, DomUtils)
 
       // start out by hiding, then showing, then completing
         var fromTab = eventData.fromTab.closest('li')
-        .removeClass('oj-selected');
+        .removeClass(_OJ_SEL);
 
         toHide.hide();
       //  - unable to stretch ojtable in an initially hidden ojtab
@@ -1468,7 +1482,7 @@ function(oj, $, Components, DomUtils)
             'aria-hidden': 'true'
           });
 
-        fromTab.attr('aria-selected', 'false');
+        fromTab.attr(_ARIA_SEL, 'false'); // @HTMLUpdateOK
 
       // If we're switching tabs, remove the old tab from the tab order.
       // If we're opening from collapsed state, remove the previous tab from the tab order.
@@ -1481,8 +1495,8 @@ function(oj, $, Components, DomUtils)
           .attr('tabIndex', '-1');
         }
 
-        toShow.attr('aria-expanded', 'true')
-        .removeAttr('aria-hidden');
+        toShow.attr(_ARIA_EXP, 'true') // @HTMLUpdateOK
+        .removeAttr(_ARIA_HIDDEN);
 
         toTab.attr(
           {
@@ -1528,7 +1542,7 @@ function(oj, $, Components, DomUtils)
 
           this._getEnabledTabs().each(function (index) {
             if (self._isTabRemovable($(this))) {
-              var div = $(this).find('> :first-child');
+              var div = $(this).find(_FIRST_CHILD);
               div.addClass('oj-removable');
 
             // add cue text for removable icon for screen reader users
@@ -1586,7 +1600,7 @@ function(oj, $, Components, DomUtils)
           this._sortable = undefined;
         }
 
-        var navRoot = this.element.children('.oj-tabs-nav-root');
+        var navRoot = this.element.children(_TABS_NAV_ROOT);
         var navRootNotUL = !navRoot.hasClass('oj-tabs-nav');
 
       //  - open/close of tabs leaks sortable
@@ -1602,7 +1616,7 @@ function(oj, $, Components, DomUtils)
             navRoot.children().each(
             function () {
               var child = $(this);
-              if (child.hasClass('oj-tabs-conveyorbelt-wrapper')) {
+              if (child.hasClass(_OJ_TABS)) {
                 child = tabbar;
               } else if (!child.hasClass('oj-tabs-facet')) {
                 return;
@@ -1654,20 +1668,20 @@ function(oj, $, Components, DomUtils)
           tab = $(this);
 
           tab.removeAttr('tabIndex')
-          .removeAttr('aria-selected')
-          .removeAttr('aria-labelledby')
-          .removeAttr('aria-hidden')
-          .removeAttr('aria-controls')
-          .removeAttr('aria-disabled')
+          .removeAttr(_ARIA_SEL)
+          .removeAttr(_ARIA_LABELLEDBY)
+          .removeAttr(_ARIA_HIDDEN)
+          .removeAttr(_ARIA_CONTROLS)
+          .removeAttr(_ARIA_DISABLED)
           .removeAttr('aria-describedby')
           .removeAttr('role')
-          .removeAttr('data-content')
+          .removeAttr(_DATA_CONTENT)
           .removeClass('oj-active oj-disabled oj-selected oj-tabs-gen-id oj-tabs-tab')
           .removeUniqueId()
           .css('display', '');
 
           div = tab.children('div')
-          .removeClass('oj-tabs-tab-content');
+          .removeClass(_OJ_TABS_CONTENT);
 
           anchor = div.children('a')
           .removeClass('oj-tabs-anchor')
@@ -1676,15 +1690,15 @@ function(oj, $, Components, DomUtils)
 
           header = anchor.children();
           header.removeClass('oj-tabs-title')
-          .removeAttr('aria-hidden');
+          .removeAttr(_ARIA_HIDDEN);
 
         // if old markup is used, move header back to its own div
           if (self._isOldMarkup) {
             header.prependTo(self.panels.get(index)); // @HTMLUpdateOK
-          } else if (div.hasClass('oj-tabs-gen-div') && anchor.hasClass('oj-tabs-gen-a')) {
+          } else if (div.hasClass('oj-tabs-gen-div') && anchor.hasClass(_TABS_GENA)) {
             header.prependTo(tab); // @HTMLUpdateOK
             div.remove();
-          } else if (anchor.hasClass('oj-tabs-gen-a')) {
+          } else if (anchor.hasClass(_TABS_GENA)) {
             header.prependTo(div); // @HTMLUpdateOK
             anchor.remove();
           } else if (div.hasClass('oj-tabs-gen-div')) {
@@ -1709,17 +1723,17 @@ function(oj, $, Components, DomUtils)
           var panel = $(this);
 
           panel.removeAttr('tabIndex')
-          .removeAttr('aria-expanded')
-          .removeAttr('aria-selected')
-          .removeAttr('aria-labelledby')
-          .removeAttr('aria-hidden')
+          .removeAttr(_ARIA_EXP)
+          .removeAttr(_ARIA_SEL)
+          .removeAttr(_ARIA_LABELLEDBY)
+          .removeAttr(_ARIA_HIDDEN)
           .removeAttr('role')
           .removeClass('oj-active oj-tabs-selected oj-tabs-gen-id oj-tabs-panel')
           .removeUniqueId()
           .css('display', '');
         });
 
-        this.element.children('.oj-tabs-facet').removeClass('oj-start');
+        this.element.children(_OJ_TABS_FACET).removeClass('oj-start');
       },
 
       _isTabRemovable: function (tab) {
@@ -1757,7 +1771,7 @@ function(oj, $, Components, DomUtils)
           }
 
           // if tab to be removed is selected, select the next enabled tab
-          if (tab.hasClass('oj-selected')) {
+          if (tab.hasClass(_OJ_SEL)) {
             var curIndex = this.tabs.index(tab);
             var nextIndex = this._getNextEnabledTab(curIndex);
 
@@ -1834,18 +1848,18 @@ function(oj, $, Components, DomUtils)
         if (header.prop('tagName').toLowerCase() === 'li') {
           tab = header;
           var div = tab.children('div');
-          if (div.length === 1 && div.hasClass('oj-tabs-tab-content')) {
+          if (div.length === 1 && div.hasClass(_OJ_TABS_CONTENT)) {
             var anchor = div.children('a');
             if (anchor.length !== 1) {
               tab.wrapInner("<a href='#'></a>"); // @HTMLUpdateOK
-              anchor.addClass('oj-tabs-gen-a');
+              anchor.addClass(_TABS_GENA);
             }
           } else {
             div = tab.wrapInner("<div><a href='#'></a></div>") // @HTMLUpdateOK
             .children();
 
             div.addClass('oj-tabs-gen-div oj-tabs-tab-content');
-            div.children().addClass('oj-tabs-gen-a');
+            div.children().addClass(_TABS_GENA);
           }
         } else {
           tab = header
@@ -1858,7 +1872,7 @@ function(oj, $, Components, DomUtils)
 
       // set content id on tab
         if (contentId) {
-          tab.attr('data-content', contentId);
+          tab.attr(_DATA_CONTENT, contentId); // @HTMLUpdateOK
         }
 
         return tab;
@@ -1902,11 +1916,11 @@ function(oj, $, Components, DomUtils)
         } else {
           // Backward compatible: move header to tab bar
           content = newTab;
-          tab = this._wrapLi($(newTab).find('> :first-child'),
+          tab = this._wrapLi($(newTab).find(_FIRST_CHILD),
                            this._getUniqueId(content));
         }
 
-        var navRoot = this.element.children('.oj-tabs-nav-root');
+        var navRoot = this.element.children(_TABS_NAV_ROOT);
         var tabbar;
         // vertical tabs
         if (navRoot.hasClass('oj-tabs-nav')) {
@@ -1929,7 +1943,7 @@ function(oj, $, Components, DomUtils)
         if (index >= 0 && index < tabbar.children().length) {
           var tabAfter = tabbar.children(':eq(' + index + ')');
           var contentAfter = this.element.children(
-          this._sanitizeIdSelector(tabAfter.attr('aria-controls')));
+          this._sanitizeIdSelector(tabAfter.attr(_ARIA_CONTROLS)));
 
           tabAfter.before(tab); // @HTMLUpdateOK
           contentAfter.before(content); // @HTMLUpdateOK
@@ -2104,13 +2118,13 @@ function(oj, $, Components, DomUtils)
         //  - er for placing buttons alongside tabs
           var newTable;
 
-          if (this.element.children('.oj-tabs-facet').length > 0) {
+          if (this.element.children(_OJ_TABS_FACET).length > 0) {
             newTable = ulParent
             .wrap('<div>') // @HTMLUpdateOK
             .wrap('<div>') // @HTMLUpdateOK
             .parent()
             .parent()
-            .addClass('oj-tabs-conveyorbelt-wrapper');
+            .addClass(_OJ_TABS);
           } else {
             newTable = ulParent;
           }
@@ -2139,7 +2153,7 @@ function(oj, $, Components, DomUtils)
         }
       },
 
-    //* * @inheritdoc */
+
       getNodeBySubId: function (locator) {
         if (locator == null) {
           return this.element ? this.element[0] : null;
@@ -2148,7 +2162,7 @@ function(oj, $, Components, DomUtils)
         var subId = locator.subId;
         var index = locator.index;
 
-        if (subId !== 'oj-conveyorbelt' &&
+        if (subId !== _CONV &&
           ((typeof index !== 'number') ||
            index < 0 || index >= this.panels.length)) {
           return null;
@@ -2165,7 +2179,7 @@ function(oj, $, Components, DomUtils)
             return this.tabs[index];
 
           case 'oj-tabs-title':
-            return $(this.tabs[index]).find('.oj-tabs-title')[0];
+            return $(this.tabs[index]).find(_TABS_TITLE)[0];
 
           case 'oj-tabs-close-icon':
           case 'oj-tabs-close':
@@ -2177,7 +2191,7 @@ function(oj, $, Components, DomUtils)
         return null;
       },
 
-    //* * @inheritdoc */
+
       getSubIdByNode: function (node) {
         var panels = [];
         for (var i = 0; i < this.tabs.length; i++) {
@@ -2189,7 +2203,7 @@ function(oj, $, Components, DomUtils)
       // Find the tab, panel or conveyor belt this node is a descendent of
         while (currentNode) {
           if (this.conveyor && currentNode === this.conveyor[0]) {
-            return { subId: 'oj-conveyorbelt' };
+            return { subId: _CONV };
           }
 
           tabIndex = Array.prototype.indexOf.call(this.tabs, currentNode);
@@ -2198,7 +2212,7 @@ function(oj, $, Components, DomUtils)
           }
           panelIndex = panels.indexOf(currentNode);
           if (panelIndex !== -1) {
-            return { subId: 'oj-tabs-panel', index: panelIndex };
+            return { subId: _TABS_PANEL, index: panelIndex };
           }
 
           currentNode = currentNode.parentElement;
@@ -2206,15 +2220,15 @@ function(oj, $, Components, DomUtils)
       // If it's a tab, identify the specific subelement
         if (tabIndex !== -1) {
           var title = this.getNodeBySubId({ subId: 'oj-tabs-title', index: tabIndex });
-          var closeIcon = this.getNodeBySubId({ subId: 'oj-tabs-close', index: tabIndex });
+          var closeIcon = this.getNodeBySubId({ subId: _TABS_CLOSE, index: tabIndex });
           currentNode = node;
           while (currentNode) {
             if (currentNode === title) {
               return { subId: 'oj-tabs-title', index: tabIndex };
             } else if (currentNode === closeIcon) {
-              return { subId: 'oj-tabs-close', index: tabIndex };
+              return { subId: _TABS_CLOSE, index: tabIndex };
             } else if (currentNode === this.tabs[tabIndex]) {
-              return { subId: 'oj-tabs-tab', index: tabIndex };
+              return { subId: _OJ_TABS_TABS, index: tabIndex };
             }
             currentNode = currentNode.parentElement;
           }
@@ -2250,40 +2264,29 @@ function(oj, $, Components, DomUtils)
       _applyTabMaxWidth: function () {
         var maxWidth = this._getTabMaxWidth();
 
-        this.tablist.find('.oj-tabs-title').each(function () {
+        this.tablist.find(_TABS_TITLE).each(function () {
           $(this).css('max-width', '' + maxWidth + 'px')
                .addClass('oj-tabs-title-overflow');
         });
-
-//      this._logMessage("apply max width");
       },
 
       _removeTabMaxWidth: function () {
-        this.tablist.find('.oj-tabs-title').each(function () {
+        this.tablist.find(_TABS_TITLE).each(function () {
           $(this).css('max-width', '')
                .removeClass('oj-tabs-title-overflow');
         });
-
-//      this._logMessage("remove max width");
       },
-
       _logMessage: function (/* msg */) {
-//      console.log(msg);
       },
 
     /* resize handler */
       _handleResize: function (/* width */) {
-//      this._logMessage("width " + width + " ulWidth " + this._originalWidth +
-//                       " clientWidth " + this._getTabsWidth());
-
-      //  - truncation=none tabs + buttons are not laid out correctly.
+      // truncation=none tabs + buttons are not laid out correctly.
       // if no truncation, skip applying tab max width
         if (this._isProgressive()) {
           if (this._isOverflow()) {
-//        this._logMessage("overflow");
             this._applyTabMaxWidth();
           } else {
-//        this._logMessage("underflow");
             this._removeTabMaxWidth();
           }
         }
@@ -2532,7 +2535,7 @@ function(oj, $, Components, DomUtils)
             menu.$container.remove();
           }
           if (menu.$menuItems) {
-            for (; menu.$menuItems.length > 0;) {
+            while (menu.$menuItems.length > 0) {
               menu.$menuItems.pop().remove();
             }
           }
@@ -2613,7 +2616,7 @@ function(oj, $, Components, DomUtils)
       },
 
       _getPanelForTab: function (tab) {
-        return this.element.find(this._sanitizeIdSelector($(tab).attr('aria-controls')));
+        return this.element.find(this._sanitizeIdSelector($(tab).attr(_ARIA_CONTROLS)));
       },
 
       _getUniqueId: function (panel) {
@@ -2683,8 +2686,8 @@ function(oj, $, Components, DomUtils)
       // clear oj-disabled that were on the tabs
         var tabbar = this.tablist ? this.tablist : this.element.children('ul');
         var children = tabbar.children('li');
-        children.removeClass('oj-disabled')
-              .removeAttr('aria-disabled');
+        children.removeClass(_OJ_DISABLED)
+              .removeAttr(_ARIA_DISABLED);
 
         var arr = [];
 
@@ -2696,10 +2699,10 @@ function(oj, $, Components, DomUtils)
           for (var i = 0; i < disTabs.length; i++) {
             tab = this._getTab(disTabs[i]);
             if (tab) {
-              tab.addClass('oj-disabled');
+              tab.addClass(_OJ_DISABLED);
 
-              tab.attr('aria-disabled', 'true');
-            //  - clicking on disabled tab takes user to the top of the page
+              tab.attr(_ARIA_DISABLED, 'true'); // @HTMLUpdateOK
+            // clicking on disabled tab takes user to the top of the page
               tab.find('.oj-tabs-anchor').removeAttr('href');
 
               id = tab.attr('id');
@@ -2722,7 +2725,7 @@ function(oj, $, Components, DomUtils)
           this.tablist.children().each(
           function () {
             var tab = $(this);
-            if (tab.hasClass('oj-disabled')) {
+            if (tab.hasClass(_OJ_DISABLED)) {
               arr.push(self._getTabIdOrIndex(tab));
             }
           });
@@ -2733,9 +2736,7 @@ function(oj, $, Components, DomUtils)
           if (this._initialRender) {
             this.options.disabledTabs = arr;
           } else {
-            var context = {};
-            context.internalSet = true;
-            context.writeback = true;
+            var context = { internalSet: true, writeback: true };
             this.option({ disabledTabs: arr }, { _context: context, changed: true });
           }
         }
@@ -2780,7 +2781,7 @@ function(oj, $, Components, DomUtils)
 
           this.element.children().each(
           function (index) {
-            var tab = self._wrapLi($(this).find('> :first-child'), contentIds[index]);
+            var tab = self._wrapLi($(this).find(_FIRST_CHILD), contentIds[index]);
 
             tab.appendTo(tabbar); // @HTMLUpdateOK
           });
@@ -2791,11 +2792,11 @@ function(oj, $, Components, DomUtils)
 
     //  - er for placing buttons alongside tabs
       _addFacets: function () {
-        var navRoot = this.element.children('.oj-tabs-nav-root');
+        var navRoot = this.element.children(_TABS_NAV_ROOT);
         var self = this;
         var tabbarWrapper = navRoot.children('.oj-tabs-conveyorbelt-wrapper');
 
-        this.element.children('.oj-tabs-facet').each(
+        this.element.children(_OJ_TABS_FACET).each(
         function () {
           var facet = $(this);
           var facetId = self._getUniqueId(facet);
@@ -2820,7 +2821,7 @@ function(oj, $, Components, DomUtils)
         this.element.children(':not(ul):not(.oj-tabs-facet)').each(
         function () {
           var panel = $(this);
-          panel.addClass('oj-tabs-panel');
+          panel.addClass(_TABS_PANEL);
           contentIds.push(self._getUniqueId(panel));
         });
 
@@ -2840,7 +2841,7 @@ function(oj, $, Components, DomUtils)
      * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
      *
      * @example <caption>Get the second tab:</caption>
-     * var node = $( ".selector" ).ojTabs( "getNodeBySubId", {'subId': 'oj-tabs-tab', 'index': 1} );
+     * var node = $( ".selector" ).ojTabs( "getNodeBySubId", {'subId': _OJ_TABS_TABS, 'index': 1} );
      */
 
     /**

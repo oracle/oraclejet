@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojOptgroup extends JetElement<ojOptgroupSettableProperties> {
     disabled: boolean;
@@ -42,4 +36,16 @@ export namespace OptgroupElement {
     type disabledChanged = JetElementCustomEvent<ojOptgroup["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelChanged = JetElementCustomEvent<ojOptgroup["label"]>;
+}
+export interface OptgroupIntrinsicProps extends Partial<Readonly<ojOptgroupSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondisabledChanged?: (value: ojOptgroupEventMap['disabledChanged']) => void;
+    onlabelChanged?: (value: ojOptgroupEventMap['labelChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-optgroup": OptgroupIntrinsicProps;
+        }
+    }
 }

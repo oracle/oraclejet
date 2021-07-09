@@ -12,6 +12,7 @@ function(oj, $, Context, Components, DomUtils)
   "use strict";
 
 
+
 /* global DomUtils:false, TreeUtils:false */
 
 /* jslint browser: true,devel:true*/
@@ -227,10 +228,6 @@ oj.TreeDndContext.prototype.initDnDOpts = function () {
   }
 
   dnd.pureReorder = (dnd.reorder && (!dnd.dragFromEnabled));
-
-// if (dnd.reorder || dnd.dropToEnabled) {
-//   this._applyDefaults(this.options["dnd"], this._dnd.defaults) ;  // not yet exposed
-// }
 };
 
 
@@ -331,11 +328,6 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
   var dnd = this._dnd;
   var vars = dnd.vars;
 
-  // this._trace(this._elemId + " _dragStart(" + $node.attr("id") + ") - dragged=" + dnd.nodeDraggedId +
-  //            "  nodeLastEnter=" +
-  //            (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
-  //            (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null"), 1) ;
-
   vars.o = null; // no dragged node(s) yet
   vars.r = null; // no reference node yet
   dnd.nodeLastEnter = null;
@@ -356,8 +348,7 @@ oj.TreeDndContext.prototype._dragStart = function (e) {
 
   //  Add dragged node(s) to transfer data.  If dragged node is selected,
   //  then will drag all selected nodes, else just have the one node.
-  $nodes = (this.component.isSelected($node)) ? this.component._getNode(null, true) :
-    $nodes = $node;
+  $nodes = (this.component.isSelected($node)) ? this.component._getNode(null, true) : $node;
 
   // Set app defined dataTypes to the node data
   if (dnd.dragFromEnabled || dnd.pureReorder) {
@@ -455,19 +446,9 @@ oj.TreeDndContext.prototype._dragEnter = function (e) {
     this._dndClean();
     return undefined;
   }
-
-  // this._trace(this._elemId + " _dragEnter(" +  e.target.tagName + ", " +
-  //            (bNode? $node.attr("id") : "nonode") + ") - draggedId=" +
-  //            dnd.nodeDraggedId + "  nodeLastEnter=" + " dragStarted=" + dnd.dragStarted +
-  //            (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") +
-  //            " lastLeft=" + (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null") +
-  //            " vars.o=" + vars.o + " vars.r=" + vars.r + "  dnd.foreign=" + dnd.foreign, 1) ;
-
   // If foreign object see if it is a tree or non-tree
   if (dnd.foreign) {
     bForeignTree = this._isDtType(dt, cons._DND_INTERNAL_DT);
-    // this._trace("_dragEnter - " + (bForeignTree? "Foreign Tree" :
-    //                                             "Foreign Object (non-tree)"), 1) ;
 
     // Not from this tree. If this tree does not allow drops, can't continue.
     if (!dnd.dropToEnabled) {
@@ -572,16 +553,6 @@ oj.TreeDndContext.prototype._dragOver = function (e) {
   var bClean = false;
   var ret;
 
-  // -------Debugging----------
-  // var $n = this._getNode($(e.target));
-  // this._trace(this._elemId + " _dragOver(" + e.target.tagName + ", " +
-  //             (($n && $n.length)? $n.attr("id") : "nonode") + ") - dragged=" + dnd.nodeDraggedId +
-  //              "  nodeLastEnter=" +
-  //              (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
-  //              (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null") +
-  //              " vars.o=" + vars.o + " vars.r=" + vars.r + " dnd.foreign=" + dnd.foreign, 1) ;
-  // -------End Debugging--------
-
   // Did _dragEnter() determine node is a drop target?
   if ((!vars.r) || (!vars.r.length)) {
     this._dndHideMarker();
@@ -602,7 +573,6 @@ oj.TreeDndContext.prototype._dragOver = function (e) {
   }
 
   this._dndPlacement(e, $node);
-  // this._dndDrag(e) ;
 
   if (!this._dndPrepare()) { // returns "after", "before", "inside" if drop position is acceptable
     this._dndHideMarker();
@@ -656,16 +626,6 @@ oj.TreeDndContext.prototype._dragDrop = function (e) {
   var veto = false;
   var ret;
 
-  // -- debugging --
-  // var $t = $(e.target);
-  // var $n = this._getNode($t);
-  // this._trace(this._elemId + " _dragDrop(" + $n.attr("id") + ") - dnd.nodeDraggedId=" +
-  //                  dnd.nodeDraggedId + "  dnd.nodeLastEnter=" +
-  //                  (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
-  //                  (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null") +
-  //                  " vars.o=" + vars.o + " vars.r=" + vars.r + " dnd.foreign=" + dnd.foreign, 1) ;
-  // -- debugging --
-
   if (vars.r) { // sanity check - ensure we have a ref node drop position
     if (dnd.dropDropCallback) {
       ret = dnd.dropDropCallback(e, {
@@ -709,16 +669,6 @@ oj.TreeDndContext.prototype._dragEnd = function (e) {
   var dnd = this._dnd;
   var vars = dnd.vars;
 
-  // ----debugging
-  // this._trace(this._elemId + " _dragEnd(" + ( e?  $(e.target).closest("li").attr("id") : "") + ") - dragged=" +
-  //            dnd.nodeDraggedId + "  lastEnter=" +
-  //            (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
-  //            (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null") +
-  //            " vars.o=" + vars.o + " vars.r=" + vars.r + " dnd.foreign=" + dnd.foreign +
-  //            " reorder=" + (dnd.reorder && vars.o) + dropEffect=" +
-  //            ((e && e.dataTransfer)? e.dataTransfer.dropEffect : "(event=null)"), 1) ;
-  // ----debugging
-
   if (dnd.dragEndCallback) { // check if app callback in drag options?
     dnd.dragEndCallback(e, {
       reorder: (dnd.reorder && vars.o === false)
@@ -757,13 +707,6 @@ oj.TreeDndContext.prototype._dragLeave = function (e) {
   var bNode = ($node && ($node.length > 0) && $node.hasClass('oj-tree-node'));
   var dt = e.originalEvent.dataTransfer;
 
-  // this._trace(this._elemId + " _dragLeave(" + e.target.tagName + ", " + (bNode? $node.attr("id"): "nonode") +
-  //                 ") - dragged=" + dnd.nodeDraggedId + "  nodeLastEnter=" +
-  //                 (dnd.nodeLastEnter? dnd.nodeLastEnter.attr("id") : "null") + " lastLeft=" +
-  //                 (dnd.nodeLastLeft? dnd.nodeLastLeft.attr("id") : "null") +
-  //                 " vars.o=" + vars.o + " vars.r=" + vars.r + " dnd.foreign=" + dnd.foreign +
-  //                 " dropEffect=" + e.dataTransfer.dropEffect, 1) ;
-
   if (dnd.dropDragLeaveCallback) {
     dnd.dropDragLeaveCallback(e, { item: dnd.bInternalNode ? null : $node });
   }
@@ -790,12 +733,9 @@ oj.TreeDndContext.prototype._dndEnter = function () {
   var dnd = this._dnd;
   var vars = dnd.vars;
 
-   // this._trace("_dndEnter vars.o = " + vars.o + " vars.r = " +  vars.r) ;
-
   dnd.prepared = false; // no prepMoveBlk object yet
   var ret = this._dndPrepare();
 
-  // var ms  = s["openTimeout"] ;     // not publicly exposed
   var ms = dnd.openTimeoutMs; // open timeout value (ms)
   if (ms) {
     if (dnd.openTimer_Id) {
@@ -1071,12 +1011,6 @@ oj.TreeDndContext.prototype._dndClean = function () {
   if (dnd.openTimerId) {
     clearTimeout(dnd.openTimerId);
   }
-  // if (dnd.i1)  {
-  //  clearInterval(dnd.i1);
-  // }
-  // if (dnd.i2)  {
-  //  clearInterval(dnd.i2);
-  // }
 
   dnd.nodeDraggedId = null;
   dnd.foreign = false;
@@ -1088,8 +1022,6 @@ oj.TreeDndContext.prototype._dndClean = function () {
   dnd.off = false;
   dnd.prepared = false;
   dnd.openTimerId = false;
-  // dnd.i1             = false;
-  // dnd.i2             = false;
   dnd.foreign = false;
   dnd.bInternalNode = false;
 };
@@ -1191,9 +1123,6 @@ oj.TreeDndContext.prototype._dndShowMarker = function () {
   var lineTop; // top pos of marker line rel to doc
   var nodeHeight = this.component._getNodeHeight();
   var r = false;
-
-  // this._trace("dndShowMarker entry  vars.o = " + vars.o + "  vars.r = " + vars.r + " dnd.place = " + dnd.place, 1) ;
-  // this._trace("dnd['after'] = " + dnd['after'] + " dnd['inside'] = " + dnd['inside'] + " dnd['before'] = " + dnd['before']) ;
 
   if (!dnd.prepared) {
     this._dndHideMarker();
@@ -1361,14 +1290,6 @@ oj.TreeDndContext.prototype._dndStopDrag = function () {
   var dnd = this._dnd;
   var vars = dnd.vars;
   var cons = oj.TreeDndContext;
-
-//      if (vars.sli)  {
-//        clearInterval(vars.sli);
-//      }
-//      if (vars.sti)   {
-//        clearInterval(vars.sti);
-//      }
-//
 
   if (vars.r) {
     this._clearDropClasses(vars.r);
@@ -1605,25 +1526,15 @@ oj.TreeDndContext.prototype._reset = function () {
   _dnd.cof = false;
   _dnd.cw = false;
   _dnd.ch = false;
-// _dnd.i1         = false ;      // not currently used
-// _dnd.i2         = false ;      // not currently used
   _dnd.ml_width = 100; // marker line width - updated in _initDnd() from css
   _dnd.targ_ml_width = 100; // marker line width of target node
   _dnd.openTimeoutMs = 500; // open folder timeout when dragged over
-// _dnd.defaults = { // not yet exposed
-//                    "openTimeout"  : 500
-//                    "checkTimeout" : 100 };
   _dnd.vars = {}; // drag/drop block of vars
   _dnd.vars.o = false; // node(s) being dragged, or
                                    // 1 if foreign obj, or 2 if foreign node(s)
   _dnd.vars.r = false; // reference node
   _dnd.vars.m = false; // marker pointer div
   _dnd.vars.ml = false; // marker line div
-// _dnd.vars.sli      = undefined ;
-// _dnd.vars.sti      = undefined ;
-// _dnd.vars.dir1     = false ;
-// _dnd.vars.dir2     = false ;
-// _dnd.vars.last_pos = false ;
 };
 
 
@@ -1801,9 +1712,12 @@ TreeUtils._OJ_DISABLED = 'oj-disabled';
 TreeUtils._OJ_DEFAULT = 'oj-default';
 TreeUtils._OJ_TEMPNODE = 'oj-treenode-temp';
 
-
-
 /**
+ * @license
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
+ * as shown at https://oss.oracle.com/licenses/upl/
+ *
  * @license
  * This component is based on original code from:
  * jsTree 1.0-rc3   http://jstree.com/

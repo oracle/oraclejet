@@ -13,13 +13,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojmessaging', 'ojs/ojknock
   Message = Message && Object.prototype.hasOwnProperty.call(Message, 'default') ? Message['default'] : Message;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Tracks the validity of a group of components bound to this observable. It also provides
    * properties and methods that the page author can use to enforce form validation best practice.
    *
@@ -570,13 +563,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojmessaging', 'ojs/ojknock
     return !Message.isValid(messages);
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /* jslint browser: true, devel: true*/
 
   // private to prevent creating a JSDoc page for this class.  The only thing we wish

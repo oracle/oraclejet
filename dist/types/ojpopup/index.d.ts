@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojPopup extends baseComponent<ojPopupSettableProperties> {
     autoDismiss: 'none' | 'focusLoss';
@@ -90,7 +84,7 @@ export namespace ojPopup {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
-        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'right';
         vertical?: 'top' | 'bottom' | 'center';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -193,4 +187,27 @@ export namespace PopupElement {
         x?: number;
         y?: number;
     };
+}
+export interface PopupIntrinsicProps extends Partial<Readonly<ojPopupSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojPopupEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojPopupEventMap['ojAnimateStart']) => void;
+    onojBeforeClose?: (value: ojPopupEventMap['ojBeforeClose']) => void;
+    onojBeforeOpen?: (value: ojPopupEventMap['ojBeforeOpen']) => void;
+    onojClose?: (value: ojPopupEventMap['ojClose']) => void;
+    onojFocus?: (value: ojPopupEventMap['ojFocus']) => void;
+    onojOpen?: (value: ojPopupEventMap['ojOpen']) => void;
+    onautoDismissChanged?: (value: ojPopupEventMap['autoDismissChanged']) => void;
+    onchromeChanged?: (value: ojPopupEventMap['chromeChanged']) => void;
+    oninitialFocusChanged?: (value: ojPopupEventMap['initialFocusChanged']) => void;
+    onmodalityChanged?: (value: ojPopupEventMap['modalityChanged']) => void;
+    onpositionChanged?: (value: ojPopupEventMap['positionChanged']) => void;
+    ontailChanged?: (value: ojPopupEventMap['tailChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-popup": PopupIntrinsicProps;
+        }
+    }
 }

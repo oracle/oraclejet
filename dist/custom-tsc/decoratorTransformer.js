@@ -23,11 +23,8 @@ const ts = __importStar(require("typescript"));
 const DecoratorUtils_1 = require("./utils/DecoratorUtils");
 const _DT_DECORATORS = new Set([
     "method",
-    "rootProperty",
-    "readOnly",
-    "event",
-    "consumeBinding",
-    "provideBinding",
+    "consumedBindings",
+    "providedBindings",
 ]);
 function decoratorTransformer(buildOptions) {
     function visitor(ctx, sf) {
@@ -48,8 +45,8 @@ function decoratorTransformer(buildOptions) {
                 }
                 if (!updatedDecorators ||
                     updatedDecorators.length < node.decorators.length) {
-                    if (ts.isPropertyDeclaration(node)) {
-                        return ts.factory.updatePropertyDeclaration(node, updatedDecorators, node.modifiers, node.name, node.questionToken || node.exclamationToken, node.type, node.initializer);
+                    if (ts.isClassDeclaration(node)) {
+                        node = ts.factory.updateClassDeclaration(node, updatedDecorators, node.modifiers, node.name, node.typeParameters, node.heritageClauses, node.members);
                     }
                     else if (ts.isMethodDeclaration(node)) {
                         return ts.factory.updateMethodDeclaration(node, updatedDecorators, node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters, node.type, node.body);

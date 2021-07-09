@@ -3,6 +3,7 @@
 @import "../utilities/oj.utilities.units";
 @import "../utilities/oj.utilities.modules";
 @import "../utilities/oj.utilities.theming.vars";
+@import "../utilities/oj.utilities.json";
 
 //-----------------------------------------------------------------------------
 // Variable Naming Conventions
@@ -610,6 +611,7 @@
 // Currently this is used by collection components such as datagrid, table, listview
 // but is generally applicable in places where loading indicator is used
 //$loadingIndicatorDelayDuration: "250" !default;
+
 //$loadingBgImage: linear-gradient(
 //  90deg,
 //  $neutralColor6 0%,
@@ -1116,6 +1118,8 @@
 //// OFFCANVAS
 ////----------------------------------------
 //// options
+//
+//// values could be "push"(alta default/ios) or "overlay"(for android/windows)
 //$offcanvasDisplayModeOptionDefault: overlay !default;
 //
 //// MENU
@@ -2425,10 +2429,10 @@
 //// Table sticky layouts
 //$tableEnableSticky: false !default;
 //
-//// animations
 //$tableAddAnimation: (
 //  (
 //    effect: "slideIn",
+// 
 //    direction: "bottom"
 //  ),
 //  "fadeIn"
@@ -2500,6 +2504,7 @@
 //$listViewPointerUpAnimation: (
 //  effect: "none"
 //) !default;
+//
 //// gridlines option defaulting
 //$listViewGridlinesItemOptionDefault: visible !default;
 //$listViewGridlinesTopOptionDefault: visible !default;
@@ -2766,7 +2771,7 @@
 //
 ////This value will be ignored when $navigationListIconOnlyStyle is set to 'circle'.
 //$navigationListIconOnlyItemBorderWidth: 0 0 0
-//  $navigationListItemAccentBorderWidth !default; // the right and left borders will be flipped in rtl languanges
+//$navigationListItemAccentBorderWidth !default; // the right and left borders will be flipped in rtl languanges
 ////This value will be ignored when $navigationListIconOnlyStyle is set to 'circle'.
 //
 ////-------Navlist Contrast variables--------------
@@ -3310,6 +3315,7 @@
 //$avatarInnerBgColor: $iconCircleInnerBgColor !default;
 //$avatarBorderColor: $avatarInnerBgColor !default;
 //$avatarTextColor: $iconCircleFontColor !default;
+//$avatarShapeOptionDefault: 'circle' !default;
 //
 ////Width of the inner circle
 //$avatarXxsInnerSize: 32px !default;
@@ -3488,6 +3494,93 @@
 //  "--oj-drop-target-1-color": $dropTarget1Color,
 //  "--oj-drop-target-2-color": $dropTarget2Color,
 //  "--oj-color-required": $brandColorDark1
+//);
+
+// Map of Option default css vars
+//$oj-css-option-defaults-map: (
+//
+//  --oj-private-core-global-dropdown-offset: 0,
+//
+//  --oj-private-avatar-global-shape-default: $avatarShapeOptionDefault,
+//
+//  --oj-private-conveyor-belt-global-arrow-visibility-default: $conveyorBeltArrowVisibilityOptionDefault,
+//  
+//  --oj-private-table-global-add-animation:  oj-json($tableAddAnimation),
+//  --oj-private-table-global-remove-animation:  oj-json($tableRemoveAnimation),
+//  --oj-private-table-global-update-animation:  oj-json($tableUpdateAnimation),
+//  --oj-private-table-global-display-default:           $tableDisplayOptionDefault,
+//  --oj-private-table-global-display-list-horizontal-grid-visible-default:    $tableHorizontalGridVisibleOptionDefault,
+//  --oj-private-table-global-load-indicator-default:       $tableLoadIndicator,
+//  --oj-private-table-global-enable-selector-default:       $tableEnableSelector,
+//  --oj-private-table-global-sticky-default:       $tableEnableSticky,
+//
+//  --oj-private-core-global-loading-indicator-delay-duration: $loadingIndicatorDelayDuration,
+//
+//  --oj-private-button-global-chroming-default:   $buttonChromingOptionDefault,
+//  --oj-private-buttonset-global-chroming-default: $buttonsetChromingOptionDefault,
+//
+//  --oj-private-toolbar-global-chroming-default: $toolbarChromingOptionDefault,
+//  
+//  --oj-private-off-canvas-global-display-mode-default: $offcanvasDisplayModeOptionDefault,
+//
+//  --oj-private-tree-view-global-expand-animation:                 oj-json($treeViewExpandAnimation),
+//  --oj-private-tree-view-global-collapse-animation:               oj-json($treeViewCollapseAnimation),
+//  --oj-private-tree-view-global-data-fadein-duration:             $treeViewDataFadeInDuration,
+//  --oj-private-tree-view-global-selection-affordance-default:     $treeViewMultipleSelectionAffordance,
+//  --oj-private-tree-view-global-load-indicator-default:   $treeViewLoadIndicator,
+//
+//  --oj-private-popup-global-modality-default: $popupModalityOptionDefault,
+//
+//  --oj-private-popup-global-open-animation-default: oj-json($popupOpenAnimation),
+//  --oj-private-popup-global-close-animation-default: oj-json($popupCloseAnimation),
+//  
+//  --oj-private-menu-global-drop-down-open-animation:  oj-json($menuDropDownOpenAnimation),
+//  --oj-private-menu-global-drop-down-close-animation:  oj-json($menuDropDownCloseAnimation),
+//  --oj-private-menu-global-sheet-open-animation:  oj-json($menuSheetOpenAnimation),
+//  --oj-private-menu-global-sheet-close-animation:  oj-json($menuSheetCloseAnimation),
+//  --oj-private-menu-global-submenu-open-animation:  oj-json($menuSubmenuOpenAnimation),
+//  --oj-private-menu-global-submenu-close-animation:  oj-json($menuSubmenuCloseAnimation),
+//  --oj-private-menu-global-sheet-cancel-affordance: $menuSheetCancelAffordance,
+//  --oj-private-menu-global-sheet-swipe-down-behavior: $menuSheetSwipeDownBehavior,
+//  --oj-private-menu-global-drop-down-modality: $menuDropDownModality,
+//  --oj-private-menu-global-sheet-modality: $menuSheetModality,
+//  --oj-private-menu-global-sheet-margin-bottom: $menuSheetMarginBottom,
+//
+//  --oj-private-input-number-button-global-chroming-default: $inputNumberButtonChromingOptionDefault,
+//  --oj-private-input-number-global-step-default: $inputNumberStepOptionDefault,
+//  --oj-private-list-view-global-load-indicator-default: $listViewLoadIndicator,
+//
+//  --oj-private-list-view-global-add-animation-default: oj-json($listViewAddAnimation),
+//  --oj-private-list-view-global-remove-animation-default: oj-json($listViewRemoveAnimation),
+//  --oj-private-list-view-global-update-animation-default: oj-json($listViewUpdateAnimation),
+//  --oj-private-list-view-global-expand-animation-default: oj-json($listViewExpandAnimation),
+//  --oj-private-list-view-global-collapse-animation-default: oj-json($listViewCollapseAnimation),
+//  --oj-private-list-view-global-pointerUp-animation-default: oj-json($listViewPointerUpAnimation),
+//  
+//  --oj-private-list-view-global-gridlines-item-default: $listViewGridlinesItemOptionDefault,
+//  --oj-private-list-view-global-gridlines-top-default: $listViewGridlinesTopOptionDefault,
+//  --oj-private-list-view-global-gridlines-bottom-default: $listViewGridlinesBottomOptionDefault,
+//    
+//  --oj-private-navigation-list-global-horizontal-add-animation-default: oj-json($navigationListHorizontalAddAnimation),
+//  --oj-private-navigation-list-global-horizontal-remove-animation-default: oj-json($navigationListHorizontalRemoveAnimation),
+//  --oj-private-navigation-list-global-add-animation-default: oj-json($navigationListAddAnimation),
+//  --oj-private-navigation-list-global-remove-animation-default: oj-json($navigationListRemoveAnimation),
+//  --oj-private-navigation-list-global-update-animation-default: oj-json($navigationListUpdateAnimation),
+//  --oj-private-navigation-list-global-expand-animation-default: oj-json($navigationListExpandAnimation),
+//  --oj-private-navigation-list-global-collapse-animation-default: oj-json($navigationListCollapseAnimation),
+//  --oj-private-navigation-list-global-slider-expand-animation-default: oj-json($navigationListSliderExpandAnimation),
+//  --oj-private-navigation-list-global-slider-collapse-animation-default: oj-json($navigationListSliderCollapseAnimation),
+//  --oj-private-navigation-list-global-pointer-up-animation-default: oj-json($navigationListPointerUpAnimation),
+//    
+//  --oj-private-navigation-list-global-hierarchy-menu-threshold-default: $navigationListHierarchyMenuThresholdOptionDefault,
+//  
+//  --oj-private-tab-bar-global-horizontal-add-animation-default:  oj-json($tabBarHorizontalAddAnimation),
+//  --oj-private-tab-bar-global-horizontal-remove-animation-default: oj-json($tabBarHorizontalRemoveAnimation),
+//  --oj-private-tab-bar-global-add-animation-default: oj-json($tabBarAddAnimation),
+//  --oj-private-tab-bar-global-remove-animation-default: oj-json($tabBarRemoveAnimation),
+//  --oj-private-tab-bar-global-update-animation-default: oj-json($tabBarUpdateAnimation),
+//  --oj-private-tab-bar-global-pointerUp-animation-default: oj-json($tabBarPointerUpAnimation)
+//  
 //);
 
 // For quiet forms

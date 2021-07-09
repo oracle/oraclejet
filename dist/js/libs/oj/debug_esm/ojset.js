@@ -10,7 +10,7 @@ import KeySetImpl from 'ojs/ojkeysetimpl';
 class ojSet {
     constructor(initialKeys) {
         this.initialKeys = initialKeys;
-        let self = this;
+        const self = this;
         this._set = new Set();
         this._keyset = new KeySetImpl();
         if (initialKeys) {
@@ -19,7 +19,7 @@ class ojSet {
             });
         }
         Object.defineProperty(this, 'size', {
-            get: function () {
+            get() {
                 return this._set.size;
             }
         });
@@ -32,7 +32,7 @@ class ojSet {
         this._keyset._keys.clear();
     }
     delete(key) {
-        var theKey = this._keyset.get(key);
+        const theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
             return false;
         }
@@ -55,7 +55,7 @@ class ojSet {
         return this._keyset.has(key);
     }
     add(key) {
-        var theKey = this._keyset.get(key);
+        const theKey = this._keyset.get(key);
         if (theKey === this._keyset.NOT_A_KEY) {
             this._keyset._keys.add(key);
             this._set.add(key);

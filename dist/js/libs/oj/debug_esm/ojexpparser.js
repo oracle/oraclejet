@@ -8,9 +8,14 @@
 /**
  * @license
  * Copyright (c) 2019 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ *
+ * Based on JSEP Parser
+ * @license
+ * JavaScript Expression Parser (JSEP) 0.3.4
+ * JSEP may be freely distributed under the MIT License
+ * http://jsep.from.so/
  */
 
 /* eslint-disable no-use-before-define */
@@ -19,11 +24,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable one-var */
 /* eslint-disable no-param-reassign */
-// Based on JSEP Parser
-//
-//     JavaScript Expression Parser (JSEP) 0.3.4
-//     JSEP may be freely distributed under the MIT License
-//     http://jsep.from.so/
 
 /**
  * @ignore
@@ -365,7 +365,7 @@ const ExpParser = function () {
   // e.g.: `foo`, `_value`, `$x1`
   // Also, this function checks if that identifier is a literal:
   // (e.g. `true`, `false`, `null`) or `this`
-  function _gobbleIdentifier(context) {
+  function _gobbleIdentifier(context, bMemberExpr) {
     var expr = context.expr;
     var ch = expr.charCodeAt(context.index), start = context.index, identifier;
 
@@ -386,8 +386,9 @@ const ExpParser = function () {
     }
     identifier = expr.slice(start, context.index);
 
-    if (identifier === 'new') {
-      // process constructor expression, e.g. new Date('Jan 1, 2016')
+    if (identifier === 'new' && !bMemberExpr) {
+      // process constructor expression,
+      // e.g. new Date('Jan 1, 2016') or new (MyFoo())("outer")
       _gobbleSpaces(context);
       var constructorNode = _gobbleVariable(context, 4); // stop at CallExpression type
       if (constructorNode.type !== 4) {
@@ -501,7 +502,7 @@ const ExpParser = function () {
           type: 2, // 'MemberExpression'
           computed: false,
           object: node,
-          property: _gobbleIdentifier(context)
+          property: _gobbleIdentifier(context, true)
         };
       } else if (ch_i === QUMARK_CODE) {
         // optional chaining - current index is on the '.',
@@ -513,7 +514,7 @@ const ExpParser = function () {
           computed: false,
           conditional: true,
           object: node,
-          property: _gobbleIdentifier(context)
+          property: _gobbleIdentifier(context, true)
         };
       } else if (ch_i === OBRACK_CODE) {
         node = {

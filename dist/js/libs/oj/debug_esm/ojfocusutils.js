@@ -13,9 +13,7 @@ import { isAncestorOrSelf } from 'ojs/ojdomutils';
  * Focus utilities.
  * @ignore
  */
-const FocusUtils = {};
-
-FocusUtils._TABBABLE = ':tabbable,iframe';
+const FocusUtils = { _TABBABLE: ':tabbable,iframe' };
 
 // These functions inspired by AdfFocusUtils
 

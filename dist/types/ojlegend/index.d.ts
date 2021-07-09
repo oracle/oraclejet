@@ -1,32 +1,26 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponent<ojLegendSettableProperties<K, D>> {
-    as: string;
+    as?: string;
     data: DataProvider<K, D> | null;
-    drilling: 'on' | 'off';
-    expanded: KeySet<K> | null;
-    halign: 'center' | 'end' | 'start';
-    hiddenCategories: string[];
-    hideAndShowBehavior: 'on' | 'off';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverBehaviorDelay: number;
-    orientation: 'horizontal' | 'vertical';
-    scrolling: 'off' | 'asNeeded';
-    symbolHeight: number;
-    symbolWidth: number;
+    drilling?: 'on' | 'off';
+    expanded?: KeySet<K> | null;
+    halign?: 'center' | 'end' | 'start';
+    hiddenCategories?: string[];
+    hideAndShowBehavior?: 'on' | 'off';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverBehaviorDelay?: number;
+    orientation?: 'horizontal' | 'vertical';
+    scrolling?: 'off' | 'asNeeded';
+    symbolHeight?: number;
+    symbolWidth?: number;
     textStyle?: CSSStyleDeclaration;
-    valign: 'middle' | 'bottom' | 'top';
+    valign?: 'middle' | 'bottom' | 'top';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -96,6 +90,11 @@ export namespace ojLegend {
     type textStyleChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valignChanged<K, D extends Item<K> | Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends Item<K> | Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -117,7 +116,7 @@ export namespace ojLegend {
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
-        text?: string;
+        text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext = {
@@ -143,7 +142,7 @@ export namespace ojLegend {
     type Section<K> = {
         collapsible?: 'on' | 'off';
         expanded?: 'off' | 'on';
-        id: K;
+        id?: K;
         items?: Array<Item<K>>;
         sections?: Array<Section<K>>;
         title?: string;
@@ -169,24 +168,25 @@ export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Secti
     'symbolWidthChanged': JetElementCustomEvent<ojLegend<K, D>["symbolWidth"]>;
     'textStyleChanged': JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     'valignChanged': JetElementCustomEvent<ojLegend<K, D>["valign"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojLegend<K, D>["trackResize"]>;
 }
 export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentSettableProperties {
-    as: string;
+    as?: string;
     data: DataProvider<K, D> | null;
-    drilling: 'on' | 'off';
-    expanded: KeySet<K> | null;
-    halign: 'center' | 'end' | 'start';
-    hiddenCategories: string[];
-    hideAndShowBehavior: 'on' | 'off';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverBehaviorDelay: number;
-    orientation: 'horizontal' | 'vertical';
-    scrolling: 'off' | 'asNeeded';
-    symbolHeight: number;
-    symbolWidth: number;
+    drilling?: 'on' | 'off';
+    expanded?: KeySet<K> | null;
+    halign?: 'center' | 'end' | 'start';
+    hiddenCategories?: string[];
+    hideAndShowBehavior?: 'on' | 'off';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverBehaviorDelay?: number;
+    orientation?: 'horizontal' | 'vertical';
+    scrolling?: 'off' | 'asNeeded';
+    symbolHeight?: number;
+    symbolWidth?: number;
     textStyle?: CSSStyleDeclaration;
-    valign: 'middle' | 'bottom' | 'top';
+    valign?: 'middle' | 'bottom' | 'top';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -221,7 +221,7 @@ export interface ojLegendItem extends JetElement<ojLegendItemSettableProperties>
     lineStyle?: 'dotted' | 'dashed' | 'solid';
     lineWidth?: number;
     markerColor?: string;
-    markerShape: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+    markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSvgClassName?: string;
     markerSvgStyle?: CSSStyleDeclaration;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
@@ -307,7 +307,7 @@ export interface ojLegendItemSettableProperties extends JetSettableProperties {
     lineStyle?: 'dotted' | 'dashed' | 'solid';
     lineWidth?: number;
     markerColor?: string;
-    markerShape: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+    markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSvgClassName?: string;
     markerSvgStyle?: CSSStyleDeclaration;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
@@ -401,6 +401,11 @@ export namespace LegendElement {
     type textStyleChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["textStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valignChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = JetElementCustomEvent<ojLegend<K, D>["valign"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> = dvtBaseComponent.trackResizeChanged<ojLegendSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         borderColor?: string;
@@ -422,7 +427,7 @@ export namespace LegendElement {
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
-        text?: string;
+        text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -434,7 +439,7 @@ export namespace LegendElement {
     type Section<K> = {
         collapsible?: 'on' | 'off';
         expanded?: 'off' | 'on';
-        id: K;
+        id?: K;
         items?: Array<ojLegend.Item<K>>;
         sections?: Array<ojLegend.Section<K>>;
         title?: string;
@@ -489,4 +494,62 @@ export namespace LegendSectionElement {
     type textHalignChanged = JetElementCustomEvent<ojLegendSection["textHalign"]>;
     // tslint:disable-next-line interface-over-type-literal
     type textStyleChanged = JetElementCustomEvent<ojLegendSection["textStyle"]>;
+}
+export interface LegendIntrinsicProps extends Partial<Readonly<ojLegendSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojDrill?: (value: ojLegendEventMap<any, any>['ojDrill']) => void;
+    onasChanged?: (value: ojLegendEventMap<any, any>['asChanged']) => void;
+    ondataChanged?: (value: ojLegendEventMap<any, any>['dataChanged']) => void;
+    ondrillingChanged?: (value: ojLegendEventMap<any, any>['drillingChanged']) => void;
+    onexpandedChanged?: (value: ojLegendEventMap<any, any>['expandedChanged']) => void;
+    onhalignChanged?: (value: ojLegendEventMap<any, any>['halignChanged']) => void;
+    onhiddenCategoriesChanged?: (value: ojLegendEventMap<any, any>['hiddenCategoriesChanged']) => void;
+    onhideAndShowBehaviorChanged?: (value: ojLegendEventMap<any, any>['hideAndShowBehaviorChanged']) => void;
+    onhighlightedCategoriesChanged?: (value: ojLegendEventMap<any, any>['highlightedCategoriesChanged']) => void;
+    onhoverBehaviorChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorChanged']) => void;
+    onhoverBehaviorDelayChanged?: (value: ojLegendEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
+    onorientationChanged?: (value: ojLegendEventMap<any, any>['orientationChanged']) => void;
+    onscrollingChanged?: (value: ojLegendEventMap<any, any>['scrollingChanged']) => void;
+    onsymbolHeightChanged?: (value: ojLegendEventMap<any, any>['symbolHeightChanged']) => void;
+    onsymbolWidthChanged?: (value: ojLegendEventMap<any, any>['symbolWidthChanged']) => void;
+    ontextStyleChanged?: (value: ojLegendEventMap<any, any>['textStyleChanged']) => void;
+    onvalignChanged?: (value: ojLegendEventMap<any, any>['valignChanged']) => void;
+    ontrackResizeChanged?: (value: ojLegendEventMap<any, any>['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface LegendItemIntrinsicProps extends Partial<Readonly<ojLegendItemSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onborderColorChanged?: (value: ojLegendItemEventMap['borderColorChanged']) => void;
+    oncategoriesChanged?: (value: ojLegendItemEventMap['categoriesChanged']) => void;
+    oncategoryVisibilityChanged?: (value: ojLegendItemEventMap['categoryVisibilityChanged']) => void;
+    oncolorChanged?: (value: ojLegendItemEventMap['colorChanged']) => void;
+    ondrillingChanged?: (value: ojLegendItemEventMap['drillingChanged']) => void;
+    onlineStyleChanged?: (value: ojLegendItemEventMap['lineStyleChanged']) => void;
+    onlineWidthChanged?: (value: ojLegendItemEventMap['lineWidthChanged']) => void;
+    onmarkerColorChanged?: (value: ojLegendItemEventMap['markerColorChanged']) => void;
+    onmarkerShapeChanged?: (value: ojLegendItemEventMap['markerShapeChanged']) => void;
+    onmarkerSvgClassNameChanged?: (value: ojLegendItemEventMap['markerSvgClassNameChanged']) => void;
+    onmarkerSvgStyleChanged?: (value: ojLegendItemEventMap['markerSvgStyleChanged']) => void;
+    onpatternChanged?: (value: ojLegendItemEventMap['patternChanged']) => void;
+    onshortDescChanged?: (value: ojLegendItemEventMap['shortDescChanged']) => void;
+    onsourceChanged?: (value: ojLegendItemEventMap['sourceChanged']) => void;
+    onsvgClassNameChanged?: (value: ojLegendItemEventMap['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojLegendItemEventMap['svgStyleChanged']) => void;
+    onsymbolTypeChanged?: (value: ojLegendItemEventMap['symbolTypeChanged']) => void;
+    ontextChanged?: (value: ojLegendItemEventMap['textChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface LegendSectionIntrinsicProps extends Partial<Readonly<ojLegendSectionSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncollapsibleChanged?: (value: ojLegendSectionEventMap['collapsibleChanged']) => void;
+    ontextChanged?: (value: ojLegendSectionEventMap['textChanged']) => void;
+    ontextHalignChanged?: (value: ojLegendSectionEventMap['textHalignChanged']) => void;
+    ontextStyleChanged?: (value: ojLegendSectionEventMap['textStyleChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-legend": LegendIntrinsicProps;
+            "oj-legend-item": LegendItemIntrinsicProps;
+            "oj-legend-section": LegendSectionIntrinsicProps;
+        }
+    }
 }

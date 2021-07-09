@@ -1,0 +1,25 @@
+<?js
+var properties = obj.properties;
+var self = this;
+var events = obj.events? Object.keys(obj.events) : [];
+var props = properties? Object.keys(properties) : [];
+var eventMapTypeParams = obj.classTypeParamsAny;
+var componentNamespace = obj.vcomponentName;
+
+props.sort();
+events.sort();
+
+for (let event of events){
+  let eventType = `${obj.eventMapInterface}${eventMapTypeParams}['${event}']`;
+  ?>
+  <?js= `on${event}?: (value: ${eventType}) => void;` ?>
+<?js
+}
+for (let prop of props) {
+  let strProp = `on${prop}Changed`;
+  let propEventType = `${obj.eventMapInterface}${eventMapTypeParams}['${prop}Changed']`;
+  ?>
+  <?js= `${strProp}?: (value: ${propEventType}) => void;` ?>
+  <?js
+}
+?>

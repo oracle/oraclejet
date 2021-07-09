@@ -21,7 +21,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDecoratorParamValue = exports.getDecoratorName = exports.getDecorators = exports.getDecorator = void 0;
 const ts = __importStar(require("typescript"));
-const _ALLOW_MANY = new Set(["provideBinding"]);
 function getDecorator(node, name) {
     var _a;
     return (_a = node.decorators) === null || _a === void 0 ? void 0 : _a.find((decorator) => {
@@ -33,17 +32,7 @@ function getDecorators(node, aliasToExport) {
     const decoratorMap = {};
     if (node.decorators) {
         node.decorators.forEach((decorator) => {
-            const decoratorName = getDecoratorName(decorator);
-            const decoratorExportName = aliasToExport[decoratorName];
-            if (_ALLOW_MANY.has(decoratorExportName)) {
-                if (!decoratorMap[decoratorName]) {
-                    decoratorMap[decoratorName] = new Array();
-                }
-                decoratorMap[decoratorName].push(decorator);
-            }
-            else {
-                decoratorMap[getDecoratorName(decorator)] = decorator;
-            }
+            decoratorMap[getDecoratorName(decorator)] = decorator;
         });
     }
     return decoratorMap;
@@ -69,7 +58,7 @@ function getDecoratorParamValue(decorator, paramName) {
                     if (ts.isPropertyAssignment(prop)) {
                         const propKey = prop.name.getText();
                         if (propKey === paramName) {
-                            param = _getAssignmentValue(prop.initializer);
+                            param = _getValue(prop.initializer);
                         }
                     }
                 });
@@ -79,7 +68,7 @@ function getDecoratorParamValue(decorator, paramName) {
     return param;
 }
 exports.getDecoratorParamValue = getDecoratorParamValue;
-function _getAssignmentValue(exp) {
+function _getValue(exp) {
     let value = undefined;
     switch (exp.kind) {
         case ts.SyntaxKind.StringLiteral:
@@ -97,18 +86,31 @@ function _getAssignmentValue(exp) {
         case ts.SyntaxKind.NullKeyword:
             value = null;
             break;
+        case ts.SyntaxKind.ArrayLiteralExpression:
+            value = _getArrayLiteral(exp);
+            break;
         case ts.SyntaxKind.ObjectLiteralExpression:
             value = _getObjectLiteral(exp);
             break;
     }
     return value;
 }
+function _getArrayLiteral(arrayExpression) {
+    let retArray = [];
+    arrayExpression.elements.forEach((element) => {
+        const item = _getValue(element);
+        if (!(item === null || item === undefined)) {
+            retArray.push(item);
+        }
+    });
+    return retArray;
+}
 function _getObjectLiteral(objExpression) {
     let retObj = {};
     objExpression.properties.forEach((prop) => {
         if (ts.isPropertyAssignment(prop)) {
             const propKey = prop.name.getText();
-            retObj[propKey] = _getAssignmentValue(prop.initializer);
+            retObj[propKey] = _getValue(prop.initializer);
         }
     });
     return retObj;

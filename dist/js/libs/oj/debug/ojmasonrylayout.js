@@ -12,14 +12,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthe
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
   FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_masonry_layout_metadata = 
 {
   "properties": {
@@ -67,20 +59,12 @@ var __oj_masonry_layout_metadata =
   },
   "extension": {}
 };
-   /* global __oj_masonry_layout_metadata:false */
+  /* global __oj_masonry_layout_metadata:false */
   (function () {
     __oj_masonry_layout_metadata.extension._WIDGET_NAME = 'ojMasonryLayout';
     __oj_masonry_layout_metadata.extension._TRACK_CHILDREN = 'immediate';
     oj.CustomElementBridge.register('oj-masonry-layout', { metadata: __oj_masonry_layout_metadata });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /*
   ** Important:
@@ -655,9 +639,6 @@ var __oj_masonry_layout_metadata =
       agentType = 'trident';
       var possibleVersion = versionParser(userAgent, /trident\/(\d+[.]\d+)/);
       if (possibleVersion !== -1) {
-        // 6.0 = IE10
-        // 5.0 = IE9
-        // 4.0 = IE8
         agentVersion = possibleVersion;
       } else {
         possibleVersion = versionParser(userAgent, /msie (\d+\.\d+);/);
@@ -856,7 +837,6 @@ var __oj_masonry_layout_metadata =
     var arMovedInfolets = [];
     var arOldPositions = [];
     var arNewPositions = [];
-    var arCols = [];
     var rtl = this._rtl;
     // FIX : need to take container border and padding into account for layout
     var mlcClass = MasonryLayoutCommon;
@@ -938,9 +918,6 @@ var __oj_masonry_layout_metadata =
             newPosition = this._calcPosition(child, c, r, childSpan, cellSize, insets);
             arNewPositions.push(newPosition);
 
-            if (rtl) {
-              arCols.push(c);
-            }
             next = true;
             // FIX : keep track of tile positions so that tiles can later be
             // sorted into layout order
@@ -1067,7 +1044,7 @@ var __oj_masonry_layout_metadata =
     var arTilePositions = this._arTilePositions;
     this._arTilePositions = null;
     var mlcClass = MasonryLayoutCommon;
-    arTilePositions = arTilePositions.sort(mlcClass._compareTilePositions);
+    arTilePositions.sort(mlcClass._compareTilePositions);
     var children = this._getTileChildren();
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
@@ -1623,14 +1600,6 @@ var __oj_masonry_layout_metadata =
   MasonryLayoutCommon._PHASE_SHOW = 3;
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojMasonryLayout
    * @augments oj.baseComponent
    * @since 1.1.0
@@ -1713,9 +1682,9 @@ var __oj_masonry_layout_metadata =
    * and responding to key events, like pressing the arrow keys.
    *
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
    * <p>MasonryLayout is for layout only.  It is the responsibility of the
@@ -1801,6 +1770,44 @@ var __oj_masonry_layout_metadata =
    *   &lt;div class='oj-masonrylayout-tile-1x1'>Zeta&lt;/div>
    * &lt;/oj-masonry-layout>
    */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <p>This element does not expose any subIds.</p>
+   *
+   * @ojsubid None
+   * @memberof oj.ojMasonryLayout
+   */
+
+  /**
+   * <p>MasonryLayout is for layout only and does not directly support touch
+   * interaction.
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojMasonryLayout
+   */
+
+  /**
+   * <p>MasonryLayout is for layout only and does not directly support keyboard
+   * interaction.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojMasonryLayout
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+   * @ojstylevariableset oj-masonry-layout-css-set1
+   * @ojdisplayname Masonry Layout Tile CSS
+   * @ojstylevariable oj-masonry-layout-tile-width {description: "Masonry layout tile width", formats: ["length"]}
+   * @ojstylevariable oj-masonry-layout-tile-height {description: "Masonry layout tile height", formats: ["length"]}
+   * @memberof oj.ojMasonryLayout
+   */
+
   (function () {
     // start static members and functions //////////////////////////////////////////
 
@@ -1817,10 +1824,15 @@ var __oj_masonry_layout_metadata =
 
     var _TILE_SELECTOR = '.' + _OJ_MASONRYLAYOUT_TILE;
 
+    var _OJ_HELPER_HIDDEN = 'oj-helper-hidden';
+    var _DATA_OJ_COMMAND = 'data-oj-command';
+
     var _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS = 'oj-masonrylayout-tile-transition-show-from';
 
     // log warning message when "disabled" property set
     var _WARNING_DISABLED_OPTION = "JET MasonryLayout: 'disabled' property not supported";
+
+    var _WARNING_NO_TILE_FOUND_FOR_SELECTOR = 'no tile found for selector: ';
 
     // Context Menu: menu item ids
     var _OJMASONRYLAYOUTCUT = 'ojmasonrylayoutcut';
@@ -2113,7 +2125,7 @@ var __oj_masonry_layout_metadata =
            * Failure to call <code class="prettyprint">event.detail.endCallback()</code> may prevent the element from working properly.</p>
            *
            * <p>For more information on customizing animations, see the documentation of
-           * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
+           * <a href="AnimationUtils.html">AnimationUtils</a>.</p>
            *
            * <caption>The default animations are controlled via the theme (SCSS) :</caption>
            * <pre class="prettyprint"><code>
@@ -2419,14 +2431,7 @@ var __oj_masonry_layout_metadata =
          */
         _NotifyShown: function () {
           this._super();
-          // perform a deferred layout
-          if (this._needsSetup) {
-            this._setup(this._needsSetup[0]);
-          } else {
-            // explicitly relayout in case we don't get a resize notification when shown
-            var mlCommon = this._mlCommon;
-            mlCommon.setup(true);
-          }
+          this._setupAsNeeded();
         },
 
         /**
@@ -2440,14 +2445,7 @@ var __oj_masonry_layout_metadata =
          */
         _NotifyAttached: function () {
           this._super();
-          // perform a deferred layout
-          if (this._needsSetup) {
-            this._setup(this._needsSetup[0]);
-          } else {
-            // explicitly relayout in case we don't get a resize notification when attached
-            var mlCommon = this._mlCommon;
-            mlCommon.setup(true);
-          }
+          this._setupAsNeeded();
         },
 
         /**
@@ -2470,6 +2468,24 @@ var __oj_masonry_layout_metadata =
           if ($menuItems && $menuItems.length > 0) {
             this._OpenContextMenu(event, eventType,
                                   { launcher: $(event.target).closest(':tabbable') });
+          }
+        },
+
+        /**
+         * Common setup code for _NotifyShown and _NotifyAttached.
+         * @return {void}
+         * @memberof oj.ojMasonryLayout
+         * @instance
+         * @private
+         */
+        _setupAsNeeded: function () {
+          // perform a deferred layout
+          if (this._needsSetup) {
+            this._setup(this._needsSetup[0]);
+          } else {
+            // explicitly relayout in case we don't get a resize notification when attached
+            var mlCommon = this._mlCommon;
+            mlCommon.setup(true);
           }
         },
 
@@ -2523,26 +2539,27 @@ var __oj_masonry_layout_metadata =
               self._layoutCycleOnEnd(resolveBusyState);
             };
             if (!this._mlCommon) {
-              var selectors = {};
-              selectors.tiles = _TILE_SELECTOR;
-              var styles = {};
-              styles.transitionShowFromStyleClass = _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS;
-              var callbackInfo = {};
-              callbackInfo.addStyleClassName = _addStyleClassName;
-              callbackInfo.removeStyleClassName = _removeStyleClassName;
-              callbackInfo.getSizeStyleClassName = _getSizeStyleClassName;
-              callbackInfo.getTileSpan = _getTileSpan;
-              callbackInfo.showTileOnEndFunc = this._showTileOnEndFunc;
-              callbackInfo.hideTileOnEndFunc = this._hideTileOnEndFunc;
-              callbackInfo.startAnimationFunc = this._startAnimationFunc;
-              callbackInfo.layoutOnEndFunc = this._layoutOnEndFunc;
-              callbackInfo.layoutCycleOnStartFunc = this._layoutCycleOnStartFunc;
-              callbackInfo.layoutCycleOnEndFunc = this._layoutCycleOnEndFunc;
-              callbackInfo.sortTilesOriginalOrderFunc = _sortTilesOriginalOrder;
-              callbackInfo.subtreeAttached = Components.subtreeAttached;
-              callbackInfo.subtreeDetached = Components.subtreeDetached;
-              callbackInfo.addBusyState = function (description) {
-                return self._addBusyState(description);
+              var selectors = { tiles: _TILE_SELECTOR };
+              var styles = {
+                transitionShowFromStyleClass: _OJ_MASONRYLAYOUT_TILE_TRANSITION_SHOW_FROM_CLASS
+              };
+              var callbackInfo = {
+                addStyleClassName: _addStyleClassName,
+                removeStyleClassName: _removeStyleClassName,
+                getSizeStyleClassName: _getSizeStyleClassName,
+                getTileSpan: _getTileSpan,
+                showTileOnEndFunc: this._showTileOnEndFunc,
+                hideTileOnEndFunc: this._hideTileOnEndFunc,
+                startAnimationFunc: this._startAnimationFunc,
+                layoutOnEndFunc: this._layoutOnEndFunc,
+                layoutCycleOnStartFunc: this._layoutCycleOnStartFunc,
+                layoutCycleOnEndFunc: this._layoutCycleOnEndFunc,
+                sortTilesOriginalOrderFunc: _sortTilesOriginalOrder,
+                subtreeAttached: Components.subtreeAttached,
+                subtreeDetached: Components.subtreeDetached,
+                addBusyState: function (description) {
+                  return self._addBusyState(description);
+                }
               };
 
               // apply the oj-masonrylayout-tile style class to child tiles
@@ -2740,7 +2757,7 @@ var __oj_masonry_layout_metadata =
           // Fix  - throw error if the selector is invalid
           if (!elem) {
             throw new Error('JET MasonryLayout: Unable to resize tile because ' +
-                             'no tile found for selector: ' + selector);
+                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
           }
           var prevSizeStyleClass = _getSizeStyleClassName(elem);
 
@@ -2814,7 +2831,7 @@ var __oj_masonry_layout_metadata =
           // Fix  - throw error if the selector is invalid
           if (!elem) {
             throw new Error('JET MasonryLayout: Unable to insert tile because ' +
-                             'no tile found for selector: ' + selector);
+                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
           }
 
           // add the oj-masonrylayout-tile style class to the inserted tile
@@ -2887,7 +2904,7 @@ var __oj_masonry_layout_metadata =
           // Fix  - throw error if the selector is invalid
           if (!infolet) {
             throw new Error('JET MasonryLayout: Unable to remove tile because ' +
-                             'no tile found for selector: ' + selector);
+                            _WARNING_NO_TILE_FOUND_FOR_SELECTOR + selector);
           }
 
           // if the infolet being deleted contains the focus, remember that so we can
@@ -3202,7 +3219,7 @@ var __oj_masonry_layout_metadata =
           var arChildren = [];
           for (var i = 0; i < numChildren; i++) {
             var child = children[i];
-            if (!excludeDropSite || (excludeDropSite && child !== this._dropSite)) {
+            if (!excludeDropSite || (child !== this._dropSite)) {
               var style = child.style;
               if (style.visibility !== _HIDDEN && style.display !== _NONE) {
                 arChildren.push(child);
@@ -3471,7 +3488,7 @@ var __oj_masonry_layout_metadata =
           var bChanged = false;
 
           listItems.each(function () {
-            var command = $(this).attr('data-oj-command');
+            var command = $(this).attr(_DATA_OJ_COMMAND);
             if (command.indexOf('oj-masonrylayout-') >= 0) {
               command = command.slice('oj-masonrylayout-'.length);
             }
@@ -3483,7 +3500,7 @@ var __oj_masonry_layout_metadata =
               // Just update the content of OJ-OPTION and don't replace that with menu item,
               // because replacing OJ-OPTION would trigger a detach/attach of custom element
               this.innerHTML = newMenuItem.get(0).innerHTML; // @HTMLUpdateOK
-              $(this).attr('data-oj-command', newMenuItem.attr('data-oj-command'));
+              $(this).attr(_DATA_OJ_COMMAND, newMenuItem.attr(_DATA_OJ_COMMAND)); // @HTMLUpdateOK
             } else {
               // replace the list item with the new menu item
               newMenuItem.get(0).className = $(this).get(0).className;
@@ -3575,12 +3592,12 @@ var __oj_masonry_layout_metadata =
             if (elemCut) {
               // FIX : only allow reordering if context menu was
               // launched from reorder handle
-              var cutHidden = elemCut.hasClass('oj-helper-hidden');
+              var cutHidden = elemCut.hasClass(_OJ_HELPER_HIDDEN);
               if (!reorderAllowed && !cutHidden) {
-                elemCut.addClass('oj-helper-hidden');
+                elemCut.addClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               } else if (reorderAllowed && cutHidden) {
-                elemCut.removeClass('oj-helper-hidden');
+                elemCut.removeClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               }
 
@@ -3604,12 +3621,12 @@ var __oj_masonry_layout_metadata =
             if (elemPasteBefore) {
               // FIX : only allow reordering if context menu was
               // launched from reorder handle
-              var pasteBeforeHidden = elemPasteBefore.hasClass('oj-helper-hidden');
+              var pasteBeforeHidden = elemPasteBefore.hasClass(_OJ_HELPER_HIDDEN);
               if (!reorderAllowed && !pasteBeforeHidden) {
-                elemPasteBefore.addClass('oj-helper-hidden');
+                elemPasteBefore.addClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               } else if (reorderAllowed && pasteBeforeHidden) {
-                elemPasteBefore.removeClass('oj-helper-hidden');
+                elemPasteBefore.removeClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               }
 
@@ -3635,12 +3652,12 @@ var __oj_masonry_layout_metadata =
             if (elemPasteAfter) {
               // FIX : only allow reordering if context menu was
               // launched from reorder handle
-              var pasteAfterHidden = elemPasteAfter.hasClass('oj-helper-hidden');
+              var pasteAfterHidden = elemPasteAfter.hasClass(_OJ_HELPER_HIDDEN);
               if (!reorderAllowed && !pasteAfterHidden) {
-                elemPasteAfter.addClass('oj-helper-hidden');
+                elemPasteAfter.addClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               } else if (reorderAllowed && pasteAfterHidden) {
-                elemPasteAfter.removeClass('oj-helper-hidden');
+                elemPasteAfter.removeClass(_OJ_HELPER_HIDDEN);
                 bRefreshMenu = true;
               }
 
@@ -3687,7 +3704,7 @@ var __oj_masonry_layout_metadata =
           var id = _MENU_CMD_MAP[command];
           var item = $(document.createElement(tagName)); // @HTMLUpdateOK
           item.attr('id', id);
-          item.attr('data-oj-command', command);
+          item.attr(_DATA_OJ_COMMAND, command); // @HTMLUpdateOK
           item.append(this._buildContextMenuLabel(command, tagName === 'OJ-OPTION')); // @HTMLUpdateOK
           return item;
         },
@@ -4546,37 +4563,7 @@ var __oj_masonry_layout_metadata =
         getSubIdByNode: function (node) {
           return this._super(node);
         }
-
-        // start API doc fragments /////////////////////////////////////////////////////
-
-        /**
-         * <p>This element does not expose any subIds.</p>
-         *
-         * @ojsubid None
-         * @memberof oj.ojMasonryLayout
-         */
-
-        /**
-         * <p>MasonryLayout is for layout only and does not directly support touch
-         * interaction.
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojMasonryLayout
-         */
-
-        /**
-         * <p>MasonryLayout is for layout only and does not directly support keyboard
-         * interaction.
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojMasonryLayout
-         */
-
-        // end API doc fragments ///////////////////////////////////////////////////////
-
       }); // end of oj.__registerWidget
-
-
   // end static members and functions ////////////////////////////////////////////
   }()); // end of MasonryLayout wrapper function
 

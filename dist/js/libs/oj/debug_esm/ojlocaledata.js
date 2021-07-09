@@ -8,14 +8,6 @@
 import oj from 'ojs/ojcore-base';
 import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 var ojld = ojldimport;
 
 /**
@@ -127,6 +119,9 @@ LocaleData.getMonthNames = function (type) {
  * @export
  * @method isMonthPriorToYear
  * @memberof oj.LocaleData
+ * @ojdeprecated [{since: "11.0.0", description: "This is used internally by the oj-date-picker component,
+ *  and should not be called by application code. If the functionality is needed, use Intl.DateTimeFormat.formatToParts
+ *  instead which returns the formatted pieces in order."}]
  */
 LocaleData.isMonthPriorToYear = function () {
   var longDateFormat = LocaleData._getCalendarData().dateFormats.long.toUpperCase();
@@ -233,5 +228,6 @@ const getWeekendStart = LocaleData.getWeekendStart;
 const isMonthPriorToYear = LocaleData.isMonthPriorToYear;
 const setBundle = LocaleData.setBundle;
 const __getBundle = LocaleData.__getBundle;
+const _getCalendarData = LocaleData._getCalendarData;
 
-export { __getBundle, getDayNames, getFirstDayOfWeek, getMonthNames, getWeekendEnd, getWeekendStart, isMonthPriorToYear, setBundle };
+export { __getBundle, _getCalendarData, getDayNames, getFirstDayOfWeek, getMonthNames, getWeekendEnd, getWeekendStart, isMonthPriorToYear, setBundle };

@@ -11,14 +11,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class CubeAggType
    * @classdesc Valid aggregation types
    * @hideconstructor
@@ -79,14 +71,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
     CUSTOM: 'custom'
   };
   oj._registerLegacyNamespaceProp('CubeAggType', CubeAggType);
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class CubeAxisValue
@@ -227,7 +211,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * Get the label for this axis header location, if any.  If none, falls back to {@link getValue}
+   * Get the label for this axis header location, if any.  If none, falls back to {@link CubeAxisValue#getValue}
    * @returns {string|null} the label for this axis header value
    * @memberof CubeAxisValue
    * @since 1.1.0
@@ -372,14 +356,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
     // Not found
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class CubeAxis
@@ -538,14 +514,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class CubeDataValue
    * @see Cube#getValues
    * @since 1.1.0
@@ -645,14 +613,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    * @private
    */
@@ -723,14 +683,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
     }
     return keyHash;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class Cube
@@ -972,7 +924,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
     if (indices.length === 0) {
       // Get the current value at location
       var loc = location.slice(0);
-      // loc.reverse();
       return this._getValue(loc);
     }
 
@@ -1430,14 +1381,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-   /**
    * @class CubeCellSet
    * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
    * of the fetchCells method on DataGridDataSource.  This implementation of CellSet is used by the
@@ -1513,12 +1456,8 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
    */
   CubeCellSet.prototype.getMetadata = function (indexes) {
     // Get each axis' key
-    var obj = {};
-    obj.keys = {};
-    obj.keys.row = this._getAxisMetadata(indexes, 'row', 2);
-    obj.keys.column = this._getAxisMetadata(indexes, 'column', 1);
-
-    return obj;
+    return { keys: { row: this._getAxisMetadata(indexes, 'row', 2),
+                     column: this._getAxisMetadata(indexes, 'column', 1) } };
   };
 
   /**
@@ -1588,14 +1527,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
       column: { extent: 1, more: { before: false, after: false } }
     };
   };
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class CubeHeaderSet
@@ -1760,14 +1691,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class CubeDataGridDataSource
    * @classdesc  A cubic/aggregating DataGridDataSource based on the Cube
    * @see Cube
@@ -1825,9 +1748,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
    * @private
    */
   CubeDataGridDataSource.prototype._fireRefresh = function () {
-    var event = {};
-    event.source = this;
-    event.operation = 'refresh';
+    var event = { source: this, operation: 'refresh' };
     this.handleEvent('change', event);
   };
 
@@ -2062,14 +1983,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class CubeLevel
    * @classdesc  Represents a level within an axis.  The level is tied to an attribute within the original rowset.  Each level contains a number of [CubeAxisValues]{@link CubeAxisValue}, all from the same attribute
    * @see CubeAxis
@@ -2158,14 +2071,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
    * @private
    */
    CubeLevel.prototype._axisObj = null;
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class DataColumnCube
@@ -2332,14 +2237,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojdatasource-common'], func
       }
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class DataValueAttributeCube

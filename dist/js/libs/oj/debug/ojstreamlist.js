@@ -5,17 +5,18 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcontext', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, ojvcomponentElement, DataCollectionUtils, ojvcollection, Context, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
+define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcontext', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, DataCollectionUtils, ojvcollection, Context, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     class StreamListContentHandler extends ojvcollection.IteratingDataProviderContentHandler {
-        constructor(root, dataProvider, callback, scrollPolicyOptions) {
-            super(root, dataProvider, callback, scrollPolicyOptions);
+        constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
+            super(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions);
             this.root = root;
             this.dataProvider = dataProvider;
             this.callback = callback;
+            this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.postRender = () => {
                 this.vnodesCache = this.newVnodesCache;
@@ -23,11 +24,15 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 if (this.callback) {
                     if (this.domScroller) {
                         const itemsRoot = this.root.lastElementChild;
-                        let items = itemsRoot.querySelectorAll('.oj-stream-list-item');
-                        const rootOffsetTop = this.root.offsetTop;
-                        const start = items[0].offsetTop - rootOffsetTop;
-                        const end = items[items.length - 1].offsetTop + items[items.length - 1].offsetHeight - rootOffsetTop;
-                        this.domScroller.setViewportRange(start, end);
+                        const items = itemsRoot.querySelectorAll('.oj-stream-list-item');
+                        if (items.length > 0) {
+                            const rootOffsetTop = this.root.offsetTop;
+                            const start = items[0].offsetTop - rootOffsetTop;
+                            const end = items[items.length - 1].offsetTop +
+                                items[items.length - 1].offsetHeight -
+                                rootOffsetTop;
+                            this.domScroller.setViewportRange(start, end);
+                        }
                     }
                     if (this.domScroller && !this.domScroller.checkViewport()) {
                         return;
@@ -71,41 +76,39 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return vnodes;
         }
         renderItem(key, index, data) {
-            const node = this.vnodesCache.get(key);
-            if (node) {
-                this.newVnodesCache.set(key, { vnodes: node.vnodes });
-                return node.vnodes;
-            }
             const renderer = this.callback.getItemRenderer();
-            const vnodes = renderer({ data: data, key: key });
+            const vnodes = renderer({ data, key });
             let vnode;
-            for (let i = 0; i < vnodes.length; i++) {
-                const node = vnodes[i]._node;
-                if (node.nodeType === 1) {
-                    vnode = vnodes[i];
+            for (const curr of vnodes) {
+                vnode = curr;
+                if (vnode.props) {
                     break;
                 }
             }
-            let prunedVnodes = [vnode];
+            const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
         decorateItem(vnodes, key, index, initialFetch, visible) {
-            let vnode = vnodes[0];
-            let contentRoot = vnode._node;
-            if (contentRoot != null) {
+            const vnode = vnodes[0];
+            if (vnode != null) {
                 vnode.key = key;
-                contentRoot.key = key;
-                contentRoot.setAttribute('role', 'listitem');
-                contentRoot.setAttribute('tabIndex', '-1');
+                vnode.props.role = 'listitem';
+                vnode.props.tabIndex = -1;
+                vnode.props['data-oj-key'] = key;
+                if (typeof key === 'number') {
+                    vnode.props['data-oj-key-type'] = 'number';
+                }
                 const styleClasses = this.getItemStyleClass(visible, this.newItemsTracker.has(key), initialFetch);
-                styleClasses.forEach((styleClass) => {
-                    contentRoot.classList.add(styleClass);
-                });
+                const classProp = vnode.props.className ? 'className' : 'class';
+                const currentClasses = vnode.props[classProp]
+                    ? [vnode.props[classProp], ...styleClasses]
+                    : styleClasses;
+                vnode.props[classProp] = currentClasses.join(' ');
             }
         }
         getItemStyleClass(visible, isNew, animate) {
-            let styleClass = [];
+            const styleClass = [];
             styleClass.push('oj-stream-list-item');
             if (animate) {
             }
@@ -117,11 +120,12 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
     }
 
     class StreamListTreeContentHandler extends ojvcollection.IteratingTreeDataProviderContentHandler {
-        constructor(root, dataProvider, callback, scrollPolicyOptions) {
-            super(root, dataProvider, callback, scrollPolicyOptions);
+        constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
+            super(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions);
             this.root = root;
             this.dataProvider = dataProvider;
             this.callback = callback;
+            this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.postRender = () => {
                 this.vnodesCache = this.newVnodesCache;
@@ -160,6 +164,16 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             this.vnodesCache.clear();
             super.handleModelRefresh();
         }
+        destroy() {
+            super.destroy();
+            this._resolveCheckViewportBusyState();
+        }
+        _resolveCheckViewportBusyState() {
+            if (this.viewportResolveFunc) {
+                this.viewportResolveFunc();
+            }
+            this.viewportResolveFunc = null;
+        }
         checkViewport() {
             if (this.viewportResolveFunc) {
                 return;
@@ -171,16 +185,10 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 busyContext.whenReady().then(() => {
                     if (this.callback != null) {
                         super.checkViewport();
-                        if (this.viewportResolveFunc) {
-                            this.viewportResolveFunc();
-                        }
-                        this.viewportResolveFunc = null;
+                        this._resolveCheckViewportBusyState();
                     }
                 }, () => {
-                    if (this.viewportResolveFunc) {
-                        this.viewportResolveFunc();
-                    }
-                    this.viewportResolveFunc = null;
+                    this._resolveCheckViewportBusyState();
                 });
             }
         }
@@ -195,65 +203,63 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return vnodes;
         }
         renderItem(metadata, index, data) {
-            let key = metadata.key;
-            const node = this.vnodesCache.get(key);
-            if (node) {
-                this.newVnodesCache.set(key, { vnodes: node.vnodes });
-                return node.vnodes;
-            }
+            const key = metadata.key;
             let renderer;
             let vnodes;
-            if (!metadata.isLeaf) {
+            if (metadata.isLeaf === false) {
                 renderer = this.callback.getGroupRenderer();
             }
             if (renderer == null) {
                 renderer = this.callback.getItemRenderer();
             }
             vnodes = renderer({
-                data: data,
+                data,
                 key: metadata.key,
                 leaf: metadata.isLeaf,
                 parentKey: metadata.parentKey,
                 depth: metadata.treeDepth
             });
             let vnode;
-            for (let i = 0; i < vnodes.length; i++) {
-                const node = vnodes[i]._node;
-                if (node.nodeType === 1) {
-                    vnode = vnodes[i];
+            for (const curr of vnodes) {
+                vnode = curr;
+                if (vnode.props) {
                     break;
                 }
             }
-            let prunedVnodes = [vnode];
+            const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
             return prunedVnodes;
         }
         decorateItem(vnodes, metadata, index, initialFetch, visible) {
-            let vnode = vnodes[0];
-            let contentRoot = vnode._node;
-            if (contentRoot != null) {
+            const vnode = vnodes[0];
+            if (vnode != null) {
                 vnode.key = metadata.key;
-                contentRoot.key = metadata.key;
-                contentRoot.setAttribute('role', 'listitem');
-                contentRoot.setAttribute('tabIndex', '-1');
+                vnode.props.role = 'listitem';
+                vnode.props.tabIndex = -1;
+                vnode.props['data-oj-key'] = metadata.key;
+                if (typeof metadata.key === 'number') {
+                    vnode.props['data-oj-key-type'] = 'number';
+                }
                 const styleClasses = this.getItemStyleClass(metadata, visible, this.newItemsTracker.has(metadata.key), initialFetch);
-                styleClasses.forEach((styleClass) => {
-                    contentRoot.classList.add(styleClass);
-                });
+                const classProp = vnode.props.className ? 'className' : 'class';
+                const currentClasses = vnode.props[classProp]
+                    ? [vnode.props[classProp], ...styleClasses]
+                    : styleClasses;
+                vnode.props[classProp] = currentClasses.join(' ');
                 if (!metadata.isLeaf) {
-                    let expandedProp = this.callback.getExpanded();
-                    let expanded = expandedProp && expandedProp.has(metadata.key);
+                    const expandedProp = this.callback.getExpanded();
+                    const expanded = expandedProp && expandedProp.has(metadata.key);
                     if (expanded) {
-                        contentRoot.setAttribute('aria-expanded', 'true');
+                        vnode.props['aria-expanded'] = true;
                     }
                     else {
-                        contentRoot.setAttribute('aria-expanded', 'false');
+                        vnode.props['aria-expanded'] = false;
                     }
                 }
             }
         }
         getItemStyleClass(metadata, visible, isNew, animate) {
-            let styleClass = [];
+            const styleClass = [];
             if (!metadata.isLeaf) {
                 styleClass.push('oj-stream-list-group');
             }
@@ -280,27 +286,142 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
     };
     var StreamList_1;
     class Props {
-        constructor() {
-            this.data = null;
-            this.expanded = new ojkeyset.KeySetImpl();
-            this.scrollPolicy = 'loadMoreOnScroll';
-            this.scrollPolicyOptions = {
-                fetchSize: 25,
-                maxCount: 500,
-                scroller: null
-            };
-            this.scrollPosition = { y: 0 };
-        }
     }
-    exports.StreamList = StreamList_1 = class StreamList extends ojvcomponentElement.ElementVComponent {
+    exports.StreamList = StreamList_1 = class StreamList extends preact.Component {
         constructor(props) {
             super(props);
             this.restoreFocus = false;
             this.actionableMode = false;
             this.skeletonHeight = 0;
             this.height = 0;
+            this._handleFocusIn = (event) => {
+                this._clearFocusoutTimeout();
+                const target = event.target;
+                const item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
+                if (item && this._isFocusable(target, item)) {
+                    this._enterActionableMode(target);
+                }
+                else if (this.currentItem && !this.actionableMode) {
+                    this.focusInHandler(this.currentItem);
+                }
+            };
+            this._handleFocusOut = () => {
+                this._clearFocusoutTimeout();
+                if (this.actionableMode) {
+                    this._focusoutTimeout = setTimeout(function () {
+                        this._doBlur();
+                    }.bind(this), 100);
+                }
+                else if (!this._isFocusBlurTriggeredByDescendent(event)) {
+                    this._doBlur();
+                }
+            };
+            this._handleClick = (event) => {
+                const target = event.target;
+                const group = target.closest('.' + this.getGroupStyleClass());
+                if (group) {
+                    const key = this.contentHandler.getKey(group);
+                    const expanded = this.props.expanded.has(key);
+                    this._handleToggleExpanded(key, expanded);
+                }
+                this._handleTouchOrClickEvent(event);
+            };
+            this._handleKeyDown = (event) => {
+                if (this.currentItem) {
+                    let next;
+                    switch (event.key) {
+                        case DataCollectionUtils.KEYBOARD_KEYS._LEFT:
+                        case DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE:
+                        case DataCollectionUtils.KEYBOARD_KEYS._RIGHT:
+                        case DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE: {
+                            if (this.currentItem.classList.contains(this.getGroupStyleClass())) {
+                                const group = this.currentItem;
+                                const key = this.contentHandler.getKey(group);
+                                const expanded = this.props.expanded.has(key);
+                                if (((event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT ||
+                                    event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE) &&
+                                    !expanded) ||
+                                    ((event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT ||
+                                        event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE) &&
+                                        expanded)) {
+                                    this._handleToggleExpanded(key, expanded);
+                                }
+                            }
+                            break;
+                        }
+                        case DataCollectionUtils.KEYBOARD_KEYS._UP:
+                        case DataCollectionUtils.KEYBOARD_KEYS._UP_IE: {
+                            if (this.actionableMode === false) {
+                                next = this.currentItem.previousElementSibling;
+                                while (next &&
+                                    next.previousElementSibling &&
+                                    next.classList.contains('oj-stream-list-skeleton')) {
+                                    next = next.previousElementSibling;
+                                }
+                            }
+                            break;
+                        }
+                        case DataCollectionUtils.KEYBOARD_KEYS._DOWN:
+                        case DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE: {
+                            if (this.actionableMode === false) {
+                                next = this.currentItem.nextElementSibling;
+                                while (next &&
+                                    next.nextElementSibling &&
+                                    next.classList.contains('oj-stream-list-skeleton')) {
+                                    next = next.nextElementSibling;
+                                }
+                            }
+                            break;
+                        }
+                        case DataCollectionUtils.KEYBOARD_KEYS._F2: {
+                            if (this.actionableMode === false) {
+                                this._enterActionableMode();
+                            }
+                            break;
+                        }
+                        case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE:
+                        case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE: {
+                            if (this.actionableMode === true) {
+                                this._exitActionableMode(true);
+                            }
+                            break;
+                        }
+                        case DataCollectionUtils.KEYBOARD_KEYS._TAB: {
+                            if (this.actionableMode === true && this.currentItem) {
+                                if (event.shiftKey) {
+                                    if (DataCollectionUtils.handleActionablePrevTab(event, this.currentItem)) {
+                                        event.preventDefault();
+                                    }
+                                }
+                                else {
+                                    if (DataCollectionUtils.handleActionableTab(event, this.currentItem)) {
+                                        event.preventDefault();
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (next != null &&
+                        (next.classList.contains(this.getItemStyleClass()) ||
+                            next.classList.contains(this.getGroupStyleClass()))) {
+                        this._updateCurrentItemAndFocus(next, true);
+                        event.preventDefault();
+                    }
+                }
+            };
             this.setRootElement = (element) => {
                 this.root = element;
+            };
+            this.scrollListener = () => {
+                const self = this;
+                if (this.getData() != null && !this._ticking) {
+                    window.requestAnimationFrame(function () {
+                        self._updateScrollPosition();
+                        self._ticking = false;
+                    });
+                    this._ticking = true;
+                }
             };
             this.state = {
                 renderedData: null,
@@ -310,30 +431,9 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 expandedToggleKeys: new ojkeyset.KeySetImpl(),
                 expandedSkeletonKeys: new ojkeyset.KeySetImpl(),
                 expandingKeys: new ojkeyset.KeySetImpl(),
-                toCollapse: []
+                toCollapse: [],
+                lastExpanded: props.expanded
             };
-        }
-        _handleFocusIn(event) {
-            this._clearFocusoutTimeout();
-            let target = event.target;
-            let item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
-            if (item && this._isFocusable(target, item)) {
-                this._enterActionableMode(target);
-            }
-            else if (this.currentItem && !this.actionableMode) {
-                this.focusInHandler(this.currentItem);
-            }
-        }
-        _handleFocusOut() {
-            this._clearFocusoutTimeout();
-            if (this.actionableMode) {
-                this._focusoutTimeout = setTimeout(function () {
-                    this._doBlur();
-                }.bind(this), 100);
-            }
-            else if (!this._isFocusBlurTriggeredByDescendent(event)) {
-                this._doBlur();
-            }
         }
         _clearFocusoutTimeout() {
             if (this._focusoutTimeout) {
@@ -341,18 +441,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 this._focusoutTimeout = null;
             }
         }
-        _handleClick(event) {
-            let target = event.target;
-            let group = target.closest('.' + this.getGroupStyleClass());
-            if (group) {
-                let key = group.key;
-                let expanded = this.props.expanded.has(key);
-                this._handleToggleExpanded(key, expanded);
-            }
-            this._handleTouchOrClickEvent(event);
-        }
         _handleToggleExpanded(key, expanded) {
-            this.updateState(function (state, props) {
+            this.setState(function (state, props) {
                 var _a, _b;
                 let expandedToggleKeys = state.expandedToggleKeys;
                 if (!expandedToggleKeys.has(key)) {
@@ -367,94 +457,10 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                         }
                     });
                     (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, newExpanded);
-                    return { expandedToggleKeys: expandedToggleKeys };
+                    return { expandedToggleKeys };
                 }
                 return {};
             }.bind(this));
-        }
-        _handleKeyDown(event) {
-            if (this.currentItem) {
-                let next;
-                switch (event.key) {
-                    case DataCollectionUtils.KEYBOARD_KEYS._LEFT:
-                    case DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE:
-                    case DataCollectionUtils.KEYBOARD_KEYS._RIGHT:
-                    case DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE: {
-                        if (this.currentItem.classList.contains(this.getGroupStyleClass())) {
-                            let group = this.currentItem;
-                            let key = group.key;
-                            let expanded = this.props.expanded.has(key);
-                            if (((event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT ||
-                                event.key === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_IE) &&
-                                !expanded) ||
-                                ((event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT ||
-                                    event.key === DataCollectionUtils.KEYBOARD_KEYS._LEFT_IE) &&
-                                    expanded)) {
-                                this._handleToggleExpanded(key, expanded);
-                            }
-                        }
-                        break;
-                    }
-                    case DataCollectionUtils.KEYBOARD_KEYS._UP:
-                    case DataCollectionUtils.KEYBOARD_KEYS._UP_IE: {
-                        if (this.actionableMode === false) {
-                            next = this.currentItem.previousElementSibling;
-                            while (next &&
-                                next.previousElementSibling &&
-                                next.classList.contains('oj-stream-list-skeleton')) {
-                                next = next.previousElementSibling;
-                            }
-                        }
-                        break;
-                    }
-                    case DataCollectionUtils.KEYBOARD_KEYS._DOWN:
-                    case DataCollectionUtils.KEYBOARD_KEYS._DOWN_IE: {
-                        if (this.actionableMode === false) {
-                            next = this.currentItem.nextElementSibling;
-                            while (next &&
-                                next.nextElementSibling &&
-                                next.classList.contains('oj-stream-list-skeleton')) {
-                                next = next.nextElementSibling;
-                            }
-                        }
-                        break;
-                    }
-                    case DataCollectionUtils.KEYBOARD_KEYS._F2: {
-                        if (this.actionableMode === false) {
-                            this._enterActionableMode();
-                        }
-                        break;
-                    }
-                    case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE:
-                    case DataCollectionUtils.KEYBOARD_KEYS._ESCAPE_IE: {
-                        if (this.actionableMode === true) {
-                            this._exitActionableMode(true);
-                        }
-                        break;
-                    }
-                    case DataCollectionUtils.KEYBOARD_KEYS._TAB: {
-                        if (this.actionableMode === true && this.currentItem) {
-                            if (event.shiftKey) {
-                                if (DataCollectionUtils.handleActionablePrevTab(event, this.currentItem)) {
-                                    event.preventDefault();
-                                }
-                            }
-                            else {
-                                if (DataCollectionUtils.handleActionableTab(event, this.currentItem)) {
-                                    event.preventDefault();
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (next != null &&
-                    (next.classList.contains(this.getItemStyleClass()) ||
-                        next.classList.contains(this.getGroupStyleClass()))) {
-                    this._updateCurrentItemAndFocus(next, true);
-                    event.preventDefault();
-                }
-            }
         }
         _touchStartHandler(event) {
             this._handleTouchOrClickEvent(event);
@@ -472,7 +478,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                     content = this._renderInitialSkeletons(initialSkeletonCount, data == null);
                 }
                 else if (data != null) {
-                    content = this.contentHandler.render();
+                    content = this.contentHandler.render(data);
                     if (this.currentItem &&
                         this.currentItem.contains(document.activeElement) &&
                         !this.actionableMode) {
@@ -480,8 +486,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                     }
                 }
             }
-            return (ojvcomponentElement.h("oj-stream-list", { ref: this.setRootElement },
-                ojvcomponentElement.h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeydown: this._handleKeyDown, onTouchstart: this._touchStartHandler, onFocusin: this._handleFocusIn, onFocusout: this._handleFocusOut }, content)));
+            return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
+                preact.h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
         }
         _doBlur() {
             if (this.actionableMode) {
@@ -510,8 +516,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.renderSkeletons(count);
         }
         renderSkeletons(count, indented, key) {
-            let skeletons = [];
-            let isTreeData = this._isTreeData();
+            const skeletons = [];
+            const isTreeData = this._isTreeData();
             let skeletonKey;
             for (let i = 0; i < count; i++) {
                 let shouldIndent = indented;
@@ -530,13 +536,13 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             if (indented) {
                 className += ' oj-stream-list-child-skeleton';
             }
-            return (ojvcomponentElement.h("div", { class: className, key: key },
-                ojvcomponentElement.h("div", { class: 'oj-stream-list-skeleton-content oj-animation-skeleton' })));
+            return (preact.h("div", { class: className, key: key },
+                preact.h("div", { class: 'oj-stream-list-skeleton-content oj-animation-skeleton' })));
         }
         _applySkeletonExitAnimation(skeletons) {
             const resolveFunc = this.addBusyState('apply skeleton exit animations');
             return new Promise((resolve, reject) => {
-                let promises = [];
+                const promises = [];
                 skeletons.forEach((skeleton) => {
                     promises.push(AnimationUtils.fadeOut(skeleton));
                 });
@@ -547,7 +553,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             });
         }
         _isTreeData() {
-            var data = this.props.data;
+            const data = this.props.data;
             return data != null && this.instanceOfTreeDataProvider(data);
         }
         instanceOfTreeDataProvider(object) {
@@ -556,17 +562,17 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         _postRender() {
             this._registerScrollHandler();
             const data = this.getData();
-            let initialSkeleton = this.state.initialSkeleton;
+            const initialSkeleton = this.state.initialSkeleton;
             if (data != null && initialSkeleton) {
-                let skeletons = this.getRootElement().querySelectorAll('.oj-stream-list-skeleton');
+                const skeletons = this.getRootElement().querySelectorAll('.oj-stream-list-skeleton');
                 this._applySkeletonExitAnimation(skeletons).then(function () {
-                    this.updateState({ initialSkeleton: false });
+                    this.setState({ initialSkeleton: false });
                 }.bind(this));
             }
             else if (data != null) {
                 this.contentHandler.postRender();
             }
-            let items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
+            const items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
             this._disableAllTabbableElements(items);
             this._restoreCurrentItem(items);
         }
@@ -577,23 +583,22 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 scroller: this._getScroller()
             };
         }
-        mounted() {
-            var data = this.props.data;
+        componentDidMount() {
+            const data = this.props.data;
             if (this._isTreeData()) {
-                this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this._getScrollPolicyOptions());
+                this.contentHandler = new StreamListTreeContentHandler(this.root, data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
             }
             else if (data != null) {
-                this.contentHandler = new StreamListContentHandler(this.root, data, this, this._getScrollPolicyOptions());
+                this.contentHandler = new StreamListContentHandler(this.root, data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
             }
-            this.contentHandler.fetchRows();
             this.height = this.root.clientHeight;
-            let skeleton = this.root.querySelector('.oj-stream-list-skeleton');
+            const skeleton = this.root.querySelector('.oj-stream-list-skeleton');
             if (skeleton) {
                 this.skeletonHeight = this.outerHeight(skeleton);
                 this._delayShowSkeletons();
             }
             if (window['ResizeObserver']) {
-                let root = this.root;
+                const root = this.root;
                 const resizeObserver = new window['ResizeObserver']((entries) => {
                     entries.forEach((entry) => {
                         if (entry.target === root && entry.contentRect) {
@@ -614,11 +619,17 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             DomUtils.makeFocusable({
                 applyHighlight: true,
                 setupHandlers: (focusInHandler, focusOutHandler) => {
-                    let noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+                    const noJQHandlers = DataCollectionUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
                     this.focusInHandler = noJQHandlers.focusIn;
                     this.focusOutHandler = noJQHandlers.focusOut;
                 }
             });
+            const root = this.getRootElement();
+            if (root) {
+                root.addEventListener('touchstart', (event) => this._touchStartHandler(event), {
+                    passive: true
+                });
+            }
             this._postRender();
         }
         getSkeletonHeight() {
@@ -626,11 +637,11 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         }
         outerHeight(el) {
             let height = el.offsetHeight;
-            let style = getComputedStyle(el);
+            const style = getComputedStyle(el);
             height += parseInt(style.marginTop) + parseInt(style.marginBottom);
             return height;
         }
-        unmounted() {
+        componentWillUnmount() {
             if (this.contentHandler) {
                 this.contentHandler.destroy();
             }
@@ -645,10 +656,9 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             window.setTimeout(() => {
                 const data = this.getData();
                 if (data == null) {
-                    this.updateState((state) => {
-                        return {
-                            initialSkeletonCount: Math.max(1, Math.floor(this.height / this.skeletonHeight))
-                        };
+                    this.setState({
+                        initialSkeleton: true,
+                        initialSkeletonCount: Math.max(1, Math.floor(this.height / this.skeletonHeight))
                     });
                 }
             }, this._getShowSkeletonsDelay());
@@ -670,12 +680,12 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         getRootElement() {
             return this.root;
         }
-        updated(oldProps, oldState) {
+        componentDidUpdate(oldProps, oldState) {
             if (this._isTreeData() && this.contentHandler.collapse) {
                 this.contentHandler.collapse(this.state.toCollapse);
             }
-            let oldExpandingKeys = oldState.expandingKeys;
-            let expandingKeys = this.state.expandingKeys;
+            const oldExpandingKeys = oldState.expandingKeys;
+            const expandingKeys = this.state.expandingKeys;
             expandingKeys.values().forEach(function (key) {
                 if (!oldExpandingKeys.has(key)) {
                     this.contentHandler.expand(key);
@@ -686,23 +696,23 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                     this.contentHandler.destroy();
                 }
                 this.setCurrentItem(null);
-                this.updateState({
+                this.setState({
                     renderedData: null,
                     outOfRangeData: null,
-                    initialSkeleton: true,
+                    initialSkeleton: false,
                     initialSkeletonCount: this.state.initialSkeletonCount,
                     expandedToggleKeys: new ojkeyset.KeySetImpl(),
                     expandedSkeletonKeys: new ojkeyset.KeySetImpl(),
                     expandingKeys: new ojkeyset.KeySetImpl()
                 });
                 if (this._isTreeData()) {
-                    this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this._getScrollPolicyOptions());
+                    this.contentHandler = new StreamListTreeContentHandler(this.root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    this._delayShowSkeletons();
                 }
                 else if (this.props.data != null) {
-                    this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this._getScrollPolicyOptions());
+                    this.contentHandler = new StreamListContentHandler(this.root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions());
+                    this._delayShowSkeletons();
                 }
-                this.contentHandler.fetchRows();
-                this._delayShowSkeletons();
             }
             this._postRender();
             if (!oj.Object.compareValues(this.props.scrollPosition, oldProps.scrollPosition) &&
@@ -710,24 +720,22 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 this._syncScrollTopWithProps();
             }
         }
-        static initStateFromProps(props, state) {
-            return StreamList_1.updateStateFromProps(props, state, null);
-        }
-        static updateStateFromProps(props, state, oldProps) {
-            let { expandedToggleKeys, expandingKeys, renderedData, expandedSkeletonKeys } = state;
-            let toCollapse = [];
-            let newExpanded = props.expanded;
-            if (oldProps && newExpanded !== oldProps.expanded) {
-                let oldExpanded = oldProps.expanded;
+        static getDerivedStateFromProps(props, state) {
+            let { expandedToggleKeys, expandingKeys, renderedData, expandedSkeletonKeys, lastExpanded } = state;
+            if (!renderedData)
+                return {};
+            const toCollapse = [];
+            const newExpanded = props.expanded;
+            if (newExpanded !== lastExpanded) {
                 expandedToggleKeys.values().forEach((key) => {
-                    if (oldExpanded.has(key) !== newExpanded.has(key)) {
+                    if (lastExpanded.has(key) !== newExpanded.has(key)) {
                         expandedToggleKeys = expandedToggleKeys.delete([key]);
                     }
                 });
                 renderedData.value.metadata.forEach((itemMetadata) => {
-                    let key = itemMetadata.key;
-                    let itemExpanded = itemMetadata.expanded;
-                    let isExpanded = newExpanded.has(key);
+                    const key = itemMetadata.key;
+                    const itemExpanded = itemMetadata.expanded;
+                    const isExpanded = newExpanded.has(key);
                     if (itemExpanded && !isExpanded) {
                         toCollapse.push(key);
                         itemMetadata.expanded = false;
@@ -747,7 +755,8 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                     expandingKeys,
                     expandedToggleKeys,
                     expandedSkeletonKeys,
-                    toCollapse
+                    toCollapse,
+                    lastExpanded: newExpanded
                 };
             }
             return { toCollapse };
@@ -761,34 +770,25 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return -1;
         }
         _unregisterScrollHandler() {
-            let scrollElement = this._getScrollEventElement();
+            const scrollElement = this._getScrollEventElement();
             scrollElement.removeEventListener('scroll', this.scrollListener);
         }
         _registerScrollHandler() {
-            let scrollElement = this._getScrollEventElement();
+            const scrollElement = this._getScrollEventElement();
             this._unregisterScrollHandler();
             scrollElement.addEventListener('scroll', this.scrollListener);
         }
-        scrollListener() {
-            var self = this;
-            if (this.getData() != null && !this._ticking) {
-                window.requestAnimationFrame(function () {
-                    self._updateScrollPosition();
-                    self._ticking = false;
-                });
-                this._ticking = true;
-            }
-        }
         _updateScrollPosition() {
             var _a, _b;
-            let scrollPosition = {};
-            let scrollTop = this._getScroller().scrollTop;
-            let result = this._findClosestElementToTop(scrollTop);
+            const scrollPosition = {};
+            const scrollTop = this._getScroller().scrollTop;
+            const result = this._findClosestElementToTop(scrollTop);
             scrollPosition.y = scrollTop;
             if (result != null) {
-                let elem = result.elem;
+                const elem = result.elem;
+                const elemKey = this.contentHandler.getKey(elem);
                 scrollPosition.offsetY = result.offsetY;
-                scrollPosition.key = elem.key;
+                scrollPosition.key = elemKey;
                 if (this._isTreeData() && elem.classList.contains('oj-stream-list-item')) {
                     scrollPosition.parentKey = this._getParentKey(elem);
                 }
@@ -800,14 +800,14 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             (_b = (_a = this.props).onScrollPositionChanged) === null || _b === void 0 ? void 0 : _b.call(_a, scrollPosition);
         }
         _syncScrollTopWithProps() {
-            let scrollPosition = this.props.scrollPosition;
+            const scrollPosition = this.props.scrollPosition;
             let scrollTop;
             const key = scrollPosition.key;
             if (key) {
                 const parent = scrollPosition.parentKey;
                 const item = this._getItemByKey(key, parent);
                 if (item != null) {
-                    let root = this.root;
+                    const root = this.root;
                     scrollTop = item.offsetTop - root.offsetTop;
                 }
                 else {
@@ -835,17 +835,17 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         _getParentKey(item) {
             while (item) {
                 if (item.classList.contains('oj-stream-list-group')) {
-                    return item.key;
+                    return this.contentHandler.getKey(item);
                 }
                 item = item.previousElementSibling;
             }
             return null;
         }
         _getItemByKey(key, parentKey) {
-            var items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
+            const items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
             for (let i = 0; i < items.length; i++) {
-                let item = items[i];
-                let itemKey = item.key;
+                const item = items[i];
+                const itemKey = this.contentHandler.getKey(item);
                 if (itemKey === key) {
                     if (parentKey == null || this._getParentKey(item) === parentKey) {
                         return item;
@@ -880,19 +880,19 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.getRootElement();
         }
         _findClosestElementToTop(currScrollTop) {
-            var items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
+            const items = this.root.querySelectorAll('.oj-stream-list-item, .oj-stream-list-group');
             if (items == null || items.length === 0) {
                 return null;
             }
-            let root = this.root;
-            let rootTop = root.offsetTop;
-            let scrollTop = Math.max(currScrollTop, 0);
+            const root = this.root;
+            const rootTop = root.offsetTop;
+            const scrollTop = Math.max(currScrollTop, 0);
             let offsetTop = 0 - rootTop;
             let diff = scrollTop;
             let index = 0;
             let elem = items[index];
             let found = false;
-            let elementDetail = { elem: elem, offsetY: diff };
+            let elementDetail = { elem, offsetY: diff };
             while (!found && index >= 0 && index < items.length) {
                 elem = items[index];
                 offsetTop = elem.offsetTop - rootTop;
@@ -901,7 +901,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
                 if (found) {
                     break;
                 }
-                elementDetail = { elem: elem, offsetY: diff };
+                elementDetail = { elem, offsetY: diff };
                 index += 1;
             }
             return elementDetail;
@@ -919,12 +919,11 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.state.renderedData;
         }
         setData(data) {
-            this.updateState({ renderedData: data });
+            this.setState({ renderedData: data });
         }
         updateData(updater) {
-            this.updateState(function (state) {
-                let returnVal = updater(state.renderedData, state.expandingKeys);
-                return returnVal;
+            this.setState(function (state) {
+                return updater(state.renderedData, state.expandingKeys);
             }.bind(this));
         }
         getExpanded() {
@@ -935,7 +934,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             (_b = (_a = this.props).onExpandedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, set);
         }
         updateExpand(updater) {
-            this.updateState(function (state, props) {
+            this.setState(function (state, props) {
                 return updater(state.renderedData, state.expandedSkeletonKeys, state.expandingKeys, props.expanded);
             }.bind(this));
         }
@@ -943,10 +942,10 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.state.expandingKeys;
         }
         setExpandingKeys(set) {
-            this.updateState({ expandingKeys: set });
+            this.setState({ expandingKeys: set });
         }
         updateExpandingKeys(key) {
-            this.updateState(function (state) {
+            this.setState(function (state) {
                 return { expandingKeys: state.expandingKeys.add([key]) };
             });
         }
@@ -954,10 +953,10 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.state.expandedSkeletonKeys;
         }
         setSkeletonKeys(set) {
-            this.updateState({ expandedSkeletonKeys: set });
+            this.setState({ expandedSkeletonKeys: set });
         }
         updateSkeletonKeys(key) {
-            this.updateState(function (state) {
+            this.setState(function (state) {
                 return { expandedSkeletonKeys: state.expandedSkeletonKeys.add([key]) };
             });
         }
@@ -965,7 +964,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this.state.outOfRangeData;
         }
         setOutOfRangeData(data) {
-            this.updateState({ outOfRangeData: data });
+            this.setState({ outOfRangeData: data });
         }
         getItemRenderer() {
             return this.props.itemTemplate;
@@ -982,11 +981,21 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         addBusyState(description) {
             const root = this.getRootElement();
             const componentBusyContext = Context.getContext(root).getBusyContext();
-            return componentBusyContext.addBusyState({ description: description });
+            return componentBusyContext.addBusyState({ description });
+        }
+        handleItemRemoved(key) {
+            if (key == this.getCurrentItem()) {
+                let next = this.currentItem.nextElementSibling;
+                if (!next)
+                    next = this.currentItem.previousElementSibling;
+                if (next) {
+                    this._updateCurrentItemAndFocus(next, this.root.contains(document.activeElement));
+                }
+            }
         }
         _handleTouchOrClickEvent(event) {
-            let target = event.target;
-            let item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
+            const target = event.target;
+            const item = target.closest('.oj-stream-list-item, .oj-stream-list-group');
             if (item) {
                 if (this._isFocusable(target, item)) {
                     this._updateCurrentItemAndFocus(item, false);
@@ -1001,7 +1010,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             return this._isInputElement(target) || this._isInsideFocusableElement(target, item);
         }
         _isInputElement(target) {
-            var inputRegExp = /^INPUT|SELECT|OPTION|TEXTAREA/;
+            const inputRegExp = /^INPUT|SELECT|OPTION|TEXTAREA/;
             return target.nodeName.match(inputRegExp) != null && !target.readOnly;
         }
         _isInsideFocusableElement(target, item) {
@@ -1020,7 +1029,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         }
         _isInFocusableElementsList(target, item) {
             let found = false;
-            let nodes = DataCollectionUtils.getFocusableElementsIncludingDisabled(item);
+            const nodes = DataCollectionUtils.getFocusableElementsIncludingDisabled(item);
             nodes.forEach(function (node) {
                 if (node === target) {
                     found = true;
@@ -1043,24 +1052,26 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             }
         }
         _updateCurrentItemAndFocus(item, shouldFocus) {
-            let lastCurrentItem = this.currentItem;
-            let newCurrentItem = item;
+            const lastCurrentItem = this.currentItem;
+            const newCurrentItem = item;
             this._resetFocus(lastCurrentItem, true);
             this.currentItem = newCurrentItem;
-            this.setCurrentItem(newCurrentItem.key);
+            const newCurrentItemKey = this.contentHandler.getKey(newCurrentItem);
+            this.setCurrentItem(newCurrentItemKey);
             this._setFocus(newCurrentItem, shouldFocus);
         }
         _isInViewport(item) {
-            let itemElem = item;
-            let top = itemElem.offsetTop;
-            let scrollTop = this._getScroller().scrollTop;
+            const itemElem = item;
+            const top = itemElem.offsetTop;
+            const scrollTop = this._getScroller().scrollTop;
             return top >= scrollTop && top <= scrollTop + this.height;
         }
         _restoreCurrentItem(items) {
             if (this.currentKey != null) {
-                for (let i = 0; i < items.length; i++) {
-                    if (oj.KeyUtils.equals(items[i].key, this.currentKey)) {
-                        const elem = items[i];
+                for (const curr of items) {
+                    const itemKey = this.contentHandler.getKey(curr);
+                    if (itemKey == this.currentKey) {
+                        const elem = curr;
                         if (this.restoreFocus && this._isInViewport(elem)) {
                             this._updateCurrentItemAndFocus(elem, true);
                             return;
@@ -1077,7 +1088,7 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
         }
         _disableAllTabbableElements(items) {
             items.forEach((item) => {
-                var busyContext = Context.getContext(item).getBusyContext();
+                const busyContext = Context.getContext(item).getBusyContext();
                 busyContext.whenReady().then(function () {
                     DataCollectionUtils.disableAllFocusableElements(item, true);
                 });
@@ -1101,60 +1112,39 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojdatacollection-common', 'o
             }
         }
     };
+    exports.StreamList.defaultProps = {
+        data: null,
+        expanded: new ojkeyset.KeySetImpl(),
+        scrollPolicy: 'loadMoreOnScroll',
+        scrollPolicyOptions: {
+            fetchSize: 25,
+            maxCount: 500,
+            scroller: null
+        },
+        scrollPosition: {
+            y: 0
+        }
+    };
     exports.StreamList.collapse = (key, currentData) => {
-        let data = currentData.value.data;
-        let metadata = currentData.value.metadata;
-        let index = StreamList_1._findIndex(metadata, key);
+        const data = currentData.value.data;
+        const metadata = currentData.value.metadata;
+        const index = StreamList_1._findIndex(metadata, key);
         if (index > -1) {
-            let count = StreamList_1._getLocalDescendentCount(metadata, index);
+            const count = ojvcollection.IteratingTreeDataProviderContentHandler.getLocalDescendentCount(metadata, index);
             data.splice(index + 1, count);
             metadata.splice(index + 1, count);
         }
         return {
             value: {
-                data: data,
-                metadata: metadata
+                data,
+                metadata
             },
             done: currentData.done
         };
     };
-    exports.StreamList._getLocalDescendentCount = (metadata, index) => {
-        let count = 0;
-        let depth = metadata[index].treeDepth;
-        let lastIndex = metadata.length;
-        for (let j = index + 1; j < lastIndex; j++) {
-            let newMetadata = metadata[j];
-            let newDepth = newMetadata.treeDepth;
-            if (newDepth > depth) {
-                count += 1;
-            }
-            else {
-                return count;
-            }
-        }
-        return count;
-    };
-    exports.StreamList.metadata = { "extension": { "_DEFAULTS": Props, "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [] }, "properties": { "data": { "type": "object|null", "value": null }, "expanded": { "type": "any", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"], "value": "loadMoreOnScroll" }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number", "value": 25 }, "maxCount": { "type": "number", "value": 500 }, "scroller": { "type": "Element|string|null", "value": null } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number", "value": 0 }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } } };
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.StreamList.prototype, "_handleFocusIn", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.StreamList.prototype, "_handleFocusOut", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.StreamList.prototype, "_handleClick", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.StreamList.prototype, "_handleKeyDown", null);
-    __decorate([
-        ojvcomponentElement.listener({ passive: true })
-    ], exports.StreamList.prototype, "_touchStartHandler", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.StreamList.prototype, "scrollListener", null);
+    exports.StreamList.metadata = { "properties": { "data": { "type": "object|null" }, "expanded": { "type": "any", "writeback": true }, "scrollPolicy": { "type": "string", "enumValues": ["loadAll", "loadMoreOnScroll"] }, "scrollPolicyOptions": { "type": "object", "properties": { "fetchSize": { "type": "number" }, "maxCount": { "type": "number" }, "scroller": { "type": "Element|string|null" } } }, "scrollPosition": { "type": "object", "properties": { "y": { "type": "number" }, "key": { "type": "any" }, "offsetY": { "type": "number" }, "parentKey": { "type": "any" } }, "writeback": true } }, "slots": { "groupTemplate": { "data": {} }, "itemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["expanded", "scrollPosition"], "_READ_ONLY_PROPS": [] } };
     exports.StreamList = StreamList_1 = __decorate([
-        ojvcomponentElement.customElement('oj-stream-list')
+        ojvcomponent.customElement('oj-stream-list')
     ], exports.StreamList);
 
     Object.defineProperty(exports, '__esModule', { value: true });

@@ -5,13 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-/**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import oj from 'ojs/ojcore-base';
+
 /**
  * Contains utility functions intended to be used to pick files
  * @ojmodulecontainer ojfilepickerutils
@@ -41,8 +36,17 @@
  * @property {'single' | 'multiple'} selectionMode - Whether to allow single or multiple file selection.  Single is the default.
  */
 
-function pickFiles(callback, fileOptions) {
-    const input = document.createElement('input');
+let input;
+const isIOS = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS;
+const teardownInput = () => {
+    if (isIOS)
+        document.body.removeChild(input);
+    input = null;
+};
+const setupInput = (fileOptions) => {
+    if (input)
+        teardownInput();
+    input = document.createElement('input');
     input.type = 'file';
     if ((fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.capture) && fileOptions.capture != 'none') {
         input.capture = fileOptions.capture;
@@ -51,8 +55,15 @@ function pickFiles(callback, fileOptions) {
     const accept = acceptProp && acceptProp.length ? acceptProp.join(',') : null;
     input.accept = accept;
     input.multiple = (fileOptions === null || fileOptions === void 0 ? void 0 : fileOptions.selectionMode) == 'multiple';
+    input.style.display = 'none';
+    if (isIOS)
+        document.body.appendChild(input);
+};
+function pickFiles(callback, fileOptions) {
+    setupInput(fileOptions);
     input.onchange = function () {
         callback(input.files);
+        teardownInput();
     };
     input.click();
 }

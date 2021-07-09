@@ -360,6 +360,17 @@
       
     }
 
+    /* Styling for custom content containers */
+    .oj-gantt-task-custom svg,
+    .oj-gantt-dependency-line-custom svg {
+      // Apps always provide custom content wrapped inside a <svg> element in their template.
+      // However, non-root svgs are overflow hidden as per both the browser's user agent and dvt base style sheets.
+      // This has the effect of clipping all custom content's width and height by the width and height of the component's svg container.
+      // We never want this overflow hidden behavior in Gantt because the custom content's dimensions can be bigger than the component's width and height,
+      // e.g. the custom task content's width can increase past the component's width during horizontal time-based zoom in.
+      overflow: visible;
+    }
+
     /* Option defaults */
     $ganttDefaultOptions: ();
     $ganttTaskDefaultsDefaultOptions: ();

@@ -10,13 +10,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojindexer', 'ojs/ojdatasource-common'
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Implementation of the IndexerModel and TreeDataSource based on an array of data set.
    * This should be used with the Indexer and its associated ListView.
    * By default, this adapter groups the data based on the first letter of the data and the alphabet of the current locale.
@@ -25,7 +18,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojindexer', 'ojs/ojdatasource-common'
    * @classdesc TreeDataSource and IndexerModel implementation that represents hierachical data available from an array of JSON objects.  This data source can be used by [Indexer]{@link oj.ojIndexer} and
    *            associated [ListView]{@link oj.ojListView}.<br><br>
    *            See the Indexer - Basic demo for an example.<br><br>
-   *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
+   *            Refer to {@link TreeDataSource} for other data sources that represent hierarachical data.
    * @param {Array.<any>} data an array of data used for Indexer and ListView
    * @param {string} idAttribute the id attribute of the data
    * @param {function(Object)|function(string)} listener a callback function that handles when a section becomes current (user clicks on the section in the Indexer).

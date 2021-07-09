@@ -537,7 +537,7 @@ define(['./impl/logger'], function (logger) {
     logger.log("Offline Persistence Toolkit persistenceUtils: buildEndpointKey() for Request with url: " + request.url);
     var endPointKeyObj = {
       url: request.url,
-      id : Math.random().toString(36).replace(/[^a-z]+/g, '') // @randomNumberOk - Only used to internally keep track of request URLs
+      id : Math.random().toString(36).replace(/[^a-z]+/g, '') // @RandomNumberOK - Only used to internally keep track of request URLs
     };
     return JSON.stringify(endPointKeyObj);
   };

@@ -109,7 +109,7 @@
       line-height: 2rem;
       margin: 0;
       min-height: 2rem;
-      word-wrap: break-word;
+      word-break: break-word;
       -webkit-touch-callout: none;
 
         @include oj-user-select-property(none);
@@ -293,32 +293,7 @@
      */
     .oj-listbox-search-icon {
       @extend .oj-fwk-icon-magnifier;
-
-        color: $buttonIconColor;
-
-    }
-
-    /*
-     * Applied to the spyglass (search icon) container
-     */
-    .oj-listbox-spyglass-box {
-      box-sizing: border-box;
-      text-align: center;
-      vertical-align: middle;
-      border:0;
-      overflow: hidden;
-      display: inline-block;
-      position: absolute;
-
-        @include oj-ltr() {
-          right: 0;
-          padding-right: $listboxItemPadding;
-        }
-        @include oj-rtl() {
-          left: 0;
-          padding-left: $listboxItemPadding;
-        }
-
+      color: $buttonIconColor;
     }
 
     /*
@@ -330,42 +305,14 @@
       display: inline-flex;
       @include oj-form-control-text-size-adjust($formControlInputFontSize);
 
-        background-color: $formControlBgColor;
-        border-color: $formControlBorderColor;
-        border-width: $formControlBorderWidth;
-        @include oj-border-radius($formControlBorderRadius);
-
-      border-style: solid;
+      background-color: $formControlBgColor;
     }
 
     /*
      * Applied to the search text
      */
     .oj-listbox-input {
-      box-sizing: border-box;
       width: 100%;
-
-        color: $textColor;
-        @include oj-border-radius($formControlBorderRadius);
-        @include oj-box-shadow(none);
-        @include oj-ltr() {
-          padding-right: 2rem;
-          padding-left: $formControlPaddingHorizontal;
-        }
-        @include oj-rtl() {
-          padding-left: 2rem;
-          padding-right: $formControlPaddingHorizontal;
-        }
-
-      outline: none;
-      border: 0;
-      // even if the border is 0, we still need to set border radius here otherwise
-      // the inputbox background color bleeds thru the container's corner
-      // (see oj-listbox-search), which makes the container border radius
-      // look disconnected.
-      background-color: inherit;
-      padding-top: 6px;
-      padding-bottom: 5px;
      }
 
     /*
@@ -373,10 +320,20 @@
      */
     .oj-listbox-search-wrapper {
       border: 0;
+      padding: $listboxItemPadding;
+      background-color: $formControlBgColor;
+    }
 
-        padding: $listboxItemPadding;
-        background-color: $formControlBgColor;
-
+    /*
+     * Applied to the spyglass (search icon) container
+     */
+    .oj-listbox-spyglass-box {
+      @include oj-ltr() {
+        padding-right: 6px;
+      }
+      @include oj-rtl() {
+        padding-left: 6px;
+      }
     }
 
     // .oj-listbox-searchselect .oj-listbox-search-wrapper {
@@ -430,6 +387,15 @@
 
     }
 
+    /**
+     * Applied to the wrapper container of the loading indicator in the dropdown for the
+     * ojselectcombobox components.
+     */
+     .oj-listbox-loader-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+
     /*
      * Applied to the data fetching indicator container
      */
@@ -460,7 +426,7 @@
       display: inline-block;
       width: 24px;
       height: 24px;
-      margin: auto;
+      margin: 0.5rem auto;
       @include oj-icon-content(
         $icon: oj-image-url("spinner_full.gif"),
         $lowResProportion: 0.15
@@ -483,27 +449,6 @@
 
         border: 1px dotted $formControlBorderColor;
 
-    }
-
-    /*
-     * Applied to the search icon
-     */
-    .oj-listbox-search-icon {
-        padding: 0.31rem;
-    }
-
-    /*
-     * Applied to the spyglass (search icon) container
-     */
-    .oj-listbox-spyglass-box {
-      padding-top: 1px;
-
-      @include oj-ltr() {
-        padding-right: 6px;
-      }
-      @include oj-rtl() {
-        padding-left: 6px;
-      }
     }
 
     /*

@@ -1,11 +1,6 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
+import { PagingModel } from '../ojpagingmodel';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojFilmStrip extends baseComponent<ojFilmStripSettableProperties> {
     arrowPlacement: 'adjacent' | 'overlay';
@@ -32,6 +27,7 @@ export interface ojFilmStrip extends baseComponent<ojFilmStripSettableProperties
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojFilmStripSettableProperties>): void;
     setProperties(properties: ojFilmStripSettablePropertiesLenient): void;
     getItemsPerPage(): number;
+    getPagingModel(): PagingModel;
     refresh(): void;
 }
 export namespace ojFilmStrip {
@@ -91,4 +87,20 @@ export namespace FilmStripElement {
     type maxItemsPerPageChanged = JetElementCustomEvent<ojFilmStrip["maxItemsPerPage"]>;
     // tslint:disable-next-line interface-over-type-literal
     type orientationChanged = JetElementCustomEvent<ojFilmStrip["orientation"]>;
+}
+export interface FilmStripIntrinsicProps extends Partial<Readonly<ojFilmStripSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onarrowPlacementChanged?: (value: ojFilmStripEventMap['arrowPlacementChanged']) => void;
+    onarrowVisibilityChanged?: (value: ojFilmStripEventMap['arrowVisibilityChanged']) => void;
+    oncurrentItemChanged?: (value: ojFilmStripEventMap['currentItemChanged']) => void;
+    onloopingChanged?: (value: ojFilmStripEventMap['loopingChanged']) => void;
+    onmaxItemsPerPageChanged?: (value: ojFilmStripEventMap['maxItemsPerPageChanged']) => void;
+    onorientationChanged?: (value: ojFilmStripEventMap['orientationChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-film-strip": FilmStripIntrinsicProps;
+        }
+    }
 }

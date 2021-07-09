@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
     selectedStep: string;
@@ -26,7 +20,7 @@ export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
         label?: string;
         disabled?: boolean;
         visited?: boolean;
-        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation';
+        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation' | null;
     }): void;
 }
 export namespace ojTrain {
@@ -63,7 +57,7 @@ export namespace ojTrain {
         disabled?: boolean;
         id: string;
         label: string;
-        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation';
+        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation' | null;
         visited?: boolean;
     };
 }
@@ -117,7 +111,23 @@ export namespace TrainElement {
         disabled?: boolean;
         id: string;
         label: string;
-        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation';
+        messageType?: 'info' | 'error' | 'fatal' | 'warning' | 'confirmation' | null;
         visited?: boolean;
     };
+}
+export interface TrainIntrinsicProps extends Partial<Readonly<ojTrainSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojBeforeDeselect?: (value: ojTrainEventMap['ojBeforeDeselect']) => void;
+    onojBeforeSelect?: (value: ojTrainEventMap['ojBeforeSelect']) => void;
+    onojDeselect?: (value: ojTrainEventMap['ojDeselect']) => void;
+    onojSelect?: (value: ojTrainEventMap['ojSelect']) => void;
+    onselectedStepChanged?: (value: ojTrainEventMap['selectedStepChanged']) => void;
+    onstepsChanged?: (value: ojTrainEventMap['stepsChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-train": TrainIntrinsicProps;
+        }
+    }
 }

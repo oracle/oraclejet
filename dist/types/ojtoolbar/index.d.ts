@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojToolbar extends baseComponent<ojToolbarSettableProperties> {
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
@@ -35,4 +29,15 @@ export type ToolbarElement = ojToolbar;
 export namespace ToolbarElement {
     // tslint:disable-next-line interface-over-type-literal
     type chromingChanged = JetElementCustomEvent<ojToolbar["chroming"]>;
+}
+export interface ToolbarIntrinsicProps extends Partial<Readonly<ojToolbarSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onchromingChanged?: (value: ojToolbarEventMap['chromingChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-toolbar": ToolbarIntrinsicProps;
+        }
+    }
 }

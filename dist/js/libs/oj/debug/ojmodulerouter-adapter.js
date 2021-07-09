@@ -8,14 +8,6 @@
 define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 'knockout'], function (Logger, ModuleUtils, ModuleAnimations, ko) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class oj.ModuleRouterAdapter
    * @since 8.0.0
    * @ojshortdesc Utility class for loading oj-module configuration based on the current state of the router.
@@ -95,6 +87,29 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
    * @ojtsimport {module: "ojmodule-element", type: "AMD", imported: ["ModuleElementAnimation","ModuleViewModel"]}
    * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
    */
+   /**
+    * @typedef {Object} oj.ModuleRouterAdapter.AnimationCallbackParameters
+    * @property {Element} node An oj-module element used for hosting the views
+    * @property {any} previousViewModel The instance of previous ViewModel
+    * @property {any} viewModel The instance of the current ViewModel
+    * @property {any} previousState Previous router state.
+    * @property {any} state Current router state.
+    */
+
+   /**
+    * @typedef {Object} oj.ModuleRouterAdapter.ViewModelParameters
+    * @property {CoreRouter} parentRouter The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+    * @property {any} params The value of CoreRouterState params property.
+    * @property {CoreRouter} router The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
+    * @property {CoreRouter.CoreRouterState} routerState The current state of CoreRouter
+    * @ojsignature [{target: "Type", value: "CoreRouter<D, P>", for: "parentRouter"},
+    *               {target: "Type", value: "P", for: "params"},
+    *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
+    *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
+    *               {target: "Type", value: "<D, P>", for: "genericTypeParameters"}]
+    * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
+    *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
+    */
   // eslint-disable-next-line no-unused-vars
   function ModuleRouterAdapter(router, options) {
     var _router = router;
@@ -260,30 +275,6 @@ define(['ojs/ojlogger', 'ojs/ojmodule-element-utils', 'ojs/ojmoduleanimations', 
       }
     });
     return moduleAdapter;
-
-   /**
-    * @typedef {Object} oj.ModuleRouterAdapter.AnimationCallbackParameters
-    * @property {Element} node An oj-module element used for hosting the views
-    * @property {any} previousViewModel The instance of previous ViewModel
-    * @property {any} viewModel The instance of the current ViewModel
-    * @property {any} previousState Previous router state.
-    * @property {any} state Current router state.
-    */
-
-   /**
-    * @typedef {Object} oj.ModuleRouterAdapter.ViewModelParameters
-    * @property {CoreRouter} parentRouter The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
-    * @property {any} params The value of CoreRouterState params property.
-    * @property {CoreRouter} router The instance of the CoreRouter, that used by the ModuleRouterAdapter instance.
-    * @property {CoreRouter.CoreRouterState} routerState The current state of CoreRouter
-    * @ojsignature [{target: "Type", value: "CoreRouter<D, P>", for: "parentRouter"},
-    *               {target: "Type", value: "P", for: "params"},
-    *               {target: "Type", value: "CoreRouter<D, P>", for: "router"},
-    *               {target: "Type", value: "CoreRouter.CoreRouterState<D, P>", for: "routerState"},
-    *               {target: "Type", value: "<D, P>", for: "genericTypeParameters"}]
-    * @ojdeprecated [{target: "property", for: "parentRouter", since: "8.1.0", description: "Use router property instead."},
-    *                 {target: "property", for: "params", since: "8.1.0", description: "Use CoreRouter.CoreRouterState.params instead."}]
-    */
   }
 
   return ModuleRouterAdapter;

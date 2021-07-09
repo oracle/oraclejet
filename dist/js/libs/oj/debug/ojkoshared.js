@@ -10,13 +10,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @private
    * @constructor
    * Global Change Queue Implementation
@@ -87,14 +80,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
       this._delayPromise = null;
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ignore
@@ -238,7 +223,7 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
     function _wrap(wrapped, name, prewrap) {
       var isHasBindings = (name === 'nodeHasBindings');
 
-      var impl = function (arg0) {
+      return function (arg0) {
         if (isHasBindings) {
           var type = arg0.nodeType;
           if (type !== 1 && type !== 8) {
@@ -263,13 +248,11 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
         }
         return ret;
       };
-
-      return impl;
     }
 
     function _wrapPreprocessNode(wrapped) {
       var originalPreprocessor = wrapped.preprocessNode;
-      var impl = function (node) {
+      return function (node) {
         var preprocessor;
         var ret;
         var obj = null;
@@ -288,7 +271,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
         }
         return ret;
       };
-      return impl;
     }
 
     function _preprocessNewNodes(originalNode, newNodes) {
@@ -371,7 +353,7 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
     }
 
     function _preWrapGetAccessors(original, wrappedProvider) {
-      var impl = function (node, bindingContext) {
+      return function (node, bindingContext) {
         if (bindingContext[_OJ_EXTENDED]) {
           var bindingsString = _getBindingsString(node, wrappedProvider, bindingContext);
           // _createExtendAccessorsViaCache() returns a function that will produce a map of binding accessors.
@@ -400,8 +382,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojconfig', 'ojs/ojlogger'], function
         }
         return original.call(wrappedProvider, node, bindingContext);
       };
-
-      return impl;
     }
 
     function _createExtendAccessorsViaCache(bindingsString, bindingContext) {

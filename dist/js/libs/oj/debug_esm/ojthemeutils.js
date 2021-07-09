@@ -8,13 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import { warn, error } from 'ojs/ojlogger';
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+const _OJ_THEME_JSON = 'oj-theme-json';
 
 /**
  * @namespace oj.ThemeUtils
@@ -37,7 +31,7 @@ const ThemeUtils = {};
  */
 ThemeUtils.getThemeName = function () {
   // get the map of theme info
-  var themeMap = ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {};
+  var themeMap = ThemeUtils.parseJSONFromFontFamily(_OJ_THEME_JSON) || {};
 
   return themeMap.name;
 };
@@ -72,7 +66,7 @@ ThemeUtils.getThemeName = function () {
  */
 ThemeUtils.getThemeTargetPlatform = function () {
   // get the map of theme info
-  var themeMap = ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {};
+  var themeMap = ThemeUtils.parseJSONFromFontFamily(_OJ_THEME_JSON) || {};
 
   return themeMap.targetPlatform;
 };
@@ -87,6 +81,7 @@ ThemeUtils.getThemeTargetPlatform = function () {
  */
 ThemeUtils.clearCache = function () {
   ThemeUtils._cache = null;
+  ThemeUtils._cssVarCache = null;
 };
 
 
@@ -211,7 +206,6 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
     } else {
       // remove inconsistent quotes
       var fontstring = rawfontstring.replace(/^['"]+|\s+|\\|(;\s?})+|['"]$/g, '');
-      // console.log("json fontstring for selector " + selector + ': ' + fontstring);
 
       if (fontstring) {
         try {
@@ -259,10 +253,53 @@ ThemeUtils.parseJSONFromFontFamily = function (selector) {
     ThemeUtils._cache[selector] = jsonval;
   }
 
-  // console.log(ThemeUtils._cache);
-
   return jsonval;
 };
+/**
+ * Returns the root css var values
+ * @private
+ * @method getRootCssVarValue
+ * @argument {string} key
+ * @return {string} The property value for the key
+ * @memberof oj.ThemeUtils
+ */
+const getRootCssVarValue = ((key) => {
+  if (!ThemeUtils._rootCSSStyles) {
+    ThemeUtils._rootCSSStyles = window.getComputedStyle(document.documentElement);
+  }
+  // remove inconsistent quotes
+  return ThemeUtils._rootCSSStyles.getPropertyValue(key).replace(/^['"\s]+|\s+|\\|(;\s?})+|['"]$/g, '');
+  });
+/**
+ * Returns the css var values
+ * @private
+ * @method getCachedValueForKey
+ * @argument {string} key
+ * @return {string} The property value for the key
+ * @memberof oj.ThemeUtils
+ */
+var getCachedValueForKey = ((key) => {
+  if (!ThemeUtils._cssVarCache) {
+    ThemeUtils._cssVarCache = new Map();
+  }
+  if (!ThemeUtils._cssVarCache.has(key)) {
+    ThemeUtils._cssVarCache.set(key,
+      getRootCssVarValue(key));
+  }
+  return ThemeUtils._cssVarCache.get(key);
+  });
+  /**
+ * Returns the css var values
+ * @ignore
+ * @static
+ * @method getCachedCSSVarValues
+ * @argument {Array} cssVarArray An array of the CSS Vars
+ * @return {Array} An Array containing the computed values of the css vars in the cssVarArray
+ * @memberof oj.ThemeUtils
+ */
+ThemeUtils.getCachedCSSVarValues = ((cssVarArray) => {
+  return cssVarArray.map(cssVar => getCachedValueForKey(cssVar));
+  });
 
 /**
  * Validates the CSS version against the JS version the first time it's called.
@@ -286,7 +323,7 @@ ThemeUtils.verifyThemeVersion = (() => {
       const jetVersions = oj.version.split('.');
       let themeMap;
       try {
-        themeMap = (ThemeUtils.parseJSONFromFontFamily('oj-theme-json') || {}).jetReleaseVersion;
+        themeMap = (ThemeUtils.parseJSONFromFontFamily(_OJ_THEME_JSON) || {}).jetReleaseVersion;
       } catch (err) {
         // Either CSS wasn't found at all, or the CSS is old enough to not contain oj-theme-json
         // Setting themeMap to undefined will let this fall through to the Logger.error case below
@@ -314,5 +351,6 @@ const getThemeName = ThemeUtils.getThemeName;
 const getThemeTargetPlatform = ThemeUtils.getThemeTargetPlatform;
 const parseJSONFromFontFamily = ThemeUtils.parseJSONFromFontFamily;
 const verifyThemeVersion = ThemeUtils.verifyThemeVersion;
+const getCachedCSSVarValues = ThemeUtils.getCachedCSSVarValues;
 
-export { clearCache, getThemeName, getThemeTargetPlatform, parseJSONFromFontFamily, verifyThemeVersion };
+export { clearCache, getCachedCSSVarValues, getThemeName, getThemeTargetPlatform, parseJSONFromFontFamily, verifyThemeVersion };

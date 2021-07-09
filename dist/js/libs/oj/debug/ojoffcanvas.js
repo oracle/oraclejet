@@ -13,14 +13,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
   FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace
    * @since 1.1.0
    * @ojtsmodule
@@ -51,22 +43,22 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
    *   </thead>
    *   <tbody>
    *     <tr>
-   *       <td>beforeClose</td>
+   *       <td>ojbeforeclose</td>
    *       <td>Triggered immediately before the offcanvas is closed. It can be canceled to prevent the content from closing by returning a false in the event listener.</td>
   *       <td>$(".selector").on("ojbeforeclose", function(event, offcanvas) {});</td>
    *     </tr>
    *     <tr>
-   *       <td>beforeOpen<br>
+   *       <td>ojbeforeopen<br>
    *       <td>Triggered immediately before the offcanvas is open. It can be canceled to prevent the content from opening by returning a false in the event listener.</td>
   *       <td>$(".selector").on("ojbeforeopen", function(event, offcanvas) {});</td>
    *     </tr>
    *     <tr>
-   *       <td>close<br>
+   *       <td>ojclose<br>
    *       <td>Triggered after the offcanvas has been closed.</td>
   *       <td>$(".selector").on("ojclose", function(event, offcanvas) {});</td>
    *     </tr>
    *     <tr>
-   *       <td>open<br>
+   *       <td>ojopen<br>
    *       <td>Triggered after the offcanvas has been open (after animation completes).</td>
   *       <td>$(".selector").on("ojopen", function(event, offcanvas) {});</td>
    *     </tr>
@@ -320,7 +312,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
         displayMode !== OffcanvasUtils.DISPLAY_MODE_PUSH &&
         displayMode !== OffcanvasUtils.DISPLAY_MODE_REFLOW) {
       // default displayMode in iOS is push and in android and windows are overlay
-      displayMode = (ThemeUtils.parseJSONFromFontFamily('oj-offcanvas-option-defaults') || {}).displayMode;
+      displayMode = ThemeUtils.getCachedCSSVarValues(['--oj-private-off-canvas-global-display-mode-default'])[0];
     }
 
     return displayMode;
@@ -359,8 +351,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
     return drawer.closest('.' + OffcanvasUtils.OUTER_WRAPPER_SELECTOR);
   };
 
-  // selector
-  // displayMode
   /**
    * @memberof OffcanvasUtils
    * @private
@@ -507,10 +497,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
   };
 
 
-  //
-  // selector
-  // edge
-  // displayMode
   /**
    * This method is called right before open and after close animation
    * @memberof OffcanvasUtils
@@ -636,7 +622,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
       function () {
         if (transitionTimer) {
           clearTimeout(transitionTimer);
-          transitionTimer = undefined;
+          transitionTimer = null;
         }
         // remove handler
         target.off(endEvents, listener);
@@ -1343,7 +1329,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
     var size;
     if (edge === OffcanvasUtils.EDGE_START || edge === OffcanvasUtils.EDGE_END) {
       // if size is missing, outerWidth is used
-      size = (size === undefined) ? (drawer.outerWidth(true) + 'px') : size;
+      size = drawer.outerWidth(true) + 'px';
 
       // don't set transform for OffcanvasUtils.DISPLAY_MODE_OVERLAY
       if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
@@ -1351,7 +1337,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
       }
     } else {
       // if size is missing, outerHeight is used
-      size = (size === undefined) ? (drawer.outerHeight(true) + 'px') : size;
+      size = drawer.outerHeight(true) + 'px';
 
       // don't set transform for OffcanvasUtils.DISPLAY_MODE_OVERLAY
       if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
@@ -1568,7 +1554,7 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'hammerjs', 'ojs/ojcontext', 'oj
            offcanvas[OffcanvasUtils.SELECTOR_KEY] + "' doing the open animation." });
 
         if (isReflow) {
-  //        OffcanvasUtils._openReflow(myOffcanvas, resolve, reject, edge);
+          // OffcanvasUtils._openReflow(myOffcanvas, resolve, reject, edge);
         } else if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
           OffcanvasUtils._openPush(myOffcanvas, resolve, reject, edge);
         } else {

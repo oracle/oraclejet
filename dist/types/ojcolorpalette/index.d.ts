@@ -1,20 +1,14 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import Color = require('../ojcolor');
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojColorPalette extends editableValue<Color, ojColorPaletteSettableProperties> {
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;
@@ -64,6 +58,30 @@ export namespace ojColorPalette {
     type swatchSizeChanged = JetElementCustomEvent<ojColorPalette["swatchSize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojColorPalette["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<Color, ojColorPaletteSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojColorPaletteSettableProperties> {
     'ojAnimateEnd': ojColorPalette.ojAnimateEnd;
@@ -75,13 +93,22 @@ export interface ojColorPaletteEventMap extends editableValueEventMap<Color, ojC
     'paletteChanged': JetElementCustomEvent<ojColorPalette["palette"]>;
     'swatchSizeChanged': JetElementCustomEvent<ojColorPalette["swatchSize"]>;
     'valueChanged': JetElementCustomEvent<ojColorPalette["value"]>;
+    'describedByChanged': JetElementCustomEvent<ojColorPalette["describedBy"]>;
+    'disabledChanged': JetElementCustomEvent<ojColorPalette["disabled"]>;
+    'helpChanged': JetElementCustomEvent<ojColorPalette["help"]>;
+    'helpHintsChanged': JetElementCustomEvent<ojColorPalette["helpHints"]>;
+    'labelEdgeChanged': JetElementCustomEvent<ojColorPalette["labelEdge"]>;
+    'labelHintChanged': JetElementCustomEvent<ojColorPalette["labelHint"]>;
+    'messagesCustomChanged': JetElementCustomEvent<ojColorPalette["messagesCustom"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<ojColorPalette["userAssistanceDensity"]>;
+    'validChanged': JetElementCustomEvent<ojColorPalette["valid"]>;
 }
 export interface ojColorPaletteSettableProperties extends editableValueSettableProperties<Color> {
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelDisplay: 'auto' | 'off';
     labelledBy: string | null;
@@ -128,4 +155,56 @@ export namespace ColorPaletteElement {
     type swatchSizeChanged = JetElementCustomEvent<ojColorPalette["swatchSize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojColorPalette["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<Color, ojColorPaletteSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<Color, ojColorPaletteSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
+}
+export interface ColorPaletteIntrinsicProps extends Partial<Readonly<ojColorPaletteSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojColorPaletteEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojColorPaletteEventMap['ojAnimateStart']) => void;
+    ondisplayOptionsChanged?: (value: ojColorPaletteEventMap['displayOptionsChanged']) => void;
+    onlabelDisplayChanged?: (value: ojColorPaletteEventMap['labelDisplayChanged']) => void;
+    onlabelledByChanged?: (value: ojColorPaletteEventMap['labelledByChanged']) => void;
+    onlayoutChanged?: (value: ojColorPaletteEventMap['layoutChanged']) => void;
+    onpaletteChanged?: (value: ojColorPaletteEventMap['paletteChanged']) => void;
+    onswatchSizeChanged?: (value: ojColorPaletteEventMap['swatchSizeChanged']) => void;
+    onvalueChanged?: (value: ojColorPaletteEventMap['valueChanged']) => void;
+    ondescribedByChanged?: (value: ojColorPaletteEventMap['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojColorPaletteEventMap['disabledChanged']) => void;
+    onhelpChanged?: (value: ojColorPaletteEventMap['helpChanged']) => void;
+    onhelpHintsChanged?: (value: ojColorPaletteEventMap['helpHintsChanged']) => void;
+    onlabelEdgeChanged?: (value: ojColorPaletteEventMap['labelEdgeChanged']) => void;
+    onlabelHintChanged?: (value: ojColorPaletteEventMap['labelHintChanged']) => void;
+    onmessagesCustomChanged?: (value: ojColorPaletteEventMap['messagesCustomChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojColorPaletteEventMap['userAssistanceDensityChanged']) => void;
+    onvalidChanged?: (value: ojColorPaletteEventMap['validChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-color-palette": ColorPaletteIntrinsicProps;
+        }
+    }
 }

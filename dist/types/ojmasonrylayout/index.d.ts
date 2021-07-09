@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojMasonryLayout extends baseComponent<ojMasonryLayoutSettableProperties> {
     reorderHandle: string | null;
@@ -182,4 +176,25 @@ export namespace MasonryLayoutElement {
     }
     // tslint:disable-next-line interface-over-type-literal
     type reorderHandleChanged = JetElementCustomEvent<ojMasonryLayout["reorderHandle"]>;
+}
+export interface MasonryLayoutIntrinsicProps extends Partial<Readonly<ojMasonryLayoutSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojMasonryLayoutEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojMasonryLayoutEventMap['ojAnimateStart']) => void;
+    onojBeforeInsert?: (value: ojMasonryLayoutEventMap['ojBeforeInsert']) => void;
+    onojBeforeRemove?: (value: ojMasonryLayoutEventMap['ojBeforeRemove']) => void;
+    onojBeforeReorder?: (value: ojMasonryLayoutEventMap['ojBeforeReorder']) => void;
+    onojBeforeResize?: (value: ojMasonryLayoutEventMap['ojBeforeResize']) => void;
+    onojInsert?: (value: ojMasonryLayoutEventMap['ojInsert']) => void;
+    onojRemove?: (value: ojMasonryLayoutEventMap['ojRemove']) => void;
+    onojReorder?: (value: ojMasonryLayoutEventMap['ojReorder']) => void;
+    onojResize?: (value: ojMasonryLayoutEventMap['ojResize']) => void;
+    onreorderHandleChanged?: (value: ojMasonryLayoutEventMap['reorderHandleChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-masonry-layout": MasonryLayoutIntrinsicProps;
+        }
+    }
 }

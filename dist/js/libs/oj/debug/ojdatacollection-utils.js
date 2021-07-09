@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore'], function (oj, $, Co
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * This class contains all utility methods used by the data grid collection model.
    * @export
    * @private

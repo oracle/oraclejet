@@ -1024,19 +1024,16 @@
     // -----------------------------------------------------------------------------------------
 
     // Styling on form control dom which doesn't require text-align, padding, or color
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-text-field-middle,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
       height:100%;
     }
 
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-disabled) .oj-inputdatetime-input-container,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-disabled) .oj-inputdatetime-input-trigger {
       @include oj-form-control-inherit-background();
     }
 
     // only override the border when not oj-invalid or oj-warning
-    .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime-input-container,
     .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-invalid):not(.oj-warning) .oj-inputdatetime-input-trigger {
       @include oj-form-control-inherit-border();
     }

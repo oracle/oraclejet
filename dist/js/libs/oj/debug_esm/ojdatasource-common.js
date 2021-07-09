@@ -9,13 +9,6 @@ import oj$1 from 'ojs/ojcore-base';
 import oj$2 from 'ojs/ojcore';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
@@ -68,13 +61,6 @@ DataSource.prototype.Init = function () {
  * @return {string|null} the capability of the specified feature.  Returns null if the feature is not recognized.
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @class DataGridDataSource
  * @classdesc The base class for DataGridDataSource.<br>
@@ -254,13 +240,6 @@ oj$2.Object.createSubclass(DataGridDataSource, oj$2.DataSource, 'oj.DataGridData
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @class DiagramDataSource
  * @classdesc Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
  * @param {Object} data data required by the DiagramDataSource implementation
@@ -324,15 +303,15 @@ oj$1.Object.createSubclass(DiagramDataSource, oj$1.DataSource, 'oj.DiagramDataSo
  * optimal way to return links is as part of the data of the
  * nearest common ancestor of the link's endpoints.
  *
- * @param {Object|null} parentData An object that contains data for the parent node. See {@link oj.DiagramDataSource.NodeObject} section.
+ * @param {Object|null} parentData An object that contains data for the parent node. See {@link DiagramDataSource.NodeObject} section.
  *                     If parentData is null, the method retrieves data for top level nodes.
  * @return {Promise} Promise resolves to a component object with the following structure:<p>
  * <table>
  * <tbody>
  * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent.
- *              See {@link oj.DiagramDataSource.NodeObject} section.</td></tr>
+ *              See {@link DiagramDataSource.NodeObject} section.</td></tr>
  * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent.
- *              See {@link oj.DiagramDataSource.LinkObject} section.</td></tr>
+ *              See {@link DiagramDataSource.LinkObject} section.</td></tr>
  * </tbody>
  * </table>
  * @method
@@ -430,13 +409,6 @@ DiagramDataSource.EventType =
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
@@ -460,13 +432,13 @@ DiagramDataSource.EventType =
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td>{@link oj.ArrayTableDataSource}</td>
+ *       <td>{@link ArrayTableDataSource}</td>
  *       <td>When the data is available from an array.</td>
  *       <td>ListView<br>NavigationList<br>TabBar<br>Table<br></td>
  *     </tr>
  *     <tr>
- *       <td>{@link oj.CollectionTableDataSource}</td>
- *       <td>When the data is available from an {@link oj.Collection} object, such as an external data source.</td>
+ *       <td>{@link CollectionTableDataSource}</td>
+ *       <td>When the data is available from an {@link Collection} object, such as an external data source.</td>
  *       <td>ListView<br>NavigationList<br>TabBar<br>Table<br></td>
  *     </tr>
  *     <tr>
@@ -482,7 +454,7 @@ DiagramDataSource.EventType =
  *   </tbody>
  * </table>
  * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TableDataSource subclasses.</br><br>
- * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object.createSubclass}.  New subclass can be based on
  * TableDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need
  * to be overridden.
  *
@@ -762,13 +734,6 @@ TableDataSource._LOGGER_MSG =
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @class TreeDataSource
  * @classdesc Abstract class representing hierarchical (tree) data that can be used by different components such as [Indexer]{@link oj.ojIndexer}, [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  * and [TreeView]{@link oj.ojTreeView}.<br><br>
@@ -799,7 +764,7 @@ TableDataSource._LOGGER_MSG =
  *   </tbody>
  * </table>
  * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TreeDataSource subclasses.</br><br>
- * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object.createSubclass}.  New subclass can be based on
  * TreeDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need
  * to be overridden.
  *
@@ -954,13 +919,6 @@ oj$2.Object.createSubclass(TreeDataSource, oj$2.DataSource, 'oj.TreeDataSource')
  * @instance
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 var DataSourceCommon = {};
 DataSourceCommon.DataGridDataSource = oj.DataGridDataSource;

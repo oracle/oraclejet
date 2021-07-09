@@ -5,1084 +5,2373 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import Context from 'ojs/ojcontext';
-import { mount, patch, mounted, unmount, h as h$1, classPropToObject as classPropToObject$1, LISTENER_OPTIONS_SYMBOL, flattenContent } from 'ojs/ojvdom';
+import { h, options, createRef, render, cloneElement, Fragment } from 'preact';
+import { getPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
+import { JetElementError, CustomElementUtils, AttributeUtils, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
+import oj from 'ojs/ojcore-base';
+import { OJ_SLOT, OJ_REPLACER, patchSlotParent } from 'ojs/ojpreact-patch';
+import { traceDispatchEvent } from 'ojs/ojtrace-event';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
- * Property decorator for VComponent properties whose default value is determined at
- * runtime and returned via the getter method passed to the decorator.
- * @param {Function} defaultGetter The method to call to retrieve the default value
- * @name dynamicDefault
+ * Class decorator for VComponent custom elements. Takes the tag name
+ * of the custom element.
+ * @param {string} tagName The custom element tag name
+ * @name customElement
  * @function
- * @memberof! VComponent
+ * @ojexports
+ * @memberof ojvcomponent
  * @ojdecorator
  */
 
 /**
- * Method decorator for VComponent that binds a specified method to the component instance 'this'
- * and passes provided options to the addEventListener()/removeEventListener() calls, when the method is used as a listener.
- * @param {object=} options The options for this decorator
- * @param {boolean=} options.passive True indicates that the listener will never call preventDefault().
- * @param {boolean=} options.capture True indicates that events of this type will be dispatched to the registered listener
- *                                  before being dispatched to any target beneath it in the DOM tree.
- * @name listener
+ * Method decorator for VComponent methods that should be exposed on the custom element.
+ * Non decorated VComponent methods will not be made available on the custom element.
+ * @name method
  * @function
- * @memberof! VComponent
+ * @ojexports
+ * @memberof ojvcomponent
  * @ojdecorator
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
- * @class VComponent
- * @param {Object} props The passed in component properties
- * @ojsignature [{
- *                target: "Type",
- *                value: "abstract class VComponent<P extends object = any, S extends object = any>",
- *                genericParameters: [{"name": "P", "description": "Type of the props object"},
- *                                    {"name": "S", "description": "Type of the state object"}]
- *               },
- *               {target: "Type", value: "Readonly<P>", for: "props"}]
- * @constructor
- * @since 9.0.0
+ * @ojmodulecontainer ojvcomponent
+ * @ojhidden
+ * @since 11.0.0
  * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
- * @ojmodule ojvcomponent
- * @classdesc <p>
- * <b>Note: the VComponent API is currently in Experimental status.</b>
- * The APIs discussed in this documentation are subject to change.  More specifically,
- * VComponent authors may be required to make changes to their component implementations
- * when upgrading to future versions of JET.
+ * @classdesc
+ * <p>The VComponent API is a mechanism for creating virtual DOM-based
+ * Web Components.  VComponents are authored in TypeScript as
+ * <a href="https://preactjs.com/">Preact</a> class-based
+ * components, with the custom element tag name specified via the
+ * <a href="#customElement">&#64;customElement</a> decorator:
  * </p>
- * <p>
- * The VComponent base class provides a mechanism for defining JET
- * <a href="CompositeOverview.html">Custom Components</a>.
- * Like the JET <a href="ComponentTypeOverview.html#corecomponents">Core Components</a>
- * and composite components, VComponent-based components
- * are exposed as custom elements. From the application developer’s perspective, these
- * custom elements are (essentially) indistinguishable from JET’s other component types.
- * Where VComponents differ is in the component implementation strategy: VComponents produce
- * content via virtual DOM rendering.
- * </p>
- * <p>
- * To create a new VComponent-based custom component, the component author typically does the following:
- * <ul>
- *   <li>Implements a class that extends VComponent. This class must be authored in TypeScript.</li>
- *   <li>Overrides the <a href="#render">render()</a> method to return a virtual DOM representation
- *       of the component’s content.</li>
- *   <li>Sets the &#64;customElement() decorator with the custom element tag name passed in as a parameter.</li>
- *   <li>Defines the public contract of the custom element.
- *   <ul>
- *     <li><b>Properties: </b>defined as members of the Props class.</li>
- *     <li><b>Methods: </b>defined as methods of the VComponent class and marked for exposure on the custom element using the &#64;method decorator.</li>
- *     <li><b>Events: </b>defined as members of the Props class using the naming convention on[EventName] and having type
- *     <a href="#Action">Action</a> or <a href="#CancelableAction">CancelableAction</a>.</li>
- *     <li><b>Slots: </b>defined as members of the Props class having type <a href="#Slot">Slot</a>.</li>
- *   </ul>
- * </ul>
- * </p>
- * <p>
- * Given the above, JET generates an HTMLElement subclass and registers this as a custom
- * element with the browser. These VComponent-based custom elements can then be used anywhere
- * that other JET components are used, and application developers can leverage typical JET
- * functionality such as data binding, slotting, etc.
- * </p>
- * <p>
- * A minimal VComponent subclass is shown below:
- * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement } from "ojs/ojvcomponent";
- * import "ojs/ojavatar";
+ * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+ * import { customElement, GlobalProps } from 'ojs/ojvcomponent';
  *
- * class Props {
- *   initials?: string = '';
- *   fullName?: string = '';
- *   department?: 'Billing' | 'Sales' | 'Engineering';
- *   rank?: Rank = { level: 1, title: 'entry level' };
- * }
- *
- * type Rank = {
- *   level: number,
- *   title: string
- * };
- *
- * &#64;customElement('oj-sample-employee')
- * export class SampleEmployee extends VComponent&lt;Props> {
- *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div>
- *         &lt;oj-avatar initials={this.props.initials} />
- *         &lt;span>{this.props.fullName}&lt;/span>
- *       &lt;/div>
- *     );
+ * &#64;customElement('oj-hello-world')
+ * export class HelloWorld extends Component&lt;GlobalProps&gt; {
+ *   render(): ComponentChild {
+ *     return &lt;div&gt;Hello, World!&lt;/div&gt;;
  *   }
  * }
  * </code></pre>
- *
- * <h3 id="rendering">
- *  Rendering
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#rendering"></a>
+ * <p>
+ *   In order to prepare the component for use, the VComponent must be run
+ *   through the <a href="https://www.npmjs.com/package/@oracle/ojet-cli">ojet
+ *   CLI</a> build process.  Running <code>ojet build</code> will do the
+ *   following:
+ * </p>
+ * <ul>
+ *   <li>Inject necessary information into the module to enable Web Component
+ *   usage.</li>
+ *   <li>Generate a type definition that includes Web Component type info.</li>
+ *   <li>Generate a component.json metadata file for enabling integration
+ *   with <a href="https://developer.oracle.com/visual-builder/">Oracle
+ *   Visual Builder</a></li>
+ * </ul>
+ * <p>
+ *   Once the VComponent has been built, it can either be consumed as a
+ *   plain old Web Component in HTML content, for example:
+ * </p>
+ * <pre class="prettyprint"><code>&lt;!-- This is HTML: --&gt;
+ * &lt;oj-hello-world&gt;&lt;/oj-hello-world&gt;
+ * </code></pre>
+ * <p>
+ *   Or via the Preact component class in JSX:
+ * </p>
+ * <pre class="prettyprint"><code>// This is JSX:
+ * const hw =  &lt;HelloWorld /&gt;
+ * </code></pre>
+ * <p>
+ *   These both produce the same DOM content.  That is, in both cases, an
+ *   &lt;oj-hello-world&gt; custom element is created and added to the DOM.  In
+ *   the case where the VComponent is referenced via its Preact component
+ *   class, this custom element is automatically created and wrapped around
+ *   the rendered content (the &lt;div&gt; in the above example) by the
+ *   VComponent framework.
+ * </p>
+ * <h3 id="creating">
+ *  Creating VComponents
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#creating"></a>
  * </h3>
  * <p>
- * Every VComponent class must provide an implementation of the <a href="#render">render()</a> method.
- * This method returns a tree of virtual DOM nodes that represents the component's content.
- * The return value can take one of two forms:
+ *   VComponents can be created either by hand or via the ojet
+ *   CLI's "create component" command, for example:
+ * </p>
+ * <pre class="prettyprint"><code>$ ojet create component oj-hello-world --vcomponent
+ * </code></pre>
+ * <p>
+ *   When running the <code>ojet create component</code> commmand, the custom
+ *   element tag name is specified as an argument, and the --vcomponent flag
+ *   indicates that a VComponent (as opposed to a Composite Component) should
+ *   be created.
+ * </p>
+ * <p>
+ *   (Note: if the application was originally created using the --vdom
+ *   flag, the <code>ojet create component</code> command will default to
+ *   creating VComponents and the --vcomponent flag can be omitted.
+ * </p>
+ * <p>
+ * The ojet create component command creates some
+ * supporting artifacts, including:
+ * </p>
+ * <ul>
+ *   <li>A loader module</li>
+ *   <li>A style sheet and SASS files for theming</li>
+ *   <li>A resource module for translated strings</li>
+ * </ul>
+ * <p>
+ *   In addition, ojet will ensure that the path to the VComponent is
+ *   properly configured in the application's tsconfig.json
+ * </p>
+ * <h3 id="properties">
+ *  Properties
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#properties"></a>
+ * </h3>
+ * <p>
+ *   VComponents/Preact components declare their supported properties
+ *   via a type parameter. For example, as we saw above:
+ * </p>
+ * <pre class="prettyprint"><code>export class HelloWorld extends Component&lt;GlobalProps&gt; {
+ * </code></pre>
+ * <p>
+ *   With this declaration, the component indicates that it supports
+ *   the properties specified via the
+ *   <a href="#GlobalProps">GlobalProps</a> type.  This type
+ *   includes a subset of the
+ *   <a href="https://html.spec.whatwg.org/#global-attributes">
+ *   global HTML attributes</a> which represent
+ *   the minimally required set of properties that all VComponents
+ *   must support.
+ * </p>
+ * <p>
+ *   VComponents can, of course, expose other non-global,
+ *   component-specific properties as well.  This is typically done by
+ *   declaring a type alias:
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *   greeting?: string;
+ *   name?: string;
+ * }
+ * </code></pre>
+ * <p>
+ *   And associating this type with the first type parameter in the
+ *   <a href="https://preactjs.com/guide/v10/api-reference#component">
+ *   Component</a> class declaration.
+ * </p>
+ * <p>
+ *   Since VComponents are minimally required to support the
+ *   global HTML attributes defined by GlobalProps, the
+ *   component-specific props must be combined with GlobalProps.  The
+ *   VComponent API includes a utility type to help with this:
+ *   <a href="#ExtendGlobalProps">ExtendGlobalProps</a>.
+ *   Using ExtendGlobalProps, a component with
+ *   the above Props type (including some default values) ends up looking like:
+ * </p>
+ * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+ * import { customElement, ExtendGlobalProps } from 'ojs/ojvcomponent';
+ *
+ * type Props = {
+ *   greeting?: string;
+ *   name?: string;
+ * }
+ *
+ * &#64;customElement('oj-hello-world-with-props')
+ * export class HelloWorld extends Component&lt;ExtendGlobalProps&lt;Props&gt;&gt; {
+ *   render(props: Readonly&lt;Props&gt;): ComponentChild {
+ *     const { greeting, name } = props;
+ *
+ *     return &lt;div&gt;{ greeting }, { name }!&lt;/div&gt;;
+ *   }
+ *
+ *   static defaultProps: Props = {
+ *     greeting: "Hello",
+ *     name: "World"
+ *   };
+ * }
+ * </code></pre>
+ * <p>
+ *   In Preact, properties can be accessed either through this.props
+ *   or via the first argument of the render method.
+ * </p>
+ * <p>
+ *   Properties can be set on the component in various ways, including:
+ * </p>
  * <ol>
- *   <li>The render function can return a single virtual DOM node representing the root
- *       custom element and any child content specified as virtual DOM children.  If the
- *       component needs to modify root attributes, needs to set a ref callback on the root
- *       custom element, or contains multiple virtual DOM children, this return value form
- *       <i>must</i> be used.
- *   <li>If the component's content consists of a single virtual DOM child, a single virtual
- *       DOM node representing the child node may be returned, omitting a node representing
- *       the root custom element.</li>
+ *   <li>As attributes in HTML markup</li>
+ *   <li>As properties in JSX</li>
+ *   <li>As properties on the DOM element</li>
  * </ol>
- * While it is always acceptable to include a virtual DOM node representing the root
- * custom element as in #1, the return form in #2 is supported as a convenience.  In many cases, the root
- * virutal DOM node can be omitted.
+ * <p>
+ *   One note on naming conventions: when referencing properties within JSX
+ *   or on a DOM element (#2 and #3), the property name as specified in the
+ *   component type is always used.
  * </p>
  * <p>
- * Virtual DOM nodes are plain old JavaScript objects that specify the node type
- * (typically the element’s tag name), properties and children. This information is
- * used by the underlying virtual DOM engine to produce live DOM (i.e. by calling
- * document.createElement()).
+ *   However, for attributes in HTML markup (#1), JET uses a different
+ *   naming convention for multi-word attributes.  As discussed in
+ *   <a href="CustomElementOverview.html#ce-proptoattr-section">
+ *   Property-to-Attribute Mapping</a>, JET converts camelCased property names
+ *   into hyphen-separated, kebab-case attribute names.  As such, given the
+ *   following property:
  * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *     preferredGreeting?: string;
+ * }
+ * </code></pre>
  * <p>
- * Virtual DOM nodes can be created in one of two ways:
- * <ul>
- *   <li>By calling the virtual DOM node factory function, which is exported
- *    from the ojs/ojvcomponent module under the name "h".  The <code>h</code>
- *    factory function takes the type, properties and children and returns a
- *    virtual DOM node.</li>
- *   <li>Declaratively via TSX (a TypeScript flavor of JSX).</li>
- * </ul>
+ *   The attribute name "preferred-greeting" is used in HTML markup:
  * </p>
+ * <pre class="prettyprint"><code>&lt;!-- This is HTML --&gt;
+ * &lt;oj-hello-world preferred-greeting="Hi"&gt;&lt;/oj-hello-world&gt;
+ * </code></pre>
  * <p>
- * The latter approach is strongly preferred as it results in more readable code. A build-time transformation step
- * will ultimately convert the TSX markup into calls to <code>h()</code> that will be executed at run-time.
+ *   And the unmodified property name is used everywhere else:
  * </p>
- * <p>
- * Note that in either case, the virtual DOM factory function must be imported as
- * an import named "h".
- * </p>
- * <p>
- * The <a href="#render">render()</a> method will be called whenever component state or properties change to return the new VDOM. The virtual
- * component will then diff the VDOM and patch the live DOM with updates. As custom elements,
- * these virtual components are used in the same way as other JET components, supporting data binding
- * and slotting.
- * </p>
- * <p>
+ * <pre class="prettyprint"><code>// This is JSX
+ * function Parent() {
+ *   return &lt;HelloWorld preferredGreeting="Hi" /&gt;
+ * }
  *
- * <h3 id="jsx">
- *  JSX Syntax
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#jsx"></a>
+ * // This is also JSX
+ * function ParentOfCustomElement() {
+ *   return &lt;oj-hello-world preferredGreeting="Hi" /&gt;
+ * }
+ *
+ * // This is plain old DOM
+ * const helloWorld = document.createElement("oj-hello-world");
+ * helloWorld.preferredGreeting = "Hi";
+ * </code></pre>
+ * </p>
+ * <h3 id="children">
+ *  Children and Slots
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#children"></a>
  * </h3>
  * <p>
- * Virtual component render functions support the use of JSX which is an XML
- * syntax that looks similar to HTML, but supports a different attribute syntax.
+ *   Many Web Components allow children to be specified, either as
+ *   direct children or via named
+ *   <a href="CustomElementOverview.html#ce-slots-section">slots</a>.
+ *   A VComponent indicates
+ *   that it takes arbitrary (non-named) children by declaring a "children"
+ *   property using Preact's ComponentChildren type.  Named slots are
+ *   declared in a similar fashion, using the
+ *   VComponent-specific <a href="#Slot">Slot</a> type:
  * </p>
+ * <pre class="prettyprint"><code>import { h, Component, ComponentChildren } from 'preact';
+ * import { customElement, ExtendGlobalProps, Slot } from 'ojs/ojvcomponent';
  *
- * <h4>JSX Attributes</h4>
- * <p>
- * Component properties, global HTMLElement properties, event listeners, ref, and key attributes
- * can all be specified using the virtual component JSX attribute syntax. JSX expects the
- * <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a>
- * property names for all JSX attributes except for class and for. In cases where an attribute does not have an
- * equivalent property on the HTMLElement (data-, aria-, role, etc), the attribute name
- * should be used. The style attribute is special cased and only supports object values
- * e.g. style={ {color: 'blue', fontSize: '12px'} }. Primitive JSX attribute values can
- * be set directly using the equal operator, or within {...} brackets for JavaScript values
- * e.g. the style example above.</p>
+ * type Props = {
+ *   // This indicates that the VComponent accepts arbitrary
+ *   // (non-slot) children:
+ *   children?: ComponentChildren;
  *
- * The JET <a href="CustomElementOverview.html#ce-databind-syntax-section">data binding syntax</a>
- * using double curly or square brackets is not supported when using JSX.  Additionally, subproperty
- * syntax (e.g. complexProperty.subProperty={...}) is not supported; when dealing with complex-typed properties,
- * the full value must be specified (i.e. complexProperty={ {subProperty: ...} }).
- * </p>
- *
- * <h4>class</h4>
- * <p>
- * The class JSX attribute supports space delimited class names in addition to an
- * Object whose keys are individual style classes and whose values are booleans to determine
- * whether those style classes should be present in the DOM.
- * (e.g. class={ {'oj-hover': isHovered} }).
- * </p>
- *
- * <h4>Event Listeners</h4>
- * <p>
- * Event listeners follow a 'on'[EventName] naming syntax e.g.
- * onClick={clickListener} and unlike data bound on-click listeners set on the root
- * custom element, JSX event listeners will only receive a single event parameter.
- * Use the &#64;listener decorator to bind an event listener to the component instance - 'this'.
- * The &#64;listener decorator accepts an options object that would be passed to the
- * DOM addEventListener() method for specifying capture or passive listeners.
- *
- * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement, listener } from "ojs/ojvcomponent";
- *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent {
- *
- *   &#64;listener({ passive: true })
- *   private _touchStartHandler(event) {
- *     // handler code
- *   }
- *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div onTouchstart={this._touchStartHandler}>
- *         &hellip;
- *       &lt;/div>
- *     );
- *   }
+ *   // And this indicates that the VComponent accepts a
+ *   // slot named "start"
+ *   start?: Slot;
  * }
  * </code></pre>
- *
- * <h4 id="refs">
- *  Refs
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#refs"></a>
- * </h4>
  * <p>
- * While we recommend that rendering is done declaratively, for use cases where
- * a reference to a DOM node is necessary, a ref attribute
- * along with a callback can be set on the virtual node within the render function.
- * The callback function will be called with either a DOM node when using the element syntax
- * or a VComponent instance when using the class syntax after the node has been inserted
- * into the DOM. The ref callback will be called again with null when the node has been
- * unmounted. See the <a href="#lifecycle">lifecycle doc</a> for ref callback
- * ordering in relation to other lifecycle methods.
+ *   Both children and slots can be embedded directly in a virtual DOM
+ *   tree:
  * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement } from "ojs/ojvcomponent";
- *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent {
- *   private _scrollingDiv: HTMLDivElement;
- *
- *   protected render(): VComponent.VNode {
+ * <pre class="prettyprint"><code>  render(props: Readonly&lt;Props&gt;): ComponentChild {
  *     return (
- *       &lt;div ref={this._setScrollingDiv}>
- *         &hellip;
- *       &lt;/div>
+ *       &lt;div&gt;
+ *         // Place the start slot before our greeting
+ *         { props.start }
+ *
+ *         Hello, World!
+ *
+ *         &lt;div&gt;
+ *           // And dump any other children in a wrapper div
+ *           { props.children }
+ *         &lt;/div&gt;
+ *       &lt;/div&gt;
  *     );
  *   }
+ * </code></pre>
+ * <p>
+ *   In cases where the VComponent needs to inspect children or
+ *   slot content, these values must first be normalized to a
+ *   flattened array by calling Preact's
+ *   <a href="https://preactjs.com/guide/v10/api-reference/#tochildarray">
+ *   toChildArray</a>.
+ * </p>
+ * <p>
+ *   When consuming the VComponent as a custom element, slots are
+ *   specified using the slot attribute:
+ * </p>
+ * <pre class="prettyprint"><code>      &lt;!-- This is HTML --&gt;
+ *       &lt;oj-hello-world-with-children&gt;
+ *         &lt;!-- This is the start slot content: --&gt;
+ *         &lt;oj-avatar slot="start" initials="HW"&gt;&lt;/oj-avatar&gt;
  *
- *   protected mounted(): void {
- *     this._adjustScrollingDiv();
- *   }
- *
- *   protected updated(oldProps: Readonly&lt;Props>, oldState: Readonly&lt;State>): void
- *     this._adjustScrollingDiv();
- *   }
- *
- *   private _setScrollingDiv = (elem) => {
- *     this._scrollingDiv = elem as HTMLDivElement;
- *   }
- *
- *   private _adjustScrollingDiv(): void {
- *     // Perform some calculations
- *     &hellip;
- *     this._scrollingDiv.style.height = calculatedValue;
- *   }
- *
+ *         &lt;!-- This is other child content: --&gt;
+ *         &lt;span&gt;Child content&lt;/span&gt;
+ *       &lt;/oj-hello-world-with-children&gt;
+ * </code></pre>
+ * <p>
+ *   However, when referencing the VComponent as a Preact component,
+ *   slots are configured as plain old component properties:
+ * </p>
+ * <pre class="prettyprint"><code>function Parent() {
+ *   return (
+ *     &lt;HelloWorldWithChildren start={ &lt;oj-avatar initials="OJ" /&gt; }&gt;
+ *       &lt;span&gt;Child content&lt;/span&gt;
+ *     &lt;/HelloWorldWithChildren&gt;
+ *   )
  * }
  * </code></pre>
- *
- * <h4>Keys</h4>
- * <p>
- * When rendering lists of virtual nodes, it may be beneficial to set key attributes
- * in JSX to help distinguish between insertions, deletions, and updates. Without keys,
- * the VComponent diffing logic will compare the old and new virtual node lists in order,
- * so an insertion before the first virtual node will result in a diff for all subsequent
- * virtual nodes without the key attribute. The key can be of type string or number.
- * </p>
- *
- * <h4>Root Attributes</h4>
- * <p>
- * In general, we do not recommend modifying core HTML properties on the custom element to
- * avoid overriding application set values. However in cases where this is necessary
- * (e.g. moving or copying attributes for accessibility), authors should register properties
- * they plan to update or listen to changes from as members of their Props class, marked with the &#64;rootProperty decorator.
- * These root properties will then be populated in the component's <code>this.props</code> object as
- * long as they are present in the live DOM; unlike component properties, no default values will be made available
- * in <code>this.props</code> for root properties. When rendering, only core HTML properties that are specifically marked with the &#64;rootProperty decorator will be
- * reflected in the live DOM on the root custom element; any other core HTML properties will be ignored.
- * Components will be notified of changes to root properties similar to component properties and trigger a rerender.
- * </p>
- *
- * <p>
- * Style and class properties can be set on the root custom element and are applied additively to the application-provided
- * style and class.  Event listeners can be added using the on[PropertyName] syntax in the root element within the component's
- * <a href="#render">render()</a> method and will be added or removed using the DOM's addEventListener and removeEventListener methods.
- * Style, class, and event listeners can always be specified on the root custom element and do not need to be declared
- * as members of the Props class unlike other root properties.
- * </p>
- *
- * <pre class="prettyprint"><code>
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;oj-sample-component onClick={this._clickListener} style={ {color: red} } class='my-class-name'>
- *         &lt;div>&hellip;&lt;/div>
- *       &lt;/oj-sample-component>
- *     );
- *   }
- * </code></pre>
- *
- * <p>
- * Components often need to generate unique IDs for internal DOM. The <a href="#uniqueId">uniqueId()</a> method can
- * be called to retrieve an id that is unique to the component instance (matching the live DOM if it has been specified)
- * that can be used e.g. as a prefix for IDs on internal DOM.
- * </p>
- *
- * <h3 id="updates">
- *  State Updates
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#updates"></a>
+ * <h3 id="template-slots">
+ *  Template Slots
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#template-slots"></a>
  * </h3>
  * <p>
- * Components may track internal state that is not reflected through their
- * properties. There is a state mechanism for supporting this. Components
- * should initialize their state objects in their constructors. After that,
- * components should treat their <code>this.state</code> objects as immutable
- * and call <a href="#updateState">updateState</a> to request a
- * state update.
+ *   As with other JET components, VComponents can expose
+ *   <a href="CustomElementOverview.html#ce-slots-template-section">
+ *   template slots.</a>
+ *   Template slots differ from plain old slots in that they are invoked
+ *   with some context.  Template slots are most commonly used within
+ *   iterating "collection" components, which need to stamp out some bit of
+ *   content corresponding to each value/row/item in a data set.
  * </p>
- * <p> The updateState() method does not immediately update the state of the component,
- * it just puts the update in a queue to be processed later. The framework will batch
- * multiple updates together to make rendering more efficient. It will schedule
- * the change and rerender the component. Consider using function callback instead
- * of an object when updating the state in order to avoid stale data for the state.
- * Calls to updateState() will only cause the component to rerender if the end result
- * differs from the original state.
+ * <p>
+ *   Like other slots, template slots are declared as properties.  Rather
+ *   than using the Slot type, the <a href="#TemplateSlot">TemplateSlot</a>
+ *   type is used:
  * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>import { h, Component } from "preact";
+ * import { customElement, ExtendGlobalProps, TemplateSlot } from "ojs/ojvcomponent";
  *
- * class Props { &hellip; }
- *
- * type State = {
- *   foo: boolean,
- *   bar: boolean
+ * type Props = {
+ *   // This indicates that the VComponent exposes a template
+ *   // slot named "itemTemplate":
+ *   itemTemplate?: TemplateSlot&lt;ItemContext&gt;;
  * }
  *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props, State> {
- *   constructor(props: Readonly&lt;Props>) {
- *     // State should be instantiated in the constructor
- *     this.state = {
- *       foo: true,
- *       bar: false
- *     }
- *   }
- *
- *   &#64;listener()
- *   private _handleClick() {
- *     // Update state in response to user interaction, triggering a
- *     // re-render.
- *     this.updateState({ foo: false });
- *   }
+ * // This is the type for the context that we'll
+ * // pass into the itemTemplate slot
+ * type ItemContext = {
+ *   index?: number;
+ *   label?: string;
+ *   value?: string;
  * }
  * </code></pre>
- *
- * <h3 id="defaults">
- *  Default Values
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#defaults"></a>
+ * <p>
+ *   TemplateSlot is a function type that takes a single  parameter:
+ *   the context that is passed in when the template slot is
+ *   rendered.  The VComponent invokes the template slot function
+ *   with this context and embeds the results in the virtual DOM tree:
+ * </p>
+ * <pre class="prettyprint"><code>// Invoke the template slot and embed the results
+ * // in a list item:
+ * &lt;li&gt; {
+ *   props.itemTemplate?.({
+ *     index: currentIndex,
+ *     label: currentLabel,
+ *     value: currentValue
+ *   })
+ * }
+ * &lt;/li&gt;
+ * </code></pre>
+ * <h3 id="actions">
+ *  Actions and Events
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#actions"></a>
  * </h3>
  * <p>
- * Static default values for components can be provided using direct value assignments
- * on the corresponding members in the Props class.  In addition, dynamic default values
- * can be specified using the &#64;dynamicDefault() decorator with a parameter representing
- * a method that should be called to retrieve the default value at runtime.</p>
- *
- * <p>Object- or Array-typed default values will recursively frozen before being returned
- * as property values to prevent subsequent modification.  Any Objects that are not POJOs
- * <i>will not be frozen</i> (including references to them inside other Objects or Arrays) and
- * it is the component's responsibility to ensure that default values of this type (e.g. class instances)
- * are immutable.
+ *   As with other types of Web Components, VComponents can be the source
+ *   of events, typically fired in response to some user interaction.
+ *   VComponents specify their event contracts by declaring properties of
+ *   the form "on&lt;PascalCaseEventName&gt;" of type
+ *   <a href="#Action">Action</a>.  For example, the
+ *   following declaration indicates that the component fires a
+ *   "greetingComplete" event:
  * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement, dynamicDefault } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, Action } from 'ojs/ojvcomponent';
  *
- * function computeDynamicDefault(): string { &hellip; }
+ * type Props = {
+ *   onGreetingComplete?: Action;
  *
- * class Props {
- *   primitiveProperty?: number = 0;
- *   complexProperty?: {index: number} = {index: 0};
- *   classProperty?: MyType = new ImmutableMyTypeImpl();
- *   &#64;dynamicDefault(computeDynamicDefault) dynamicProperty?: string;
- * }
- *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props> {
- *   &hellip;
+ *   // Other component props...
  * }
  * </code></pre>
+ * <p>
+ *   Action is a function type that optionally takes an argument
+ *   representing the event detail payload.  For events that include a
+ *   detail payload, the detail type is specified via a type parameter:
+ * </p>
+ * <pre class="prettyprint"><code>type Detail = {
+ *   status: "success" | "failure";
+ * }
  *
- * <h3 id="lifecycle">
- *  Lifecycle Methods
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+ * type Props = {
+ *   onGreetingComplete?: Action&lt;Detail&gt;;
+ * }
+ * </code></pre>
+ * <p>
+ *   The VComponent triggers the event by invoking the Action property and
+ *   providing the detail payload:
+ * </p>
+ * <pre class="prettyprint"><code>  this.props.onGreetingComplete?.({ status: "success"});
+ * </code></pre>
+ * <p>
+ *   When used in custom element form, this dispatches an
+ *   actual DOM
+ *   <a href="https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent">
+ *   CustomEvent</a>.  See the
+ *   <a href="CustomElementOverview.html#ce-events-section">Events and
+ *   Listeners</a> topic for
+ *   details on how to respond to these events.
+ * </p>
+ * <p>
+ *   By default, events that are dispatched by the VComponent framework do
+ *   not bubble.  See the <a href="#Bubbles">Bubbles</a> type for info on
+ *   how to declare bubbling events.
+ * </p>
+ * <p>
+ *   When consumed as a Preact component, no DOM events are created or
+ *   dispatched.  Instead, the Action callback is simply invoked directly.
+ *   There is no automatic event bubbling-like behavior in this case.
+ * </p>
+ * <p>
+ *  The VComponent API also supports a contract for actions/events that
+ *  can be vetoed by the consumer.  See the
+ *  <a href="#CancelableAction">CancelableAction</a> type for details.
+ * </p>
+ * <h3 id="methods">
+ *  Methods
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#methods"></a>
  * </h3>
  * <p>
- * In addition to the required render method, virtual components have several optional lifecycle
- * methods that give the component hooks to setup/cleanup global listeners, do geometry management,
- * and update state. See the API doc for each lifecycle method for details.
+ *  Some Web Components need to expose non-standard, component specific
+ *  methods on their custom elements.  For example, the
+ *  <a href="oj.ojPopup.html">&lt;oj-popup&gt;</a>
+ *  custom element exposes
+ *  <a href="oj.ojPopup.html#open">open</a>,
+ *  <a href="oj.ojPopup.html#isOpen">isOpen</a> and
+ *  <a href="oj.ojPopup.html#close">close</a> methods.
  * </p>
- *
- * <h4>Mount</h4>
- * <ul>
- *   <li><a href="#VComponent">constructor()</a></li>
- *   <li>(static) <a href="#initStateFromProps">initStateFromProps()</a></li>
- *   <li><a href="#render">render()</a></li>
- *   <li><a href="#refs">ref callbacks</a></li>
- *   <li><a href="#mounted">mounted()</a></li>
- * </ul>
- *
- * <h4>Update</h4>
- * <ul>
- *   <li>(static) <a href="#updateStateFromProps">updateStateFromProps()</a></li>
- *   <li><a href="#render">render()</a></li>
- *   <li><a href="#refs">ref callbacks</a></li>
- *   <li><a href="#update">updated()</a></li>
- * </ul>
- *
- * <h4>Unmount</h4>
- * <ul>
- *   <li><a href="#unmounted">unmounted()</a></li>
- *   <li><a href="#refs">ref callbacks</a></li>
- *
- * </ul>
- *
- * <h3 id="slots">
- *  Slotting
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#slots"></a>
+ * <p>
+ *  While it is preferable to favor declarative, property-driven APIs over
+ *  imperative, method-centric contracts, the VComponent API does allow
+ *  components to expose methods on their custom elements.
+ * </p>
+ * <p>
+ *  By default, no methods defined on the VComponent's class are surfaced
+ *  on the custom element.  To indicate that a VComponent method should be
+ *  included in the custom element's API, simply mark the method with the
+ *  <a href="#method">&#64;method</a> decorator.
+ * </p>
+ * <h3 id="writeback">
+ *  Writeback Properties
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#writeback"></a>
  * </h3>
  * <p>
- * Component authors declare their expected slots as members of their Props class.  The various slot types are exposed as follows:
- * <ul>
- *   <li>Default slot - exposed through the <code>children</code> member with type <code><a href="#VNode">VNode</a>[]</code>.</li>
- *   <li>Ordinary slot - exposed through a member with type <code><a href="#Slot">Slot</a></code> whose name corresponds to the slot name.</li>
- *   <li>Template slots - exposed through a member with type <code><a href="#Slot">Slot&lt;SlotContextType></a></code> whose name corresponds to the slot name.  <code>SlotContextType</code> represents the data type for this template slot (corresponding to the type of the $current object).</li>
- *   <li>Dynamic slots - any slots that are not explicitly declared as one of the three previous types will be exposed in a Map of type <code><a href="#DynamicSlots">DynamicSlots</a></code>.  This may be useful in cases where the set of expected slots cannot be statically defined, but is determined
- *       by the component through other means at runtime.  The dynamic slot map may contain either ordinary slots or template slots.</li>
- * </ul>
- * Note that in all of the cases above, the component author must declare the corresponding properties in their Props class in order to receive access to slot content.
+ *   JET-based Web Components support a mechanism by which components can
+ *   trigger changes to their own properties.  For example, the JET input
+ *   and select components notify consumers of changes to the value
+ *   property as the user enters new values.  When combined with two-way
+ *   binding, this can be used to update values referenced via JET binding
+ *   expressions.  This process is known as "writeback".  See the
+ *   <a href="CustomElementOverview.html#ce-databind-writeback-section">
+ *   Writeback</a> section in the
+ *   <a href="CustomElementOverview.html">JET Web Components</a> topic
+ *   for background.
  * </p>
  * <p>
- * During component rendering, default slot content can simply be inlined as with any other virtual DOM content.  Components can test for the existence of the <code>children</code> property to decide whether to render default content.
+ *   VComponents declare writeback properties by pairing a normal property
+ *   declaration with a companion callback property that is invoked when the
+ *   component wants to trigger a writeback.  For example, this plain old
+ *   (non-writeback) value property:
  * </p>
- * <pre class="prettyprint"><code>
- * class Props {
- *   children?: VComponent.Children;
- * }
+ * <pre class="prettyprint"><code>type Props = {
  *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props> {
- *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div style="border-style: solid; width:200px;">
- *         { this.props.children || &lt;span>Default Content&lt;/span> }
- *       &lt;/div>
- *     );
- *   }
+ *   // This is a plain old (non-writeback) value property:
+ *   value?: string;
  * }
  * </code></pre>
  * <p>
- * Ordinary slots are exposed as render functions at runtime and can simply be called to retrieved the corresponding content.
+ *   Can be converted into a writeback by adding a second property named
+ *   "onValueChanged":
  * </p>
- * <pre class="prettyprint"><code>
- * class Props {
- *   header?: Slot;
- * }
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, PropertyChanged } from "ojs/ojvcomponent";
  *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props> {
+ * type Props = {
+ *   value?: string;
  *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div style="border-style: solid; width:200px;">
- *         { this.props.header?.() || &lt;span>Default Header Content&lt;/span> }
- *       &lt;/div>
- *     );
- *   }
+ *   // The presence of this callback promotes "value" into a
+ *   // writeback property
+ *   onValueChanged?: PropertyChanged&lt;string&gt;;
  * }
  * </code></pre>
  * <p>
- * Template slots are also exposed as render functions at runtime, but additional take an argument representing the template data.
+ *   Both the event name and type are significant.  In order to be
+ *   recognizable as a writeback property, the companion callback property
+ *   must follow the naming convention "on&lt;PropertyName&gt;Changed" and must
+ *   be of type <a href="#PropertyChanged">PropertyChanged</a>.
  * </p>
- * <pre class="prettyprint"><code>
- * type Item {
- *   index: number;
- *   text: string;
- * }
- *
- * class Props {
- *   itemTemplate?: Slot&lt;Item>;
- *   items?: string[];
- * }
- *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props> {
- *
- *   protected render(): VComponent.VNode {
- *     return (
- *       const templateFunction = this.itemTemplate || this._defaultTemplate;
- *       &lt;ul>
- *         items.map( (item, index) =>
- *           &lt;li>
- *             { templateFunction({index: index, text: item}) }
- *           &lt;/li>);
- *       &lt;/ul>
- *     );
- *   }
- * }
- * </code></pre>
  * <p>
- * Dynamic slots are rendered exactly like ordinary and template slots once the component determines what slot to render.
+ *   Similar to Actions, invoking a PropertyChanged callback has different
+ *   implications depending on whether the VComponent is being consumed as
+ *   a custom element or as a Preact component.
  * </p>
- * <pre class="prettyprint"><code>
- * class Props {
- *   cards?: DynamicSlots;
- *   currentCard: string;
- * }
- *
- * &#64;customElement('oj-sample-component')
- * export class SampleComponent extends VComponent&lt;Props> {
- *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div style="border-style: solid; width:200px;">
- *         { this.props.cards?.[this.props.currentCard]?.() }
- *       &lt;/div>
- *     );
- *  }
- * }
- * </code></pre>
- *
- * <h3 id="perf">
- *  Performance Considerations
- *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf"></a>
+ * <p>
+ *   When the VComponent is used in its custom element form, invoking the
+ *   PropertyChanged callback results in an actual DOM
+ *   <a href="CustomElementOverview.html#ce-properties-changed-section">
+ *   propertyChanged event</a>
+ *   being created and dispatched.  This allows JET's two-way binding
+ *   mechanism to kick in.  If the property is configured with a two-way
+ *   binding, the new value will be written back into the expression.
+ * </p>
+ * <p>
+ *   In addition, when used as a custom element, triggering a writeback
+ *   automatically queues a render of the VComponent, allowing the
+ *   VComponent to re-render with the new value.
+ * </p>
+ * <p>
+ *   When the VComponent is used via its Preact component class, no DOM
+ *   event is created or dispatched.  Instead, the PropertyChanged callback
+ *   is simply invoked with the new value.  The parent component is then
+ *   responsible for deciding whether re-render with the new value or not.
+ * </p>
+ * <p>
+ *   The VComponent API also supports writeback properties which can be
+ *   read/observed by the consumer, but are only ever written by the
+ *   component itself.  These are known as
+ *   <a href="CustomElementOverview.html#ce-properties-readonlywriteback-section">
+ *   read-only writeback properties</a>.
+ *   See the <a href="#ElementReadOnly">ElementReadOnly<a> type for info on how
+ *   to configure these properties.
+ * </p>
+ * <h3 id="observed">
+ *  Observed Global Properties
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#observed"></a>
  * </h3>
  * <p>
- * Every time a component's render function is called, everything contained is created anew.
- * As a result, complex properties (e.g. non-primitive values like Object types, event listeners),
- * should be created outside of the render function's scope. Otherwise, e.g. the component would
- * be specifying a different instance of an event listener each time the component is rendered
- * which would result in unnecessary DOM changes. Event listeners should be declared as instance functions
- * marked with the &#64;listener decorator which will ensure that they are property bound.
- * Non-primitive values should be saved in variables
- * outside of the render function.
+ *   As discussed above, all VComponents minimally support the set of
+ *   global HTML attributes defined by the GlobalProps/ExtendGlobalProps
+ *   types.  This means that when consuming a VComponent either via its
+ *   custom element tag or VComponent class, global attributes (e.g., id,
+ *   tabIndex, title, etc...) can be specified:
  * </p>
- * <pre class="prettyprint"><code>
- * import { h, VComponent, customElement, listener } from "ojs/ojvcomponent";
+ * <pre class="prettyprint"><code>function Parent() {
+ *   // We can pass GlobalProps like id into any VComponent:
+ *   return &lt;HelloWorld id="hw" /&gt;
+ * }
+ * </code></pre>
+ * <p>
+ *   The VComponent framework automatically transfers any global properties
+ *   through to the underlying custom element in the DOM.
+ * <p>
+ *   In some cases, the VComponent implementation may need to inspect the
+ *   values of these global properties.  In addition, VComponents may need
+ *   to respond by re-rendering themselves when a global property is
+ *   modified on the custom element.  In such cases, VComponents can
+ *   express interest in specific global properties via the
+ *   <a href="#ObservedGlobalProps">ObservedGlobalProps</a>
+ *   utility type.  This type allows specific global
+ *   properties to be selected for observation via a type parameter.  This
+ *   type is combined with the component's other properties as part of the
+ *   property declaration.
+ * </p>
+ * <p>
+ *   The following property declaration indicates that the component
+ *   exposes "greeting" and "name" properties and also observes the global
+ *   "id" and "tabIndex" props:
+ * </p>
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
  *
- * class Props {&hellip;}
+ * type Props = {
+ *   greeting?: string;
+ *   name?: string;
+ * } & ObservedGlobalProps&lt;'id' | 'tabIndex'&gt;
+ * </code></pre>
+ * <p>
+ *   Any props that are specified via ObservedGlobalProps are automatically
+ *   included in the custom element's observed attributes set.  As a
+ *   result, any mutations to the one of these attributes on the custom
+ *   element will automatically trigger a re-render of the VComponent with
+ *   the new values.
+ * </p>
+ * <h3 id="root-element">
+ *  Root Element
+ *  <a class="bookmarkable-link" title="Bookmarkable Link" href="#root-element"></a>
+ * </h3>
+ * <p>
+ *   In all of the VComponents that we have seen so far, the root custom
+ *   element is not included in the rendered output.  Instead, this element
+ *   is implicitly injected into the DOM by the VComonent framework.
+ * </p>
+ * <p>
+ *   In some rare cases, it may be necessary to have more control over how
+ *   the the root element is rendered.
+ * </p>
+ * <p>
+ *   For example, consider this case of a VComponent that renders a link:
+ * </p>
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps } from "ojs/ojvcomponent";
+ * import { h, Component, ComponentChild } from "preact";
  *
- * &#64;customElement('oj-sample-collection')
- * export class SampleCollection extends VComponent&lt;Props> {
- *   constructor(props: Readonly&lt;Props>) {
- *     super(props);
- *   }
+ * type Props = {
+ *   href?: string;
+ * } & ObservedGlobalProps&lt;'tabIndex'&gt;;
  *
- *   &#64;listener()
- *   private _handleClick(event) { &hellip; }
+ * &#64;customElement("oj-demo-link")
+ * export class OjDemoLink extends Component&lt;ExtendGlobalProps&lt;Props&gt;&gt; {
  *
- *   protected render(): VComponent.VNode {
- *     return (
- *       &lt;div onClick={this._handleClick}/>
- *     );
+ *   render(props: Props): ComponentChild {
+ *     return &lt;a href={ props.href } tabIndex={ props.tabIndex }&gt;Hello, World&lt;/a&gt;;
  *   }
  * }
  * </code></pre>
+ * <p>
+ *   The intent is that the value of the global tabIndex attribute will be
+ *   transferred from the root element down to the link.
+ * </p>
+ * <p>
+ *   However, since the tabIndex value will be automatically rendered on
+ *   the root custom element, we end up with the tabIndex on two elements:
+ *   on the root &lt;oj-demo-link&gt; and on the &lt;a&gt;.
+ * </p>
+ * <p>
+ *   To address this, we can update the render method to render both the
+ *   link *and* the root custom element.  The VComponent API includes a
+ *   simple component that acts as a placeholder for the root element,
+ *   named "Root".  The <a href="#Root">Root</a> component is exported from the
+ *   "ojs/ojvcomponent" module, so we add this in our import list:
+ * </p>
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, ObservedGlobalProps, Root } from "ojs/ojvcomponent";
+ * </code></pre>
+ * <p>
+ *   And then we can include the Root component in the virtual DOM tree,
+ *   adjusting exactly which properties are rendered:
+ * </p>
+ * <pre class="prettyprint"><code>  render(props: Props): ComponentChild {
+ *     return (
+ *       // Suppress the tabIndex on the root custom element since
+ *       // we are transferring this to the link
+ *       &lt;Root tabIndex={ -1 }&gt;
+ *
+ *         // Render the tabIndex here:
+ *         &lt;a href={ props.href } tabIndex={ props.tabIndex }&gt;Hello, World&lt;/a&gt;
+ *       &lt;/Root&gt;
+ *     );
+ *   }
+ * </code></pre>
+ * <p>
+ *   The presence of the Root component impacts how global properties are
+ *   managed.  When the Root component is omitted, all global properties,
+ *   both observed and non-observed, are automatically passed through to the
+ *   root custom element.  When the Root component is included at the root
+ *   of the rendered virtual DOM tree, non-observed global properties are
+ *   still passed through to the root custom element.  However only those
+ *   observed global properties that are explicitly rendered on the Root
+ *   component will be passed through.
+ * </p>
  */
 
 // TYPEDEFS
 
 /**
- * @typedef {Object} VComponent.VComponentClass
- * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
- *               {target: "Type", value: "new (props: P) => VComponent<P, any>"}]
+ * <p>
+ *  The Action type is used to identify properties as action callbacks.
+ *  Actions are functions that the VComponent invokes when it wants to
+ *  communicate some activity to the outside world.  When the VComponent
+ *  is being consumed as a custom element, this results in an actual DOM
+ *  <a href="https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent">
+ *  CustomEvent</a> being dispatched.  Alternatively, when the VComponent is
+ *  referenced via its Preact Component class, the provided callback is
+ *  invoked directly and no CustomEvent is produced.
+ * </<p>
+ * <p>
+ *  Actions have an optional detail type.  If specified, the detail value
+ *  is either passed to the consumer via the CustomEvent detail payload
+ *  for the custom element case, or directly into the callback for the
+ *  Preact component case.
+ * </p>
+ * <p>
+ *  Note that Action properties must adhere to a specific naming
+ *  convention: "on&lt;PascalCaseEventName&gt;".  For the custom element case,
+ *  the type of the CustomEvent will be derived by converting the first
+ *  character of the event name to lower case.  Thus, the
+ *  "onGreetingComplete" property will generate a CustomEvent of type
+ *  "greetingComplete".
+ * </p>
+ * <p>
+ *  See <a href="#actions">Actions and Events</a> for more info.
+ * </p>
+ * @typedef {Function} Action
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "(detail?: Detail) => void"}]
  */
 
 /**
- * @typedef {Object} VComponent.RenderFunction
- * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
- *               {target: "Type", value: "(props: P, content: VComponent.VNode[]) => VComponent.VNode"}]
+ * <p>
+ *  As discussed in <a href="#actions">Actions and Events</a>,  the custom
+ *  events generated by Actions do not bubble by default.  The
+ *  Bubbles marker type can be combined with the <a href="#Action">Action</a>
+ *  type to indicate that the Action's custom events should bubble.
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *   // This action generates bubbling custom events
+ *   onThisActionBubbles?: Action & Bubbles;
+ *
+ *   // This action generates non-bubbling custom events
+ *   onThisActionDoesNotBubble?: Action;
+ * }
+ * </code></pre>
+ * @typedef {Object} Bubbles
+ * @ojexports
+ * @memberof ojvcomponent
  */
 
 /**
- * @typedef {Object} VComponent.VNodeType
- * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
- *               {target: "Type", value: "string | VComponent.VComponentClass<P> | VComponent.RenderFunction<P>"}]
+ * <p>
+ *   Some JET Web Components support an asynchronous, event-based
+ *   cancelation contract where prior to performing some operation, the
+ *   component dispatches a "cancelable" event.  If the application cancels
+ *   the event, the operation is not performed.  The
+ *   <a href="oj.ojFilePicker.html">&lt;oj-file-picker&gt;</a>'s
+ *   <a href="oj.ojFilePicker.html#event:beforeSelect">ojBeforeSelect</a>
+ *   event is one example of such an API.
+ * </p>
+ * <p>
+ *   The VComponent API has built-in support for this pattern via the
+ *   CancelableAction type.  Like the plain old <a href="#Action">Action</a>
+ *   type, CancelableAction is a function type that is used for defining
+ *   callback-centric properties.  One key difference between these types
+ *   is that CancelableAction returns a Promise.  If the Promise resolves
+ *   successfully, the action is considered to be accepted.  If the Promise
+ *   is rejected, the action is canceled.
+ * </p>
+ * <p>
+ *   As with Action-typed properties, CancelableActions exhibit different
+ *   behavior depending on whether the VComponent is being consumed as a
+ *   custom element or via its Preact Component class.
+ * </p>
+ * <p>
+ *   When consumed as a custom element, invoking a CancelableAction results
+ *   in a CustomEvent being created and dispatched.  The detail payload of
+ *   this custom event is augmented with one extra field: an "accept"
+ *   method.  The accept method takes a single argument: the Promise that
+ *   produces the cancelation result.
+ * </p>
+ * <p>
+ *   When consumed via the Preact Component class, no custom event is
+ *   dispatched.  Instead, the callback returns the cancelation promise
+ *   directly.
+ * </p>
+ * @typedef {Function} CancelableAction
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<Detail extends object = {}>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "(detail?: Detail) => Promise<void>"}]
+ */
+
+/**
+ * <p>
+ *   In most cases when a Web Component accepts slot content, the number
+ *   and names of the slots are known, as these are defined by the
+ *   component's public API.  However, in some cases components may allow
+ *   an arbitrary number of slots to be specified, where the slot names are not
+ *   known up front.  The &lt;oj-switcher&gt; component
+ *   is an example of a component that accepts a dynamically defined
+ *   (rather than predefined) set of slots.
+ * </p>
+ * <p>
+ *   The VComponent API supports such cases via the DynamicSlots and
+ *   <a href="#DynamicTemplateSlots">DynamicTemplateSlots</a> types.  A
+ *   single property can be marked with the DynamicSlots type:
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *
+ *   // This property will be populated with all
+ *   // "unknown" slots.
+ *   items?: DynamicSlots;
+ *
+ *   // Other properties go here...
+ * }
+ * </code></pre>
+ * <p>
+ *   When the VComponent is consumed in custom element form, this property
+ *   will be populated with entries for each "dynamic" slot.  That is,
+ *   an entry will be added for each child element with a slot attribute that
+ *   does not correspond to a known  Slot-typed property.
+ *   The property acts as a map from slot name to <a href="#Slot">Slot</a>
+ *   instance.  The VComponent can use whatever heuristic it prefers to
+ *   decide which (if any) slots should be included in the rendered output.
+ * </p>
+ * @typedef {Object} DynamicSlots
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target: "Type", value: "Record<string, VComponent.Slot>" }]
+ */
+
+/**
+ * <p>
+ *  The DynamicTemplateSlots type is a companion to
+ *  <a href="#DynamicSlots">DynamicSlots</a> that is
+ *  used in cases where the component accepts an arbitrary number of
+ *  <a href="#template-slots">template slots</a>.  VComponents may declare a
+ *  single property of type DynamicTemplateSlots.  When the component is used as
+ *  a custom element, this property will be populated with one entry for each
+ *  "dynamic" template slot, where the key is the slot name and the value is a
+ *  <a href="#TemplateSlot">TemplateSlot</a> function.
+ * </p>
+ * <p>
+ *   Note that each VComponent class can only contain a single dynamic
+ *   slot property.  That is, each VComponent can have one property
+ *   of type DynamicSlots or one property of type DynamicTemplateSlots, but
+ *   not both.
+ * </p>
+ * @typedef {Object} DynamicTemplateSlots
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<Data>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "Record<string, VComponent.TemplateSlot<Data>>" }]
+*/
+
+/**
+ * <p>
+ *   By default, writeback property mutations can be driven either by the
+ *   component, typically in response to some user interaction, or by the
+ *   consumer of the component.  In some cases, writeback properties are
+ *   exclusively mutated by the component itself.  Writeback properties
+ *   that cannot be mutated by the consumer are known as
+ *   <a href="CustomElementOverview.html#ce-properties-readonlywriteback-section">
+ *   read-only writeback properties</a>.  The
+ *   <a href="oj.ojInputText.html">&lt;oj-input-text&gt;</a>'s
+ *   <a href="oj.ojInputText.html#rawValue">rawValue</a> property is an
+ *   example of such a property.
+ * </p>
+ * <p>
+ *   Read-only writeback properties are declared in a similar manner to
+ *   <a href="#writeback">plain old writeback properties</a>, with one important
+ *   difference: the ElementReadOnly utility type is used as a marker to
+ *   identify the that the property is read-only.
+ * </p>
+ * <p>
+ *   Declarations for both forms of writeback properties can be seen below:
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *
+ *   // This is a normal writeback property:
+ *   value?: string;
+ *   onValueChanged?: PropertyChanged&lt;string&gt;
+ *
+ *   // This is a read-only writeback property:
+ *   rawValue?: ElementReadOnly&lt;string&gt;;
+ *   onRawValueChanged?: PropertyChanged&lt;string&gt;
+ * }
+ * </code></pre>
+ * @typedef {Object} ElementReadOnly
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<T>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "T"}]
+
+ */
+
+/**
+ * <p>
+ *   As discussed in the <a href="#properties">Properties</a> section,
+ *   all VComponents must minimally include the
+ *   <a href="#GlobalProps">GlobalProps</a> in their property types.
+ *   ExtendGlobalProps is a convenience type for combining component-specific
+ *   properties with GlobalProps, e.g.:
+ * </p>
+ * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps } from 'ojs/ojvcomponent';
+ *
+ * // These are the component-specific props:
+ * type Props = {
+ *   greeting?: string;
+ *   name?: string;
+ * }
+ *
+ * // Below we merge the component props with the
+ * // global props using ExtendGlobalProps
+ * &#64;customElement('oj-hello-world-with-props')
+ * export class HelloWorld extends Component&lt;ExtendGlobalProps&lt;Props&gt;&gt; {
+ * </code></pre>
+ * @typedef {Object} ExtendGlobalProps
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<Props>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "Readonly<Props> & GlobalProps"}]
+ */
+
+/**
+ * <p>
+ *   The GlobalProps type defines the set of global properties that are
+ *   supported by all VComponents.  This includes three categories of
+ *   properties:
+ * </p>
+ * <ol>
+ *   <li><a href="https://html.spec.whatwg.org/#global-attributes">
+ *   Global HTML attributes</a></li>
+ *   <li><a href="https://www.w3.org/TR/wai-aria-1.1/#state_prop_def">ARIA
+ *     attributes</a></li>
+ *   <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers">
+ *     Global event listeners</a></li>
+ * </ol>
+ * <p>
+ *   The following properties are included from category 1:
+ * </p>
+ * <ul>
+ *   <li>accessKey</li>
+ *   <li>autocapitalize</li>
+ *   <li>autofocus</li>
+ *   <li>class</li>
+ *   <li>contentEditable</li>
+ *   <li>dir</li>
+ *   <li>draggable</li>
+ *   <li>enterKeyHint</li>
+ *   <li>hidden</li>
+ *   <li>id</li>
+ *   <li>inputMode</li>
+ *   <li>lang</li>
+ *   <li>role</li>
+ *   <li>slot</li>
+ *   <li>spellcheck</li>
+ *   <li>style</li>
+ *   <li>tabIndex</li>
+ *   <li>title</li>
+ *   <li>translate</li>
+ * </ul>
+ * <p>
+ *   The following ARIA-specific attributes are included from category 2:
+ * </p>
+ * <ul>
+ *   <li>aria-activedescendant</li>
+ *   <li>aria-atomic</li>
+ *   <li>aria-autocomplete</li>
+ *   <li>aria-busy</li>
+ *   <li>aria-checked</li>
+ *   <li>aria-colcount</li>
+ *   <li>aria-colindex</li>
+ *   <li>aria-colspan</li>
+ *   <li>aria-controls</li>
+ *   <li>aria-current</li>
+ *   <li>aria-describedby</li>
+ *   <li>aria-details</li>
+ *   <li>aria-disabled</li>
+ *   <li>aria-errormessage</li>
+ *   <li>aria-expanded</li>
+ *   <li>aria-flowto</li>
+ *   <li>aria-haspopup</li>
+ *   <li>aria-hidden</li>
+ *   <li>aria-invalid</li>
+ *   <li>aria-keyshortcuts</li>
+ *   <li>aria-label</li>
+ *   <li>aria-labelledby</li>
+ *   <li>aria-level</li>
+ *   <li>aria-live</li>
+ *   <li>aria-modal</li>
+ *   <li>aria-multiline</li>
+ *   <li>aria-multiselectable</li>
+ *   <li>aria-orientation</li>
+ *   <li>aria-owns</li>
+ *   <li>aria-placeholder</li>
+ *   <li>aria-posinset</li>
+ *   <li>aria-pressed</li>
+ *   <li>aria-readonly</li>
+ *   <li>aria-relevant</li>
+ *   <li>aria-required</li>
+ *   <li>aria-roledescription</li>
+ *   <li>aria-rowcount</li>
+ *   <li>aria-rowindex</li>
+ *   <li>aria-rowspan</li>
+ *   <li>aria-selected</li>
+ *   <li>aria-setsize</li>
+ *   <li>aria-sort</li>
+ *   <li>aria-valuemax</li>
+ *   <li>aria-valuemin</li>
+ *   <li>aria-valuenow</li>
+ *   <li>aria-valuetext</li>
+ * </ul>
+ * <p>
+ *   The following event listener properties are included
+ *   from category 3:
+ * </p>
+ * <ul>
+ *   <li>onBlur</li>
+ *   <li>onClick</li>
+ *   <li>onContextMenu</li>
+ *   <li>onDblClick</li>
+ *   <li>onDrag</li>
+ *   <li>onDragEnd</li>
+ *   <li>onDragEnter</li>
+ *   <li>onDragExit</li>
+ *   <li>onDragLeave</li>
+ *   <li>onDragOver</li>
+ *   <li>onDragStart</li>
+ *   <li>onDrop</li>
+ *   <li>onFocus</li>
+ *   <li>onKeyDown</li>
+ *   <li>onKeyPress</li>
+ *   <li>onKeyUp</li>
+ *   <li>onMouseDown</li>
+ *   <li>onMouseEnter</li>
+ *   <li>onMouseLeave</li>
+ *   <li>onMouseMove</li>
+ *   <li>onMouseOut</li>
+ *   <li>onMouseOver</li>
+ *   <li>onMouseUp</li>
+ *   <li>onPointerOver</li>
+ *   <li>onPointerEnter</li>
+ *   <li>onPointerDown</li>
+ *   <li>onPointerMove</li>
+ *   <li>onPointerUp</li>
+ *   <li>onPointerCancel</li>
+ *   <li>onPointerOut</li>
+ *   <li>onPointerLeave</li>
+ *   <li>onTouchCancel</li>
+ *   <li>onTouchEnd</li>
+ *   <li>onTouchMove</li>
+ *   <li>onTouchStart</li>
+ *   <li>onWheel</li>
+ * </ul>
+ * <p>
+ *   The above event listener properties can also be specified with
+ *   the "Capture" suffix (e.g., "onClickCapture") to indicate that the
+ *   listener should be registered as a capture listener.
+ * </p>
+ * <p>
+ *   Finally, onfocusin and onfocusout properties are also available,
+ *   though technically speaking these are
+ *   <a href="https://github.com/preactjs/preact/issues/1611">not global
+ *   events</a>.
+ * </p>
+ * @typedef {Object} GlobalProps
+ * @ojexports
+ * @memberof ojvcomponent
+ */
+
+/**
+ * <p>
+ *   The ObservedGlobalProps type is used to identify the subset of
+ *   <a href="#GlobalProps">GlobalProps</a> that the VComponent implementation
+ *   needs to observe.  When a VComponent is used as a custom element,
+ *   ObservedGlobalProps determines which of the GlobalProps values will be
+ *   extracted from the DOM and passed into the VComponent.  Properties
+ *   that are selected using ObservedGlobalProps are also included in
+ *   the custom element's observedAttributes list.  As a result, updates to
+ *   observed global properties will trigger the VComponent to render
+ *   with the new values.
+ * </p>
+ * <p>
+ *   The ObservedGlobalProps type acts as a Pick type, where properties are
+ *   implicitly picked from GlobalProps.  The resulting type is typically
+ *   merged with any component-specific properties via a union.
+ * </p>
+ * <p>
+ *   See the <a href="#observed">Observed Global Properties</a> section for
+ *   more details.
+ * </p>
+ * @typedef {Object} ObservedGlobalProps
+ * @ojexports
+ * @memberof ojvcomponent
+ */
+
+/**
+ * <p>
+ *   The PropertyChanged type is used to identify callback properties that
+ *   notify VComponent consumers of writeback property mutations.
+ *   Writeback property callbacks must adhere to the naming convention of
+ *   "on<PropertyName>Changed", where "PropertyName" is the name of the
+ *   writeback property with the first character converted to upper case:
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *   // This is a writeback property
+ *   value?: string;
+ *
+ *   // This is the corresponding property changed callback
+ *   onValueChanged?: PropertyChanged<string>
+ * }
+ * </code></pre>
+ * <p>
+ *   See the <a href="#writeback">Writeback Properties</a> section for
+ *   more details.
+ * </p>
+ * @typedef {Object} PropertyChanged
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<T>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "(value: T) => void"}]
+ */
+
+/**
+ * <p>
+ *   The Slot type identifies properties as representing named slot
+ *   children.  This type is an alias for Preact's ComponentChildren type.  As
+ *   such, the value of a slot property can either be embedded directly in
+ *   a virtual DOM tree or can be passed to Preact's
+ *   <a href="https://preactjs.com/guide/v10/api-reference/#tochildarray">
+ *   toChildArray</a>.
+ * </p>
+ * <p>
+ *   See <a href="#children">Children and Slots</a> for more details.
+ * </p>
+ * @typedef {Function} Slot
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target: "Type", value: "ComponentChildren"}]
+ */
+
+/**
+ * <p>
+ *   The TemplateSlot type identifies properties as representing named
+ *   template slot children.  Unlike the <a href="#Slot">Slot</a> type,
+ *   TemplateSlot is a functional type that takes some context and returns
+ *   the slot children.
+ * </p>
+ * <p>
+ *   See the <a href="#template-slots">Template Slots</a> section for more details.
+ * </p>
+ * @typedef {Function} TemplateSlot
+ * @ojexports
+ * @memberof ojvcomponent
+ * @ojsignature [{target:"Type", value:"<Data extends object>", for:"genericTypeParameters"},
+ *               {target: "Type", value: "(data: Data) => VComponent.Slot"}]
  */
 
 // STATIC METHODS
 
-/**
- * Creates a virtual node for an HTML element of the given type, props, and children.
- * @function h
- * @memberof VComponent
- * @param {any} type An HTML or SVG tag name
- * @param {Object} props The properties to set in the real DOM node
- * @param {...Object} children Optional child DOM
- * @ojsignature [{target:"Type", value:"<P>", for:"genericTypeParameters"},
- *               {target: "Type", value: "VComponent.VNodeType<P>", for: "type"},
- *               {target: "Type", value: "P", for: "props"},
- *               {target: "Type", value: "Array<VComponent.VNode|Node>", for: "children"},
- *               {target: "Type", value: "VComponent.VNode", for: "returns"}]
- * @return {Object}
- * @expose
- * @ignore
- */
-
 
 /**
- * Utility to convert a JSX 'class' attribute value to an object for easier component
- * manipulation.
- * <pre class="prettyprint"><code>
- * import { h, VComponent, classPropToObject } from "ojs/ojvcomponent";
+ * <p>
+ *   For the most part, VComponents should not need to render ids on child
+ *   content.  However, in some cases this may be necessary.  For example,
+ *   in order to set up a relationship between a label and the element that
+ *   the label references, the label and labeled content must rendezvous on
+ *   a common id.  Specifying fixed ids is problematic as this can
+ *   lead to conflicts with other ids on the page.  The getUniqueId()
+ *   method helps solve this problem by creating producing an id that is
+ *   guaranteed not to conflict with ids rendered by other components.
+ * </p>
+ * <p>
+ *   The id returned by getUniqueId() is typically used to provide a prefix
+ *   (or suffix) for what would otherwise be a static id for some element
+ *   rendered by the VComponent.
+ * </p>
+ * <p>
+ *   The usage model is:
+ * </p>
+ * <ol>
+ *   <li>
+ *   In the VComponent's constructor, check to see whether the
+ *   VComponent already has a props.id value.  If so, this can be used as a
+ *   prefix for other ids and calling getUniqueId() is unnecessary.
+ *   </li>
+ *   <li>
+ *   Otherwise, call getUniqueId() to retrieve the unique prefix for
+ *   this component
+ *   </li>
+ *   <li>
+ *   Store the result of the #1/#2 in an instance variable for later
+ *   use.
+ *   </li>
+ *   <li>
+ *   When rendering, use the previously stored prefix to generate
+ *   unique ids for any elements that need them.
+ *   </li>
+ *   <li>
+ *   Don't forget to include "id" in the list of
+ *   <a href="#ObservedGlobalProps">ObservedGlobalProps</a> in
+ *   order to ensure that the VComponent receives the value of this global
+ *   HTML attribute.
+ *   </li>
+ * </ol>
+ * <p>
+ *   Putting this all together, we end up with a component like this:
+ * </p>
+ * <pre class="prettyprint"><code>import { h, Component, ComponentChild } from 'preact';
+ * import { customElement, ExtendGlobalProps, ObservedGlobalProps, getUniqueId } from 'ojs/ojvcomponent';
+ * import "ojs/ojinputtext";
+ * import "ojs/ojlabel";
  *
- * class Props {
- *   class?: string | object = {};
- * }
+ * export type Props = ObservedGlobalProps&lt;'id'&gt;;
  *
- * export class SampleComponent extends VComponent&lt;Props> {
- *   protected render(): VComponent.VNode {
- *     // Make a copy of the readonly return value from classPropToObject and add additional classes
- *     const classObj = Object.assign({}, classPropToObject(this.props.class), { newClass: true }
+ * &#64;customElement('oj-demo-unique-id')
+ * export class DemoUniqueId extends Component&lt;ExtendGlobalProps&lt;Props&gt;&gt; {
+ *
+ *   private uniquePrefix: string;
+ *
+ *   constructor(props: Readonly&lt;Props&gt;) {
+ *     super(props)
+ *
+ *     this.uniquePrefix = props.id ?? getUniqueId();
+ *   }
+ *
+ *   render(): ComponentChild {
+ *
+ *     const inputTextId = `${this.uniquePrefix}_input`;
+ *
  *     return (
- *       &lt;div class={ classObj } />
+ *       &lt;div&gt;
+ *         &lt;oj-label for={ inputTextId }&gt;Label&lt;/oj-label&gt;
+ *         &lt;oj-input-text id={ inputTextId } value="Value"/&gt;
+ *       &lt;/div&gt;
  *     );
  *   }
  * }
  * </code></pre>
- * @function classPropToObject
- * @memberof VComponent
- * @param {string|object|null} classProp An HTML or SVG tag name
- * @ojsignature [{target: "Type", value: "Readonly<object>", for: "returns"}]
- * @return {Object}
- * @ignore
- */
-
-
-/**
- * Utility to convert a VComponent's child content into a flattened readonly array of virtual DOM nodes (VNodes).<br/><br/>
- * The returned VNode array is constructed as follows:
- * <ul>
- *   <li>Strings will get converted to VNodes.</li>
- *   <li>If content is null, returns the empty array.</li>
- *   <li>If content is a single VNode, returns an array containing the VNode.</li>
- *   <li>If the content is an array of VNodes, returns the array.</li>
- *   <li>If the content is an array of nested VNodes, returns the flattened array.</li>
- *   <li>Nulls and booleans will be removed from the returned array.</li>
- * </ul>
- * @function flattenChildren
- * @memberof VComponent
- * @param {?(object|Array<object>)} children Children of a VComponent
- * @ojsignature [{target: "Type", for: "children", value: "VComponent.Children|VComponent.VNode|VComponent.VNode[]|null"},
- *               {target: "Type", for: "returns", value: "Readonly<VComponent.VNode[]>"}
- *              ]
- * @return {Array<object>}
- * @ignore
- */
-
-
-/**
- * An optional static lifecycle method used to initialize derived state.
- * Called before the render method on the first flow through the
- * lifecycle. Components should return a partial state that will be merged
- * into any state that was initialized in the constructor, or null if
- * no changes are needed.
  *
- * @function initStateFromProps
- * @memberof VComponent
- * @param {Object} props The component's initial properties
- * @param {Object} state The component's initial state
- * @return {Object|null}
- * @ojsignature [{target: "Type", value: "Readonly<P>", for: "props"},
- *              {target: "Type", value: "Readonly<S>", for: "state"},
- *              {target: "Type", value: "Partial<S>|null", for: "returns"}]
- * @ojprotected
- * @expose
- */
-
-/**
- * An optional static lifecycle method used to update derived state.
- * Called before the render method on update flows through the lifecycle.
- * Components should return either a partial state that will be merged
- * into component state or null if no changes are needed. Logic that relies on old
- * and new state or property values should be done in <a href="#update">updated()</a>
- * instead.
- * @function updateStateFromProps
- * @memberof VComponent
- * @param {Object} props The new component properties
- * @param {Object} state The new state
- * @return {Object|null}
- * @ojsignature [{target: "Type", value: "Readonly<P>", for: "props"},
- *              {target: "Type", value: "Readonly<S>", for: "state"},
- *              {target: "Type", value: "Partial<S>|null", for: "returns"}]
- * @ojprotected
- * @expose
- */
-
-// INSTANCE PROPERTIES
-
-/**
- * The passed in component properties. This property should not be directly modified e.g.
- * this.props = {} or this.props.someProp = 'foo'.
- * @name props
- * @memberof VComponent
- * @type {Object}
- * @default {}
- * @ojsignature [{target: "Type", value: "Readonly<P>"}]
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * The component state. State updates should be done through the updateState or updateStateFromProps methods
- * and not by direct modification of this property in order to ensure that the component
- * is rerendered.
- * @expose
- * @name state
- * @memberof VComponent
- * @type {Object}
- * @default {}
- * @ojsignature [{target: "Type", value: "Readonly<S>"}]
- * @ojprotected
- * @instance
- */
-
-// INSTANCE METHODS
-
-/**
- * Required lifecycle method which returns the component's virtual subtree.
- * @function render
- * @return {VComponent.VNode}
- *
- * @memberof VComponent
- * @ojprotected
- * @abstract
- * @instance
- * @expose
- */
-
-/**
- * An optional lifecycle method called after the
- * virtual component has been initially rendered and inserted into the
- * DOM. Data fetches and global listeners can be added here.
- * This will not be called for reparenting cases. State and property
- * updates should be done here instead of the constructor.
- * @function mounted
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * An optional component lifecycle method called after the
- * render method in updating (state or property change) cases.
- * Additional DOM manipulation can be done here. State and property
- * updates that need access to old and values should also be done here.
- * Note that when updating state or property in updated(),
- * the component should compare old and new values.
- * @function updated
- * @param {Object} oldProps The previous value of the component properties.
- * @param {Object} oldState The previous value of the component state.
- * @return {void}
- * @ojsignature [{target: "Type", value: "Readonly<P>", for: "oldProps"},
- *               {target: "Type", value: "Readonly<S>", for: "oldState"},
- *              {target: "Type", value: "void", for: "returns"}]
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * An optional component lifecycle method called after the
- * virtual component has been removed from the DOM. This will not
- * be called for reparenting cases. Global listener cleanup can
- * be done here.
- * @function unmounted
- * @return {void}
- *
- * @memberof VComponent
- * @ojprotected
- * @instance
- * @expose
- */
-
-/**
- * The <a href="#uniqueId">uniqueId()</a> method can
- * be called to retrieve an id that is unique to the component instance (matching the live DOM if it has been specified)
- * that can be used e.g. as a prefix for IDs on internal DOM.
- *
- * For components needing to generate a unique ID for internal DOM, this utility method
- * will return either the id set on the VComponent by the parent or a unique string that
- * can be used for a prefix for child elements if one wasn't set by the parent.
- * This method can only be called after the VComponent
- * has been instantiated and will return undefined if called from the constructor.
- * @function uniqueId
+ * @function getUniqueId
  * @return {string}
  *
- * @memberof VComponent
- * @ojprotected
- * @instance
+ * @memberof ojvcomponent
  * @expose
+ * @ojexports
  */
 
 /**
- * Updates an internal component state. State updates always trigger an asynchronous rerender.<br/>
- * Note that the method accepts either partial state for the component or a callback that
- * returns a partial state.
- * The callback receives up-to-date component state and property values and can be
- * used to dynamically compute the next state. State updates that rely on state or
- * property values should use the callback form to ensure the latest values are used.
- * @function updateState
- * @param {Object | function} state Accepts a partial state object or a callback that returns
- *                  a partial state object that will be merged into component state.
- *                  The updater function takes a reference to the component state
- *                  at the time the change is being applied and the component properties object.
- * @return {void}
- * @ojsignature {target: "Type", value: "((state: Readonly<S>, props: Readonly<P>) => Partial<S>) | Partial<S>", for: "state"}
- * @memberof VComponent
- * @ojprotected
- * @instance
+ * <p>
+ *   Root is a Preact component that can be used to wrap the
+ *   VComponent's child content.  This component should only be used
+ *   for cases where the VComponent needs to control how
+ *   <a href="#observed">observed global properties</a> are rendered on
+ *   the component's root custom element.  In all other cases the
+ *   non-wrapped child content should be returned directly.
+ * </p>
+ * <p>
+ *   See the <a href="#root-element">Root Element</a> section for more details.
+ * </p>
+ *
+ * @function Root
+ *
+ * @memberof ojvcomponent
  * @expose
+ * @ojexports
  */
 
-class VComponent {
-    constructor(props) {
-        this._pendingPropsUpdate = false;
-        this._renderInterrupted = false;
-        this.props = props;
-    }
-    updated(oldProps, oldState) { }
-    mounted() { }
-    unmounted() { }
-    uniqueId() {
-        return this._uniqueId;
-    }
-    updateState(state) {
-        if (!this._pendingStateUpdaters) {
-            this._pendingStateUpdaters = [];
-        }
-        this._pendingStateUpdaters.push(state);
-        this.queueRender(this._ref, 'stateUpdate');
-    }
-    mount(props, content) {
-        this._vnode = this._renderForMount(props, content);
-        return (this._ref = mount(this._vnode, true));
-    }
-    patch(props, content) {
-        const oldProps = this.props;
-        const oldState = this.state;
-        const oldVnode = this._vnode;
-        const newVNode = this._renderForPatch(props, content);
-        this._vnode = patch(newVNode, oldVnode, this._ref.parentNode, true);
-        this.updated(oldProps, oldState);
-    }
-    notifyMounted() {
-        this._renderIfNeeded();
-        mounted(this._vnode);
-        this.mounted();
-    }
-    notifyUnmounted() {
-        this._cancelQueuedRender();
-        unmount(this._vnode);
-        this.unmounted();
-    }
-    queueRender(element, reason) {
-        this._renderInterrupted = false;
-        if (reason === 'propsUpdate') {
-            this._pendingPropsUpdate = true;
-        }
-        if (!this._busyStateCallbackForRender) {
-            const busyContext = Context.getContext(element).getBusyContext();
-            this._busyStateCallbackForRender = busyContext.addBusyState({
-                description: this.uniqueId() + ' is waiting to render.'
-            });
-            this._animation = window.requestAnimationFrame(() => {
-                const busyStateCallbackForRender = this._busyStateCallbackForRender;
-                const pendingPropsUpdate = this._pendingPropsUpdate;
-                const pendingStateUpdaters = this._pendingStateUpdaters;
-                this._busyStateCallbackForRender = null;
-                this._pendingPropsUpdate = false;
-                this._pendingStateUpdaters = null;
-                try {
-                    const props = this._getCallback('getPropsForRender')();
-                    const newState = this._doUpdateState(props, pendingStateUpdaters);
-                    if (pendingPropsUpdate || (newState && !this._areStatesEqual(this.state, newState))) {
-                        this._pendingState = newState;
-                        this._getCallback('patch')(props, this._ref.parentNode);
-                    }
-                }
-                catch (error) {
-                    throw error;
-                }
-                finally {
-                    this._cleanupRender(busyStateCallbackForRender);
-                }
-            });
+class Parking {
+    parkNode(node) {
+        this._getLot().appendChild(node);
+        if (oj.Components) {
+            oj.Components.subtreeHidden(node);
         }
     }
-    _cancelQueuedRender() {
-        if (this._animation != null) {
-            window.cancelAnimationFrame(this._animation);
-            this._renderInterrupted = true;
-            this._cleanupRender(this._busyStateCallbackForRender);
-            this._busyStateCallbackForRender = null;
-        }
-    }
-    _cleanupRender(busyStateCallback) {
-        if (busyStateCallback) {
-            busyStateCallback();
-        }
-        this._pendingState = null;
-        this._animation = null;
-    }
-    _renderIfNeeded() {
-        if (this._renderInterrupted) {
-            this.queueRender(this._ref, 'resume');
-        }
-    }
-    _renderForMount(props, content) {
-        if (this.state) {
-            const initStateFromProps = this.constructor.initStateFromProps;
-            if (initStateFromProps) {
-                const newPartialState = initStateFromProps.call(this.constructor, props, this.state);
-                this.state = this._getNewState(newPartialState);
+    disposeNodes(nodeMap, cleanFunc) {
+        Parking._iterateSlots(nodeMap, (node) => {
+            const parent = node.parentElement;
+            if (this._lot === parent) {
+                cleanFunc(node);
+                this._lot.removeChild(node);
             }
-        }
-        return this._render(props, content);
-    }
-    _renderForPatch(props, content) {
-        if (this.state) {
-            const updateStateFromProps = this.constructor.updateStateFromProps;
-            let newPartialState;
-            if (updateStateFromProps) {
-                newPartialState = updateStateFromProps.call(this.constructor, props, this._pendingState || this.state, this.props);
+            else if (!parent) {
+                cleanFunc(node);
             }
-            this.state = this._getNewState(newPartialState, this._pendingState);
-        }
-        const vnode = this._render(props, content);
-        return vnode;
+        });
     }
-    _render(props, content) {
-        if (content && content.length) {
-            Object.assign(props, this._getCallback('convertChildrenToSlotProps')(content));
-        }
-        this.props = props;
-        return this.render();
+    disconnectNodes(nodeMap) {
+        Parking._iterateSlots(nodeMap, (node) => {
+            if (this._lot === node.parentElement) {
+                this._lot.removeChild(node);
+            }
+        });
     }
-    _doUpdateState(props, updaters) {
-        if (!updaters || updaters.length === 0) {
+    reconnectNodes(nodeMap) {
+        Parking._iterateSlots(nodeMap, (node) => {
+            if (!node.parentElement) {
+                this._lot.appendChild(node);
+            }
+        });
+    }
+    isParked(n) {
+        return (n === null || n === void 0 ? void 0 : n.parentElement) === this._lot;
+    }
+    _getLot() {
+        if (!this._lot) {
+            const div = document.createElement('div');
+            div.style.display = 'none';
+            document.body.appendChild(div);
+            this._lot = div;
+        }
+        return this._lot;
+    }
+    static _iterateSlots(nodeMap, callback) {
+        const keys = Object.keys(nodeMap);
+        keys.forEach((key) => {
+            const nodes = nodeMap[key];
+            nodes.forEach((node) => {
+                callback(node);
+            });
+        });
+    }
+}
+const ParkingLot = new Parking();
+
+function convertToVNode(node, slot, index, handleSlotMount, handleSlotUnmount) {
+    const key = `_${slot}_${index}_`;
+    const ref = _getReplacerRef(node, handleSlotMount, handleSlotUnmount);
+    return h(() => h('oj-slot-replacer', { ref, key }), null);
+}
+class SlotReplacerElement extends HTMLElement {
+    connectedCallback() {
+        const slot = this[OJ_SLOT];
+        if (slot) {
+            this.parentElement.replaceChild(slot, this);
+        }
+    }
+    get parentNode() {
+        const delegate = this[OJ_SLOT];
+        return !delegate || ParkingLot.isParked(delegate) ? null : delegate.parentNode;
+    }
+    get nextSibling() {
+        const delegate = this[OJ_SLOT];
+        if (!delegate || ParkingLot.isParked(delegate)) {
             return null;
         }
-        const newState = updaters.reduce((acc, updater) => {
-            const updatedState = typeof updater === 'function' ? updater(acc, props) : updater;
-            return Object.assign(acc, updatedState);
-        }, Object.assign({}, this.state));
-        return newState;
-    }
-    _areStatesEqual(oldState, newState) {
-        return Object.keys(newState).every((key) => oldState[key] === newState[key]);
-    }
-    _getCallback(name) {
-        if (!this._callbacks) {
-            this._callbacks = this._getBuiltInCallbacks();
-        }
-        return this._callbacks[name];
-    }
-    _getBuiltInCallbacks() {
-        const callbacks = {
-            getPropsForRender: () => {
-                return this.props;
-            },
-            patch: (props, parent) => {
-                this.patch(props, parent);
-            },
-            convertChildrenToSlotProps: function (children) {
-                return { children };
-            }
-        };
-        callbacks['_vcomp'] = true;
-        return callbacks;
-    }
-    _getNewState(newPartialState, pendingState = null) {
-        if (newPartialState || pendingState) {
-            return Object.assign({}, pendingState || this.state, newPartialState);
-        }
-        return this.state;
+        const siblingToSlot = delegate.nextSibling;
+        return (siblingToSlot === null || siblingToSlot === void 0 ? void 0 : siblingToSlot[OJ_REPLACER]) || siblingToSlot;
     }
 }
-const h = h$1;
-const classPropToObject = classPropToObject$1;
+customElements.define('oj-slot-replacer', SlotReplacerElement);
+function _getReplacerRef(slotNode, handleSlotMount, handleSlotUnmount) {
+    let _activeReplacer;
+    let _count = 0;
+    return (replacerElem) => {
+        if (replacerElem != null) {
+            _count++;
+            if (_activeReplacer) {
+                _activeReplacer[OJ_SLOT] = null;
+            }
+            _activeReplacer = slotNode[OJ_REPLACER] = replacerElem;
+            const parent = replacerElem.parentElement;
+            patchSlotParent(parent);
+            parent.replaceChild(slotNode, replacerElem);
+            handleSlotMount(slotNode);
+            replacerElem[OJ_SLOT] = slotNode;
+        }
+        else {
+            _count--;
+            if (_count < 0) {
+                throw new JetElementError(this, 'Slot replacer count underflow');
+            }
+            if (_count === 0) {
+                slotNode.remove();
+                handleSlotUnmount(slotNode);
+            }
+        }
+    };
+}
 
-function listener(options) {
-    return function (target, key, descriptor) {
-        let fn = descriptor === null || descriptor === void 0 ? void 0 : descriptor.value;
-        return {
-            configurable: true,
-            get() {
-                const boundFn = fn.bind(this);
-                boundFn[LISTENER_OPTIONS_SYMBOL] = options;
-                Object.defineProperty(this, key, {
-                    configurable: true,
-                    get() {
-                        return boundFn;
-                    },
-                    set(value) {
-                        fn = value;
-                        delete this[key];
+const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides) {
+    let i;
+    for (i in oldProps) {
+        if (i !== 'children' && i !== 'key' && !(i in newProps)) {
+            setPropertyOverrides(dom, i, null, oldProps[i], isSvg) ||
+                setProperty(dom, i, null, oldProps[i], isSvg);
+        }
+    }
+    for (i in newProps) {
+        if ((!hydrate || typeof newProps[i] == 'function') &&
+            i !== 'children' &&
+            i !== 'key' &&
+            i !== 'value' &&
+            i !== 'checked' &&
+            oldProps[i] !== newProps[i]) {
+            setPropertyOverrides(dom, i, newProps[i], oldProps[i], isSvg) ||
+                setProperty(dom, i, newProps[i], oldProps[i], isSvg);
+        }
+    }
+}
+function setStyle(style, key, value) {
+    if (key[0] === '-') {
+        style.setProperty(key, value);
+    }
+    else if (value == null) {
+        style[key] = '';
+    }
+    else if (typeof value != 'number' || IS_NON_DIMENSIONAL.test(key)) {
+        style[key] = value;
+    }
+    else {
+        style[key] = value + 'px';
+    }
+}
+function setProperty(dom, name, value, oldValue, isSvg) {
+    let useCapture;
+    o: if (name === 'style') {
+        if (typeof value == 'string') {
+            dom.style.cssText = value;
+        }
+        else {
+            if (typeof oldValue == 'string') {
+                dom.style.cssText = oldValue = '';
+            }
+            if (oldValue) {
+                for (name in oldValue) {
+                    if (!(value && name in value)) {
+                        setStyle(dom.style, name, '');
+                    }
+                }
+            }
+            if (value) {
+                for (name in value) {
+                    if (!oldValue || value[name] !== oldValue[name]) {
+                        setStyle(dom.style, name, value[name]);
+                    }
+                }
+            }
+        }
+    }
+    else if (name[0] === 'o' && name[1] === 'n') {
+        useCapture = name !== (name = name.replace(/Capture$/, ''));
+        if (name.toLowerCase() in dom)
+            name = name.toLowerCase().slice(2);
+        else
+            name = name.slice(2);
+        if (!dom._listeners)
+            dom._listeners = {};
+        dom._listeners[name + useCapture] = value;
+        if (value) {
+            if (!oldValue) {
+                const handler = useCapture ? eventProxyCapture : eventProxy;
+                dom.addEventListener(name, handler, useCapture);
+            }
+        }
+        else {
+            const handler = useCapture ? eventProxyCapture : eventProxy;
+            dom.removeEventListener(name, handler, useCapture);
+        }
+    }
+    else if (name !== 'dangerouslySetInnerHTML') {
+        if (isSvg) {
+            name = name.replace(/xlink[H:h]/, 'h').replace(/sName$/, 's');
+        }
+        else if (name !== 'href' &&
+            name !== 'list' &&
+            name !== 'form' &&
+            name !== 'tabIndex' &&
+            name !== 'download' &&
+            name in dom) {
+            try {
+                dom[name] = value == null ? '' : value;
+                break o;
+            }
+            catch (e) { }
+        }
+        if (typeof value === 'function') {
+        }
+        else if (value != null && (value !== false || (name[0] === 'a' && name[1] === 'r'))) {
+            dom.setAttribute(name, value);
+        }
+        else {
+            dom.removeAttribute(name);
+        }
+    }
+}
+function eventProxy(e) {
+    this._listeners[e.type + false](options.event ? options.event(e) : e);
+}
+function eventProxyCapture(e) {
+    this._listeners[e.type + true](options.event ? options.event(e) : e);
+}
+
+const ELEMENT_REF = Symbol();
+const ROOT_VNODE_PATCH = Symbol();
+const _EMPTY_SET = new Set();
+const _LISTENERS = Symbol();
+const _CAPTURE_LISTENERS = Symbol();
+class IntrinsicElement {
+    constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
+        this.ref = createRef();
+        this._isPatching = false;
+        this._props = { ref: this.ref };
+        this._verifyingState = ConnectionState.Unset;
+        this._earlySets = [];
+        this._eventQueue = [];
+        this._isRenderQueued = false;
+        this._state = CustomElementUtils.getElementState(element);
+        this._element = element;
+        this._metadata = metadata;
+        this._component = component;
+        this._controlledProps = (rootProperties === null || rootProperties === void 0 ? void 0 : rootProperties.length) > 0 ? new Set(rootProperties) : _EMPTY_SET;
+        this._controlledAttrs = (rootAttributes === null || rootAttributes === void 0 ? void 0 : rootAttributes.length) > 0 ? new Set(rootAttributes) : _EMPTY_SET;
+        this._defaultProps = defaultProps;
+        this._rootPatchCallback = this._patchRootElement.bind(this);
+    }
+    connectedCallback() {
+        this._verifyConnectDisconnect(ConnectionState.Connect);
+    }
+    disconnectedCallback() {
+        this._verifyConnectDisconnect(ConnectionState.Disconnect);
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (!this._isPatching && this._state.canHandleAttributes()) {
+            const propName = AttributeUtils.attributeToPropertyName(name);
+            const topProp = propName.split('.')[0];
+            if (this._state.dirtyProps.has(topProp)) {
+                this._state.dirtyProps.delete(topProp);
+            }
+            else if (oldValue === newValue) {
+                return;
+            }
+            if (newValue === null) {
+                newValue = undefined;
+            }
+            if ('knockout' === this._state.getBindingProviderType()) {
+                if (!AttributeUtils.isGlobalOrData(propName)) {
+                    this._element.dispatchEvent(new CustomEvent('attribute-changed', {
+                        detail: { attribute: name, value: newValue, previousValue: oldValue }
+                    }));
+                }
+            }
+            const [prop, value, propMeta] = this._getPropValuePair(name, newValue);
+            if (prop) {
+                this._updatePropsAndQueueRenderAsNeeded(prop, value, propMeta);
+            }
+        }
+    }
+    getProperty(name) {
+        var _a;
+        const meta = getPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+        if (!meta) {
+            return this._element[name];
+        }
+        else {
+            let value = CustomElementUtils.getPropertyValue(this._props, name);
+            if (value === undefined && this._defaultProps) {
+                value = CustomElementUtils.getPropertyValue(this._defaultProps, name);
+            }
+            return value;
+        }
+    }
+    setProperty(name, value) {
+        var _a;
+        if (this._isPatching)
+            return;
+        const meta = getPropertyMetadata(name, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+        if (!meta) {
+            this._element[name] = value;
+        }
+        else {
+            value = CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, value);
+            if (this._state.allowPropertySets()) {
+                this._updatePropsAndQueueRenderAsNeeded(name, value, meta);
+            }
+            else {
+                this._earlySets.push({ property: name, value });
+            }
+        }
+    }
+    setProperties(properties) {
+        if (this._isPatching) {
+            return;
+        }
+        Object.keys(properties).forEach((prop) => {
+            this.setProperty(prop, properties[prop]);
+        });
+    }
+    getProps() {
+        return this._props;
+    }
+    isInitialized() {
+        return !!this._vdom;
+    }
+    appendChildHelper(element, newNode) {
+        if (CustomElementUtils.canRelocateNode(element, newNode)) {
+            return HTMLElement.prototype.appendChild.call(element, newNode);
+        }
+        return newNode;
+    }
+    insertBeforeHelper(element, newNode, refNode) {
+        if (CustomElementUtils.canRelocateNode(element, newNode)) {
+            return HTMLElement.prototype.insertBefore.call(element, newNode, refNode);
+        }
+        return newNode;
+    }
+    _render() {
+        var _a;
+        if (!this._vdom) {
+            this._initializePropsFromDom();
+            const eventsMeta = this._metadata.events;
+            if (eventsMeta) {
+                this._initializeActionCallbacks(eventsMeta);
+            }
+            const writebackProps = (_a = this._metadata.extension) === null || _a === void 0 ? void 0 : _a['_WRITEBACK_PROPS'];
+            if (writebackProps) {
+                this._initializeWritebackCallbacks(writebackProps);
+            }
+            this._playbackEarlyPropertySets();
+        }
+        this._vdom = h(this._component, this._props, null);
+        this._vdom.props[ELEMENT_REF] = this._element;
+        this._vdom.props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
+        this._isPatching = true;
+        render(this._vdom, this._element);
+        this._isPatching = false;
+    }
+    _getPropValuePair(attrName, attrValue) {
+        var _a, _b;
+        if ('knockout' !== this._state.getBindingProviderType() ||
+            !AttributeUtils.getExpressionInfo(attrValue).expr) {
+            const propName = AttributeUtils.attributeToPropertyName(attrName);
+            const propMeta = getPropertyMetadata(propName, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+            if (propMeta) {
+                if (propMeta.readOnly) {
+                    return [null, null, null];
+                }
+                return [
+                    propName,
+                    AttributeUtils.attributeToPropertyValue(this._element, attrName, attrValue, propMeta),
+                    propMeta
+                ];
+            }
+            const globalPropName = AttributeUtils.getGlobalPropForAttr(attrName);
+            if (this._controlledProps.has(globalPropName)) {
+                return [globalPropName, (_b = this[globalPropName]) !== null && _b !== void 0 ? _b : attrValue, null];
+            }
+        }
+        return [null, null, null];
+    }
+    _updatePropsAndQueueRenderAsNeeded(prop, value, propMeta, isOuter = true) {
+        const previousValue = this.getProperty(prop);
+        if (propMeta && ElementUtils.comparePropertyValues(propMeta, value, previousValue)) {
+            return;
+        }
+        const propPath = prop.split('.');
+        const topProp = propPath[0];
+        const isSubprop = propPath.length > 1;
+        let topPropPrevValue = this.getProperty(topProp);
+        if (oj.CollectionUtils.isPlainObject(topPropPrevValue)) {
+            topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
+        }
+        if (isOuter) {
+            this._verifyProps(prop, value, propMeta);
+        }
+        this._updateProps(propPath, value);
+        if (!isOuter ||
+            (this._state.allowPropertyChangedEvents() && !AttributeUtils.isGlobalOrData(prop))) {
+            this._state.dirtyProps.add(topProp);
+            const updatedFrom = isOuter ? 'external' : 'internal';
+            const detail = {
+                value: this.getProperty(topProp),
+                previousValue: topPropPrevValue,
+                updatedFrom
+            };
+            if (isSubprop) {
+                detail['subproperty'] = {
+                    path: prop,
+                    value,
+                    previousValue
+                };
+            }
+            this._queueFireEventsTask(new CustomEvent(topProp + 'Changed', { detail }));
+        }
+        const oldProps = this._oldRootProps;
+        if (oldProps && this._controlledProps.has(prop)) {
+            oldProps[prop] = value;
+        }
+        this._queueRender(this._vdom && !(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly));
+    }
+    _queueRender(needRendering) {
+        if (needRendering && !this._isRenderQueued) {
+            this._isRenderQueued = true;
+            window.queueMicrotask(() => {
+                try {
+                    this._render();
+                }
+                finally {
+                    this._isRenderQueued = false;
+                }
+            });
+        }
+    }
+    _verifyProps(prop, value, propMeta) {
+        if (!propMeta) {
+            return;
+        }
+        if (propMeta.readOnly) {
+            throw new JetElementError(this._element, `Read-only property '${prop}' cannot be set.`);
+        }
+        try {
+            checkEnumValues(this._element, prop, value, propMeta);
+        }
+        catch (error) {
+            throw new JetElementError(this._element, error.message);
+        }
+    }
+    _updateProps(propPath, value) {
+        var _a, _b;
+        const topProp = propPath[0];
+        let propsObj = this._props;
+        if (propPath.length > 1) {
+            const currentValue = (_a = this._props[topProp]) !== null && _a !== void 0 ? _a : (_b = this._defaultProps) === null || _b === void 0 ? void 0 : _b[topProp];
+            if (currentValue && oj.CollectionUtils.isPlainObject(currentValue)) {
+                propsObj[topProp] = oj.CollectionUtils.copyInto({}, currentValue, undefined, true);
+            }
+            else {
+                propsObj[topProp] = {};
+            }
+        }
+        while (propPath.length) {
+            const subprop = propPath.shift();
+            if (propPath.length === 0) {
+                propsObj[subprop] = value;
+            }
+            else if (!propsObj[subprop]) {
+                propsObj[subprop] = {};
+            }
+            propsObj = propsObj[subprop];
+        }
+    }
+    _queueFireEventsTask(customEvent) {
+        this._eventQueue.push(customEvent);
+        if (!this._queuedEvents) {
+            this._queuedEvents = new Promise((resolve) => {
+                window.queueMicrotask(() => {
+                    try {
+                        while (this._eventQueue.length) {
+                            this._element.dispatchEvent(this._eventQueue.shift());
+                        }
+                    }
+                    finally {
+                        resolve();
+                        this._queuedEvents = null;
                     }
                 });
-                return boundFn;
-            },
-            set(value) {
-                fn = value;
+            });
+        }
+        return this._queuedEvents;
+    }
+    _verifyConnectDisconnect(state) {
+        if (this._verifyingState === ConnectionState.Unset) {
+            window.queueMicrotask(() => {
+                if (this._verifyingState === state) {
+                    if (this._verifyingState === ConnectionState.Connect) {
+                        this._verifiedConnect();
+                    }
+                    else {
+                        this._verifiedDisconnect();
+                    }
+                }
+                this._verifyingState = ConnectionState.Unset;
+            });
+        }
+        this._verifyingState = state;
+    }
+    _verifiedConnect() {
+        if (this._state.isComplete()) {
+            this._reconnectSlots();
+        }
+        else {
+            this._state.startCreationCycle();
+            if (this._state.isCreating()) {
+                const createComponentCallback = () => {
+                    this._element[CHILD_BINDING_PROVIDER] = 'preact';
+                    let slotMap = this._state.getSlotMap();
+                    if (!slotMap) {
+                        slotMap = this._state.getSlotMap(true);
+                        const slotProps = this._removeAndConvertSlotsToProps(slotMap);
+                        Object.assign(this._props, slotProps);
+                    }
+                    else {
+                        this._reconnectSlots();
+                    }
+                    this._render();
+                };
+                this._state.setCreateCallback(createComponentCallback);
+                this._state.setBindingsDisposedCallback(() => this._handleBindingsDisposed());
             }
+        }
+    }
+    _verifiedDisconnect() {
+        if (this._state.isComplete()) {
+            this._disconnectSlots();
+            this._state.resetCreationCycle();
+            render(null, this._element);
+            this._applyRef(this._oldRootRef, null);
+            this._oldRootRef = undefined;
+            this._vdom = null;
+        }
+        else {
+            this._state.pauseCreationCycle();
+        }
+    }
+    _initializePropsFromDom() {
+        const attrs = this._element.attributes;
+        for (let i = 0; i < attrs.length; i++) {
+            const { name, value } = attrs[i];
+            const [prop, propVal, propMeta] = this._getPropValuePair(name, value);
+            if (prop) {
+                this._verifyProps(prop, propVal, propMeta);
+                this._updateProps(prop.split('.'), propVal);
+            }
+        }
+    }
+    _playbackEarlyPropertySets() {
+        while (this._earlySets.length) {
+            const setObj = this._earlySets.shift();
+            this.setProperty(setObj.property, setObj.value);
+        }
+    }
+    _patchRootElement(newVNode) {
+        var _a;
+        const oldProps = this._oldRootProps || this._getInitialRootProps();
+        const newProps = newVNode.props;
+        diffProps(this._element, newProps, oldProps, false, false, IntrinsicElement._setPropertyOverrides);
+        const newRef = newVNode.ref;
+        if (this._oldRootRef !== newRef) {
+            this._applyRef(newRef, this._element);
+            if (newRef) {
+                (_a = this._oldRootRef) === null || _a === void 0 ? void 0 : _a.call(this, null);
+            }
+        }
+        this._oldRootProps = newProps;
+        this._oldRootRef = newRef;
+    }
+    _applyRef(ref, value) {
+        if (ref) {
+            if (typeof ref == 'function') {
+                ref(value);
+            }
+            else {
+                ref.current = value;
+            }
+        }
+    }
+    static _setPropertyOverrides(dom, name, value, oldValue) {
+        if (name === 'style' && typeof value == 'string') {
+            throw new Error('CSS style must be an object. CSS text is not supported');
+        }
+        if (name === 'class' || name === 'className') {
+            const oldClasses = oldValue == null ? _EMPTY_SET : CustomElementUtils.getClassSet(oldValue);
+            const newClasses = value == null ? _EMPTY_SET : CustomElementUtils.getClassSet(value);
+            for (const cl of oldClasses.values()) {
+                if (!newClasses.has(cl)) {
+                    dom.classList.remove(cl);
+                }
+            }
+            for (const cl of newClasses.values()) {
+                if (!oldClasses.has(cl)) {
+                    dom.classList.add(cl);
+                }
+            }
+            return true;
+        }
+        else if (name[0] === 'o' && name[1] === 'n') {
+            const useCapture = name !== (name = name.replace(/Capture$/, ''));
+            const nameLower = name.toLowerCase();
+            if (nameLower in dom)
+                name = nameLower;
+            name = name.slice(2);
+            IntrinsicElement._getRootListeners(dom, useCapture)[name] = value;
+            const proxy = useCapture ? IntrinsicElement._eventProxyCapture : IntrinsicElement._eventProxy;
+            if (value) {
+                if (!oldValue)
+                    dom.addEventListener(name, proxy, useCapture);
+            }
+            else {
+                dom.removeEventListener(name, proxy, useCapture);
+            }
+            return true;
+        }
+        return false;
+    }
+    static _getRootListeners(dom, useCapture) {
+        const key = useCapture ? _CAPTURE_LISTENERS : _LISTENERS;
+        let listeners = dom[key];
+        if (!listeners) {
+            listeners = dom[key] = {};
+        }
+        return listeners;
+    }
+    _getInitialRootProps() {
+        const props = {};
+        for (const name of this._controlledProps.values()) {
+            if (name in this._props) {
+                props[name] = this._props[name];
+            }
+        }
+        return props;
+    }
+    _removeAndConvertSlotsToProps(slotMap) {
+        var _a, _b;
+        const dynamicSlotMetadata = (_a = this._metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
+        const dynamicSlotProp = dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.prop;
+        const slotsMetadata = (_b = this._metadata) === null || _b === void 0 ? void 0 : _b.slots;
+        const slots = Object.keys(slotMap);
+        const slotProps = {};
+        if (slots.length > 0) {
+            slots.forEach((slot) => {
+                const slotNodes = slotMap[slot];
+                slotNodes.forEach((node) => {
+                    ParkingLot.parkNode(node);
+                });
+                const slotMetadata = getPropertyMetadata(slot, slotsMetadata);
+                if (slotMetadata) {
+                    const isTemplateSlot = !!(slotMetadata === null || slotMetadata === void 0 ? void 0 : slotMetadata.data);
+                    const slotProperty = !isTemplateSlot && slot === '' ? 'children' : slot;
+                    this._assignSlotProperty(slotProps, slotProperty, undefined, slot, isTemplateSlot, slotNodes);
+                }
+                else {
+                    if (!dynamicSlotProp) {
+                        return;
+                    }
+                    if (!slotProps[dynamicSlotProp]) {
+                        slotProps[dynamicSlotProp] = {};
+                    }
+                    const isTemplateSlot = dynamicSlotMetadata.isTemplate;
+                    this._assignSlotProperty(slotProps, slot, dynamicSlotProp, slot, isTemplateSlot, slotNodes);
+                }
+            });
+        }
+        if (this._state.getBindingProviderType() === 'knockout') {
+            let child;
+            while ((child = this._element.firstChild)) {
+                this._state.getBindingProviderCleanNode()(child);
+                child.remove();
+            }
+        }
+        return slotProps;
+    }
+    _assignSlotProperty(slotProps, propName, containerPropName, slotName, isTemplateSlot, slotNodes) {
+        var _a, _b;
+        const propContainer = containerPropName ? slotProps[containerPropName] : slotProps;
+        if (isTemplateSlot) {
+            if (((_a = slotNodes[0]) === null || _a === void 0 ? void 0 : _a.nodeName) === 'TEMPLATE') {
+                const templateNode = slotNodes[0];
+                propContainer[propName] =
+                    (_b = templateNode['render']) !== null && _b !== void 0 ? _b : this._getSlotRenderer(templateNode, propName, containerPropName);
+            }
+            else {
+                throw new JetElementError(this._element, `Slot content for template slot ${slotName} must be a template element.`);
+            }
+        }
+        else {
+            const vnodes = slotNodes.map((node, index) => convertToVNode(node, slotName, index, IntrinsicElement._handleSlotMount, this._handleSlotUnmount.bind(this)));
+            propContainer[propName] = vnodes;
+        }
+    }
+    _getSlotRenderer(templateNode, slotProp, containerProp) {
+        const bindingProvider = this._state.getBindingProvider();
+        const mutationCallback = bindingProvider
+            ? () => {
+                const propContainer = containerProp ? this._props[containerProp] : this._props;
+                propContainer[slotProp] = this._getSlotRenderer(templateNode, slotProp, containerProp);
+                this._queueRender(true);
+            }
+            : null;
+        return (context) => {
+            const cachedTemplateEngine = this._state.getTemplateEngine();
+            if (!cachedTemplateEngine) {
+                throw new JetElementError(this._element, 'Unexpected call to render a template slot');
+            }
+            return cachedTemplateEngine.execute(this._element, templateNode, context, bindingProvider, mutationCallback);
         };
-    };
+    }
+    _handleBindingsDisposed() {
+        ParkingLot.disposeNodes(this._state.getSlotMap(), this._state.getBindingProviderCleanNode());
+        this._state.disposeTemplateCache();
+    }
+    _disconnectSlots() {
+        ParkingLot.disconnectNodes(this._state.getSlotMap());
+    }
+    _reconnectSlots() {
+        ParkingLot.reconnectNodes(this._state.getSlotMap());
+    }
+    _handleSlotUnmount(node) {
+        if (this._state.isComplete()) {
+            ParkingLot.parkNode(node);
+        }
+    }
+    static _handleSlotMount(node) {
+        if (oj.Components) {
+            oj.Components.subtreeShown(node);
+        }
+    }
+    static _eventProxy(e) {
+        this[_LISTENERS][e.type](options.event ? options.event(e) : e);
+    }
+    static _eventProxyCapture(e) {
+        this[_CAPTURE_LISTENERS][e.type](options.event ? options.event(e) : e);
+    }
+    _initializeActionCallbacks(eventsMeta) {
+        Object.keys(eventsMeta).forEach((event) => {
+            const eventMeta = eventsMeta[event];
+            const eventProp = AttributeUtils.eventTypeToEventListenerProperty(event);
+            this._props[eventProp] = (detailObj) => {
+                const detail = Object.assign({}, detailObj);
+                const cancelable = !!eventMeta.cancelable;
+                const acceptPromises = [];
+                if (cancelable) {
+                    detail.accept = (promise) => {
+                        acceptPromises.push(promise);
+                    };
+                }
+                const eventDescriptor = { detail, bubbles: !!eventMeta.bubbles, cancelable };
+                const customEvent = new CustomEvent(event, eventDescriptor);
+                const eventPromise = this._queueFireEventsTask(customEvent);
+                if (cancelable) {
+                    return eventPromise.then(() => {
+                        return customEvent.defaultPrevented
+                            ? Promise.reject()
+                            : Promise.all(acceptPromises).then(() => Promise.resolve(), (reason) => Promise.reject(reason));
+                    });
+                }
+                return undefined;
+            };
+        });
+    }
+    _initializeWritebackCallbacks(writebackProps) {
+        writebackProps.forEach((prop) => {
+            var _a;
+            const callbackProp = AttributeUtils.propertyNameToChangedCallback(prop);
+            const meta = getPropertyMetadata(prop, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+            this._props[callbackProp] = (value) => {
+                this._updatePropsAndQueueRenderAsNeeded(prop, value, meta, false);
+            };
+        });
+    }
+}
+var ConnectionState;
+(function (ConnectionState) {
+    ConnectionState[ConnectionState["Connect"] = 0] = "Connect";
+    ConnectionState[ConnectionState["Disconnect"] = 1] = "Disconnect";
+    ConnectionState[ConnectionState["Unset"] = 2] = "Unset";
+})(ConnectionState || (ConnectionState = {}));
+
+class ValueBasedElement {
+    constructor() {
+        this.appendChildHelper = (element, newNode) => HTMLElement.prototype.appendChild.call(element, newNode);
+        this.insertBeforeHelper = (element, newNode, refNode) => HTMLElement.prototype.insertBefore.call(element, newNode, refNode);
+    }
+    connectedCallback() { }
+    disconnectedCallback() { }
+    attributeChangedCallback(name, oldValue, newValue) { }
+    getProperty(name) {
+        return undefined;
+    }
+    setProperty(name, value) { }
+    setProperties(properties) { }
+}
+const valueBasedElement = new ValueBasedElement();
+
+const dispatchEventWrapper = traceDispatchEvent(HTMLElement.prototype.dispatchEvent);
+class HTMLJetElement extends HTMLElement {
+    constructor() {
+        super(...arguments);
+        this.dispatchEvent = dispatchEventWrapper;
+    }
+    static get observedAttributes() {
+        let observed = [];
+        if (this.metadata.properties) {
+            observed = observed.concat(getFlattenedAttributes(this.metadata.properties));
+        }
+        if (this.rootObservedAttributes) {
+            observed = observed.concat(this.rootObservedAttributes);
+        }
+        return observed;
+    }
+    connectedCallback() {
+        this._getHelper().connectedCallback();
+    }
+    disconnectedCallback() {
+        var _a;
+        (_a = this._helper) === null || _a === void 0 ? void 0 : _a.disconnectedCallback();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        var _a;
+        (_a = this._helper) === null || _a === void 0 ? void 0 : _a.attributeChangedCallback(name, oldValue, newValue);
+    }
+    getProperty(name) {
+        return this._getHelper().getProperty(name);
+    }
+    setProperty(name, value) {
+        this._getHelper().setProperty(name, value);
+    }
+    setProperties(properties) {
+        this._getHelper().setProperties(properties);
+    }
+    appendChild(newNode) {
+        return this._getHelper().appendChildHelper(this, newNode);
+    }
+    insertBefore(newNode, refNode) {
+        return this._getHelper().insertBeforeHelper(this, newNode, refNode);
+    }
+    setAttribute(qualifiedName, value) {
+        if (qualifiedName === 'class') {
+            const outerClasses = CustomElementUtils.getClassSet(value);
+            CustomElementUtils.getElementState(this).setOuterClasses(outerClasses);
+        }
+        else {
+            HTMLElement.prototype.setAttribute.call(this, qualifiedName, value);
+        }
+    }
+    removeAttribute(qualifiedName) {
+        if (qualifiedName === 'class') {
+            this.setAttribute('class', '');
+        }
+        else {
+            HTMLElement.prototype.removeAttribute.call(this, qualifiedName);
+        }
+    }
+    _getHelper() {
+        if (!this._helper) {
+            if (this.hasAttribute('data-oj-jsx')) {
+                this.removeAttribute('data-oj-jsx');
+                this.classList.add('oj-complete');
+                this._helper = valueBasedElement;
+            }
+            else {
+                this._helper = new IntrinsicElement(this, this.constructor['component'], this.constructor['metadata'], this.constructor['rootObservedAttributes'], this.constructor['rootObservedProperties'], this.constructor['defaultProps']);
+            }
+        }
+        return this._helper;
+    }
+}
+const getDescriptiveTransferAttributeValue = (element, attrName) => {
+    var _a;
+    const elementVal = element.getAttribute(attrName);
+    if (elementVal) {
+        return elementVal;
+    }
+    const helper = element._getHelper();
+    const vprops = ((_a = helper.getProps) === null || _a === void 0 ? void 0 : _a.call(helper)) || {};
+    return vprops[attrName];
+};
+const isInitialized = (element) => {
+    var _a;
+    const helper = element._getHelper();
+    return !!((_a = helper.isInitialized) === null || _a === void 0 ? void 0 : _a.call(helper));
+};
+
+class VComponentState extends ElementState {
+    getTemplateEngine() {
+        return VComponentState._cachedTemplateEngine;
+    }
+    getTrackChildrenOption() {
+        return 'immediate';
+    }
+    allowPropertyChangedEvents() {
+        return super.allowPropertyChangedEvents() && isInitialized(this.Element);
+    }
+    disposeTemplateCache() {
+        var _a;
+        const slotMap = this.getSlotMap();
+        const slots = Object.keys(slotMap);
+        const metadata = CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
+        const dynamicSlotMetadata = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a._DYNAMIC_SLOT;
+        const hasDynamicTemplateSlots = !!(dynamicSlotMetadata === null || dynamicSlotMetadata === void 0 ? void 0 : dynamicSlotMetadata.isTemplate);
+        const templateSlots = slots.filter((slot) => {
+            const slotMetadata = getPropertyMetadata(slot, metadata === null || metadata === void 0 ? void 0 : metadata.slots);
+            if (slotMetadata) {
+                if (slotMetadata.data) {
+                    return true;
+                }
+            }
+            else {
+                if (hasDynamicTemplateSlots) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        templateSlots.forEach((slot) => {
+            var _a;
+            const slotNodes = slotMap[slot];
+            if (((_a = slotNodes[0]) === null || _a === void 0 ? void 0 : _a.nodeName) === 'TEMPLATE') {
+                this.getTemplateEngine().cleanupTemplateCache(slotNodes[0]);
+            }
+        });
+    }
+    GetPreCreatedPromise() {
+        const preCreatePromise = super.GetPreCreatedPromise();
+        if (!VComponentState._cachedTemplateEngine && this._hasDirectTemplateChildren()) {
+            return preCreatePromise.then(() => this._getTemplateEnginePromise());
+        }
+        return preCreatePromise;
+    }
+    IsTransferAttribute(attrName) {
+        return this.Element.constructor.rootObservedAttrSet.has(attrName);
+    }
+    GetDescriptiveTransferAttributeValue(attrName) {
+        return getDescriptiveTransferAttributeValue(this.Element, attrName);
+    }
+    _getTemplateEnginePromise() {
+        return import('ojs/ojvcomponent-template').then((eng) => {
+            VComponentState._cachedTemplateEngine = eng;
+        });
+    }
+    _hasDirectTemplateChildren() {
+        const childNodeList = this.Element.childNodes;
+        for (let i = 0; i < childNodeList.length; i++) {
+            const child = childNodeList[i];
+            if (child.localName === 'template') {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
-function dynamicDefault(defaultGetter) {
-    return (target, propertyKey) => {
-        const key = Symbol();
-        return {
+const Root = () => {
+    throw new Error('The Root component should only be used as the top-level return from a VComponent render function.  It will be rewritten by VComponent code so Preact will never actually render it unless it appears in an invalid location.');
+};
+
+const _CLASSNAME = 'className';
+const _CLASS = 'class';
+function customElement(tagName) {
+    return function (constructor) {
+        var _a;
+        const metadata = constructor['metadata'];
+        const observedProps = ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_OBSERVED_GLOBAL_PROPS']) || [];
+        const observedAttrs = observedProps.map((prop) => AttributeUtils.getGlobalAttrForProp(prop));
+        overrideRender(tagName, constructor, metadata, new Set(observedProps));
+        registerElement(tagName, metadata, constructor, observedProps, observedAttrs);
+    };
+}
+function registerElement(tagName, metadata, constructor, observedProps, observedAttrs) {
+    class HTMLPreactElement extends HTMLJetElement {
+    }
+    HTMLPreactElement.metadata = metadata || {};
+    HTMLPreactElement.component = constructor;
+    HTMLPreactElement.rootObservedAttributes = observedAttrs;
+    HTMLPreactElement.rootObservedAttrSet = new Set(observedAttrs);
+    HTMLPreactElement.rootObservedProperties = observedProps;
+    HTMLPreactElement.defaultProps = constructor['defaultProps']
+        ? deepFreeze(constructor['defaultProps'])
+        : null;
+    addPropGetterSetters(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.properties);
+    addMethods(HTMLPreactElement.prototype, metadata === null || metadata === void 0 ? void 0 : metadata.methods);
+    CustomElementUtils.registerElement(tagName, {
+        descriptor: { metadata },
+        stateClass: VComponentState,
+        vcomp: true
+    }, HTMLPreactElement);
+}
+function overrideRender(tagName, constructor, metadata, observedPropsSet) {
+    const componentRender = constructor.prototype.render;
+    constructor.prototype.render = function (props, state, context) {
+        var _a;
+        const readOnlyProps = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_READ_ONLY_PROPS'];
+        if (readOnlyProps) {
+            readOnlyProps.forEach((prop) => delete props[prop]);
+        }
+        const element = props[ELEMENT_REF];
+        const isElementFirst = !!element;
+        if (isElementFirst) {
+            CustomElementUtils.getElementState(element).disposeTemplateCache();
+        }
+        let vdom = componentRender.call(this, props, state, context);
+        if (vdom.type === Root) {
+            vdom = cloneElement(vdom);
+            vdom.type = tagName;
+        }
+        if (vdom.type !== tagName) {
+            const rootProps = {};
+            if (!isElementFirst) {
+                rootProps['ref'] = function (ref) {
+                    if (ref) {
+                        ref[CustomElementUtils.VCOMP_INSTANCE] = {
+                            props
+                        };
+                    }
+                };
+                rootProps['data-oj-jsx'] = '';
+                Object.keys(props).forEach((prop) => {
+                    if (isGlobalProperty(prop, metadata)) {
+                        rootProps[prop] = props[prop];
+                    }
+                });
+                return h(tagName, rootProps, vdom);
+            }
+            return vdom;
+        }
+        if (!isElementFirst) {
+            const vdomProps = vdom.props;
+            if (props.style && vdomProps['style']) {
+                vdomProps['style'] = Object.assign({}, props.style, vdomProps['style']);
+            }
+            const componentClass = props[_CLASSNAME] || props[_CLASS];
+            if (componentClass) {
+                const targetProp = _CLASSNAME in vdomProps ? _CLASSNAME : _CLASS;
+                const nodeClass = vdomProps[targetProp] || '';
+                vdomProps[targetProp] = `${componentClass} ${nodeClass}`;
+            }
+            vdomProps['data-oj-jsx'] = '';
+            Object.keys(props).forEach((prop) => {
+                if (!(prop in vdomProps) &&
+                    !observedPropsSet.has(prop) &&
+                    isGlobalProperty(prop, metadata)) {
+                    vdomProps[prop] = props[prop];
+                }
+            });
+            return vdom;
+        }
+        props[ROOT_VNODE_PATCH](vdom);
+        return h(Fragment, {}, vdom.props.children);
+    };
+}
+function addPropGetterSetters(proto, properties) {
+    if (!properties)
+        return;
+    for (let name in properties) {
+        Object.defineProperty(proto, name, {
             get() {
-                const value = this[key];
-                return value === undefined ? defaultGetter() : value;
+                return this.getProperty(name);
             },
             set(value) {
-                this[key] = value;
+                this.setProperty(name, value);
             }
+        });
+    }
+}
+function addMethods(proto, methods) {
+    if (!methods)
+        return;
+    for (let method in methods) {
+        proto[method] = function () {
+            if (this._helper === valueBasedElement) {
+                throw new JetElementError(this, 'Cannot access element methods when rendered as a value based element.');
+            }
+            const comp = this._helper.ref.current;
+            if (!comp) {
+                throw new JetElementError(this, 'Cannot access methods before element is upgraded.');
+            }
+            return comp[method].apply(comp, arguments);
         };
-    };
+    }
+}
+function isGlobalProperty(prop, metadata) {
+    return (prop === 'className' ||
+        AttributeUtils.isGlobalOrData(prop) ||
+        isGlobalEventListenerProperty(prop, metadata));
+}
+const _GLOBAL_EVENT_MATCH_EXP = /^on(?!.*Changed$)([A-Za-z])([A-Za-z]*)$/;
+function isGlobalEventListenerProperty(prop, metadata) {
+    var _a, _b;
+    if ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.properties) === null || _a === void 0 ? void 0 : _a[prop]) {
+        return false;
+    }
+    const match = prop.match(_GLOBAL_EVENT_MATCH_EXP);
+    if (match) {
+        const eventType = match[1].toLowerCase() + match[2];
+        return !((_b = metadata === null || metadata === void 0 ? void 0 : metadata.events) === null || _b === void 0 ? void 0 : _b[eventType]);
+    }
+    return false;
 }
 
-function flattenChildren(children) {
-    return flattenContent(children);
-}
+function method(target, propertyKey, descriptor) { }
 
-export { VComponent, classPropToObject, dynamicDefault, flattenChildren, h, listener };
+(function () {
+    if (typeof window !== 'undefined') {
+        if (!HTMLTemplateElement.prototype.hasOwnProperty('render')) {
+            Object.defineProperty(HTMLTemplateElement.prototype, 'render', {
+                value: null,
+                writable: true
+            });
+        }
+    }
+})();
+
+const getUniqueId = ElementUtils.getUniqueId.bind(null, null);
+
+export { Root, customElement, getUniqueId, method };

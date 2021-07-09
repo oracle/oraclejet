@@ -5,19 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconverterutils', 'ojs/ojvalidation-error'], function (exports, oj, Translations, $, ConverterUtils, ojvalidationError) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconverterutils', 'ojs/ojvalidation-error', 'ojs/ojlogger'], function (exports, oj, Translations, $, ConverterUtils, ojvalidationError, Logger) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   ConverterUtils = ConverterUtils && Object.prototype.hasOwnProperty.call(ConverterUtils, 'default') ? ConverterUtils['default'] : ConverterUtils;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /*
    DESCRIPTION
    OraI18nUtils provides helper functions for converter objects.
@@ -271,6 +264,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     res.dateTime = isoStr.substring(0, isoStrLen - timeZoneLen);
     res.isoStrParts = OraI18nUtils._IsoStrParts(res.dateTime);
     return res;
+  };
+
+  /**
+   * Returns the format type of the isoStr: 'local', 'zulu' or 'offset',
+   * or throw invalidISOStringSytax error
+   * @param {string} isoStr isoString
+   * @returns {'local'|'zulu'|'offset'} isoString format: 'local', 'zulu', or 'offset'
+   * @throws Error
+   * @memberof oj.OraI18nUtils
+   * @method getISOStrFormatType
+   */
+   OraI18nUtils.getISOStrFormatType = function (isoStr) {
+    let format;
+    const exe = OraI18nUtils._ISO_DATE_REGEXP.exec(isoStr);
+
+    if (exe === null) {
+      OraI18nUtils._throwInvalidISOStringSyntax(isoStr);
+    }
+    if (exe[1] === undefined && exe[2] === undefined) {
+      format = 'local';
+      return format;
+    }
+    let timeZone = (exe[1] !== undefined) ? exe[1] : exe[2];
+    if (timeZone === 'Z') {
+      format = 'zulu';
+    } else {
+      format = 'offset';
+    }
+    return format;
   };
 
   // This private method is not called, commenting out for now to remove it from code coverage calculations
@@ -923,14 +945,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @export
    * @classdesc Utility function for converters
    * @hideconstructor
@@ -1059,6 +1073,101 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
   };
 
   // PACKAGE PRIVATE
+  /**
+   * Returns the format type of the isoStr: 'local', 'zulu' or 'offset'.
+   *
+   * @param {string} isoStr isoString
+   * @returns {'local'|'zulu'|'offset'} isoString format: 'local', 'zulu', or 'offset'
+   * @throws Error
+   * @export
+   * @ignore
+   * @since 11.0.0
+   * @memberof oj.IntlConverterUtils
+   * @method _getISOStrFormatType
+   * @private
+   */
+  IntlConverterUtils._getISOStrFormatType = function (isoStr) {
+    return OraI18nUtils.getISOStrFormatType(isoStr);
+  };
+
+  /**
+   * Checks that min and max are parseable isoStrings, and that they
+   * are the same type as each other and as the value option.
+   * Logs a warning if value, min, max are not all iso strings, or are not of the same type.
+   * In a future release this will throw an error.
+   *
+   * @throws {Error} if value, min, max are not all iso strings, or are not of the same type.
+   * @param {string} value
+   * @param {string} min
+   * @param {string} max
+   * @export
+   * @ignore
+   * @since 11.0.0
+   * @memberof oj.IntlConverterUtils
+   * @method _verifyValueMinMax
+   * @private
+   */
+   IntlConverterUtils._verifyValueMinMax = function (value, min, max) {
+    let valueIsoFormat;
+    let minIsoFormat;
+    let maxIsoFormat;
+
+    // If value or min or max is not an iso string (say ‘abc’ or ‘2021/03/03’),
+    // the datepicker renders, but you see an inline converter error meant only for an application
+    // developer under the field, “Please provide valid ISO 8601 string”.
+    // This is inconsistent with other component attributes** that are not set to the correct type
+    // ** e.g., set oj-input-number value=“abc” and an error is thrown in the console.
+    // For now, log a warning and then our customers can fix this. Then in a future release
+    // we can throw an error.
+    if (value) {
+      try {
+        valueIsoFormat = IntlConverterUtils._getISOStrFormatType(value);
+      } catch (e) {
+        // We weren't checking this in pre-v11.
+        Logger.warn('value must be an iso string: ' + e);
+      }
+    }
+
+    if (min) {
+      try {
+        minIsoFormat = IntlConverterUtils._getISOStrFormatType(min);
+      } catch (e) {
+        Logger.warn('min must be an iso string: ' + e);
+      }
+    }
+
+    if (max) {
+      try {
+        maxIsoFormat = IntlConverterUtils._getISOStrFormatType(max);
+      } catch (e) {
+        Logger.warn('max must be an iso string: ' + e);
+      }
+    }
+
+    // Issue two is.
+    // If value and min and max are not of the same iso string type: zulu, offset, or local,
+    // we coerced to the same type so that we could easily compare them,
+    // like min <= value <= max. We plan to instead throw an error if they are not of the same type,
+    // but for now we log a warning so our customers can fix this.
+
+    if (value && min && max &&
+      !(valueIsoFormat === minIsoFormat && valueIsoFormat === maxIsoFormat)) {
+      Logger.warn(`min and max must be in the same iso string format as value.
+    value is in ${valueIsoFormat} format.`);
+    }
+    if (value && min && !(valueIsoFormat === minIsoFormat)) {
+      Logger.warn(`min must be in the same iso string format as value.
+    value is in ${valueIsoFormat} format.`);
+    }
+    if (value && max && !(valueIsoFormat === maxIsoFormat)) {
+      Logger.warn(`max must be in the same iso string format as value.
+      value is in ${valueIsoFormat} format.`);
+    }
+    if (min && max && !(minIsoFormat === maxIsoFormat)) {
+      Logger.warn(`min and max must be in the same iso string format.
+      min is in ${minIsoFormat} format and max is in ${maxIsoFormat} format.`);
+    }
+  };
 
   /**
    * Processes an converter option error and returns a oj.ConverterERror instance.

@@ -39,6 +39,7 @@ function(oj,
 {
   "use strict";
 
+
 /* global __ValidationFactoryBase:false, ColorConverter:false, __ConverterI18nUtils:false,
 LengthValidator:false, RegExpValidator:false, RequiredValidator:false,
 Converter:false, Validator:false */

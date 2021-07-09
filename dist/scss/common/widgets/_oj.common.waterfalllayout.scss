@@ -63,16 +63,5 @@
       width: 100%;
       height: 100%;
     }
-
-    /* Option defaults */
-    $waterfallLayoutDefaultOptions: ();
-    
-    @if ($loadingIndicatorDelayDuration) {
-      $waterfallLayoutDefaultOptions: map-merge($waterfallLayoutDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
-    }
- 
-    .oj-waterfalllayout-option-defaults {
-      font-family: oj-json($waterfallLayoutDefaultOptions);
-    }    
   }
 }

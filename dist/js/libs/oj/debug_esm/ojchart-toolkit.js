@@ -10,14 +10,6 @@ import { LinearScaleAxisValueFormatter, BaseAxisInfo, DataAxisInfoMixin } from '
 import { Legend } from 'ojs/ojlegend-toolkit';
 import { Overview } from 'ojs/ojdvt-overview';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtChartDataItemUtils = {
   /**
    * Returns the default data item id based on series name and group name.
@@ -42,14 +34,6 @@ const DvtChartDataItemUtils = {
     return Obj.compareValues(context, a, b);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   * Creates an object representing the ID of a chart data item.
@@ -107,14 +91,6 @@ DvtChartDataItem.prototype.toString = function() {
 DvtChartDataItem.prototype.valueOf = function() {
   return this.toString();
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Utility functions for Chart.
@@ -449,14 +425,6 @@ DvtChartTypeUtils.isMixedFrequency = function(chart) {
   return DvtChartTypeUtils.getTimeAxisType(chart) == 'mixedFrequency';
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtChartCoordUtils = {
   /**
    * Converts polar coord to cartesian coord.
@@ -490,14 +458,6 @@ const DvtChartCoordUtils = {
       return new Point(coord.x, coord.y);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 const DvtChartFormatUtils$1 = {
   /**
@@ -556,7 +516,7 @@ const DvtChartFormatUtils$1 = {
     majorIncrement = (majorIncrement != null) ? majorIncrement : 0;
 
     // Create the formatter
-    var formatter = new LinearScaleAxisValueFormatter(chart.getCtx(), min, max, majorIncrement, scaling, autoPrecision, chart.getOptions().translations);
+    var formatter = new LinearScaleAxisValueFormatter(min, max, majorIncrement, scaling, autoPrecision, chart.getOptions().translations);
     if (converter &&  converter['format'])
       return formatter.format(value, converter);
     else
@@ -578,14 +538,6 @@ const DvtChartFormatUtils$1 = {
     return null;
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Data related utility functions for Chart.
@@ -842,6 +794,12 @@ DvtChartDataUtils.getRawDataItem = function(chart, seriesIndex, groupIndex) {
   if (typeof (dataItem) === 'number') {
     return dataItem;
   }
+
+  // for missing data in group or series
+  if (!dataItem) {
+    return null;
+  }
+
   var clonedData = Object.assign({}, dataItem);
   clonedData['itemData'] = dataItem['_itemData'];
   delete clonedData['_itemData'];
@@ -2311,14 +2269,6 @@ DvtChartDataUtils.isMultiSeriesDrillEnabled = function (chart) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -2485,14 +2435,6 @@ DvtChartDefaults.getGapHeight = function(chart, defaultHeight) {
 DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
   return {series: {items: {_itemData: true}}, data: true};
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Utility functions for pie chart.
@@ -2714,14 +2656,6 @@ DvtChartPieUtils.getSliceBySeriesIndex = function(chart, seriesIndex) {
   }
   return null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Style related utility functions for Chart.
@@ -4129,6 +4063,9 @@ DvtChartStyleUtils.getDataContext = function(chart, seriesIndex, groupIndex, ite
       'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
       'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
       'open': dataItem['open'],
+      'q1': dataItem['q1'],
+      'q2': dataItem['q2'],
+      'q3': dataItem['q3'],
       'close': dataItem['close'],
       'volume': dataItem['volume'],
       'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex),
@@ -4169,6 +4106,56 @@ DvtChartStyleUtils.getDataContext = function(chart, seriesIndex, groupIndex, ite
 };
 
 /**
+ * Returns an object containing information about the data item used by tooltip and dataLabel callbacks.
+ * @param {Chart} chart
+ * @param {number} seriesIndex The series index.
+ * @param {number} groupIndex The group index.
+ * @param {number} itemIndex The nested item index.
+ * @return {object} An object containing information about the data item.
+ */
+ DvtChartStyleUtils.getShortDescContext = function(chart, seriesIndex, groupIndex, itemIndex) {
+  // Only data items have tooltips
+  if (seriesIndex < 0 || groupIndex < 0)
+    return null;
+
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+  var rawOptions = chart.getRawOptions();
+  var chartOptions = chart.getOptions();
+
+  var rawData = rawOptions['series'][seriesIndex]['items'][groupIndex];
+  if (rawData._noTemplate) {
+    rawData = rawData._itemData;
+  }
+  else  if (rawData && typeof(rawData) === 'object' ) {
+    rawData = Object.assign({}, rawData);
+    delete rawData['_itemData'];
+  }
+  return {
+    'id': DvtChartDataUtils.getDataItemId(chart, seriesIndex, groupIndex),
+    'data' : rawData,
+    'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+    'targetValue': DvtChartDataUtils.getTargetValue(chart, seriesIndex, groupIndex),
+    'label': DvtChartDataUtils.getDefaultDataLabel(chart, seriesIndex, groupIndex, itemIndex),
+    'x': DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex),
+    'y': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+    'z': DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex),
+    'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
+    'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
+    'q1': dataItem['q1'],
+    'q2': dataItem['q2'],
+    'q3': dataItem['q3'],
+    'volume': dataItem['volume'],
+    'open': dataItem['open'],
+    'close': dataItem['close'],
+    'itemData': chartOptions['series'][seriesIndex]['items'][groupIndex]["_itemData"],
+    'group': DvtChartDataUtils.getGroup(chart, groupIndex),
+    'groupData': DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex],
+    'series': DvtChartDataUtils.getSeries(chart, seriesIndex),
+    'seriesData': DvtChartDataUtils.getSeriesDataForContext(chart, seriesIndex)
+  };
+};
+
+/**
  * Returns the data label for the specified data point.
  * @param {Chart} chart
  * @param {number} seriesIndex The series index.
@@ -4193,8 +4180,47 @@ DvtChartStyleUtils.getDataLabel = function(chart, seriesIndex, groupIndex, itemI
       funcLabel = DvtChartFormatUtils.formatValue(chart, valueFormat, funcLabel);
     }
   }
+  if (chart.Options.stackLabelProvider && isStackLabel) {
+    var stackLabelContext  = DvtChartStyleUtils.getStackLabelContext(chart, groupIndex);
+    funcLabel = chart.Options.stackLabelProvider(stackLabelContext);
+  }
 
   return funcLabel ? funcLabel : defaultLabel;
+};
+
+
+/**
+ * Returns an object containing information about the stack item used by stack label callbacks.
+ * @param {Chart} chart
+ * @return {object} An object containing information about the data item.
+ */
+DvtChartStyleUtils.getStackLabelContext = function(chart, groupIndex) {
+  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+  var chartOptions = chart.getOptions();
+  var rawData = [];
+  var itemData = [];
+  var value = 0;
+  var groups = DvtChartDataUtils.getGroup(chart, groupIndex);
+  for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+    var item = chartOptions['series'][seriesIndex]['items'][groupIndex];
+    rawData.push(item);
+    if (item) {
+      itemData.push(item["_itemData"]);
+    }
+    value += DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex);
+  }
+  var groupData = DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex] || [];
+  var stackLabelContext;
+  //these all have to be arrays that get extended with each call
+  stackLabelContext = {
+    'groups': groups,
+    'data' : rawData,
+    'groupData': groupData,
+    'value': value,
+    'itemData': itemData
+  };
+
+  return stackLabelContext;
 };
 
 /**
@@ -4240,14 +4266,6 @@ DvtChartStyleUtils.hasUncenteredSeries = function(chart) {
   }
   return false;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Data cursor component.
@@ -4304,25 +4322,32 @@ DvtChartDataCursor.prototype.Init = function(context, options, bHoriz) {
   this._cursorOuterLine = new Line(this.getCtx(), 0, 0, 0, 0, 'dcLine');
   this._cursorOuterLine.setClassName('oj-chart-data-cursor-outer-line');
   this.addChild(this._cursorOuterLine);
+  // default marker
+  this.addMarker(SimpleMarker.CIRCLE, options.markerSize);
+};
 
-  //****************************************** Data Cursor Marker *****************************************************/
-  if (options['markerDisplayed'] != 'off') {
+DvtChartDataCursor.prototype.addMarker = function (markerShape, markerSize) {
+  if (this._options.markerDisplayed !== 'off') {
+    if (this._marker) {
+      this.removeChild(this._marker);
+    }
     this._marker = new Container(this._context);
     this._marker.setMouseEnabled(false);
     this.addChild(this._marker);
 
-    var markerSize = options['markerSize'];
-    var outerCircle = new SimpleMarker(this._context, SimpleMarker.CIRCLE, 0, 0, markerSize + 4 * lineWidth, markerSize + 4 * lineWidth);
-    outerCircle.setSolidFill(lineColor);
-    this._marker.addChild(outerCircle);
+    var lineColor = this._options.lineColor;
+    var lineWidth = this._options.lineWidth;
+    var outerShape = new SimpleMarker(this._context, markerShape, 0, 0, markerSize + 4 * lineWidth, markerSize + 4 * lineWidth);
+    outerShape.setSolidFill(lineColor);
+    this._marker.addChild(outerShape);
 
-    var middleCircle = new SimpleMarker(this._context, SimpleMarker.CIRCLE, 0, 0, markerSize + 2 * lineWidth, markerSize + 2 * lineWidth);
-    middleCircle.setSolidFill('white');
-    this._marker.addChild(middleCircle);
+    var middleShape = new SimpleMarker(this._context, markerShape, 0, 0, markerSize + 2 * lineWidth, markerSize + 2 * lineWidth);
+    middleShape.setSolidFill('white');
+    this._marker.addChild(middleShape);
 
     // Inner circle will be filled to correspond to the data item color
-    this._markerInnerCircle = new SimpleMarker(this._context, SimpleMarker.CIRCLE, 0, 0, markerSize, markerSize);
-    this._marker.addChild(this._markerInnerCircle);
+    this._markerInnerShape = new SimpleMarker(this._context, markerShape, 0, 0, markerSize, markerSize);
+    this._marker.addChild(this._markerInnerShape);
   }
 };
 
@@ -4416,7 +4441,7 @@ DvtChartDataCursor.prototype.render = function(plotAreaBounds, dataX, dataY, lin
 
     // Set the marker color
     var markerColor = this._options['markerColor'];
-    this._markerInnerCircle.setSolidFill(markerColor ? markerColor : dataColor);
+    this._markerInnerShape.setSolidFill(markerColor ? markerColor : dataColor);
 
     // : Workaround firefox issue
     Agent.workaroundFirefoxRepaint(this._marker);
@@ -4449,14 +4474,6 @@ DvtChartDataCursor.prototype.getBehavior = function() {
 DvtChartDataCursor.prototype.setBehavior = function(behavior) {
   this._behavior = behavior;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Reference object related utility functions for Chart.
@@ -4615,14 +4632,6 @@ DvtChartRefObjUtils.getHighValue = function(item) {
 DvtChartRefObjUtils.getXValue = function(chart, items, index) {
   return DvtChartDataUtils.getXValueFromItem(chart, items[index], index);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Utility functions for Chart.
@@ -5038,14 +5047,6 @@ DvtChartTooltipUtils.getDataCursorBehavior = function(chart) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Logical object for chart data object displayables.
  * @param {Chart} chart The owning chart instance.
  * @param {array} displayables The array of associated DvtDisplayables.
@@ -5354,8 +5355,8 @@ DvtChartObjPeer.prototype.getAriaLabel = function() {
   if (shortDesc == null && this._groupIndex < 0 && states.length > 0)
     shortDesc = DvtChartDataUtils.getSeriesLabel(this._chart, this._seriesIndex);
 
-  return Displayable.generateAriaLabel(shortDesc, states);
-};
+    return Displayable.generateAriaLabel(shortDesc, states, () => DvtChartStyleUtils.getShortDescContext(this._chart, this._seriesIndex, this._groupIndex, this._itemIndex, false));
+  };
 
 /**
  * Updates the aria-label as needed. On desktop, we can defer the aria creation, and the aria-label will be updated
@@ -5660,14 +5661,6 @@ DvtChartObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Logical object for reference object displayables.
  * @param {Chart} chart
  * @param {array} displayables The array of associated DvtDisplayables.
@@ -5756,14 +5749,6 @@ DvtChartRefObjPeer.prototype.getDatatipColor = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Axis Constants
  * @class
  */
@@ -5781,13 +5766,6 @@ DvtAxisConstants.TICK_LABEL = 'tickLabel';
  */
 DvtAxisConstants.TITLE = 'title';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -5839,14 +5817,6 @@ DvtAxisDefaults.getGapSize = function(context, options, defaultSize) {
   var scalingFactor = Math.min(TextUtils.getTextStringHeight(context, options['tickLabel']['style']) / 14, 1);
   return Math.ceil(defaultSize * scalingFactor);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Calculated axis information and drawable creation.  This class should
@@ -5903,7 +5873,6 @@ DvtAxisInfo.prototype.Init = function(context, options, availSpace) {
   DvtAxisInfo.superclass.Init.call(this, context, options, availSpace);
   this._title = null;
 };
-
 
 /**
  * Returns an array containing the tick labels for this axis.
@@ -6473,14 +6442,6 @@ DvtAxisInfo.prototype.getLogScaleUnit = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Simple logical object for tooltip support.
  * @param {DvtAxis} axis The axis.
  * @param {dvt.OutputText} label The owning text instance.
@@ -6689,14 +6650,6 @@ DvtAxisObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Event Manager for DvtAxis.
  * @param {DvtAxis} axis
  * @class
@@ -6804,13 +6757,6 @@ DvtAxisEventManager.prototype.GetDragDataContexts = function(bSanitize) {
   return [];
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Renderer for DvtAxis.
  * @class
@@ -7780,14 +7726,6 @@ DvtAxisRenderer.isWrapEnabled = function(cssStyle) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Calculated axis information and drawable creation for a group axis.
  * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
@@ -8133,7 +8071,11 @@ DvtGroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, l
       var text = labels[i];
       if (text) {
         var coord = this._getLabelCoord(j, this.getLabelIndex(text));
-        text.setX(coord);
+        if (this._numLevels > 1) {
+          text.setTranslateX(coord);
+        } else {
+          text.setX(coord);
+        }
       }
     }
   }
@@ -8951,13 +8893,6 @@ DvtGroupAxisInfo.prototype.getSkipIncrement = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtAxisAutomation
  *  @param {DvtAxis} dvtComponent
@@ -9062,14 +8997,6 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {DvtAxis} axis
   *  @class DvtAxisKeyboardHandler
@@ -9125,14 +9052,6 @@ DvtAxisKeyboardHandler.prototype.processKeyDown = function(event) {
 
   return nextNavigable;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Axis component.  This class should never be instantiated directly.  Use the
@@ -9213,6 +9132,9 @@ DvtAxis.prototype.SetOptions = function(options) {
   }
   else if (!this.Options) // Create a default options object if none has been specified
     this.Options = this.GetDefaults();
+
+  // cache isRtl value
+  this.Options.isRTL = Agent.isRightToLeft(this.getCtx());
 };
 
 
@@ -9410,14 +9332,6 @@ DvtAxis.prototype.getAutomation = function() {
   return new DvtAxisAutomation(this);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtChartBehaviorUtils = {
   /**
    * Returns the hide and show behavior for the specified chart.
@@ -9544,13 +9458,6 @@ const DvtChartBehaviorUtils = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Text related utility functions.
  * @class
  */
@@ -9617,14 +9524,6 @@ DvtChartTextUtils.renderEmptyText = function(chart, container, availSpace) {
       new Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
       chart.getEventManager(), options['_statusMessageStyle']);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Axis related utility functions for Chart.
@@ -10600,14 +10499,6 @@ DvtChartAxisUtils.getViewportMinMaxIndex = function(chart, items) {
   return {'min': minIndex, 'max': maxIndex};
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtChartGroupUtils = {
 
   /**
@@ -10933,14 +10824,6 @@ const DvtChartGroupUtils = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Series effect utility functions for Chart.
  * @class
  */
@@ -11112,14 +10995,6 @@ DvtChartSeriesEffectUtils.getFunnelPyramidSliceFill = function(chart, seriesInde
   else // seriesEffect="color"
     return new SolidFill(color);
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Creates a funnel shape.
@@ -11598,14 +11473,6 @@ DvtChartFunnelSlice.prototype.hideHoverEffect = function() {
 DvtChartFunnelSlice.prototype.copyShape = function() {
   return new DvtChartFunnelSlice(this._chart, this._seriesIndex, this._numDrawnSeries, this._funnelWidth, this._funnelHeight, this._startPercent, this._valuePercent, this._fillPercent, this._gap);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Utility functions for Chart eventing and interactivity.
@@ -12221,14 +12088,6 @@ DvtChartEventUtils.addPlotAreaDnDBackground = function(chart, container, availSp
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for funnel chart.
  * @class
  */
@@ -12363,14 +12222,6 @@ DvtChartFunnelRenderer._renderFunnelSlices = function(chart, container, availSpa
   }
   return true;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Creates a pyramid shape.
@@ -12835,14 +12686,6 @@ DvtChartPyramidSlice.prototype.getPrimaryFill = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for pyramid chart.
  * @class
  */
@@ -12943,14 +12786,6 @@ DvtChartPyramidRenderer._renderPyramidSlices = function(chart, container, availS
   }
   return true;
 };
-
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Creates a selectable shape using SVG path commands.
@@ -13259,14 +13094,6 @@ DvtChartSelectableWedge.prototype.UpdateSelectionEffect = function() {
   // noop: Selection effects fully managed by this class
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------------------*/
 /* Class DvtChartPieLabelInfo       Slice label information               */
 /*---------------------------------------------------------------------*/
@@ -13530,14 +13357,6 @@ DvtChartPieLabelInfo.prototype.getY = function() {
 DvtChartPieLabelInfo.prototype.setY = function(y) {
   this._y = y;
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @class DvtChartPieRenderUtils
@@ -13932,14 +13751,6 @@ DvtChartPieRenderUtils._generateInnerPoints = function(cx, cy, xpos, ypos, tilt)
   return pointArray;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieLabelUtils                                                  */
 /*---------------------------------------------------------------------*/
@@ -14250,8 +14061,18 @@ DvtChartPieLabelUtils.createPieCenter = function(pieChart) {
     var newOverlay = context.createOverlayDiv();
     if (Array.isArray(customContent)) {
       customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
-    }
-    else {
+    } else if (typeof customContent === 'string') {
+      newOverlay.textContent = customContent;
+      newOverlay.style.position = 'absolute';
+      newOverlay.style.left = `${centerCoord.x}px`;
+      newOverlay.style.top = `${centerCoord.y}px`;
+      newOverlay.style.transform = 'translate(-50%, -50%)';
+      newOverlay.style.width = `${2 * innerRadius}px`;
+      newOverlay.style.height = `${2 * innerRadius}px`;
+      newOverlay.style.display = 'flex';
+      newOverlay.style.textAlign = 'center';
+      newOverlay.style.alignItems = 'center';
+    } else {
       newOverlay.appendChild(customContent); // @HTMLUpdateOK
     }
     pieChart.chart.pieCenterDiv = newOverlay;
@@ -15083,14 +14904,6 @@ DvtChartPieLabelUtils.getPieCenterOptions = function(options) {
 DvtChartPieLabelUtils._skipSliceLabel = function(pie, slice) {
   return slice.getAngleExtent() < 3 && DvtChartDataUtils.getSeriesCount(pie.chart) > 120;
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieSlice                                                       */
@@ -16401,14 +16214,6 @@ DvtChartPieSlice.prototype.getSeriesIndex = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtChartAutomation
  *  @param {Chart} dvtComponent
@@ -16957,14 +16762,6 @@ Automation.prototype.IsTooltipElement = function(domElement) {
     return true;
   return false;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for Chart.
@@ -18040,14 +17837,6 @@ DvtChartEventManager.prototype._getDropObject = function(event) {
   return dropObject;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------------------------------*/
 /*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
 /*---------------------------------------------------------------------------------*/
@@ -18186,14 +17975,6 @@ DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *  Abstract Data change handler for a chart object peer.
   *  @extends {dvt.Obj}
   *  @class DvtChartDataChangeAbstract  Data change Handler for a chart object peer.
@@ -18308,14 +18089,6 @@ DvtChartDataChangeAbstract.prototype.setOldChart = function(chart)
   this._oldChart = chart;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------------------*/
 /*  DvtChartDataChangeUtils()                                                       */
 /*---------------------------------------------------------------------*/
@@ -18407,14 +18180,6 @@ DvtChartDataChangeUtils._drawIndicator = function(context, bDown, bHoriz, fc)
   ret.setStyle({fill: fc});
   return ret;
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  *  Data change Handler for 2D Bar Riser (implements DvtChartDataChangeAbstract).
@@ -18548,14 +18313,6 @@ DvtChartDataChangeBar.prototype._onEndAnimation = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Data change handler for box & whisker shape (implements DvtChartDataChangeAbstract).
  *  @extends {DvtChartDataChangeAbstract}
  *  @class DvtChartDataChangeBoxAndWhisker
@@ -18577,14 +18334,6 @@ DvtChartDataChangeBoxAndWhisker.prototype.Init = function(peer, duration) {
 
   this._animId += '/boxAndWhisker';
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  *  Data change Handler for DvtChartFunnelSlice (implements DvtChartDataChangeAbstract).
@@ -18689,14 +18438,6 @@ DvtChartDataChangeFunnelSlice.prototype.Init = function(peer, duration) {
 
   this._animId += '/funnel';
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Data change Handler for Line or Area (implements DvtChartDataChangeAbstract).
@@ -18917,14 +18658,6 @@ DvtChartDataChangeLineArea.prototype.Init = function(peer, duration) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *  Data change Handler for markers.
   *  @extends {DvtChartDataChangeAbstract}
   *  @class DvtChartDataChangeMarker  Data change Handler for markers.
@@ -19057,14 +18790,6 @@ DvtChartDataChangeMarker.prototype.Init = function(peer, duration) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Data change Handler for DvtChartPyramidSlice (implements DvtChartDataChangeAbstract).
  *  @extends {DvtChartDataChangeAbstract}
  *  @class DvtChartDataChangePyramidSlice  Data change Handler for Pyramid Slices.
@@ -19160,14 +18885,6 @@ DvtChartDataChangePyramidSlice.prototype.Init = function(peer, duration) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Data change handler for range markers (implements DvtChartDataChangeAbstract).
  *  @extends {DvtChartDataChangeAbstract}
  *  @class DvtChartDataChangeRangeMarker  Data change Handler for range markers.
@@ -19232,14 +18949,6 @@ DvtChartDataChangeRangeMarker.prototype.animateUpdate = function(handler, oldDC)
 
   handler.add(nodePlayable, 1);
 };
-
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * A selectable polygon displayable.
@@ -19492,14 +19201,6 @@ DvtChartSelectableRectangularPolygon.prototype._createPointsArray = function(ins
   var y2 = this._y2 - inset;
   return [x1, y1, x2, y1, x2, y2, x1, y2];
 };
-
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  A selectable bar for charting.
@@ -19880,14 +19581,6 @@ DvtChartBar.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   //       existing getDimensions calls.  For now, components must be aware of the presence of children to use this.
   return this.ConvertCoordSpaceRect(this.getBoundingBox(), targetCoordinateSpace);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Displayable for box and whisker shape (box plot).
@@ -20401,13 +20094,6 @@ DvtChartBoxAndWhisker.prototype._cleanUp = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Displayable for stock bars.
  * @extends {dvt.Container}
  * @param {dvt.Context} context
@@ -20631,14 +20317,6 @@ DvtChartCandlestick._getInitialPoints = function(points) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Property bag of line/area coordinate for DvtChartPolygonSet.
  * The coordinates are represented by x, y1, and y2. Usually, y1 == y2. If y1 != y2, it means that there's a jump in
  * the y value at that x position (from y1 to y2) due to a null in the data.
@@ -20679,14 +20357,6 @@ DvtChartCoord.prototype.isUpstep = function(baseline) {
 DvtChartCoord.prototype.clone = function() {
   return new DvtChartCoord(this.x, this.y1, this.y2, this.groupIndex, this.group, this.filtered);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * A collection of line/area shapes for a chart series.
@@ -21337,14 +21007,6 @@ DvtChartLineArea._removeAreaEdge = function(arCoord, index, baseline) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *  A marker object for selectable invisible markers.
   *  @param {dvt.Context} context
   *  @param {number} type The marker type.
@@ -21436,14 +21098,6 @@ DvtChartLineMarker.prototype.setSelected = function(selected)
 DvtChartLineMarker.prototype.UpdateSelectionEffect = function() {
   // noop: Selection effects fully managed by this class
 };
-
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  A selectable polar bar for charting.
@@ -21629,14 +21283,6 @@ DvtChartPolarBar.prototype.getBoundingBox = function() {
 DvtChartPolarBar.prototype.getOriginalBarSize = function() {
   return this._bbox.w;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * A marker for range area chart.
@@ -21829,14 +21475,6 @@ DvtChartRangeMarker.prototype.getBoundingBox2 = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *   Animation on Datachange functionality.
   *   @class
   */
@@ -22004,14 +21642,6 @@ DvtChartAnimOnDC._canAnimate = function(oldChart, newChart)
   else
     return false;
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  *   Animation on Display funtionality.
@@ -22272,14 +21902,6 @@ DvtChartAnimOnDisplay._getMeanPoints = function(params) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Calculated axis information and drawable creation for a data axis.
  * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
@@ -22288,7 +21910,7 @@ DvtChartAnimOnDisplay._getMeanPoints = function(params) {
  * @constructor
  * @extends {DvtAxisInfo}
  */
-var DvtDataAxisInfo = function(context, options, availSpace) {
+var DvtDataAxisInfo = function (context, options, availSpace) {
   this.Init(context, options, availSpace);
 };
 
@@ -22296,9 +21918,9 @@ Obj.createSubclass(DvtDataAxisInfo, DvtAxisInfo);
 
 DvtAxisInfo.registerConstructor('data', DvtDataAxisInfo);
 
-DvtDataAxisInfo.prototype.Init = function(context, options, availSpace) {
+DvtDataAxisInfo.prototype.Init = function (context, options, availSpace) {
   DvtDataAxisInfo.superclass.Init.call(this, context, options, availSpace);
-  this.MixinInit.call(this, context, options, availSpace);
+  this.MixinInit.call(this, options);
 };
 
 /** @private @const */
@@ -22351,7 +21973,7 @@ DvtDataAxisInfo.prototype.getAllLabels = function(context, asString) {
   // when scaling is set then init formatter
   if (this.Options['tickLabel'] && this.Options['tickLabel']['scaling']) {
     var autoPrecision = this.Options['tickLabel']['autoPrecision'] ? this.Options['tickLabel']['autoPrecision'] : 'on';
-    this._axisValueFormatter = new LinearScaleAxisValueFormatter(context, this.LinearMinValue, this.LinearMaxValue, this.MajorIncrement, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
+    this._axisValueFormatter = new LinearScaleAxisValueFormatter(this.LinearMinValue, this.LinearMaxValue, this.MajorIncrement, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
   }
 
   // Iterate on an integer to reduce rounding error.  We use <= since the first
@@ -22373,7 +21995,7 @@ DvtDataAxisInfo.prototype.getAllLabels = function(context, asString) {
     if (this.IsLog) {
       // for log scale, format each label individually as the scaling don't need to match across labels
       value = this.linearToActual(value);
-      this._axisValueFormatter = new LinearScaleAxisValueFormatter(context, value, value, value, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
+      this._axisValueFormatter = new LinearScaleAxisValueFormatter(value, value, value, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
       label = this._formatValue(value);
     }
     else
@@ -22573,14 +22195,6 @@ DvtDataAxisInfo.prototype.getLogScaleUnit = function() {
 };
 
 DataAxisInfoMixin.call(DvtDataAxisInfo.prototype);
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Calculated axis information and drawable creation for a time axis.
@@ -23998,14 +23612,6 @@ DvtTimeAxisInfo.prototype.getEndOverflow = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for the reference objects of a Chart.
  * @class
  */
@@ -24364,14 +23970,6 @@ DvtChartRefObjRenderer._getAxisCoord = function(chart, axis, value) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Bubble chart utility functions for Chart.
  * @class
  */
@@ -24561,14 +24159,6 @@ DvtChartMarkerUtils.updatePixelMap = function(pixelMap, markerX, markerY, marker
   var y2 = Math.max(Math.round(markerY + halfSize), 0);
   pixelMap.obscure(x1, y1, x2, y2, alpha);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for the plot area of a Chart.
@@ -26625,14 +26215,6 @@ DvtChartPlotAreaRenderer._extendClipGroup = function(chart) {
   return 0;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------------------*/
 /*  DvtChartDataCursorHandler                 Data Cursor Event Handler                  */
 /*---------------------------------------------------------------------*/
@@ -26730,6 +26312,11 @@ DvtChartDataCursorHandler.prototype._showDataCursor = function(plotRect, x, y, b
 
   var itemColor = DvtChartTooltipUtils.getDatatipColor(this._chart, logicalObject.getSeriesIndex(), logicalObject.getGroupIndex(), logicalObject.getNestedDataItemIndex());
   var lineCoord = dataCursor.isHorizontal() ? dcY : dcX;
+  var shape = logicalObject.getDisplayables()[0];
+  // update the default maker shape and size
+  if (shape instanceof SimpleMarker) {
+    dataCursor.addMarker(shape.getType(), shape.getSize());
+  }
   dataCursor.render(plotRect, centerPoint.x, centerPoint.y, lineCoord, tooltipText, itemColor);
 
   this._dataCursorShown = true;
@@ -26881,14 +26468,6 @@ DvtChartDataCursorHandler.prototype._getClosestMatch = function(x, y) {
   }
   return DvtChartDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Axis component for use by Chart.  This class exposes additional functions needed for
@@ -27175,14 +26754,6 @@ DvtChartAxis.prototype.getMinCoord = function() {
 DvtChartAxis.prototype.getMaxCoord = function() {
   return this.axisToPlotArea(Math.max(this.Info.getStartCoord(), this.Info.getEndCoord()));
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Performs layout and positioning for the chart axes.
@@ -27920,14 +27491,6 @@ DvtChartAxisRenderer._storeAxes = function(chart, xInfo, yInfo, y2Info) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Performs layout and positioning for the chart legend.
  * @class
  */
@@ -28332,14 +27895,6 @@ DvtChartLegendRenderer._getRefObjItems = function(chart) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Overview window for chart.
  * @param {Chart} chart The parent chart who owns the overview.
  * @class
@@ -28530,14 +28085,6 @@ DvtChartOverview.prototype.HandleKeyDown = function(event) {
 DvtChartOverview.prototype.HandleKeyUp = function(event) {
   return; // remove keyboard behavior
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /*---------------------------------------------------------------------*/
 /*   DvtChartPie                                                       */
@@ -29372,14 +28919,6 @@ DvtChartPie.prototype.setCenterLabel = function(text) {
 DvtChartPie.prototype.getCenterLabel = function() {
   return this._centerLabel;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for Chart.
@@ -30303,14 +29842,6 @@ DvtChartRenderer.renderDataCursor = function(chart) {
   return dataCursor;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtChartDataObjectUtils = {
 
   /**
@@ -30716,14 +30247,6 @@ const DvtChartDataObjectUtils = {
   }
 
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Chart component.
@@ -32173,14 +31696,6 @@ DvtChartDataChange.prototype.getOptionsCache = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtSparkChartAutomation
  *  @param {SparkChart} dvtComponent
@@ -32225,14 +31740,6 @@ DvtSparkChartAutomation.prototype.getDataItem = function(itemIndex) {
   }
   return null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Default values and utility functions for chart versioning.
@@ -32285,14 +31792,6 @@ DvtSparkChartDefaults.prototype.getAnimationDuration = function(options)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Event Manager for SparkChart.
  * @param {SparkChart} sparkChart
  * @class
@@ -32330,14 +31829,6 @@ DvtSparkChartEventManager.prototype.OnBlur = function(event) {
   DvtSparkChartEventManager.superclass.OnBlur.call(this, event);
   this.hideTooltip();
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for SparkChart.
@@ -32517,8 +32008,28 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
   chartOptions['series'] = [{'items': chartItems, 'areaColor': options['areaColor'], 'svgClassName': (options['className'] || options['svgClassName']), 'svgStyle': (options['style'] || options['svgStyle']), 'areaSvgClassName': (options['areaClassName'] || options['areaSvgClassName']), 'areaStyle': (options['areaStyle'] || options['areaSvgStyle'])}];
 
   // Reference Objects
-  if (options['referenceObjects'] && options['referenceObjects'].length > 0)
+  if (options['referenceObjects'] && options['referenceObjects'].length > 0) {
     chartOptions['yAxis']['referenceObjects'] = options['referenceObjects'];
+    // pass in default reference object line width
+    chartOptions._defaultReferenceObjectLineWidth = 1;
+    var obj;
+    for (var ii = 0; ii < options.referenceObjects.length; ii++) {
+      obj = options.referenceObjects[ii];
+      if (obj.type === 'area') {
+        if (obj.high != null) {
+          highValue = Math.max(highValue, obj.high);
+          lowValue = Math.min(lowValue, obj.high);
+        }
+        if (obj.low != null) {
+          highValue = Math.max(highValue, obj.low);
+          lowValue = Math.min(lowValue, obj.low);
+        }
+      } else if (obj.value != null) {
+        highValue = Math.max(highValue, obj.value);
+        lowValue = Math.min(lowValue, obj.value);
+      }
+    }
+  }
 
   //**************************** Style Attributes ****************************/
   chartOptions['__spark'] = true;
@@ -32573,14 +32084,6 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
 
   return chartOptions;
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Spark chart component.  This chart should never be instantiated directly.  Use the

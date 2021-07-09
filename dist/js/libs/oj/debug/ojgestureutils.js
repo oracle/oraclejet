@@ -260,7 +260,7 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
       .on('keydown' + namespace + ' ' +
           'contextmenu' + namespace, function (event) {
             if (event.type === 'contextmenu' // right-click.  pressHold for Android but not iOS
-                || (event.which === 121 && event.shiftKey)) { // Shift-F10
+                || (event.keyCode === 121 && event.shiftKey)) { // Shift-F10
               var eventType;
               if (touchInProgress) {
                 eventType = 'touch';

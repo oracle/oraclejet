@@ -10,22 +10,15 @@ import 'ojs/ojjquery-hammer';
 import { PopupSkipLink, PopupWhenReadyMediator } from 'ojs/ojpopupcore';
 import 'ojs/ojoption';
 import oj from 'ojs/ojcore-base';
-import { Swipe, DIRECTION_DOWN } from 'hammerjs';
+import { Swipe, DIRECTION_HORIZONTAL } from 'hammerjs';
 import Context from 'ojs/ojcontext';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { _OJ_CONTAINER_ATTR, subtreeShown, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
 import { startAnimation } from 'ojs/ojanimation';
 import { warn } from 'ojs/ojlogger';
 import { getDeviceRenderMode } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
   // -----------------------------------------------------------------------------
   // "private static members" shared by all menus
@@ -47,6 +40,38 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    */
   var _POSITION_DATA = 'oj-menu-position';
 
+  const _OJ_MENU_SELECT_MANY = 'OJ-MENU-SELECT-MANY';
+
+  const _OJ_MENU_ITEM_CLASS = '.oj-menu-item';
+  const _OJ_FOCUS_ANCESTOR = '.oj-focus-ancestor';
+  const _OJ_MENU_DIVIDER = '.oj-menu-divider';
+  const _OJ_DISABLED_CLASS = '.oj-disabled';
+  const _OJ_DISABLED = 'oj-disabled';
+
+  const _ARIA_EXPANDED = 'aria-expanded';
+  const _ARIA_HIDDEN = 'aria-hidden';
+  const _ARIA_DISABLED = 'aria-disabled';
+  const _ARIA_ACTIVEDESCENDANT = 'aria-activedescendant';
+  const _DATA_OJ_DEFAULT_MARGIN = 'data-oj-default-margin';
+  const _MARGIN_LEFT = 'margin-left';
+  const _MARGIN_RIGHT = 'margin-right';
+  const _OJ_MENU_ITEM_BEFORE_DIVIDER = 'oj-menu-item-before-divider';
+  const _OJ_MENU_CSS_VARS = {
+    animation: {
+      dropdown: {
+        open: '--oj-private-menu-global-drop-down-open-animation',
+        close: '--oj-private-menu-global-drop-down-close-animation',
+      },
+      sheet: {
+        open: '--oj-private-menu-global-sheet-open-animation',
+        close: '--oj-private-menu-global-sheet-close-animation',
+      },
+      submenu: {
+        open: '--oj-private-menu-global-submenu-open-animation',
+        close: '--oj-private-menu-global-submenu-close-animation',
+      },
+    },
+  };
   // Used to suppress focus ring for Mac Safari due to platform repainting bug.
   // This returns true for Mac Safari, but not for desktop Chrome, FF, IE11, Edge;
   // Mac Chrome, FF; iOS Safari; or Android Chrome.
@@ -55,24 +80,29 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
   var _IS_MAC_SAFARI = oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.MAC &&
     oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.SAFARI;
 
-  var _config = parseJSONFromFontFamily('oj-menu-config') || {};
-  var _SHEETS_HAVE_CANCEL_ITEM = _config.sheetCancelAffordance === 'menuItem';
-  var _SHEETS_HAVE_SWIPE_DOWN_TO_DISMISS = _config.sheetSwipeDownBehavior === 'dismiss';
-  var _DROPDOWN_MODALITY = _config.dropDownModality || 'modeless'; // backward-compatible value
-  var _SHEET_MODALITY = _config.sheetModality || 'modal';
+  var _SHEETS_HAVE_CANCEL_ITEM = getCachedCSSVarValues(['--oj-private-menu-global-sheet-cancel-affordance'])[0] === 'menuItem';
+  var _SHEETS_HAVE_SWIPE_DOWN_TO_DISMISS = getCachedCSSVarValues(['--oj-private-menu-global-sheet-swipe-down-behavior'])[0] === 'dismiss';
+  var _DROPDOWN_MODALITY = getCachedCSSVarValues(['--oj-private-menu-global-drop-down-modality'])[0] || 'modeless'; // backward-compatible value
+  var _SHEET_MODALITY = getCachedCSSVarValues(['--oj-private-menu-global-sheet-modality'])[0] || 'modal';
+
 
   // "bottom-0", "bottom-12", or "bottom-10%", per standard JQUI position utility syntax. Put the
   // minus on position's "at", not "my", so that %'s (which we're not using, but themers might) are relative to window,
   // not menu, thus closer to behavior of using % margin in CSS.  SCSS code comment on our $var says we use "at".
-  var _SHEET_POSITION_AT = 'bottom-' + (_config.sheetMarginBottom || 0);
+  var _SHEET_POSITION_AT = 'bottom-' + (getCachedCSSVarValues(['oj-private-menu-global-sheet-margin-bottom'])[0] || 0);
 
   var _HAMMER_OPTIONS = _SHEETS_HAVE_SWIPE_DOWN_TO_DISMISS && {
     recognizers: [
-      [Swipe, { direction: DIRECTION_DOWN }]
+      [Swipe, { direction: DIRECTION_HORIZONTAL }]
     ]
   };
 
   var _SUBID_CANCEL = 'oj-menu-cancel-command';
+
+  // Submenu's y offset is equal to 0.5rem margin + 1px border of menu divider
+  let remInPixels =
+    parseInt(window.getComputedStyle(document.documentElement).fontSize, 10);
+  const Y_SUBMENU_OFFSET = -((0.5 * remInPixels) + 1);
 
   function _findImmediateMenuItems(activeMenu) {
     var menuItems = [];
@@ -85,10 +115,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     }
     for (var i = 0; i < children.length; i++) {
       var child = $(children[i]);
-      if (child.is('.oj-menu-item')) {
+      if (child.is(_OJ_MENU_ITEM_CLASS)) {
         menuItems.push(child[0]);
-      } else if (child[0].nodeName === 'OJ-MENU-SELECT-MANY') {
-        menuItems = $.merge(menuItems, child.children('.oj-menu-item'));
+      } else if (child[0].nodeName === _OJ_MENU_SELECT_MANY) {
+        menuItems = $.merge(menuItems, child.children(_OJ_MENU_ITEM_CLASS));
       }
     }
     return menuItems;
@@ -181,15 +211,15 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *
    * <pre class="prettyprint">
    * <code>&lt;oj-menu id="menu" style="display:none" aria-label="Order Edit">
-   *   &lt;oj-option>Item 1&lt;/oj-option>
-   *   &lt;oj-option>Item 2&lt;/oj-option>
+   *   &lt;oj-option value="item1">Item 1&lt;/oj-option>
+   *   &lt;oj-option value="item2">Item 2&lt;/oj-option>
    *   &lt;oj-option>Item 3
    *     &lt;oj-menu id="submenu">
-   *       &lt;oj-option>Item 3-1&lt;/oj-option>
-   *       &lt;oj-option>Item 3-2&lt;/oj-option>
-   *       &lt;oj-option>Item 3-3&lt;/oj-option>
-   *       &lt;oj-option>Item 3-4&lt;/oj-option>
-   *       &lt;oj-option>Item 3-5&lt;/oj-option>
+   *       &lt;oj-option value="item3-1">Item 3-1&lt;/oj-option>
+   *       &lt;oj-option value="item3-2">Item 3-2&lt;/oj-option>
+   *       &lt;oj-option value="item3-3">Item 3-3&lt;/oj-option>
+   *       &lt;oj-option value="item3-4">Item 3-4&lt;/oj-option>
+   *       &lt;oj-option value="item3-5">Item 3-5&lt;/oj-option>
    *     &lt;/oj-menu>
    *   &lt;/oj-option>
    *   &lt;oj-option>Item 4&lt;/oj-option>
@@ -203,7 +233,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#popup-section"></a>
    * </h3>
    *
-   * <p>JET Menu is a popup component, for use with [context menu]{@link oj.baseComponent#contextMenu}, [menu button]{@link oj.ojButton#menu},
+   * <p>JET Menu is a popup component, for use with [context menu]{@link oj.baseComponent#contextMenu}, [menu button]{@link oj.ojMenuButton},
    * or similar functionality.  It is not intended to sit inline on the page.  See also the [JET NavigationList]{@link oj.ojNavigationList} component.
    *
    * <p>For this reason, the component is automatically hidden until it is opened.  However, this styling is not applied until the component is initialized.
@@ -230,9 +260,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *
    * <pre class="prettyprint">
    * <code>&lt;oj-menu id="menu" style="display:none" aria-label="Order Edit">
-   *   &lt;oj-option>Item 1&lt;/oj-option>
+   *   &lt;oj-option value="item1">Item 1&lt;/oj-option>
    *   &lt;oj-option>---&lt;/oj-option>
-   *   &lt;oj-option>Item 2&lt;/oj-option>
+   *   &lt;oj-option value="item2">Item 2&lt;/oj-option>
    * &lt;/oj-menu>
    * </code></pre>
    *
@@ -251,25 +281,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * accepted children and slots.</p>
    *
    *
-   * <h3 id="dismissal-section">
-   *   Dismissal
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dismissal-section"></a>
-   * </h3>
-   *
-   * <p>JET Menus auto-dismiss in the expected cases, such as focus loss and menu item selection.  In addition, Sheet Menus
-   * offer the following optional dismissal affordances:
-   *
-   * <ul>
-   * <li>A "Cancel" menu item is displayed for Sheet Menus if the
-   *     <code class="prettyprint">$menuSheetCancelAffordance</code> SASS variable is set to
-   *     <code class="prettyprint">"menuItem"</code>.  See its
-   *     <a href="#translations.labelCancel">translation</a> and <a href="#oj-menu-cancel-command">subId</a>.</li>
-   * <li>The user can dismiss Sheet Menus via a downward swipe on the menu if the
-   *     <code class="prettyprint">$menuSheetSwipeDownBehavior</code> SASS variable is set to
-   *     <code class="prettyprint">"dismiss"</code>.</li>
-   * </ul>
-   *
-   *
    * <h3 id="scrolling-section">
    *   Scrolling
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#scrolling-section"></a>
@@ -278,7 +289,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * <p>JET Menus is scrollable when the menu is long. However, scrolling isn't supported on below scenarios: </p>
    * <ul>
    * <li>Scrolling is not supported on Submenus.
-   * <li>Scrolling is not supported on phone due to some themes supporting downward swipe dismissal on Sheet Menus. Please check details on <a href="#dismissal-section">Dismissal</a> section.</li>
+   * <li>Scrolling is not supported on phone due to some themes supporting downward swipe dismissal on Sheet Menus.</li>
    * </ul>
    *
    * <h3 id="touch-section">
@@ -309,7 +320,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * <p>If a menu is shared by different launchers, and should have a different label for each launcher, then a
    * <a href="#event:beforeOpen">ojBeforeOpen</a> listener can be used to set a different label per launch.
    *
-   * <p>For a menu launched exclusively by one or more [menu buttons]{@link oj.ojButton#menu}, these attributes are optional.  When the
+   * <p>For a menu launched exclusively by one or more [menu buttons]{@link oj.ojMenuButton}, these attributes are optional.  When the
    * menu is opened via the menu button UI, if neither attribute is present after all <a href="#event:beforeOpen">ojBeforeOpen</a>
    * listeners have been called, then <code class="prettyprint">aria-labelledby</code> will be set on the menu, referencing the menu
    * button, and will be removed when the menu is closed.  This approach provides a useful default label, while allowing the app to
@@ -362,7 +373,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
    * </h3>
    *
-   * <p>If a menu launcher (such as a [menu button]{@link oj.ojButton#menu} or item with a [context menu]{@link oj.baseComponent#contextMenu})
+   * <p>If a menu launcher (such as a [menu button]{@link oj.ojMenuButton} or item with a [context menu]{@link oj.baseComponent#contextMenu})
    * is stamped inside a table, dataGrid, or other container, the resulting set of launchers should share a single menu defined outside the container.
    *
    *
@@ -388,7 +399,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * <code>&lt;oj-menu id="menu" style="display:none" aria-label="Order Edit">
    *     &lt;oj-bind-for-each data="[[menuItems]]">
    *         &lt;template>
-   *             &lt;oj-option :id="[[$current.data.id]]" :disabled="[[$current.data.disabled]]">
+   *             &lt;oj-option value="[[$current.data.label]]" :id="[[$current.data.id]]" :disabled="[[$current.data.disabled]]">
    *                 &lt;span>
    *                     &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
    *                 &lt;/span>
@@ -397,12 +408,193 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *     &lt;/oj-bind-for-each>
    * &lt;/oj-menu>
    * </code></pre>
-   *
-   *
-   * <!-- - - - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
-   *
    */
+  // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for menus
+
+  /**
+   * @ojslot contextMenu
+   * @memberof oj.ojMenu
+   * @ignore
+   */
+
+  //-----------------------------------------------------
+  //                   Slots
+  //-----------------------------------------------------
+
+  /**
+   * <p>The &lt;oj-menu> element accepts <code class="prettyprint">oj-option</code> and <code class="prettyprint">oj-menu-select-many</code> as child elements.  See
+   * the [oj-option]{@link oj.ojOption} documentation for details about accepted children and slots.</p>
+   *
+   * @ojchild Default
+   * @memberof oj.ojMenu
+   * @ojshortdesc The oj-menu element accepts oj-option and oj-menu-select-many as child elements.
+   * @ojpreferredcontent ["OptionElement", "MenuSelectManyElement"]
+   *
+   * @example <caption>Initialize the Menu with child content specified:</caption>
+   * &lt;oj-menu>
+   *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+   *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+   *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+   * &lt;/oj-menu>
+   */
+
+  /**
+   * @ojslot contextMenu
+   * @memberof oj.ojMenu
+   * @ignore
+   */
+
+  /**
+   * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Menu component.
+   *
+   * @method
+   * @name oj.ojMenu#widget
+   * @memberof oj.ojMenu
+   * @instance
+   * @ignore
+   * @return {jQuery} the root element of the component
+   */
+
+  /**
+   * Removes the menu functionality completely. This will return the element back to its pre-init state.
+   *
+   * @method
+   * @name oj.ojMenu#destroy
+   * @memberof oj.ojMenu
+   * @instance
+   * @ignore
+   */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Menu Item</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Invoke the menu item's action.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Menu</td>
+   *       <td><kbd>Swipe Down</kbd></td>
+   *       <td>Dismiss the menu, if "swipe to dismiss" is enabled by the application.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>JET Component or HTML Element having a JET Context Menu</td>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>Open the context menu.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Outside of Menu</td>
+   *       <td><kbd>Touch</kbd></td>
+   *       <td>Close the menu.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled items do not allow any touch interaction.
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojMenu
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan = "5">Menu Item</td>
+   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+   *       <td>Invoke the focused menu item's action.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Move focus to the previous menu item, wrapping around at the top.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Move focus to the next menu item, wrapping around at the bottom.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Move focus to the first menu item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Move focus to the last menu item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Menu Item in Top-level Menu</td>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>Close the menu and move focus to the launcher.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>JET Component or HTML Element having a JET Context Menu</td>
+   *       <td><kbd>Shift + F10</kbd></td>
+   *       <td>Open the context menu.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>* RTL refers to pages written in a right-to-left language such as Arabic.
+   *
+   * <p>Typing a letter moves focus to the first item whose title starts with that character. Repeating the same character cycles through matching items.
+   * Typing more characters within the one second timer matches those characters.
+   *
+   * <p>Note that the "Search for text when I start typing" feature in Firefox can interfere with web content that accepts keystrokes, such as this "type a letter" feature of JET Menu.
+   *
+   * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojMenu
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the <a href="#dismissal-section">"Cancel"</a> menu item.</p>
+   *
+   * @ojsubid oj-menu-cancel-command
+   * @memberof oj.ojMenu
+   * @since 2.1.0
+   *
+   * @example <caption>Get the node for the "Cancel" menu item:</caption>
+   * var node = myMenu.getNodeBySubId( {'subId': 'oj-menu-cancel-command'} );
+   */
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+  * @ojstylevariableset oj-menu-css-set1
+  * @ojstylevariable oj-menu-icon-size {description: "Menu icon size", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-icon-to-edge-padding {description: "Padding between icon and menu edge",formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-text-to-start-icon-padding {description: "Padding between text and start icon", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-text-to-end-icon-padding {description: "Padding between text and end icon", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-text-to-edge-padding {description: "Padding between text and menu edge",formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-divider-margin {description: "Menu divider margin", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-sheet-margin-horizontal {description: "Menu horizontal margin when displayed as a sheet", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-item-text-color {description: "Menu item text color", formats: ["color"], help: "#css-variables"}
+  * @ojstylevariable oj-menu-icon-color {description: "Menu icon color", formats: ["color"], help: "#css-variables"}
+  * @memberof oj.ojMenu
+  */
   oj.__registerWidget('oj.ojMenu', $.oj.baseComponent, {
     defaultElement: '<ul>', // added to externs.js, since this is an override of a superclass member.  (That's the rule for public methods, what about protected fields?)  TODO: Would @override do the job and be better than externing?
     delay: 300, // Doesn't get renamed even when unquoted and not in (our) externs.js file, so I'm leaving it unquoted for now.  TBD: This is private, but do NOT rename to _delay since there's an inherited instance method by that name, so rename so something else prefixed with _.
@@ -504,7 +696,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * a drop down, regardless of the values of this option.
          *
          * @expose
-         * @alias openOptions.display
+         * @name openOptions.display
          * @ojshortdesc Specifies whether the menu displays as a drop down or as a sheet. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
@@ -532,7 +724,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * Determines focus behavior when the menu is initially opened.
          *
          * @expose
-         * @alias openOptions.initialFocus
+         * @name openOptions.initialFocus
          * @ojshortdesc Specifies focus behavior when the menu is initially opened.
          * @memberof! oj.ojMenu
          * @instance
@@ -562,7 +754,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * and <a href="#event:beforeOpen">ojBeforeOpen</a>.
          *
          * @expose
-         * @alias openOptions.launcher
+         * @name openOptions.launcher
          * @ojshortdesc Specifies the DOM node that launches this menu. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
@@ -613,7 +805,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * <b>Deprecated v5.0.0 jQuery UI position syntax; Use of a percent unit with "my" or "at" is not supported.</b>
          *
          * @expose
-         * @alias openOptions.position
+         * @name openOptions.position
          * @ojshortdesc Specifies the position of a drop down menu when launched. See the Help documentation for more information.
          * @memberof! oj.ojMenu
          * @instance
@@ -644,7 +836,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * @expose
            * @memberof! oj.ojMenu
            * @instance
-           * @alias openOptions.position.my
            * @name openOptions.position.my
            * @type {{horizontal:string, vertical:string}}
            */
@@ -654,7 +845,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @expose
              * @memberof! oj.ojMenu
              * @instance
-             * @alias openOptions.position.my.horizontal
              * @name openOptions.position.my.horizontal
              * @type {string}
              * @default 'start'
@@ -670,7 +860,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @expose
              * @memberof! oj.ojMenu
              * @instance
-             * @alias openOptions.position.my.vertical
              * @name openOptions.position.my.vertical
              * @type {string}
              * @default 'top'
@@ -685,7 +874,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * @expose
            * @memberof! oj.ojMenu
            * @instance
-           * @alias openOptions.position.offset
            * @name openOptions.position.offset
            * @type {{x:number, y:number}}
            */
@@ -695,7 +883,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @expose
              * @memberof! oj.ojMenu
              * @instance
-             * @alias openOptions.position.offset.x
              * @name openOptions.position.offset.x
              * @type {number}
              * @default 0
@@ -706,7 +893,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @expose
              * @memberof! oj.ojMenu
              * @instance
-             * @alias openOptions.position.offset.y
              * @name openOptions.position.offset.y
              * @type {number}
              * @default 0
@@ -720,7 +906,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * @expose
            * @memberof! oj.ojMenu
            * @instance
-           * @alias openOptions.position.at
            * @name openOptions.position.at
            * @type {{horizontal:string, vertical:string}}
            */
@@ -731,7 +916,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @memberof! oj.ojMenu
              * @ojshortdesc Defines the horizontal alignment of what the menu is aligned to. See the Help documentation for more information.
              * @instance
-             * @alias openOptions.position.at.horizontal
              * @name openOptions.position.at.horizontal
              * @type {string}
              * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
@@ -747,7 +931,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
              * @memberof! oj.ojMenu
              * @ojshortdesc Defines the vertical alignment of what the menu is aligned to. See the Help documentation for more information.
              * @instance
-             * @alias openOptions.position.at.vertical
              * @name openOptions.position.at.vertical
              * @type {string}
              * @ojvalue {string} "top"
@@ -776,7 +959,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * @memberof! oj.ojMenu
            * @ojshortdesc Which element to position the menu against. See the Help documentation for more information.
            * @instance
-           * @alias openOptions.position.of
            * @name openOptions.position.of
            * @type {string|{x: number, y: number}}
            */
@@ -787,7 +969,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * @expose
            * @memberof! oj.ojMenu
            * @instance
-           * @alias openOptions.position.collision
            * @name openOptions.position.collision
            * @type {string}
            * @default 'flipfit'
@@ -850,7 +1031,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          * the <code class="prettyprint">of</code> field, then the submenu is positioned relative to that element or position instead.
          *
          * @expose
-         * @alias submenuOpenOptions.position
+         * @name submenuOpenOptions.position
          * @memberof! oj.ojMenu
          * @instance
          * @ignore
@@ -873,17 +1054,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
        * being opened/closed or a child item is being added/removed. The default animation can
        * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
        *
-       * <caption>The default animations are controlled via the theme (SCSS) :</caption>
-       * <pre class="prettyprint"><code>
-       * // dropdown menu
-       * $menuDropDownOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $animationDurationShort) !default;
-       * $menuDropDownCloseAnimation: (effect: "none") !default;
-       *
-       * // sheet menu
-       * $menuSheetOpenAnimation: (effect: "slideIn", direction: "top", duration: $animationDurationShort) !default;
-       * $menuSheetCloseAnimation: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort) !default;
-       *
-       * </code></pre>
        * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
        * being opened/closed or a child item is being added/removed. The default animation can
        * be cancelled by calling event.preventDefault.
@@ -1000,7 +1170,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
        * affecting the component option.  Since these changes are applied to the merged object, they supersede both the <code class="prettyprint">openOptions</code>
        * passed to <code class="prettyprint">open()</code> and the <code class="prettyprint">openOptions</code> component option.
        *
-       * <p>If any of the above techniques are used to alter the built-in [menu button]{@link oj.ojButton#menu} or [context menu]{@link oj.baseComponent#contextMenu}
+       * <p>If any of the above techniques are used to alter the built-in [menu button]{@link oj.ojMenuButton} or [context menu]{@link oj.baseComponent#contextMenu}
        * functionality, it is the app's responsibility to ensure that the result is both correct and accessible.
        *
        * @expose
@@ -1184,6 +1354,12 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
     },
 
+    _preventDefault: function (event) {
+      if (this.options.disabled) {
+        event.preventDefault();
+      }
+    },
+
     _createAsTopLevelMenu: function () {
       var self = this;
       this.activeMenu = this.element;
@@ -1206,16 +1382,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // pass true to catch these events on all menus, not just enabled menus
       this._on(true, {
         // Required to stick the focus on disabled menu.
-        'mousedown .oj-menu-item': function (event) {
-          if (this.options.disabled) {
-            event.preventDefault();
-          }
-        },
-        click: function (event) {
-          if (this.options.disabled) {
-            event.preventDefault();
-          }
-        },
+        'mousedown .oj-menu-item': this._preventDefault,
+        click: this._preventDefault,
         // On Esc key focus should be shifted to launcher and dismiss menu.
         // the TAB key should also implicitly dismiss the menu
         keydown: function (event) {
@@ -1235,8 +1403,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // TBD: Would be a little better to toggle these 2 things rather than only setting them if true, as in superclass _setOption().
       if (this.options.disabled) {
         this.element
-          .addClass('oj-disabled')
-          .attr('aria-disabled', 'true');
+          .addClass(_OJ_DISABLED)
+          .attr(_ARIA_DISABLED, 'true'); // @HTMLUpdateOK
       }
 
       var handleMouseEnterMenuItem = function (event) {
@@ -1271,16 +1439,18 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         this._collapse(event, 'eventSubtree');
       }.bind(this);
 
-      this._touchStartHandler = function () {
+      this._touchStartHandler = function (event) {
         // when the touchstart event bubbles out of the root menu element, we're done with it, so
         // reset this flag to its initial value of false in preparation for the next touch
         this.focusHandled = false;
-      };
+        var target = $(event.currentTarget);
+        this._focus(event, target);
+      }.bind(this);
 
       this.element[0].addEventListener('touchstart', this._touchStartHandler, { passive: true });
 
       this._delegatedHandleMouseEnterMenuItem = function (event) {
-        const selector = '.oj-menu-item';
+        const selector = _OJ_MENU_ITEM_CLASS;
         const container = event.currentTarget;
         const targetElement = event.target.closest(selector);
         if (targetElement && container.contains(targetElement)) {
@@ -1317,10 +1487,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           this.focusHandled = false;
         },
         'click .oj-menu-item:has(a)': function (event) {
-          var target = $(event.target).closest('.oj-menu-item');
+          var target = $(event.target).closest(_OJ_MENU_ITEM_CLASS);
           // the mouseHandled var ensures that the click is handled only for the originally clicked
           // menu item, not for the parent menu items to which it bubbles.
-          if (!this.mouseHandled && target.not('.oj-disabled').length) {
+          if (!this.mouseHandled && target.not(_OJ_DISABLED_CLASS).length) {
             this.mouseHandled = true;
 
             // prevent page scrolling and appending # to page URL, which can interfere with routing, etc.
@@ -1439,7 +1609,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           var child = $(children[i]);
           if (child[0].nodeName === 'OJ-OPTION') {
             menuItems.push(child[0]);
-          } else if (child[0].nodeName === 'OJ-MENU-SELECT-MANY') {
+          } else if (child[0].nodeName === _OJ_MENU_SELECT_MANY) {
             menuItems = $.merge(menuItems, child.children('oj-option'));
           }
         }
@@ -1464,7 +1634,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       function getPrevSibling(element) {
         if (element.previousElementSibling && element.previousElementSibling.nodeName === 'OJ-OPTION') {
           return element.previousElementSibling;
-        } else if (element.previousElementSibling && element.previousElementSibling.nodeName === 'OJ-MENU-SELECT-MANY') {
+        } else if (element.previousElementSibling &&
+            element.previousElementSibling.nodeName === _OJ_MENU_SELECT_MANY) {
           var node = element.previousElementSibling.lastElementChild;
           if (node.nodeName === 'OJ-OPTION') {
             return node;
@@ -1472,18 +1643,21 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
             return node.previousElementSibling;
           }
           return getPrevSibling(node);
-        } else if (!element.previousElementSibling && element.parentElement.nodeName === 'OJ-MENU-SELECT-MANY') {
+        } else if (!element.previousElementSibling &&
+            element.parentElement.nodeName === _OJ_MENU_SELECT_MANY) {
           return getPrevSibling(element.parentElement);
         }
         return undefined;
       }
       function getNextSibling(element) {
-        if (element.nextElementSibling && element.nextElementSibling.nodeName === 'OJ-OPTION') {
+        if (element.nextElementSibling &&
+            element.nextElementSibling.nodeName === 'OJ-OPTION') {
           return element.nextElementSibling;
-        } else if (element.nextElementSibling && element.nextElementSibling.nodeName === 'OJ-MENU-SELECT-MANY') {
+        } else if (element.nextElementSibling &&
+            element.nextElementSibling.nodeName === _OJ_MENU_SELECT_MANY) {
           return element.nextElementSibling.firstElementChild;
         } else if ((!element.nextElementSibling || element.nextElementSibling.nodeName !== 'OJ-OPTION')
-          && element.parentElement.nodeName === 'OJ-MENU-SELECT-MANY') {
+          && element.parentElement.nodeName === _OJ_MENU_SELECT_MANY) {
           return getNextSibling(element.parentElement);
         }
         return undefined;
@@ -1491,7 +1665,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       function initDividerNeighbors(dividerDom) {
         var sibling = getPrevSibling(dividerDom);
         if (sibling) {
-          $(sibling).addClass('oj-menu-item-before-divider');
+          $(sibling).addClass(_OJ_MENU_ITEM_BEFORE_DIVIDER);
         }
         sibling = getNextSibling(dividerDom);
         if (sibling) {
@@ -1515,7 +1689,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // Implement custom rendering here...
       var ojOption = $(optionDom);
-      var isCheckableMenuItem = ojOption.parent().prop('nodeName') === 'OJ-MENU-SELECT-MANY';
+      var isCheckableMenuItem = ojOption.parent().prop('nodeName') === _OJ_MENU_SELECT_MANY;
       var self = this;
 
       this._hasSubmenus = false;
@@ -1632,11 +1806,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
         // check for disabled state in case all we need to do is update disabled attribute
         if (optionDom.disabled) {
-          ojOption.addClass('oj-disabled');
-          customAnchor.attr('aria-disabled', 'true');
+          ojOption.addClass(_OJ_DISABLED);
+          customAnchor.attr(_ARIA_DISABLED, 'true'); // @HTMLUpdateOK
         } else {
-          ojOption.removeClass('oj-disabled');
-          customAnchor.removeAttr('aria-disabled');
+          ojOption.removeClass(_OJ_DISABLED);
+          customAnchor.removeAttr(_ARIA_DISABLED);
         }
       }
       // Update menu padding each time an ojOption is updated
@@ -1647,14 +1821,14 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _positionStartIcon: function (node, index, count) {
       var marginProperty;
       if (this.isRtl) {
-        marginProperty = 'margin-right';
+        marginProperty = _MARGIN_RIGHT;
       } else {
-        marginProperty = 'margin-left';
+        marginProperty = _MARGIN_LEFT;
       }
-      var margin = Number($(node).attr('data-oj-default-margin'));
+      var margin = Number($(node).attr(_DATA_OJ_DEFAULT_MARGIN));
       if (isNaN(margin)) {
         margin = parseInt($(node).css(marginProperty), 10);
-        $(node).attr('data-oj-default-margin', margin);
+        $(node).attr(_DATA_OJ_DEFAULT_MARGIN, margin); // @HTMLUpdateOK
       }
       // margins are negative for start icons
       this._startIconWidth = -1 * margin;
@@ -1666,16 +1840,16 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var marginProperty;
       var widthProperty;
       if (this.isRtl) {
-        marginProperty = 'margin-left';
-        widthProperty = 'margin-right';
+        marginProperty = _MARGIN_LEFT;
+        widthProperty = _MARGIN_RIGHT;
       } else {
-        marginProperty = 'margin-right';
-        widthProperty = 'margin-left';
+        marginProperty = _MARGIN_RIGHT;
+        widthProperty = _MARGIN_LEFT;
       }
-      var margin = Number($(node).attr('data-oj-default-margin'));
+      var margin = Number($(node).attr(_DATA_OJ_DEFAULT_MARGIN));
       if (isNaN(margin)) {
         margin = parseInt($(node).css(marginProperty), 10);
-        $(node).attr('data-oj-default-margin', margin);
+        $(node).attr(_DATA_OJ_DEFAULT_MARGIN, margin); // @HTMLUpdateOK
       }
       // margins are negative for end icons
       this._endIconWidth = -1 * parseInt($(node).css(widthProperty), 10);
@@ -1754,7 +1928,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
               (event.type === 'keydown' ||
                (event.type === 'mousedown' && event.which === 3) || // 1. if it's a context-menu-launching event other than pressHold (see event.which on outer if)
                !$(event.target).closest(menu._launcher).length || // 2. When focus is moved on to other than launcher or left/middle mousedown or touchstart on element other than launcher
-               (menu._launcherClickShouldDismiss &&
+               (menu._isContextMenu &&
                 ((event.type === 'mousedown' && event.which !== 3) ||
                  event.type === 'touchstart')))) { // 3. If event is a (left/middle-mousedown or touchstart) on launcher and current menu is contextmenu (see )
             // Don't do it again if the menu is already being dismissed
@@ -1789,16 +1963,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     // eslint-disable-next-line no-unused-vars
     _setOption: function (key, value) { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
       this._superApply(arguments); // TBD: consider calling super at end, so that optionChange (fired at end of super) is fired at very end
-
-      switch (key) {
-        case 'translations':
-          // no refresh() needed to just change text of existing inited menu item
-          if (this._cancelAnchor) {
-            this._cancelAnchor.text(this.options.translations.labelCancel);
-          }
-          break;
-        default:
-          break;
+      // no refresh() needed to just change text of existing inited menu item
+      if (key === 'translations' && this._cancelAnchor) {
+        this._cancelAnchor.text(this.options.translations.labelCancel);
       }
     },
 
@@ -1828,24 +1995,24 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // Destroy (sub)menus
       this.element
-        .removeAttr('aria-activedescendant')
+        .removeAttr(_ARIA_ACTIVEDESCENDANT)
         .removeClass('oj-component')
         .find('.oj-menu').addBack()
         .removeClass('oj-menu oj-menu-submenu oj-menu-icons oj-menu-end-icons oj-menu-text-only')
         .removeAttr('role')
         .removeAttr('tabIndex')
         .removeAttr('aria-labelledby')
-        .removeAttr('aria-hidden')
-        .removeAttr('aria-disabled')
+        .removeAttr(_ARIA_HIDDEN)
+        .removeAttr(_ARIA_DISABLED)
         .removeUniqueId()
         .show();
 
       // Destroy menu items
-      this.element.find('.oj-menu-item')
+      this.element.find(_OJ_MENU_ITEM_CLASS)
         .removeClass('oj-menu-item')
         .removeAttr('role')
         .children('a')
-        .removeAttr('aria-disabled')
+        .removeAttr(_ARIA_DISABLED)
         .removeUniqueId()
         .removeClass('oj-hover')
         .removeAttr('tabIndex')
@@ -1860,10 +2027,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         });
 
       // Destroy anchors
-      this.element.find('a').removeAttr('aria-expanded');
+      this.element.find('a').removeAttr(_ARIA_EXPANDED);
 
       // Destroy menu dividers
-      this.element.find('.oj-menu-divider')
+      this.element.find(_OJ_MENU_DIVIDER)
         .removeClass('oj-menu-divider')
         .removeAttr('role');
 
@@ -1907,7 +2074,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         case $.ui.keyCode.RIGHT:
           var isExpand = (event.keyCode === $.ui.keyCode.RIGHT) !== this.isRtl;
           if (isExpand) {
-            if (this.active && !this.active.is('.oj-disabled')) {
+            if (this.active && !this.active.is(_OJ_DISABLED_CLASS)) {
               this._expand(event);
             }
           } else {
@@ -1943,7 +2110,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           if (this._launcher) {
             // if menu is currently open
             // <a> or nothing.  Always the same as this.active now that we change them in lockstep.
-            var activeItemId = this.element.attr('aria-activedescendant');
+            var activeItemId = this.element.attr(_ARIA_ACTIVEDESCENDANT);
             var closestParentMenu = $(document.getElementById(activeItemId)).parents('.oj-menu').first();
             var submenuOpen = closestParentMenu.length > 0
               && closestParentMenu[0] !== this.element[0];
@@ -1976,7 +2143,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
             return regex.test($(this).children('a').text());
           });
           match = skip && match.index(this.active.next()) !== -1 ?
-                this.active.nextAll('.oj-menu-item') :
+                this.active.nextAll(_OJ_MENU_ITEM_CLASS) :
                 match;
 
           // If no matches on the current filter, reset to the last character pressed
@@ -2013,7 +2180,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * Called for Space and Enter
      */
     _handleEnterSpace: function (event) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-      if (this.active && !this.active.is('.oj-disabled')) {
+      if (this.active && !this.active.is(_OJ_DISABLED_CLASS)) {
         if (this.active.children("a[aria-haspopup='true']").length) {
           this._expand(event);
         } else {
@@ -2043,7 +2210,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         var submenus = self.element.find('oj-menu:not(.oj-menu-submenu)');
         for (var i = 0; i < submenus.length; i++) {
           // element might not be upgraded so just toggle its visibility and wait to be upgraded
-          $(submenus[i]).attr('aria-hidden', 'true').hide();
+          $(submenus[i]).attr(_ARIA_HIDDEN, 'true').hide(); // @HTMLUpdateOK
 
           var busyContext = Context.getContext(submenus[i]).getBusyContext();
           busyContext.whenReady().then(function (submenu) {
@@ -2150,7 +2317,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // Anything that used to be a divider, but now has an "a", should become a menu element.
       children
-        .filter('.oj-menu-divider')
+        .filter(_OJ_MENU_DIVIDER)
         .has('a')
         .removeClass('oj-menu-divider oj-menu-item') // remove oj-menu-item if somehow present to ensure that it enters following block
         .removeAttr('role');
@@ -2176,8 +2343,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       this._initDividerNeighbors(children, dividers);
 
       // Add aria-disabled to any disabled menu item, and remove it from any recently enabled menu item
-      children.filter('.oj-disabled').children('a').attr('aria-disabled', 'true');
-      children.filter(':not(.oj-disabled)').children('a').removeAttr('aria-disabled');
+      children.filter(_OJ_DISABLED_CLASS).children('a').attr(_ARIA_DISABLED, 'true'); // @HTMLUpdateOK
+      children.filter(':not(.oj-disabled)').children('a').removeAttr(_ARIA_DISABLED);
 
       // Initialize nested menus
       submenus.filter(':not(.oj-menu)')
@@ -2207,7 +2374,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var isIconAdded = item[0].querySelectorAll('.oj-menu-submenu-icon.oj-component-icon').length !== 0;
       item
         .attr('aria-haspopup', 'true')
-        .attr('aria-expanded', 'false'); // per a11y team, live on <a>, not <ul> like JQUI
+        .attr(_ARIA_EXPANDED, 'false'); // @HTMLUpdateOK // per a11y team, live on <a>, not <ul> like JQUI
       if (addIcon && !isIconAdded) {
         var submenuIcon = $('<span>');
         submenuIcon // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
@@ -2259,7 +2426,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     _initDividerNeighbors: function (items, dividers) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
       items.removeClass('oj-menu-item-before-divider oj-menu-item-after-divider');
-      dividers.prev().addClass('oj-menu-item-before-divider');
+      dividers.prev().addClass(_OJ_MENU_ITEM_BEFORE_DIVIDER);
       dividers.next().addClass('oj-menu-item-after-divider');
     },
 
@@ -2284,7 +2451,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     },
 
     _itemRole: function (option) {
-      if (option.parent().prop('nodeName') === 'OJ-MENU-SELECT-MANY') {
+      if (option.parent().prop('nodeName') === _OJ_MENU_SELECT_MANY) {
         return 'menuitemcheckbox';
       }
       return 'menuitem';
@@ -2292,8 +2459,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
     // given a menu item, returns JQ object with any adjacent group dividers and optionally, that item
     _getAdjacentDividers: function (menuItem, includeItem) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-      var result = menuItem.prev('.oj-menu-divider')
-                         .add(menuItem.next('.oj-menu-divider'));
+      var result = menuItem.prev(_OJ_MENU_DIVIDER)
+                         .add(menuItem.next(_OJ_MENU_DIVIDER));
 
       if (includeItem) {
         result = result.add(menuItem);
@@ -2329,10 +2496,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       this._makeActive(item, event);
 
       var containingMenu = item.parents('.oj-menu').first(); // ul.  Length-1.  Might be top or submenu.
-      var parentMenuItem = containingMenu.closest('.oj-menu-item'); // li. Length 0 iff item is in top menu.
+      var parentMenuItem = containingMenu.closest(_OJ_MENU_ITEM_CLASS); // li. Length 0 iff item is in top menu.
 
       // Remove oj-focus-ancestor class from all menu items and group dividers in the newly focused menu item's menu and submenus of that menu
-      containingMenu.find('.oj-focus-ancestor').removeClass('oj-focus-ancestor');
+      containingMenu.find(_OJ_FOCUS_ANCESTOR).removeClass('oj-focus-ancestor');
 
       // Highlight active parent menu item, if any, and adjacent group dividers, if any
       this._getAdjacentDividers(parentMenuItem, true).addClass('oj-focus-ancestor');
@@ -2349,7 +2516,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var nested = this._IsCustomElement() ? item.children('oj-menu') : item.children('.oj-menu'); // immediately nested submenu.  length 0 or 1.
       var previousFocusInSubmenu = nested.length > 0 && previousItem.length > 0 &&
         $.contains(nested[0], previousItem[0]);
-      if (nested.length && event && (/^mouse|click/.test(event.type) && !this.active.hasClass('oj-disabled')) &&
+      if (nested.length && event && (/^mouse|click/.test(event.type) && !this.active.hasClass(_OJ_DISABLED)) &&
           !previousFocusInSubmenu) {
         this._startOpening(event, nested);
       }
@@ -2379,7 +2546,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var anchor = item.children('a');
 
       this.active = item;
-      this.element.attr('aria-activedescendant', anchor.attr('id'));
+      this.element.attr(_ARIA_ACTIVEDESCENDANT, anchor.attr('id')); // @HTMLUpdateOK
 
       this._focusOutHandler(previousItem);
       this._focusInHandler(item);
@@ -2410,7 +2577,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         var previousItem = this.active; // non-null, so don't need null-check
 
         this.active = null;
-        this.element.removeAttr('aria-activedescendant');
+        this.element.removeAttr(_ARIA_ACTIVEDESCENDANT);
 
         this._focusOutHandler(previousItem);
         this._getAdjacentDividers(previousItem).removeClass('oj-focus');
@@ -2484,7 +2651,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       // no-op for a closed menu
       var status = oj.ZOrderUtils.getStatus(this.element);
-      if (!(status === oj.ZOrderUtils.STATUS.OPEN)) {
+      if (status !== oj.ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
@@ -2515,9 +2682,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * @return {Object} The default animation for the menu type
      */
     _getDefaultAnimation: function (menuType, action) {
-      var defaults = parseJSONFromFontFamily('oj-menu-option-defaults').animation;
-      var animation = defaults[menuType][action];
-      return animation;
+      var defaults = _OJ_MENU_CSS_VARS.animation;
+      var animationEffects = getCachedCSSVarValues([defaults[menuType][action]])[0];
+      return JSON.parse(animationEffects);
     },
 
     /**
@@ -2624,7 +2791,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
 
       if (this._isAnimationDisabled()) {
-        rootElement.attr('aria-hidden', 'true').hide();
+        rootElement.attr(_ARIA_HIDDEN, 'true').hide(); // @HTMLUpdateOK
         return undefined;
       }
 
@@ -2637,7 +2804,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         this);
 
       promise.then(function () {
-        rootElement.attr('aria-hidden', 'true').hide();
+        rootElement.attr(_ARIA_HIDDEN, 'true').hide(); // @HTMLUpdateOK
       });
 
       return promise;
@@ -2661,7 +2828,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this.element.removeData(_POSITION_DATA);
 
-      this._launcher = undefined;
+      this._launcher = null;
       this._sheetMenuIsOpen = false;
 
       // Preserve original logic for old-style component:
@@ -2737,6 +2904,34 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     },
 
     /**
+     * Close menu if already open.
+     *
+     * @memberof! oj.ojMenu
+     * @instance
+     * @private
+     * @return {void}
+     */
+    _closeMenuIfOpen: function (oldOpenOptions, beforeOpenResults, menuOpenOptions) {
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        // Disable animation since we'll be reopening the menu
+        this._disableAnimation = true;
+
+        // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch,
+        // then it should return the details for the old launch
+        this._currentOpenOptions = oldOpenOptions;
+
+        // Use the beforeOpen event as the close event's originalEvent
+        this.__dismiss(beforeOpenResults.event); // sets this._currentOpenOptions to null
+
+        // In case the menu is being opened by a different launcher, we don't
+        // want the _clickAwayHandler for the old launcher to dismiss it.
+        this._dismissEvent = null;
+
+        this._currentOpenOptions = menuOpenOptions; // restore this launch's value
+      }
+    },
+
+    /**
      * <p>Launches this menu after firing the <a href="#event:beforeOpen">ojBeforeOpen</a> event.  Listeners to that event can cancel the launch
      * via <code class="prettyprint">event.preventDefault()</code>.  If the launch is not canceled, then the the <a href="#event:open">open</a> event
      * is fired after the launch.
@@ -2745,7 +2940,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      * corresponding component options, without altering those options.  Those per-launch values can be further customized by a
      * <code class="prettyprint">ojBeforeOpen</code> listener.
      *
-     * <p>Menus launched manually (as opposed to those launched by built-in functionality such as the [menu button]{@link oj.ojButton#menu} and
+     * <p>Menus launched manually (as opposed to those launched by built-in functionality such as the [menu button]{@link oj.ojMenuButton} and
      * [context menu]{@link oj.baseComponent#contextMenu} functionality) must be launched via this API, not by simply unhiding the Menu DOM (such as
      * via jQuery's <code class="prettyprint">show()</code> API.
      *
@@ -2783,7 +2978,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         if (this._IsCustomElement()) {
           this.refresh();
         }
-        this.element.removeAttr('aria-activedescendant');
+        this.element.removeAttr(_ARIA_ACTIVEDESCENDANT);
         this.element.find('.oj-focus').removeClass('oj-focus');
         this.focusHandled = false;
         this._focusIsFromPointer = false;
@@ -2826,7 +3021,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         // menu is open as a context menu vs. some other kind of menu including menu button,
         // as this affects whether subsequent mousedown/touchstart on launcher should dismiss menu.  IIRC, the upcoming Popup Fmwk
         // will address this need, but if not, fix it separately, perhaps by adding a new openOptions sub-option so it can be passed to menu.open().
-        this._launcherClickShouldDismiss = this.element[0].__openingContextMenu;
+        this._isContextMenu = this.element[0].slot && this.element[0].slot === 'contextMenu';
 
         // TBD: if we ever pass submenuOpenOptions to a listener, must copy its position object first like we do for openOptions, above.
         var beforeOpenResults = this._trigger2('beforeOpen', menuEvent, { openOptions: menuOpenOptions });
@@ -2837,24 +3032,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           return;
         }
 
-        // Close menu if already open
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
-          // Disable animation since we'll be reopening the menu
-          this._disableAnimation = true;
-
-          // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch,
-          // then it should return the details for the old launch
-          this._currentOpenOptions = oldOpenOptions;
-
-          // Use the beforeOpen event as the close event's originalEvent
-          this.__dismiss(beforeOpenResults.event); // sets this._currentOpenOptions to null
-
-          // In case the menu is being opened by a different launcher, we don't
-          // want the _clickAwayHandler for the old launcher to dismiss it.
-          this._dismissEvent = null;
-
-          this._currentOpenOptions = menuOpenOptions; // restore this launch's value
-        }
+        this._closeMenuIfOpen(oldOpenOptions, beforeOpenResults, menuOpenOptions);
 
         var launcher = menuOpenOptions.launcher;
         if (!this._IsCustomElement()) {
@@ -2887,6 +3065,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           modality = _DROPDOWN_MODALITY;
           var openOptionsPosition =
             oj.PositionUtils.normalizeHorizontalAlignment(menuOpenOptions.position, this.isRtl);
+
+          const verticalOffset =
+            getCachedCSSVarValues(['--oj-private-core-global-dropdown-offset'])[0] || 0;
+          openOptionsPosition.offset = { x: 0, y: verticalOffset };
+
           // convert the position option back to JQuery format if custom element menu or submenu
           if (this._IsCustomElement()) {
             // fixup the position option if custom element menu or submenu
@@ -3083,15 +3266,15 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       return Object.assign(position, { offset: { my: scrollbarWidth * -1 } });
     },
     // JET-36321: Scroll fix for v9.x. Needs to update when implementing redwood scrolling(JET-32432)
-    // Not supported for sheetmenu or submenu
-    _updateMenuMaxHeight: function () {
-      var elem = this.element[0];
+    // Not supported for submenu
+    _updateMenuMaxHeight: function (menu) {
+      var elem = menu ? menu[0] : this.element[0];
       var isDropdown = this._isDropDown(this.options.openOptions.display);
       var hasSubmenu = elem.querySelectorAll('oj-menu').length;
       // Max height will apply will only certain condition
-      if (hasSubmenu ||
-         !isDropdown ||
-        this.rootHeight < window.innerHeight) return;
+      if (hasSubmenu || !isDropdown || elem.offsetHeight < window.innerHeight) {
+        return;
+      }
       // Leave some space between menu and viewport edge
       var bottomPadding = 25;
       var menuHeight = window.innerHeight - this.launcherHeight - bottomPadding;
@@ -3100,7 +3283,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         menuHeight = bottomPadding;
       }
       elem.style.maxHeight = menuHeight + 'px';
-      elem.style.overflowY = 'scroll';
+      elem.style.overflowY = 'auto';
     },
 
     /**
@@ -3203,8 +3386,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     },
 
     _getFirstItem: function () {
-      var firstItem = this.element.find('.oj-menu-item').first();
-      return firstItem;
+      return this.element.find(_OJ_MENU_ITEM_CLASS).first();
     },
 
     _startOpening: function (event, submenu) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
@@ -3229,7 +3411,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // Don't open if already open.
       // Calling position() again when the submenu is animating will mess up
       // the calculation and make the submenu appear in different positions.
-      if (submenu.attr('aria-hidden') !== 'true' || !this.active) {
+      if (submenu.attr(_ARIA_HIDDEN) !== 'true' || !this.active) {
         return;
       }
 
@@ -3241,8 +3423,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         if (!beforeOpenResults.proceed) {
           return;
         }
+        let submenuPosition = Object.assign(submenuWidget.options.openOptions.position,
+          { offset: { x: 0, y: Y_SUBMENU_OFFSET } });
 
-        position = oj.PositionUtils.coerceToJqUi(submenuWidget.options.openOptions.position);
+        position = oj.PositionUtils.coerceToJqUi(submenuPosition);
         position = oj.PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
       } else {
         position = this._submenuPosition;
@@ -3255,25 +3439,34 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
       this.element.find('.oj-menu').not(submenu.parents('.oj-menu'))
         .hide()
-        .attr('aria-hidden', 'true')
+        .attr(_ARIA_HIDDEN, 'true') // @HTMLUpdateOK
         .removeData(_POSITION_DATA);
-
       submenu
         .show()
-        .removeAttr('aria-hidden')
+        .removeAttr(_ARIA_HIDDEN)
         .position(position)
         .data(_POSITION_DATA, position);
 
-      this._getSubmenuAnchor(submenu).attr('aria-expanded', 'true');
+      this._getSubmenuAnchor(submenu).attr(_ARIA_EXPANDED, 'true'); // @HTMLUpdateOK
 
       if (!this._isAnimationDisabled()) {
         var busyContext = Context.getContext(this.element[0]).getBusyContext();
         var resolveBusyState = busyContext.addBusyState({ description: this._getSubmenuBusyStateDescription('opening') });
 
         var animation = this._getDefaultAnimation('submenu', 'open');
+
+        // if space is not enough, submenu will be opened on the opposite side,
+        // so we need to change the animation direction
+        if (!this.isRtl && parseFloat(submenu[0].style.left) < 0) {
+          position.my = 'right top';
+        } else if (this.isRtl && parseFloat(submenu[0].style.left) > 0) {
+          position.my = 'left top';
+        }
+
         animation = this._replaceAnimationOptions(animation, { '#myPosition': position.my });
         startAnimation(submenu[0], 'open', animation, this).then(resolveBusyState);
       }
+      this._updateMenuMaxHeight(submenu);
     },
 
     /*
@@ -3359,15 +3552,15 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var menus = startMenu.find('.oj-menu');
       var hideSubmenus = function (submenus) {
         submenus.hide()
-          .attr('aria-hidden', 'true')
+          .attr(_ARIA_HIDDEN, 'true') // @HTMLUpdateOK
           .removeData(_POSITION_DATA);
-        self._getSubmenuAnchor(submenus).attr('aria-expanded', 'false');
+        self._getSubmenuAnchor(submenus).attr(_ARIA_EXPANDED, 'false'); // @HTMLUpdateOK
       };
 
       if (this._isAnimationDisabled()) {
         // If animation is hard-disabled, just hide all submenus at once
         hideSubmenus(menus);
-        startMenu.find('.oj-focus-ancestor').removeClass('oj-focus-ancestor');
+        startMenu.find(_OJ_FOCUS_ANCESTOR).removeClass('oj-focus-ancestor');
         closePromise = Promise.resolve(true);
       } else {
         // If there is animation, recursively hide submenus level by level,
@@ -3425,7 +3618,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         closePromise = closeSubmenus(startMenu);
 
         closePromise = this._runOnPromise(closePromise, function () {
-          startMenu.find('.oj-focus-ancestor').removeClass('oj-focus-ancestor');
+          startMenu.find(_OJ_FOCUS_ANCESTOR).removeClass('oj-focus-ancestor');
         });
       }
 
@@ -3452,7 +3645,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       if (which == null || which === 'active') {
         var newItem = this.activeMenu &&
-            this.activeMenu.closest('.oj-menu-item', this.element);
+            this.activeMenu.closest(_OJ_MENU_ITEM_CLASS, this.element);
         if (newItem && newItem.length) {
           var self = this;
           promise = this._close();
@@ -3582,7 +3775,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _select: function (event) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
       // If no menu item is focused, then infer one from the event if possible.  TBD: still need this now that not public?  Or is this.active always set?
       if (!this.active && event && event.target) {
-        var menuItem = $(event.target).closest('.oj-menu-item');
+        var menuItem = $(event.target).closest(_OJ_MENU_ITEM_CLASS);
         if (menuItem.closest(this.element).length) {
           this._makeActive(menuItem, event);
         }
@@ -3693,13 +3886,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
     // @inheritdoc
     getNodeBySubId: function (locator) {
-      switch (locator && locator.subId) {
-        case _SUBID_CANCEL:
-          // only return it if it's currently in the DOM, never when it's detached
-          return this._cancelDomAttached ? this._cancelItem[0] : null;
-        default:
-          return this._super(locator);
+      if (locator && locator.subId === _SUBID_CANCEL) {
+        // only return it if it's currently in the DOM, never when it's detached
+        return this._cancelDomAttached ? this._cancelItem[0] : null;
       }
+      return this._super(locator);
     },
 
     /**
@@ -3761,7 +3952,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       if (isDropDown) {
         if (this._cancelDomAttached) {
-          getItemBeforeDivider(this.element, this._getCancelDom()).removeClass('oj-menu-item-before-divider');
+          getItemBeforeDivider(this.element,
+            this._getCancelDom()).removeClass(_OJ_MENU_ITEM_BEFORE_DIVIDER);
           this._getCancelDom().detach();
           this._cancelDomAttached = false;
         }
@@ -3770,7 +3962,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         // even if app or component has appended menu items.
         var cancelDom = this._getCancelDom();
         cancelDom.appendTo(this.element); // @HTMLUpdateOK trusted string per annotations in callee
-        getItemBeforeDivider(this.element, cancelDom).addClass('oj-menu-item-before-divider');
+        getItemBeforeDivider(this.element, cancelDom).addClass(_OJ_MENU_ITEM_BEFORE_DIVIDER);
         this._cancelDomAttached = true;
       }
     },
@@ -3805,7 +3997,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     },
 
     /**
-     * Called at create. Sets up Hammer swipe-down-to-dismiss-menu listener if enabled via SASS var.
+     * Called at create. Sets up Hammer swipe-down-to-dismiss-menu listener when
+     * --oj-private-menu-global-sheet-swipe-down-behavior value is "dismiss"
      * @private
      */
     _setupSwipeBehavior: function () {
@@ -3961,152 +4154,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this._super();
     }
-
-    // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for menus
-
-    /**
-     * @ojslot contextMenu
-     * @memberof oj.ojMenu
-     * @ignore
-     */
-
-    // API doc for inherited methods with no JS in this file:
-
-    /**
-     * <p>The &lt;oj-menu> element accepts <code class="prettyprint">oj-option</code> and <code class="prettyprint">oj-menu-select-many</code> as child elements.  See
-     * the [oj-option]{@link oj.ojOption} documentation for details about accepted children and slots.</p>
-     *
-     * @ojchild Default
-     * @memberof oj.ojMenu
-     * @ojshortdesc The oj-menu element accepts oj-option and oj-menu-select-many as child elements.
-     * @ojpreferredcontent ["OptionElement", "MenuSelectManyElement"]
-     *
-     * @example <caption>Initialize the Menu with child content specified:</caption>
-     * &lt;oj-menu>
-     *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-     *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-     *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-     * &lt;/oj-menu>
-     */
-
-    /**
-     * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Menu component.
-     *
-     * @method
-     * @name oj.ojMenu#widget
-     * @memberof oj.ojMenu
-     * @instance
-     * @ignore
-     * @return {jQuery} the root element of the component
-     */
-
-    /**
-     * Removes the menu functionality completely. This will return the element back to its pre-init state.
-     *
-     * @method
-     * @name oj.ojMenu#destroy
-     * @memberof oj.ojMenu
-     * @instance
-     * @ignore
-     */
-
-    // Fragments:
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Menu Item</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Invoke the menu item's action.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Menu</td>
-     *       <td><kbd>Swipe Down</kbd></td>
-     *       <td>Dismiss the menu, if "swipe to dismiss" is enabled by the application.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>JET Component or HTML Element having a JET Context Menu</td>
-     *       <td><kbd>Press & Hold</kbd></td>
-     *       <td>Open the context menu.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Outside of Menu</td>
-     *       <td><kbd>Touch</kbd></td>
-     *       <td>Close the menu.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * <p>Disabled items do not allow any touch interaction.
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojMenu
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td rowspan = "5">Menu Item</td>
-     *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-     *       <td>Invoke the focused menu item's action.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>UpArrow</kbd></td>
-     *       <td>Move focus to the previous menu item, wrapping around at the top.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>DownArrow</kbd></td>
-     *       <td>Move focus to the next menu item, wrapping around at the bottom.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>Home</kbd></td>
-     *       <td>Move focus to the first menu item.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>End</kbd></td>
-     *       <td>Move focus to the last menu item.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Menu Item in Top-level Menu</td>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td>Close the menu and move focus to the launcher.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>JET Component or HTML Element having a JET Context Menu</td>
-     *       <td><kbd>Shift + F10</kbd></td>
-     *       <td>Open the context menu.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * <p>* RTL refers to pages written in a right-to-left language such as Arabic.
-     *
-     * <p>Typing a letter moves focus to the first item whose title starts with that character. Repeating the same character cycles through matching items.
-     * Typing more characters within the one second timer matches those characters.
-     *
-     * <p>Note that the "Search for text when I start typing" feature in Firefox can interfere with web content that accepts keystrokes, such as this "type a letter" feature of JET Menu.
-     *
-     * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojMenu
-     */
   });
 
   setDefaultOptions(
@@ -4143,28 +4190,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         })
       }
     });
-
-  // ////////////////     SUB-IDS     //////////////////
-
-  /**
-   * <p>Sub-ID for the <a href="#dismissal-section">"Cancel"</a> menu item.</p>
-   *
-   * @ojsubid oj-menu-cancel-command
-   * @memberof oj.ojMenu
-   * @since 2.1.0
-   *
-   * @example <caption>Get the node for the "Cancel" menu item:</caption>
-   * var node = myMenu.getNodeBySubId( {'subId': 'oj-menu-cancel-command'} );
-   */
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_menu_metadata = 
 {

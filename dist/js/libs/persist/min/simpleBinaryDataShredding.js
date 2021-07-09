@@ -1,1 +1,6 @@
-define(["./persistenceUtils"],function(a){"use strict";function b(a){if(!a||1!==a.length)throw new Error({message:"shredded data is not in the correct format."});var b=a[0].data;return b&&1===b.length&&"single"===a[0].resourceType?b[0]:b}return{getShredder:function(a){return function(b){var c=b.clone(),d=c.headers.get("Etag");return c.blob().then(function(c){var e=[],f=[];return e[0]=null==b.url||0==b.url.length?b.headers.get("x-oracle-jscpt-response-url"):b.url,f[0]=c,[{name:a,resourceIdentifier:d,keys:e,data:f,resourceType:"single"}]})}},getUnshredder:function(){return function(c,d){var e=b(c);return a.setResponsePayload(d,e).then(function(a){return a.headers.set("x-oracle-jscpt-cache-expiration-date",""),a})}}}});
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define(["./persistenceUtils"],(function(e){"use strict";return{getShredder:function(e){return function(r){var t=r.clone(),n=t.headers.get("Etag");return t.blob().then((function(t){var s=[],u=[];return s[0]=null==r.url||0==r.url.length?r.headers.get("x-oracle-jscpt-response-url"):r.url,u[0]=t,[{name:e,resourceIdentifier:n,keys:s,data:u,resourceType:"single"}]}))}},getUnshredder:function(){return function(r,t){var n=function(e){if(!e||1!==e.length)throw new Error({message:"shredded data is not in the correct format."});var r=e[0].data;return r&&1===r.length&&"single"===e[0].resourceType?r[0]:r}(r);return e.setResponsePayload(t,n).then((function(e){return e.headers.set("x-oracle-jscpt-cache-expiration-date",""),e}))}}}}));

@@ -6,14 +6,7 @@
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import { AttributeUtils } from 'ojs/ojcustomelement-utils';
 
 /**
  * Component Metadata utilities.
@@ -32,17 +25,17 @@ const MetadataUtils = {};
  * @ignore
  */
 MetadataUtils.getDefaultValue = function (metadata, shouldFreeze) {
-  var defaultValue = metadata.value;
+  let defaultValue = metadata.value;
   if (defaultValue === undefined) {
     // If top level metadata isn't specified, check subproperties.
     // Note that we are not handling cases where both top level and subproperty
     // default values are provided, leaving that to auditing and build tools to check.
-    var subMeta = metadata.properties;
+    const subMeta = metadata.properties;
     if (subMeta) {
-      var complexValue = {};
-      var keys = Object.keys(subMeta);
-      for (var i = 0; i < keys.length; i++) {
-        var subpropDefault = MetadataUtils.getDefaultValue(subMeta[keys[i]]);
+      const complexValue = {};
+      const keys = Object.keys(subMeta);
+      for (let i = 0; i < keys.length; i++) {
+        const subpropDefault = MetadataUtils.getDefaultValue(subMeta[keys[i]]);
         if (subpropDefault !== undefined) {
           complexValue[keys[i]] = subpropDefault;
         }
@@ -63,8 +56,9 @@ MetadataUtils.getDefaultValue = function (metadata, shouldFreeze) {
     if (Array.isArray(defaultValue)) {
       defaultValue = shouldFreeze ? MetadataUtils.deepFreeze(defaultValue) : defaultValue.slice();
     } else if (defaultValue !== null && typeof defaultValue === 'object') {
-      defaultValue = shouldFreeze ? MetadataUtils.deepFreeze(defaultValue) :
-        oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
+      defaultValue = shouldFreeze
+        ? MetadataUtils.deepFreeze(defaultValue)
+        : oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
     }
   }
   return defaultValue;
@@ -81,13 +75,13 @@ MetadataUtils.getDefaultValue = function (metadata, shouldFreeze) {
  * @ignore
  */
 MetadataUtils.getDefaultValues = function (metadata, shouldFreeze) {
-  var defaults = {};
-  var propNames = Object.keys(metadata);
-  var hasDefaults = false;
+  const defaults = {};
+  const propNames = Object.keys(metadata);
+  let hasDefaults = false;
   propNames.forEach(function (propName) {
     // would be nice if this could be done lazily via defineProperty, but this causes
     // Object.assign to fail because the property has no setter
-    var defaultValue = MetadataUtils.getDefaultValue(metadata[propName], shouldFreeze);
+    const defaultValue = MetadataUtils.getDefaultValue(metadata[propName], shouldFreeze);
     if (defaultValue !== undefined) {
       defaults[propName] = defaultValue;
       hasDefaults = true;
@@ -110,7 +104,8 @@ MetadataUtils.deepFreeze = function (value) {
     return value;
   } else if (Array.isArray(value)) {
     // eslint-disable-next-line no-param-reassign
-    value = value.map(item => MetadataUtils.deepFreeze(item));
+    value = value.map((item) => MetadataUtils.deepFreeze(item));
+    Object.freeze(value);
   } else if (value !== null && typeof value === 'object') {
     // We should only recurse/freeze if value is a pojo.
     // proto will be null if Object.create(null) was used
@@ -127,8 +122,81 @@ MetadataUtils.deepFreeze = function (value) {
   return value;
 };
 
+MetadataUtils.getPropertyMetadata = function (propName, metadata) {
+  let propMeta = metadata;
+  if (propMeta && propName) {
+    const namePath = propName.split('.');
+    for (let i = 0; i < namePath.length; i++) {
+      propMeta = propMeta[namePath[i]];
+      if (!propMeta || namePath.length === 1 || i === namePath.length - 1 || !propMeta.properties) {
+        break;
+      }
+      propMeta = propMeta.properties;
+    }
+  }
+  return propMeta;
+};
+
+/**
+ * Checks to see whether a value is valid for an element property's enum and throws an error if not.
+ * @param  {Element}  element The custom element
+ * @param  {string}  property The property to check
+ * @param  {string}  value The property value
+ * @param  {Object}  metadata The property metadata
+ * @ignore
+ */
+MetadataUtils.checkEnumValues = function (element, property, value, metadata) {
+  // Only check enum values for string types
+  if (typeof value === 'string' && metadata) {
+    const enums = metadata.enumValues;
+    if (enums && enums.indexOf(value) === -1) {
+      throw new Error(
+        `Invalid value '${value}' found for property '${property}'.\
+Expected one of the following '${enums.toString()}'.`
+      );
+    }
+  }
+};
+
+/**
+ * Returns the attributes including the flattened dot notation versions of all complex properties.
+ * @param {Object} props The properties object
+ * @return {Array}
+ * @ignore
+ */
+MetadataUtils.getFlattenedAttributes = function (props) {
+  const attrs = [];
+  MetadataUtils._getAttributesFromProperties('', props, attrs);
+  return attrs;
+};
+
+/**
+ * Helper method which returns the attributes including the dot notation versions of all complex attributes
+ * stored on a bridge instance
+ * @param {string} parentPath The path from any parent complex property or empty string if evaluating a top level property
+ * @param {Object} props The properties metadata object
+ * @param {Array} attrs The attribute array to add to
+ * @ignore
+ */
+MetadataUtils._getAttributesFromProperties = function (parentPath, props, attrs) {
+  if (props) {
+    const propKeys = Object.keys(props);
+    propKeys.forEach((prop) => {
+      const propMeta = props[prop];
+      const concatName = parentPath + prop;
+      attrs.push(AttributeUtils.propertyNameToAttribute(concatName));
+      if (propMeta.properties) {
+        MetadataUtils._getAttributesFromProperties(concatName + '.', propMeta.properties, attrs);
+      }
+    });
+  }
+};
+
 const getDefaultValue = MetadataUtils.getDefaultValue;
 const getDefaultValues = MetadataUtils.getDefaultValues;
 const deepFreeze = MetadataUtils.deepFreeze;
+const getPropertyMetadata = MetadataUtils.getPropertyMetadata;
+const checkEnumValues = MetadataUtils.checkEnumValues;
+const getFlattenedAttributes = MetadataUtils.getFlattenedAttributes;
 
-export { deepFreeze, getDefaultValue, getDefaultValues };
+export { checkEnumValues, deepFreeze, getDefaultValue, getDefaultValues, getFlattenedAttributes, getPropertyMetadata };

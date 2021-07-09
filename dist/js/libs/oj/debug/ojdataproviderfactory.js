@@ -13,31 +13,31 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
 
     function getEnhancedDataProvider(dataProvider, options) {
         var _a, _b, _c;
-        let fetchCapability = (_a = options === null || options === void 0 ? void 0 : options.capabilities) === null || _a === void 0 ? void 0 : _a.fetchCapability;
-        let dedupCapability = (_b = options === null || options === void 0 ? void 0 : options.capabilities) === null || _b === void 0 ? void 0 : _b.dedupCapability;
-        let eventFilteringCapability = (_c = options === null || options === void 0 ? void 0 : options.capabilities) === null || _c === void 0 ? void 0 : _c.eventFilteringCapability;
-        let dataProviderFetchCapability = dataProvider.getCapability('fetchCapability');
-        let dataProviderDedupCapability = dataProvider.getCapability('dedup');
-        let dataProviderEventFilteringCapability = dataProvider.getCapability('eventFiltering');
+        const fetchCapability = (_a = options === null || options === void 0 ? void 0 : options.capabilities) === null || _a === void 0 ? void 0 : _a.fetchCapability;
+        const dedupCapability = (_b = options === null || options === void 0 ? void 0 : options.capabilities) === null || _b === void 0 ? void 0 : _b.dedupCapability;
+        const eventFilteringCapability = (_c = options === null || options === void 0 ? void 0 : options.capabilities) === null || _c === void 0 ? void 0 : _c.eventFilteringCapability;
+        const dataProviderFetchCapability = dataProvider.getCapability('fetchCapability');
+        const dataProviderDedupCapability = dataProvider.getCapability('dedup');
+        const dataProviderEventFilteringCapability = dataProvider.getCapability('eventFiltering');
         let needsCaching = true;
         let needsDedup = true;
         let needsEventFiltering = true;
         const dataProviderFetchCapabilityCaching = dataProviderFetchCapability === null || dataProviderFetchCapability === void 0 ? void 0 : dataProviderFetchCapability.caching;
-        if ((fetchCapability === null || fetchCapability === void 0 ? void 0 : fetchCapability.caching) == 'none' ||
-            dataProviderFetchCapabilityCaching == 'all' ||
-            dataProviderFetchCapabilityCaching == 'visitedByCurrentIterator') {
+        if ((fetchCapability === null || fetchCapability === void 0 ? void 0 : fetchCapability.caching) === 'none' ||
+            dataProviderFetchCapabilityCaching === 'all' ||
+            dataProviderFetchCapabilityCaching === 'visitedByCurrentIterator') {
             needsCaching = false;
         }
         const dataProviderDedupCapabilityType = dataProviderDedupCapability === null || dataProviderDedupCapability === void 0 ? void 0 : dataProviderDedupCapability.type;
-        if ((dedupCapability === null || dedupCapability === void 0 ? void 0 : dedupCapability.type) == 'none' ||
-            dataProviderDedupCapabilityType == 'global' ||
-            dataProviderDedupCapabilityType == 'iterator') {
+        if ((dedupCapability === null || dedupCapability === void 0 ? void 0 : dedupCapability.type) === 'none' ||
+            dataProviderDedupCapabilityType === 'global' ||
+            dataProviderDedupCapabilityType === 'iterator') {
             needsDedup = false;
         }
         const dataProviderEventFilteringCapabilityType = dataProviderEventFilteringCapability === null || dataProviderEventFilteringCapability === void 0 ? void 0 : dataProviderEventFilteringCapability.type;
-        if ((eventFilteringCapability === null || eventFilteringCapability === void 0 ? void 0 : eventFilteringCapability.type) == 'none' ||
-            dataProviderEventFilteringCapabilityType == 'global' ||
-            dataProviderEventFilteringCapabilityType == 'iterator') {
+        if ((eventFilteringCapability === null || eventFilteringCapability === void 0 ? void 0 : eventFilteringCapability.type) === 'none' ||
+            dataProviderEventFilteringCapabilityType === 'global' ||
+            dataProviderEventFilteringCapabilityType === 'iterator') {
             needsEventFiltering = false;
         }
         let wrappedDataProvider = dataProvider;
@@ -61,9 +61,11 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
             this.enhancedDataProvider = enhancedDataProvider;
             this.options = options;
             enhancedDataProvider.addEventListener(EnhancedTreeDataProvider._MUTATE, (event) => {
+                this.updateCache(event);
                 this.dispatchEvent(event);
             });
             enhancedDataProvider.addEventListener(EnhancedTreeDataProvider._REFRESH, (event) => {
+                this.flushCache();
                 this.dispatchEvent(event);
             });
             if (enhancedDataProvider.createOptimizedKeyMap) {
@@ -76,13 +78,16 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
                     return enhancedDataProvider.createOptimizedKeySet(initialSet);
                 };
             }
+            this._mapKeyToChild = new Map();
         }
         getChildDataProvider(parentKey) {
-            const childDataProvider = this.treeDataProvider.getChildDataProvider(parentKey);
-            if (childDataProvider) {
-                return getEnhancedDataProvider(childDataProvider, this.options);
+            const enhancedDP = this._mapKeyToChild.get(parentKey);
+            if (enhancedDP) {
+                return enhancedDP;
             }
-            return null;
+            else {
+                return this.cacheEnhancedDataProvider(parentKey);
+            }
         }
         containsKeys(parameters) {
             return this.enhancedDataProvider.containsKeys(parameters);
@@ -104,6 +109,41 @@ define(['exports', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider
         }
         isEmpty() {
             return this.enhancedDataProvider.isEmpty();
+        }
+        cacheEnhancedDataProvider(parentKey) {
+            const childDataProvider = this.treeDataProvider.getChildDataProvider(parentKey);
+            if (childDataProvider) {
+                const enhancedDP = getEnhancedDataProvider(childDataProvider, this.options);
+                this._mapKeyToChild.set(parentKey, enhancedDP);
+                return enhancedDP;
+            }
+            else {
+                return null;
+            }
+        }
+        updateCache(event) {
+            const remove = event.detail.remove;
+            const update = event.detail.update;
+            let keys;
+            if (remove) {
+                keys = remove.keys;
+                if (keys) {
+                    keys.forEach((key) => {
+                        this._mapKeyToChild.delete(key);
+                    });
+                }
+            }
+            if (update) {
+                keys = update.keys;
+                if (keys) {
+                    keys.forEach((key) => {
+                        this._mapKeyToChild.delete(key);
+                    });
+                }
+            }
+        }
+        flushCache() {
+            this._mapKeyToChild.clear();
         }
     }
     EnhancedTreeDataProvider._REFRESH = 'refresh';

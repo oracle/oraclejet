@@ -10,14 +10,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_accordion_metadata = 
 {
   "properties": {
@@ -56,14 +48,6 @@ var __oj_accordion_metadata =
     __oj_accordion_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
     oj.CustomElementBridge.register('oj-accordion', { metadata: __oj_accordion_metadata });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -141,7 +125,131 @@ var __oj_accordion_metadata =
    * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the accordion must be <code class="prettyprint">refresh()</code>ed.
    *
    */
+  //---------------------------------------------------------------
+  //                    Fragments
+  //---------------------------------------------------------------
+
+  /**
+   * <p>The <code class="prettyprint">&lt;oj-accordion></code> element accepts one or more <code class="prettyprint">&lt;oj-collapsible></code> elements as children.
+   *
+   * @ojchild Default
+   * @memberof oj.ojAccordion
+   * @ojpreferredcontent ["CollapsibleElement"]
+   *
+   * @example <caption>Initialize the Accordion with two Collapsible children specified:</caption>
+   * &lt;oj-accordion>
+   *   &lt;oj-collapsible>
+   *     &lt;h3 slot="header">Header 1&lt;/h3>
+   *     &lt;p>Content 1&lt;/p>
+   *   &lt;/oj-collapsible>
+   *   &lt;oj-collapsible expanded="true">
+   *     &lt;h3 slot="header">Header 2&lt;/h3>
+   *     &lt;p>Content 2&lt;/p>
+   *   &lt;/oj-collapsible>
+   * &lt;/oj-accordion>
+   */
+
+  /**
+   * <p>Sub-ID for the specified disclosure icon within an Accordion.</p>
+   *
+   * @property {number} index The zero-based index of the disclosure icon.
+   *
+   * @ojsubid oj-accordion-disclosure
+   * @memberof oj.ojAccordion
+   *
+   * @example <caption>Get the second disclosure icon:</caption>
+   * var node = myAccordion.getNodeBySubId({"subId": "oj-accordion-disclosure", 'index': 1});
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Toggle disclosure state.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojAccordion
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>Space or Enter</kbd></td>
+   *       <td>Toggle disclosure state.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td>Navigate to next collapsible header and if none then the next element on page.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>Shift+Tab</kbd></td>
+   *       <td>Navigate to previous collapsible header and if none then the previous element on page.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>UpArrow or LeftArrow</kbd> (<kbd>RightArrow</kbd> in RTL)</td>
+   *       <td>Move focus to the previous collapsible header with wrap around.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>DownArrow or RightArrow</kbd> (<kbd>LeftArrow</kbd> in RTL)</td>
+   *       <td>Move focus to the next collapsible header with wrap around.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Move focus to the first collapsible header.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Collapsible header</td>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Move focus to the last collapsible header.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojAccordion
+   */
+
+   //-----------------------------------------------------------------
+   //                        Widget Code
+   //-----------------------------------------------------------------
+
   (function () {
+    const OJA_COLLAPSIBLE = 'oj-accordion-collapsible';
+    const OJA_CREATED = 'oj-accordion-created';
+
+    const OJ_COLLAPSIBLE = 'oj-collapsible';
+    const OJ_COLLAPSIBLE_HEADER = 'oj-collapsible-header';
+
+    const OJ_COLLAPSIBLE_CLASS = '.oj-collapsible';
+
     oj.__registerWidget('oj.ojAccordion', $.oj.baseComponent,
       {
         widgetEventPrefix: 'oj',
@@ -335,11 +443,11 @@ var __oj_accordion_metadata =
             .removeAttr('role');
 
           this.element.children()
-            .removeClass('oj-accordion-collapsible');
+            .removeClass(OJA_COLLAPSIBLE);
 
           // remove collapsibles created by accordion
           this.element.children('.oj-accordion-created')
-            .removeClass('oj-accordion-created')
+            .removeClass(OJA_CREATED)
             .ojCollapsible('destroy');
         },
 
@@ -355,7 +463,7 @@ var __oj_accordion_metadata =
             if (!value && this.options.multiple) {
               //  - when "multiple" option value is changed to false, exception is displayed
               this.element.children('.oj-expanded')
-                .first().siblings('.oj-collapsible')
+                .first().siblings(OJ_COLLAPSIBLE_CLASS)
                 .ojCollapsible('collapse', false);
             }
           } else if (key === 'expanded') {
@@ -410,11 +518,11 @@ var __oj_accordion_metadata =
           this.collapsibles = this.element.children().not('oj-menu');
 
           if (this._IsCustomElement()) {
-            this.collapsibles.not('oj-collapsible')
+            this.collapsibles.not(OJ_COLLAPSIBLE)
               .ojCollapsible({
                 expandArea: 'header'
               })
-              .addClass('oj-accordion-created')
+              .addClass(OJA_CREATED)
               .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
           } else {
             this.element.children(':oj-collapsible')
@@ -426,11 +534,11 @@ var __oj_accordion_metadata =
               .ojCollapsible({
                 expandArea: 'header'
               })
-              .addClass('oj-accordion-created')
+              .addClass(OJA_CREATED)
               .attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
           }
 
-          this.collapsibles.addClass('oj-accordion-collapsible');
+          this.collapsibles.addClass(OJA_COLLAPSIBLE);
         },
 
         /**
@@ -468,12 +576,12 @@ var __oj_accordion_metadata =
         _keydown: function (event) {
           // ignore event if target is not a header
           if (!event.altKey && !event.ctrlKey &&
-              (($(event.target).hasClass('oj-collapsible-header')) ||
+              (($(event.target).hasClass(OJ_COLLAPSIBLE_HEADER)) ||
                ($(event.target).hasClass('oj-collapsible-header-icon')))) {
             var keyCode = $.ui.keyCode;
             var enabledCollapsibles = this.collapsibles.not('.oj-disabled');
             var length = enabledCollapsibles.length;
-            var target = $(event.target).closest('.oj-collapsible');
+            var target = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
             var currentIndex = enabledCollapsibles.index(target);
             var toFocus = false;
 
@@ -519,7 +627,7 @@ var __oj_accordion_metadata =
          */
         _findTargetSiblings: function (event) {
           if (!this.options.multiple) {
-            var closestCollapsible = $(event.target).closest('.oj-collapsible');
+            var closestCollapsible = $(event.target).closest(OJ_COLLAPSIBLE_CLASS);
             if (closestCollapsible.parent().is(':oj-ojAccordion')) {
               return closestCollapsible
                 .siblings('.oj-collapsible.oj-expanded')
@@ -672,15 +780,12 @@ var __oj_accordion_metadata =
          * @private
          */
         _initEventData: function (fromC, toC) {
-          var eventData =
-            {
+          return {
               /** @expose */
               fromCollapsible: fromC, // the collapsible being collapsed.
               /** @expose */
               toCollapsible: toC // the collapsible being expanded.
             };
-
-          return eventData;
         },
 
         /**
@@ -722,7 +827,7 @@ var __oj_accordion_metadata =
 
           this.collapsibles.each(function (index) {
             var bExpanded = false;
-            if (this.tagName.toLowerCase() === 'oj-collapsible') {
+            if (this.tagName.toLowerCase() === OJ_COLLAPSIBLE) {
               bExpanded = this.expanded;
             } else {
               bExpanded = $(this).ojCollapsible('option', 'expanded');
@@ -839,7 +944,7 @@ var __oj_accordion_metadata =
               // when the parent override the child setting:
               // 1) log a warning
               // 2) set child's expanded option with the writeback flag.
-              var isCustomElement = this.tagName.toLowerCase() === 'oj-collapsible';
+              var isCustomElement = this.tagName.toLowerCase() === OJ_COLLAPSIBLE;
               var childExp = isCustomElement ? this.expanded : child.ojCollapsible('option', 'expanded');
 
               if (childExp !== parentExp) {
@@ -860,7 +965,7 @@ var __oj_accordion_metadata =
           this._updateExpanded();
         },
 
-        //* * @inheritdoc */
+
         getNodeBySubId: function (locator) {
           if (locator == null) {
             return this.element ? this.element[0] : null;
@@ -882,7 +987,7 @@ var __oj_accordion_metadata =
               break;
 
             case 'oj-accordion-header':
-              subId = 'oj-collapsible-header';
+              subId = OJ_COLLAPSIBLE_HEADER;
               break;
 
             case 'oj-accordion-disclosure':
@@ -890,7 +995,7 @@ var __oj_accordion_metadata =
               subId = 'oj-collapsible-disclosure';
               break;
 
-            case 'oj-accordion-collapsible':
+            case OJA_COLLAPSIBLE:
               return collapsible;
 
             default:
@@ -900,7 +1005,7 @@ var __oj_accordion_metadata =
           return $(collapsible).ojCollapsible('getNodeBySubId', { subId: subId });
         },
 
-        //* * @inheritdoc */
+
         getSubIdByNode: function (node) {
           // First, find which collapsible the node is a descendant of
           var collapsibleIndex = -1;
@@ -921,7 +1026,7 @@ var __oj_accordion_metadata =
               case 'oj-collapsible-content':
                 subId = 'oj-accordion-content';
                 break;
-              case 'oj-collapsible-header':
+              case OJ_COLLAPSIBLE_HEADER:
                 subId = 'oj-accordion-header';
                 break;
               case 'oj-collapsible-disclosure':
@@ -929,7 +1034,7 @@ var __oj_accordion_metadata =
                 subId = 'oj-accordion-disclosure';
                 break;
               default:
-                subId = 'oj-accordion-collapsible';
+                subId = OJA_COLLAPSIBLE;
             }
           }
           if (subId) {
@@ -938,124 +1043,13 @@ var __oj_accordion_metadata =
           return null;
         },
 
-        //* * @inheritdoc */
+
         _CompareOptionValues: function (option, value1, value2) {
           if (option === 'expanded') {
             return oj.Object.compareValues(value1, value2);
           }
           return this._super(option, value1, value2);
         }
-
-        // Fragments:
-
-        /**
-         * <p>The <code class="prettyprint">&lt;oj-accordion></code> element accepts one or more <code class="prettyprint">&lt;oj-collapsible></code> elements as children.
-         *
-         * @ojchild Default
-         * @memberof oj.ojAccordion
-         * @ojpreferredcontent ["CollapsibleElement"]
-         *
-         * @example <caption>Initialize the Accordion with two Collapsible children specified:</caption>
-         * &lt;oj-accordion>
-         *   &lt;oj-collapsible>
-         *     &lt;h3 slot="header">Header 1&lt;/h3>
-         *     &lt;p>Content 1&lt;/p>
-         *   &lt;/oj-collapsible>
-         *   &lt;oj-collapsible expanded="true">
-         *     &lt;h3 slot="header">Header 2&lt;/h3>
-         *     &lt;p>Content 2&lt;/p>
-         *   &lt;/oj-collapsible>
-         * &lt;/oj-accordion>
-         */
-
-        /**
-         * <p>Sub-ID for the specified disclosure icon within an Accordion.</p>
-         *
-         * @property {number} index The zero-based index of the disclosure icon.
-         *
-         * @ojsubid oj-accordion-disclosure
-         * @memberof oj.ojAccordion
-         *
-         * @example <caption>Get the second disclosure icon:</caption>
-         * var node = myAccordion.getNodeBySubId({"subId": "oj-accordion-disclosure", 'index': 1});
-         */
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Gesture</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Toggle disclosure state.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojAccordion
-         */
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>Space or Enter</kbd></td>
-         *       <td>Toggle disclosure state.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>Tab</kbd></td>
-         *       <td>Navigate to next collapsible header and if none then the next element on page.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>Shift+Tab</kbd></td>
-         *       <td>Navigate to previous collapsible header and if none then the previous element on page.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>UpArrow or LeftArrow</kbd> (<kbd>RightArrow</kbd> in RTL)</td>
-         *       <td>Move focus to the previous collapsible header with wrap around.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>DownArrow or RightArrow</kbd> (<kbd>LeftArrow</kbd> in RTL)</td>
-         *       <td>Move focus to the next collapsible header with wrap around.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>Home</kbd></td>
-         *       <td>Move focus to the first collapsible header.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Collapsible header</td>
-         *       <td><kbd>End</kbd></td>
-         *       <td>Move focus to the last collapsible header.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojAccordion
-         */
-
       });
   }());
 

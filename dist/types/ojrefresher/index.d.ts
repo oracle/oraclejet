@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojRefresher extends baseComponent<ojRefresherSettableProperties> {
     refreshContent: (() => Promise<any>);
@@ -65,4 +59,18 @@ export namespace RefresherElement {
     type textChanged = JetElementCustomEvent<ojRefresher["text"]>;
     // tslint:disable-next-line interface-over-type-literal
     type thresholdChanged = JetElementCustomEvent<ojRefresher["threshold"]>;
+}
+export interface RefresherIntrinsicProps extends Partial<Readonly<ojRefresherSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onrefreshContentChanged?: (value: ojRefresherEventMap['refreshContentChanged']) => void;
+    ontargetChanged?: (value: ojRefresherEventMap['targetChanged']) => void;
+    ontextChanged?: (value: ojRefresherEventMap['textChanged']) => void;
+    onthresholdChanged?: (value: ojRefresherEventMap['thresholdChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-refresher": RefresherIntrinsicProps;
+        }
+    }
 }

@@ -1,11 +1,3 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface dvtTimeComponent<SP extends dvtTimeComponentSettableProperties = dvtTimeComponentSettableProperties> extends dvtBaseComponent<SP> {
@@ -18,9 +10,20 @@ export interface dvtTimeComponent<SP extends dvtTimeComponentSettableProperties 
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, dvtTimeComponentSettableProperties>): void;
     setProperties(properties: dvtTimeComponentSettablePropertiesLenient): void;
 }
+export namespace dvtTimeComponent {
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<SP extends dvtTimeComponentSettableProperties = dvtTimeComponentSettableProperties> = dvtBaseComponent.trackResizeChanged<SP>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
+}
 // These interfaces are empty but required to keep the event chain intact. Avoid lint-rule
 // tslint:disable-next-line no-empty-interface
 export interface dvtTimeComponentEventMap<SP extends dvtTimeComponentSettableProperties = dvtTimeComponentSettableProperties> extends dvtBaseComponentEventMap<SP> {
+    'trackResizeChanged': JetElementCustomEvent<dvtTimeComponent<SP>["trackResize"]>;
 }
 // These interfaces are empty but required to keep the component chain intact. Avoid lint-rule
 // tslint:disable-next-line no-empty-interface

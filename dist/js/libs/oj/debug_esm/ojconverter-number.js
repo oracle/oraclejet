@@ -14,14 +14,6 @@ import { getLocale } from 'ojs/ojconfig';
 import oj$1 from 'ojs/ojcore-base';
 import { ConverterError } from 'ojs/ojvalidation-error';
 
-/**
- * @license
- * Copyright (c) 2016 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /* xeslint-disable no-param-reassign */
 /**
  * @constructor
@@ -2315,13 +2307,6 @@ const OraNumberConverter = (function () {
 }());
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * oj.NumberConverter Contract.
  * @ignore
  */
@@ -2390,15 +2375,6 @@ NumberConverter.prototype.parse = function (value) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * @export
  * Placeholder here as closure compiler objects to export annotation outside of top level
  */
@@ -2409,26 +2385,29 @@ NumberConverter.prototype.parse = function (value) {
  * @name oj.IntlNumberConverter
  * @classdesc Constructs an immutable instance and initializes it with the options provided. When initialized
  * with no options, the default options for the current locale are assumed. The converters by
- * default use the current page locale (returned by oj.Config.getLocale()). There are several ways
- * to initialize the converter.
+ * default use the current page locale (set with the html lang attribute and what is returned by oj.Config.getLocale()).
+ * There are several ways to initialize the converter.
  * <p>
  * <ul>
  * <li>Using options defined by the ECMA 402 Specification, these would be the properties style,
  * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits,
  * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
- * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
- * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
- * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
+ * <li>Using the decimalFormat option to define a locale-based pattern, e.g.,
+ *  a compact pattern, such as "1M" and "1 million".</li>
+ * <li>Using the currencyFormat option to define a locale-based pattern, e.g.,
+ * a compact pattern, such as "$1M" and "$1 million".</li>
  * <li>Using the roundingMode and roundDuringParse options to round the number UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN or HALF_EVEN.</li>
+ * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property. (deprecated)</li>
  * </ul>
  * <p>
  *
  * The converter provides leniency when parsing user input value to a number in the following ways:<br/>
  *
  * <ul>
- * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is
- * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to
- * -123.45</li>
+ * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when the options are
+ * {style: "percent"} (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed as
+ * if the value was -123.45 to
+ * -123%</li>
  * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are
  * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as
  * -123.</li>
@@ -2760,6 +2739,7 @@ const IntlNumberConverter = function (options) {
  * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the
  * convenience of specifying an explicit format mask. Setting a pattern will override the default
  * locale specific format. <br/>
+ * @ojdeprecated {target: 'property', for:'pattern', since: '11.0.0', description: 'Use other options instead like style'}
  *
  * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN'|'UP'|'DOWN'|'CEILING'|'FLOOR')=} roundingMode - specifies the rounding behavior.
  * This follows the Java.Math.RoundingMode behavior. https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html
@@ -2887,6 +2867,7 @@ IntlNumberConverter.prototype.getHint = function () {
  * @export
  * @instance
  * @method getOptions
+ * @ojdeprecated {since: '11.0.0', description: 'Use resolvedOptions.'}
  */
 IntlNumberConverter.prototype.getOptions = function () {
   return IntlNumberConverter.superclass.getOptions.call(this);

@@ -11,13 +11,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs
 	Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
 	/**
-	 * @license
-	 * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-	 * The Universal Permissive License (UPL), Version 1.0
-	 * as shown at https://oss.oracle.com/licenses/upl/
-	 * @ignore
-	 */
-	/**
 	 * @ojoverviewdoc ModuleLoadingOverview - [5]JET Module Loading
 	 * @classdesc
 	 * {@ojinclude "name":"moduleLoadingOverviewDoc"}
@@ -89,14 +82,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs
 	 *
 	 * @ojfragment moduleLoadingOverviewDoc
 	 * @memberof ModuleLoadingOverview
-	 */
-
-	/**
-	 * @license
-	 * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-	 * The Universal Permissive License (UPL), Version 1.0
-	 * as shown at https://oss.oracle.com/licenses/upl/
-	 * @ignore
 	 */
 
 	oj._registerLegacyNamespaceProp('Logger', Logger);

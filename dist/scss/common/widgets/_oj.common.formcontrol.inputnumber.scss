@@ -286,24 +286,5 @@
     .oj-inputnumber.oj-warning .oj-text-field-input {
       border-color: $borderColorWarning; 
     }
-
-    // Theme defaults for properties
-    //------------------------------
-
-    $inputNumberDefaultOptions: ();
-
-    @if ($inputNumberStepOptionDefault != null) {
-      $inputNumberDefaultOptions: map-merge($inputNumberDefaultOptions, 
-      (step: $inputNumberStepOptionDefault));
-    }
-
-    @if ($inputNumberButtonChromingOptionDefault != null) {
-      $inputNumberDefaultOptions: map-merge($inputNumberDefaultOptions, 
-      (buttonChroming: $inputNumberButtonChromingOptionDefault));
-    }
-
-    .oj-input-number-option-defaults {
-        font-family: oj-json-from-map($inputNumberDefaultOptions);
-    }
   }
 }

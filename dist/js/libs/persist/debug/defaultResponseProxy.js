@@ -369,7 +369,7 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
 
         if (ifMatch || ifNoneMatch) {
           logger.log("Offline Persistence Toolkit DefaultResponseProxy: Generating ETag for offline Response for default PUT Handler");
-          var randomInt = Math.floor(Math.random() * 1000000); // @randomNumberOk - Only used to generate ETag while offline
+          var randomInt = Math.floor(Math.random() * 1000000); // @RandomNumberOK - Only used to generate ETag while offline
           requestData.headers['etag'] = (Date.now() + randomInt).toString();
           requestData.headers['x-oracle-jscpt-etag-generated'] = requestData.headers['etag'];
           delete requestData.headers['if-match'];

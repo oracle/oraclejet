@@ -10,14 +10,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlocaledata'], function (exports, oj
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace TimeUtils
    * @since 2.1.0
    * @public

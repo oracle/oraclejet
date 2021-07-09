@@ -12,13 +12,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     ojSet = ojSet && Object.prototype.hasOwnProperty.call(ojSet, 'default') ? ojSet['default'] : ojSet;
 
     /**
-     * @license
-     * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-    /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
      * Released under the MIT license.
      * http://jquery.org/license
@@ -119,7 +112,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     /**
      * @typedef {Object} ArrayDataProvider.Options
      * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
-     * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+     * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
      * This is used for cases where we would like display some indication that the data is already sorted.
      * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
      * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
@@ -150,7 +143,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
     /**
      * @typedef {Object} ArrayDataProvider.DeprecatedOptions
      * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
-     * @property {SortCriterion=} implicitSort - Optional array of {@link sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+     * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
      * This is used for cases where we would like display some indication that the data is already sorted.
      * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
      * This option is not used for cases where we want the ArrayDataProvider to apply a sort on initial fetch.
@@ -355,7 +348,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             this.AsyncIterable = class {
                 constructor(_asyncIterator) {
                     this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = function () {
+                    this[Symbol.asyncIterator] = () => {
                         return this._asyncIterator;
                     };
                 }
@@ -373,7 +366,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 }
                 ['next']() {
                     const cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
-                    let resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
+                    const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
                     this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
                     return Promise.resolve(resultObj.result);
                 }
@@ -436,7 +429,6 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     Object.defineProperty(this, ArrayDataProvider._PARENT, { value: _parent, enumerable: false });
                 }
             };
-            this._cachedIndexMap = [];
             this._sequenceNum = 0;
             this._mutationSequenceNum = 0;
             this._mapClientIdToOffset = new Map();
@@ -447,27 +439,25 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             }
         }
         containsKeys(params) {
-            let self = this;
-            return this.fetchByKeys(params).then(function (fetchByKeysResult) {
-                let results = new ojSet();
-                params[ArrayDataProvider._KEYS].forEach(function (key) {
+            return this.fetchByKeys(params).then((fetchByKeysResult) => {
+                const results = new ojSet();
+                params[ArrayDataProvider._KEYS].forEach((key) => {
                     if (fetchByKeysResult[ArrayDataProvider._RESULTS].get(key) != null) {
                         results.add(key);
                     }
                 });
-                return Promise.resolve(new self.ContainsKeysResults(params, results));
+                return Promise.resolve(new this.ContainsKeysResults(params, results));
             });
         }
         fetchByKeys(params) {
-            let self = this;
             this._generateKeysIfNeeded();
-            let results = new ojMap();
-            let keys = this._getKeys();
-            let fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+            const results = new ojMap();
+            const keys = this._getKeys();
+            const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
             let findKeyIndex, i = 0;
             if (params) {
-                let rowData = self._getRowData();
-                params[ArrayDataProvider._KEYS].forEach(function (searchKey) {
+                const rowData = this._getRowData();
+                params[ArrayDataProvider._KEYS].forEach((searchKey) => {
                     findKeyIndex = null;
                     for (i = 0; i < keys.length; i++) {
                         if (oj.Object.compareValues(keys[i], searchKey)) {
@@ -478,44 +468,46 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     if (findKeyIndex != null && findKeyIndex >= 0) {
                         let row = rowData[findKeyIndex];
                         if (fetchAttributes && fetchAttributes.length > 0) {
-                            let updatedData = {};
-                            self._filterRowAttributes(fetchAttributes, row, updatedData);
+                            const updatedData = {};
+                            this._filterRowAttributes(fetchAttributes, row, updatedData);
                             row = updatedData;
                         }
-                        results.set(searchKey, new self.Item(new self.ItemMetadata(searchKey), row));
+                        results.set(searchKey, new this.Item(new this.ItemMetadata(searchKey), row));
                     }
                 });
-                return Promise.resolve(new self.FetchByKeysResults(params, results));
+                return Promise.resolve(new this.FetchByKeysResults(params, results));
             }
             else {
                 return Promise.reject('Keys are a required parameter');
             }
         }
         fetchByOffset(params) {
-            let self = this;
-            let size = params != null ? params[ArrayDataProvider._SIZE] : -1;
-            let sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
-            let offset = params != null
+            const size = params != null ? params[ArrayDataProvider._SIZE] : -1;
+            const sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
+            const offset = params != null
                 ? params[ArrayDataProvider._OFFSET] > 0
                     ? params[ArrayDataProvider._OFFSET]
                     : 0
                 : 0;
-            let fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
-            let filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
+            const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+            const filterCriterion = params != null ? params[ArrayDataProvider._FILTERCRITERION] : null;
             this._generateKeysIfNeeded();
             let resultsArray = [];
             let done = true;
             if (params) {
-                let fetchParams = new this.FetchListParameters(size, sortCriteria, filterCriterion, fetchAttributes);
-                let iteratorResults = this._fetchFrom(fetchParams, offset, true).result;
-                let value = iteratorResults[ArrayDataProvider._VALUE];
+                const fetchParams = new this.FetchListParameters(size, sortCriteria, filterCriterion, fetchAttributes);
+                const iteratorResults = this._fetchFrom(fetchParams, offset, true).result;
+                if (fetchParams[ArrayDataProvider._SORTCRITERIA]) {
+                    params[ArrayDataProvider._SORTCRITERIA] = fetchParams[ArrayDataProvider._SORTCRITERIA];
+                }
+                const value = iteratorResults[ArrayDataProvider._VALUE];
                 done = iteratorResults[ArrayDataProvider._DONE];
-                let data = value[ArrayDataProvider._DATA];
-                let keys = value[ArrayDataProvider._METADATA].map(function (value) {
+                const data = value[ArrayDataProvider._DATA];
+                const keys = value[ArrayDataProvider._METADATA].map((value) => {
                     return value[ArrayDataProvider._KEY];
                 });
-                resultsArray = data.map(function (value, index) {
-                    return new self.Item(new self.ItemMetadata(keys[index]), value);
+                resultsArray = data.map((value, index) => {
+                    return new this.Item(new this.ItemMetadata(keys[index]), value);
                 });
                 return Promise.resolve(new this.FetchByOffsetResults(params, resultsArray, done));
             }
@@ -524,14 +516,14 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             }
         }
         fetchFirst(params) {
-            let offset = 0;
+            const offset = 0;
             return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), params, offset));
         }
         getCapability(capabilityName) {
             return ArrayDataProvider.getCapability(capabilityName);
         }
         static _getFetchCapability() {
-            let exclusionFeature = new Set();
+            const exclusionFeature = new Set();
             exclusionFeature.add('exclusion');
             return {
                 caching: 'all',
@@ -545,22 +537,22 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             };
         }
         static getCapability(capabilityName) {
-            if (capabilityName == 'sort') {
+            if (capabilityName === 'sort') {
                 return { attributes: 'multiple' };
             }
-            else if (capabilityName == 'fetchByKeys') {
+            else if (capabilityName === 'fetchByKeys') {
                 return Object.assign({ implementation: 'lookup' }, ArrayDataProvider._getFetchCapability());
             }
-            else if (capabilityName == 'fetchByOffset') {
+            else if (capabilityName === 'fetchByOffset') {
                 return Object.assign({ implementation: 'randomAccess' }, ArrayDataProvider._getFetchCapability());
             }
-            else if (capabilityName == 'fetchFirst') {
+            else if (capabilityName === 'fetchFirst') {
                 return Object.assign({ iterationSpeed: 'immediate' }, ArrayDataProvider._getFetchCapability());
             }
-            else if (capabilityName == 'fetchCapability') {
+            else if (capabilityName === 'fetchCapability') {
                 return ArrayDataProvider._getFetchCapability();
             }
-            else if (capabilityName == 'filter') {
+            else if (capabilityName === 'filter') {
                 return {
                     operators: ['$co', '$eq', '$ew', '$pr', '$gt', '$ge', '$lt', '$le', '$ne', '$regex', '$sw'],
                     attributeExpression: ['*'],
@@ -580,8 +572,8 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
         }
         createOptimizedKeyMap(initialMap) {
             if (initialMap) {
-                let map = new ojMap();
-                initialMap.forEach(function (value, key) {
+                const map = new ojMap();
+                initialMap.forEach((value, key) => {
                     map.set(key, value);
                 });
                 return map;
@@ -601,7 +593,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             return this._keys;
         }
         _indexOfKey(searchKey) {
-            let keys = this._getKeys();
+            const keys = this._getKeys();
             let keyIndex = -1;
             let i;
             for (i = 0; i < keys.length; i++) {
@@ -616,7 +608,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             this._mapClientIdToOffset.forEach((offset, clientId) => {
                 let deleteCount = 0;
                 if (removeIndexes) {
-                    removeIndexes.forEach(function (index) {
+                    removeIndexes.forEach((index) => {
                         if (index < offset) {
                             ++deleteCount;
                         }
@@ -624,7 +616,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 }
                 offset -= deleteCount;
                 if (addIndexes) {
-                    addIndexes.forEach(function (index) {
+                    addIndexes.forEach((index) => {
                         if (index < offset) {
                             ++offset;
                         }
@@ -638,15 +630,15 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 if (!this._isObservableArray(data)) {
                     throw new Error('Invalid data type. ArrayDataProvider only supports Array or observableArray.');
                 }
-                let self = this;
-                data['subscribe'](function (changes) {
-                    let i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
+                data['subscribe']((changes) => {
+                    let i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
+                    const afterKeyArray = [];
                     let addCount = 0;
                     let deleteCount = 0;
-                    self._mutationSequenceNum++;
+                    this._mutationSequenceNum++;
                     let onlyAdds = true;
                     let onlyDeletes = true;
-                    changes.forEach(function (change) {
+                    changes.forEach((change) => {
                         if (change['status'] === 'deleted') {
                             onlyAdds = false;
                             ++deleteCount;
@@ -656,25 +648,25 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             ++addCount;
                         }
                     });
-                    let updatedIndexes = [];
-                    let removeDuplicate = [];
+                    const updatedIndexes = [];
+                    const removeDuplicate = [];
                     let operationUpdateEventDetail = null;
                     let operationAddEventDetail = null;
                     let operationRemoveEventDetail = null;
-                    let generatedKeys = self._generateKeysIfNeeded();
+                    const generatedKeys = this._generateKeysIfNeeded();
                     if (!onlyAdds && !onlyDeletes) {
                         for (i = 0; i < changes.length; i++) {
                             index = changes[i].index;
                             status = changes[i].status;
-                            let iKey = self._getId(changes[i].value);
+                            const iKey = this._getId(changes[i].value);
                             for (j = 0; j < changes.length; j++) {
-                                if (j != i &&
+                                if (j !== i &&
                                     index === changes[j].index &&
                                     status !== changes[j]['status'] &&
                                     updatedIndexes.indexOf(i) < 0 &&
                                     removeDuplicate.indexOf(i) < 0) {
                                     if (iKey == null ||
-                                        oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
+                                        oj.Object.compareValues(iKey, this._getId(changes[j].value))) {
                                         if (status === 'deleted') {
                                             removeDuplicate.push(i);
                                             updatedIndexes.push(j);
@@ -689,36 +681,38 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         }
                         for (i = 0; i < changes.length; i++) {
                             if (updatedIndexes.indexOf(i) >= 0) {
-                                let key = self._getKeys()[changes[i].index];
+                                const key = this._getKeys()[changes[i].index];
                                 keyArray.push(key);
                                 dataArray.push(changes[i].value);
                                 indexArray.push(changes[i].index);
                             }
                         }
                         if (keyArray.length > 0) {
-                            metadataArray = keyArray.map(function (value) {
-                                return new self.ItemMetadata(value);
+                            metadataArray = keyArray.map((value) => {
+                                return new this.ItemMetadata(value);
                             });
-                            let keySet = new ojSet();
-                            keyArray.map(function (key) {
+                            const keySet = new ojSet();
+                            keyArray.forEach((key) => {
                                 keySet.add(key);
                             });
-                            operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, dataArray, indexArray);
+                            operationUpdateEventDetail = new this.DataProviderOperationEventDetail(this, keySet, metadataArray, dataArray, indexArray);
                         }
                     }
-                    (dataArray = []), (keyArray = []), (indexArray = []);
+                    dataArray = [];
+                    keyArray = [];
+                    indexArray = [];
                     if (!onlyAdds) {
                         for (i = 0; i < changes.length; i++) {
                             if (changes[i]['status'] === 'deleted' &&
                                 updatedIndexes.indexOf(i) < 0 &&
                                 removeDuplicate.indexOf(i) < 0) {
-                                id = self._getId(changes[i].value);
+                                id = this._getId(changes[i].value);
                                 if (id == null) {
                                     if (generatedKeys) {
                                         id = changes[i].index;
                                     }
                                     else {
-                                        id = self._getKeys()[changes[i].index];
+                                        id = this._getKeys()[changes[i].index];
                                     }
                                 }
                                 keyArray.push(id);
@@ -727,45 +721,48 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             }
                         }
                         if (keyArray.length > 0) {
-                            keyArray.map(function (key) {
-                                let keyIndex = self._indexOfKey(key);
+                            keyArray.forEach((key) => {
+                                const keyIndex = this._indexOfKey(key);
                                 if (keyIndex >= 0) {
-                                    self._keys.splice(keyIndex, 1);
+                                    this._keys.splice(keyIndex, 1);
                                 }
                             });
                         }
                         if (keyArray.length > 0) {
-                            metadataArray = keyArray.map(function (value) {
-                                return new self.ItemMetadata(value);
+                            metadataArray = keyArray.map((value) => {
+                                return new this.ItemMetadata(value);
                             });
-                            let keySet = new ojSet();
-                            keyArray.map(function (key) {
+                            const keySet = new ojSet();
+                            keyArray.forEach((key) => {
                                 keySet.add(key);
                             });
-                            operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, dataArray, indexArray);
+                            operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, keySet, metadataArray, dataArray, indexArray);
                         }
                     }
-                    (dataArray = []), (keyArray = []), (indexArray = []);
+                    dataArray = [];
+                    keyArray = [];
+                    indexArray = [];
                     if (!onlyDeletes) {
-                        let isInitiallyEmpty = self._getKeys() != null ? (self._getKeys().length > 0 ? false : true) : true;
+                        const isInitiallyEmpty = this._getKeys() != null ? (this._getKeys().length > 0 ? false : true) : true;
                         for (i = 0; i < changes.length; i++) {
                             if (changes[i]['status'] === 'added' &&
                                 updatedIndexes.indexOf(i) < 0 &&
                                 removeDuplicate.indexOf(i) < 0) {
-                                id = self._getId(changes[i].value);
-                                if (id == null && (generatedKeys || self._keysSpecified)) {
-                                    id = self._getKeys()[changes[i].index];
+                                id = this._getId(changes[i].value);
+                                if (id == null && (generatedKeys || this._keysSpecified)) {
+                                    id = this._getKeys()[changes[i].index];
                                 }
                                 if (id == null) {
-                                    id = self._sequenceNum++;
-                                    self._keys.splice(changes[i].index, 0, id);
+                                    id = this._sequenceNum;
+                                    this._sequenceNum++;
+                                    this._keys.splice(changes[i].index, 0, id);
                                 }
-                                else if (isInitiallyEmpty || self._indexOfKey(id) === -1) {
-                                    self._keys.splice(changes[i].index, 0, id);
+                                else if (isInitiallyEmpty || this._indexOfKey(id) === -1) {
+                                    this._keys.splice(changes[i].index, 0, id);
                                 }
-                                else if (!generatedKeys && !self._keysSpecified) {
+                                else if (!generatedKeys && !this._keysSpecified) {
                                     Logger.warn('added row has duplicate key ' + id);
-                                    self._keys.splice(changes[i].index, 0, id);
+                                    this._keys.splice(changes[i].index, 0, id);
                                 }
                                 keyArray.push(id);
                                 dataArray.push(changes[i].value);
@@ -776,73 +773,73 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             if (changes[i]['status'] === 'added' &&
                                 updatedIndexes.indexOf(i) < 0 &&
                                 removeDuplicate.indexOf(i) < 0) {
-                                let afterKey = self._getKeys()[changes[i].index + 1];
+                                let afterKey = this._getKeys()[changes[i].index + 1];
                                 afterKey = afterKey == null ? null : afterKey;
                                 afterKeyArray.push(afterKey);
                             }
                         }
                         if (keyArray.length > 0) {
-                            metadataArray = keyArray.map(function (value) {
-                                return new self.ItemMetadata(value);
+                            metadataArray = keyArray.map((value) => {
+                                return new this.ItemMetadata(value);
                             });
-                            let keySet = new ojSet();
-                            keyArray.map(function (key) {
+                            const keySet = new ojSet();
+                            keyArray.forEach((key) => {
                                 keySet.add(key);
                             });
-                            let afterKeySet = new ojSet();
-                            afterKeyArray.map(function (key) {
+                            const afterKeySet = new ojSet();
+                            afterKeyArray.forEach((key) => {
                                 afterKeySet.add(key);
                             });
-                            operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, afterKeySet, afterKeyArray, metadataArray, dataArray, indexArray);
+                            operationAddEventDetail = new this.DataProviderAddOperationEventDetail(this, keySet, afterKeySet, afterKeyArray, metadataArray, dataArray, indexArray);
                         }
                     }
-                    self._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+                    this._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
                 }, null, 'arrayChange');
-                data['subscribe'](function (changes) {
+                data['subscribe']((changes) => {
                     var _a, _b, _c, _d;
-                    if (self._mutationEvent) {
-                        const detail = self._mutationEvent['detail'];
-                        self._adjustIteratorOffset((_a = detail.remove) === null || _a === void 0 ? void 0 : _a.indexes, (_b = detail.add) === null || _b === void 0 ? void 0 : _b.indexes);
-                        self.dispatchEvent(self._mutationEvent);
+                    if (this._mutationEvent) {
+                        const detail = this._mutationEvent['detail'];
+                        this._adjustIteratorOffset((_a = detail.remove) === null || _a === void 0 ? void 0 : _a.indexes, (_b = detail.add) === null || _b === void 0 ? void 0 : _b.indexes);
+                        this.dispatchEvent(this._mutationEvent);
                     }
-                    else if (self._mutationRemoveEvent ||
-                        self._mutationAddEvent ||
-                        self._mutationUpdateEvent) {
-                        if (self._mutationRemoveEvent) {
-                            const detail = self._mutationRemoveEvent['detail'];
-                            self._adjustIteratorOffset((_c = detail.remove) === null || _c === void 0 ? void 0 : _c.indexes, null);
-                            self.dispatchEvent(self._mutationRemoveEvent);
+                    else if (this._mutationRemoveEvent ||
+                        this._mutationAddEvent ||
+                        this._mutationUpdateEvent) {
+                        if (this._mutationRemoveEvent) {
+                            const detail = this._mutationRemoveEvent['detail'];
+                            this._adjustIteratorOffset((_c = detail.remove) === null || _c === void 0 ? void 0 : _c.indexes, null);
+                            this.dispatchEvent(this._mutationRemoveEvent);
                         }
-                        if (self._mutationAddEvent) {
-                            const detail = self._mutationAddEvent['detail'];
-                            self._adjustIteratorOffset(null, (_d = detail.add) === null || _d === void 0 ? void 0 : _d.indexes);
-                            self.dispatchEvent(self._mutationAddEvent);
+                        if (this._mutationAddEvent) {
+                            const detail = this._mutationAddEvent['detail'];
+                            this._adjustIteratorOffset(null, (_d = detail.add) === null || _d === void 0 ? void 0 : _d.indexes);
+                            this.dispatchEvent(this._mutationAddEvent);
                         }
-                        if (self._mutationUpdateEvent) {
-                            self.dispatchEvent(self._mutationUpdateEvent);
+                        if (this._mutationUpdateEvent) {
+                            this.dispatchEvent(this._mutationUpdateEvent);
                         }
                     }
                     else {
-                        self.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                        this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
                     }
-                    self._mutationEvent = null;
-                    self._mutationRemoveEvent = null;
-                    self._mutationAddEvent = null;
-                    self._mutationUpdateEvent = null;
+                    this._mutationEvent = null;
+                    this._mutationRemoveEvent = null;
+                    this._mutationAddEvent = null;
+                    this._mutationUpdateEvent = null;
                 }, null, 'change');
             }
         }
         _fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail) {
-            let mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+            const mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             this._mutationEvent = new ojdataprovider.DataProviderMutationEvent(mutationEventDetail);
         }
         _hasSamePropValue(operationEventDetail1, operationEventDetail2, prop) {
             const errStr = '_hasSamePropValue is true';
             try {
                 if (operationEventDetail1 && operationEventDetail1[prop]) {
-                    operationEventDetail1[prop].forEach(function (prop1) {
+                    operationEventDetail1[prop].forEach((prop1) => {
                         if (operationEventDetail2 && operationEventDetail2[prop]) {
-                            operationEventDetail2[prop].forEach(function (prop2) {
+                            operationEventDetail2[prop].forEach((prop2) => {
                                 if (oj.Object.compareValues(prop1, prop2)) {
                                     throw errStr;
                                 }
@@ -862,21 +859,22 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             return false;
         }
         _isObservableArray(obj) {
-            return typeof obj == 'function' && obj.subscribe && !(obj['destroyAll'] === undefined);
+            return typeof obj === 'function' && obj.subscribe && !(obj['destroyAll'] === undefined);
         }
         _generateKeysIfNeeded() {
             if (this._keys == null) {
-                let keyAttributes = this.options != null
+                const keyAttributes = this.options != null
                     ? this.options[ArrayDataProvider._KEYATTRIBUTES] ||
                         this.options[ArrayDataProvider._IDATTRIBUTE]
                     : null;
                 this._keys = [];
-                let rowData = this._getRowData();
+                const rowData = this._getRowData();
                 let id, i = 0;
                 for (i = 0; i < rowData.length; i++) {
                     id = this._getId(rowData[i]);
-                    if (id == null || keyAttributes == '@index') {
-                        id = this._sequenceNum++;
+                    if (id == null || keyAttributes === '@index') {
+                        id = this._sequenceNum;
+                        this._sequenceNum++;
                     }
                     this._keys[i] = id;
                 }
@@ -903,7 +901,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         id[i] = this._getVal(row, keyAttributes[i]);
                     }
                 }
-                else if (keyAttributes == '@value') {
+                else if (keyAttributes === '@value') {
                     id = this._getAllVals(row);
                 }
                 else {
@@ -916,51 +914,49 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             }
         }
         _getVal(val, attr) {
-            if (typeof attr == 'string') {
-                let dotIndex = attr.indexOf('.');
+            if (typeof attr === 'string') {
+                const dotIndex = attr.indexOf('.');
                 if (dotIndex > 0) {
-                    let startAttr = attr.substring(0, dotIndex);
-                    let endAttr = attr.substring(dotIndex + 1);
-                    let subObj = val[startAttr];
+                    const startAttr = attr.substring(0, dotIndex);
+                    const endAttr = attr.substring(dotIndex + 1);
+                    const subObj = val[startAttr];
                     if (subObj) {
                         return this._getVal(subObj, endAttr);
                     }
                 }
             }
-            if (typeof val[attr] == 'function') {
+            if (typeof val[attr] === 'function') {
                 return val[attr]();
             }
             return val[attr];
         }
         _getAllVals(val) {
-            let self = this;
-            return Object.keys(val).map(function (key) {
-                return self._getVal(val, key);
+            return Object.keys(val).map((key) => {
+                return this._getVal(val, key);
             });
         }
         _fetchFrom(params, offset, useHasMore, cacheObj) {
-            let self = this;
-            let fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
+            const fetchAttributes = params != null ? params[ArrayDataProvider._ATTRIBUTES] : null;
             this._generateKeysIfNeeded();
-            let sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
-            let indexMap = this._getCachedIndexMap(sortCriteria, cacheObj);
-            let rowData = this._getRowData();
-            let mappedData = indexMap.map(function (index) {
-                let row = rowData[index];
+            const sortCriteria = params != null ? params[ArrayDataProvider._SORTCRITERIA] : null;
+            const indexMap = this._getCachedIndexMap(sortCriteria, cacheObj);
+            const rowData = this._getRowData();
+            const mappedData = indexMap.map((index) => {
+                const row = rowData[index];
                 return row;
             });
-            let mappedKeys = indexMap.map(function (index) {
-                return self._getKeys()[index];
+            const mappedKeys = indexMap.map((index) => {
+                return this._getKeys()[index];
             });
-            let fetchSize = params != null
+            const fetchSize = params != null
                 ? params[ArrayDataProvider._SIZE] > 0
                     ? params[ArrayDataProvider._SIZE]
                     : params[ArrayDataProvider._SIZE] < 0
-                        ? self._getKeys().length
+                        ? this._getKeys().length
                         : 25
                 : 25;
-            let hasMore = offset + fetchSize < mappedData.length ? true : false;
-            let mergedSortCriteria = this._mergeSortCriteria(sortCriteria);
+            let hasMore = offset + fetchSize < mappedData.length;
+            const mergedSortCriteria = this._mergeSortCriteria(sortCriteria);
             if (mergedSortCriteria != null) {
                 params = params || {};
                 params[ArrayDataProvider._SORTCRITERIA] = mergedSortCriteria;
@@ -986,23 +982,23 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     }
                     i++;
                 }
-                hasMore = i < mappedData.length ? true : false;
+                hasMore = i < mappedData.length;
             }
             else {
                 resultData = mappedData.slice(offset, offset + fetchSize);
                 resultKeys = mappedKeys.slice(offset, offset + fetchSize);
             }
             updatedOffset = offset + resultData.length;
-            filteredResultData = resultData.map(function (row) {
+            filteredResultData = resultData.map((row) => {
                 if (fetchAttributes && fetchAttributes.length > 0) {
-                    let updatedData = {};
-                    self._filterRowAttributes(fetchAttributes, row, updatedData);
+                    const updatedData = {};
+                    this._filterRowAttributes(fetchAttributes, row, updatedData);
                     row = updatedData;
                 }
                 return row;
             });
-            let resultMetadata = resultKeys.map(function (value) {
-                return new self.ItemMetadata(value);
+            const resultMetadata = resultKeys.map((value) => {
+                return new this.ItemMetadata(value);
             });
             let result = new this.FetchListResult(params, filteredResultData, resultMetadata);
             if (useHasMore ? hasMore : result.data.length > 0) {
@@ -1024,10 +1020,10 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
                 return cacheObj['indexMap'];
             }
-            let dataIndexes = this._getRowData().map(function (value, index) {
+            const dataIndexes = this._getRowData().map((value, index) => {
                 return index;
             });
-            let indexMap = this._sortData(dataIndexes, sortCriteria);
+            const indexMap = this._sortData(dataIndexes, sortCriteria);
             if (cacheObj) {
                 cacheObj['indexMap'] = indexMap;
                 cacheObj[ArrayDataProvider._MUTATIONSEQUENCENUM] = this._mutationSequenceNum;
@@ -1035,22 +1031,20 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             return indexMap;
         }
         _sortData(indexMap, sortCriteria) {
-            let self = this;
-            let rowData = this._getRowData();
-            let indexedData = indexMap.map(function (index) {
-                return { index: index, value: rowData[index] };
+            const rowData = this._getRowData();
+            const indexedData = indexMap.map((index) => {
+                return { index, value: rowData[index] };
             });
             if (sortCriteria != null) {
                 indexedData.sort(this._getSortComparator(sortCriteria));
             }
-            return indexedData.map(function (item) {
+            return indexedData.map((item) => {
                 return item.index;
             });
         }
         _getSortComparator(sortCriteria) {
-            let self = this;
-            return function (x, y) {
-                let sortComparators = self.options != null ? self.options[ArrayDataProvider._SORTCOMPARATORS] : null;
+            return (x, y) => {
+                const sortComparators = this.options != null ? this.options[ArrayDataProvider._SORTCOMPARATORS] : null;
                 let i, direction, attribute, comparator, xval, yval;
                 for (i = 0; i < sortCriteria.length; i++) {
                     direction = sortCriteria[i][ArrayDataProvider._DIRECTION];
@@ -1059,20 +1053,20 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                     if (sortComparators != null) {
                         comparator = sortComparators[ArrayDataProvider._COMPARATORS].get(attribute);
                     }
-                    xval = self._getVal(x.value, attribute);
-                    yval = self._getVal(y.value, attribute);
+                    xval = this._getVal(x.value, attribute);
+                    yval = this._getVal(y.value, attribute);
                     if (comparator != null) {
-                        let descendingResult = direction == 'descending' ? -1 : 1;
-                        let comparatorResult = comparator(xval, yval) * descendingResult;
-                        if (comparatorResult != 0) {
+                        const descendingResult = direction === 'descending' ? -1 : 1;
+                        const comparatorResult = comparator(xval, yval) * descendingResult;
+                        if (comparatorResult !== 0) {
                             return comparatorResult;
                         }
                     }
                     else {
                         let compareResult = 0;
-                        let strX = typeof xval === 'string' ? xval : new String(xval).toString();
-                        let strY = typeof yval === 'string' ? yval : new String(yval).toString();
-                        if (direction == 'ascending') {
+                        const strX = typeof xval === 'string' ? xval : xval.toString();
+                        const strY = typeof yval === 'string' ? yval : yval.toString();
+                        if (direction === 'ascending') {
                             compareResult = strX.localeCompare(strY, undefined, {
                                 numeric: true,
                                 sensitivity: 'base'
@@ -1084,7 +1078,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                                 sensitivity: 'base'
                             });
                         }
-                        if (compareResult != 0) {
+                        if (compareResult !== 0) {
                             return compareResult;
                         }
                     }
@@ -1093,17 +1087,17 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             };
         }
         _mergeSortCriteria(sortCriteria) {
-            let implicitSort = this.options != null ? this.options[ArrayDataProvider._IMPLICITSORT] : null;
+            const implicitSort = this.options != null ? this.options[ArrayDataProvider._IMPLICITSORT] : null;
             if (implicitSort != null) {
                 if (sortCriteria == null) {
                     return implicitSort;
                 }
-                let mergedSortCriteria = sortCriteria.slice(0);
+                const mergedSortCriteria = sortCriteria.slice(0);
                 let i, j, found;
                 for (i = 0; i < implicitSort.length; i++) {
                     found = false;
                     for (j = 0; j < mergedSortCriteria.length; j++) {
-                        if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] ==
+                        if (mergedSortCriteria[j][ArrayDataProvider._ATTRIBUTE] ===
                             implicitSort[i][ArrayDataProvider._ATTRIBUTE]) {
                             found = true;
                         }
@@ -1119,16 +1113,15 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             }
         }
         _filterRowAttributes(fetchAttribute, data, updatedData) {
-            let self = this;
             if (Array.isArray(fetchAttribute)) {
                 let fetchAllAttributes = false;
-                fetchAttribute.forEach(function (key) {
-                    if (key == ArrayDataProvider._ATDEFAULT || key.name == ArrayDataProvider._ATDEFAULT) {
+                fetchAttribute.forEach((key) => {
+                    if (key === ArrayDataProvider._ATDEFAULT || key.name === ArrayDataProvider._ATDEFAULT) {
                         fetchAllAttributes = true;
                     }
                 });
                 let i;
-                Object.keys(data).forEach(function (dataAttr) {
+                Object.keys(data).forEach((dataAttr) => {
                     if (fetchAllAttributes) {
                         let excludeAttribute = false;
                         let fetchAttr = dataAttr;
@@ -1142,22 +1135,22 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             }
                             if (attribute.startsWith('!')) {
                                 attribute = attribute.substr(1, attribute.length - 1);
-                                if (attribute == dataAttr) {
+                                if (attribute === dataAttr) {
                                     excludeAttribute = true;
                                     break;
                                 }
                             }
-                            else if (attribute == dataAttr) {
+                            else if (attribute === dataAttr) {
                                 fetchAttr = fetchAttribute[i];
                                 break;
                             }
                         }
                         if (!excludeAttribute) {
-                            self._filterRowAttributes(fetchAttr, data, updatedData);
+                            this._filterRowAttributes(fetchAttr, data, updatedData);
                         }
                     }
                     else {
-                        fetchAttribute.forEach(function (fetchAttr) {
+                        fetchAttribute.forEach((fetchAttr) => {
                             let attribute;
                             if (fetchAttr instanceof Object) {
                                 attribute = fetchAttr['name'];
@@ -1165,38 +1158,38 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                             else {
                                 attribute = fetchAttr;
                             }
-                            if (!attribute.startsWith('!') && attribute == dataAttr) {
-                                self._filterRowAttributes(fetchAttr, data, updatedData);
+                            if (!attribute.startsWith('!') && attribute === dataAttr) {
+                                this._filterRowAttributes(fetchAttr, data, updatedData);
                             }
                         });
                     }
                 });
             }
             else if (fetchAttribute instanceof Object) {
-                let name = fetchAttribute['name'];
-                let attributes = fetchAttribute['attributes'];
+                const name = fetchAttribute['name'];
+                const attributes = fetchAttribute['attributes'];
                 if (name && !name.startsWith('!')) {
                     if (data[name] instanceof Object && !Array.isArray(data[name]) && attributes) {
-                        let updatedDataSubObj = {};
-                        self._filterRowAttributes(attributes, data[name], updatedDataSubObj);
+                        const updatedDataSubObj = {};
+                        this._filterRowAttributes(attributes, data[name], updatedDataSubObj);
                         updatedData[name] = updatedDataSubObj;
                     }
                     else if (Array.isArray(data[name]) && attributes) {
                         updatedData[name] = [];
                         let updatedDataArrayItem;
-                        data[name].forEach(function (arrVal, index) {
+                        data[name].forEach((arrVal, index) => {
                             updatedDataArrayItem = {};
-                            self._filterRowAttributes(attributes, arrVal, updatedDataArrayItem);
+                            this._filterRowAttributes(attributes, arrVal, updatedDataArrayItem);
                             updatedData[name][index] = updatedDataArrayItem;
                         });
                     }
                     else {
-                        self._proxyAttribute(updatedData, data, name);
+                        this._proxyAttribute(updatedData, data, name);
                     }
                 }
             }
             else {
-                self._proxyAttribute(updatedData, data, fetchAttribute);
+                this._proxyAttribute(updatedData, data, fetchAttribute);
             }
         }
         _proxyAttribute(updatedData, data, attribute) {
@@ -1204,10 +1197,10 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 return;
             }
             Object.defineProperty(updatedData, attribute, {
-                get: function () {
+                get() {
                     return data[attribute];
                 },
-                set: function (val) {
+                set(val) {
                     data[attribute] = val;
                 },
                 enumerable: true

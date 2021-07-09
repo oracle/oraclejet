@@ -353,14 +353,14 @@
      * Applied to the multi-select selected choice
      */
     .oj-select-selected-choice {
-      position: relative;
-      line-height: 1.8rem;
+      line-height: 1.9rem;
+      display: flex;
+      align-items: center;
       cursor: default;
 
-        @include oj-border-radius($buttonBorderRadius);
-        border: 1px solid $buttonOutlinedChromeBorderColor;
-        color: $buttonOutlinedChromeTextColor;        
-
+      @include oj-border-radius($buttonBorderRadius);
+      border: 1px solid $buttonOutlinedChromeBorderColor;
+      color: $buttonOutlinedChromeTextColor;        
 
       background-clip: padding-box;
       @include oj-ltr() {
@@ -396,6 +396,7 @@
     .oj-select-selected-choice-separator {
       display: inline-block;
       vertical-align: middle;
+      word-break: break-word;
     }
 
     /*
@@ -565,6 +566,9 @@
     {
       $selectDefaultOptions: map-merge($selectDefaultOptions, (renderMode: $selectRenderModeOptionDefault));
     }
+    @if ($loadingIndicatorDelayDuration) {
+      $selectDefaultOptions: map-merge($selectDefaultOptions, (loadingIndicatorDelay: $loadingIndicatorDelayDuration));
+    }
     .oj-select-option-defaults {
       font-family: oj-json-from-map($selectDefaultOptions);
     }
@@ -640,6 +644,20 @@
      */
     .oj-select-select:not(.oj-focus-highlight):focus {
       outline: none;
+    }
+
+    /**
+     * Styling for loading state
+     */
+    .oj-select.oj-loading .oj-select-accessible-container {
+      background-image: $loadingBgImage;
+      animation: LoadingGradientAnimation 3s infinite; 
+      background-size: 200% 200%;
+      opacity: 1;
+    }
+    
+    .oj-select.oj-loading .oj-select-arrow {
+      display: none;
     }
 
     //jet theme

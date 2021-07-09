@@ -8,14 +8,6 @@
 import { Obj, SelectionEffectUtils, IconButton, Displayable, Agent, MouseEvent, KeyboardHandler, Rectangle, Rect, Automation, BaseComponentDefaults, CSSStyle, TextUtils, EventManager, SimpleMarker, EventFactory, SimpleObjPeer, JsonUtils, ToolkitUtils, KeyboardEvent, SimpleScrollableContainer, Container, Dimension, LayoutUtils, OutputText, ImageMarker, PatternFill, Line, Stroke, BaseComponent, CategoryRolloverHandler, ResourceUtils, AriaUtils } from 'ojs/ojdvt-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Utility functions for Legend.
  * @class
  */
@@ -63,14 +55,6 @@ const DvtLegendUtils = {
     return section['expanded'] == 'off' || section['expanded'] == false || (options.expanded && options.expanded.has(section.id) == false);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Logical object for legend data object displayables.
@@ -397,14 +381,6 @@ DvtLegendObjPeer.prototype.hideHoverEffect = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtLegendAutomation
  *  @param {Legend} dvtComponent
@@ -663,14 +639,6 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -747,14 +715,6 @@ DvtLegendDefaults.getGapSize = function(legend, defaultSize) {
 DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
   return {'sections': {'items': {'_getDataContext': true}} };
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for Legend.
@@ -1098,14 +1058,6 @@ DvtLegendEventManager.prototype.ShowRejectedDropEffect = function(event) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {Legend} legend
   *  @class DvtLegendKeyboardHandler
@@ -1178,14 +1130,6 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for Legend.
  * @class
  */
@@ -1220,7 +1164,9 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   if (!options['isLayout'])
     DvtLegendRenderer._renderBackground(legend, availSpace);
 
-  var container = new SimpleScrollableContainer(context, availSpace.w, availSpace.h);
+  // setting scroll to 'always' in redwood
+  var visibleScrolling = (context.getThemeBehavior() === 'redwood') ? 'always' : 'asNeeded';
+  var container = new SimpleScrollableContainer(context, availSpace.w, availSpace.h, visibleScrolling);
   var contentContainer = new Container(context);
   container.getScrollingPane().addChild(contentContainer);
   legend.addChild(container);
@@ -2119,14 +2065,6 @@ DvtLegendRenderer._getBoxPlotOptions = function(item, prefix) {
     'style': (item['_boxPlot'][prefix + 'Style'] || item['_boxPlot'][prefix + 'svgStyle'])
   };
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Legend component.  This class should never be instantiated directly.  Use the

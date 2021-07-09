@@ -13,14 +13,6 @@ import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { startAnimation } from 'ojs/ojanimation';
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * A collection of ModuleAnimation implementations that can be specified on the "animation"
  * option of ojModule binding.<br><br>
  * These implementations assume that either the ojModule binding is on a real HTML element

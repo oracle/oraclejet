@@ -8,16 +8,8 @@
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import Context from 'ojs/ojcontext';
-import { getThemeName } from 'ojs/ojthemeutils';
+import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import 'ojs/ojcomponentcore';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 var __oj_train_metadata = 
 {
@@ -61,14 +53,6 @@ var __oj_train_metadata =
 }());
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojTrain
  * @augments oj.baseComponent
  *
@@ -109,7 +93,162 @@ var __oj_train_metadata =
  *
  * {@ojinclude "name":"keyboardDoc"}
  */
-// --------------------------------------------------- oj.ojTrain Styling Start -----------------------------------------------------------
+
+//-----------------------------------------------------
+//                   Fragments
+//-----------------------------------------------------
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *    <tr>
+ *       <td>Step</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Move to the targeted step</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Step Label</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Move to the targeted step</td>
+ *    </tr>
+ *   </tbody>
+ *  </table>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojTrain
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>Tab</kbd></td>
+ *       <td> Move focus to the next selectable step. </tr>
+ *     <tr>
+ *       <td><kbd>Shift+Tab</kbd></td>
+ *       <td> Move focus to the previous selectable step.</tr>
+ *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td> Select the focused step.</tr>
+ *   </tbody>
+ *  </table>
+ *
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojTrain
+ */
+
+//-----------------------------------------------------
+//                   Sub-ids
+//-----------------------------------------------------
+/**
+ * <p>Sub-ID for the specified train step.</p>
+ *
+ * @property {number} index The zero-based index of the train step.
+ *
+ * @ojsubid oj-train-step
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the second step:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-step', 'index': 1});
+ */
+
+/**
+ * <p>Sub-ID for the specified train step button.</p>
+ *
+ * @property {number} index The zero-based index of the train step.
+ *
+ * @ojsubid oj-train-button
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the button of the second step:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button', 'index': 1});
+ * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
+ * @ignore
+ */
+
+/**
+ * <p>Sub-ID for the train step button connector background.</p>
+ *
+ * @property {number} index The zero-based index of the train step.
+ *
+ * @ojsubid oj-train-button-connector
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the button connector background of the second step:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button-connector', 'index': 1});
+ * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
+ * @ignore
+ */
+
+/**
+ * <p>Sub-ID for the train background connector bar.</p>
+ *
+ * @ojsubid oj-train-connector
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the background connector bar of the train:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector'});
+ * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
+ * @ignore
+ */
+
+/**
+ * <p>Sub-ID for the train background connector bar fill inidcating the train progress.</p>
+ *
+ * @ojsubid oj-train-connector-fill
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the train background connector bar fill:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector-fill'});
+ * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
+ * @ignore
+ */
+
+/**
+ * <p>Sub-ID for the specified train step icon.</p>
+ *
+ * @property {number} index The zero-based index of the train step.
+ *
+ * @ojsubid oj-train-icon
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the icon of the second step:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-icon', 'index': 1});
+ * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
+ * @ignore
+ */
+
+/**
+ * <p>Sub-ID for the specified train step label.</p>
+ *
+ * @property {number} index The zero-based index of the train step.
+ *
+ * @ojsubid oj-train-label
+ * @memberof oj.ojTrain
+ *
+ * @example <caption>Get the label of the second step:</caption>
+ * var node = myTrain.getNodeBySubId({'subId': 'oj-train-label', 'index': 1});
+ * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
+ * @ignore
+ */
+
+//-----------------------------------------------------
+//                   Styling
+//-----------------------------------------------------
 // ---------------- oj-train-stretch --------------
 /**
 * Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified.
@@ -120,8 +259,80 @@ var __oj_train_metadata =
 * &lt;oj-train selected-step="{{currentStepValue}}" steps="{{stepArray}}" class="oj-train-stretch">
 * &lt;/oj-train>
 */
-// --------------------------------------------------- oj.ojTrain Styling End -----------------------------------------------------------
-
+/**
+* @ojstylevariableset oj-train-css-set1
+* @ojstylevariable oj-train-step-width {description: "Train step width", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-step-border-radius {description: "Train step border radius", formats: ["length","percentage"], help: "#css-variables"}
+* @ojstylevariable oj-train-padding {description: "Train padding", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-label-font-size {description: "Train label font size", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-label-font-weight {description: "Train label font weight", formats: ["font_weight"], help: "#css-variables"}
+* @ojstylevariable oj-train-label-padding-top {description: "Train label padding top", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-button-diameter {description: "Train button diameter", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-button-font-size {description: "Train button font size", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-connector-height {description: "Train connector height", formats: ["length"], help: "#css-variables"}
+* @ojstylevariable oj-train-connector-padding {description: "Train connector padding", formats: ["length"], help: "#css-variables"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set2
+* @ojdisplayname Default
+* @ojstylevariable oj-train-button-bg-color {description: "Default train button background color", formats: ["color"], help: "#oj-train-css-set2"}
+* @ojstylevariable oj-train-button-border-color {description: "Default train button border color", formats: ["color"], help: "#oj-train-css-set2"}
+* @ojstylevariable oj-train-button-text-color {description: "Default train button text color", formats: ["color"], help: "#oj-train-css-set2"}
+* @ojstylevariable oj-train-label-color {description: "Default label color", formats: ["color"], help: "#oj-train-css-set2"}
+* @ojstylevariable oj-train-connector-color {description: "Default train connector color", formats: ["color"], help: "#oj-train-css-set2"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set3
+* @ojdisplayname Visited
+* @ojstylevariable oj-train-button-bg-color-visited {description: "Train button background color when visited", formats: ["color"], help: "#oj-train-css-set3"}
+* @ojstylevariable oj-train-button-border-color-visited {description: "Train button border color when visited",formats: ["color"], help: "#oj-train-css-set3"}
+* @ojstylevariable oj-train-button-text-color-visited {description: "Train button text color when visited", formats: ["color"], help: "#oj-train-css-set3"}
+* @ojstylevariable oj-train-label-color-visited {description: "Train label color when visited", formats: ["color"], help: "#oj-train-css-set3"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set4
+* @ojdisplayname Hovered
+* @ojstylevariable oj-train-button-bg-color-hover {description: "Train button background color when hovered", formats: ["color"], help: "#oj-train-css-set4"}
+* @ojstylevariable oj-train-button-border-color-hover {description: "Train button border color when hovered", formats: ["color"], help: "#oj-train-css-set4"}
+* @ojstylevariable oj-train-button-text-color-hover {description: "Train button text color when hovered", formats: ["color"], help: "#oj-train-css-set4"}
+* @ojstylevariable oj-train-step-bg-color-hover {description: "Train step background color when hovered", formats: ["color"], help: "#oj-train-css-set4"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set5
+* @ojdisplayname Active
+* @ojstylevariable oj-train-button-bg-color-active {description: "Train button background color when active", formats: ["color"], help: "#oj-train-css-set5"}
+* @ojstylevariable oj-train-button-border-color-active {description: "Train button border color when active", formats: ["color"], help: "#oj-train-css-set5"}
+* @ojstylevariable oj-train-button-text-color-active {description: "Train button text color when active", formats: ["color"], help: "#oj-train-css-set5"}
+* @ojstylevariable oj-train-label-font-weight-active {description: "Train label font weight when active", formats: ["font_weight"], help: "#oj-train-css-set5"}
+* @ojstylevariable oj-train-step-bg-color-active {description: "Train step background color when active", formats: ["color"], help: "#oj-train-css-set5"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set6
+* @ojdisplayname Selected
+* @ojstylevariable oj-train-button-bg-color-selected {description: "Train button background color when selected", formats: ["color"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-button-border-color-selected {description: "Train button border color when selected", formats: ["color"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-button-text-color-selected {description: "Train button text color when selected", formats: ["color"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-label-font-weight-selected {description: "Train label font weight when selected", formats: ["font_weight"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-label-color-selected {description: "Train label color when selected",formats: ["color"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-connector-color-selected {description: "Train connector color when selected", formats: ["color"], help: "#oj-train-css-set6"}
+* @ojstylevariable oj-train-connector-padding-selected {description: "Train connector padding when selected", formats: ["length"], help: "#oj-train-css-set6"}
+* @memberof oj.ojTrain
+*/
+/**
+* @ojstylevariableset oj-train-css-set7
+* @ojdisplayname Disabled
+* @ojstylevariable oj-train-button-bg-color-disabled {description: "Train button background color when disabled", formats: ["color"], help: "#oj-train-css-set7"}
+* @ojstylevariable oj-train-button-border-color-disabled {description: "Train button border color when disabled", formats: ["color"], help: "#oj-train-css-set7"}
+* @ojstylevariable oj-train-button-text-color-disabled {description: "Train button text color when disabled", formats: ["color"], help: "#oj-train-css-set7"}
+* @ojstylevariable oj-train-button-opacity-disabled {description: "Train button opacity when disabled", formats: ["number","percentage"], help: "#oj-train-css-set7"}
+* @ojstylevariable oj-train-label-color-disabled {description: "Train label color when disabled", formats: ["color"], help: "#oj-train-css-set7"}
+* @memberof oj.ojTrain
+*/
 (function () {
   oj.__registerWidget('oj.ojTrain', $.oj.baseComponent,
     {
@@ -136,7 +347,7 @@ var __oj_train_metadata =
          * @property {string} label label of the step
          * @property {boolean} [disabled] indicates whether the step is disabled
          * @property {boolean} [visited] indicates whether the step has been visited
-         * @property {"info"|"error"|"fatal"|"warning"|"confirmation"} [messageType] the type of message icon displayed on the step
+         * @property {"info"|"error"|"fatal"|"warning"|"confirmation"|null} [messageType] the type of message icon displayed on the step, null removes the message icon
          *
          */
 
@@ -376,18 +587,13 @@ var __oj_train_metadata =
             stepTag.css('width', (100 / (this._stepNum)) + '%');
           }
 
-          var themeName = getThemeName();
+          var behavior = parseJSONFromFontFamily('oj-theme-json').behavior;
 
-          if (themeName.includes('redwood') && !disabled && this._selectedIndex !== i) {
+          if (behavior.includes('redwood') && !disabled && this._selectedIndex !== i) {
             this._AddHoverable(stepTag);
             this._AddActiveable(stepTag);
 
-            stepTag.on('click' + this.eventNamespace, function (stepID, event) {
-              if (event.keyCode === $.ui.keyCode.ENTER || event.type === 'click') {
-                event.preventDefault();
-                this._fireSelectedStepOptionChange(stepID, event);
-              }
-            }.bind(this, stepId));
+            stepTag.on('click' + this.eventNamespace, this._preventDefaultAndFireSelectedStepOptionChange.bind(this, stepId));
           }
         }
 
@@ -400,6 +606,13 @@ var __oj_train_metadata =
         this._stepList.appendTo(this._wrapper);// @HTMLUpdateOK
 
         this.element.addClass('oj-train');
+      },
+
+      _preventDefaultAndFireSelectedStepOptionChange(stepID, event) {
+        if (event.keyCode === $.ui.keyCode.ENTER || event.type === 'click') {
+          event.preventDefault();
+          this._fireSelectedStepOptionChange(stepID, event);
+        }
       },
 
       /**
@@ -415,13 +628,17 @@ var __oj_train_metadata =
         this._stepArray = [];
         for (var i = 0; i < this._stepNum; i++) {
           var step = options.steps[i];
-          this._stepArray[i] = new Array(5);
+          this._stepArray[i] = [];
           this._stepArray[i][0] = step.label ? step.label : null;
           this._stepArray[i][1] = step.id ? step.id : null;
           this._stepArray[i][2] = !!step.disabled;
           this._stepArray[i][3] = !!step.visited;
           this._stepArray[i][4] = step.messageType ? step.messageType : null;
         }
+      },
+
+      _newDivElement() {
+        return $('<div></div>');
       },
 
       /**
@@ -433,7 +650,7 @@ var __oj_train_metadata =
        * @private
        */
       _drawButton: function (index) {
-        var button = $('<div></div>')
+        var button = this._newDivElement()
             .addClass('oj-train-button');
         var scrnRead = $('<span></span>');
         var desc = '';
@@ -489,7 +706,7 @@ var __oj_train_metadata =
        */
       _drawMessageType: function (index) {
         if (this._stepArray[index] && this._stepArray[index][4]) {
-          var icon = $('<div></div>')
+          var icon = this._newDivElement()
               .addClass('oj-train-icon oj-component-icon')
               .attr('aria-hidden', 'true');
           var scrnRead = $('<span></span>');
@@ -502,10 +719,7 @@ var __oj_train_metadata =
           } else if (messageType === 'info') {
             icon.addClass('oj-info');
             desc = ' Info ';
-          } else if (messageType === 'error') {
-            icon.addClass('oj-error');
-            desc = ' Error ';
-          } else if (messageType === 'fatal') {
+          } else if (messageType === 'error' || messageType === 'fatal') {
             icon.addClass('oj-error');
             desc = ' Error ';
           } else if (messageType === 'warning') {
@@ -595,7 +809,7 @@ var __oj_train_metadata =
        * @private
        */
       _drawStepNumberLabel: function (index) {
-        var stepNumberLabel = $('<div></div>')
+        var stepNumberLabel = this._newDivElement()
                .addClass('oj-train-button-text');
         stepNumberLabel.append((index + 1).toString());// @HTMLUpdateOK
         var stepBackground = this._stepList.children().eq(index).find('.oj-train-button');
@@ -612,7 +826,7 @@ var __oj_train_metadata =
        */
       _drawIndividualConnectorLine: function (index) {
         if (index !== this._stepNum - 1) {
-          var stepConnector = $('<div></div>')
+          var stepConnector = this._newDivElement()
               .addClass('oj-train-step-individual-connector');
           if (index < this._selectedIndex) {
             stepConnector.addClass('oj-train-connector-before-selected-step');
@@ -630,7 +844,7 @@ var __oj_train_metadata =
        * @private
        */
       _drawStepFill: function (index) {
-        var stepFill = $('<div></div>');
+        var stepFill = this._newDivElement();
         stepFill.addClass('oj-train-button-connector');
         if (this._stepArray[index]) {
           if (index <= this._selectedIndex) {
@@ -651,7 +865,7 @@ var __oj_train_metadata =
        */
       _drawLabel: function (index) {
         if (this._stepArray[index]) {
-          var labelWrapper = $('<div></div>')
+          var labelWrapper = this._newDivElement()
                 .addClass('oj-train-label-wrapper');
           var label = $('<a>');
           label.text(this._stepArray[index][0]);
@@ -676,16 +890,7 @@ var __oj_train_metadata =
 
             var stepId = this._stepArray[index][1];
 
-            label.on('click keydown' + this.eventNamespace,
-            /**
-             * @suppress {missingProperties}
-             */
-            function (stepID, event) {
-              if (event.keyCode === $.ui.keyCode.ENTER || event.type === 'click') {
-                event.preventDefault();
-                this._fireSelectedStepOptionChange(stepID, event);
-              }
-            }.bind(this, stepId));
+            label.on('click keydown' + this.eventNamespace, this._preventDefaultAndFireSelectedStepOptionChange.bind(this, stepId));
           }
           var stepLi = this._stepList.children().eq(index).children();
           if (stepLi.length >= 2) {
@@ -825,7 +1030,7 @@ var __oj_train_metadata =
        * @param {string} [stepProperties.label] label of step
        * @param {boolean} [stepProperties.disabled] whether step is disabled
        * @param {boolean} [stepProperties.visited] whether step has been visited
-       * @param {"info"|"error"|"fatal"|"warning"|"confirmation"} [stepProperties.messageType] type of message displayed
+       * @param {"info"|"error"|"fatal"|"warning"|"confirmation"| null} [stepProperties.messageType] type of message displayed, null resets to default step without message
        * @instance
        * @memberof oj.ojTrain
        * @return {void}
@@ -852,10 +1057,12 @@ var __oj_train_metadata =
               stepInfo[3] = stepProperties.visited;
               stepObj.visited = stepProperties.visited;
             }
-            if (stepProperties.messageType) {
+            if (typeof (stepProperties.messageType) === 'string' ||
+               (stepObj.messageType != null && stepProperties.messageType === null)) {
               stepInfo[4] = stepProperties.messageType;
               stepObj.messageType = stepProperties.messageType;
             }
+
             this.refresh();
           }
         }
@@ -897,6 +1104,10 @@ var __oj_train_metadata =
         }
       },
 
+      _busyContextAnimatingDescription(msg) {
+        return msg + "' is animating.";
+      },
+
       /**
        * Refreshes the train.
        *
@@ -908,7 +1119,6 @@ var __oj_train_metadata =
        * @instance
        */
       refresh: function () {
-        // TODO: Refresh should not call destroy.
         this._super();
         this._destroy();
         this._setupTrain();
@@ -929,8 +1139,8 @@ var __oj_train_metadata =
           var selectedAnimationDuration = parseFloat($(selectedButton).css('animationDuration'));
           if (selectedAnimationDuration > 0) {
             var selectedButtonAnimationResolve = selectedButtonBusyContext.addBusyState(
-                    { description: "The train selected button index='" +
-                      this._selectedIndex + "' is animating." });
+                    { description: this._busyContextAnimatingDescription("The train selected button index='" +
+                      this._selectedIndex) });
 
 
             setTimeout(function () {
@@ -945,8 +1155,8 @@ var __oj_train_metadata =
           var visitedAnimationDuration = parseFloat($(visitedButton).css('animationDuration'));
           if (visitedAnimationDuration > 0) {
             var visitedButtonAnimationResolve = visitedButtonBusyContext.addBusyState(
-                            { description: "The train visited button index='" +
-                              this._previousStepIndex + "' is animating." });
+                            { description: this._busyContextAnimatingDescription("The train visited button index='" +
+                              this._previousStepIndex) });
 
 
             setTimeout(function () {
@@ -961,8 +1171,8 @@ var __oj_train_metadata =
           var iconAnimationDuration = parseFloat($(previousStepIcon).css('animationDuration'));
           if (iconAnimationDuration > 0) {
             var iconAnimationResolve = iconBusyContext.addBusyState(
-                { description: "The train icon index='" +
-                  this._previousStepIndex + "' is animating." });
+                { description: this._busyContextAnimatingDescription("The train icon index='" +
+                  this._previousStepIndex) });
 
             setTimeout(function () {
               iconAnimationResolve();
@@ -976,8 +1186,8 @@ var __oj_train_metadata =
           var selectedIconAnimationDuration = parseFloat($(selectedStepIcon).css('animationDuration'));
           if (selectedIconAnimationDuration > 0) {
             var selectedIconAnimationResolve = selectedIconBusyContext.addBusyState(
-                { description: "The train icon index='" +
-                  this._selectedIndex + "' is animating." });
+                { description: this._busyContextAnimatingDescription("The train icon index='" +
+                  this._selectedIndex) });
 
             setTimeout(function () {
               selectedIconAnimationResolve();
@@ -1037,7 +1247,7 @@ var __oj_train_metadata =
         this._stepList.children().eq(index).find('.oj-train-label').focus();
       },
 
-      //* * @inheritdoc */
+
       getNodeBySubId: function (locator) {
         if (locator === null) {
           return this.element ? this.element[0] : null;
@@ -1080,17 +1290,16 @@ var __oj_train_metadata =
 
             // Deprecated sub-id
           case 'oj-train-label':
-            // return this._stepList.children().eq(index).find('.oj-train-button');
-
             //  - OJ-TRAIN-LABEL DOES NOT RETURN THE RIGHT NODE
             return this._stepList.children().eq(index).find('.oj-train-label')[0];
+
           default:
             // Non-null locators have to be handled by the component subclasses
             return null;
         }
       },
 
-      //* * @inheritdoc */
+
       getSubIdByNode: function (node) {
         var currentNode = node;
 
@@ -1111,154 +1320,5 @@ var __oj_train_metadata =
         }
         return null;
       }
-
-    // Fragments:
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *    <tr>
-     *       <td>Step</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Move to the targeted step</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Step Label</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Move to the targeted step</td>
-     *    </tr>
-     *   </tbody>
-     *  </table>
-     *
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojTrain
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td><kbd>Tab</kbd></td>
-     *       <td> Move focus to the next selectable step. </tr>
-     *     <tr>
-     *       <td><kbd>Shift+Tab</kbd></td>
-     *       <td> Move focus to the previous selectable step.</tr>
-     *     <tr>
-     *       <td><kbd>Enter</kbd></td>
-     *       <td> Select the focused step.</tr>
-     *   </tbody>
-     *  </table>
-     *
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojTrain
-     */
-
-    // Sub_IDs:
-
-    /**
-     * <p>Sub-ID for the specified train step.</p>
-     *
-     * @property {number} index The zero-based index of the train step.
-     *
-     * @ojsubid oj-train-step
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the second step:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-step', 'index': 1});
-     */
-
-    /**
-     * <p>Sub-ID for the specified train step button.</p>
-     *
-     * @property {number} index The zero-based index of the train step.
-     *
-     * @ojsubid oj-train-button
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the button of the second step:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button', 'index': 1});
-     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
-     * @ignore
-     */
-
-    /**
-     * <p>Sub-ID for the train step button connector background.</p>
-     *
-     * @property {number} index The zero-based index of the train step.
-     *
-     * @ojsubid oj-train-button-connector
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the button connector background of the second step:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-button-connector', 'index': 1});
-     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
-     * @ignore
-     */
-
-    /**
-     * <p>Sub-ID for the train background connector bar.</p>
-     *
-     * @ojsubid oj-train-connector
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the background connector bar of the train:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector'});
-     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
-     * @ignore
-     */
-
-    /**
-     * <p>Sub-ID for the train background connector bar fill inidcating the train progress.</p>
-     *
-     * @ojsubid oj-train-connector-fill
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the train background connector bar fill:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-connector-fill'});
-     * @deprecated 1.2.0 This sub-id was deprecated because the returned node is not interactive.
-     * @ignore
-     */
-
-    /**
-     * <p>Sub-ID for the specified train step icon.</p>
-     *
-     * @property {number} index The zero-based index of the train step.
-     *
-     * @ojsubid oj-train-icon
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the icon of the second step:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-icon', 'index': 1});
-     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
-     * @ignore
-     */
-
-    /**
-     * <p>Sub-ID for the specified train step label.</p>
-     *
-     * @property {number} index The zero-based index of the train step.
-     *
-     * @ojsubid oj-train-label
-     * @memberof oj.ojTrain
-     *
-     * @example <caption>Get the label of the second step:</caption>
-     * var node = myTrain.getNodeBySubId({'subId': 'oj-train-label', 'index': 1});
-     * @deprecated 1.2.0 This sub-id was deprecated please use oj-train-step instead.
-     * @ignore
-     */
     });
 }());

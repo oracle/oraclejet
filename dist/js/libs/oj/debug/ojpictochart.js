@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojpictochart-to
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
    * @ignore
    */
@@ -59,7 +51,18 @@ var __oj_picto_chart_metadata =
       "type": "number"
     },
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "drilling": {
       "type": "string",
@@ -283,7 +286,7 @@ var __oj_picto_chart_item_metadata =
       "value": "rectangle"
     },
     "shortDesc": {
-      "type": "string"
+      "type": "string|function"
     },
     "source": {
       "type": "string",
@@ -319,14 +322,6 @@ var __oj_picto_chart_item_metadata =
       metadata: __oj_picto_chart_item_metadata
     });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ojcomponent oj.ojPictoChart
@@ -444,7 +439,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The duration of the animations in milliseconds.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number}
+         * @type {number=}
          * @ojsignature {target: "Type", value: "?"}
          * @ojunits "milliseconds"
          */
@@ -457,7 +452,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies the animation that is applied on data changes.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -471,7 +466,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies the animation shown on initial display.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "popIn"
          * @ojvalue {string} "alphaFade"
@@ -488,7 +483,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc An alias for the '$current' context variable passed to slot content for the itemTemplate slot.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @default ""
          * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
         */
@@ -500,7 +495,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The number of columns in the picto chart. If unspecified, the number of columns will be automatically computed.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number|null}
+         * @type {(number|null)=}
          * @default null
          */
         columnCount: null,
@@ -512,14 +507,14 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The width of a column in pixels. If unspecified, the column width will be automatically computed. See the Help documentation for more information.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number|null}
+         * @type {(number|null)=}
          * @default null
          * @ojunits "pixels"
          */
         columnWidth: null,
         /**
          * The DataProvider for the picto chart. It should provide rows where each row corresponds to a single picto chart item.
-         * The DataProvider can either have an arbitrary data shape, in which case an <oj-picto-chart-item> element must be specified in the itemTemplate slot or it can have [oj.ojPictoChart.Item]{@link oj.ojPictoChart#Item} as its data shape, in which case no template is required.
+         * The DataProvider can either have an arbitrary data shape, in which case an <oj-picto-chart-item> element must be specified in the itemTemplate slot or it can have [oj.ojPictoChart.Item]{@link oj.ojPictoChart.Item} as its data shape, in which case no template is required.
          * @expose
          * @name data
          * @ojshortdesc Specifies the DataProvider for the picto chart. See the Help documentation for more information.
@@ -528,6 +523,9 @@ var __oj_picto_chart_item_metadata =
          * @type {Object|null}
          * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
          * @default null
+         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+         *
          * @example <caption>Initialize the picto chart with the
          * <code class="prettyprint">data</code> attribute specified:</caption>
          * &lt;oj-picto-chart data='[[dataProvider]]'>&lt;/oj-picto-chart>
@@ -549,7 +547,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "on"
          * @ojvalue {string} "off"
          * @default "off"
@@ -563,7 +561,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc An array of category strings used for filtering. Data items with any category matching an item in this array will be filtered.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {Array.<string>}
+         * @type {(Array.<string>)=}
          * @default []
          * @ojwriteback
          */
@@ -576,7 +574,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc An array of category strings used for highlighting. Data items matching categories in this array will be highlighted.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {Array.<string>}
+         * @type {(Array.<string>)=}
          * @default []
          * @ojwriteback
          */
@@ -589,7 +587,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "any"
          * @ojvalue {string} "all"
          * @default "all"
@@ -603,7 +601,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Defines the behavior applied when hovering over data items.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "dim"
          * @ojvalue {string} "none"
          * @default "none"
@@ -616,7 +614,7 @@ var __oj_picto_chart_item_metadata =
          * @name hoverBehaviorDelay
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number}
+         * @type {number=}
          * @ojunits "milliseconds"
          * @default 200
          */
@@ -645,7 +643,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies the direction in which items are laid out.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "vertical"
          * @ojvalue {string} "horizontal"
          * @default "horizontal"
@@ -659,7 +657,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies where the first item is rendered. Subsequent items follow the first item according to the layout.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "topEnd"
          * @ojvalue {string} "bottomStart"
          * @ojvalue {string} "bottomEnd"
@@ -675,7 +673,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The number of rows in the picto chart. If unspecified, the number of rows will be automatically computed.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number|null}
+         * @type {(number|null)=}
          * @default null
          */
         rowCount: null,
@@ -687,7 +685,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc The height of a row in pixels. If unspecified, the row height will be automatically computed. See the Help documentation for more information.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {number|null}
+         * @type {(number|null)=}
          * @default null
          * @ojunits "pixels"
          */
@@ -699,7 +697,7 @@ var __oj_picto_chart_item_metadata =
          * @name selection
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {Array.<any>}
+         * @type {(Array.<any>)=}
          * @ojsignature [{target: "Type", value: "Array<K>"}]
          * @default []
          * @ojwriteback
@@ -720,7 +718,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc Specifies the selection mode.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "none" Selection is disabled.
          * @ojvalue {string} "single" Only a single item can be selected at a time.
          * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
@@ -735,7 +733,7 @@ var __oj_picto_chart_item_metadata =
          * @ojshortdesc An object containing an optional callback function for tooltip customization.
          * @memberof oj.ojPictoChart
          * @instance
-         * @type {Object}
+         * @type {Object=}
          */
         tooltip: {
           /**
@@ -772,12 +770,12 @@ var __oj_picto_chart_item_metadata =
         drill: null
       },
 
-      //* * @inheritdoc */
+
       _CreateDvtComponent: function (context, callback, callbackObj) {
         return ojpictochartToolkit.PictoChart.newInstance(context, callback, callbackObj);
       },
 
-      //* * @inheritdoc */
+
       _GetSimpleDataProviderConfigs: function () {
         return {
           data: {
@@ -788,7 +786,7 @@ var __oj_picto_chart_item_metadata =
         };
       },
 
-      //* * @inheritdoc */
+
       _ConvertLocatorToSubId: function (locator) {
         var subId = locator.subId;
 
@@ -805,7 +803,7 @@ var __oj_picto_chart_item_metadata =
         return subId;
       },
 
-      //* * @inheritdoc */
+
       _ConvertSubIdToLocator: function (subId) {
         var locator = {};
 
@@ -820,14 +818,14 @@ var __oj_picto_chart_item_metadata =
         return locator;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses.push('oj-pictochart');
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetChildStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses['oj-pictochart-item'] = { path: '_defaultColor', property: 'background-color' };
@@ -837,12 +835,12 @@ var __oj_picto_chart_item_metadata =
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetEventTypes: function () {
         return ['optionChange'];
       },
 
-      //* * @inheritdoc */
+
       _HandleEvent: function (event) {
         var type = event.type;
         if (type === 'drill') {
@@ -907,24 +905,17 @@ var __oj_picto_chart_item_metadata =
         return null;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentDeferredDataPaths: function () {
         return { root: ['items', 'data'] };
       },
 
-      //* * @inheritdoc */
+
       _IsFlowingLayoutSupported: function () {
         return true;
       }
     });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * <table class="keyboard-table">
    *   <thead>
@@ -1058,11 +1049,12 @@ var __oj_picto_chart_item_metadata =
    * @property {number=} count Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
    * @property {number=} rowSpan The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.
    * @property {number=} columnSpan The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.
-   * @property {string=} shortDesc Short description string for accessibility users.
+   * @property {(string|function)=} shortDesc Short description string for accessibility users.
    * @property {Array.<string>=} categories An array of category strings corresponding to this item. If not specified, defaults to the item id or name. This enables highlighting and filtering of individual data items through interactions with other visualization elements.
    * @property {"inherit"|"off"|"on"} [drilling="inherit"] Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
+   *               {target: "Type", value: "?(string | ((context: oj.ojPictoChart.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
    */
 
@@ -1074,6 +1066,15 @@ var __oj_picto_chart_item_metadata =
    * @property {number} count The count of the hovered item.
    * @property {string} color The color of the hovered item.
    * @property {Element} componentElement The picto chart HTML element.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+   */
+
+  /**
+   * @typedef {Object} oj.ojPictoChart.ItemShortDescContext
+   * @property {any} id The id of the hovered item.
+   * @property {string} name The name of the hovered item.
+   * @property {number} count The count of the hovered item.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
    */
@@ -1199,16 +1200,19 @@ var __oj_picto_chart_item_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojPictoChartItem
    * @ojshortdesc The oj-picto-chart-item element is used to declare properties for picto chart items. See the Help documentation for more information.
-   * @ojsignature {target: "Type", value:"class ojPictoChartItem extends JetElement<ojPictoChartItemSettableProperties>"}
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojPictoChartItem<K=any> extends dvtBaseComponent<ojPictoChartItemSettableProperties<K>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojPictoChartItemSettableProperties<K=any> extends dvtBaseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
    * @ojslotcomponent
    * @ojsubcomponenttype data
    * @since 5.2.0
@@ -1243,7 +1247,7 @@ var __oj_picto_chart_item_metadata =
    * @name borderColor
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @ojformat color
    * @default ''
    *
@@ -1261,7 +1265,7 @@ var __oj_picto_chart_item_metadata =
    * @name borderWidth
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {number}
+   * @type {number=}
    * @default 0
    * @ojunits pixels
    *
@@ -1279,7 +1283,7 @@ var __oj_picto_chart_item_metadata =
    * @name categories
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {Array.<string>}
+   * @type {(Array.<string>)=}
    * @default []
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1296,7 +1300,7 @@ var __oj_picto_chart_item_metadata =
    * @name color
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @ojformat color
    * @default ''
    *
@@ -1314,7 +1318,7 @@ var __oj_picto_chart_item_metadata =
    * @name columnSpan
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {number}
+   * @type {number=}
    * @default 1
    * @ojmin 0
    *
@@ -1333,7 +1337,7 @@ var __oj_picto_chart_item_metadata =
    * @ojshortdesc Specifies the number of times that the shape (or custom image) is drawn. See the Help documentation for more information.
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {number}
+   * @type {number=}
    * @default 1
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1354,7 +1358,7 @@ var __oj_picto_chart_item_metadata =
    * @ojvalue {string} "inherit"
    * @ojvalue {string} "off"
    * @ojvalue {string} "on"
-   * @type {string}
+   * @type {string=}
    * @default "inherit"
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1371,7 +1375,7 @@ var __oj_picto_chart_item_metadata =
    * @name name
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @ojtranslatable
    * @default ''
    *
@@ -1389,7 +1393,7 @@ var __oj_picto_chart_item_metadata =
    * @name rowSpan
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {number}
+   * @type {number=}
    * @default 1
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1419,12 +1423,13 @@ var __oj_picto_chart_item_metadata =
    * &lt;/oj-picto-chart>
    */
   /**
-   * The description of the item. This is used for customizing the tooltip text.
+   * The description of the item. This is used for accessibility and also for customizing the tooltip text.
    * @expose
    * @name shortDesc
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {(string|function)=}
+   * @ojsignature [{target: "Type", value: "?(string | ((context: oj.ojPictoChart.ItemShortDescContext<K>) => string))", jsdocOverride: true}]
    *
    * @example <caption>Initialize the picto chart item with the
    * <code class="prettyprint">short-desc</code> attribute specified:</caption>
@@ -1440,7 +1445,7 @@ var __oj_picto_chart_item_metadata =
    * @name source
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @default ''
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1457,7 +1462,7 @@ var __oj_picto_chart_item_metadata =
    * @name sourceHover
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @default ''
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1474,7 +1479,7 @@ var __oj_picto_chart_item_metadata =
    * @name sourceHoverSelected
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @default ''
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1491,7 +1496,7 @@ var __oj_picto_chart_item_metadata =
    * @name sourceSelected
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @default ''
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1510,7 +1515,7 @@ var __oj_picto_chart_item_metadata =
    * @ojshortdesc The inline style to apply to the item. See the Help documentation for more information.
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {Object}
+   * @type {Object=}
    * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
    * @default {}
    *
@@ -1529,7 +1534,7 @@ var __oj_picto_chart_item_metadata =
    * @ojshortdesc The CSS style class to apply to the item. See the Help documentation for more information.
    * @memberof! oj.ojPictoChartItem
    * @instance
-   * @type {string}
+   * @type {string=}
    * @default ''
    *
    * @example <caption>Initialize the picto chart item with the
@@ -1539,6 +1544,14 @@ var __oj_picto_chart_item_metadata =
    *    &lt;oj-picto-chart-item svg-class-name='[[item.data.svgClassName]]'> &lt;/oj-picto-chart-item>
    *  &lt;/template>
    * &lt;/oj-picto-chart>
+   */
+   //-----------------------------------------------------
+   //                   Styling
+   //-----------------------------------------------------
+   /**
+    * @ojstylevariableset oj-picto-chart-item-css-set1
+    * @ojstylevariable oj-picto-chart-item-bg-color {description: "Pictochart item background color", formats: ["color"], help: "#css-variables"}
+    * @memberof! oj.ojPictoChartItem
    */
 
 });

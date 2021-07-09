@@ -12,18 +12,7 @@
                 visibility: hidden;
             }
         }
-
-        /* Component option defaults. */
-        $collectionDefaultOptions: ();
-
-        @if ($loadingIndicatorDelayDuration != null)
-        {
-           $collectionDefaultOptions: map-merge($collectionDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
-        }
-        .oj-datagrid-option-defaults {
-           font-family: oj-json-from-map($collectionDefaultOptions);
-        }
-
+        
         // do not overwrite hidden display properties
         [hidden].oj-datagrid {
             display: none;

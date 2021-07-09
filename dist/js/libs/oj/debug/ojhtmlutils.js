@@ -8,13 +8,6 @@
 define(['exports'], function (exports) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @namespace
    * @hideconstructor
    * @ojtsmodule
@@ -115,7 +108,8 @@ define(['exports'], function (exports) { 'use strict';
       var attr;
       var replNode;
 
-      if (nodeName.substr(0, 16) === 'oj-bind-replace-') {
+      const BIND_REPLACE = 'oj-bind-replace-';
+      if (nodeName.substr(0, 16) === BIND_REPLACE) {
         var replName = nodeName.substr(16);
         replNode = document.createElement(replName); // @HTMLUpdateOK
         for (j = 0; j < child.attributes.length; j++) {
@@ -134,11 +128,11 @@ define(['exports'], function (exports) { 'use strict';
           replNode.setAttribute(attr.name, attr.value); // @HTMLUpdateOK
         }
         var origHTML = child.innerHTML; // @HTMLUpdateOK
-        replNode.innerHTML = origHTML.replace(new RegExp('oj-bind-replace-', 'g'), ''); // @HTMLUpdateOK
+        replNode.innerHTML = origHTML.replace(new RegExp(BIND_REPLACE, 'g'), ''); // @HTMLUpdateOK
         parent.replaceChild(replNode, child);
       } else if (child.nodeType === 8) { // comment node
         var origValue = child.nodeValue;
-        child.nodeValue = origValue.replace(new RegExp('oj-bind-replace-', 'g'), '');
+        child.nodeValue = origValue.replace(new RegExp(BIND_REPLACE, 'g'), '');
       }
     }
   }

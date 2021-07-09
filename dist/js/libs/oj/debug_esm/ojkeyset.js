@@ -9,13 +9,6 @@ import oj from 'ojs/ojcore-base';
 import KeySetImpl$1 from 'ojs/ojkeysetimpl';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * An immutable set of keys.
  * @class KeySet
  *
@@ -210,13 +203,6 @@ KeySet.prototype.Clone = function () {
 
 KeySetImpl$1.call(KeySet.prototype);
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Create a new immutable KeySet containing the keys of the expanded items.
  * Use this KeySet when specifying individual keys to expand.
@@ -485,13 +471,6 @@ ExpandAllKeySet.prototype.deletedValues = function () {
   return this.Clone();
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Create a new immutable KeySet containing the keys of items.
  * Use this KeySet when specifying individual keys to select or expand.
@@ -791,13 +770,6 @@ AllKeySetImpl.prototype.deletedValues = function () {
   return this.Clone();
 };
 
-/**
- * @license
- * Copyright (c) 2019 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Contains a set of utility methods for working with KeySet.
  * @class

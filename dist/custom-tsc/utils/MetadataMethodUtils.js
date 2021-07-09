@@ -24,6 +24,7 @@ const MetaUtils = __importStar(require("./MetadataUtils"));
 const ts = __importStar(require("typescript"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
+const MetaTypes = __importStar(require("./MetadataTypes"));
 function generateMethodMetadata(node, metaUtilObj) {
     if (!metaUtilObj.rtMetadata.methods) {
         metaUtilObj.rtMetadata.methods = {};
@@ -41,7 +42,7 @@ function getDtMetadataForMethod(method, metaUtilObj) {
     if (method.parameters) {
         method.parameters.forEach((parameter) => {
             const name = parameter.name.getText();
-            const typeObj = TypeUtils.getAllMetadataForDeclaration(parameter, true, metaUtilObj);
+            const typeObj = TypeUtils.getAllMetadataForDeclaration(parameter, MetaTypes.MetadataScope.DT, metaUtilObj);
             let mParamObj = { name, type: typeObj.type };
             let dtParamObj = findParameter(name);
             if (dtParamObj) {
@@ -56,7 +57,7 @@ function getDtMetadataForMethod(method, metaUtilObj) {
     else {
         delete dt.params;
     }
-    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(method, true, metaUtilObj);
+    const returnTypeObj = TypeUtils.getAllMetadataForDeclaration(method, MetaTypes.MetadataScope.DT, metaUtilObj);
     dt.return = returnTypeObj.type;
     return dt;
 }

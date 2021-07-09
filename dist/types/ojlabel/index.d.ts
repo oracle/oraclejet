@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojLabel extends baseComponent<ojLabelSettableProperties> {
     for: string | null;
@@ -70,4 +64,18 @@ export namespace LabelElement {
     type labelIdChanged = JetElementCustomEvent<ojLabel["labelId"]>;
     // tslint:disable-next-line interface-over-type-literal
     type showRequiredChanged = JetElementCustomEvent<ojLabel["showRequired"]>;
+}
+export interface LabelIntrinsicProps extends Partial<Readonly<ojLabelSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onforChanged?: (value: ojLabelEventMap['forChanged']) => void;
+    onhelpChanged?: (value: ojLabelEventMap['helpChanged']) => void;
+    onlabelIdChanged?: (value: ojLabelEventMap['labelIdChanged']) => void;
+    onshowRequiredChanged?: (value: ojLabelEventMap['showRequiredChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-label": LabelIntrinsicProps;
+        }
+    }
 }

@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ElementVComponent, h, customElement } from 'ojs/ojvcomponent-element';
+import { Root, customElement } from 'ojs/ojvcomponent';
+import { Component, h } from 'preact';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
@@ -14,26 +15,18 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-class Props {
-    constructor() {
-        this.max = 100;
-        this.value = 0;
-        this.size = 'md';
+let ProgressCircle = class ProgressCircle extends Component {
+    render(props) {
+        return props.value === -1
+            ? this._renderIndeterminateCircle(props)
+            : this._renderDeterminateCircle(props);
     }
-}
-let ProgressCircle = class ProgressCircle extends ElementVComponent {
-    render() {
-        return this.props.value == -1
-            ? this._renderIndeterminateCircle()
-            : this._renderDeterminateCircle();
-    }
-    _renderIndeterminateCircle() {
-        return (h("oj-progress-circle", { class: 'oj-progress-circle oj-progress-circle-' + this.props.size, role: 'progressbar', "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
+    _renderIndeterminateCircle(props) {
+        return (h(Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuetext": getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
             h("div", { class: 'oj-progress-circle-indeterminate' },
                 h("div", { class: 'oj-progress-circle-indeterminate-inner' }))));
     }
-    _renderDeterminateCircle() {
-        const props = this.props;
+    _renderDeterminateCircle(props) {
         let max = props.max;
         let value = props.value;
         if (max < 0) {
@@ -42,11 +35,11 @@ let ProgressCircle = class ProgressCircle extends ElementVComponent {
         if (value < 0 && value !== -1) {
             value = 0;
         }
-        const percentage = max == 0 ? 0 : value > max ? 1 : value / max;
+        const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
         const clipPath = this._getClipPath(percentage);
-        return (h("oj-progress-circle", { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": max, "aria-valuenow": value },
+        return (h(Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": max, "aria-valuenow": value },
             h("div", { class: 'oj-progress-circle-tracker' }),
-            h("div", { class: 'oj-progress-circle-value', style: { clipPath: clipPath } })));
+            h("div", { class: 'oj-progress-circle-value', style: { clipPath } })));
     }
     _getClipPath(percentage) {
         let tangent;
@@ -88,7 +81,12 @@ let ProgressCircle = class ProgressCircle extends ElementVComponent {
         return 50 * Math.tan(percentage * 2 * Math.PI);
     }
 };
-ProgressCircle.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-valuemin": 1, "aria-valuemax": 1, "aria-valuetext": 1, "aria-valuenow": 1, "role": 1 } }, "properties": { "max": { "type": "number", "value": 100 }, "value": { "type": "number", "value": 0 }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"], "value": "md" } } };
+ProgressCircle.defaultProps = {
+    max: 100,
+    value: 0,
+    size: 'md'
+};
+ProgressCircle.metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"] } } };
 ProgressCircle = __decorate([
     customElement('oj-progress-circle')
 ], ProgressCircle);

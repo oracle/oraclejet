@@ -1,16 +1,11 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponent<SP> {
     chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
+    label: string | null;
     addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojButtonSettableProperties>(property: T): ojButton<SP>[T];
@@ -30,17 +25,21 @@ export namespace ojButton {
     type disabledChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
     type displayChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["label"]>;
 }
 export interface ojButtonEventMap<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponentEventMap<SP> {
     'ojAction': ojButton.ojAction;
     'chromingChanged': JetElementCustomEvent<ojButton<SP>["chroming"]>;
     'disabledChanged': JetElementCustomEvent<ojButton<SP>["disabled"]>;
     'displayChanged': JetElementCustomEvent<ojButton<SP>["display"]>;
+    'labelChanged': JetElementCustomEvent<ojButton<SP>["label"]>;
 }
 export interface ojButtonSettableProperties extends baseComponentSettableProperties {
     chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
     display: 'all' | 'icons';
+    label: string | null;
 }
 export interface ojButtonSettablePropertiesLenient extends Partial<ojButtonSettableProperties> {
     [key: string]: any;
@@ -194,12 +193,21 @@ export namespace ojMenuButton {
     type disabledChanged = JetElementCustomEvent<ojMenuButton["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
     type displayChanged = JetElementCustomEvent<ojMenuButton["display"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = ojButton.labelChanged<ojMenuButtonSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export interface ojMenuButtonEventMap extends ojButtonEventMap<ojMenuButtonSettableProperties> {
     'ojAction': ojMenuButton.ojAction;
     'chromingChanged': JetElementCustomEvent<ojMenuButton["chroming"]>;
     'disabledChanged': JetElementCustomEvent<ojMenuButton["disabled"]>;
     'displayChanged': JetElementCustomEvent<ojMenuButton["display"]>;
+    'labelChanged': JetElementCustomEvent<ojMenuButton["label"]>;
 }
 export interface ojMenuButtonSettableProperties extends ojButtonSettableProperties {
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
@@ -225,6 +233,8 @@ export namespace ButtonElement {
     type disabledChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
     type displayChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["display"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged<SP extends ojButtonSettableProperties = ojButtonSettableProperties> = JetElementCustomEvent<ojButton<SP>["label"]>;
 }
 export namespace ButtonsetManyElement {
     // tslint:disable-next-line interface-over-type-literal
@@ -269,4 +279,58 @@ export namespace MenuButtonElement {
     type disabledChanged = JetElementCustomEvent<ojMenuButton["disabled"]>;
     // tslint:disable-next-line interface-over-type-literal
     type displayChanged = JetElementCustomEvent<ojMenuButton["display"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type labelChanged = ojButton.labelChanged<ojMenuButtonSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
+}
+export interface ButtonIntrinsicProps extends Partial<Readonly<ojButtonSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAction?: (value: ojButtonEventMap<any>['ojAction']) => void;
+    onchromingChanged?: (value: ojButtonEventMap<any>['chromingChanged']) => void;
+    ondisabledChanged?: (value: ojButtonEventMap<any>['disabledChanged']) => void;
+    ondisplayChanged?: (value: ojButtonEventMap<any>['displayChanged']) => void;
+    onlabelChanged?: (value: ojButtonEventMap<any>['labelChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface ButtonsetManyIntrinsicProps extends Partial<Readonly<ojButtonsetManySettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onchromingChanged?: (value: ojButtonsetManyEventMap['chromingChanged']) => void;
+    ondescribedByChanged?: (value: ojButtonsetManyEventMap['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojButtonsetManyEventMap['disabledChanged']) => void;
+    ondisplayChanged?: (value: ojButtonsetManyEventMap['displayChanged']) => void;
+    onfocusManagementChanged?: (value: ojButtonsetManyEventMap['focusManagementChanged']) => void;
+    onlabelledByChanged?: (value: ojButtonsetManyEventMap['labelledByChanged']) => void;
+    onvalueChanged?: (value: ojButtonsetManyEventMap['valueChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface ButtonsetOneIntrinsicProps extends Partial<Readonly<ojButtonsetOneSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onchromingChanged?: (value: ojButtonsetOneEventMap['chromingChanged']) => void;
+    ondescribedByChanged?: (value: ojButtonsetOneEventMap['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojButtonsetOneEventMap['disabledChanged']) => void;
+    ondisplayChanged?: (value: ojButtonsetOneEventMap['displayChanged']) => void;
+    onfocusManagementChanged?: (value: ojButtonsetOneEventMap['focusManagementChanged']) => void;
+    onlabelledByChanged?: (value: ojButtonsetOneEventMap['labelledByChanged']) => void;
+    onvalueChanged?: (value: ojButtonsetOneEventMap['valueChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface MenuButtonIntrinsicProps extends Partial<Readonly<ojMenuButtonSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAction?: (value: ojMenuButtonEventMap['ojAction']) => void;
+    onchromingChanged?: (value: ojMenuButtonEventMap['chromingChanged']) => void;
+    ondisabledChanged?: (value: ojMenuButtonEventMap['disabledChanged']) => void;
+    ondisplayChanged?: (value: ojMenuButtonEventMap['displayChanged']) => void;
+    onlabelChanged?: (value: ojMenuButtonEventMap['labelChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-button": ButtonIntrinsicProps;
+            "oj-buttonset-many": ButtonsetManyIntrinsicProps;
+            "oj-buttonset-one": ButtonsetOneIntrinsicProps;
+            "oj-menu-button": MenuButtonIntrinsicProps;
+        }
+    }
 }

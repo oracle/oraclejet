@@ -7,7 +7,7 @@ export namespace <?js= componentName ?> {
   if (props){
   for (let prop of props) {?>
   // tslint:disable-next-line interface-over-type-literal
-  type <?js= prop ?>Changed<?js= this.classTypeParamsDeclaration ?> = JetElementCustomEvent<<?js= componentName ?><?js= data.classTypeParams ?>["<?js= prop ?>"]>;
+  type <?js= prop ?>Changed<?js= this.classTypeParamsDeclaration ?> = JetElementCustomEventStrict<<?js= componentName ?><?js= data.classTypeParams ?>["<?js= prop ?>"]>;
   <?js}
   }?>
 }

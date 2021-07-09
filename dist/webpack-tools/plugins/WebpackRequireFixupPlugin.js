@@ -155,7 +155,7 @@ class WebpackRequireFixupPlugin
 				"WebpackRequireFixupPlugin",
                   (statement) => {
 
-                    if (statement.type === "FunctionDeclaration"
+                    if (statement.type === "FunctionDeclaration" &&  statement.id
                                       && statement.id.name === "_getOjModuleRequirePromise") {
 
                       // This function is replaced to make dynamic import calls with a context derived from the webpack.config.js and comment annotations

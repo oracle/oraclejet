@@ -5,6 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import oj from 'ojs/ojcore-base';
 import Context from 'ojs/ojcontext';
 import { warn } from 'ojs/ojlogger';
 import { verifyThemeVersion } from 'ojs/ojthemeutils';
@@ -60,9 +61,15 @@ class ElementUtils {
         ElementUtils._UNIQUE_INCR += 1;
         return ret;
     }
+    static comparePropertyValues(metadata, value1, value2) {
+        if (metadata.writeback) {
+            return oj.Object.compareValues(value1, value2);
+        }
+        return value1 === value2;
+    }
 }
 ElementUtils._UNIQUE_INCR = 0;
-ElementUtils._UNIQUE = '_ojcustomelem';
+ElementUtils._UNIQUE = '_oj';
 ElementUtils._RESERVED_TAGS = new Set([
     'annotation-xml',
     'color-profile',
@@ -87,51 +94,25 @@ const GLOBAL_PROPS = {
     hidden: 'hidden',
     id: 'id',
     inputMode: 'inputmode',
-    is: 'is',
-    itemid: 'itemid',
-    itemprop: 'itemprop',
-    itemref: 'itemref',
-    itemscope: 'itemscope',
-    itemtype: 'itemtype',
     lang: 'lang',
-    nonce: 'nonce',
     role: 'role',
     slot: 'slot',
     spellcheck: 'spellcheck',
     style: 'style',
     tabIndex: 'tabindex',
-    title: 'title',
-    translate: 'translate'
+    translate: 'translate',
+    title: 'title'
 };
-const NATIVE_PROPS = {
-    acceptCharset: 'accept-charset',
-    allowFullscreen: 'allowfullscreen',
-    allowPaymentRequest: 'allowpaymentrequest',
-    colSpan: 'colspan',
-    crossOrigin: 'crossorigin',
-    dateTime: 'datetime',
-    dirName: 'dirname',
-    encoding: 'enctype',
-    formAction: 'formaction',
-    formEnctype: 'formenctype',
-    formMethod: 'formmethod',
-    formNoValidate: 'formnovalidate',
-    formTarget: 'formtarget',
-    for: 'for',
-    httpEquiv: 'http-equiv',
-    imageSizes: 'imagesizes',
-    imageSrcset: 'imagesrcset',
-    inputMode: 'inputmode',
-    isMap: 'ismap',
-    maxLength: 'maxlength',
-    minLength: 'minlength',
-    noModule: 'nomodule',
-    noValidate: 'novalidate',
-    readOnly: 'readonly',
-    referrerPolicy: 'referrerpolicy',
-    rowSpan: 'rowspan',
-    useMap: 'usemap'
-};
+
+class JetElementError extends Error {
+    constructor(element, message) {
+        super(`${element.localName} with id '${element.id || ''}': ${message}`);
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, JetElementError);
+        }
+        this.name = 'JetElementError';
+    }
+}
 
 const _ARRAY_VALUE_EXP = /^\s*\[[^]*\]\s*$/;
 const _OBJ_VALUE_EXP = /^\s*\{[^]*\}\s*$/;
@@ -139,10 +120,9 @@ const _ATTR_EXP = /^(?:\{\{)([^]+)(?:\}\})$/;
 const _ATTR_EXP_RO = /^(?:\[\[)([^]+)(?:\]\])$/;
 const _GLOBAL_ATTRS = {};
 Object.keys(GLOBAL_PROPS).forEach(function (prop) {
-    var attr = GLOBAL_PROPS[prop];
+    const attr = GLOBAL_PROPS[prop];
     if (prop !== attr) {
         _GLOBAL_ATTRS[attr] = prop;
-        NATIVE_PROPS[prop] = attr;
     }
 });
 class AttributeUtils {
@@ -161,15 +141,25 @@ class AttributeUtils {
         }
         return { downstreamOnly, expr };
     }
+    static attributeToPropertyValue(elem, attr, val, propMeta) {
+        if (val == null)
+            return undefined;
+        try {
+            return AttributeUtils.coerceValue(elem, attr, val, propMeta.type);
+        }
+        catch (err) {
+            throw new JetElementError(elem, `Error while parsing parsing attribute ${attr}. ${err.stack || err}`);
+        }
+    }
     static coerceValue(elem, attr, value, type) {
-        var tagName = elem.tagName.toLowerCase();
+        const tagName = elem.tagName.toLowerCase();
         if (!type) {
             throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}'. \
         This attribute only supports data bound values. Check the API doc for supported types`);
         }
         const supportedTypes = ElementUtils.getSupportedTypes(type);
-        var isValueArray = _ARRAY_VALUE_EXP.test(value);
-        var isValueObj = _OBJ_VALUE_EXP.test(value);
+        const isValueArray = _ARRAY_VALUE_EXP.test(value);
+        const isValueObj = _OBJ_VALUE_EXP.test(value);
         if ((supportedTypes.array && isValueArray) ||
             (supportedTypes.object && isValueObj) ||
             (supportedTypes.any && (isValueArray || isValueObj))) {
@@ -214,18 +204,23 @@ class AttributeUtils {
     static getGlobalPropForAttr(attr) {
         return _GLOBAL_ATTRS[attr] || attr;
     }
-    static getNativeAttr(prop) {
-        return NATIVE_PROPS[prop] || prop;
-    }
 }
 AttributeUtils.attributeToPropertyName = cacheHelper.bind(null, (attr) => attr.toLowerCase().replace(/-(.)/g, (match, group1) => group1.toUpperCase()));
 AttributeUtils.propertyNameToAttribute = cacheHelper.bind(null, (name) => name.replace(/([A-Z])/g, (match) => `-${match.toLowerCase()}`));
 AttributeUtils.eventTypeToEventListenerProperty = cacheHelper.bind(null, (type) => 'on' + type.substr(0, 1).toUpperCase() + type.substr(1));
 AttributeUtils.isEventListenerProperty = cacheHelper.bind(null, (property) => /^on[A-Z]/.test(property));
+AttributeUtils.isEventListenerAttr = cacheHelper.bind(null, (attr) => /^on-[a-z]/.test(attr));
 AttributeUtils.eventListenerPropertyToEventType = cacheHelper.bind(null, (property) => property.substr(2, 1).toLowerCase() + property.substr(3));
 AttributeUtils.propertyNameToChangeEventType = cacheHelper.bind(null, (name) => `${name}Changed`);
 AttributeUtils.propertyNameToChangedCallback = cacheHelper.bind(null, (prop) => `on${prop[0].toUpperCase()}${prop.substr(1)}Changed`);
 AttributeUtils.eventTriggerToEventType = cacheHelper.bind(null, (trigger) => `oj${trigger.substr(0, 1).toUpperCase()}${trigger.substr(1)}`);
+AttributeUtils.eventAttrToPreactPropertyName = cacheHelper.bind(null, (attr) => {
+    const capitalize = (chunk) => chunk.charAt(0).toUpperCase() + chunk.substr(1);
+    const chunks = attr.toLowerCase().split('-');
+    return chunks.reduce((acc, curr, index) => {
+        return index > 1 ? acc + capitalize(curr) : acc + curr;
+    }, '');
+});
 function cacheHelper(converter, key) {
     let cache = converter['cache'];
     if (!cache) {
@@ -238,8 +233,9 @@ function cacheHelper(converter, key) {
     return cache.get(key);
 }
 
+const EMPTY_SET = new Set();
 class CustomElementUtils {
-    static registerElement(tagName, regObj) {
+    static registerElement(tagName, regObj, constructor) {
         const tagNameUpper = tagName.toUpperCase();
         if (!CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper]) {
             if (!regObj.descriptor) {
@@ -247,13 +243,25 @@ class CustomElementUtils {
             }
             CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] = regObj;
             CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagNameUpper] = regObj;
-            return true;
+            Object.defineProperty(constructor, 'name', {
+                value: CustomElementUtils.tagNameToElementClassName(tagName)
+            });
+            customElements.define(tagName, constructor);
         }
-        return false;
+    }
+    static tagNameToElementClassName(tagName) {
+        return (tagName
+            .toLowerCase()
+            .match(/-(?<match>.*)/)[0]
+            .replace(/-(.)/g, (match, group1) => group1.toUpperCase()) + 'Element');
     }
     static isComposite(tagName) {
         var _a, _b;
         return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.composite) !== null && _b !== void 0 ? _b : false;
+    }
+    static isVComponent(tagName) {
+        var _a, _b;
+        return (_b = (_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.vcomp) !== null && _b !== void 0 ? _b : false;
     }
     static isElementRegistered(tagName) {
         return CustomElementUtils._CUSTOM_ELEMENT_REGISTRY[tagName] != null;
@@ -300,7 +308,7 @@ class CustomElementUtils {
     static getSlotMap(element) {
         const slotMap = {};
         const childNodeList = element.childNodes;
-        for (var i = 0; i < childNodeList.length; i++) {
+        for (let i = 0; i < childNodeList.length; i++) {
             const child = childNodeList[i];
             if (CustomElementUtils.isSlotable(child)) {
                 const slot = CustomElementUtils.getSlotAssignment(child);
@@ -325,17 +333,20 @@ class CustomElementUtils {
     }
     static getElementProperty(element, property) {
         if (CustomElementUtils.isElementRegistered(element.tagName)) {
-            const vInst = element['_vcomp'];
+            let vInst = element['_vcomp'];
             if (vInst && !vInst.isCustomElementFirst()) {
-                return CustomElementUtils.getComplexProperty(vInst.props, property);
+                return CustomElementUtils.getPropertyValue(vInst.props, property);
+            }
+            else if ((vInst = element[CustomElementUtils.VCOMP_INSTANCE])) {
+                return CustomElementUtils.getPropertyValue(vInst.props, property);
             }
             return element.getProperty(property);
         }
         return element[property];
     }
-    static getComplexProperty(allProps, property) {
+    static getPropertyValue(allProps, property) {
         let propObj = allProps;
-        let propPath = property.split('.');
+        const propPath = property.split('.');
         try {
             propPath.forEach((subprop) => (propObj = propObj[subprop]));
         }
@@ -344,78 +355,151 @@ class CustomElementUtils {
         }
         return propObj;
     }
+    static allowSlotRelocation(allow) {
+        CustomElementUtils._ALLOW_RELOCATION_COUNT += allow ? 1 : -1;
+    }
+    static canRelocateNode(element, node) {
+        const state = CustomElementUtils.getElementState(element);
+        const slotMap = state.getSlotMap();
+        if (!slotMap || CustomElementUtils._ALLOW_RELOCATION_COUNT > 0) {
+            return true;
+        }
+        const slotSet = state.getSlotSet();
+        if (state.isPostCreateCallbackOrComplete() && slotSet.has(node)) {
+            if (element.hasAttribute('data-oj-preact')) {
+                throw new JetElementError(element, `${node.localName} cannot be relocated as a child of this element.`);
+            }
+            else if (state.getBindingProviderType() === 'preact') {
+                return false;
+            }
+        }
+        return true;
+    }
+    static getClassSet(strClass) {
+        if (strClass) {
+            const arClasses = strClass.split(/\s+/).filter((cls) => cls.length > 0);
+            if (arClasses.length > 0) {
+                return new Set(arClasses);
+            }
+        }
+        return EMPTY_SET;
+    }
+    static convertEmptyStringToUndefined(element, propertyMeta, value) {
+        if (value === '') {
+            const elementState = CustomElementUtils.getElementState(element);
+            if (elementState.getBindingProviderType() === 'preact') {
+                const types = ElementUtils.getSupportedTypes(propertyMeta.type);
+                if (!types.string || propertyMeta.enumValues) {
+                    return undefined;
+                }
+            }
+        }
+        return value;
+    }
 }
 CustomElementUtils._CUSTOM_ELEMENT_REGISTRY = {};
 CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
 CustomElementUtils._ELEMENT_BRIDGE_KEY = '_ojBridge';
+CustomElementUtils._ALLOW_RELOCATION_COUNT = 0;
+CustomElementUtils.VCOMP_INSTANCE = Symbol('vcompInstance');
 
+const CHILD_BINDING_PROVIDER = Symbol('childBindingProvider');
+const CACHED_BINDING_PROVIDER = Symbol('cachedBindingProvider');
 class ElementState {
     constructor(element) {
-        this.isComplete = false;
-        this.isConnected = false;
-        this.isDisposed = false;
-        this.isInitializingProperties = false;
         this.dirtyProps = new Set();
+        this._componentState = ComponentState.WaitingToCreate;
+        this._outerClasses = new Set();
         this.Element = element;
+    }
+    startCreationCycle() {
+        if (this._isInErrorState())
+            return;
+        if (this._preCreatedPromise == null ||
+            this._componentState === ComponentState.WaitingToCreate) {
+            this._updateComponentState(ComponentState.Creating);
+        }
+        this._registerBusyState();
+    }
+    pauseCreationCycle() {
+        this._resolveBusyState();
+    }
+    resetCreationCycle() {
+        this._updateComponentState(ComponentState.WaitingToCreate);
+        this._bindingProviderPromise = null;
+        this._preCreatedPromise = null;
+        this._createdPromise = null;
+    }
+    isComplete() {
+        return this._componentState === ComponentState.Complete;
+    }
+    isCreating() {
+        return this._componentState === ComponentState.Creating;
+    }
+    isPostCreateCallbackOrComplete() {
+        return this._componentState === ComponentState.PostCreateCallback || this.isComplete();
+    }
+    canHandleAttributes() {
+        return !this._isInErrorState() && this._componentState !== ComponentState.WaitingToCreate;
+    }
+    beginApplyingBindings() {
+        if (!this.isComplete()) {
+            this._bindingProviderType = 'knockout';
+            this._updateComponentState(ComponentState.ApplyingBindings);
+        }
+    }
+    allowPropertySets() {
+        return (this._componentState === ComponentState.Creating ||
+            this._componentState === ComponentState.ApplyingBindings ||
+            this._componentState === ComponentState.BindingsApplied ||
+            this._componentState === ComponentState.PostCreateCallback ||
+            this._componentState === ComponentState.Complete);
+    }
+    allowPropertyChangedEvents() {
+        return (this._componentState === ComponentState.BindingsApplied ||
+            this._componentState === ComponentState.PostCreateCallback ||
+            this._componentState === ComponentState.Complete);
     }
     getTrackChildrenOption() {
         var _a, _b;
         const metadata = CustomElementUtils.getElementDescriptor(this.Element.tagName).metadata;
         return (_b = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_TRACK_CHILDREN']) !== null && _b !== void 0 ? _b : 'none';
     }
-    registerBusyState() {
-        const busyContext = Context.getContext(this.Element).getBusyContext();
-        if (this._resolveCreatedBusyState) {
-            this.throwError('Registering busy state before previous state is resolved.');
-        }
-        this._resolveCreatedBusyState = busyContext.addBusyState({
-            description: CustomElementUtils.getElementInfo(this.Element) + ' is being upgraded.'
-        });
-    }
-    resolveBusyState() {
-        const callback = this._resolveCreatedBusyState;
-        if (!callback) {
-            this.throwError('Resolving busy state before one is registered.');
-        }
-        this._resolveCreatedBusyState = null;
-        callback();
-    }
-    beginCreate(createComponentCallback) {
+    setCreateCallback(createComponentCallback) {
+        if (this._isInErrorState())
+            return;
+        this._updateComponentState(ComponentState.WaitingForBindings);
         if (!this._preCreatedPromise) {
             this._preCreatedPromise = this.GetPreCreatedPromise();
         }
-        if (this.isComplete) {
-            this._resetStateFlags();
-        }
-        this._createdPromise = this._preCreatedPromise.then(createComponentCallback);
+        this._createdPromise = this._preCreatedPromise.then(() => {
+            if (!this._isInErrorState()) {
+                const createVal = createComponentCallback();
+                this._updateComponentState(ComponentState.PostCreateCallback);
+                return createVal;
+            }
+            return Promise.reject();
+        });
         this._createdPromise.then(() => {
-            this.Element.classList.add('oj-complete');
-            this._completeHandler();
+            this._updateComponentState(ComponentState.Complete);
         }, (error) => {
-            this.Element.classList.add('oj-incomplete');
-            this._completeHandler();
+            this._updateComponentState(ComponentState.Incomplete);
             if (error)
                 throw error;
         });
     }
-    throwError(msg, origErr) {
-        let errMsg = CustomElementUtils.getElementInfo(this.Element) + ': ' + msg;
-        if (origErr) {
-            errMsg = errMsg + ' ' + (origErr.stack ? origErr.stack : origErr);
-        }
-        throw new Error(errMsg);
+    setBindingsDisposedCallback(callback) {
+        this._disposedCallback = callback;
     }
     resolveBindingProvider(provider) {
-        var _a;
+        this._bpClean = provider.__CleanNode;
         if (this._resolveBindingProviderCallback) {
-            (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+            this._bindingsApplied();
             this._resolveBindingProviderCallback(provider);
             this._resolveBindingProviderCallback = null;
             this._rejectBindingProviderCallback = null;
         }
-        else {
-            this._bindingProvider = provider;
-        }
+        this._bindingProvider = provider;
     }
     rejectBindingProvider(error) {
         if (this._rejectBindingProviderCallback) {
@@ -425,26 +509,29 @@ class ElementState {
         }
     }
     disposeBindingProvider() {
-        this.isDisposed = true;
-        if (!this.isComplete) {
+        var _a;
+        if (!this.isComplete()) {
             this.rejectBindingProvider();
+            this._updateComponentState(ComponentState.BindingsDisposed);
+        }
+        else {
+            (_a = this._disposedCallback) === null || _a === void 0 ? void 0 : _a.call(this);
         }
     }
     setBindingProviderCallback(callback) {
         this._bindingProviderCallback = callback;
     }
     getBindingProviderPromise() {
-        var _a, _b;
+        const bpType = this.getBindingProviderType();
         if (!this._bindingProviderPromise) {
             verifyThemeVersion();
-            const name = this._walkBindingProviders(this.Element);
-            if (name === 'none') {
-                (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+            if (bpType === 'none' || bpType === 'preact') {
+                this._bindingsApplied();
                 this._bindingProviderPromise = Promise.resolve(null);
             }
-            else if (name === 'knockout') {
+            else if (bpType === 'knockout') {
                 if (this._bindingProvider) {
-                    (_b = this._bindingProviderCallback) === null || _b === void 0 ? void 0 : _b.call(this);
+                    this._bindingsApplied();
                     this._bindingProviderPromise = Promise.resolve(this._bindingProvider);
                 }
                 else {
@@ -455,10 +542,22 @@ class ElementState {
                 }
             }
             else {
-                this.throwError("Unknown binding provider '" + name + "'.");
+                throw new JetElementError(this.Element, `Unknown binding provider '${bpType}'.`);
             }
         }
         return this._bindingProviderPromise;
+    }
+    getBindingProvider() {
+        return this._bindingProvider;
+    }
+    getBindingProviderType() {
+        if (!this._bindingProviderType) {
+            this._bindingProviderType = ElementState._walkBindingProviders(this.Element);
+        }
+        return this._bindingProviderType;
+    }
+    getBindingProviderCleanNode() {
+        return this._bpClean || ElementState._NOOP;
     }
     getDescriptiveText() {
         let text = this.GetDescriptiveValue('aria-label') ||
@@ -473,6 +572,37 @@ class ElementState {
             text = '';
         }
         return text;
+    }
+    getSlotMap(bCreate) {
+        if (!this._slotMap && bCreate) {
+            this._slotMap = CustomElementUtils.getSlotMap(this.Element);
+        }
+        return this._slotMap;
+    }
+    getSlotSet() {
+        if (!this._slotSet) {
+            const keys = Object.keys(this._slotMap);
+            let nodes = [];
+            keys.forEach((key) => (nodes = nodes.concat(this._slotMap[key])));
+            this._slotSet = new Set(nodes);
+        }
+        return this._slotSet;
+    }
+    setOuterClasses(outerClasses) {
+        this.PatchClasses(this._outerClasses, outerClasses);
+        this._outerClasses = outerClasses;
+    }
+    PatchClasses(oldClasses, newClasses) {
+        oldClasses.forEach((oldClass) => {
+            if (!newClasses.has(oldClass)) {
+                this.Element.classList.remove(oldClass);
+            }
+        });
+        newClasses.forEach((newClass) => {
+            if (!oldClasses.has(newClass)) {
+                this.Element.classList.add(newClass);
+            }
+        });
     }
     GetCreatedPromise() {
         return this._createdPromise;
@@ -518,24 +648,55 @@ class ElementState {
         }
         return null;
     }
-    GetBindingProviderName(element) {
-        return null;
-    }
-    _completeHandler() {
-        if (!this.isComplete) {
-            if (this.isConnected) {
-                this.resolveBusyState();
+    _updateComponentState(state) {
+        if (this._componentState !== ComponentState.BindingsDisposed) {
+            switch (state) {
+                case ComponentState.WaitingToCreate:
+                    this.Element.classList.remove('oj-complete');
+                    this._createdPromise = null;
+                    break;
+                case ComponentState.Complete:
+                    this.Element.classList.add('oj-complete');
+                    this._resolveBusyState();
+                    break;
+                case ComponentState.BindingsDisposed:
+                case ComponentState.Incomplete:
+                    this.Element.classList.add('oj-incomplete');
+                    this._resolveBusyState();
+                    break;
+                default:
+                    break;
             }
-            this.isComplete = true;
+            this._componentState = state;
         }
     }
-    _walkBindingProviders(element) {
-        const cachedProp = '_ojBndgPrv';
-        let name = element[cachedProp];
+    _bindingsApplied() {
+        var _a;
+        this._updateComponentState(ComponentState.BindingsApplied);
+        (_a = this._bindingProviderCallback) === null || _a === void 0 ? void 0 : _a.call(this);
+    }
+    _registerBusyState() {
+        const busyContext = Context.getContext(this.Element).getBusyContext();
+        if (this._resolveCreatedBusyState) {
+            throw new JetElementError(this.Element, 'Registering busy state before previous state is resolved.');
+        }
+        this._resolveCreatedBusyState = busyContext.addBusyState({
+            description: CustomElementUtils.getElementInfo(this.Element) + ' is being upgraded.'
+        });
+    }
+    _resolveBusyState() {
+        if (this._resolveCreatedBusyState) {
+            this._resolveCreatedBusyState();
+            this._resolveCreatedBusyState = null;
+        }
+    }
+    static _walkBindingProviders(element, startElement = element) {
+        var _a;
+        let name = element[CACHED_BINDING_PROVIDER];
         if (name) {
             return name;
         }
-        name = element.getAttribute('data-oj-binding-provider') || this.GetBindingProviderName(element);
+        name = element.getAttribute('data-oj-binding-provider');
         if (!name) {
             const parent = element.parentElement;
             if (parent == null) {
@@ -543,14 +704,15 @@ class ElementState {
                     name = 'knockout';
                 }
                 else {
-                    this.throwError('Cannot determine binding provider for a disconnected subtree.');
+                    throw new JetElementError(startElement, 'Cannot determine binding provider for a disconnected subtree.');
                 }
             }
             else {
-                name = this._walkBindingProviders(parent);
+                name =
+                    (_a = parent[CHILD_BINDING_PROVIDER]) !== null && _a !== void 0 ? _a : ElementState._walkBindingProviders(parent, startElement);
             }
         }
-        Object.defineProperty(element, cachedProp, { value: name });
+        element[CACHED_BINDING_PROVIDER] = name;
         return name;
     }
     _getTrackedChildrenPromises(bindingProvider) {
@@ -561,10 +723,10 @@ class ElementState {
         const promises = trackedElements.map((trackedElement) => {
             if (!bindingProvider) {
                 const resolveElementDefinedBusyState = busyContext.addBusyState({
-                    description: 'Waiting for element ' + trackedElement.localName + ' to be defined.'
+                    description: `Waiting for element ${trackedElement.localName} to be defined.`
                 });
                 const timer = setInterval(() => {
-                    warn('Waiting for element ' + trackedElement.localName + ' to be defined.');
+                    warn(`Waiting for element ${trackedElement.localName} to be defined.`);
                 }, _UPGRADE_MESSAGE_INTERVAL);
                 return customElements
                     .whenDefined(trackedElement.localName)
@@ -579,7 +741,7 @@ class ElementState {
                     .catch((error) => {
                     resolveElementDefinedBusyState();
                     clearInterval(timer);
-                    throw new Error('Error defining element ' + trackedElement.localName + ' : ' + error);
+                    throw new Error(`Error defining element ${trackedElement.localName} : ${error}`);
                 });
             }
             else if (CustomElementUtils.isElementRegistered(trackedElement.tagName)) {
@@ -602,10 +764,23 @@ class ElementState {
         }
         return trackedElements;
     }
-    _resetStateFlags() {
-        this._createdPromise = null;
-        this.isComplete = false;
+    _isInErrorState() {
+        return (this._componentState === ComponentState.Incomplete ||
+            this._componentState === ComponentState.BindingsDisposed);
     }
 }
+ElementState._NOOP = () => { };
+var ComponentState;
+(function (ComponentState) {
+    ComponentState[ComponentState["WaitingToCreate"] = 0] = "WaitingToCreate";
+    ComponentState[ComponentState["Creating"] = 1] = "Creating";
+    ComponentState[ComponentState["WaitingForBindings"] = 2] = "WaitingForBindings";
+    ComponentState[ComponentState["ApplyingBindings"] = 3] = "ApplyingBindings";
+    ComponentState[ComponentState["BindingsApplied"] = 4] = "BindingsApplied";
+    ComponentState[ComponentState["PostCreateCallback"] = 5] = "PostCreateCallback";
+    ComponentState[ComponentState["Complete"] = 6] = "Complete";
+    ComponentState[ComponentState["Incomplete"] = 7] = "Incomplete";
+    ComponentState[ComponentState["BindingsDisposed"] = 8] = "BindingsDisposed";
+})(ComponentState || (ComponentState = {}));
 
-export { AttributeUtils, CustomElementUtils, ElementState, ElementUtils };
+export { AttributeUtils, CACHED_BINDING_PROVIDER, CHILD_BINDING_PROVIDER, CustomElementUtils, ElementState, ElementUtils, JetElementError };

@@ -5,345 +5,475 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojvdom', 'ojs/ojlogger', 'ojs/ojcustomelement-utils'], function (ko, oj, BindingProviderImpl, HtmlUtils, VDom, Logger, ojcustomelementUtils) { 'use strict';
+define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojcore-base'], function (ko, oj, BindingProviderImpl, HtmlUtils, Logger, ojcustomelementUtils, preact, oj$1) { 'use strict';
 
-  oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
-  BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
+    oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
+    BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
+    oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
-   * Default JET Template engine iumplementation
-   * @ignore
-   */
-  const JetTemplateEngine = function () {
-    /**
-     * Executes the template by deep-cloning the template nodes and then applying data binndings
-     * @param {Element} componentElement component element
-     * @param {Element} templateElement the <template> element
-     * @param {Oject} properties data to be applied to the template
-     * @param {string} alias an alias for referencing the data within a template
-     * @return {Array.<Node>} HTML nodes representing the result of the execution
-     * @ignore
-     */
-    this.execute = function (componentElement, templateElement, properties, alias) {
-      // Check to see if data-oj-as was defined on the template element as an additional
-      // alias to provide to the template children
-      var templateAlias = templateElement.getAttribute('data-oj-as');
-      var context = _getContext(componentElement, templateElement, properties, alias, templateAlias);
-
-      // The 'render' property on a template means that the template is a part of a VComponent.
-      // The template will be processed with VDom methods.
-      if (templateElement.render) {
-        return this._executeVDomTemplate(templateElement, context);
-      }
-      var tmpContainer = _createAndPopulateContainer(templateElement);
-      ko.applyBindingsToDescendants(context, tmpContainer);
-
-      return Array.prototype.slice.call(tmpContainer.childNodes, 0);
-    };
-
-    /**
-     * When a custom element is a part of a VComponent, we expect that its template
-     * has 'render' property. The property contains a function callback that returns a body of the template.
-     * In this case we want to process template using VDom methods in order to process template
-     * expressions correctly.
-     * Template nodes will be cached in order to be updated when 'render' proprety value is updated,
-     * in this case we don't need to refresh parent custom element completely.
-     * @param {Element} templateElement the <template> element
-     * @param {Object} context the binding context for the template  element
-     * @ignore
-     */
-    this._executeVDomTemplate = function (templateElement, context) {
-      var computedVNode = ko.pureComputed({
-        read: () => {
-          // Run render() callback to produce VNode element - root node for template content.
-          // Then cache tempate the content.
-          return templateElement.render(context.$current);
-        }
-      }).extend({ rateLimit: 0 });
-
-      var vNode = computedVNode();
-      this._extendTemplateForVComponent(templateElement);
-      templateElement._cachedRows.push({
-        currentContext: context.$current,
-        vnode: vNode,
-        computedVNode: computedVNode
-      });
-
-      // Mount template content and add a class to recognize the content during clean().
-      var domNode = VDom.mount(vNode, false);
-      domNode.classList.add('oj-vdom-template-root');
-      domNode._vnodeTemplate = templateElement;
-
-      computedVNode.subscribe((newVNode) => {
-        var currRow = templateElement._cachedRows.find(row => row.computedVNode === computedVNode);
-        VDom.patch(newVNode, currRow.vnode, VDom.getMountedNode(currRow.vnode).parentNode, false);
-        currRow.vnode = newVNode;
-      });
-
-      return [domNode];
-    };
-
-    /**
-     * The method is handles templates used inside VComponents by the regular custom elements.
-     * The '_cachedRows' property is added to the template to store all the processed nodes and
-     * the setter/getter methods are added for 'render' property in order to update nodes
-     * created with this template.
-     * @param {Element} node the <template> element
-     * @ignore
-     */
-    this._extendTemplateForVComponent = function (node) {
-      if (!node._cachedRows) {
-        var fn = node.render;
-        Object.defineProperties(node, {
-          _cachedRows: { writable: true, value: [] },
-          render: {
-            enumerable: true,
-            get() {
-              return fn;
-            },
-            set(renderCallback) {
-              fn = renderCallback;
-              if (renderCallback) {
-                this._cachedRows.forEach(rowItem => {
-                  var newVNode = renderCallback(rowItem.currentContext);
-                  VDom.patch(newVNode, rowItem.vnode,
-                    VDom.getMountedNode(rowItem.vnode).parentNode,
-                    false);
-                  // eslint-disable-next-line no-param-reassign
-                  rowItem.vnode = newVNode;
+    const ROW = Symbol('row');
+    class PreactTemplate {
+        static executeVDomTemplate(templateElement, context) {
+            const computedVNode = ko.pureComputed({
+                read: () => {
+                    return templateElement.render(context.$current);
+                }
+            })
+                .extend({ rateLimit: 0 });
+            const vNode = computedVNode();
+            PreactTemplate._extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
+                templateElement._cachedRows.forEach((rowItem) => {
+                    let newVNode = renderer(rowItem.currentContext);
+                    PreactTemplate._renderNodes(newVNode, rowItem);
                 });
-              }
+            });
+            const parentStub = document.createElement('div');
+            const cachedRow = {
+                currentContext: context.$current,
+                template: templateElement,
+                parentStub,
+                computedVNode,
+                vnode: undefined,
+                nodes: undefined
+            };
+            PreactTemplate._renderNodes(vNode, cachedRow);
+            templateElement._cachedRows.push(cachedRow);
+            computedVNode.subscribe((newVNode) => {
+                const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
+                PreactTemplate._renderNodes(newVNode, currRow);
+            });
+            return cachedRow.nodes;
+        }
+        static _renderNodes(vnode, row) {
+            const parentStub = row.parentStub;
+            let reparentNodes;
+            if (row.nodes) {
+                const oldNodes = row.nodes;
+                reparentNodes = PreactTemplate._getInsertNodesFunction(oldNodes);
+                oldNodes.forEach((node) => {
+                    parentStub.appendChild(node);
+                });
+            }
+            preact.render(vnode, parentStub);
+            const nodes = Array.from(parentStub.childNodes);
+            nodes.forEach((node) => {
+                var _a;
+                (_a = node.classList) === null || _a === void 0 ? void 0 : _a.add('oj-vdom-template-root');
+                node[ROW] = row;
+                node[ojcustomelementUtils.CACHED_BINDING_PROVIDER] = 'preact';
+            });
+            row.vnode = vnode;
+            row.nodes = nodes;
+            reparentNodes === null || reparentNodes === void 0 ? void 0 : reparentNodes(nodes);
+        }
+        static clean(node) {
+            const row = node[ROW];
+            if (!row.cleaned) {
+                row.cleaned = true;
+                const reconnectNodes = PreactTemplate._getInsertNodesFunction(row.nodes);
+                preact.render(null, row.parentStub);
+                reconnectNodes(row.nodes);
+                row.computedVNode.dispose();
+                const template = row.template;
+                const index = template._cachedRows.indexOf(row);
+                template._cachedRows.splice(index, 1);
+            }
+        }
+        static _getInsertNodesFunction(oldNodes) {
+            const lastNode = oldNodes[oldNodes.length - 1];
+            const parentNode = lastNode.parentNode;
+            const nextSibling = lastNode.nextSibling;
+            return (nodes) => {
+                nodes.forEach((node) => parentNode.insertBefore(node, nextSibling));
+            };
+        }
+        static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
+            const [cache, deleteEntry] = PreactTemplate._extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
+                for (const observable of cache) {
+                    observable.recalculateValue(recalc);
+                }
+            });
+            const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, propertySet, data, propertyValidator);
+            const item = new ObservableProperty(calcValue, renderer, defaultValues, deleteEntry);
+            cache.add(item);
+            return item;
+        }
+        static _computeProps(renderer, elementTagName, propertySet, data, propertyValidator) {
+            const result = renderer(data);
+            const vnodes = Array.isArray(result) ? result : [result];
+            const targetNode = vnodes.find((n) => n.type === elementTagName);
+            if (!targetNode) {
+                throw new Error(`Item template must contain an element named {elementTagName}`);
+            }
+            const props = {};
+            const vprops = targetNode.props;
+            Object.keys(vprops).forEach((prop) => {
+                if (propertySet.has(prop)) {
+                    props[prop] = targetNode.props[prop];
+                }
+            });
+            return props;
+        }
+        static _extendTemplate(node, initialCacheFactory, onRenderChanged) {
+            if (!node._cachedRows) {
+                let fn = node.render;
+                Object.defineProperties(node, {
+                    _cachedRows: { writable: true, value: initialCacheFactory() },
+                    render: {
+                        enumerable: true,
+                        get() {
+                            return fn;
+                        },
+                        set(renderCallback) {
+                            fn = renderCallback;
+                            if (renderCallback) {
+                                onRenderChanged(renderCallback);
+                            }
+                        }
+                    }
+                });
+            }
+            return node._cachedRows;
+        }
+    }
+    PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY = () => {
+        const cache = new Set();
+        return [cache, cache.delete.bind(cache)];
+    };
+    PreactTemplate._ROW_CACHE_FACTORY = () => [];
+    class ObservableProperty {
+        constructor(calculate, renderer, defaultProps, disposeCallback) {
+            this._calculate = calculate;
+            this._defaultProps = defaultProps;
+            this._disposeCallback = disposeCallback;
+            this._value = calculate(renderer);
+            this._merged = this._getMergedValue(this._value);
+        }
+        peek() {
+            return this._merged;
+        }
+        subscribe(sub) {
+            if (this._sub) {
+                throw new Error('Resolved property observable does not support multiple subscribers');
+            }
+            this._sub = sub;
+        }
+        dispose() {
+            this._disposeCallback(this);
+        }
+        recalculateValue(renderer) {
+            const val = this._calculate(renderer);
+            const old = this._value;
+            this._value = val;
+            if (this._sub && !oj$1.Object.compareValues(val, old)) {
+                this._merged = this._getMergedValue(val);
+                this._sub(this._merged);
+            }
+        }
+        _getMergedValue(val) {
+            return Object.assign({}, this._defaultProps, val);
+        }
+    }
+
+    /**
+     * Default JET Template engine iumplementation
+     * @ignore
+     */
+    const JetTemplateEngine = function () {
+      /**
+       * Executes the template by deep-cloning the template nodes and then applying data bindings
+       * @param {Element} componentElement component element
+       * @param {Element} templateElement the <template> element
+       * @param {Oject} properties data to be applied to the template
+       * @param {string} alias an alias for referencing the data within a template
+       * @param {Element} reportBusy - optional element for bubblng busy states outside of the template
+       * @return {Array.<Node>} HTML nodes representing the result of the execution
+       * @ignore
+       */
+      this.execute = function (componentElement, templateElement, properties, alias, reportBusy) {
+        // Check to see if data-oj-as was defined on the template element as an additional
+        // alias to provide to the template children
+        var templateAlias = templateElement.getAttribute('data-oj-as');
+        var context = _getContext(componentElement, templateElement, properties, alias, templateAlias);
+
+        // The 'render' property on a template means that the template is a part of a VComponent.
+        // The template will be processed with VDom methods.
+        if (templateElement.render) {
+          return PreactTemplate.executeVDomTemplate(templateElement, context);
+        }
+        var tmpContainer = _createAndPopulateContainer(templateElement, reportBusy);
+        let stampedNodes = tmpContainer.childNodes;
+        for (let i = 0; i < stampedNodes.length; i++) {
+          const stampedNode = stampedNodes[i];
+          // Set the binding provider on the stamped nodes in case the parent
+          // component is a different binding provider
+          stampedNode[ojcustomelementUtils.CACHED_BINDING_PROVIDER] = 'knockout';
+        }
+        ko.applyBindingsToDescendants(context, tmpContainer);
+
+        return Array.prototype.slice.call(stampedNodes, 0);
+      };
+
+      /**
+       * Cleans the node where bindings were previously applied
+       * @param {Node} node the node to clean.  Note that this is not the template element,
+       *        but rather, some node that contains the result of a previous call to execute()
+       * @ignore
+       */
+      this.clean = function (node) {
+        // Search for nodes created with VDom methods and let PreactTemplate clean them.
+        let vdomTemplateRoots =
+          node && node.getElementsByClassName
+            ? Array.from(node.getElementsByClassName('oj-vdom-template-root'))
+            : [];
+        // Add the node itself to the array if it has the oj-vdom-template-root class
+        if (node && node.matches && node.matches('.oj-vdom-template-root')) {
+          vdomTemplateRoots.push(node);
+        }
+        vdomTemplateRoots.forEach((root) => {
+          PreactTemplate.clean(root);
+        });
+        return vdomTemplateRoots.length === 0 ? ko.cleanNode(node) : null;
+      };
+
+      /**
+       * Resolves properties on an element of the template without producing
+       * any DOM. This method should be used when a template is used exclusively for collecting
+       * properties while iterating over data
+       * @param {Element} componentElement component element
+       * @param {Element} node the <template> element
+       * @param {string} elementTagName tag name of the element where the property should be collected
+       * @param {Set.<string>} propertySet properties to be resolved
+       * @param {Object} data data to be applied to the template
+       * @param {string} alias an alias for referencing the data within a template
+       * @param {Function=} propertyValidator a function to type check the value for a property
+       * @param {Element=} alternateParent an element where the template element will be
+       * temporarily added as a child. If the parameter is ommitted, the componentElement will
+       * be used
+       * @return {Object} an object that implemenets three functions: peek(), subscribe() and dispose()
+       * peek() returns the current value of the resolved properties, subscribe allows registering a subscription to the changes in resolved property values with
+       * the subscription callback receiving the new value as a parameter, and dispose() removes the subscription.
+       * @ignore
+       */
+      this.resolveProperties = function (
+        componentElement,
+        node,
+        elementTagName,
+        propertySet,
+        data,
+        alias,
+        propertyValidator,
+        alternateParent
+      ) {
+        // The 'render' property on a template means that the template is a part of a VComponent.
+        // The template will be processed with VDom methods
+        const renderFunc = node.render;
+        if (renderFunc) {
+          const defaultProps = this._getResolvedDefaultProps(elementTagName, propertySet);
+          return PreactTemplate.resolveVDomTemplateProps(node, renderFunc, elementTagName, propertySet,
+              data, defaultProps, propertyValidator);
+        }
+
+        var templateAlias = node.getAttribute('data-oj-as');
+
+        var context = _getContext(componentElement, node, data, alias, templateAlias);
+
+        var contribs = _getPropertyContributorsViaCache(
+          node,
+          context,
+          elementTagName,
+          propertySet,
+          alternateParent || componentElement
+        );
+
+        return _createComputed(contribs, context, propertyValidator);
+      };
+
+      /**
+       * Defines a special 'tracked' property on the target object. Mutating the tracked property will automatically update
+       * the DOM previously produced by the .execute() method
+       * @param {Object} target an object where the property is defined
+       * @param {string} name property name
+       * @param {*=} optional initial value
+       * @param {Function=} optional listener for value changes. Note that the listener
+       * will be invoked both for upsteream and downstream changes
+       * @ignore
+       */
+      this.defineTrackableProperty = function (target, name, value, changeListener) {
+        _createPropertyBackedByObservable(target, name, value, changeListener);
+      };
+
+      function _createPropertyBackedByObservable(target, name, value, changeListener) {
+        var obs = ko.observable(value);
+        Object.defineProperty(target, name, {
+          get: function () {
+            return obs();
+          },
+          set: function (val) {
+            obs(val);
+            if (changeListener) {
+              changeListener(val);
+            }
+          },
+          enumerable: true
+        });
+      }
+
+      var _propertyContribsCache = new WeakMap();
+
+      function _createComputed(contribs, context, propertyValidator) {
+        var computed = ko.pureComputed(function () {
+          var boundValues = {};
+          contribs.evalMap.forEach(function (evaluator, tokens) {
+            var leafValue = ko.utils.unwrapObservable(evaluator(context));
+            if (propertyValidator) {
+              propertyValidator(tokens, leafValue);
+            }
+            boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
+          });
+          var extend = oj.CollectionUtils.copyInto;
+          var valueMap = extend({}, contribs.staticMap, null, true);
+          valueMap = extend(valueMap, boundValues, null, true);
+
+          return valueMap;
+        });
+
+        return _wrap(computed, ['peek', 'subscribe', 'dispose']);
+      }
+
+      function _wrap(delegate, methods) {
+        var ret = {};
+        methods.forEach(function (method) {
+          ret[method] = delegate[method].bind(delegate);
+        });
+        return ret;
+      }
+
+      function _getPropertyContributorsViaCache(node, context, elementTagName, propertySet, parent) {
+        var contribs = _propertyContribsCache.get(node);
+        if (!contribs) {
+          contribs = {};
+          _propertyContribsCache.set(node, contribs);
+
+          var tmpNode = _createAndPopulateContainer(node);
+          var firstElem = tmpNode.querySelector(elementTagName);
+
+          contribs.evalMap = _getPropertyEvaluatorMap(firstElem, propertySet, context);
+          contribs.staticMap = _getStaticPropertyMap(firstElem, propertySet, parent);
+        }
+        return contribs;
+      }
+
+      function _getPropertyEvaluatorMap(firstElem, propertySet, context) {
+        var evalMap = new Map();
+        var attrs = firstElem ? firstElem.attributes : [];
+
+        for (var i = 0; i < attrs.length; i++) {
+          var attr = attrs[i];
+          var prop = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attr.name);
+          // Handle the 'dot' notation for bound subprops
+          var propTokens = prop.split('.');
+          if (propertySet.has(propTokens[0])) {
+            var info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(attr.value);
+            var expr = info.expr;
+            if (expr) {
+              evalMap.set(
+                propTokens,
+                BindingProviderImpl.createBindingExpressionEvaluator(expr, context)
+              );
             }
           }
-        });
-      }
-    };
-
-    /**
-     * Cleans the node where bindings were previously applied
-     * @param {Node} node the node to clean.  Note that this is not the template element,
-     *        but rather, some node that contains the result of a previous call to execute()
-     * @ignore
-     */
-    this.clean = function (node) {
-      // Search for nodes created with VDom methods.
-      // Remove the corresponding VDom nodes from _cachedRows stored on the template.
-      // Unmount the corresponding VDom nodes.
-      var vdomTemplateRoots = node && node.getElementsByClassName ?
-        node.getElementsByClassName('oj-vdom-template-root') : [];
-      Array.from(vdomTemplateRoots).forEach(root => {
-        var vnodeTemplate = root._vnodeTemplate;
-        var rowsToStay = vnodeTemplate._cachedRows.filter(row => {
-          if (VDom.getMountedNode(row.vnode) === root) {
-            VDom.unmount(row.vnode);
-            row.computedVNode.dispose();
-            return false;
-          }
-          return true;
-        });
-        vnodeTemplate._cachedRows = rowsToStay;
-      });
-
-      return vdomTemplateRoots.length === 0 ? ko.cleanNode(node) : null;
-    };
-
-    /**
-     * Resolves properties on an element of the template without producing
-     * any DOM. This method should be used when a template is used exclusively for collecting
-     * properties while iterating over data
-     * @param {Element} componentElement component element
-     * @param {Element} node the <template> element
-     * @param {string} elementTagName tag name of the element where the property should be collected
-     * @param {Set.<string>} propertySet properties to be resolved
-     * @param {Object} data data to be applied to the template
-     * @param {string} alias an alias for referencing the data within a template
-     * @param {Function=} propertyValidator a function to type check the value for a property
-     * @param {Element=} alternateParent an element where the template element will be
-     * temporarily added as a child. If the parameter is ommitted, the componentElement will
-     * be used
-     * @return {Object} an object that implemenets three functions: peek(), subscribe() and dispose()
-     * peek() returns the current value of the resolved properties, subscribe allows registering a subscription to the changes in resolved property values with
-     * the subscription callback receiving the new value as a parameter, and dispose() removes the subscription.
-     * @ignore
-     */
-    this.resolveProperties = function (componentElement, node, elementTagName, propertySet,
-      data, alias, propertyValidator, alternateParent) {
-      var templateAlias = node.getAttribute('data-oj-as');
-
-      var context = _getContext(componentElement, node, data, alias, templateAlias);
-
-      var contribs = _getPropertyContributorsViaCache(node, context, elementTagName,
-        propertySet, alternateParent || componentElement);
-
-      return _createComputed(contribs, context, propertyValidator);
-    };
-
-    /**
-     * Defines a special 'tracked' property on the target object. Mutating the tracked property will automatically update
-     * the DOM previously produced by the .execute() method
-     * @param {Object} target an object where the property is defined
-     * @param {string} name property name
-     * @param {*=} optional initial value
-     * @param {Function=} optional listener for value changes. Note that the listener
-     * will be invoked both for upsteream and downstream changes
-     * @ignore
-     */
-    this.defineTrackableProperty = function (target, name, value, changeListener) {
-      _createPropertyBackedByObservable(target, name, value, changeListener);
-    };
-
-    function _createPropertyBackedByObservable(target, name, value, changeListener) {
-      var obs = ko.observable(value);
-      Object.defineProperty(target, name, {
-        get: function () { return obs(); },
-        set: function (val) {
-          obs(val);
-          if (changeListener) {
-            changeListener(val);
-          }
-        },
-        enumerable: true
-      });
-    }
-
-    var _propertyContribsCache = new WeakMap();
-
-    function _createComputed(contribs, context, propertyValidator) {
-      var computed = ko.pureComputed(function () {
-        var boundValues = {};
-        contribs.evalMap.forEach(function (evaluator, tokens) {
-          var leafValue = ko.utils.unwrapObservable(evaluator(context));
-          if (propertyValidator) {
-            propertyValidator(tokens, leafValue);
-          }
-          boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
-        });
-        var extend = oj.CollectionUtils.copyInto;
-        var valueMap = extend({}, contribs.staticMap, null, true);
-        valueMap = extend(valueMap, boundValues, null, true);
-
-        return valueMap;
-      });
-
-      return _wrap(computed, ['peek', 'subscribe', 'dispose']);
-    }
-
-    function _wrap(delegate, methods) {
-      var ret = {};
-      methods.forEach(function (method) {
-        ret[method] = delegate[method].bind(delegate);
-      });
-      return ret;
-    }
-
-    function _getPropertyContributorsViaCache(node, context, elementTagName, propertySet, parent) {
-      var contribs = _propertyContribsCache.get(node);
-      if (!contribs) {
-        contribs = {};
-        _propertyContribsCache.set(node, contribs);
-
-        var tmpNode = _createAndPopulateContainer(node);
-        var firstElem = tmpNode.querySelector(elementTagName);
-
-        contribs.evalMap = _getPropertyEvaluatorMap(firstElem, propertySet, context);
-        contribs.staticMap = _getStaticPropertyMap(firstElem, propertySet, parent);
-      }
-      return contribs;
-    }
-
-    function _getPropertyEvaluatorMap(firstElem, propertySet, context) {
-      var evalMap = new Map();
-      var attrs = firstElem ? firstElem.attributes : [];
-
-      for (var i = 0; i < attrs.length; i++) {
-        var attr = attrs[i];
-        var prop = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(attr.name);
-        // Handle the 'dot' notation for bound subprops
-        var propTokens = prop.split('.');
-        if (propertySet.has(propTokens[0])) {
-          var info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(attr.value);
-          var expr = info.expr;
-          if (expr) {
-            evalMap.set(propTokens,
-              BindingProviderImpl.createBindingExpressionEvaluator(expr, context));
-          }
         }
+        return evalMap;
       }
-      return evalMap;
-    }
 
-    function _getStaticPropertyMap(firstElem, propertySet, parent) {
-      var staticMap = {};
-      if (firstElem) {
-        var st = firstElem.style;
-        st.display = 'none';
-        st.position = 'absolute';
-        firstElem.setAttribute('data-oj-binding-provider', 'none');
-        parent.appendChild(firstElem);
+      function _getStaticPropertyMap(firstElem, propertySet, parent) {
+        var staticMap = {};
+        if (firstElem) {
+          var st = firstElem.style;
+          st.display = 'none';
+          st.position = 'absolute';
+          firstElem.setAttribute('data-oj-binding-provider', 'none');
+          parent.appendChild(firstElem);
 
-        propertySet.forEach(function (key) {
-          if (firstElem[key] !== undefined) {
-            staticMap[key] = firstElem[key];
-          }
-        });
+          propertySet.forEach(function (key) {
+            if (firstElem[key] !== undefined) {
+              staticMap[key] = firstElem[key];
+            }
+          });
 
-        parent.removeChild(firstElem);
+          parent.removeChild(firstElem);
+        }
+        return staticMap;
       }
-      return staticMap;
-    }
 
-    function _getMergedValue(valuesObj, tokens, value) {
-      if (tokens.length < 2) {
-        return value;
+      function _getMergedValue(valuesObj, tokens, value) {
+        if (tokens.length < 2) {
+          return value;
+        }
+        var complexVal = valuesObj[tokens[0]] || {};
+        var current = complexVal;
+        var lastIndex = tokens.length - 1;
+
+        for (var i = 1; i < lastIndex; i++) {
+          var token = tokens[i];
+          var newVal = current[token] || {};
+          current[token] = newVal;
+          current = newVal;
+        }
+        current[tokens[lastIndex]] = value;
+        return complexVal;
       }
-      var complexVal = valuesObj[tokens[0]] || {};
-      var current = complexVal;
-      var lastIndex = tokens.length - 1;
 
-      for (var i = 1; i < lastIndex; i++) {
-        var token = tokens[i];
-        var newVal = current[token] || {};
-        current[token] = newVal;
-        current = newVal;
+      function _createAndPopulateContainer(node, reportBusy) {
+        var div = document.createElement('div');
+        if (reportBusy) {
+          div._ojReportBusy = reportBusy;
+        }
+        var nodes = HtmlUtils.getTemplateContent(node);
+        for (var i = 0; i < nodes.length; i++) {
+          div.appendChild(nodes[i]);
+        }
+        return div;
       }
-      current[tokens[lastIndex]] = value;
-      return complexVal;
-    }
 
-    function _createAndPopulateContainer(node) {
-      var div = document.createElement('div');
-      var nodes = HtmlUtils.getTemplateContent(node);
-      for (var i = 0; i < nodes.length; i++) {
-        div.appendChild(nodes[i]);
+      function _getContext(componentElement, node, properties, alias, templateAlias) {
+        // Always use the binding context for the template  element
+        // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
+        var bindingContext = node.__ojBindingContext ? node.__ojBindingContext : ko.contextFor(node);
+        // In the rare case it's not defined, check the componentElement and log a message
+        if (!bindingContext) {
+          Logger.info(
+            'Binding context not found when processing template for element with id: ' +
+              componentElement.id +
+              '. Using binding context for element instead.'
+          );
+          bindingContext = ko.contextFor(componentElement);
+        }
+        return BindingProviderImpl.extendBindingContext(
+          bindingContext,
+          properties,
+          alias,
+          templateAlias,
+          componentElement
+        );
       }
-      return div;
-    }
 
-    function _getContext(componentElement, node, properties, alias, templateAlias) {
-      // Always use the binding context for the template  element
-      // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
-      var bindingContext = node.__ojBindingContext ?
-        node.__ojBindingContext : ko.contextFor(node);
-      // In the rare case it's not defined, check the componentElement and log a message
-      if (!bindingContext) {
-        Logger.info('Binding context not found when processing template for element with id: ' +
-          componentElement.id + '. Using binding context for element instead.');
-        bindingContext = ko.contextFor(componentElement);
-      }
-      return BindingProviderImpl.extendBindingContext(bindingContext, properties,
-        alias, templateAlias, componentElement);
-    }
-  };
+      this._getResolvedDefaultProps = function (elementTagName, propertySet) {
+        let props = this._defaultProps.get(elementTagName);
+        if (!props) {
+          const elem = document.createElement(elementTagName); // @HTMLUpdateOK element tag name will always be one of JET elements
+          props = _getStaticPropertyMap(elem, propertySet, document.body);
+          this._defaultProps.set(elementTagName, props);
+        }
+        return props;
+      };
 
-  var index = new JetTemplateEngine();
+      this._defaultProps = new Map();
+    };
 
-  return index;
+    var index = new JetTemplateEngine();
+
+    return index;
 
 });

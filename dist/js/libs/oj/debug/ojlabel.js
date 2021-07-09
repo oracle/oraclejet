@@ -11,14 +11,6 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   (function () {
     /**
      * String used in the id on the span that surrounds the help icon.
@@ -145,7 +137,101 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      *
      * @ojuxspecs ['label']
      */
-    // --------------------------------------------------- oj.ojLabel Styling Start -----------------------------------------------------------
+
+
+    /**
+     * Removes the label functionality completely.
+     * This will return the element back to its pre-init state.
+     *
+     * <p>This method does not accept any arguments.
+     *
+     * @method
+     * @name oj.ojLabel#destroy
+     * @memberof oj.ojLabel
+     * @instance
+     * @ignore
+     *
+     * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
+     * $( ".selector" ).ojLabel( "destroy" );
+     */
+
+    //-----------------------------------------------------
+    //                   Fragments
+    //-----------------------------------------------------
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan=2>Help Icon</td>
+     *       <td><kbd>Tap and Hold</kbd></td>
+     *       <td>Show the help definition in a popup</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>If no help source, show the help definition in a popup.
+     *       If help source, navigate to the url.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+     * @memberof oj.ojLabel
+     * @instance
+     */
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan=2>Help Icon</td>
+     *       <td><kbd>Enter</kbd></td>
+     *       <td>If there is an url associated with help icon, navigate to the url.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Tab In</kbd></td>
+     *       <td>Show the help definition in a popup.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojLabel
+     * @instance
+     */
+
+    //-----------------------------------------------------
+    //                   Sub-ids
+    //-----------------------------------------------------
+
+    /**
+     * <p>Sub-ID for the label's help icon.</p>
+     *
+     * @ojsubid oj-label-help-icon
+     * @memberof oj.ojLabel
+     *
+     * @example <caption>Get the node for the help icon:</caption>
+     * var node = myComponent.getNodeBySubId({'subId': 'oj-label-help-icon'});
+     */
+
+    //-----------------------------------------------------
+    //                   Styling
+    //-----------------------------------------------------
+
     // ---------------- oj-focus-highlight --------------
     /**
     * Under normal circumstances this class is applied automatically.
@@ -178,7 +264,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
     *   &lt;!-- Content -->
     * &lt;/oj-label>
     */
-   // ---------------- oj-label-nowrap --------------
+    // ---------------- oj-label-nowrap --------------
     /**
     * Place on the oj-label element to have it not wrap when you don't want to use the responsive design classes (e.g., oj-md-labels-nowrap or oj-md-label-nowrap).
     * @ojstyleclass oj-label-nowrap
@@ -189,7 +275,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
     *   &lt;!-- Content -->
     * &lt;/oj-label>
     */
-   // ---------------- oj-label-inline --------------
+    // ---------------- oj-label-inline --------------
     /**
     * Place on the oj-label element to inline the label with the sibling DOM element when you don't want to use the responsive design classes (e.g., oj-md-labels-inline).
     * @ojstyleclass oj-label-inline
@@ -201,7 +287,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
     *   &lt;!-- Content -->
     * &lt;/oj-label>
     */
-   // ---------------- oj-label-inline-top --------------
+    // ---------------- oj-label-inline-top --------------
     /**
     * Place on the oj-label element together with oj-label-inline to inline the label with the sibling DOM element and have zero margin-top.
     * @ojstyleclass oj-label-inline-top
@@ -212,6 +298,27 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
     * &lt;oj-label class="oj-label-inline-top">
     *   &lt;!-- Content -->
     * &lt;/oj-label>
+    */
+    /**
+    * @ojstylevariableset oj-label-css-set1
+    * @ojstylevariable oj-label-font-size {description: "Label font size", formats: ["length"], help: "#css-variables"}
+    * @ojstylevariable oj-label-font-weight {description: "Label font weight", formats: ["font_weight"], help: "#css-variables"}
+    * @ojstylevariable oj-label-line-height {description: "Label line height", formats: ["number"], help: "#css-variables"}
+    * @ojstylevariable oj-label-color {description: "Label font color", formats: ["color"], help: "#css-variables"}
+    * @ojstylevariable oj-label-color-disabled {description: "Disabled label font color", formats: ["color"], help: "#css-variables"}
+    * @ojstylevariable oj-label-required-char-font-size {description: "Label required char font size", formats: ["length"], help: "css-variables"}
+    * @ojstylevariable oj-label-required-icon-color {description: "Label required icon color", formats: ["color"], help: "#css-variables"}
+    * @memberof oj.ojLabel
+    */
+   /**
+    * @ojstylevariableset oj-label-css-set2
+    * @ojdisplayname Inside label CSS
+    * @ojstylevariable oj-label-inside-edge-font-size {description: "Inside label font size", formats: ["length"], help: "#oj-label-css-set2"}
+    * @ojstylevariable oj-label-inside-edge-font-weight {description: "Inside label font weight", formats: ["font_weight"], help: "oj-label-css-set2"}
+    * @ojstylevariable oj-label-inside-edge-line-height {description: "Inside label edge line height", formats: ["number"], help: "#oj-label-css-set2"}
+    * @ojstylevariable oj-label-inside-edge-position-top {description: "Inside label edge position top", formats: ["length"], help: "#oj-label-css-set2"}
+    * @ojstylevariable oj-label-inside-edge-color {description: "Inside label edge color", formats: ["color"], help: "#oj-label-css-set2"}
+    * @memberof oj.ojLabel
     */
     oj.__registerWidget('oj.ojLabel', $.oj.baseComponent,
       {
@@ -507,11 +614,13 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
             // This is set by oj-radioset, oj-checkboxset, etc, so the oj-label can find it fast.
             this._targetElement = document.getElementById(setIdOption);
             targetElement = this._targetElement;
-            if (this._needsHelpIcon()) {
-              self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
-            }
-            if (self.options.showRequired) {
-              self._addRequiredDescribedByOnCustomFormElement(targetElement);
+            if (targetElement) {
+              if (this._needsHelpIcon()) {
+                self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
+              }
+              if (self.options.showRequired) {
+                self._addRequiredDescribedByOnCustomFormElement(targetElement);
+              }
             }
           }
 
@@ -1652,12 +1761,12 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
               helpSpan = this._createIconSpan(helpSpanId, true);
             }
             this._createHelp(helpSpan);
-            if (this._isCustomElement) {
+            if (this._isCustomElement && targetElement) {
               this._addHelpSpanIdOnTarget(helpSpanId, targetElement);
             }
           } else if (helpSpan !== null) {
             helpSpan.parentNode.removeChild(helpSpan);
-            if (this._isCustomElement) {
+            if (this._isCustomElement && targetElement) {
               this._removeHelpSpanIdOnTarget(helpSpanId, targetElement);
             }
           }
@@ -1868,102 +1977,9 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
 
           return this._super();
         }
-
-        /** ** end internal widget functions ****/
-
-        /**
-         * Removes the label functionality completely.
-         * This will return the element back to its pre-init state.
-         *
-         * <p>This method does not accept any arguments.
-         *
-         * @method
-         * @name oj.ojLabel#destroy
-         * @memberof oj.ojLabel
-         * @instance
-         * @ignore
-         *
-         * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-         * $( ".selector" ).ojLabel( "destroy" );
-         */
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Gesture</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td rowspan=2>Help Icon</td>
-         *       <td><kbd>Tap and Hold</kbd></td>
-         *       <td>Show the help definition in a popup</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>If no help source, show the help definition in a popup.
-         *       If help source, navigate to the url.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojLabel
-         * @instance
-         */
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td rowspan=2>Help Icon</td>
-         *       <td><kbd>Enter</kbd></td>
-         *       <td>If there is an url associated with help icon, navigate to the url.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>Tab In</kbd></td>
-         *       <td>Show the help definition in a popup.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojLabel
-         * @instance
-         */
-
-
-      });
-
-    // ////////////////     SUB-IDS     //////////////////
-
-    /**
-     * <p>Sub-ID for the label's help icon.</p>
-     *
-     * @ojsubid oj-label-help-icon
-     * @memberof oj.ojLabel
-     *
-     * @example <caption>Get the node for the help icon:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-label-help-icon'});
-     */
+    });
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () {
 var __oj_label_metadata = 
 {

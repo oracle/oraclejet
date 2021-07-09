@@ -12,13 +12,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojeditablevalue', 'ojs/
   LengthFilter = LengthFilter && Object.prototype.hasOwnProperty.call(LengthFilter, 'default') ? LengthFilter['default'] : LengthFilter;
   RegExpValidator = RegExpValidator && Object.prototype.hasOwnProperty.call(RegExpValidator, 'default') ? RegExpValidator['default'] : RegExpValidator;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () {
     var bindingMeta = {
       properties: {
@@ -499,7 +492,7 @@ var __oj_input_text_metadata =
     /* global __oj_input_text_metadata:false */
     __oj_input_text_metadata.extension._WIDGET_NAME = 'ojInputText';
     __oj_input_text_metadata.extension._INNER_ELEM = 'input';
-    __oj_input_text_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
+    __oj_input_text_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex', 'autocapitalize'];
     __oj_input_text_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
     oj.CustomElementBridge.register('oj-input-text', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_input_text_metadata,
@@ -752,21 +745,13 @@ var __oj_text_area_metadata =
     /* global __oj_text_area_metadata:false */
     __oj_text_area_metadata.extension._WIDGET_NAME = 'ojTextArea';
     __oj_text_area_metadata.extension._INNER_ELEM = 'textarea';
-    __oj_text_area_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
+    __oj_text_area_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex', 'autocapitalize'];
     __oj_text_area_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
     oj.CustomElementBridge.register('oj-text-area', {
       metadata: oj.CollectionUtils.mergeDeep(__oj_text_area_metadata,
         bindingMeta)
     });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ojcomponent oj.inputBase
@@ -1565,6 +1550,10 @@ var __oj_text_area_metadata =
         var readOnly = this.options.readOnly;
 
         this._rtl = this._GetReadingDirection() === 'rtl';
+        // JET-39086 - raw-value is not getting updated until space in android devices
+        // In android device we need to update rawValue even for composition events
+        // Get and store agent info
+        this._isAndroidDevice = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID);
 
         // update element state using options
         if (typeof readOnly === 'boolean') {
@@ -2192,10 +2181,27 @@ var __oj_text_area_metadata =
         // The keystroke sequence is bracketed by compositionstart and compositionend events,
         // and each keystroke also fires the input event.  Including the intermediate input
         // in rawValue makes it hard to do meaningful validation.
-        if (!this._isComposing) {
+        // JET-39086 - raw-value is not getting updated until space in android devices
+        // In android devices, typing in an English word will behave similar to what one
+        // would see when they compose a CJK character in desktop devices. So, we need to
+        // update the raw-value for all the input events in Android devices without considering
+        // composition events so that the property gets updated for each english character and not
+        // only for delimiters. In GBoard all the CJK keyboard layouts directly allow users
+        // to input a CJK character, so we do not need to rely on composition events for that.
+        // In Japanese keyboard, one of the three available layouts uses english chars
+        // to compose a Japanese character in which case circumventing the logic would end up
+        // updating the property with garbage values. But, it is highly unlikely for one to
+        // use this layout as the other two layouts would allow users to directly type in Japanese
+        // characters. So, for now we will not have to worry about composition events in
+        // Android devices.
+        if (!this._isComposing || this._isAndroidDevice) {
           if (this._hasMaxLength()) {
-            this._filterTextAndSetValues(this.lastFilteredText,
-              this._GetContentElement().val(), false, true);
+            // JET-35424 - Text Area - Pasting a value that exceeds the character limit,
+            // should be truncated
+            // pass the pasted text as both the current and proposed values so that even if it
+            // exceeds the max length, it will be truncated and set
+            var text = this._GetContentElement().val();
+            this._filterTextAndSetValues(text, text, false, true);
           } else {
             this._SetRawValue(this._GetContentElement().val(), event);
           }
@@ -2798,13 +2804,6 @@ var __oj_text_area_metadata =
     }, true);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojInputPassword
    * @augments oj.inputBase
    * @ojsignature [{
@@ -2861,27 +2860,11 @@ var __oj_text_area_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute,
-   *  it is up to the application developer to associate an oj-label to the oj-input-password component.
-   * For accessibility, you should associate an oj-label element with the oj-input-password component
-   * by putting an <code>id</code> on the oj-input-password element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
-   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
    * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
-   * <h3 id="label-section">
-   *   Label and InputPassword
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-input-password component.
-   * For accessibility, you should associate an oj-label element with the oj-input-password component
-   * by putting an <code>id</code> on the oj-input-password element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
    *
    * @example <caption>Initialize the oj-input-password element with no attributess specified:</caption>
    * &lt;oj-input-password>&lt;/oj-input-password>
@@ -3379,14 +3362,6 @@ var __oj_text_area_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojInputText
    * @augments oj.inputBase
    * @ojsignature [{
@@ -3446,27 +3421,11 @@ var __oj_text_area_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute,
-   *  it is up to the application developer to associate an oj-label to the oj-input-text component.
-   * For accessibility, you should associate an oj-label element with the oj-input-text component
-   * by putting an <code>id</code> on the oj-input-text element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
-   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
    * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
-   * <h3 id="label-section">
-   *   Label and InputText
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label with the oj-input-text component.
-   * For accessibility, you should associate an oj-label element to the oj-input-text component
-   * by putting an <code>id</code> on the oj-input-text element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
    *
    * @example <caption>Declare the oj-input-text component with no attributes specified:</caption>
    * &lt;oj-input-text>&lt;/oj-input-text>
@@ -3780,11 +3739,6 @@ var __oj_text_area_metadata =
         pattern: '',
         /**
          * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
-         * <p>
-         * When setting the virual keyboard to "number", if the converter on the component formats the value with non-numeric characters the
-         * value will not display. If applications want to use a "number" virtual keyboard they need to provide a converter that doesn't format
-         * with non-numeric characters.
-         * </p>
          * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
          * &lt;oj-input-text virtual-keyboard="number">&lt;/oj-input-text>
          *
@@ -3800,16 +3754,22 @@ var __oj_text_area_metadata =
          * @memberof oj.ojInputText
          * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
          * @type {string}
-         * @ojvalue {string} "auto" The component will determine the best virtual keyboard to use.
-         * @ojvalue {string} "email" Use a virtual keyboard for entering email addresses.
-         * @ojvalue {string} "number" Use a virtual keyboard for entering numbers.
+         * @ojvalue {string} "auto" The component will determine the best mobile virtual keyboard to use.
+         *                          For example, it may look at the converter's resolvedOptions
+         *                          to determine the mobile virtual keyboard type.
+         * @ojvalue {string} "email" Use a mobile virtual keyboard for entering email addresses.
+         * @ojvalue {string} "number" Use a mobile virtual keyboard for entering numbers.
+         *                            <p>If using "number", you must set the converter attribute to a converter
+         *                            that formats to numeric characters only, otherwise the value will not be shown. The reason for this
+         *                            is oj-input-text uses the browser native input type='number' and when you set a value that contains a non-numeric character,
+         *                            browsers do not display the value. For example, "1,000" would not be shown.</p>
          *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
          *                            not contain the minus sign.  This value should not be used on fields that
          *                            accept negative values.</p>
-         * @ojvalue {string} "search" Use a virtual keyboard for entering search terms.
-         * @ojvalue {string} "tel" Use a virtual keyboard for entering telephone numbers.
-         * @ojvalue {string} "text" Use a virtual keyboard for entering text.
-         * @ojvalue {string} "url" Use a virtual keyboard for URL entry.
+         * @ojvalue {string} "search" Use a mobile virtual keyboard for entering search terms.
+         * @ojvalue {string} "tel" Use a mobile virtual keyboard for entering telephone numbers.
+         * @ojvalue {string} "text" Use a mobile virtual keyboard for entering text.
+         * @ojvalue {string} "url" Use a mobile virtual keyboard for URL entry.
          * @default "auto"
          * @since 5.0.0
          */
@@ -3832,7 +3792,7 @@ var __oj_text_area_metadata =
            * Maximum number of characters that can be entered in the input field.
            *
            * @expose
-           * @alias length.max
+           * @name length.max
            * @ojshortdesc Specifies the maximum number of characters to be entered in the input text.
            * @memberof! oj.ojInputText
            * @instance
@@ -3846,11 +3806,11 @@ var __oj_text_area_metadata =
            * Dictates how the input text characters has to be counted.
            *
            * @expose
-           * @alias length.countBy
+           * @name length.countBy
            * @ojshortdesc Specifies the manner in which the input text characters has to be counted.
            * @memberof! oj.ojInputText
            * @instance
-           * @type {?string}
+           * @type {string=}
            * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
            * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
            * @default "codePoint"
@@ -4304,13 +4264,6 @@ var __oj_text_area_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojTextArea
    * @augments oj.inputBase
    * @ojsignature [{
@@ -4370,27 +4323,11 @@ var __oj_text_area_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute,
-   *  it is up to the application developer to associate an oj-label to the oj-text-area component.
-   * For accessibility, you should associate an oj-label element with the oj-text-area component
-   * by putting an <code>id</code> on the oj-text-area element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
-   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
    * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
-   * <h3 id="label-section">
-   *   Label and TextArea
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-text-area component.
-   * For accessibility, you should associate an oj-label element with the oj-text-area component
-   * by putting an <code>id</code> on the oj-text-area element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
    * <h3 id="binding-section">
    *   Declarative Binding
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
@@ -4609,6 +4546,7 @@ var __oj_text_area_metadata =
         * If this is -1, there is no maximum and the textarea will grow to show all the content.
         * If this is a positive number larger than the "rows" attribute, the textarea will grow to fit the content,
         * up to the maximum number of text lines.
+        * The height will never be less than the number of rows specified by the "rows" attribute.
         *
         * @example <caption>Initialize component with <code class="prettyprint">max-rows</code> attribute:</caption>
         * &lt;oj-some-element max-rows="5">&lt;/oj-some-element>
@@ -4687,7 +4625,8 @@ var __oj_text_area_metadata =
         resizeBehavior: 'none',
         /**
          * The number of visible text lines in the textarea. It can also be used to
-         * give specific height to the textarea.
+         * give specific height to the textarea.  When used in conjuction with max-rows,
+         * the rows attribnute will be the minimum height of the textarea.
          *
          * @example <caption>Initialize component with <code class="prettyprint">rows</code> attribute:</caption>
          * &lt;oj-some-element rows="5">&lt;/oj-some-element>
@@ -4722,7 +4661,7 @@ var __oj_text_area_metadata =
            * Maximum number of characters that can be entered in the input field.
            *
            * @expose
-           * @alias length.max
+           * @name length.max
            * @ojshortdesc Specifies the maximum number of characters to be entered in the text area.
            * @memberof! oj.ojTextArea
            * @instance
@@ -4736,11 +4675,11 @@ var __oj_text_area_metadata =
            * Dictates how the input text characters has to be counted.
            *
            * @expose
-           * @alias length.countBy
+           * @name length.countBy
            * @ojshortdesc Specifies the manner in which the text area characters has to be counted.
            * @memberof! oj.ojTextArea
            * @instance
-           * @type {?string}
+           * @type {string=}
            * @ojvalue {string} 'codePoint' Uses code point to calculate the text length
            * @ojvalue {string} 'codeUnit' Uses code unit to calculate the text length
            * @default "codePoint"
@@ -4753,11 +4692,11 @@ var __oj_text_area_metadata =
            * that can be entered is shown or not.
            *
            * @expose
-           * @alias length.counter
+           * @name length.counter
            * @ojshortdesc The type of counter to display.
            * @memberof! oj.ojTextArea
            * @instance
-           * @type {?string}
+           * @type {string=}
            * @ojvalue {string} 'none' The remaining characters count is not displayed.
            * @ojvalue {string} 'remaining' The remaining characters count is displayed.
            * @default "none"
@@ -4928,26 +4867,35 @@ var __oj_text_area_metadata =
         var maxRows = this.options.maxRows;
         var textarea = this._GetContentElement()[0];
         var rows = textarea.rows;
-        var resizedHeight;
         textarea.style.height = 0;
-        // if maxRows is -1 the textarea will grow to show all the content.
+        var heightForRows = this._lineHeight * rows;
+        var resizedHeight = 0;
+        // if maxRows is -1 the textarea will grow or shrink to fit all the content.
+        // it won't shrink any less than rows.
         if (maxRows === -1) {
-          resizedHeight = textarea.scrollHeight + this._getStylingHeight(textarea, 'border');
-        } else if (maxRows > rows) {
-          // if maxRows is positive and greater than rows, the textarea will grow to fit the content, up to maxrows.
-          var heightForMaximumRows = (this._lineHeight * maxRows) + this._getStylingHeight(textarea, 'padding');
-          var heightForRows = (this._lineHeight * rows) + this._getStylingHeight(textarea, 'padding');
-          var maxHeight = textarea.scrollHeight;
-          if (maxHeight > heightForMaximumRows) {
-            resizedHeight = heightForMaximumRows + this._getStylingHeight(textarea, 'border');
-          } else if (maxHeight < heightForRows) {
-            resizedHeight = heightForRows + this._getStylingHeight(textarea, 'border');
+          // we want to fit the entire scrollHeight, but we don't want
+          // to shrink smaller than the height for rows.
+          if (textarea.scrollHeight < heightForRows) {
+            resizedHeight = heightForRows;
           } else {
-            resizedHeight = maxHeight + this._getStylingHeight(textarea, 'border');
+            resizedHeight = textarea.scrollHeight;
+          }
+        } else if (maxRows > rows) {
+          // if maxRows is positive and greater than rows, the textarea will grow to fit the content
+          // up to maxrows, or shrink to fit the content and down to rows.
+          var heightForMaximumRows = this._lineHeight * maxRows;
+          if (textarea.scrollHeight > heightForMaximumRows) {
+            resizedHeight = heightForMaximumRows;
+          } else if (textarea.scrollHeight < heightForRows) {
+            resizedHeight = heightForRows;
+          } else {
+            resizedHeight = textarea.scrollHeight;
           }
         } else {
-          resizedHeight = (this._lineHeight * rows) + this._getStylingHeight(textarea, 'paddingAndBorder');
+          resizedHeight = this._lineHeight * rows;
         }
+        // adjust for the padding and border.
+        resizedHeight += this._getStylingHeight(textarea, 'paddingAndBorder');
         textarea.style.height = resizedHeight + 'px';
       },
 
@@ -4979,14 +4927,14 @@ var __oj_text_area_metadata =
       _getStylingHeight: function (textarea, type) {
         var cssStyle = window.getComputedStyle(textarea);
         var stylingHeight = 0;
-        if (type === 'padding' || type === 'paddindAndBorder') {
-          var paddingTop = parseInt(cssStyle.paddingTop, 10);
-          var paddingBottom = parseInt(cssStyle.paddingBottom, 10);
+        if (type === 'padding' || type === 'paddingAndBorder') {
+          var paddingTop = parseFloat(cssStyle.paddingTop);
+          var paddingBottom = parseFloat(cssStyle.paddingBottom);
           stylingHeight += paddingTop + paddingBottom;
         }
         if (type === 'border' || type === 'paddingAndBorder') {
-          var borderTopWidth = parseInt(cssStyle.borderTopWidth, 10);
-          var borderBottomWidth = parseInt(cssStyle.borderBottomWidth, 10);
+          var borderTopWidth = parseFloat(cssStyle.borderTopWidth);
+          var borderBottomWidth = parseFloat(cssStyle.borderBottomWidth);
           stylingHeight += borderTopWidth + borderBottomWidth;
         }
         return stylingHeight;
@@ -5011,13 +4959,14 @@ var __oj_text_area_metadata =
           // We get 'normal' for values 'initial', 'inherit', 'unset' and 'normal'
           // In Alta Web theme, the lineHeight returns 'normal', we should keep this.
           case 'normal':
-            // getComputedStyle always return fontSize in pixels
-            var fontSize = parseInt(computedStyle.fontSize, 10);
+            // getComputedStyle always return fontSize in pixels.  Not likely a float, but since it's legal
+            // we use parseFloat()
+            var fontSize = parseFloat(computedStyle.fontSize);
             this._lineHeight = 1.2 * fontSize;
             break;
           // We get the value in pixels for all units (%, em, cm, mm, in, pt, pc, px)
           default:
-            this._lineHeight = parseInt(computedlineHeight, 10);
+            this._lineHeight = parseFloat(computedlineHeight);
         }
       },
       /**

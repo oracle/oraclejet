@@ -8,14 +8,6 @@
 define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils'], function (Components, ojcustomelement, ojcustomelementUtils) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojSwitcher
    * @ojsignature {
    *                target: "Type",
@@ -224,14 +216,6 @@ define(['ojs/ojcomponentcore', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils
       }
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   (function () {
 var __oj_switcher_metadata = 

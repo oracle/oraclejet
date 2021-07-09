@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeaxis-toolkit', 'ojs/ojdvt-overview'], function (exports, dvt, ojdvtTimecomponent, ojtimeaxisToolkit, ojdvtOverview) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Timeline keyboard handler.
    * @param {dvt.EventManager} manager The owning dvt.EventManager.
    * @class DvtTimelineKeyboardHandler
@@ -45,32 +37,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var isVertical = series.isVertical();
     var isDualSeries = navigableItems.length > 1;
 
-    if (!isRTL && dvt.KeyboardEvent.RIGHT_ARROW == event.keyCode || isRTL && dvt.KeyboardEvent.LEFT_ARROW == event.keyCode)
+    if (!isRTL && dvt.KeyboardEvent.RIGHT_ARROW === event.keyCode || isRTL && dvt.KeyboardEvent.LEFT_ARROW === event.keyCode)
     {
       if (!isVertical)
         return DvtTimelineKeyboardHandler.getNextItem(currentNavigable, navigableItems[seriesIndex], true);
-      else if (isDualSeries && seriesIndex != 1)
+      else if (isDualSeries && seriesIndex !== 1)
         return DvtTimelineKeyboardHandler.getClosestItem(currentNavigable, navigableItems[1]);
     }
-    else if (!isRTL && dvt.KeyboardEvent.LEFT_ARROW == event.keyCode || isRTL && dvt.KeyboardEvent.RIGHT_ARROW == event.keyCode)
+    else if (!isRTL && dvt.KeyboardEvent.LEFT_ARROW === event.keyCode || isRTL && dvt.KeyboardEvent.RIGHT_ARROW === event.keyCode)
     {
       if (!isVertical)
         return DvtTimelineKeyboardHandler.getNextItem(currentNavigable, navigableItems[seriesIndex], false);
-      else if (isDualSeries && seriesIndex != 0)
+      else if (isDualSeries && seriesIndex !== 0)
         return DvtTimelineKeyboardHandler.getClosestItem(currentNavigable, navigableItems[0]);
     }
-    else if (dvt.KeyboardEvent.DOWN_ARROW == event.keyCode)
+    else if (dvt.KeyboardEvent.DOWN_ARROW === event.keyCode)
     {
       if (isVertical)
         return DvtTimelineKeyboardHandler.getNextItem(currentNavigable, navigableItems[seriesIndex], true);
-      else if (isDualSeries && seriesIndex != 1)
+      else if (isDualSeries && seriesIndex !== 1)
         return DvtTimelineKeyboardHandler.getClosestItem(currentNavigable, navigableItems[1]);
     }
-    else if (dvt.KeyboardEvent.UP_ARROW == event.keyCode)
+    else if (dvt.KeyboardEvent.UP_ARROW === event.keyCode)
     {
       if (isVertical)
         return DvtTimelineKeyboardHandler.getNextItem(currentNavigable, navigableItems[seriesIndex], false);
-      else if (isDualSeries && seriesIndex != 0)
+      else if (isDualSeries && seriesIndex !== 0)
         return DvtTimelineKeyboardHandler.getClosestItem(currentNavigable, navigableItems[0]);
     }
     return null;
@@ -118,14 +110,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for Timeline tooltips.
@@ -183,18 +167,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var itemDesc = dvt.ResourceUtils.format(translations.accessibleItemStart, [formattedStart]);
 
       var end = seriesNode.getEndTime();
-      if (end && end != start)
+      if (end && end !== start)
       {
         var formattedEnd = timeline.getTimeAxis().formatDate(new Date(end), null, 'general');
         itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemEnd, [formattedEnd]);
       }
 
       var title = seriesNode.getTitle();
-      if (title && title != '')
+      if (title != null && title !== '')
         itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemTitle, [title]);
 
       var description = seriesNode.getDescription();
-      if (description && description != '')
+      if (description != null && description !== '')
         itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemDesc, [description]);
       return itemDesc;
     }
@@ -246,7 +230,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     var start = seriesNode.getStartTime();
     var end = seriesNode.getEndTime();
-    if (start && end && end != start)
+    if (start && end && end !== start)
     {
       DvtTimelineTooltipUtils._addDatatipRow(datatipRows, timeline, 'start', 'Start', start, isTabular);
       DvtTimelineTooltipUtils._addDatatipRow(datatipRows, timeline, 'end', 'End', end, isTabular);
@@ -280,7 +264,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var tooltipDisplay = valueFormat['tooltipDisplay'];
     var translations = timeline.getOptions().translations;
 
-    if (tooltipDisplay == 'off')
+    if (tooltipDisplay === 'off')
       return;
 
     // Create tooltip label
@@ -348,7 +332,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   DvtTimelineTooltipUtils.formatValue = function(timeline, type, valueFormat, value) {
     var converter = valueFormat['converter'];
 
-    if (type == 'start' || type == 'end' || type == 'date')
+    if (type === 'start' || type === 'end' || type === 'date')
       return timeline.getTimeAxis().formatDate(new Date(value), converter, 'general');
 
     if (converter && converter['format'])
@@ -356,14 +340,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     return value;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Class representing a TimelineSeries node.
@@ -482,7 +458,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   DvtTimelineSeriesNode.prototype.getShortDesc = function()
   {
-    return this._shortDesc;
+    var shortDesc = this._shortDesc;
+    return typeof shortDesc === 'function' ? shortDesc(DvtTimelineSeriesNode.getShortDescContext(this)) : shortDesc;
   };
 
   DvtTimelineSeriesNode.prototype.getStyle = function()
@@ -589,18 +566,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var itemDesc = dvt.ResourceUtils.format(translations.accessibleItemStart, [formattedStart]);
 
     var end = this.getEndTime();
-    if (end && end != start)
+    if (end != null && end !== start)
     {
       var formattedEnd = this._timeline.getTimeAxis().formatDate(new Date(end), null, 'general');
       itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemEnd, [formattedEnd]);
     }
 
     var title = this.getTitle();
-    if (title && title != '')
+    if (title != null && title !== '')
       itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemTitle, [title]);
 
     var description = this.getDescription();
-    if (description && description != '')
+    if (description != null && description !== '')
       itemDesc = itemDesc + ' ' + dvt.ResourceUtils.format(translations.accessibleItemDesc, [description]);
     return itemDesc;
   };
@@ -704,7 +681,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   DvtTimelineSeriesNode.prototype.getNextNavigable = function(event)
   {
     var keyboardHandler = this._timeline.EventManager.getKeyboardHandler();
-    if (event.type == dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event)) {
+    if (event.type === dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event)) {
       return this;
     }
     else if (keyboardHandler.isNavigationEvent(event)) {
@@ -810,14 +787,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var data = this.getData();
     var itemData = data['_itemData'];
 
-    var dataContext = {
+    return {
       'data': this.getData(true),
       'itemData': itemData ? itemData : null,
       'seriesData': this._series.getData(true),
       'previousState': this._previousState,
       'state': this._state
     };
-    return dataContext;
   };
 
   /**
@@ -836,6 +812,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       'component': this._timeline.getOptions()['_widgetConstructor']
     };
   };
+  /**
+   * Returns the shortDesc Context of the node.
+   * @param {DvtTimelineSeriesNode} node
+   * @return {object}
+   */
+   DvtTimelineSeriesNode.getShortDescContext = function(node)
+   {
+     var itemData = node.getData()['_itemData'];
+     return {
+       'data': node.getData(true),
+       'seriesData': node._series.getData(true),
+       'itemData': itemData ? itemData : null
+     };
+   };
 
   /**
    * Implemented for DvtTooltipSource
@@ -929,7 +919,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesNode.prototype.showHoverEffect = function(ignoreOverview)
   {
-    var isFocused = this._timeline.EventManager.getFocus() == this;
+    var isFocused = this._timeline.EventManager.getFocus() === this;
     this.changeState('focused', isFocused, true);
 
     this._displayable.showHoverEffect(isFocused);
@@ -951,7 +941,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesNode.prototype.hideHoverEffect = function(ignoreOverview)
   {
-    var isFocused = this._timeline.EventManager.getFocus() == this;
+    var isFocused = this._timeline.EventManager.getFocus() === this;
     this.changeState('focused', isFocused, true);
 
     this._displayable.hideHoverEffect(isFocused);
@@ -974,14 +964,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._displayable.setAriaProperty('label', this.getAriaLabel());
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Timeline automation service.
@@ -1015,7 +997,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       {
         var series = this._timeline._series[i];
         var itemIndex = series._items.indexOf(logicalObj);
-        if (itemIndex != -1)
+        if (itemIndex !== -1)
           return DvtTimelineAutomation.TIMELINE_ITEM_STRING + '[' + i + '][' + itemIndex + ']';
       }
     }
@@ -1032,7 +1014,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
   {
     // TOOLTIP
-    if (subId == dvt.Automation.TOOLTIP_SUBID)
+    if (subId === dvt.Automation.TOOLTIP_SUBID)
       return this.GetTooltipElement(this._timeline);
 
     if (subId  && this._timeline.hasValidOptions())
@@ -1060,14 +1042,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -1085,63 +1059,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    * Contains overrides for version 1.
    * @const
    */
-  DvtTimelineDefaults.VERSION_1 = {
-    'animationOnDataChange': 'none',
-    'animationOnDisplay': 'none',
-    'orientation': 'horizontal',
-    'overview': {
-      'rendered': 'off'
-    },
-    'selectionMode': 'none',
-    'styleDefaults': {
-      'animationDuration': 500,
-      'borderColor': '#d9dfe3',
-      'item': {
-        'backgroundColor': '#ffffff',
-        'borderColor': '#648baf',
-        'descriptionStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #084B8A; white-space: nowrap;'),
-        'hoverBorderColor': '#85bbe7',
-        'selectedBorderColor': '#000000',
-        'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'font-weight: bold; color: #000000; white-space: nowrap;')
-      },
-      'majorAxis': {
-        'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'font-weight: bold; color: #4f4f4f; white-space: nowrap;'),
-        'separatorColor': '#bcc7d2'
-      },
-      'minorAxis': {
-        'backgroundColor': '#f9f9f9',
-        'borderColor': '#d9dfe3',
-        'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;'),
-        'separatorColor': '#bcc7d2'
-      },
-      'overview': {
-        'backgroundColor': '#e6ecf3',
-        'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'font-weight: bold; color: #4f4f4f;'),
-        'window': {
-          'backgroundColor': '#ffffff',
-          'borderColor': '#4f4f4f'
-        }
-      },
-      'referenceObject': {
-        'color': '#ff591f'
-      },
-      'series': {
-        'backgroundColor': '#f9f9f9',
-        'emptyTextStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'font-weight: normal; color: #333333; white-space: nowrap;'),
-        'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'font-weight: bold; color: #252525; white-space: nowrap;')
-      },
-      'tooltipLabelStyle': new dvt.CSSStyle(''),
-      'tooltipValueStyle': new dvt.CSSStyle('')
-    }
-  };
+  DvtTimelineDefaults.VERSION_1 = {};
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * @override
    */
+   DvtTimelineDefaults.prototype.getNoCloneObject = function () {
+    return {
+      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+      // If the instance is a class, class methods may not be cloned for some reason.
+      majorAxis: { scale: true },
+      minorAxis: { scale: true, zoomOrder: true }
+    };
+  };
 
   /**
    * Timeline event manager.
@@ -1271,14 +1201,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Timeline JSON Parser
    * @class
    * @constructor
@@ -1341,210 +1263,16 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
 
     var overview = options['overview'];
-    if (overview != null && overview['rendered'] == 'on')
+    if (overview != null && overview['rendered'] === 'on')
       ret.hasOverview = true;
     else
       ret.hasOverview = false;
 
-    ret.timeZoneOffsets = options['_tzo'];
     ret.itemPosition = options['_ip'];
     ret.customTimeScales = options['_cts'];
 
     return ret;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2012 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /*---------------------------------------------------------------------*/
-  /*  DvtTimelineOverviewAutomation                                      */
-  /*---------------------------------------------------------------------*/
-  /**
-    *  Provides automation services for timeline.
-    *  @class  DvtTimelineOverviewAutomation
-    *  @extends {dvt.Obj}
-    *  @param {TimelineOverview} overview
-    *  @constructor
-    *
-    */
-  var DvtTimelineOverviewAutomation = function(overview)
-  {
-    this._overview = overview;
-  };
-
-  dvt.Obj.createSubclass(DvtTimelineOverviewAutomation, dvt.Automation);
-
-  DvtTimelineOverviewAutomation.NODE_ID_PREFIX = 'marker';
-
-  DvtTimelineOverviewAutomation.WINDOW_ID = 'range_window';
-  DvtTimelineOverviewAutomation.START_HANDLE_ID = 'range_start_handle';
-  DvtTimelineOverviewAutomation.END_HANDLE_ID = 'range_end_handle';
-
-  DvtTimelineOverviewAutomation.AUTOMATION_NO_EVENT = -1;
-  DvtTimelineOverviewAutomation.AUTOMATION_MOUSE_CLICK = 0;
-
-  /**
-   * Valid subIds include:
-   * <ul>
-   * <li>marker[seriesIndex][index]</li>
-   * </ul>
-   * @override
-   */
-  DvtTimelineOverviewAutomation.prototype.GetSubIdForDomElement = function(displayable)
-  {
-    var id = displayable.getId();
-    if (displayable instanceof dvt.SimpleMarker)
-    {
-      var arr = id.split(':');
-      if (arr.length != 4)
-        return null;
-
-      var seriesIds = this._overview.getSeriesIds();
-      if (seriesIds != null)
-      {
-        var seriesIndex = seriesIds.indexOf(arr[1]);
-        if (seriesIndex > -1)
-          return 'marker[' + seriesIndex + '][' + arr[2] + ']';
-      }
-    }
-    else if (id == 'window')
-    {
-      return DvtTimelineOverviewAutomation.WINDOW_ID;
-    }
-    else if (id == 'lh' || id == 'lhb' || id == 'lbgrh')
-    {
-      return DvtTimelineOverviewAutomation.START_HANDLE_ID;
-    }
-    else if (id == 'rh' || id == 'rhb' || id == 'rbgrh')
-    {
-      return DvtTimelineOverviewAutomation.END_HANDLE_ID;
-    }
-    else if (id == 'grpy')
-    {
-      var prev = displayable.getParent().getChildBefore(displayable);
-      return this.GetSubIdForDomElement(prev);
-    }
-    return null;
-  };
-
-  /**
-   * Valid subIds include:
-   * <ul>
-   * <li>marker[seriesIndex][index]</li>
-   * </ul>
-   * @override
-   */
-  DvtTimelineOverviewAutomation.prototype.getDomElementForSubId = function(subId)
-  {
-    var subIdArray = DvtTimelineOverviewAutomation._convertSubIdToArray(subId);
-    if (subIdArray && subIdArray.length == 3 && subIdArray[0] == DvtTimelineOverviewAutomation.NODE_ID_PREFIX)
-    {
-      var seriesIds = this._overview.getSeriesIds();
-      if (seriesIds != null)
-      {
-        var index = parseInt(subIdArray[1], 10);
-        if (index > -1 && index < seriesIds.length)
-        {
-          var marker = DvtTimelineOverviewAutomation._findMarker(this._overview.getMarkers(), seriesIds[index], subIdArray[2]);
-          return marker ? marker.getDisplayable().getElem() : null;
-        }
-      }
-    }
-    else if (subId == DvtTimelineOverviewAutomation.WINDOW_ID)
-    {
-      return this._overview.getSlidingWindow().getElem();
-    }
-    else if (subId == DvtTimelineOverviewAutomation.START_HANDLE_ID)
-    {
-      return this._overview.getLeftHandle().getElem();
-    }
-    else if (subId == DvtTimelineOverviewAutomation.END_HANDLE_ID)
-    {
-      return this._overview.getRightHandle().getElem();
-    }
-
-    return null;
-  };
-
-  DvtTimelineOverviewAutomation.prototype.click = function(subId)
-  {
-    this.processSubId(subId, DvtTimelineOverviewAutomation.AUTOMATION_MOUSE_CLICK);
-  };
-
-  DvtTimelineOverviewAutomation.prototype.processSubId = function(subId, event)
-  {
-    if (event === undefined)
-      event = DvtTimelineOverviewAutomation.AUTOMATION_NO_EVENT;
-
-    if (subId == null)
-      return;
-
-    var bIsEvent = (event != DvtTimelineOverviewAutomation.AUTOMATION_NO_EVENT);
-
-    if (bIsEvent) {
-      if (event == DvtTimelineOverviewAutomation.AUTOMATION_MOUSE_CLICK) {
-        var subIdArray = DvtTimelineOverviewAutomation._convertSubIdToArray(subId);
-        if (subIdArray && subIdArray.length == 3 && subIdArray[0] == DvtTimelineOverviewAutomation.NODE_ID_PREFIX) {
-          var foundMarker = DvtTimelineOverviewAutomation._findMarker(this._overview.getMarkers(), subIdArray[1], subIdArray[2]);
-          if (foundMarker)
-            this._overview.HandleMarkerClick(foundMarker.getDisplayable(), false);
-        }
-      }
-    }
-  };
-
-  DvtTimelineOverviewAutomation._convertSubIdToArray = function(subId)
-  {
-    var array = subId.split('\[');
-
-    var len = array.length;
-
-    for (var i = 1; i < len; i++)
-    {
-      var elem = array[i];
-      var tempId = elem.substr(0, elem.length - 1);   // remove trailing "]"
-      var tempIdAsNumber = parseFloat(tempId);
-      tempId = isNaN(tempIdAsNumber) ? tempId : tempIdAsNumber;
-      array[i] = tempId;
-    }
-
-    return array;
-  };
-
-
-  /**
-   * Find a marker based on series id and index.
-   * @param {Array} markers
-   * @param {String} seriesId
-   * @param {number} index
-   * @return {dvt.SimpleMarker} the marker matching the criteria.
-   * @private
-   */
-  DvtTimelineOverviewAutomation._findMarker = function(markers, seriesId, index) {
-    var timelineId = 'tl1';
-    var markerId = timelineId + ':' + seriesId + ':' + index + ':';
-    for (var i = 0; i < markers.length; i++) {
-      var marker = markers[i];
-      var id = marker.getId();
-      if (id != null && id.indexOf(markerId) == 0)
-        return marker;
-    }
-
-    return null;
-  };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Default values and utility functions for component versioning.
@@ -1629,14 +1357,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Class representing a timelineOverview node.
    * @param {TimelineOverview} timelineOverview The owning timelineOverview component.
    * @param {object} props The properties for the node.
@@ -1667,15 +1387,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     this._endTime = props.endTime == null ? null : parseInt(props.endTime);
 
     this._shape = dvt.SimpleMarker.CIRCLE;
-    if (props.shape == 'square')
+    if (props.shape === 'square')
       this._shape = dvt.SimpleMarker.RECTANGLE;
-    else if (props.shape == 'plus')
+    else if (props.shape === 'plus')
       this._shape = dvt.SimpleMarker.PLUS;
-    else if (props.shape == 'diamond')
+    else if (props.shape === 'diamond')
       this._shape = dvt.SimpleMarker.DIAMOND;
-    else if (props.shape == 'triangleUp')
+    else if (props.shape === 'triangleUp')
       this._shape = dvt.SimpleMarker.TRIANGLE_UP;
-    else if (props.shape == 'triangleDown')
+    else if (props.shape === 'triangleDown')
       this._shape = dvt.SimpleMarker.TRIANGLE_DOWN;
 
     this._desc = props.desc;
@@ -1780,14 +1500,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   {
     this._y = y;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for TimelineOverview.
@@ -1913,14 +1625,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * TimelineOverview Parser
    * @param {TimelineOverview} timelineOverview The owning timelineOverview component.
    * @class
@@ -2004,7 +1708,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   {
     if (markers)
     {
-      var treeNodes = new Array();
+      var treeNodes = [];
 
       for (var i = 0; i < markers.length; i++)
       {
@@ -2032,7 +1736,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     // The object that will be populated with parsed values and returned
     var ret = new Object();
 
-    var useSkinningDefaults = (options['_sd'] == 'true');
+    var useSkinningDefaults = (options['_sd'] === 'true');
 
     // Parse this node's properties
     ret.id = options['tid'];
@@ -2076,14 +1780,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     else
       return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * TimelineOverview component.
@@ -2206,15 +1902,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var minMarkerSpacing = 1;
     var markerSpacingError = 1;
 
-    if (this.getStyle(TimelineOverview.ENABLED_STATE, TimelineOverview.BORDER_STYLE) == 'solid')
+    if (this.getStyle(TimelineOverview.ENABLED_STATE, TimelineOverview.BORDER_STYLE) === 'solid')
       var _eOffset = parseInt(this.getStyle(TimelineOverview.ENABLED_STATE, TimelineOverview.BORDER_OFFSET), 10);
     else
       _eOffset = minMarkerSpacing;
-    if (this.getStyle(TimelineOverview.ACTIVE_SELECTED_STATE, TimelineOverview.BORDER_STYLE) == 'solid')
+    if (this.getStyle(TimelineOverview.ACTIVE_SELECTED_STATE, TimelineOverview.BORDER_STYLE) === 'solid')
       var _asOffset = parseInt(this.getStyle(TimelineOverview.ACTIVE_SELECTED_STATE, TimelineOverview.BORDER_OFFSET), 10);
     else
       _asOffset = minMarkerSpacing;
-    if (this.getStyle(TimelineOverview.SELECTED_STATE, TimelineOverview.BORDER_STYLE) == 'solid')
+    if (this.getStyle(TimelineOverview.SELECTED_STATE, TimelineOverview.BORDER_STYLE) === 'solid')
       var _sOffset = parseInt(this.getStyle(TimelineOverview.SELECTED_STATE, TimelineOverview.BORDER_OFFSET), 10);
     else
       _sOffset = minMarkerSpacing;
@@ -2248,7 +1944,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   /***************************** common helper methods *********************************************/
   TimelineOverview.prototype.isItemSelectionEnabled = function()
   {
-    return (this._selectionMode != 'none');
+    return (this._selectionMode !== 'none');
   };
 
   TimelineOverview.prototype.getDrawableById = function(id)
@@ -2361,7 +2057,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var marker = durationMarkers[i];
       var id = marker.getId();
       var sId = marker.getSeriesId();
-      if (sId != markerSeries)
+      if (sId !== markerSeries)
       {
         this._colorCount = 0;
         markerSeries = sId;
@@ -2374,7 +2070,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._durationColorMap[id] = this._colorCount;
           marker._durationFillColor = this._durationColors[this._colorCount];
           this._colorCount++;
-          if (this._colorCount == this._durationColors.length)
+          if (this._colorCount === this._durationColors.length)
             this._colorCount = 0;
         }
         else
@@ -2410,12 +2106,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (this.isHorizontalRTL())
           x = canvasSize - x;
         marker.setX(x);
-        continue;
+      } else {
+        this.calculateSize(marker, start, end, canvasSize, size / 2, result, height);
+        // if max > height, then we'll need to reduce the size of marker and recalculate, so just bail out
+        if (result.max > height)
+          break;
       }
-      this.calculateSize(marker, start, end, canvasSize, size / 2, result, height);
-      // if max > height, then we'll need to reduce the size of marker and recalculate, so just bail out
-      if (result.max > height)
-        break;
     }
 
     // minimum size is 1 (also to prevent infinite recursion)
@@ -2437,11 +2133,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var color = node.getColor();
     var isGradient = node.isGradient();
     var opacity = node.getOpacity();
+    var fill, stroke;
     if (opacity == null)
     {
       opacity = this._defOpacity;
       // if default opacity is zero but a custom color is specified, override the opacity to 1
-      if (opacity == 0 && color != null)
+      if (opacity === 0 && color != null)
         opacity = 1;
     }
     var scaleX = this.getScaleX(node);
@@ -2470,10 +2167,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     // associate the node with the marker
     displayable._node = node;
 
-    if (color == null && opacity == this._defOpacity && isGradient == null)
+    if (color == null && opacity === this._defOpacity && isGradient == null)
     {
       // use default fills
-      if (marker == dvt.SimpleMarker.CIRCLE)
+      if (marker === dvt.SimpleMarker.CIRCLE)
         fill = this._radialFill;
       else
         fill = this._linearFill;
@@ -2499,15 +2196,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (isGradient == null)
       {
-        if (marker == dvt.SimpleMarker.CIRCLE)
-          var fill = new dvt.LinearGradientFill(250, colors, alphas);
+        if (marker === dvt.SimpleMarker.CIRCLE)
+          fill = new dvt.LinearGradientFill(250, colors, alphas);
         else
           fill = new dvt.LinearGradientFill(180, colors, alphas);
       }
       else
         fill = new dvt.SolidFill(color, alphas[0]);
 
-      var stroke = new dvt.Stroke(color, opacity);
+      stroke = new dvt.Stroke(color, opacity);
     }
 
     displayable.setFill(fill);
@@ -2517,7 +2214,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     var count = this.getNumChildren();
     var lastChild = this.getChildAt(count - 1);
-    if (count > this._lastChildIndex && (lastChild.getId() == 'tb' || lastChild.getId() == 'arr'))
+    if (count > this._lastChildIndex && (lastChild.getId() === 'tb' || lastChild.getId() === 'arr'))
       this.addChildAt(displayable, count - this._lastChildIndex); // insert right before the left handle
     else
       this.addChild(displayable);
@@ -2527,8 +2224,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     this.applyState(displayable, TimelineOverview.ENABLED_STATE);
 
     // Do not antialias markers if specified or vertical
-    if ((this.isVertical() || marker == dvt.SimpleMarker.RECTANGLE || marker == dvt.SimpleMarker.DIAMOND || marker == dvt.SimpleMarker.TRIANGLE_UP ||
-        marker == dvt.SimpleMarker.TRIANGLE_DOWN || marker == dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting != 'false')
+    if ((this.isVertical() || marker === dvt.SimpleMarker.RECTANGLE || marker === dvt.SimpleMarker.DIAMOND || marker === dvt.SimpleMarker.TRIANGLE_UP ||
+        marker === dvt.SimpleMarker.TRIANGLE_DOWN || marker === dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting !== 'false')
     {
       displayable.setPixelHinting(true);
     }
@@ -2544,7 +2241,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var j = 0; j < durationMarkers.length; j++)
       {
         var node = durationMarkers[j];
-        if (i == node._durationLevel)
+        if (i === node._durationLevel)
         {
           var x = ojdvtOverview.OverviewUtils.getDatePosition(start, end, node.getTime(), this.isVertical() ? this.Height : this.Width);
           var durationId = '_drn_' + node.getId();
@@ -2620,7 +2317,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       {
         var obj = this.calculateY(overlappingMarkers, node.getShape(), cx, cy, hszx, hszy, maxy, hsz, maxHeight);
         maxy = obj['maxy'];
-        if (obj['cy'] == cy)
+        if (obj['cy'] === cy)
         {
           // cy is the same, so we are done with this marker
           cy = obj['cy'];
@@ -2639,7 +2336,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       // for vertical timeline, marker is 4 px from the right edge of the overview
       var borderOffset = 0;
       var borderStyle = this.getStyle(TimelineOverview.ENABLED_STATE, TimelineOverview.BORDER_STYLE);
-      if (borderStyle == 'solid')
+      if (borderStyle === 'solid')
         borderOffset = parseInt(this.getStyle(TimelineOverview.ENABLED_STATE, TimelineOverview.BORDER_WIDTH), 10);
       if (this.isRTL())
         cy = borderOffset + 4;
@@ -2651,7 +2348,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     node.setY(cy);
     result.arr.push(node);
 
-    if (maxy > result.max)
+    if (maxy != null && maxy > result.max)
       result.max = maxy;
   };
 
@@ -2675,7 +2372,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var prevScaleY = this.getScaleY(prevMarker);
 
       // if the markers are both circles with consistent scaleX and scaleY values, use optimized spacing below
-      if (shape == dvt.SimpleMarker.CIRCLE && prevShape == dvt.SimpleMarker.CIRCLE && hszx == hszy && prevScaleX == prevScaleY)
+      if (shape === dvt.SimpleMarker.CIRCLE && prevShape === dvt.SimpleMarker.CIRCLE && hszx === hszy && prevScaleX === prevScaleY)
       {
         var xDist = Math.abs(cx - prevX);
         var minDist = hsz * prevScaleX + this._markerSpacingOffset + hszx;
@@ -2691,7 +2388,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         maxy = Math.max(maxy, cy + height);
 
         // if maxy > maxHeight and not minimal size, then we'll need to reduce the size of marker and recalculate, so bail out
-        if (hsz >= 1 && maxHeight != undefined && maxy > maxHeight)
+        if (hsz >= 1 && maxHeight !== undefined && maxy > maxHeight)
           break;
       }
     }
@@ -2712,26 +2409,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     for (var i = 0; i < index; i++)
     {
       var currItem = durationMarkers[i];
-      if (currItem != item)
+      if (currItem !== item)
       {
         var currEndTime = currItem.getEndTime();
-        if (currEndTime == null)
-          continue;
+        if (currEndTime != null) {
+          var currStartTime = currItem.getTime();
 
-        var currStartTime = currItem.getTime();
+          var curry = currItem._durationLevel;
+          if (curry == null)
+            curry = initialY;
 
-        var curry = currItem._durationLevel;
-        if (curry == null)
-          curry = initialY;
+          if (startTime >= currStartTime && startTime <= currEndTime && y === curry)
+          {
+            y = curry + 1;
+            // y changed, do the loop again
+            item._durationLevel = y;
 
-        if (startTime >= currStartTime && startTime <= currEndTime && y == curry)
-        {
-          y = curry + 1;
-          // y changed, do the loop again
-          item._durationLevel = y;
-
-          // calculate again from start since y changed and we might have a conflict again
-          y = this.calculateDurationY(item, durationMarkers);
+            // calculate again from start since y changed and we might have a conflict again
+            y = this.calculateDurationY(item, durationMarkers);
+          }
         }
       }
     }
@@ -2771,7 +2467,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var i = 0; i < this._selectedMarkers.length; i++)
       {
         // found it
-        if (drawable == this._selectedMarkers[i])
+        if (drawable === this._selectedMarkers[i])
         {
           isSelected = true;
           break;
@@ -2813,7 +2509,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         for (var i = 0; i < this._selectedMarkers.length; i++)
         {
           // found it
-          if (drawable == this._selectedMarkers[i])
+          if (drawable === this._selectedMarkers[i])
           {
             isSelected = true;
             break;
@@ -2901,7 +2597,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var i = 0; i < this._selectedMarkers.length; i++)
       {
         var marker = this._selectedMarkers[i];
-        if (drawable == marker)
+        if (drawable === marker)
         {
           // selected, do nothing
           return;
@@ -2919,7 +2615,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var i = 0; i < this._selectedMarkers.length; i++)
       {
         var marker = this._selectedMarkers[i];
-        if (drawable == marker)
+        if (drawable === marker)
         {
           // selected, do nothing
           return;
@@ -2980,7 +2676,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var i = 0; i < this._selectedMarkers.length; i++)
       {
         var marker = this._selectedMarkers[i];
-        if (drawable == marker)
+        if (drawable === marker)
         {
           index = i;
           break;
@@ -3018,7 +2714,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (!(drawable instanceof dvt.SimpleMarker))
     {
       var id = drawable.getId();
-      if (id && id.substring(0, 5) == '_drn_')
+      if (id && id.substring(0, 5) === '_drn_')
         this.applyDurationState(drawable, state);
       return;
     }
@@ -3027,14 +2723,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var requiresGlowMarker = false;
 
     var borderStyle = this.getStyle(state, TimelineOverview.BORDER_STYLE);
-    if (borderStyle == 'solid')
+    if (borderStyle === 'solid')
     {
       requiresBorderMarker = true;
       var borderColor = this.getStyle(state, TimelineOverview.BORDER_COLOR);
       if (borderColor == null)
         borderColor = '#000000';
       var glowColor = this.getStyle(state, TimelineOverview.GLOW_COLOR);
-      if (glowColor != null && glowColor != 'none')
+      if (glowColor != null && glowColor !== 'none')
         requiresGlowMarker = true;
     }
 
@@ -3068,7 +2764,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (borderMarker == null)
       {
-        if (markerType == dvt.SimpleMarker.CIRCLE)
+        if (markerType === dvt.SimpleMarker.CIRCLE)
         {
           var width = (drawable.getDimensions().w + (borderOffset * 2)) * drawable.getScaleX();
           var height = (drawable.getDimensions().h + (borderOffset * 2)) * drawable.getScaleY();
@@ -3101,8 +2797,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       borderMarker.setStroke(stroke);
 
       // Do not antialias marker borders if specified or vertical
-      if ((this.isVertical() || markerType == dvt.SimpleMarker.RECTANGLE || markerType == dvt.SimpleMarker.DIAMOND || markerType == dvt.SimpleMarker.TRIANGLE_UP ||
-               markerType == dvt.SimpleMarker.TRIANGLE_DOWN || markerType == dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting != 'false')
+      if ((this.isVertical() || markerType === dvt.SimpleMarker.RECTANGLE || markerType === dvt.SimpleMarker.DIAMOND || markerType === dvt.SimpleMarker.TRIANGLE_UP ||
+               markerType === dvt.SimpleMarker.TRIANGLE_DOWN || markerType === dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting !== 'false')
       {
         borderMarker.setPixelHinting(true);
       }
@@ -3112,7 +2808,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (glowMarker == null)
         {
           var glowOffset = borderOffset - borderWidth;
-          if (markerType == dvt.SimpleMarker.CIRCLE)
+          if (markerType === dvt.SimpleMarker.CIRCLE)
           {
             width = (drawable.getDimensions().w + (glowOffset * 2)) * drawable.getScaleX();
             height = (drawable.getDimensions().h + (glowOffset * 2)) * drawable.getScaleY();
@@ -3145,8 +2841,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         glowMarker.setStroke(glowStroke);
 
         // Do not antialias markers if specified or vertical
-        if ((this.isVertical() || markerType == dvt.SimpleMarker.RECTANGLE || markerType == dvt.SimpleMarker.DIAMOND || markerType == dvt.SimpleMarker.TRIANGLE_UP ||
-            markerType == dvt.SimpleMarker.TRIANGLE_DOWN || markerType == dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting != 'false')
+        if ((this.isVertical() || markerType === dvt.SimpleMarker.RECTANGLE || markerType === dvt.SimpleMarker.DIAMOND || markerType === dvt.SimpleMarker.TRIANGLE_UP ||
+            markerType === dvt.SimpleMarker.TRIANGLE_DOWN || markerType === dvt.SimpleMarker.PLUS) && this._defaultMarkerStyles.pixelHinting !== 'false')
         {
           glowMarker.setPixelHinting(true);
         }
@@ -3166,30 +2862,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   /************************** end marker selection *********************************************/
 
-  /************************** automation ***********************/
-  /**
-   * @return {DvtTimelineOverviewAutomation} the automation object
-   */
-  TimelineOverview.prototype.getAutomation = function()
-  {
-    if (!this._Automation)
-      this._Automation = new DvtTimelineOverviewAutomation(this);
-
-    return this._Automation;
-  };
-
   TimelineOverview.prototype.getMarkers = function()
   {
     return this._markers;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for Timeline.
@@ -3883,12 +3559,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * Returns the style object as a dvt.CSSStyle if it is not already one
+   * @param {object | dvt.CSSStyle} style the input style object
+   * @return {dvt.CSSStyle} The style as a dvt.CSSStyle
    */
+  DvtTimelineStyleUtils.convertToCSSStyle = function(style)
+  {
+    if (style != null && !(style instanceof dvt.CSSStyle)) {
+      return new dvt.CSSStyle(style);
+    }
+    return style;
+  };
 
   /**
    * Renderer for Timeline.
@@ -3904,6 +3585,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineRenderer.renderTimeline = function(timeline)
   {
+    var series;
     DvtTimelineRenderer._renderBackground(timeline);
     DvtTimelineRenderer._renderScrollableCanvas(timeline);
 
@@ -3925,7 +3607,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       {
         for (var i = 0; i < timeline._series.length; i++)
         {
-          var series = timeline._series[i];
+          series = timeline._series[i];
           if (series._items && series._items.length > 0)
           {
             timeline.EventManager.setFocusObj(series._items[0]);
@@ -3945,9 +3627,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (ojtimeaxisToolkit.TimeAxisUtils.supportsTouch())
         timeline._setAriaProperty('flowto', timeline._series[0].getId());
 
-      for (var i = 0; i < timeline._series.length; i++)
+      for (var j = 0; j < timeline._series.length; j++)
       {
-        var series = timeline._series[i];
+        series = timeline._series[j];
         series.triggerAnimations();
       }
     }
@@ -3980,7 +3662,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     cp.addRect(transX, 0, timeline._backgroundWidth, timeline._backgroundHeight);
     timeline._background.setClipPath(cp);
 
-    if (timeline._background.getParent() != timeline)
+    if (timeline._background.getParent() !== timeline)
       timeline.addChild(timeline._background);
   };
 
@@ -4035,7 +3717,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             var key = Math.abs(i - 1);
           else
             key = i;
-          if (isRTL && timeline._series.length == 1)
+          if (isRTL && timeline._series.length === 1)
           {
             cp.addRect(axisSize, 0, timeline._seriesSize, timeline.getContentLength());
             var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
@@ -4058,7 +3740,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         series.setClipPath(cp);
         series.setMatrix(posMatrix);
 
-        if (series.getParent() != container)
+        if (series.getParent() !== container)
           container.addChild(series);
         series.render(timeline._seriesOptions[i], width, height);
       }
@@ -4072,6 +3754,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineRenderer._renderSeriesLabels = function(timeline)
   {
+    var dim, posMatrix;
     if (timeline._series)
     {
       var context = timeline.getCtx();
@@ -4079,9 +3762,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (timeline._seriesLabels)
       {
-        for (var i = 0; i < timeline._seriesLabels.length; i++)
+        for (var j = 0; j < timeline._seriesLabels.length; j++)
         {
-          timeline.removeChild(timeline._seriesLabels[i]);
+          timeline.removeChild(timeline._seriesLabels[j]);
         }
       }
       timeline._seriesLabels = [];
@@ -4108,7 +3791,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           var seriesLabelElem = new dvt.OutputText(context, seriesLabel, 0, 0, 'sl_s' + i);
           seriesLabelElem.setCSSStyle(seriesLabelStyle);
 
-          var dim = seriesLabelElem.getDimensions();
+          dim = seriesLabelElem.getDimensions();
           if (timeline.isVertical())
             var totalSpace = timeline._seriesSize;
           else
@@ -4137,7 +3820,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
               posX = i * (timeline._canvasSize - width - doubleLabelSpacing) + labelSpacing + timeline._startX + (i - 1) * -zoomControlSpacing;
             posY = timeline._startY + labelSpacing;
           }
-          var posMatrix = new dvt.Matrix(1, 0, 0, 1, posX, posY);
+          posMatrix = new dvt.Matrix(1, 0, 0, 1, posX, posY);
           seriesLabelElem.setMatrix(posMatrix);
           posMatrix = new dvt.Matrix(1, 0, 0, 1, posX - seriesLabelPadding, posY - seriesLabelPadding);
           backgroundRect.setMatrix(posMatrix);
@@ -4155,7 +3838,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             var seriesEmptyTextElem = new dvt.OutputText(context, seriesEmptyText, 0, 0, 'et_s' + i);
             seriesEmptyTextElem.setCSSStyle(DvtTimelineStyleUtils.getEmptyTextStyle(timeline.Options));
 
-            var dim = seriesEmptyTextElem.getDimensions();
+            dim = seriesEmptyTextElem.getDimensions();
             if (!timeline.isVertical())
             {
               var matPosX = (timeline._canvasLength - dim.w) / 2 + timeline._startX;
@@ -4165,11 +3848,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             {
               matPosY = (timeline._canvasLength - dim.h) / 2 + timeline._startY;
               if (isRTL)
-                matPosX = Math.abs(i - 1) * (((seriesCount - 1) * timeline._seriesSize) + timeline.getTimeAxisVisibleSize(seriesCount)) + ((timeline._seriesSize - dim.w) / 2) + timeline._startX;
+                matPosX = Math.abs(i - 1) * (((seriesCount - 1) * timeline._seriesSize) +
+                 timeline.getTimeAxisVisibleSize(seriesCount)) + ((timeline._seriesSize - dim.w) / 2) + timeline._startX;
               else
                 matPosX = i * (timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount)) + ((timeline._seriesSize - dim.w) / 2) + timeline._startX;
             }
-            var posMatrix = new dvt.Matrix(1, 0, 0, 1, matPosX, matPosY);
+            posMatrix = new dvt.Matrix(1, 0, 0, 1, matPosX, matPosY);
             seriesEmptyTextElem.setMatrix(posMatrix);
 
             timeline.addChild(seriesEmptyTextElem);
@@ -4184,9 +3868,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    * Renders the minor time axis of a timeline.
    * @param {Timeline} timeline The timeline being rendered.
    * @param {dvt.Container} container The container to render into.
+   * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame.
+   *   Improves performance especially during high fire rate events such as scroll. Default false.
    * @private
    */
-  DvtTimelineRenderer._renderAxis = function(timeline, container)
+  DvtTimelineRenderer._renderAxis = function(timeline, container, throttle)
   {
     var context = timeline.getCtx();
     var isRTL = dvt.Agent.isRightToLeft(context);
@@ -4195,11 +3881,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var seriesCount = timeline._series.length;
     var axisSize = timeline.getTimeAxisSize();
     var axisVisibleSize = timeline.getTimeAxisVisibleSize(seriesCount);
-    var axisStart = seriesCount == 1 ? (timeline._canvasSize - axisVisibleSize) : (timeline._canvasSize / seriesCount - (axisVisibleSize / 2));
-    if (isRTL && timeline.isVertical() && timeline._series.length == 1)
+    var axisStart = seriesCount === 1 ? (timeline._canvasSize - axisVisibleSize) : (timeline._canvasSize / seriesCount - (axisVisibleSize / 2));
+    if (isRTL && timeline.isVertical() && timeline._series.length === 1)
       axisStart = 0;
-
-    // timeAxis.renderTimeAxis(container, axisStart, axisVisibleSize);
 
     if (timeAxis.getParent() !== container)
       container.addChild(timeAxis);
@@ -4207,12 +3891,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (timeline.isVertical())
     {
       var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisStart, 0);
-      timeAxis.render(null, axisSize, timeline.getContentLength());
+      timeAxis.render({
+        _viewStartTime: timeline._viewStartTime,
+        _viewEndTime: timeline._viewEndTime,
+        _throttle: throttle
+      }, axisSize, timeline.getContentLength());
     }
     else
     {
       posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, axisStart);
-      timeAxis.render(null, timeline.getContentLength(), axisSize);
+      timeAxis.render({
+        _viewStartTime: timeline._viewStartTime,
+        _viewEndTime: timeline._viewEndTime,
+        _throttle: throttle
+      }, timeline.getContentLength(), axisSize);
     }
 
     timeAxis.setMatrix(posMatrix);
@@ -4236,9 +3928,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     if (timeline._majorAxisLabels)
     {
-      for (var i = 0; i < timeline._majorAxisLabels.length; i++)
+      for (var j = 0; j < timeline._majorAxisLabels.length; j++)
       {
-        container.removeChild(timeline._majorAxisLabels[i]);
+        container.removeChild(timeline._majorAxisLabels[j]);
       }
     }
     timeline._majorAxisLabels = [];
@@ -4302,16 +3994,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (!isRTL)
         {
           if (timeline.isVertical())
-            var labelElem = DvtTimelineRenderer._addLabel(context, container, 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
+            var labelElem = DvtTimelineRenderer._addLabel(context, container, 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle,
+               'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
           else
-            labelElem = DvtTimelineRenderer._addLabel(context, container, currentPos + 5, label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
+            labelElem = DvtTimelineRenderer._addLabel(context, container, currentPos + 5, label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle,
+               'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
         }
         else
         {
           if (timeline.isVertical())
-            labelElem = DvtTimelineRenderer._addLabel(context, container, timeline._canvasSize - 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
+            labelElem = DvtTimelineRenderer._addLabel(context, container, timeline._canvasSize - 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle,
+               'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
           else
-            labelElem = DvtTimelineRenderer._addLabel(context, container, length - (currentPos + 5), label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
+            labelElem = DvtTimelineRenderer._addLabel(context, container, length - (currentPos + 5), label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle,
+             'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
         }
         labelElem.time = dates[i];
       }
@@ -4384,6 +4080,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   {
     var context = timeline.getCtx();
     var scrollbarPadding = timeline.getScrollbarPadding();
+    var seriesCount = timeline._series.length;
+
     if (timeline._scrollbarsCanvas == null)
     {
       timeline._scrollbarsCanvas = new dvt.Container(context, 'sbCanvas');
@@ -4411,7 +4109,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         availSpaceWidth = timeline.getCanvasLength();
         availSpaceHeight = timeline.Height - scrollbarPadding * 1.5;
       }
-      var timeDirScrollbarDim = DvtTimelineRenderer._prerenderTimeDirScrollbar(timeline, timeline._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+      var timeDirScrollbarDim = DvtTimelineRenderer._prerenderTimeDirScrollbar(timeline, timeline._scrollbarsCanvas,
+        new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
     }
     if (timeline.isContentDirScrollbarOn())
     {
@@ -4429,11 +4128,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         availSpaceHeight = timeline._seriesSize;
       }
 
-      var seriesCount = timeline._series.length;
       var contentDirScrollbarDim = [];
       for (var i = 0; i < seriesCount; i++)
       {
-        contentDirScrollbarDim[i] = DvtTimelineRenderer._prerenderContentDirScrollbar(timeline, timeline._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight), i);
+        contentDirScrollbarDim[i] = DvtTimelineRenderer._prerenderContentDirScrollbar(timeline, timeline._scrollbarsCanvas,
+          new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight), i);
       }
     }
 
@@ -4456,8 +4155,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         sbOptions['isHorizontal'] = true;
         timeline.timeDirScrollbar.setTranslateX(timeline.getStartXOffset());
       }
-      timeline.timeDirScrollbar.render(sbOptions, timeDirScrollbarDim.w, timeDirScrollbarDim.h);
-      timeline.timeDirScrollbar.setViewportRange(timeline._viewStartTime, timeline._viewEndTime);
+      if (timeDirScrollbarDim != null) {
+        timeline.timeDirScrollbar.render(sbOptions, timeDirScrollbarDim.w, timeDirScrollbarDim.h);
+        timeline.timeDirScrollbar.setViewportRange(timeline._viewStartTime, timeline._viewEndTime);
+      }
     }
     if (timeline.contentDirScrollbar)
     {
@@ -4471,7 +4172,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (i == 0)
         {
           sbOptions['min'] = 0;
-          sbOptions['max'] = (Math.max(timeline._series[i]._maxOverflowValue, contentDirScrollbarDim[i].h));
+          var contentDirScrollbarH = (contentDirScrollbarDim[i] != null && contentDirScrollbarDim[i].h != null) ? contentDirScrollbarDim[i].h : 0;
+          sbOptions['max'] = (Math.max(timeline._series[i]._maxOverflowValue, contentDirScrollbarH));
           if (!timeline.isVertical())
           {
             sbOptions['isReversed'] = true;
@@ -4482,7 +4184,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             if (dvt.Agent.isRightToLeft(context))
             {
               sbOptions['isReversed'] = false;
-              if (seriesCount == 2)
+              if (seriesCount === 2)
                 timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset() + timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount));
               else
                 timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset() + timeline.getTimeAxisVisibleSize(seriesCount));
@@ -4663,7 +4365,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    * @private
    * @return {dvt.OutputText}
    */
-  DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLength, y, labelStyle, id, renderBackground, backgroundLabelStyle, backgroundLabelOpacity, labelPadding, labelList, isRTL)
+  DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLength, y, labelStyle,
+    id, renderBackground, backgroundLabelStyle, backgroundLabelOpacity, labelPadding, labelList, isRTL)
   {
     var label = new dvt.OutputText(context, text, pos, 0, id);
     if (labelStyle != null)
@@ -4696,14 +4399,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     return label;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Creates an instance of DvtTimelineSeriesItem which extends dvt.Container with hover and selection feedback.
@@ -4742,7 +4437,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesItem.prototype.setSelected = function(isSelected)
   {
-    if (this._isSelected == isSelected)
+    if (this._isSelected === isSelected)
       return;
 
     this._isSelected = isSelected;
@@ -4802,21 +4497,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var bubbleInner = bubble.getChildAt(0);
     var duration = item.getDurationBar();
 
-    if (state == DvtTimelineSeriesItem.ACTIVE_SELECTED_STATE_KEY)
+    if (state === DvtTimelineSeriesItem.ACTIVE_SELECTED_STATE_KEY)
     {
       var bubbleFillColor = DvtTimelineStyleUtils.getItemSelectedFillColor(item);
       var bubbleStrokeColor = DvtTimelineStyleUtils.getItemSelectedStrokeColor(item);
       var bubbleStrokeWidth = DvtTimelineStyleUtils.getItemSelectedStrokeWidth();
       var bubbleInnerStrokeColor = DvtTimelineStyleUtils.getItemInnerActiveStrokeColor();
     }
-    else if (state == DvtTimelineSeriesItem.SELECTED_STATE_KEY)
+    else if (state === DvtTimelineSeriesItem.SELECTED_STATE_KEY)
     {
       bubbleFillColor = DvtTimelineStyleUtils.getItemSelectedFillColor(item);
       bubbleStrokeColor = DvtTimelineStyleUtils.getItemSelectedStrokeColor(item);
       bubbleStrokeWidth = DvtTimelineStyleUtils.getItemSelectedStrokeWidth();
       bubbleInnerStrokeColor = DvtTimelineStyleUtils.getItemInnerStrokeColor();
     }
-    else if (state == DvtTimelineSeriesItem.HOVER_STATE_KEY)
+    else if (state === DvtTimelineSeriesItem.HOVER_STATE_KEY)
     {
       bubbleFillColor = DvtTimelineStyleUtils.getItemHoverFillColor(item);
       bubbleStrokeColor = DvtTimelineStyleUtils.getItemHoverStrokeColor(item);
@@ -4846,14 +4541,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (duration)
       duration.setStroke(bubbleStroke);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtTimelineSeriesItem.
@@ -4975,12 +4662,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (!isRTL && series.isInverted() || isRTL && !series.isInverted())
       {
         var bubbleArray = [0, 0, 0, startOffset, -6, offset, 0, endOffset, 0, nodeHeight, nodeWidth, nodeHeight, nodeWidth, 0, 0, 0];
-        var innerBubbleArray = [2, 2, 2, startOffset, -4, offset, 2, endOffset, 2, nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, 2, 2, 2];
+        var innerBubbleArray = [2, 2, 2, startOffset, -4, offset, 2, endOffset,
+           2, nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, 2, 2, 2];
       }
       else
       {
         bubbleArray = [0, 0, 0, nodeHeight, nodeWidth, nodeHeight, nodeWidth, endOffset, nodeWidth + 6, offset, nodeWidth, startOffset, nodeWidth, 0, 0, 0];
-        innerBubbleArray = [2, 2, 2, nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, endOffset, nodeWidth + 4, offset, nodeWidth - 2, startOffset, nodeWidth - 2, 2, 2, 2];
+        innerBubbleArray = [2, 2, 2, nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, endOffset,
+           nodeWidth + 4, offset, nodeWidth - 2, startOffset, nodeWidth - 2, 2, 2, 2];
       }
     }
     else
@@ -4996,19 +4685,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (series.isInverted())
       {
         bubbleArray = [0, 0, startOffset, 0, offset, -6, endOffset, 0, nodeWidth, 0, nodeWidth, nodeHeight, 0, nodeHeight, 0, 0];
-        innerBubbleArray = [2, 2, startOffset, 2, offset, -4, endOffset, 2, nodeWidth - 2, 2, nodeWidth - 2, nodeHeight - 2, 2, nodeHeight - 2, 2, 2];
+        innerBubbleArray = [2, 2, startOffset, 2, offset, -4, endOffset,
+           2, nodeWidth - 2, 2, nodeWidth - 2, nodeHeight - 2, 2, nodeHeight - 2, 2, 2];
       }
       else
       {
         bubbleArray = [0, 0, 0, nodeHeight, startOffset, nodeHeight, offset, nodeHeight + 6, endOffset, nodeHeight, nodeWidth, nodeHeight, nodeWidth, 0, 0, 0];
-        innerBubbleArray = [2, 2, 2, nodeHeight - 2, startOffset, nodeHeight - 2, offset, nodeHeight + 4, endOffset, nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, 2, 2, 2];
+        innerBubbleArray = [2, 2, 2, nodeHeight - 2, startOffset, nodeHeight - 2, offset, nodeHeight + 4, endOffset,
+           nodeHeight - 2, nodeWidth - 2, nodeHeight - 2, nodeWidth - 2, 2, 2, 2];
       }
     }
     var bubble = new dvt.Polygon(context, bubbleArray, bubbleId);
     var innerBubble = new dvt.Polygon(context, innerBubbleArray, bubbleId + '_i');
 
     innerBubble.setSolidFill(DvtTimelineStyleUtils.getItemInnerFillColor());
-    //bubble.setPixelHinting(true);
 
     // margin around content
     if (!isRTL) {
@@ -5220,7 +4910,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         textHeight = offsetY + dim.h;
         container.addChild(descText);
       }
-      container._w = maxWidth == 0 ? Math.max(offsetX - DvtTimelineStyleUtils.getItemContentSpacing(), 0) : offsetX + maxWidth;
+      container._w = maxWidth === 0 ? Math.max(offsetX - DvtTimelineStyleUtils.getItemContentSpacing(), 0) : offsetX + maxWidth;
     }
     else
     {
@@ -5242,7 +4932,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         descText.setCSSStyle(DvtTimelineStyleUtils.getItemDescriptionStyle(item));
         dim = descText.getDimensions();
         var width = dim.w;
-        if (offsetX != 0 && width != offsetX)
+        if (offsetX !== 0 && width !== offsetX)
         {
           if (width > offsetX)
           {
@@ -5262,7 +4952,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       {
         thumbWidth = DvtTimelineStyleUtils.getThumbnailWidth();
         thumbHeight = DvtTimelineStyleUtils.getThumbnailHeight();
-        offsetX = (offsetX == 0 ? 0 : offsetX + DvtTimelineStyleUtils.getItemContentSpacing());
+        offsetX = (offsetX === 0 ? 0 : offsetX + DvtTimelineStyleUtils.getItemContentSpacing());
         thumbImage = new dvt.Image(context, thumbnail, offsetX, 0, thumbWidth, thumbHeight, '_tn');
         thumbImage.setMouseEnabled(false);
         container.addChild(thumbImage);
@@ -5578,14 +5268,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * TimelineSeries JSON Parser
    * @param {DvtTimelineSeries} timelineSeries The owning timelineSeries component.
    * @class
@@ -5624,8 +5306,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     ret.label = options['label'];
     ret.emptyText = options['emptyText'];
 
-    ret.isIRAnimationEnabled = options['animationOnDisplay'] == 'auto';
-    ret.isDCAnimationEnabled = options['animationOnDataChange'] == 'auto';
+    ret.isIRAnimationEnabled = options['animationOnDisplay'] === 'auto';
+    ret.isDCAnimationEnabled = options['animationOnDataChange'] === 'auto';
 
     ret.items = this._parseDataNode(options['timeline'], options['index'], _data.data, oldItems, ret.start, ret.end);
     ret.rtl = 'false';
@@ -5634,10 +5316,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     ret.customTimeScales = options['_cts'];
     ret.customFormatScales = options['_cfs'];
 
-    if (options['itemLayout'] == null || options['itemLayout'] == 'auto')
+    if (options['itemLayout'] == null || options['itemLayout'] === 'auto')
       ret.isTopToBottom = options['inverted'];
     else
-      ret.isTopToBottom = (options['itemLayout'] == 'topToBottom');
+      ret.isTopToBottom = (options['itemLayout'] === 'topToBottom');
 
     ret.data = options['_data'];
 
@@ -5677,7 +5359,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesParser.prototype._parseDataNode = function(timeline, seriesIndex, data, oldItems, compStartTime, compEndTime)
   {
-    var treeNodes = new Array();
+    var treeNodes = [];
     var series = timeline._series[seriesIndex];
     if (data)
     {
@@ -5741,11 +5423,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       for (var i = 0; i < items.length; i++)
       {
         var item = items[i];
-        if (dvt.Obj.compareValues(this._context, props.id, item.getId()) && props.title == item.getTitle() &&
-            props.desc == item.getDescription() && props.thumbnail == item.getThumbnail())
+        if (dvt.Obj.compareValues(this._context, props.id, item.getId()) && props.title === item.getTitle() &&
+            props.desc === item.getDescription() && props.thumbnail === item.getThumbnail())
           return item;
       }
     }
+    return null;
   };
 
   DvtTimelineSeriesParser.prototype.getDate = function(date)
@@ -5803,7 +5486,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     ret.markerFillColor = data['_markerFillColor'];
     ret.markerGradientFill = data['_markerGradientFill'];
     ret.markerOpacity = data['_markerOpacity'];
-    if (data['_markerSD'] == false)
+    if (data['_markerSD'] != null && !data['_markerSD'])
       ret.markerSD = 'false';
     else
       ret.markerSD = 'true';
@@ -5812,14 +5495,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     return ret;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtTimelineSeries.
@@ -5845,7 +5520,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (series._items == null)
       return;
 
-    if (series._blocks.length == 0)
+    if (series._blocks.length === 0)
     {
       var context = series.getCtx();
 
@@ -5978,12 +5653,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     {
       if ((!series.isInverted() && !isRTL) || (series.isInverted() && isRTL))
       {
+        // Reset translateY
+        series._background.setTranslateY(0);
+
         series._background.setTranslateX(-overflowOffset);
         series.setHScrollPos(overflowOffset);
       }
     }
     else if (!series.isInverted())
     {
+      // Reset translateX
+      series._background.setTranslateX(0);
+
       series._background.setTranslateY(-overflowOffset);
       series.setVScrollPos(overflowOffset);
     }
@@ -6022,25 +5703,24 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesRenderer._renderItems = function(items, series, container, startPos, endPos, overflowOffset, frAnimationElems, mvAnimator)
   {
+    var item;
     for (var i = 0; i < items.length; i++)
     {
-      var item = items[i];
+      item = items[i];
       var loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(series._start, series._end, item.getStartTime(), series._length);
-      if (loc < startPos || loc > endPos)
-        continue;
-
-      DvtTimelineSeriesItemRenderer.renderItem(item, series, container, overflowOffset, frAnimationElems, mvAnimator);
+      if (loc >= startPos && loc <= endPos)
+        DvtTimelineSeriesItemRenderer.renderItem(item, series, container, overflowOffset, frAnimationElems, mvAnimator);
     }
 
     if (ojtimeaxisToolkit.TimeAxisUtils.supportsTouch())
     {
-      for (var i = 0; i < items.length - 1; i++)
+      for (var j = 0; j < items.length - 1; j++)
       {
-        var item = items[i];
+        item = items[j];
         var itemBubble = item.getBubble();
         if (itemBubble)
         {
-          var next = items[i + 1];
+          var next = items[j + 1];
           var nextBubble = next.getBubble();
           if (nextBubble)
             itemBubble._setAriaProperty('flowto', '_bt_' + next.getId());
@@ -6060,7 +5740,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeriesRenderer._updateItemsForZoom = function(items, series)
   {
-    if (items == null || items.length == 0)
+    var item, i;
+    if (items == null || items.length === 0)
       return;
 
     var startPos = series._fetchStartPos;
@@ -6075,14 +5756,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     else
       series._initialSpacing = 20 + DvtTimelineStyleUtils.getBubbleSpacing() + 10 * series._maxDurationSize;
 
-    for (var i = 0; i < items.length; i++)
+    for (i = 0; i < items.length; i++)
     {
-      var item = items[i];
+      item = items[i];
       var startTime = item.getStartTime();
       var loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(series._start, series._end, startTime, series._length);
       // offset position if a duration bar is rendered as well
       var endTime = item.getEndTime();
-      if (endTime && endTime != startTime)
+      if (endTime && endTime !== startTime)
       {
         var span = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(series._start, series._end, endTime, series._length) - loc;
         loc = loc + Math.min(DvtTimelineStyleUtils.getDurationFeelerOffset(), span / 2);
@@ -6091,21 +5772,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       if (!series._isRandomItemLayout)
         item.setSpacing(null);
     }
-    for (var i = 0; i < items.length; i++)
+    for (i = 0; i < items.length; i++)
     {
-      var item = items[i];
+      item = items[i];
       var itemTime = item.getStartTime();
-      if (itemTime < series._start || itemTime > series._end)
-        continue;
-
-      DvtTimelineSeriesItemRenderer._updateBubble(item, series, i);
+      if (itemTime >= series._start && itemTime <= series._end)
+        DvtTimelineSeriesItemRenderer._updateBubble(item, series, i);
     }
     var overflowOffset = Math.max(0, series._maxOverflowValue - series._size);
     DvtTimelineSeriesRenderer._adjustBackground(series, overflowOffset);
 
-    for (var i = 0; i < items.length; i++)
+    for (i = 0; i < items.length; i++)
     {
-      var item = items[i];
+      item = items[i];
       DvtTimelineSeriesItemRenderer._displayBubble(item, series, overflowOffset, null, false);
       DvtTimelineSeriesItemRenderer._updateFeeler(item, series, overflowOffset, null);
       DvtTimelineSeriesItemRenderer._updateDuration(item, series, overflowOffset, null);
@@ -6132,7 +5811,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         var item = items[j];
         var startTime = item.getStartTime();
         var endTime = item.getEndTime();
-        if (endTime && endTime != startTime && i == item.getDurationLevel())
+        if (endTime && endTime !== startTime && i === item.getDurationLevel())
           DvtTimelineSeriesItemRenderer.renderDuration(item, series, durationBlock, overflowOffset, frAnimationElems, mvAnimator);
       }
     }
@@ -6301,7 +5980,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (refObject)
         {
           var pos = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(series._start, series._end, refObject, series._length);
-          if (series._renderedReferenceObjects.length == 0)
+          if (series._renderedReferenceObjects.length === 0)
           {
             if (series.isVertical())
               var ref = new dvt.Line(context, 0, pos, series._maxOverflowValue, pos, 'zoomOrder[i]');
@@ -6406,24 +6085,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var item = items[i];
       var bubble = item.getBubble();
       container.removeChild(bubble);
-      //item.setBubble(null);
 
       if (!series.isVertical())
       {
         var feelerBlock = container.feelers;
         var feeler = item.getFeeler();
         feelerBlock.removeChild(feeler);
-        //item.setFeeler(null);
       }
 
       var startTime = item.getStartTime();
       var endTime = item.getEndTime();
-      if (endTime && endTime != startTime)
+      if (endTime && endTime !== startTime)
       {
         var durationBlock = container.durations;
         var durationBar = item.getDurationBar();
         durationBlock.removeChild(durationBar);
-        //item.setDurationBar(null);
       }
     }
   };
@@ -6456,7 +6132,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       var startTime = item.getStartTime();
       var endTime = item.getEndTime();
-      if (endTime && endTime != startTime)
+      if (endTime && endTime !== startTime)
       {
         var durationBar = item.getDurationBar();
         if (!series.isVertical())
@@ -6467,14 +6143,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       }
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * TimelineSeries component.
@@ -6516,7 +6184,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   DvtTimelineSeries.prototype.triggerAnimations = function()
   {
     var context = this.getCtx();
-    if (this._rmAnimationElems && this._rmAnimationElems.length != 0)
+    if (this._rmAnimationElems && this._rmAnimationElems.length !== 0)
     {
       // Disable event listeners temporarily
       this._callbackObj.EventManager.removeListeners(this._callbackObj);
@@ -6533,11 +6201,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._callbackObj.Animation = this._mvAnimator;
       this._mvAnimator.play();
     }
-    else if (this._frAnimationElems && this._frAnimationElems.length != 0)
+    else if (this._frAnimationElems && this._frAnimationElems.length !== 0)
     {
       // Disable event listeners temporarily
       this._callbackObj.EventManager.removeListeners(this._callbackObj);
-      var fadeInAnimator = new dvt.ParallelPlayable(context, new dvt.AnimFadeIn(context, this._frAnimationElems, DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
+      var fadeInAnimator = new dvt.ParallelPlayable(context, new dvt.AnimFadeIn(context, this._frAnimationElems,
+        DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
       dvt.Playable.appendOnEnd(fadeInAnimator, this._onAnimationEnd, this);
       this._callbackObj.Animation = fadeInAnimator;
       fadeInAnimator.play();
@@ -6573,9 +6242,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeries.prototype._onMvAnimationEnd = function()
   {
-    if (this._frAnimationElems && this._frAnimationElems.length != 0)
+    if (this._frAnimationElems && this._frAnimationElems.length !== 0)
     {
-      var fadeInAnimator = new dvt.ParallelPlayable(this.getCtx(), new dvt.AnimFadeIn(this.getCtx(), this._frAnimationElems, DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
+      var fadeInAnimator = new dvt.ParallelPlayable(this.getCtx(), new dvt.AnimFadeIn(this.getCtx(), this._frAnimationElems,
+        DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
       dvt.Playable.appendOnEnd(fadeInAnimator, this._onAnimationEnd, this);
       this._callbackObj.Animation = fadeInAnimator;
       fadeInAnimator.play();
@@ -6620,9 +6290,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     this.Height = height;
 
     var orientation = this.Options['orientation'];
-    if (orientation && orientation == ojtimeaxisToolkit.TimeAxis.ORIENTATION_VERTICAL)
+    if (orientation && orientation === ojtimeaxisToolkit.TimeAxis.ORIENTATION_VERTICAL)
     {
-      if (this._isVertical == false)
+      if (!this._isVertical)
         this._allowUpdates = false;
       else
         this._allowUpdates = true;
@@ -6819,7 +6489,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeries.prototype.calculateSpacing = function(item, index)
   {
-    if (this._items == null || this._items.length == 0)
+    var i, currItem, currWidth;
+    if (this._items == null || this._items.length === 0)
       return;
 
     var maxOverflowValue = this._maxOverflowValue;
@@ -6851,21 +6522,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var width = item.getWidth() + 10;
       var hOffset = DvtTimelineStyleUtils.getBubbleSpacing();
       var overlappingItems = [];
-      for (var i = 0; i < index; i++)
+      for (i = 0; i < index; i++)
       {
-        var currItem = this._items[i];
-        var currWidth = currItem.getWidth() + 10;
+        currItem = this._items[i];
+        currWidth = currItem.getWidth() + 10;
         var currX = currItem.getLoc();
 
         if ((x >= currX && x <= currX + currWidth) || (currX >= x && currX <= x + width))
           overlappingItems.push(currItem);
       }
-      for (var i = 0; i < overlappingItems.length; i++)
+      for (i = 0; i < overlappingItems.length; i++)
       {
         var yChanged = false;
         for (var j = 0; j < overlappingItems.length; j++)
         {
-          var currItem = overlappingItems[j];
+          currItem = overlappingItems[j];
           var currHeight = currItem.getHeight();
           var currY = currItem.getSpacing();
 
@@ -6886,10 +6557,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     }
     else
     {
-      for (var i = 0; i < index; i++)
+      for (i = 0; i < index; i++)
       {
-        var currItem = this._items[i];
-        var currWidth = currItem.getWidth() + 10;
+        currItem = this._items[i];
+        currWidth = currItem.getWidth() + 10;
         if (maxOverflowValue < y + currWidth)
           maxOverflowValue = y + currWidth;
       }
@@ -6908,13 +6579,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeries.prototype.calculateDurationSize = function(item, index)
   {
-    if (this._items == null || this._items.length == 0)
+    var i, currItem;
+    if (this._items == null || this._items.length === 0)
       return;
 
     var initialY = 1;
     var startTime = item.getStartTime();
     var endTime = item.getEndTime();
-    if (!endTime || endTime == startTime)
+    if (!endTime || endTime === startTime)
       return;
 
     var y = item.getDurationLevel();
@@ -6922,25 +6594,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       y = initialY;
 
     var overlappingItems = [];
-    for (var i = 0; i < index; i++)
+    for (i = 0; i < index; i++)
     {
-      var currItem = this._items[i];
+      currItem = this._items[i];
       var currStartTime = currItem.getStartTime();
       var currEndTime = currItem.getEndTime();
-      if (!currEndTime || currEndTime == currStartTime)
-        continue;
-
-      if (startTime >= currStartTime && startTime <= currEndTime)
+      if (currEndTime && currEndTime !== currStartTime &&
+        startTime >= currStartTime && startTime <= currEndTime)
         overlappingItems.push(currItem);
     }
-    for (var i = 0; i < overlappingItems.length; i++)
+    for (i = 0; i < overlappingItems.length; i++)
     {
       var yChanged = false;
       for (var j = 0; j < overlappingItems.length; j++)
       {
-        var currItem = overlappingItems[j];
+        currItem = overlappingItems[j];
         var currY = currItem.getDurationLevel();
-        if (y == currY)
+        if (y === currY)
         {
           y = currY + 1;
           // y changed, do the loop again
@@ -6969,7 +6639,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       var node = this._items[i];
       var startTime = node.getStartTime();
       var endTime = node.getEndTime();
-      if (endTime && endTime != startTime)
+      if (endTime && endTime !== startTime)
       {
         node.setDurationLevel(this.calculateDurationSize(node, i));
         node.setDurationSize(22 + 10 * node.getDurationLevel() - 5);
@@ -6977,7 +6647,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         {
           node.setDurationFillColor(this._colors[this._colorCount]);
           this._colorCount++;
-          if (this._colorCount == this._colors.length)
+          if (this._colorCount === this._colors.length)
             this._colorCount = 0;
         }
       }
@@ -6990,18 +6660,19 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   DvtTimelineSeries.prototype.prepareItems = function(items)
   {
+    var i, item, loc;
     if (this.isVertical())
       this._initialSpacing = 20 * (this._maxDurationSize > 0 ? 1 : 0) + DvtTimelineStyleUtils.getBubbleSpacing() + 10 * this._maxDurationSize;
     else
       this._initialSpacing = 20 + DvtTimelineStyleUtils.getBubbleSpacing() + 10 * this._maxDurationSize;
 
-    for (var i = 0; i < items.length; i++)
+    for (i = 0; i < items.length; i++)
     {
-      var item = items[i];
-      var loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
+      item = items[i];
+      loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
       // offset position if a duration bar is rendered as well
       var endTime = item.getEndTime();
-      if (endTime && endTime != item.getStartTime())
+      if (endTime && endTime !== item.getStartTime())
       {
         var span = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(this._start, this._end, endTime, this._length) - loc;
         loc = loc + Math.min(DvtTimelineStyleUtils.getDurationFeelerOffset(), span / 2);
@@ -7009,14 +6680,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       item.setLoc(loc);
     }
 
-    for (var i = 0; i < this._items.length; i++)
+    for (i = 0; i < this._items.length; i++)
     {
-      var item = this._items[i];
-      var loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
-      if (loc < this._fetchStartPos || loc > this._fetchEndPos)
-        continue;
-
-      DvtTimelineSeriesItemRenderer.initializeItem(item, this, i);
+      item = this._items[i];
+      loc = ojtimeaxisToolkit.TimeAxisUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
+      if (loc >= this._fetchStartPos && loc <= this._fetchEndPos)
+        DvtTimelineSeriesItemRenderer.initializeItem(item, this, i);
     }
   };
 
@@ -7104,14 +6773,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Timeline component. The component should never be instantiated directly. Use the newInstance function instead.
    * @param {dvt.Context} context The rendering context.
    * @param {string} callback The function that should be called to dispatch component events.
@@ -7174,7 +6835,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   Timeline.prototype._applyParsedProperties = function(props)
   {
     var orientation = this.Options['orientation'];
-    if (orientation && orientation == ojtimeaxisToolkit.TimeAxis.ORIENTATION_VERTICAL)
+    if (orientation && orientation === ojtimeaxisToolkit.TimeAxis.ORIENTATION_VERTICAL)
       this._isVertical = true;
     else
       this._isVertical = false;
@@ -7183,9 +6844,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     this._viewStartTime = props.viewStart;
     this._viewEndTime = props.viewEnd;
     this._selectionMode = props.selectionMode;
-    if (this._selectionMode == 'single')
+    if (this._selectionMode === 'single')
       this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
-    else if (this._selectionMode == 'multiple')
+    else if (this._selectionMode === 'multiple')
       this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
     else
       this.SelectionHandler = null;
@@ -7197,7 +6858,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     this._referenceObjects = props.referenceObjects;
     this._seriesScale = props.seriesScale;
 
-    this._timeZoneOffsets = props.timeZoneOffsets;
     if (this._seriesScale)
     {
       this._seriesConverter = props.seriesConverter;
@@ -7207,21 +6867,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._seriesTimeAxis.setConverter(this._seriesConverter);
       this._seriesCustomFormatScales = props.seriesCustomFormatScales;
 
-      // Internationalization strings
-      this._dateFormatStrings = this._seriesTimeAxis.getDateFormatStrings();
       if (this._isVertical)
       {
-        this._seriesTimeAxis.setType('short', this._dateFormatStrings);
         this._seriesTimeAxis.setDefaultConverter(this._resources['converterVert']);
       }
       else
       {
-        this._seriesTimeAxis.setType('long', this._dateFormatStrings);
         this._seriesTimeAxis.setDefaultConverter(this._resources['converter']);
       }
-
-      if (this._timeZoneOffsets)
-        this._seriesTimeAxis.setTimeZoneOffsets(this._timeZoneOffsets);
     }
     else
       this._seriesTimeAxis = null;
@@ -7252,7 +6905,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   Timeline.prototype.getTimeAxisVisibleSize = function(seriesCount)
   {
-    if (!this._hasOverview && seriesCount == 1)
+    if (!this._hasOverview && seriesCount === 1)
       return this.getTimeAxisSize() - this._timeAxis.getBorderWidth();
     else
       return this.getTimeAxisSize();
@@ -7290,15 +6943,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       '_cfs': this._customFormatScales,
       'orientation': options['orientation']
     };
-
-    var _resources = this._timeAxisOptions['_resources'];
-    if (_resources)
-    {
-      _resources['borderTopVisible'] = true;
-      _resources['borderRightVisible'] = true;
-      _resources['borderBottomVisible'] = true;
-      _resources['borderLeftVisible'] = true;
-    }
 
     if (options['styleDefaults'] && options['styleDefaults']['minorAxis'])
     {
@@ -7348,6 +6992,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     if (this.Options['styleDefaults'])
     {
+      // convert to dvt.CSSStyle objects after pulling from css
+      this.Options['styleDefaults']['item']['descriptionStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['item']['descriptionStyle']);
+      this.Options['styleDefaults']['item']['titleStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['item']['titleStyle']);
+      this.Options['styleDefaults']['majorAxis']['labelStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['majorAxis']['labelStyle']);
+      this.Options['styleDefaults']['minorAxis']['labelStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['minorAxis']['labelStyle']);
+      this.Options['styleDefaults']['overview']['labelStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['overview']['labelStyle']);
+      this.Options['styleDefaults']['series']['emptyTextStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['series']['emptyTextStyle']);
+      this.Options['styleDefaults']['series']['labelStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['series']['labelStyle']);
+      this.Options['styleDefaults']['tooltipLabelStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['tooltipLabelStyle']);
+      this.Options['styleDefaults']['tooltipValueStyle'] =
+        DvtTimelineStyleUtils.convertToCSSStyle(this.Options['styleDefaults']['tooltipValueStyle']);
+
       this._majorAxisStyleDefaults = this.Options['styleDefaults']['majorAxis'];
       this._seriesStyleDefaults = this.Options['styleDefaults']['series'];
     }
@@ -7424,12 +7088,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   Timeline.prototype.hasValidOptions = function()
   {
     // TODO: warn user why certain options are invalid
-    var hasValidScale = this._scale && ojtimeaxisToolkit.TimeAxis._VALID_SCALES.indexOf(this._scale) != -1;
+    var hasValidScale = this._scale && (ojtimeaxisToolkit.TimeAxis._VALID_SCALES.indexOf(this._scale) !== -1 || this.isTimeComponentScale(this._scale));
     var hasValidCustomScale = this._scale && this._customTimeScales && this._customTimeScales[this._scale];
     var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
     var hasValidSeries = this._series && this._series.length > 0;
     var hasValidSeriesItems = hasValidSeries ? this.hasValidSeriesItems() : false;
-    var hasValidSeriesScale = this._seriesScale ? ojtimeaxisToolkit.TimeAxis._VALID_SCALES.indexOf(this._seriesScale) != -1 : true;
+    var hasValidSeriesScale = this._seriesScale ? ( ojtimeaxisToolkit.TimeAxis._VALID_SCALES.indexOf(this._seriesScale) !== -1  || this.isTimeComponentScale(this._seriesScale) ): true;
     var hasValidCustomSeriesScale = this._seriesScale ? this._customTimeScales && this._customTimeScales[this._seriesScale] : true;
     var hasValidViewport = (this._viewStartTime && this._viewEndTime) ? this._viewEndTime > this._viewStartTime : true;
     var hasValidViewStart = this._viewStartTime ? (this._viewStartTime >= this._start && this._viewStartTime < this._end) : true;
@@ -7437,6 +7101,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     return ((hasValidScale || hasValidCustomScale) && (hasValidSeriesScale || hasValidCustomSeriesScale) && hasValidStartAndEnd &&
             hasValidSeries && hasValidSeriesItems && hasValidViewport && hasValidViewStart && hasValidViewEnd);
+  };
+
+  /**
+   * Helper method to decide whether or not the scale is a DvtTimeComponentScale interface
+   * @return {boolean} Whether this scale is a valid DvtTimeComponentScale interface.
+   */
+  Timeline.prototype.isTimeComponentScale = function(scale)
+  {
+    return scale.getNextDate != null && scale.getPreviousDate != null && scale.formatter != null && scale.name != null;
   };
 
   /**
@@ -7563,6 +7236,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   Timeline.prototype._populateSeries = function()
   {
+    var i;
     var series = this.Options['series'];
     if (series)
     {
@@ -7570,9 +7244,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this._seriesOptions = [];
       if (this._series)
       {
-        if (seriesCount != this._series.length)
+        if (seriesCount !== this._series.length)
         {
-          for (var i = 0; i < this._series.length; i++)
+          for (i = 0; i < this._series.length; i++)
           {
             this._timeZoomCanvas.removeChild(this._series[i]);
           }
@@ -7582,7 +7256,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       else
         this._series = [];
 
-      for (var i = 0; i < seriesCount; i++)
+      for (i = 0; i < seriesCount; i++)
       {
         var seriesOptions = series[i];
         seriesOptions['start'] = this._start;
@@ -7609,7 +7283,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           seriesOptions['axisStyleDefaults'] = this._majorAxisStyleDefaults;
         }
 
-        seriesOptions['_isRandomItemLayout'] = (this._itemPosition == 'random');
+        seriesOptions['_isRandomItemLayout'] = (this._itemPosition === 'random');
         seriesOptions['_cts'] = this.Options['_cts'];
         seriesOptions['_data'] = series[i];
 
@@ -7818,13 +7492,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   Timeline.prototype.createViewportChangeEvent = function()
   {
-    return dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._timeAxis.getScale());
+    // if custom scale, we use the name given in the custom scale.
+    var scaleName = this._timeAxis.getScale();
+    if (typeof scaleName != 'string') {
+      scaleName = scaleName.name;
+    }
+    return dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, scaleName);
   };
 
   Timeline.prototype.HandleTouchStart = function(event)
   {
     var touches = event.touches;
-    if (touches.length == 1)
+    if (touches.length === 1)
       this._dragPanSeries = this._findSeries(event.target);
   };
 
@@ -7856,6 +7535,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   Timeline.prototype.handleZoomWheel = function(newLength, time, compLoc, triggerViewportChangeEvent)
   {
+    var minLength;
     if (newLength > this._timeAxis.getMaxContentLength())
     {
       newLength = this._timeAxis.getMaxContentLength();
@@ -7879,7 +7559,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     {
       while (this._timeAxis.getZoomLevelOrder() > 0)
       {
-        var minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder() - 1];
+        minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder() - 1];
         if (this.getContentLength() >= minLength)
         {
           this._timeAxis.setZoomLevelOrder(this._timeAxis.getZoomLevelOrder() - 1);
@@ -7893,7 +7573,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     {
       while (this._timeAxis.getZoomLevelOrder() < zoomLevelLengths.length - 1)
       {
-        var minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder()];
+        minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder()];
         if (this.getContentLength() < minLength)
         {
           this._timeAxis.setZoomLevelOrder(this._timeAxis.getZoomLevelOrder() + 1);
@@ -7915,7 +7595,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
     this.applyAxisStyleValues();
-    DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
+    DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
     this.updateSeries();
 
     if (this.isContentDirScrollbarOn())
@@ -7949,7 +7629,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             var key = Math.abs(i - 1);
           else
             key = i;
-          if (this.isRTL() && this._series.length == 1)
+          if (this.isRTL() && this._series.length === 1)
           {
             cp.addRect(axisSize, 0, this._seriesSize, this.getContentLength());
             var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
@@ -8010,7 +7690,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         if (this.SelectionHandler)
         {
           var selection = this.SelectionHandler.getSelectedIds();
-          if (selection && selection.length != 0)
+          if (selection && selection.length !== 0)
           {
             for (var i = 0; i < selection.length; i++)
             {
@@ -8032,8 +7712,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   Timeline.prototype.HandleKeyDown = function(event)
   {
-    if (dvt.KeyboardEvent.RIGHT_ARROW == event.keyCode || dvt.KeyboardEvent.LEFT_ARROW == event.keyCode ||
-        dvt.KeyboardEvent.DOWN_ARROW == event.keyCode || dvt.KeyboardEvent.UP_ARROW == event.keyCode)
+    if (dvt.KeyboardEvent.RIGHT_ARROW === event.keyCode || dvt.KeyboardEvent.LEFT_ARROW === event.keyCode ||
+        dvt.KeyboardEvent.DOWN_ARROW === event.keyCode || dvt.KeyboardEvent.UP_ARROW === event.keyCode)
       this.updateScrollForItemNavigation(this.EventManager.getFocus());
   };
 
@@ -8067,6 +7747,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    */
   Timeline.prototype.panBy = function(deltaX, deltaY)
   {
+    var newMin;
     var seriesCount = this._series.length;
     var axisSize = this.getTimeAxisVisibleSize(seriesCount);
     if (this._isVertical)
@@ -8098,12 +7779,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
         if (this.isContentDirScrollbarOn())
         {
-          if (this._series[0] == this._dragPanSeries)
+          if (this._series[0] === this._dragPanSeries)
           {
             if (this.isRTL())
             {
-              if (seriesCount == 2)
-                var newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateX;
+              if (seriesCount === 2)
+                newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateX;
               else
                 newMin = this.getTimeAxisVisibleSize() - newTranslateX;
               this.contentDirScrollbar[0].setViewportRange(newMin, newMin + this._seriesSize);
@@ -8129,6 +7810,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this.isTimeDirScrollbarOn())
         this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+
+      // Update time axis due to viewport change
+      DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
     }
     else
     {
@@ -8138,6 +7822,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
       if (this.isTimeDirScrollbarOn())
         this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+
+      // Update time axis due to viewport change
+      DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
 
       if (this._dragPanSeries)
       {
@@ -8161,38 +7848,37 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
         if (this.isContentDirScrollbarOn())
         {
-          if (this._series[0] == this._dragPanSeries)
+          if (this._series[0] === this._dragPanSeries)
             this.contentDirScrollbar[0].setViewportRange(newTranslateY, newTranslateY + this._seriesSize);
           else
           {
-            var newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateY;
+            newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateY;
             this.contentDirScrollbar[1].setViewportRange(newMin, newMin + this._seriesSize);
           }
         }
       }
     }
-    //this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._timeAxis.getScale()));
   };
 
   // event callback method
   Timeline.prototype.HandleEvent = function(event, component)
   {
+    var zoomLevelOrder, minLength, widthFactor, subtype;
+    var i, j, s, item, itemId;
     var type = event['type'];
-
-    var type = event['type'];
-    if (type == 'dvtSimpleScrollbar')
+    if (type === 'dvtSimpleScrollbar')
     {
       event = this.processScrollbarEvent(event, component);
     }
-    else if (type == 'selection')
+    else if (type === 'selection')
     {
       // check for selection event, and handle accordingly
       this.dispatchEvent(event);
     }
-    else if (type == 'overview')
+    else if (type === 'overview')
     {
-      var subtype = event.subtype;
-      if (subtype == 'rangeChanging' || subtype == 'rangeChange')
+      subtype = event.subtype;
+      if (subtype === 'rangeChanging' || subtype === 'rangeChange')
       {
         var oldViewTime = this._viewEndTime - this._viewStartTime;
         if (this._isVertical)
@@ -8208,28 +7894,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         var viewTime = this._viewEndTime - this._viewStartTime;
         if (viewTime > 0)
         {
-          var widthFactor = this._canvasLength / viewTime;
+          widthFactor = this._canvasLength / viewTime;
           this.setContentLength(widthFactor * (this._end - this._start));
           this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
           var zoomLevelLengths = this._timeAxis.getZoomLevelLengths();
           if (oldViewTime > viewTime)
           {
-            var zoomLevelOrder = zoomLevelLengths.length;
-            var minLength = zoomLevelLengths[zoomLevelOrder - 1];
+            zoomLevelOrder = zoomLevelLengths.length;
+            minLength = zoomLevelLengths[zoomLevelOrder - 1];
             while (this.getContentLength() >= minLength && zoomLevelOrder > 0)
             {
               zoomLevelOrder--;
               minLength = zoomLevelLengths[zoomLevelOrder - 1];
             }
-            if (zoomLevelOrder == zoomLevelLengths.length)
+            if (zoomLevelOrder === zoomLevelLengths.length)
               zoomLevelOrder--;
             this._timeAxis.setZoomLevelOrder(zoomLevelOrder);
             this._timeAxis.setScale(this._timeAxis.getZoomOrder()[zoomLevelOrder]);
           }
           else
           {
-            var zoomLevelOrder = 0;
-            var minLength = zoomLevelLengths[zoomLevelOrder];
+            zoomLevelOrder = 0;
+            minLength = zoomLevelLengths[zoomLevelOrder];
             while (this.getContentLength() < minLength && zoomLevelOrder < zoomLevelLengths.length - 1)
             {
               zoomLevelOrder++;
@@ -8239,14 +7925,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
             this._timeAxis.setScale(this._timeAxis.getZoomOrder()[zoomLevelOrder]);
           }
           this.applyAxisStyleValues();
-          DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
+          DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
           this.updateSeries();
           this.applyTimeZoomCanvasPosition();
         }
-        if (subtype == 'rangeChange')
+        if (subtype === 'rangeChange')
           this.dispatchEvent(this.createViewportChangeEvent());
       }
-      if (subtype == 'scrollPos' || subtype == 'scrollTime')
+      if (subtype === 'scrollPos' || subtype === 'scrollTime')
       {
         if (this._isVertical)
         {
@@ -8258,25 +7944,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           this._viewStartTime = event.newX1;
           this._viewEndTime = event.newX2;
         }
-        var widthFactor = this.getContentLength() / (this._end - this._start);
+        widthFactor = this.getContentLength() / (this._end - this._start);
         this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
         this.applyTimeZoomCanvasPosition();
+
+        // Update time axis due to viewport change
+        DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
+
         this.dispatchEvent(this.createViewportChangeEvent());
       }
     }
-    else if (type = 'timeline')
+    else if (type === 'timeline')
     {
-      var subtype = event.subtype;
-      if (subtype == 'selection')
+      subtype = event.subtype;
+      if (subtype === 'selection')
       {
         var selectedItemId = event.itemId;
-        var isMultiSelect = event.isMultiSelect && this._selectionMode == 'multiple';
-        for (var i = 0; i < this._series.length; i++)
+        var isMultiSelect = event.isMultiSelect && this._selectionMode === 'multiple';
+        for (i = 0; i < this._series.length; i++)
         {
-          var s = this._series[i];
-          for (var j = 0; j < s._items.length; j++)
+          s = this._series[i];
+          for (j = 0; j < s._items.length; j++)
           {
-            var item = s._items[j];
+            item = s._items[j];
             if (dvt.Obj.compareValues(this.getCtx(), item.getId(), selectedItemId))
             {
               this.EventManager.setFocusObj(item);
@@ -8289,15 +7979,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
       }
-      else if (subtype == 'highlight')
+      else if (subtype === 'highlight')
       {
-        var itemId = event.itemId;
-        for (var i = 0; i < this._series.length; i++)
+        itemId = event.itemId;
+        for (i = 0; i < this._series.length; i++)
         {
-          var s = this._series[i];
-          for (var j = 0; j < s._items.length; j++)
+          s = this._series[i];
+          for (j = 0; j < s._items.length; j++)
           {
-            var item = s._items[j];
+            item = s._items[j];
             if (dvt.Obj.compareValues(this.getCtx(), item.getId(), itemId))
             {
               item.showHoverEffect(true);
@@ -8306,15 +7996,15 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
           }
         }
       }
-      else if (subtype == 'unhighlight')
+      else if (subtype === 'unhighlight')
       {
-        var itemId = event.itemId;
-        for (var i = 0; i < this._series.length; i++)
+        itemId = event.itemId;
+        for (i = 0; i < this._series.length; i++)
         {
-          var s = this._series[i];
-          for (var j = 0; j < s._items.length; j++)
+          s = this._series[i];
+          for (j = 0; j < s._items.length; j++)
           {
-            var item = s._items[j];
+            item = s._items[j];
             if (dvt.Obj.compareValues(this.getCtx(), item.getId(), itemId))
             {
               item.hideHoverEffect(true);
@@ -8334,12 +8024,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   Timeline.prototype.processScrollbarEvent = function(event, component)
   {
     Timeline.superclass.processScrollbarEvent.call(this, event, component);
+    if (component === this.timeDirScrollbar)
+    {
+      // Update time axis due to viewport change
+      DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas, true);
+    }
+
     var newMin = event.newMin;
-    if (component == this.contentDirScrollbar[0])
+    if (component === this.contentDirScrollbar[0])
     {
       if (this.isVertical())
       {
-        if (this._series.length == 2)
+        if (this._series.length === 2)
           this._series[0].setTranslateX(this.isRTL() ? this.getTimeAxisVisibleSize() + this._seriesSize - newMin : newMin);
         else
           this._series[0].setTranslateX(this.isRTL() ? this.getTimeAxisVisibleSize() - newMin : newMin);
@@ -8347,7 +8043,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       else
         this._series[0].setTranslateY(newMin);
     }
-    else if (component == this.contentDirScrollbar[1])
+    else if (component === this.contentDirScrollbar[1])
     {
       if (this.isVertical())
         this._series[1].setTranslateX(this.isRTL() ? newMin : this.getTimeAxisVisibleSize() + this._seriesSize - newMin);
@@ -8368,6 +8064,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     var widthFactor = this.getContentLength() / (this._end - this._start);
     this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
     this.applyTimeZoomCanvasPosition();
+
+    // Update time axis due to viewport change
+    DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
+
     this.dispatchEvent(this.createViewportChangeEvent());
   };
 
@@ -8417,6 +8117,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (this.isTimeDirScrollbarOn())
       this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
+    // Update time axis due to viewport change
+    DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
+
     this.dispatchEvent(this.createViewportChangeEvent());
   };
 
@@ -8439,14 +8142,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   Timeline.prototype._findSeries = function(target)
   {
-    if (this.hasValidOptions() && target && target != this)
+    if (this.hasValidOptions() && target && target !== this)
     {
       var id = target.getId();
-      if (target == this._series[0] || (this._series.length > 1 && target == this._series[1]))
+      if (target === this._series[0] || (this._series.length > 1 && target === this._series[1]))
         return target;
-      if (id && id.substring(id.length - 3, id.length) == '_s0')
+      if (id && id.substring(id.length - 3, id.length) === '_s0')
         return this._series[0];
-      else if (id && id.substring(id.length - 3, id.length) == '_s1')
+      else if (id && id.substring(id.length - 3, id.length) === '_s1')
         return this._series[1];
       else
         return this._findSeries(target.getParent());
@@ -8459,26 +8162,26 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (target)
     {
       var id = target.getId();
-      if (id && id.substring(0, 10) == '_duration_' && target._node)
+      if (id && id.substring(0, 10) === '_duration_' && target._node)
         return target;
 
       var parent = target.getParent();
       if (parent)
       {
-        if (id && id.substring(0, 4) == 'zoom')
+        if (id && id.substring(0, 4) === 'zoom')
           return target;
 
-        if (id && id.substring(0, 8) == '_bubble_' && parent._node)
+        if (id && id.substring(0, 8) === '_bubble_' && parent._node)
           return parent;
 
         var grandParent = parent.getParent();
         if (grandParent)
         {
-          if (id && id.substring(0, 8) == '_bubble_' && grandParent._node)
+          if (id && id.substring(0, 8) === '_bubble_' && grandParent._node)
             return grandParent;
 
           id = grandParent.getId();
-          if (id && id.substring(0, 8) == '_bubble_' && grandParent.getParent())
+          if (id && id.substring(0, 8) === '_bubble_' && grandParent.getParent())
             return grandParent.getParent();
         }
       }

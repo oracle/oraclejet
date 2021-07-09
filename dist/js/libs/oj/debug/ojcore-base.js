@@ -5,22 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-`This ES Module code cannot run on IE11`;
-   define('polyfills', []);
- 
-  define('promise', ['polyfills'], function () {
-    Promise.polyfill = function () {};
-    return Promise;
-  });
- define(['polyfills', 'ojs/ojlogger'], function (polyfills, Logger) { 'use strict';
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
+define(['ojs/ojlogger'], function (Logger) { 'use strict';
 
   /**
    * Defines the oj namespace
@@ -52,12 +37,12 @@
      * @global
      * @member {string} version JET version numberr
      */
-    version: '10.1.0',
+    version: '11.0.0',
     /**
      * @global
      * @member {string} revision JET source code revision number
      */
-    revision: '2021-04-17_08-43-39',
+    revision: '2021-07-01_19-42-54',
 
     // This function is only meant to be used outside the library, so quoting the name
     // to avoid renaming is appropriate
@@ -80,13 +65,6 @@
 
   _scope.oj = oj;
 
-  /**
-   * @license
-   * Copyright (c) 2004 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * String utilities.
    * @class oj.StringUtils
@@ -182,45 +160,6 @@
     }
     return hash;
   };
-
-
-  // Polyfills for IE11
-  (function () {
-    // String.startsWith requires for IE11
-    if (!String.prototype.startsWith) {
-      // eslint-disable-next-line no-extend-native
-      String.prototype.startsWith = function (searchString, position) {
-        // eslint-disable-next-line no-param-reassign
-        position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-      };
-    }
-
-    // String.endsWith requires for IE11
-    if (!String.prototype.endsWith) {
-      // eslint-disable-next-line no-extend-native
-      String.prototype.endsWith = function (searchString, position) {
-        var subjectString = this.toString();
-        if (typeof position !== 'number' || !isFinite(position) ||
-            Math.floor(position) !== position || position > subjectString.length) {
-          // eslint-disable-next-line no-param-reassign
-          position = subjectString.length;
-        }
-        // eslint-disable-next-line no-param-reassign
-        position -= searchString.length;
-        var lastIndex = subjectString.lastIndexOf(searchString, position);
-        return lastIndex !== -1 && lastIndex === position;
-      };
-    }
-  }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ojtsignore
@@ -448,13 +387,6 @@
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Assertion utilities.
    * The container is expected to have already initialized the oj.Assert Object before this
    * code is executed and initialized the oj.Assert.DEBUG flag/
@@ -469,6 +401,11 @@
    * @private
    */
   var _DEBUG = 'DEBUG';
+
+  /**
+   * @private
+   */
+  const _NO_PROTO = "' doesn't match prototype ";
 
   /**
    * Forces DEBUG to be set to true
@@ -560,7 +497,7 @@
 
         var isPrototypeOf = Object.prototype.isPrototypeOf;
         if (!isPrototypeOf.call(thePrototype, target)) {
-          Assert.assertionFailed("object '" + target + "' doesn't match prototype "
+          Assert.assertionFailed("object '" + target + _NO_PROTO
                                     + thePrototype,
                                     1,
                                     reason);
@@ -588,7 +525,7 @@
 
       var isPrototypeOf = Object.prototype.isPrototypeOf;
       if (!isPrototypeOf.call(thePrototype, target)) {
-        Assert.assertionFailed("object '" + target + "' doesn't match prototype "
+        Assert.assertionFailed("object '" + target + _NO_PROTO
                                   + thePrototype,
                                   1,
                                   reason);
@@ -615,7 +552,7 @@
       var isPrototypeOf = Object.prototype.isPrototypeOf;
       if (!(isPrototypeOf.call(thePrototype, target) ||
             isPrototypeOf.call(thePrototypeTwo, target))) {
-        Assert.assertionFailed("object '" + target + "' doesn't match prototype "
+        Assert.assertionFailed("object '" + target + _NO_PROTO
                                   + thePrototype + ' or ' + thePrototypeTwo,
                                   1,
                                   reason);
@@ -1003,10 +940,7 @@
       errorMessage += message;
     }
 
-    var error = new Error(errorMessage);
-
-
-    throw error;
+    throw new Error(errorMessage);
   };
 
   /**
@@ -1020,14 +954,6 @@
   }
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Log an error if IE11 is detected.
    */
   (function () {
@@ -1036,14 +962,6 @@
       Logger.error('Internet Explorer is not supported with this version of JET.');
     }
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2004 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utilities for working with collections
@@ -1188,13 +1106,6 @@
     return target;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * NOTE: When adding a new polyfill, please include a description of what the
    * polyfill is for, the source and any copyright info, along with the browsers
@@ -1577,14 +1488,6 @@
   }());
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Base class of all OJET Objects.
    * <p>
    * To create a subclass of another oj.Object, use oj.Object.createSubclass.
@@ -1623,7 +1526,6 @@
    * @private
    */
   OjObject._GET_FUNCTION_NAME_REGEXP = /function\s+([\w$][\w$\d]*)\s*\(/;
-  // oj.Object._TRIM_REGEXP = /(^\s*)|(\s*$)/g; this.replace(/(^\s*)|(\s*$)/g, "");
 
   OjObject.prototype = {};
   OjObject.prototype.constructor = OjObject;
@@ -2150,14 +2052,6 @@
   oj._registerLegacyNamespaceProp('__isAmdLoaderPresent', __isAmdLoaderPresent);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @export
    * @class EventSource
    * @classdesc Object which supports subscribing to and firing events
@@ -2256,13 +2150,6 @@
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Key utilities.
    * @class oj.KeyUtils
    * @export
@@ -2288,14 +2175,6 @@
     // ex: generate hash with key and compare hash value instead
     return OjObject.compareValues(key1, key2);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @private

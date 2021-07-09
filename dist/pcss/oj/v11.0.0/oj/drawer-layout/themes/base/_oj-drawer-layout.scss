@@ -1,0 +1,89 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example drawer-layout/themes/redwood/oj-drawer-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.drawerlayout") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-drawer-layout:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // Reflow mode uses flex position
+  oj-drawer-layout {
+    display: flex;
+  };
+
+  // Main section should eat all available space (width)
+  .oj-drawer-layout-main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  // Reflow mode
+  .oj-drawer-reflow {
+    flex: 0 0 auto;
+    background: var(--oj-drawer-overlay-bg-color);
+  };
+
+  // Divider
+  .oj-drawer-reflow.oj-drawer-start.oj-drawer-opened {
+    @include oj-ltr() {
+      border-right: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+    @include oj-rtl() {
+      border-left: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+  }
+  .oj-drawer-reflow.oj-drawer-end.oj-drawer-opened {
+    @include oj-ltr() {
+      border-left: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+    @include oj-rtl() {
+      border-right: 1px solid var(--oj-drawer-reflow-divider-color);
+    }
+  }
+
+  // Common for Reflow and Overlay mode
+  .oj-drawer-reflow,
+  .oj-drawer-overlay {
+    overflow-y: auto;
+  }
+
+  // Overlay mode
+  // Slots reparented to PopupService layer
+  .oj-drawer-layout-surrogate .oj-drawer-overlay {
+    position: absolute;
+    z-index: var(--oj-core-z-index-popup);
+    background: var(--oj-drawer-overlay-bg-color);
+    min-width: 320px;
+    max-width: 90%;
+  }
+
+  .oj-drawer-overlay.oj-drawer-full-overlay {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .oj-drawer-overlay.oj-drawer-start.oj-drawer-opened {
+    @include oj-ltr() {
+      box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: -8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-overlay.oj-drawer-end.oj-drawer-opened {
+    @include oj-ltr() {
+      box-shadow: -8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+}

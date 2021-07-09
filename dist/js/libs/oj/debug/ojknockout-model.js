@@ -10,14 +10,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace oj.KnockoutUtils
    * @classdesc Utility methods for blending Knockout observables with the data model
    * @export
@@ -110,8 +102,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
               koObject[KnockoutUtils.underUpdateProp] = false;
             }
           }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.collUpdatingProp] = false;
         }
@@ -127,13 +117,9 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
           if (koObject[KnockoutUtils.collUpdatingProp]) {
             return;
           }
-          // if (collection instanceof oj.Collection) {
           koObject[KnockoutUtils.underUpdateProp] = true;
           var _index = options.index;
           koObject.splice(_index, 1);
-          // }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.underUpdateProp] = false;
         }
@@ -165,8 +151,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
               }
             }
           }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.underUpdateProp] = false;
         }
@@ -179,7 +163,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
           }
           if (collection instanceof Model.Collection) {
             koObject[KnockoutUtils.underUpdateProp] = true;
-            // koObject.splice(0, koObject().length);
             if (ko.isObservable(koObject)) {
               if (koObject[KnockoutUtils.subscriptionProp]) {
                 koObject[KnockoutUtils.subscriptionProp].dispose();
@@ -193,8 +176,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
               koObject = [];
             }
           }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.underUpdateProp] = false;
         }
@@ -213,8 +194,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
               return KnockoutUtils._callSort(a, b, m.comparator, collection, this);
             });
           }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.underUpdateProp] = false;
         }
@@ -267,8 +246,6 @@ define(['exports', 'ojs/ojcore', 'knockout', 'ojs/ojmodel'], function (exports, 
               koObject[updateProp] = ko.observable(model.get(updateProp));
             }
           }
-        } catch (e) {
-          throw e;
         } finally {
           koObject[KnockoutUtils.underUpdateProp] = false;
         }

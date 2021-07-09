@@ -6,22 +6,17 @@
  * @ignore
  */
 import 'ojs/ojmenu';
-import { VComponent, h } from 'ojs/ojvcomponent';
-import { PopupService } from 'ojs/ojpopupcore';
+import { Component, h } from 'preact';
 
-class Props {
-    constructor() {
-        this.launcherElement = null;
-    }
-}
-class VMenu extends VComponent {
+class VMenu extends Component {
     constructor(props) {
         super(props);
+        this._rootRef = null;
     }
-    render() {
-        return (h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, this.props.children));
+    render(props) {
+        return (h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, props.children));
     }
-    mounted() {
+    componentDidMount() {
         if (!this._menuElement) {
             this._menuElement = this._getMenu();
             if (this._menuElement !== null) {
@@ -30,7 +25,7 @@ class VMenu extends VComponent {
         }
     }
     _getMenu() {
-        const menu = this._rootRef.firstChild;
+        const menu = this._rootRef.childNodes[0];
         return menu;
     }
     _openMenu() {
@@ -62,10 +57,7 @@ class VMenu extends VComponent {
         };
         return openOption;
     }
-    unmounted() {
-        if (this._rootRef) {
-            PopupService.getInstance().close({ [PopupService.OPTION.POPUP]: this._rootRef });
-        }
+    componentWillUnmount() {
         this._removeCloseListener();
     }
     _removeCloseListener() {
@@ -91,6 +83,5 @@ VMenu._MENU_POSITION = {
         collision: 'flipfit'
     }
 };
-VMenu.metadata = { "extension": { "_DEFAULTS": Props } };
 
 export { VMenu };

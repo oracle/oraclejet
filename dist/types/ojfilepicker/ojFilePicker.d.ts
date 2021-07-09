@@ -1,16 +1,11 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
+import { ComponentChildren } from "preact"
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { Action, CancelableAction, ExtendGlobalProps, ObservedGlobalProps, Slot } from 'ojs/ojvcomponent';
+import { h, Component } from 'preact';
 import { ojMessage } from 'ojs/ojmessage';
-declare class Props {
+declare type Props = ObservedGlobalProps<'aria-label' | 'role'> & {
     accept?: string[] | null;
     capture?: 'user' | 'environment' | 'implementation' | 'none' | null;
     disabled?: boolean;
@@ -20,11 +15,11 @@ declare class Props {
     }) => string);
     selectOn?: 'auto' | 'click' | 'clickAndDrop' | 'drop';
     selectionMode?: 'multiple' | 'single';
-    trigger?: ElementVComponent.Slot;
-    onOjBeforeSelect?: ElementVComponent.CancelableAction<BeforeDetail>;
-    onOjInvalidSelect?: ElementVComponent.Action<InvalidDetail>;
-    onOjSelect?: ElementVComponent.Action<SelectDetail>;
-}
+    trigger?: Slot;
+    onOjBeforeSelect?: CancelableAction<BeforeDetail>;
+    onOjInvalidSelect?: Action<InvalidDetail>;
+    onOjSelect?: Action<SelectDetail>;
+};
 declare type State = {
     focus: boolean;
     validity: string;
@@ -42,30 +37,44 @@ declare type SelectDetail = {
     files: FileList;
     originalEvent: Event;
 };
-export declare class FilePicker extends ElementVComponent<Props, State> {
+export declare class FilePicker extends Component<ExtendGlobalProps<Props>, State> {
     private inDropZone;
     private isDroppable;
     private dragPromiseResolver;
     private elementPromiseResolver;
     private selecting;
-    private rootElem?;
-    private readonly rootElemRef;
-    constructor(props: Readonly<Props>);
+    private readonly rootRef;
+    static defaultProps: {
+        accept: any;
+        capture: string;
+        disabled: boolean;
+        selectOn: string;
+        selectionMode: string;
+    };
+    constructor(props: ExtendGlobalProps<Props>);
     private _doSelectHelper;
-    private _handleSelectingFiles;
-    private _handleFileSelected;
+    private readonly _handleSelectingFiles;
+    private readonly _handleFileSelected;
     private _fileSelectedHelper;
-    private _handleDragEnter;
-    private _handleDragOver;
-    private _handleDragLeave;
-    private _handleFileDrop;
-    private _handleFocusIn;
-    private _handleFocusOut;
-    protected render(): any;
+    private readonly _handleDragEnter;
+    private readonly _handleDragOver;
+    private readonly _handleDragLeave;
+    private readonly _handleFileDrop;
+    private readonly _handleFocusIn;
+    private readonly _handleFocusOut;
+    focus(): void;
+    blur(): void;
+    private _handleFocus;
+    private _handleBlur;
+    render(props: ExtendGlobalProps<Props>): h.JSX.Element;
     private _renderDisabled;
     private _renderWithCustomTrigger;
     private _renderWithDefaultTrigger;
     private _renderDefaultTriggerContent;
+    private _getRole;
+    private _getAriaLabel;
+    private _getPrimaryText;
+    private _getSecondaryText;
     private _getDndHandlers;
     private _getFocusClass;
     private _validateSelectionMode;
@@ -75,7 +84,6 @@ export declare class FilePicker extends ElementVComponent<Props, State> {
     private _handleFilesAdded;
     private _fireInvalidSelectAction;
     private _createFileList;
-    protected _vprops?: VProps;
 }
 // Custom Element interfaces
 export interface FilePickerElement extends JetElement<FilePickerElementSettableProperties>, FilePickerElementSettableProperties {
@@ -87,44 +95,43 @@ export interface FilePickerElement extends JetElement<FilePickerElementSettableP
   setProperty<T extends string>(property: T, value: JetSetPropertyType<T, FilePickerElementSettableProperties>): void;
   setProperties(properties: FilePickerElementSettablePropertiesLenient): void;
   _doSelectHelper: FilePicker['_doSelectHelper'];
+  blur: FilePicker['blur'];
+  focus: FilePicker['focus'];
 }
 export namespace FilePickerElement {
   interface ojBeforeSelect extends CustomEvent<BeforeDetail & {
     accept: (param: Promise<void>) => void;
-    [propName: string]: any;
   }>{}
   interface ojInvalidSelect extends CustomEvent<InvalidDetail & {
-    [propName: string]: any;
   }>{}
   interface ojSelect extends CustomEvent<SelectDetail & {
-    [propName: string]: any;
   }>{}
   // tslint:disable-next-line interface-over-type-literal
-  type acceptChanged = JetElementCustomEvent<FilePickerElement["accept"]>;
+  type acceptChanged = JetElementCustomEventStrict<FilePickerElement["accept"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type captureChanged = JetElementCustomEvent<FilePickerElement["capture"]>;
+  type captureChanged = JetElementCustomEventStrict<FilePickerElement["capture"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type disabledChanged = JetElementCustomEvent<FilePickerElement["disabled"]>;
+  type disabledChanged = JetElementCustomEventStrict<FilePickerElement["disabled"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type primaryTextChanged = JetElementCustomEvent<FilePickerElement["primaryText"]>;
+  type primaryTextChanged = JetElementCustomEventStrict<FilePickerElement["primaryText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type secondaryTextChanged = JetElementCustomEvent<FilePickerElement["secondaryText"]>;
+  type secondaryTextChanged = JetElementCustomEventStrict<FilePickerElement["secondaryText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectOnChanged = JetElementCustomEvent<FilePickerElement["selectOn"]>;
+  type selectOnChanged = JetElementCustomEventStrict<FilePickerElement["selectOn"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectionModeChanged = JetElementCustomEvent<FilePickerElement["selectionMode"]>;
+  type selectionModeChanged = JetElementCustomEventStrict<FilePickerElement["selectionMode"]>;
 }
 export interface FilePickerElementEventMap extends HTMLElementEventMap {
   'ojBeforeSelect': FilePickerElement.ojBeforeSelect
   'ojInvalidSelect': FilePickerElement.ojInvalidSelect
   'ojSelect': FilePickerElement.ojSelect
-  'acceptChanged': JetElementCustomEvent<FilePickerElement["accept"]>;
-  'captureChanged': JetElementCustomEvent<FilePickerElement["capture"]>;
-  'disabledChanged': JetElementCustomEvent<FilePickerElement["disabled"]>;
-  'primaryTextChanged': JetElementCustomEvent<FilePickerElement["primaryText"]>;
-  'secondaryTextChanged': JetElementCustomEvent<FilePickerElement["secondaryText"]>;
-  'selectOnChanged': JetElementCustomEvent<FilePickerElement["selectOn"]>;
-  'selectionModeChanged': JetElementCustomEvent<FilePickerElement["selectionMode"]>;
+  'acceptChanged': JetElementCustomEventStrict<FilePickerElement["accept"]>;
+  'captureChanged': JetElementCustomEventStrict<FilePickerElement["capture"]>;
+  'disabledChanged': JetElementCustomEventStrict<FilePickerElement["disabled"]>;
+  'primaryTextChanged': JetElementCustomEventStrict<FilePickerElement["primaryText"]>;
+  'secondaryTextChanged': JetElementCustomEventStrict<FilePickerElement["secondaryText"]>;
+  'selectOnChanged': JetElementCustomEventStrict<FilePickerElement["selectOn"]>;
+  'selectionModeChanged': JetElementCustomEventStrict<FilePickerElement["selectionMode"]>;
 }
 export interface FilePickerElementSettableProperties extends JetSettableProperties {
   /**
@@ -163,40 +170,46 @@ export type ojFilePicker = FilePickerElement;
 export namespace ojFilePicker {
   interface ojBeforeSelect extends CustomEvent<BeforeDetail & {
     accept: (param: Promise<void>) => void;
-    [propName: string]: any;
   }>{}
   interface ojInvalidSelect extends CustomEvent<InvalidDetail & {
-    [propName: string]: any;
   }>{}
   interface ojSelect extends CustomEvent<SelectDetail & {
-    [propName: string]: any;
   }>{}
   // tslint:disable-next-line interface-over-type-literal
-  type acceptChanged = JetElementCustomEvent<ojFilePicker["accept"]>;
+  type acceptChanged = JetElementCustomEventStrict<ojFilePicker["accept"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type captureChanged = JetElementCustomEvent<ojFilePicker["capture"]>;
+  type captureChanged = JetElementCustomEventStrict<ojFilePicker["capture"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type disabledChanged = JetElementCustomEvent<ojFilePicker["disabled"]>;
+  type disabledChanged = JetElementCustomEventStrict<ojFilePicker["disabled"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type primaryTextChanged = JetElementCustomEvent<ojFilePicker["primaryText"]>;
+  type primaryTextChanged = JetElementCustomEventStrict<ojFilePicker["primaryText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type secondaryTextChanged = JetElementCustomEvent<ojFilePicker["secondaryText"]>;
+  type secondaryTextChanged = JetElementCustomEventStrict<ojFilePicker["secondaryText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectOnChanged = JetElementCustomEvent<ojFilePicker["selectOn"]>;
+  type selectOnChanged = JetElementCustomEventStrict<ojFilePicker["selectOn"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectionModeChanged = JetElementCustomEvent<ojFilePicker["selectionMode"]>;
+  type selectionModeChanged = JetElementCustomEventStrict<ojFilePicker["selectionMode"]>;
 }
 export type ojFilePickerEventMap = FilePickerElementEventMap;
 export type ojFilePickerSettableProperties = FilePickerElementSettableProperties;
 export type ojFilePickerSettablePropertiesLenient = FilePickerElementSettablePropertiesLenient;
-export interface FilePickerProperties extends Partial<FilePickerElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface FilePickerIntrinsicProps extends Partial<Readonly<FilePickerElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  children?: ComponentChildren;
+  onojBeforeSelect?: (value: FilePickerElementEventMap['ojBeforeSelect']) => void;
+  onojInvalidSelect?: (value: FilePickerElementEventMap['ojInvalidSelect']) => void;
+  onojSelect?: (value: FilePickerElementEventMap['ojSelect']) => void;
+  onacceptChanged?: (value: FilePickerElementEventMap['acceptChanged']) => void;
+  oncaptureChanged?: (value: FilePickerElementEventMap['captureChanged']) => void;
+  ondisabledChanged?: (value: FilePickerElementEventMap['disabledChanged']) => void;
+  onprimaryTextChanged?: (value: FilePickerElementEventMap['primaryTextChanged']) => void;
+  onsecondaryTextChanged?: (value: FilePickerElementEventMap['secondaryTextChanged']) => void;
+  onselectOnChanged?: (value: FilePickerElementEventMap['selectOnChanged']) => void;
+  onselectionModeChanged?: (value: FilePickerElementEventMap['selectionModeChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-file-picker": FilePickerProperties;
+      "oj-file-picker": FilePickerIntrinsicProps;
     }
   }
 }

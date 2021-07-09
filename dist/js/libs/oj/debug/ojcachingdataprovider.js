@@ -17,12 +17,12 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             const promise = this.asyncIterator.next();
             promise.then((result) => {
                 const value = result.value;
-                let start = this.cache.data.length;
-                let end = start + value.data.length - 1;
+                const start = this.cache.data.length;
+                const end = start + value.data.length - 1;
                 this.cache.data = this.cache.data.concat(value.data);
                 this.cache.metadata = this.cache.metadata.concat(value.metadata);
                 this.cache.done = result.done;
-                this.cacheEntries.push({ start: start, end: end, miss: 0, status: CacheStatus.READY });
+                this.cacheEntries.push({ start, end, miss: 0, status: CacheStatus.READY });
             });
             return promise;
         }
@@ -79,8 +79,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
         fetchFirst(params) {
             this._resetCache();
             const result = this.dataProvider.fetchFirst(params);
-            const iterable = new AsyncIterableWrapper(result, this.cache, this.cacheQueue);
-            return iterable;
+            return new AsyncIterableWrapper(result, this.cache, this.cacheQueue);
         }
         fetchByKeys(params) {
             return this.dataProvider.fetchByKeys(params);
@@ -100,15 +99,12 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             }
             this.currentStart = start;
             if (!this._isInCache(start, end)) {
-                Logger.info('Cache missed: ' + start + ' - ' + end);
+                Logger.info(`Cache missed: ${start} - ${end}`);
                 this.cacheQueue.forEach((cacheInfo) => {
                     if (cacheInfo.status !== CacheStatus.FETCHING) {
                         if ((cacheInfo.start >= start && cacheInfo.start <= end) ||
                             (cacheInfo.end <= end && cacheInfo.end >= start)) {
-                            this._log('cache entry update to FETCHING - start: ' +
-                                cacheInfo.start +
-                                ' end: ' +
-                                cacheInfo.end);
+                            this._log(`cache entry update to FETCHING - start: ${cacheInfo.start} end: ${cacheInfo.end}`);
                             cacheInfo.status = CacheStatus.FETCHING;
                         }
                         else {
@@ -120,20 +116,20 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
                     this._log('Call fetchByOffset to fulfill cache');
                     this.dataProvider.fetchByOffset(params).then((result) => {
                         for (let i = 0; i < result.results.length; i++) {
-                            let item = result.results[i];
+                            const item = result.results[i];
                             this.cache.data[start + i] = item.data;
                             this.cache.metadata[start + i] = item.metadata;
                         }
-                        this._log('cache fulfilled - offset: ' + start + ' size: ' + result.results.length);
+                        this._log(`cache fulfilled - offset: ${start}  size: ${result.results.length}`);
                         this.cacheQueue.forEach((cacheInfo) => {
                             if (cacheInfo.status === CacheStatus.FETCHING) {
-                                this._log('cache entry update to READY - start: ' + cacheInfo.start + ' end: ' + cacheInfo.end);
+                                this._log(`cache entry update to READY - start: ${cacheInfo.start} end: ${cacheInfo.end}`);
                                 cacheInfo.status = CacheStatus.READY;
                                 cacheInfo.miss = 0;
                             }
                         });
                         const results = this._getFetchByOffsetResult(start, end);
-                        resolve({ results: results, fetchParameters: params, done: false });
+                        resolve({ results, fetchParameters: params, done: false });
                         this._recalibrateCache(start, end, direction);
                     });
                 });
@@ -142,7 +138,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             this._updateCacheEntries(start, end);
             const results = this._getFetchByOffsetResult(start, end);
             this._recalibrateCache(start, end, direction);
-            return Promise.resolve({ results: results, fetchParameters: params, done: false });
+            return Promise.resolve({ results, fetchParameters: params, done: false });
         }
         _updateCacheEntries(start, end) {
             this.cacheQueue.forEach((cacheInfo) => {
@@ -215,7 +211,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
                 if (cacheInfo.status === CacheStatus.READY &&
                     cacheInfo.miss >= this.CACHE_MISS_THRESHOLD &&
                     (cacheInfo.end < start - this.proximity || cacheInfo.start > end + this.proximity)) {
-                    this._log('Purging cache range: ' + cacheInfo.start + ' to ' + cacheInfo.end);
+                    this._log(`Purging cache range: ${cacheInfo.start} to ${cacheInfo.end}`);
                     for (let i = cacheInfo.start; i <= cacheInfo.end; i++) {
                         this.cache.data[i] = null;
                         this.cache.metadata[i] = null;
@@ -227,17 +223,11 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             if (this.prefetching === false) {
                 return;
             }
-            for (let i = 0; i < this.cacheQueue.length; i++) {
-                let entry = this.cacheQueue[i];
+            for (const entry of this.cacheQueue) {
                 if (direction === FetchDirection.UP && entry.start < start && entry.end > start) {
                     if (entry.status === CacheStatus.PURGED || !this._isInCache(entry.start, entry.end)) {
                         entry.status = CacheStatus.FETCHING;
-                        this._log('pre-fetch cache range (before adjustment): ' +
-                            entry.start +
-                            ' - ' +
-                            entry.end +
-                            ' direction: ' +
-                            direction);
+                        this._log(`pre-fetch cache range (before adjustment): ${entry.start} - ${entry.end} direction: ${direction}`);
                         this._prefetchRange(entry.start, start - entry.start).then((success) => {
                             entry.status = CacheStatus.READY;
                         });
@@ -247,12 +237,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
                 else if (direction === FetchDirection.DOWN && entry.start < end && entry.end > end) {
                     if (entry.status === CacheStatus.PURGED || !this._isInCache(entry.start, entry.end)) {
                         entry.status = CacheStatus.FETCHING;
-                        this._log('pre-fetch cache range (before adjustment): ' +
-                            entry.start +
-                            ' - ' +
-                            entry.end +
-                            ' direction: ' +
-                            direction);
+                        this._log(`pre-fetch cache range (before adjustment): ${entry.start} - ${entry.end} direction: ${direction}`);
                         this._prefetchRange(end, entry.end - end).then((success) => {
                             entry.status = CacheStatus.READY;
                         });
@@ -262,15 +247,15 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             }
         }
         _prefetchRange(start, size) {
-            this._log('pre-fetching to refill cache - offset: ' + start + ' size: ' + size);
+            this._log(`pre-fetching to refill cache - offset: ${start} size: ${size}`);
             return new Promise((resolve, reject) => {
-                this.dataProvider.fetchByOffset({ offset: start, size: size }).then((result) => {
+                this.dataProvider.fetchByOffset({ offset: start, size }).then((result) => {
                     for (let i = 0; i < result.results.length; i++) {
-                        let item = result.results[i];
+                        const item = result.results[i];
                         this.cache.data[start + i] = item.data;
                         this.cache.metadata[start + i] = item.metadata;
                     }
-                    this._log('pre-fetch result returned and cache is fulfilled - offset: ' + start + ' size: ' + size);
+                    this._log(`pre-fetch result returned and cache is fulfilled - offset: ${start} size: ${size}`);
                     resolve(true);
                 });
             });
@@ -282,8 +267,8 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
             if (start < this.cache.startIndex || end > this.cache.startIndex + this.cache.data.length) {
                 return false;
             }
-            let relStart = start - this.cache.startIndex;
-            let relEnd = end - this.cache.startIndex;
+            const relStart = start - this.cache.startIndex;
+            const relEnd = end - this.cache.startIndex;
             for (let i = relStart; i < relEnd; i++) {
                 if (this.cache.data[i] == null) {
                     return false;
@@ -293,10 +278,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
         }
         _handleRowsMutated(detail, keyField, callback1, callback2) {
             const indexes = detail.indexes;
-            if (indexes == null) {
-                const keys = detail[keyField];
-            }
-            else {
+            if (indexes != null) {
                 indexes.forEach((index, i) => {
                     if (index < this.cache.startIndex + this.cache.data.length) {
                         if (index >= this.cache.startIndex) {
@@ -359,14 +341,7 @@ define(['ojs/ojlogger'], function (Logger) { 'use strict';
         }
         _dumpCacheStatus() {
             this.cacheQueue.forEach((cacheInfo) => {
-                this._log('Cache entry - start: ' +
-                    cacheInfo.start +
-                    ' end: ' +
-                    cacheInfo.end +
-                    ' miss: ' +
-                    cacheInfo.miss +
-                    ' status: ' +
-                    this._getStatusText(cacheInfo.status));
+                this._log(`Cache entry - start: ${cacheInfo.start} end: ${cacheInfo.end} miss: ${cacheInfo.miss} status: ${this._getStatusText(cacheInfo.status)}`);
             });
         }
     }

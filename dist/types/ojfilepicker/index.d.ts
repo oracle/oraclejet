@@ -1,12 +1,2 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-export { FilePicker } from './ojFilePicker';
 export { FileUploadTransport } from './FileUploadTransport';
-
-export { FilePickerElementEventMap, FilePickerElementSettableProperties, FilePickerElementSettablePropertiesLenient, FilePickerElement, VProps, FilePickerProperties, ojFilePickerEventMap, ojFilePickerSettableProperties, ojFilePickerSettablePropertiesLenient, ojFilePicker } from './ojFilePicker';
+export { FilePickerElementEventMap, FilePickerElementSettableProperties, FilePickerElementSettablePropertiesLenient, FilePickerElement, ojFilePickerEventMap, ojFilePickerSettableProperties, ojFilePickerSettablePropertiesLenient, ojFilePicker } from './ojFilePicker';

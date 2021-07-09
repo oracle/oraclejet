@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojmap', 'ojs/ojlocaledata', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojkeysetimpl', 'ojs/ojdomutils', 'ojs/ojattributegrouphandler', 'ojs/ojlogger', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojdnd'], function (oj, dvt, Context, Config, ojMap, LocaleData, Components, $, KeySetImpl, DomUtils, attributeGroupHandler, Logger, ojcustomelement, ojcustomelementUtils, ojdnd) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojmap', 'ojs/ojlocaledata', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojkeysetimpl', 'ojs/ojdomutils', 'ojs/ojattributegrouphandler', 'ojs/ojlogger', 'ojs/ojcustomelement', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojdnd'], function (oj, dvt, Context, Config, ojMap, LocaleData, Components, $, KeySetImpl, DomUtils, attributeGroupHandler, Logger, ojcustomelement, ojcustomelementUtils, MetadataUtils, ojdnd) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -13,13 +13,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   KeySetImpl = KeySetImpl && Object.prototype.hasOwnProperty.call(KeySetImpl, 'default') ? KeySetImpl['default'] : KeySetImpl;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>
    *
@@ -101,13 +94,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
    *               {target: "Type", value: "<T>", for: "genericTypeParameters"}]
    */
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Class to help set css properties on the component root options object
    * @param {Object} object The root options object from which this path should be resolved
@@ -192,15 +178,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-
-  /**
    * Class to help retrieve css properties to be used by the style bridge
    * @param {dvt.Context} context
    * @protected
@@ -214,6 +191,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     this._context = context;
     this._letterSpacing = null;
     this._wordSpacing = null;
+    this._fontVariantNumeric = null;
   };
 
   DvtStyleProcessor.styleTypes = {
@@ -384,12 +362,14 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       }
     }
 
-    if (!this._letterSpacing || !this._wordSpacing) {
+    if (!this._letterSpacing || !this._wordSpacing || !this._fontVariantNumeric) {
       var computedStyles = window.getComputedStyle(element[0]);
       this._context.letterSpacing = computedStyles.letterSpacing;
       this._context.wordSpacing = computedStyles.wordSpacing;
+      this._context.fontVariantNumeric = computedStyles.fontVariantNumeric;
       this._letterSpacing = computedStyles.letterSpacing;
       this._wordSpacing = computedStyles.wordSpacing;
+      this._fontVariantNumeric = computedStyles.fontVariantNumeric;
     }
 
     for (i = 0; i < styleClassKeys.length; i++) {
@@ -568,14 +548,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   /**
-   * @license
-   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-   /**
    * Handler for DataProvider generated content for chart
    * @constructor
    * @ignore
@@ -1100,15 +1072,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   /**
-   * @license
-   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-
-   /**
    * Handler for DataProvider generated content for chart
    * @constructor
    * @ignore
@@ -1254,9 +1217,12 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         }
         metadataCache[property] = metadata;
       }
-
-      oj.BaseCustomElementBridge.checkEnumValues(templateElement, property,
-        value, metadata);
+      try {
+        MetadataUtils.checkEnumValues(templateElement, property,
+          value, metadata);
+      } catch (error) {
+        throw new ojcustomelementUtils.JetElementError(element, error.message);
+      }
 
       // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
       // about component support for undefined/null
@@ -1570,15 +1536,6 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-
-  /**
    * @ojcomponent oj.dvtBaseComponent
    * @augments oj.baseComponent
    * @since 0.7.0
@@ -1617,7 +1574,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       trackResize: 'on'
     },
 
-    //* * @inheritdoc */
+
     _ComponentCreate: function () {
       this._super();
       this._renderCount = 0;
@@ -1705,7 +1662,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this.options._widgetConstructor = Components.__GetWidgetConstructor(this.element);
     },
 
-    //* * @inheritdoc */
+
     _AfterCreate: function () {
       // Allow superclass to process root attributes and context menus
       this._super();
@@ -1768,7 +1725,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       }
     },
 
-    //* * @inheritdoc */
+
     refresh: function () {
       this._super();
 
@@ -1782,7 +1739,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this._Render();
     },
 
-    //* * @inheritdoc */
+
     getNodeBySubId: function (locator) {
       var automation = (this._component && this._component.getAutomation) ?
           this._component.getAutomation() : null;
@@ -1794,7 +1751,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       return null;
     },
 
-    //* * @inheritdoc */
+
     getSubIdByNode: function (node) {
       var automation = (this._component && this._component.getAutomation) ?
           this._component.getAutomation() : null;
@@ -1886,7 +1843,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       return [];
     },
 
-    //* * @inheritdoc */
+
     _VerifyConnectedForSetup: function () {
       return true;
     },
@@ -1915,7 +1872,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this._dataValuePromise = {};
     },
 
-    //* * @inheritdoc */
+
     _destroy: function () {
       var parentElement = this.element[0].parentElement;
       if (parentElement && parentElement._dvtcontext) {
@@ -1944,7 +1901,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this._context = null;
     },
 
-    //* * @inheritdoc */
+
     // eslint-disable-next-line no-unused-vars
     _setOptions: function (options, flags) {
       // Call the super to update the property values
@@ -2181,25 +2138,25 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       return !!this.options.dnd;
     },
 
-    //* * @inheritdoc */
+
     _NotifyShown: function () {
       this._super();
       this._notifyShownAttached();
     },
 
-    //* * @inheritdoc */
+
     _NotifyAttached: function () {
       this._super();
       this._notifyShownAttached();
     },
 
-    //* * @inheritdoc */
+
     _NotifyDetached: function () {
       this._super();
       this._notifyHiddenDetached();
     },
 
-    //* * @inheritdoc */
+
     _NotifyHidden: function () {
       this._super();
       this._notifyHiddenDetached();
@@ -2252,7 +2209,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this._bUserDrivenChange = false;
     },
 
-    //* * @inheritdoc */
+
     _NotifyContextMenuGesture: function (menu, event, eventType) {
       // DVTs support context menus on touch hold release which is detected by the
       // toolkit and handled in _HandleEvent after receiving touch hold release event.
@@ -3169,7 +3126,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
       this._templateMap[templateName].push(cleanupCallback);
     },
 
-    //* * @inheritdoc */
+
     _CompareOptionValues: function (option, value1, value2) {
       switch (option) {
         case 'hiddenCategories':
@@ -3182,25 +3139,10 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
     }
   }, true);
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-   oj._registerLegacyNamespaceProp('AttributeGroupHandler', attributeGroupHandler.AttributeGroupHandler);
+  oj._registerLegacyNamespaceProp('AttributeGroupHandler', attributeGroupHandler.AttributeGroupHandler);
    oj._registerLegacyNamespaceProp('ColorAttributeGroupHandler', attributeGroupHandler.ColorAttributeGroupHandler);
    oj._registerLegacyNamespaceProp('ShapeAttributeGroupHandler', attributeGroupHandler.ShapeAttributeGroupHandler);
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Utility class with functions for parsing common DVT attributes.
    * Currently the following DVT components are using it: ojchart, ojdiagram, ojgauge, ojnbox, ojthematicmap.

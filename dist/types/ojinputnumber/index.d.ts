@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import RequiredValidator = require('../ojvalidator-required');
 import RegExpValidator = require('../ojvalidator-regexp');
 import NumberRangeValidator = require('../ojvalidator-numberrange');
@@ -22,11 +16,11 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     converter: Promise<Converter<number>> | Converter<number>;
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -126,6 +120,30 @@ export namespace ojInputNumber {
     type valueChanged = JetElementCustomEvent<ojInputNumber["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type virtualKeyboardChanged = JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export interface ojInputNumberEventMap extends editableValueEventMap<number | null, ojInputNumberSettableProperties, number | null, string> {
     'ojAnimateEnd': ojInputNumber.ojAnimateEnd;
@@ -147,17 +165,26 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'validatorsChanged': JetElementCustomEvent<ojInputNumber["validators"]>;
     'valueChanged': JetElementCustomEvent<ojInputNumber["value"]>;
     'virtualKeyboardChanged': JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
+    'describedByChanged': JetElementCustomEvent<ojInputNumber["describedBy"]>;
+    'disabledChanged': JetElementCustomEvent<ojInputNumber["disabled"]>;
+    'helpChanged': JetElementCustomEvent<ojInputNumber["help"]>;
+    'helpHintsChanged': JetElementCustomEvent<ojInputNumber["helpHints"]>;
+    'labelEdgeChanged': JetElementCustomEvent<ojInputNumber["labelEdge"]>;
+    'labelHintChanged': JetElementCustomEvent<ojInputNumber["labelHint"]>;
+    'messagesCustomChanged': JetElementCustomEvent<ojInputNumber["messagesCustom"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<ojInputNumber["userAssistanceDensity"]>;
+    'validChanged': JetElementCustomEvent<ojInputNumber["valid"]>;
 }
 export interface ojInputNumberSettableProperties extends editableValueSettableProperties<number | null, number | null, string> {
     asyncValidators: Array<AsyncValidator<number>>;
     autocomplete: 'on' | 'off' | string;
     autofocus: boolean;
     converter: Promise<Converter<number>> | Converter<number>;
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -250,4 +277,66 @@ export namespace InputNumberElement {
     type valueChanged = JetElementCustomEvent<ojInputNumber["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type virtualKeyboardChanged = JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<number | null, ojInputNumberSettableProperties, number | null, string>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
+}
+export interface InputNumberIntrinsicProps extends Partial<Readonly<ojInputNumberSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojInputNumberEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojInputNumberEventMap['ojAnimateStart']) => void;
+    onasyncValidatorsChanged?: (value: ojInputNumberEventMap['asyncValidatorsChanged']) => void;
+    onautocompleteChanged?: (value: ojInputNumberEventMap['autocompleteChanged']) => void;
+    onautofocusChanged?: (value: ojInputNumberEventMap['autofocusChanged']) => void;
+    onconverterChanged?: (value: ojInputNumberEventMap['converterChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojInputNumberEventMap['displayOptionsChanged']) => void;
+    onlabelledByChanged?: (value: ojInputNumberEventMap['labelledByChanged']) => void;
+    onmaxChanged?: (value: ojInputNumberEventMap['maxChanged']) => void;
+    onminChanged?: (value: ojInputNumberEventMap['minChanged']) => void;
+    onplaceholderChanged?: (value: ojInputNumberEventMap['placeholderChanged']) => void;
+    onrawValueChanged?: (value: ojInputNumberEventMap['rawValueChanged']) => void;
+    onreadonlyChanged?: (value: ojInputNumberEventMap['readonlyChanged']) => void;
+    onrequiredChanged?: (value: ojInputNumberEventMap['requiredChanged']) => void;
+    onstepChanged?: (value: ojInputNumberEventMap['stepChanged']) => void;
+    ontransientValueChanged?: (value: ojInputNumberEventMap['transientValueChanged']) => void;
+    onvalidatorsChanged?: (value: ojInputNumberEventMap['validatorsChanged']) => void;
+    onvalueChanged?: (value: ojInputNumberEventMap['valueChanged']) => void;
+    onvirtualKeyboardChanged?: (value: ojInputNumberEventMap['virtualKeyboardChanged']) => void;
+    ondescribedByChanged?: (value: ojInputNumberEventMap['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojInputNumberEventMap['disabledChanged']) => void;
+    onhelpChanged?: (value: ojInputNumberEventMap['helpChanged']) => void;
+    onhelpHintsChanged?: (value: ojInputNumberEventMap['helpHintsChanged']) => void;
+    onlabelEdgeChanged?: (value: ojInputNumberEventMap['labelEdgeChanged']) => void;
+    onlabelHintChanged?: (value: ojInputNumberEventMap['labelHintChanged']) => void;
+    onmessagesCustomChanged?: (value: ojInputNumberEventMap['messagesCustomChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojInputNumberEventMap['userAssistanceDensityChanged']) => void;
+    onvalidChanged?: (value: ojInputNumberEventMap['validChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-input-number": InputNumberIntrinsicProps;
+        }
+    }
 }

@@ -1,1 +1,6 @@
-define(["./impl/localPersistenceStore"],function(a){"use strict";return function(){function b(b,c){var d=new a(b);return d.Init(c).then(function(){return d})}return{createPersistenceStore:function(a,c){return b(a,c)}}}()});
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define(["./impl/localPersistenceStore"],(function(e){"use strict";return{createPersistenceStore:function(n,t){return function(n,t){var r=new e(n);return r.Init(t).then((function(){return r}))}(n,t)}}}));

@@ -1,0 +1,14 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("stable.variables.refresher") {
+
+:root {
+
+  // refresher
+  // ----------------------------
+  --oj-refresher-bg-color:           rgb(var(--oj-palette-neutral-rgb-40));
+
+  
+}
+
+}

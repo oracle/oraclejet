@@ -12,13 +12,6 @@ import $ from 'jquery';
 import { isAncestorOrSelf, unwrap, recentTouchEnd } from 'ojs/ojdomutils';
 import FocusUtils from 'ojs/ojfocusutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_switch_metadata = 
 {
@@ -98,7 +91,15 @@ var __oj_switch_metadata =
     },
     "translations": {
       "type": "object",
-      "value": {}
+      "value": {},
+      "properties": {
+        "switchOff": {
+          "type": "string"
+        },
+        "switchOn": {
+          "type": "string"
+        }
+      }
     },
     "userAssistanceDensity": {
       "type": "string",
@@ -163,14 +164,6 @@ var __oj_switch_metadata =
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
   /*!
    * JET Switch @VERSION
@@ -232,22 +225,10 @@ var __oj_switch_metadata =
    * like aria-checked and aria-disabled.
    * </p>
    * <p>
-   * It is up to the application developer to associate the label to the input element.
-   * For Switch, you should put an <code class="prettyprint">id</code> on the input element, and
-   * then set the <code class="prettyprint">for</code> attribute on the label to be the
-   * input's id.
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
-   * <h3 id="label-section">
-   *   Label and Switch
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, for accessibility, you should associate a label element with the input by putting an
-   * <code class="prettyprint">id</code> on the input, and then setting the
-   * <code class="prettyprint">for</code> attribute on the label to be the input's id.
-   * </p>
    * <h3 id="state-section">
    *   Setting the Value Attribute
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#state-section"></a>
@@ -262,7 +243,87 @@ var __oj_switch_metadata =
    * @example <caption>Initialize the switch with some attributes specified:</caption>
    * &lt;oj-switch value=true disabled=false>&lt;/oj-switch>
    */
-  // --------------------------------------------------- oj.ojSwitch Styling Start -----------------------------------------------------------
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Switch Thumb</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Toggle switch value</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSwitch
+   */
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Switch Thumb</td>
+   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+   *       <td>Toggle switch value</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Switch Thumb</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the thumb. If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled items can not receive keyboard focus.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSwitch
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+  /**
+   * <p>Sub-ID for the switch's track.</p>
+   *
+   * @ojsubid oj-switch-track
+   * @memberof oj.ojSwitch
+   *
+   * @example <caption>Get the node for the track:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-track'});
+   */
+
+  /**
+   * <p>Sub-ID for the switch's thumb.</p>
+   *
+   * @ojsubid oj-switch-thumb
+   * @memberof oj.ojSwitch
+   *
+   * @example <caption>Get the node for the thumb:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-thumb'});
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
   // ---------------- oj-switch --------------
   /**
   * Top level switch class.
@@ -289,7 +350,95 @@ var __oj_switch_metadata =
   *   &lt;!-- Content -->
   * &lt;/oj-switch>
   */
- // --------------------------------------------------- oj.ojSwitch Styling end -----------------------------------------------------------
+  /**
+  * @ojstylevariableset oj-switch-css-set1
+  * @ojstylevariable oj-switch-track-height {description: "Switch track height", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-track-width {description: "Switch track width", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-track-border-radius {description: "Switch track border radius", formats: ["length","percentage"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-thumb-to-track-horizontal-margin {description: "Switch thumb to track horizontal margin", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-thumb-height {description: "Switch thumb height", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-thumb-width {description: "Switch thumb width", formats: ["length"], help: "#css-variables"}
+  * @ojstylevariable oj-switch-thumb-border-radius {description: "Switch thumb border radius", formats: ["length","percentage"], help: "#css-variables"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when enabled
+  * @ojstylevariableset oj-switch-css-set2
+  * @ojdisplayname Enabled
+  * @ojstylevariable oj-switch-track-bg-color {description: "Switch track background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+  * @ojstylevariable oj-switch-track-border-color {description: "Switch track border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+  * @ojstylevariable oj-switch-thumb-bg-color {description: "Switch thumb background color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+  * @ojstylevariable oj-switch-thumb-border-color {description: "Switch thumb border color when enabled", formats: ["color"], help: "#oj-switch-css-set2"}
+  * @ojstylevariable oj-switch-thumb-box-shadow {description: "Switch thumb box shadow when enabled", help: "#oj-switch-css-set2"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when hovered
+  * @ojstylevariableset oj-switch-css-set3
+  * @ojdisplayname Hovered
+  * @ojstylevariable oj-switch-track-bg-color-hover {description: "Switch track background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
+  * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+  * @ojstylevariable oj-switch-track-border-color-hover {description: "Switch track border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+  * @ojstylevariable oj-switch-thumb-bg-color-hover {description: "Switch thumb background color when hovered", formats: ["color"], help: "#oj-switch-css-set3"}
+  * @ojstylevariable oj-switch-thumb-border-color-hover {description: "Switch thumb border color when hovered",formats: ["color"], help: "#oj-switch-css-set3"}
+  * @ojstylevariable oj-switch-thumb-box-shadow-hover {description: "Switch thumb box shadow when hovered", help: "#oj-switch-css-set3"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when selected and hovered
+  * @ojstylevariableset oj-switch-css-set4
+  * @ojdisplayname Selected hovered
+  * @ojstylevariable oj-switch-track-bg-color-selected-hover {description: "Switch track background color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-track-border-color-selected-hover {description: "Switch track border color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-hover {description: "Switch thumb background color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-hover {description: "Switch thumb border color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-thumb-box-shadow-selected-hover {description: "Switch thumb box shadow when selected and hovered", help: "#oj-switch-css-set4"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when active
+  * @ojstylevariableset oj-switch-css-set5
+  * @ojdisplayname Active
+  * @ojstylevariable oj-switch-track-bg-color-active {description: "Switch track background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
+  * @ojstylevariable oj-switch-track-border-color-active {description: "Switch track border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
+  * @ojstylevariable oj-switch-thumb-bg-color-active {description: "Switch thumb background color when active", formats: ["color"], help: "#oj-switch-css-set5"}
+  * @ojstylevariable oj-switch-thumb-border-color-active {description: "Switch thumb border color when active",formats: ["color"], help: "#oj-switch-css-set5"}
+  * @ojstylevariable oj-switch-thumb-box-shadow-active {description: "Switch thumb box shadow when active", help: "#oj-switch-css-set5"}
+  * @ojstylevariable oj-switch-thumb-width-active {description: "Switch thumb width when active", formats: ["length"], help: "#oj-switch-css-set5"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when selected and active
+  * @ojstylevariableset oj-switch-css-set6
+  * @ojdisplayname Selected active
+  * @ojstylevariable oj-switch-track-bg-color-selected-active {description: "Switch track background color when selected and active", formats: ["color"], help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-track-border-color-selected-active {description: "Switch track border color when selected and active ",formats: ["color"], help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-active {description: "Switch thumb background color when selected and active", formats: ["color"], help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-active {description: "Switch thumb border color when selected and active",formats: ["color"], help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-thumb-box-shadow-selected-active {description: "Switch thumb box shadow when selected and active", help: "#oj-switch-css-set6"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when disabled
+  * @ojstylevariableset oj-switch-css-set7
+  * @ojdisplayname Disabled
+  * @ojstylevariable oj-switch-track-bg-color-disabled {description: "Switch track background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
+  * @ojstylevariable oj-switch-track-border-color-disabled {description: "Switch track border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
+  * @ojstylevariable oj-switch-thumb-bg-color-disabled {description: "Switch thumb background color when disabled", formats: ["color"], help: "#oj-switch-css-set7"}
+  * @ojstylevariable oj-switch-thumb-border-color-disabled {description: "Switch thumb border color when disabled",formats: ["color"], help: "#oj-switch-css-set7"}
+  * @memberof oj.ojSwitch
+  */
+  /**
+  * CSS variables used by oj-switch when selected and disabled
+  * @ojstylevariableset oj-switch-css-set8
+  * @ojdisplayname Selected disabled
+  * @ojstylevariable oj-switch-track-bg-color-selected-disabled {description: "Switch track background color when selected and disabled", formats: ["color"], help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-track-border-color-selected-disabled {description: "Switch track border color when selected and disabled",formats: ["color"], help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-disabled {description: "Switch thumb background color when selected and disabled", formats: ["color"], help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-disabled {description: "Switch thumb border color when selected and disabled",formats: ["color"], help: "#oj-switch-css-set8"}
+  * @memberof oj.ojSwitch
+  */
+  // --------------------------------------------------- oj.ojSwitch Styling end -----------------------------------------------------------
 
   oj.__registerWidget('oj.ojSwitch', $.oj.editableValue, {
     version: '1.1.0',
@@ -542,7 +691,32 @@ var __oj_switch_metadata =
         { attribute: 'title' }
       ];
 
-      this._super(originalDefaults, constructorOptions);
+      // For translations, the oj-switch component has the following keys:
+      // SwitchON and SwitchOFF. Due to this unconventional naming, it is impossible
+      // to configure these through HTML attributes. In order to support having
+      // translations.switch-on and translations.switch-off (which would result in the
+      // properties switchOn and switchOff), we need to map the new properties to the
+      // existing translation keys.
+      let newConstructorOptions = constructorOptions;
+      const translations = constructorOptions.translations;
+      if (translations) {
+        // Make a copy of the current translations. This is needed for
+        // backwards compatibility of applications that are still using
+        // undocument translations keys for setting the translations for
+        // the swtich states (SwitchON and SwitchOFF). We should not be
+        // overriding this unless the new documented properties are provided.
+        const newTranslations = Object.assign({}, translations);
+        if (translations.switchOn !== undefined) {
+          newTranslations.SwitchON = translations.switchOn;
+        }
+        if (translations.switchOff !== undefined) {
+          newTranslations.SwitchOFF = translations.switchOff;
+        }
+        newConstructorOptions = Object.assign({},
+          constructorOptions, { translations: newTranslations });
+      }
+
+      this._super(originalDefaults, newConstructorOptions);
 
       // Only needed for non new element style
       if (!this._IsCustomElement()) {
@@ -758,15 +932,17 @@ var __oj_switch_metadata =
      */
     _switchEvents: {
       keydown: function (event) {
+        const keyCode = event.which || event.keyCode;
         // ENTER and SPACE will change the switch
-        if (event.which === $.ui.keyCode.ENTER || event.which === $.ui.keyCode.SPACE) {
+        if (keyCode === $.ui.keyCode.ENTER || keyCode === $.ui.keyCode.SPACE) {
           $(event.currentTarget).addClass('oj-active');
           event.preventDefault();
         }
       },
       keyup: function (event) {
+        const keyCode = event.which || event.keyCode;
         // ENTER and SPACE will change the switch
-        if (event.which === $.ui.keyCode.ENTER || event.which === $.ui.keyCode.SPACE) {
+        if (keyCode === $.ui.keyCode.ENTER || keyCode === $.ui.keyCode.SPACE) {
           this._SetValue(!this.option('value'), event);
         }
       },
@@ -779,7 +955,7 @@ var __oj_switch_metadata =
 
         // LEFT MOUSE BUTTON will change the switch and we want to ignore touch events here
         // so we don't toggle the value twice.
-        if (event.which === 1 && this._isRealMouseEvent(event)) {
+        if (event.button === 0 && this._isRealMouseEvent(event)) {
           this._SetValue(!this.option('value'), event);
         }
 
@@ -918,6 +1094,39 @@ var __oj_switch_metadata =
     },
 
     /**
+     * An override of the JQUI option method to set aliases for the oj-switch component's options.
+     *
+     * @param {string|Object=} optionName the option name (string, first two overloads), or the map (Object, last overload).
+     *                                    Omitted in the third overload.
+     * @param {Object=} value a value to set for the option.  Second overload only.
+     *
+     * @override
+     * @memberof oj.ojSwitch
+     * @instance
+     * @ignore
+     */
+    // eslint-disable-next-line no-unused-vars
+    option: function (optionName, value) {
+      let args = arguments;
+      let aliasedName = optionName;
+
+      // Check if the optionName is one of the options that needs to be aliased
+      if (optionName === 'translations.switchOn') {
+        aliasedName = 'translations.SwitchON';
+      } else if (optionName === 'translations.switchOff') {
+        aliasedName = 'translations.SwitchOFF';
+      }
+
+      // replace the first arg with the aliasedName if it exists
+      if (args.length > 0) {
+        args[0] = aliasedName;
+      }
+
+      // Apply the new arguments
+      return this._superApply(args);
+    },
+
+    /**
      * @override
      * @private
      */
@@ -964,81 +1173,5 @@ var __oj_switch_metadata =
       this._superApply(arguments);
       this._setup();
     }
-    // Fragments:
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Switch Thumb</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Toggle switch value</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojSwitch
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Switch Thumb</td>
-     *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-     *       <td>Toggle switch value</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Switch Thumb</td>
-     *       <td><kbd>Tab In</kbd></td>
-     *       <td>Set focus to the thumb. If hints, title or messages exist in a notewindow,
-     *        pop up the notewindow.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * <p>Disabled items can not receive keyboard focus.
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojSwitch
-     */
-
   });
 }());
-
-// / ///////////////     SUB-IDS     //////////////////
-
-/**
- * <p>Sub-ID for the switch's track.</p>
- *
- * @ojsubid oj-switch-track
- * @memberof oj.ojSwitch
- *
- * @example <caption>Get the node for the track:</caption>
- * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-track'});
- */
-
-/**
- * <p>Sub-ID for the switch's thumb.</p>
- *
- * @ojsubid oj-switch-thumb
- * @memberof oj.ojSwitch
- *
- * @example <caption>Get the node for the thumb:</caption>
- * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-thumb'});
- */

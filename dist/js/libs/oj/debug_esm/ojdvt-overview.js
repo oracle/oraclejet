@@ -8,14 +8,6 @@
 import { Obj, BaseComponentDefaults, EventManager, SvgDocumentUtils, Agent, Point, MouseEvent, Rect, PathUtils, Path, ToolkitUtils, OutputText, Container, Line, Stroke, TextUtils, TouchEvent, CSSStyle, Animator, Easing, BackgroundOutputText, EventFactory, KeyboardEvent } from 'ojs/ojdvt-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -58,14 +50,6 @@ DvtOverviewDefaults.VERSION_1 = {
     'windowBorderTopStyle': 'solid'
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Overview event manager.
@@ -153,7 +137,7 @@ DvtOverviewEventManager.prototype._getRelativePosition = function(pageX, pageY) 
  */
 DvtOverviewEventManager.prototype._onMouseDragStart = function(event)
 {
-  if (event.button != MouseEvent.RIGHT_CLICK_BUTTON)
+  if (event.button !== MouseEvent.RIGHT_CLICK_BUTTON)
   {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
     return this._overview.beginDragPan(event, relPos.x, relPos.y);
@@ -195,7 +179,7 @@ DvtOverviewEventManager.prototype._onTouchDragStart = function(event)
 {
   var touches = event.touches;
   event.stopPropagation();
-  if (touches.length == 1)
+  if (touches.length === 1)
   {
     var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
     event.preventDefault();
@@ -213,7 +197,7 @@ DvtOverviewEventManager.prototype._onTouchDragMove = function(event)
 {
   var touches = event.touches;
   // make sure this is a single touch and not a multi touch
-  if (touches.length == 1)
+  if (touches.length === 1)
   {
     var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
     this._overview.contDragPan(event, relPos.x, relPos.y);
@@ -235,14 +219,6 @@ DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
   // Clear the stage absolute position cache
   this._stageAbsolutePosition = null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Overview JSON Parser
@@ -278,8 +254,7 @@ OverviewParser.prototype.parse = function(data)
   // for now all the JSON contains should be options and no data, that could change in the future.
   var options = data;
 
-  var ret = this.ParseRootAttributes(options);
-  return ret;
+  return this.ParseRootAttributes(options);
 };
 
 
@@ -356,14 +331,6 @@ OverviewParser.prototype.calculateWidth = function(startTime, endTime, viewportS
 
   return number / denominator;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Style related utility functions for Overview.
@@ -719,14 +686,6 @@ DvtOverviewStyleUtils.getRightFilterPanelAlpha = function(options)
   return options['style']['rightFilterPanelAlpha'];
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const OverviewUtils = new Object();
 
 OverviewUtils.supportsTouch = function()
@@ -762,19 +721,11 @@ OverviewUtils.getDatePosition = function(startTime, endTime, time, width)
 OverviewUtils.getPositionDate = function(startTime, endTime, pos, width)
 {
   var number = pos * (endTime - startTime);
-  if (number == 0 || width == 0)
+  if (number === 0 || width === 0)
     return startTime;
 
   return (number / width) + startTime;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for Overview.
@@ -898,7 +849,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
       bottomHandle.setSolidStroke(overview._handleFillColor);
 
       // if the handle color is the same as the background color, it should not have antialiasing so it does not appear visible
-      if (overview._windowBackgroundColor == overview._handleFillColor)
+      if (overview._windowBackgroundColor === overview._handleFillColor)
       {
         topHandle.setPixelHinting(true);
         bottomHandle.setPixelHinting(true);
@@ -969,7 +920,7 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
       rightHandle.setSolidStroke(overview._handleFillColor);
 
       // if the handle color is the same as the background color, it should not have antialiasing so it does not appear visible
-      if (overview._windowBackgroundColor == overview._handleFillColor)
+      if (overview._windowBackgroundColor === overview._handleFillColor)
       {
         leftHandle.setPixelHinting(true);
         rightHandle.setPixelHinting(true);
@@ -1017,18 +968,19 @@ DvtOverviewRenderer._renderSlidingWindow = function(overview)
 DvtOverviewRenderer._createGrippyImage = function(overview, width, height, isVertical)
 {
   var ctx = overview.getCtx();
+  var grippy;
   if (!isVertical)
   {
     var posX = width / 2;
     var iconStyle = ToolkitUtils.getIconStyle(ctx, overview._horHandleBackgroundClass);
-    var grippy = OutputText.createIcon(ctx, {style: iconStyle, size: overview._horHandleSize, pos: {x: posX, y: 0}});
+    grippy = OutputText.createIcon(ctx, {style: iconStyle, size: overview._horHandleSize, pos: {x: posX, y: 0}});
     grippy.setId('hgrpy');
   }
   else
   {
     var posY = height / 2;
-    var iconStyle = ToolkitUtils.getIconStyle(ctx, overview._vertHandleBackgroundClass);
-    var grippy = OutputText.createIcon(ctx, {style: iconStyle, size: overview._vertHandleSize, pos: {x: 0, y: posY}});
+    var iconStyleY = ToolkitUtils.getIconStyle(ctx, overview._vertHandleBackgroundClass);
+    grippy = OutputText.createIcon(ctx, {style: iconStyleY, size: overview._vertHandleSize, pos: {x: 0, y: posY}});
     grippy.setId('vgrpy');
   }
   grippy.setMouseEnabled(false);
@@ -1185,17 +1137,17 @@ DvtOverviewRenderer._createBorderAroundSlidingWindow = function(overview)
   bottomBar.setPixelHinting(true);
   topBar.setPixelHinting(true);
 
-  if (overview._windowBorderLeftStyle != 'none')
+  if (overview._windowBorderLeftStyle !== 'none')
     leftHandle.setSolidStroke(overview._windowBorderLeftColor);
   overview.addChild(leftHandle);
   overview._leftHandle = leftHandle;
 
-  if (overview._windowBorderRightStyle != 'none')
+  if (overview._windowBorderRightStyle !== 'none')
     rightHandle.setSolidStroke(overview._windowBorderRightColor);
   overview.addChild(rightHandle);
   overview._rightHandle = rightHandle;
 
-  if (overview._borderTopStyle != 'none' && overview._borderTopColor)
+  if (overview._borderTopStyle !== 'none' && overview._borderTopColor)
   {
     leftTopBar.setSolidStroke(overview._borderTopColor);
     rightTopBar.setSolidStroke(overview._borderTopColor);
@@ -1203,11 +1155,11 @@ DvtOverviewRenderer._createBorderAroundSlidingWindow = function(overview)
   overview.addChild(leftTopBar);
   overview.addChild(rightTopBar);
 
-  if (overview._windowBorderBottomStyle != 'none')
+  if (overview._windowBorderBottomStyle !== 'none')
     bottomBar.setSolidStroke(overview._windowBorderBottomColor);
   overview.addChild(bottomBar);
 
-  if (overview._windowBorderTopStyle != 'none')
+  if (overview._windowBorderTopStyle !== 'none')
     topBar.setSolidStroke(overview._windowBorderTopColor);
   overview.addChild(topBar);
 };
@@ -1304,7 +1256,8 @@ DvtOverviewRenderer._updateSlidingWindow = function(overview)
   if (overview.isHorizontalScrollingEnabled())
   {
     var x1Pos = Math.max(overview.getMinimumPositionX(), OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x1, width));
-    var x2Pos = Math.min(overview.getMaximumPositionX(), Math.max(overview.getMinimumPositionX(), OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x2, width)));
+    var posX2Max = Math.max(overview.getMinimumPositionX(), OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x2, width));
+    var x2Pos = Math.min(overview.getMaximumPositionX(), posX2Max);
 
     if (overview.isRTL())
       overview.setSlidingWindowPosX(window, width - x2Pos);
@@ -1317,7 +1270,8 @@ DvtOverviewRenderer._updateSlidingWindow = function(overview)
   if (overview.isVerticalScrollingEnabled())
   {
     var y1Pos = Math.max(overview.getMinimumPositionY(), OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y1, height));
-    var y2Pos = Math.min(overview.getMaximumPositionY(), Math.max(overview.getMinimumPositionY(), OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y2, height)));
+    var posY2Max = Math.max(overview.getMinimumPositionY(), OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y2, height));
+    var y2Pos = Math.min(overview.getMaximumPositionY(), posY2Max);
 
     overview.setSlidingWindowPosY(window, y1Pos);
     DvtOverviewRenderer._setSlidingWindowHeight(overview, window, y2Pos - y1Pos);
@@ -1517,7 +1471,7 @@ DvtOverviewRenderer._renderLeftAndRightFilters = function(overview, handleStart)
 
     // the left and right background resize handle are needed for touch because the touch area for resize handle goes
     // beyond the handle and into the left and right background area, so we'll need something on top of the background
-    if (OverviewUtils.supportsTouch() && handleStart != undefined)
+    if (OverviewUtils.supportsTouch() && handleStart !== undefined && handleStart !== null)
     {
       if (overview.isVertical())
       {
@@ -1712,13 +1666,14 @@ DvtOverviewRenderer._addFilledTimeRange = function(overview, elem, width, height
     if (overview.isHorizontalRTL())
     {
       rangeStart_pos = size - rangeStart_pos - rangeWidth;
-      rangeEnd_pos = size - rangeEnd_pos - rangeWidth;
     }
-
+    var displayable;
     if (overview.isVertical())
-      var displayable = new Rect(overview.getCtx(), 0, rangeStart_pos, width - overview.getTimeAxisWidth(), rangeWidth, 'ftr');
-    else
-      displayable = new Rect(overview.getCtx(), rangeStart_pos, overview.isOverviewAbove() ? overview.getTimeAxisHeight() : 0, rangeWidth, height - overview.getTimeAxisHeight(), 'ftr');
+      displayable = new Rect(overview.getCtx(), 0, rangeStart_pos, width - overview.getTimeAxisWidth(), rangeWidth, 'ftr');
+    else {
+      var overviewAbove = overview.isOverviewAbove() ? overview.getTimeAxisHeight() : 0;
+      displayable = new Rect(overview.getCtx(), rangeStart_pos, overviewAbove, rangeWidth, height - overview.getTimeAxisHeight(), 'ftr');
+    }
 
     if (color != null)
       displayable.setSolidFill(color, 0.4);
@@ -1764,14 +1719,6 @@ DvtOverviewRenderer._updateCurrentTime = function(overview)
 
   overview.addChild(line);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Overview component.
@@ -1906,7 +1853,7 @@ Overview.prototype.isFeatureOff = function(feature)
   if (this._featuresOff == null)
     return false;
 
-  return (this._featuresOff.indexOf(feature) != -1);
+  return (this._featuresOff.indexOf(feature) !== -1);
 };
 
 
@@ -1915,7 +1862,7 @@ Overview.prototype.isFeatureOff = function(feature)
  */
 Overview.prototype.isAnimationOnClick = function()
 {
-  return !(this._animationOnClick === 'off');
+  return (this._animationOnClick !== 'off');
 };
 
 
@@ -1935,7 +1882,6 @@ Overview.prototype.render = function(obj, width, height)
     this.Height = height;
   }
 
-  // TODO: update this resize code for standalone overview when implemented
   if (obj == null)
   {
     var slidingWindow = this.getSlidingWindow();
@@ -1944,7 +1890,7 @@ Overview.prototype.render = function(obj, width, height)
     if (this._xMin && this._xMax)
     {
       var slidingWindowPos = this.getSlidingWindowPosX(slidingWindow);
-      if (slidingWindow != null && slidingWindowPos != 0)
+      if (slidingWindow != null && slidingWindowPos !== 0)
       {
         // note this.Width references the old width
         this._x1 = OverviewUtils.getPositionDate(this._xMin, this._xMax, slidingWindowPos, this.Width);
@@ -1953,7 +1899,7 @@ Overview.prototype.render = function(obj, width, height)
     if (this._yMin && this._yMax)
     {
       slidingWindowPos = this.getSlidingWindowPosY(slidingWindow);
-      if (slidingWindow != null && slidingWindowPos != 0)
+      if (slidingWindow != null && slidingWindowPos !== 0)
       {
         // note this.Height references the old height
         this._y1 = OverviewUtils.getPositionDate(this._yMin, this._yMax, slidingWindowPos, this.Height);
@@ -2114,7 +2060,7 @@ Overview.prototype.getYPositionDate = function(pos)
  */
 Overview.prototype.isRTL = function()
 {
-  return this._isRtl == 'true';
+  return this._isRtl === 'true';
 };
 
 /**
@@ -2130,7 +2076,7 @@ Overview.prototype.isHorizontalRTL = function()
  */
 Overview.prototype.isVertical = function()
 {
-  return (this._orientation == 'vertical');
+  return (this._orientation === 'vertical');
 };
 
 /**
@@ -2138,7 +2084,7 @@ Overview.prototype.isVertical = function()
  */
 Overview.prototype.isOverviewAbove = function()
 {
-  return (this.Options['overviewPosition'] == 'above');
+  return (this.Options['overviewPosition'] === 'above');
 };
 
 // Sets the left and right margins, used by chart
@@ -2260,24 +2206,24 @@ Overview.prototype.getHandleSize = function()
 Overview.prototype.isHandle = function(drawable)
 {
   var id = drawable.getId();
-  return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' || id == 'th' || id == 'bh' ||
-          id == 'thb' || id == 'bhb' || id == 'hgrpy' || id == 'vgrpy' || id == 'lbgrh' || id == 'rbgrh' ||
-          (drawable.getParent() != null && (drawable.getParent().getId() == 'hgrpy' || drawable.getParent().getId() == 'vgrpy')));
+  return (id === 'lh' || id === 'rh' || id === 'lhb' || id === 'rhb' || id === 'th' || id === 'bh' ||
+          id === 'thb' || id === 'bhb' || id === 'hgrpy' || id === 'vgrpy' || id === 'lbgrh' || id === 'rbgrh' ||
+          (drawable.getParent() != null && (drawable.getParent().getId() === 'hgrpy' || drawable.getParent().getId() === 'vgrpy')));
 };
 
 Overview.prototype.isLeftOrRightHandle = function(drawable)
 {
   var id = drawable.getId();
-  return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' ||
-          id == 'hgrpy' || id == 'lbgrh' || id == 'rbgrh' ||
-          (drawable.getParent() != null && drawable.getParent().getId() == 'hgrpy'));
+  return (id === 'lh' || id === 'rh' || id === 'lhb' || id === 'rhb' ||
+          id === 'hgrpy' || id === 'lbgrh' || id === 'rbgrh' ||
+          (drawable.getParent() != null && drawable.getParent().getId() === 'hgrpy'));
 };
 
 Overview.prototype.isTopOrBottomHandle = function(drawable)
 {
   var id = drawable.getId();
-  return (id == 'th' || id == 'bh' || id == 'thb' || id == 'bhb' || id == 'vgrpy' ||
-          (drawable.getParent() != null && drawable.getParent().getId() == 'vgrpy'));
+  return (id === 'th' || id === 'bh' || id === 'thb' || id === 'bhb' || id === 'vgrpy' ||
+          (drawable.getParent() != null && drawable.getParent().getId() === 'vgrpy'));
 };
 
 // for vertical
@@ -2466,33 +2412,33 @@ Overview.prototype.setLinePos = function(line, pos1, pos2)
 {
   if (this.isVertical())
   {
-    if (pos1 != -1)
+    if (pos1 !== -1)
       line.setY1(pos1);
-    if (pos2 != -1)
+    if (pos2 !== -1)
       line.setY2(pos2);
   }
   else
   {
-    if (pos1 != -1)
+    if (pos1 !== -1)
       line.setX1(pos1);
-    if (pos2 != -1)
+    if (pos2 !== -1)
       line.setX2(pos2);
   }
 };
 
 Overview.prototype.setLinePosX = function(line, x1, x2)
 {
-  if (x1 != -1)
+  if (x1 !== -1)
     line.setX1(x1);
-  if (x2 != -1)
+  if (x2 !== -1)
     line.setX2(x2);
 };
 
 Overview.prototype.setLinePosY = function(line, y1, y2)
 {
-  if (y1 != -1)
+  if (y1 !== -1)
     line.setY1(y1);
-  if (y2 != -1)
+  if (y2 !== -1)
     line.setY2(y2);
 };
 
@@ -2518,12 +2464,12 @@ Overview.prototype._findDrawable = function(event)
     if (id == null)
       return null;
 
-    if (id.substr(id.length - 7) == '_border')
+    if (id.substr(id.length - 7) === '_border')
     {
       // if it's the border shape, returns the actual drawable
       return this.getChildAfter(target);
     }
-    else if (id.substr(0, 4) != 'tick' && id != 'ltb' && id != 'rtb' && id != 'bb' && id != 'tab')
+    else if (id.substr(0, 4) !== 'tick' && id !== 'ltb' && id !== 'rtb' && id !== 'bb' && id !== 'tab')
       return target;
   }
 
@@ -2532,9 +2478,9 @@ Overview.prototype._findDrawable = function(event)
 
 Overview.prototype.isMovable = function(drawable)
 {
-  if (drawable.getId() == 'window' ||
-      drawable.getId() == 'ftr' ||
-      drawable.getId() == 'sta' ||
+  if (drawable.getId() === 'window' ||
+      drawable.getId() === 'ftr' ||
+      drawable.getId() === 'sta' ||
       this.isHandle(drawable))
     return true;
 
@@ -2645,8 +2591,8 @@ Overview.prototype.animateSlidingWindow = function(newX, newY)
   var slidingWindow = this.getSlidingWindow();
 
   // first check if sliding window moved or resized at all
-  if ((newX == undefined || newX == this.getSlidingWindowPosX(slidingWindow)) &&
-      (newY == undefined || newY == this.getSlidingWindowPosY(slidingWindow)))
+  if ((newX === undefined || newX === null || newX === this.getSlidingWindowPosX(slidingWindow)) &&
+      (newY === undefined || newY === null|| newY === this.getSlidingWindowPosY(slidingWindow)))
     return;
 
   var leftHandle = this.getLeftHandle();
@@ -2826,19 +2772,19 @@ Overview.prototype.HandleShapeMouseOver = function(event)
 {
   var drawable = this._findDrawable(event);
   // Return if no drawable is found
-  if (!drawable || drawable.getId() == 'bg' || drawable.getId() == 'ocd')
-    return;
+  if (!drawable || drawable.getId() === 'bg' || drawable.getId() === 'ocd')
+    return undefined;
 
   // if it is a label, show a tooltip of the label if it is truncated
-  if (drawable.getId().substr(0, 5) == 'label' && (drawable instanceof OutputText || drawable instanceof BackgroundOutputText))
+  if (drawable.getId().substr(0, 5) === 'label' && (drawable instanceof OutputText || drawable instanceof BackgroundOutputText))
   {
     if (drawable.isTruncated())
       this.getCtx().getTooltipManager().showDatatip(event.pageX, event.pageY, drawable._rawText, '#000000');
-    return;
+    return undefined;
   }
 
-  if (drawable.getId() == 'window' || drawable.getId() == 'ftr' || drawable.getId() == 'arr' || this.isHandle(drawable))
-    return;
+  if (drawable.getId() === 'window' || drawable.getId() === 'ftr' || drawable.getId() === 'arr' || this.isHandle(drawable))
+    return undefined;
 
   return drawable;
 };
@@ -2851,7 +2797,7 @@ Overview.prototype.HandleShapeMouseOut = function(event)
 
   var drawable = this._findDrawable(event);
   if (drawable == null)
-    return;
+    return null;
 
   return drawable;
 };
@@ -2864,15 +2810,15 @@ Overview.prototype.HandleShapeClick = function(event, pageX, pageY)
   var drawable = this._findDrawable(event);
 
   // Return if no drawable is found
-  if (!drawable || drawable.getId() == 'window' || this.isHandle(drawable))
-    return;
+  if (!drawable || drawable.getId() === 'window' || this.isHandle(drawable))
+    return null;
 
   // if clicking anywhere on the overview scroll to the location
-  if (drawable.getId() == 'bg' || drawable.getId().substr(0, 5) == 'label' || drawable.getId() == 'ocd' || drawable.getId() == 'lbg' || drawable.getId() == 'rbg')
+  if (drawable.getId() === 'bg' || drawable.getId().substr(0, 5) === 'label' || drawable.getId() === 'ocd' || drawable.getId() === 'lbg' || drawable.getId() === 'rbg')
   {
-    if (pageX == undefined)
+    if (pageX === undefined || pageX === null)
       pageX = event.pageX;
-    if (pageY == undefined)
+    if (pageY === undefined || pageY === null)
       pageY = event.pageY;
 
     var relPos = this.getCtx().pageToStageCoords(pageX, pageY);
@@ -2891,9 +2837,6 @@ Overview.prototype.HandleShapeClick = function(event, pageX, pageY)
       var posX = relPos.x;
       var width = this.Width;
       var newPosX = posX - slidingWindow.getWidth() / 2;
-
-      if (this.isRTL())
-        posX = width - posX;
     }
 
     this.animateSlidingWindow(newPosX, newPosY);
@@ -2928,7 +2871,7 @@ Overview.prototype.HandleShapeClick = function(event, pageX, pageY)
     }
     var evt = EventFactory.newOverviewEvent('scrollTime', newX1, newX2,  newY1, newY2);
     this.dispatchEvent(evt);
-    return;
+    return null;
   }
 
   return drawable;
@@ -2947,7 +2890,7 @@ Overview.prototype.beginDragPan = function(event, compX, compY)
   if (drawable != null && this.isMovable(drawable))
   {
     // if the drawable is the formatted time ranges, move the sliding window
-    if (drawable.getId() == 'ftr' || drawable.getId() == 'sta')
+    if (drawable.getId() === 'ftr' || drawable.getId() === 'sta')
       drawable = this.getSlidingWindow();
 
     this._initX = compX;
@@ -2957,27 +2900,27 @@ Overview.prototype.beginDragPan = function(event, compX, compY)
     {
       var slidingWindow = this.getSlidingWindow();
 
-      if (drawable.getParent().getId() == 'hgrpy' || drawable.getParent().getId() == 'vgrpy')
+      if (drawable.getParent().getId() === 'hgrpy' || drawable.getParent().getId() === 'vgrpy')
         drawable = drawable.getParent();
 
       var drawableId = drawable.getId();
 
-      if (drawableId == 'hgrpy' || drawableId == 'vgrpy')
+      if (drawableId === 'hgrpy' || drawableId === 'vgrpy')
       {
         drawable = slidingWindow.getChildBefore(drawable);
         drawableId = drawable.getId();
       }
 
-      if (drawableId == 'lh' || drawableId == 'rh' || drawableId == 'th' || drawableId == 'bh')
+      if (drawableId === 'lh' || drawableId === 'rh' || drawableId === 'th' || drawableId === 'bh')
       {
         drawable = slidingWindow.getChildBefore(drawable);
         drawableId = drawable.getId();
       }
 
-      if (drawableId == 'lbgrh')
+      if (drawableId === 'lbgrh')
         drawable = slidingWindow.getChildAt(0);
 
-      if (drawableId == 'rbgrh')
+      if (drawableId === 'rbgrh')
         drawable = slidingWindow.getChildAt(slidingWindow.getNumChildren() - 3);
 
       if (this.isLeftOrRightHandle(drawable))
@@ -3077,9 +3020,9 @@ Overview.prototype.resetCursors = function()
  */
 Overview.prototype.endDragPan = function()
 {
-  if (this._moveDrawable != null && this._isDragPanning == true)
+  if (this._moveDrawable != null && this._isDragPanning)
   {
-    if (this._moveDrawable.getId() == 'window')
+    if (this._moveDrawable.getId() === 'window')
       this.handleWindowDrag('scrollEnd');
     else if (this.isHandle(this._moveDrawable))
     {
@@ -3118,7 +3061,7 @@ Overview.prototype.endDragPan = function()
  */
 Overview.prototype.contDragPan = function(event, compX, compY)
 {
-  if (this._moveDrawable != null && this._initX != -1)
+  if (this._moveDrawable != null && this._initX !== -1)
   {
     this._isDragPanning = true;
     var diffX = compX - this._initX;
@@ -3126,15 +3069,15 @@ Overview.prototype.contDragPan = function(event, compX, compY)
     this._initX = compX;
     this._initY = compY;
 
-    if (this._moveDrawable.getId() == 'window')
+    if (this._moveDrawable.getId() === 'window')
       this.handleWindowDrag('scrollPos', diffX, diffY);
-    else if (this._moveDrawable.getId() == 'lh' || this._moveDrawable.getId() == 'lhb')
+    else if (this._moveDrawable.getId() === 'lh' || this._moveDrawable.getId() === 'lhb')
       this.handleLeftOrRightHandleDragPositioning(event, diffX, true);
-    else if (this._moveDrawable.getId() == 'rh' || this._moveDrawable.getId() == 'rhb')
+    else if (this._moveDrawable.getId() === 'rh' || this._moveDrawable.getId() === 'rhb')
       this.handleLeftOrRightHandleDragPositioning(event, diffX, false);
-    else if (this._moveDrawable.getId() == 'th' || this._moveDrawable.getId() == 'thb')
+    else if (this._moveDrawable.getId() === 'th' || this._moveDrawable.getId() === 'thb')
       this.handleTopOrBottomHandleDragPositioning(event, diffY, true);
-    else if (this._moveDrawable.getId() == 'bh' || this._moveDrawable.getId() == 'bhb')
+    else if (this._moveDrawable.getId() === 'bh' || this._moveDrawable.getId() === 'bhb')
       this.handleTopOrBottomHandleDragPositioning(event, diffY, false);
   }
 };
@@ -3146,7 +3089,7 @@ Overview.prototype.HandleTouchStart = function(event)
   this._touchStartY = touches[0].pageY;
 
   // see if this is a width change gesture
-  if (touches.length == 2)
+  if (touches.length === 2)
   {
     // only prevent default if it is a multi-touch gesture otherwise we don't get click callback
     event.preventDefault();
@@ -3349,7 +3292,7 @@ Overview.prototype.fireScrollEvent = function(type, newX1, newX2, newY1, newY2)
 
 Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delta, isLeft)
 {
-  if (delta == 0)
+  if (delta === 0)
     return;
 
   var slidingWindow = this.getSlidingWindow();
@@ -3370,9 +3313,7 @@ Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delt
     var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
     relPos = this.stageToLocal(relPos);
 
-    if (delta > 0 && relPos <= windowPos)
-      return;
-    else if (delta < 0 && relPos >= windowPos)
+    if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos) )
       return;
 
     this.setSlidingWindowPosX(slidingWindow, windowPos + delta);
@@ -3392,9 +3333,7 @@ Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delt
     relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
     relPos = this.stageToLocal(relPos);
 
-    if (delta > 0 && relPos <= windowPos + windowWidth)
-      return;
-    else if (delta < 0 && relPos >= windowPos + windowWidth)
+    if ((delta > 0 && relPos <= windowPos + windowWidth) || (delta < 0 && relPos >= windowPos + windowWidth))
       return;
 
     DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, windowWidth + delta);
@@ -3425,7 +3364,7 @@ Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delt
 
 Overview.prototype.handleTopOrBottomHandleDragPositioning = function(event, delta, isTop)
 {
-  if (delta == 0)
+  if (delta === 0)
     return;
 
   var slidingWindow = this.getSlidingWindow();
@@ -3446,9 +3385,7 @@ Overview.prototype.handleTopOrBottomHandleDragPositioning = function(event, delt
     var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
     relPos = this.stageToLocal(relPos);
 
-    if (delta > 0 && relPos <= windowPos)
-      return;
-    else if (delta < 0 && relPos >= windowPos)
+    if ((delta > 0 && relPos <= windowPos) || (delta < 0 && relPos >= windowPos))
       return;
 
     this.setSlidingWindowPosY(slidingWindow, windowPos + delta);
@@ -3468,9 +3405,7 @@ Overview.prototype.handleTopOrBottomHandleDragPositioning = function(event, delt
     relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
     relPos = this.stageToLocal(relPos);
 
-    if (delta > 0 && relPos <= windowPos + windowHeight)
-      return;
-    else if (delta < 0 && relPos >= windowPos + windowHeight)
+    if ((delta > 0 && relPos <= windowPos + windowHeight) || (delta < 0 && relPos >= windowPos + windowHeight))
       return;
 
     DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, windowHeight + delta);

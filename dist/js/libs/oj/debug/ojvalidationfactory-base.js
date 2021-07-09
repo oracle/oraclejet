@@ -21,6 +21,7 @@ RequiredValidator)
   "use strict";
 
 
+
 /* global Logger:false */
 
 /**
@@ -477,7 +478,7 @@ var ConverterFactory =
   {
     /**
      * Default type for a factory used to create number converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the
+     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
      * number converter factory of type {@link oj.NumberConverterFactory}.
      * @example <caption>Create a JET number converter with options</caption>
      * var convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
@@ -497,7 +498,7 @@ var ConverterFactory =
 
     /**
      * Default type for a factory used to create datetime converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the
+     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
      * datetime converter factory of type {@link oj.DateTimeConverterFactory}.
      * @example <caption>Create a JET dateTime converter with options</caption>
      * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
@@ -515,7 +516,7 @@ var ConverterFactory =
 
     /**
      * Default type for a factory used to create color converters. This type is passed to the
-     * [Validation.converterFactory]{@link oj.Validation#converterFactory} method to retrieve the
+     * [Validation.converterFactory]{@link oj.Validation.converterFactory} method to retrieve the
      * color converter factory of type {@link oj.ColorConverterFactory}.
      * @example <caption>Create a JET color converter with options</caption>
      * this._convFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_COLOR);
@@ -639,7 +640,7 @@ var ValidatorFactory =
   {
     /**
      * Default type for a factory used to create required validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * required validator factory of type {@link oj.RequiredValidatorFactory}.
      * @example <caption>Create a JET required validator</caption>
      * var rvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
@@ -656,7 +657,7 @@ var ValidatorFactory =
 
     /**
      * Default type for a factory used to create regExp validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * regExp validator factory of type {@link oj.RegExpValidatorFactory}.
      * @example <caption>Create a JET regexp validator</caption>
      * var validatorFactory =
@@ -677,7 +678,7 @@ var ValidatorFactory =
 
     /**
      * Default type for a factory used to create numberRange validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * numberRange validator factory of type {@link oj.NumberRangeValidatorFactory}.
      * @example <caption>Create a JET numberrange validator</caption>
      * var validatorFactory =
@@ -696,7 +697,7 @@ var ValidatorFactory =
 
     /**
      * Default type for a factory used to create length validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * length validator factory of type {@link oj.LengthValidatorFactory}.
      * @example <caption>Create a JET length validator</caption>
      * var validatorFactory =
@@ -714,7 +715,7 @@ var ValidatorFactory =
 
     /**
      * Default type for a factory used to create required validators. This type is passed to the
-     * [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * dateTimeRange validator factory of type {@link oj.DateTimeRangeValidatorFactory}.
      * @example <caption>Create a JET datetime validator</caption>
      * var validator =
@@ -733,7 +734,7 @@ var ValidatorFactory =
 
     /**
      * Default type for a factory used to create date restriction validators. This type is passed to
-     * the [Validation.validatorFactory]{@link oj.Validation#validatorFactory} method to retrieve the
+     * the [Validation.validatorFactory]{@link oj.Validation.validatorFactory} method to retrieve the
      * dateRestriction validator factory of type {@link oj.DateRestrictionValidatorFactory}.
      * @example <caption>Create a JET dateRestriction validator</caption>
      * var validatorFactory =
@@ -778,20 +779,6 @@ var ValidatorFactory =
      */
     // eslint-disable-next-line no-unused-vars
     createValidator: function (options) {}
-
-    /**
-     * A ducktype for accessing validator created and/ registered by referring to {@link oj.Validation.validatorFactory}
-     * @typedef {object} oj.Validation.RegisteredValidator
-     * @property {string} type the name of the factory registered validator
-     * @property {Object=} options options to the validator
-     */
-
-     /**
-     * A ducktype for accessing converter created and/ registered by referring to {@link oj.Validation.converterFactory}
-     * @typedef {object} oj.Validation.RegisteredConverter
-     * @property {string} type the name of the factory registered converter
-     * @property {Object=} options options to the converter
-     */
   };
 
 /**
@@ -802,6 +789,20 @@ Validation._CONTRACTS = {
   converter: { name: 'oj.ConverterFactory', type: ConverterFactory },
   validator: { name: 'oj.ValidatorFactory', type: ValidatorFactory }
 };
+
+/**
+     * A ducktype for accessing validator created and/ registered by referring to {@link oj.Validation.validatorFactory}
+     * @typedef {object} oj.Validation.RegisteredValidator
+     * @property {string} type the name of the factory registered validator
+     * @property {Object=} options options to the validator
+     */
+
+/**
+* A ducktype for accessing converter created and/ registered by referring to {@link oj.Validation.converterFactory}
+* @typedef {object} oj.Validation.RegisteredConverter
+* @property {string} type the name of the factory registered converter
+* @property {Object=} options options to the converter
+*/
 
 
 

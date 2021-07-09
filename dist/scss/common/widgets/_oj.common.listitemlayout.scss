@@ -16,6 +16,10 @@
     }
   }
 
+  oj-list-item-layout {
+    display: block;
+  }
+
   .oj-listitemlayout-grid {
     display: grid;
     grid-template-areas: "selector leading textslots extra" ".... .... quaternary navigation";

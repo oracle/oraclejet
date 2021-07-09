@@ -27,7 +27,7 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget'], function (oj, ojeventtarget) { 
                     this._fetchFirst = true;
                 }
                 ['next']() {
-                    var fetchFirst = this._fetchFirst;
+                    const fetchFirst = this._fetchFirst;
                     this._fetchFirst = false;
                     return this._nextFunc(this._params, fetchFirst);
                 }
@@ -119,14 +119,14 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget'], function (oj, ojeventtarget) { 
             };
         }
         getCapability(capabilityName) {
-            if (capabilityName == DataSourceAdapter._SORT &&
-                this.dataSource.getCapability(capabilityName) == 'full') {
+            if (capabilityName === DataSourceAdapter._SORT &&
+                this.dataSource.getCapability(capabilityName) === 'full') {
                 return { attributes: 'multiple' };
             }
-            else if (capabilityName == 'fetchByKeys') {
+            else if (capabilityName === 'fetchByKeys') {
                 return { implementation: 'lookup' };
             }
-            else if (capabilityName == 'fetchByOffset') {
+            else if (capabilityName === 'fetchByOffset') {
                 return { implementation: 'lookup' };
             }
             return null;

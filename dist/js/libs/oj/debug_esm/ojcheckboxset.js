@@ -15,13 +15,6 @@ import { warn } from 'ojs/ojlogger';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import LabeledByUtils from 'ojs/ojlabelledbyutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_checkboxset_metadata = 
 {
@@ -208,14 +201,6 @@ var __oj_checkboxset_metadata =
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
   /*!
    * JET Checkboxset @VERSION
@@ -224,9 +209,8 @@ var __oj_checkboxset_metadata =
   // -----------------------------------------------------------------------------
   // "private static members" shared by all checkboxsets
   // -----------------------------------------------------------------------------
-  /**
-   * do not do a value change check in _SetValue
-   */
+
+  // do not do a value change check in _SetValue
   var _sValueChangeCheckFalse = { doValueChangeCheck: false };
 
 /**
@@ -245,7 +229,7 @@ var __oj_checkboxset_metadata =
  *                target: "Type",
  *                value: "class ojCheckboxset<K, D, V =any> extends editableValue<Array<V>, ojCheckboxsetSettableProperties<K, D, V>>",
  *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
- *                , {"name": "V", "description": "Type of each item in the value of the component"}]
+ *                {"name": "V", "description": "Type of each item in the value of the component"}]
  *               },
  *               {
  *                target: "Type",
@@ -324,26 +308,9 @@ var __oj_checkboxset_metadata =
  * <p>JET Checkboxset takes care of setting <code class="prettyprint">role="group"</code>
  * on the oj-checkboxset element.
  *
- * <p>If not using the <code class="prettyprint">label-hint</code> attribute,
- * the application is responsible for setting the
- * <code class="prettyprint">labelled-by</code>
- * to point to an <code class="prettyprint">oj-label</code> element for the oj-checkboxset.
- * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
- * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
- * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
- * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
- * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
- * required of enabled content, it cannot be used to convey meaningful information.<p>
- * <h3 id="label-section">
- *   Label and Checkboxset
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
  * <p>
- * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
- * you should associate an oj-label element with the checkboxset
- * by putting an <code class="prettyprint">id</code> on the oj-label, and then setting the
- * <code class="prettyprint">labelled-by</code> attribute on the oj-checkboxset to be the
- * oj-label's <code class="prettyprint">id</code>.
+ * {@ojinclude "name":"accessibilitySetLabelEditableValue"}
+ * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
  *
  * @example <caption>Initialize the checkboxset with no attributes specified:</caption>
@@ -363,62 +330,188 @@ var __oj_checkboxset_metadata =
  * // set the value to "ciao". (The 'ciao' checkbox will be checked)
  * myComp.value = ["ciao"];
  */
-// --------------------------------------------------- oj.ojCheckboxset Styling Start ------------------------------------------------------------
-  /**
-  * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-  */
-  // ---------------- oj-choice-direction-column --------------
-  /**
-  * Use this style class to lay out the checkboxes in a column. This is the default.
-  * @ojstyleclass oj-choice-direction-column
-  * @ojdisplayname Column Layout
-  * @memberof oj.ojCheckboxset
-  * @ojtsexample
-  * &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-column">
-  *   &lt;!-- Content -->
-  * &lt;/oj-checkboxset>
-  */
-  /**
-  * Use this style class to lay out the checkboxes in a row.
-  * @ojstyleclass oj-choice-direction-row
-  * @ojdisplayname Row Layout
-  * @memberof oj.ojCheckboxset
-  * @ojtsexample
-  * &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-row">
-  *   &lt;!-- Content -->
-  * &lt;/oj-checkboxset>
-  */
-  /**
-  * Use this style class if you don't want the chrome around the set.
-  * @ojstyleclass oj-checkboxset-no-chrome
-  * @ojdisplayname No Chrome
-  * @memberof oj.ojCheckboxset
-  * @ojtsexample
-  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-no-chrome">
-  *   &lt;!-- Content -->
-  * &lt;/oj-checkboxset>
-  */
-  /**
-  * Use this style class to order the checkbox at the start and label text at the end, even if a theme has a different default order.
-  * @ojstyleclass oj-checkboxset-input-start
-  * @ojdisplayname Input Start
-  * @memberof oj.ojCheckboxset
-  * @ojtsexample
-  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-start">
-  *   &lt;!-- Content -->
-  * &lt;/oj-checkboxset>
-  */
-  /**
-  * Use this style class to order the checkbox at the end and the label text at the start, even if a theme has a different default order.
-  * @ojstyleclass oj-checkboxset-input-end
-  * @ojdisplayname Input End
-  * @memberof oj.ojCheckboxset
-  * @ojtsexample
-  * &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-end">
-  *   &lt;!-- Content -->
-  * &lt;/oj-checkboxset>
-  */
-  // --------------------------------------------------- oj.ojCheckboxset Styling End ------------------------------------------------------------
+
+/**
+ * Removes the checkboxset functionality completely.
+ * This will return the element back to its pre-init state.
+ *
+ * <p>This method does not accept any arguments.
+ *
+ * @method
+ * @name oj.ojCheckboxset#destroy
+ * @memberof oj.ojCheckboxset
+ * @instance
+ * @ignore
+ *
+ * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
+ * $( ".selector" ).ojCheckboxset( "destroy" );
+ */
+
+  //------------------------------------------------------------
+  //                              Fragments
+  //------------------------------------------------------------
+/**
+ * <p>The &lt;oj-checkboxset> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+ * accepted children and slots.</p>
+ *
+ * @ojchild Default
+ * @memberof oj.ojCheckboxset
+ * @ojshortdesc The oj-checkboxset element accepts oj-option elements as children.
+ * @ojpreferredcontent ["OptionElement"]
+ *
+ * @example <caption>Initialize the Checkboxset with child content specified:</caption>
+ * &lt;oj-checkboxset>
+ *   &lt;oj-option value="check1">Check 1&lt;/oj-option>
+ *   &lt;oj-option value="check2">Check 2&lt;/oj-option>
+ *   &lt;oj-option value="check3">Check 3&lt;/oj-option>
+ * &lt;/oj-checkboxset>
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *    <tr>
+ *       <td>Checkbox</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td> Select/unselect the checkbox</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Checkbox's Label</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td> Select/unselect the corresponding checkbox</td>
+ *    </tr>
+ *     <tr>
+ *       <td>Checkbox or Label</td>
+ *       <td><kbd>Press & Hold</kbd></td>
+ *       <td>If hints, help.instruction or messages exist in a notewindow,
+ *           pop up the notewindow.</td>
+ *    </tr>
+ *   </tbody>
+ *  </table>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojCheckboxset
+ */
+
+/**
+* <table class="keyboard-table">
+*   <thead>
+*     <tr>
+*       <th>Target</th>
+*       <th>Key</th>
+*       <th>Action</th>
+*     </tr>
+*   </thead>
+*   <tbody>
+*     <tr>
+*       <td>Checkboxset</td>
+*       <td><kbd>Tab In</kbd></td>
+*       <td>Set focus to the first focusable checkbox in the checkboxset.
+*       Disabled checkboxes are not focusable.
+*       If hints, helpInstruction or messages exist in a notewindow,
+*        pop up the notewindow.</td>
+*     </tr>
+*     <tr>
+*       <td>Checkbox</td>
+*       <td><kbd>Space</kbd></td>
+*       <td>Toggles the checkbox; Iff the checkbox is unselected, it will select it and vice versa.</td>
+*     </tr>
+*    <tr>
+*       <td>Checkbox</td>
+*       <td><kbd>Tab</kbd></td>
+*       <td>Sets focus to the next focusable checkbox in the checkboxset.
+*        Disabled checkboxes are not focusable. If the target is the last focusable checkbox in the
+*        checkboxset, focus goes to the next focusable item after the oj-checkboxset.</td>
+*     </tr>
+*    <tr>
+*       <td>Checkbox</td>
+*       <td><kbd>Shift+Tab</kbd></td>
+*       <td>Sets focus to the previous focusable checkbox in the checkboxset.
+*        Disabled checkboxes are not focusable. If the target is the first focusable checkbox in the
+*        checkboxset, focus goes to the previous focusable item before the oj-checkboxset.</td>
+*     </tr>
+*   </tbody>
+* </table>
+*
+*
+* @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+* @memberof oj.ojCheckboxset
+*/
+  //--------------------------------------------------------
+  //                   SUB-IDS
+  //--------------------------------------------------------
+/**
+ * <p>Sub-ID for the checkboxset's checkboxes.
+ *
+ * @ojsubid oj-checkboxset-inputs
+ * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+ * @ignore
+ * @memberof oj.ojCheckboxset
+ * @example <caption>Get the nodes for the checkboxes:</caption>
+ * var nodes = myComp.getNodeBySubId('oj-checkboxset-inputs');
+ */
+  //------------------------------------------------------
+  //                  Styling Start
+  //------------------------------------------------------
+/**
+* Use this style class to lay out the checkboxes in a column. This is the default.
+* @ojstyleclass oj-choice-direction-column
+* @ojdisplayname Column Layout
+* @memberof oj.ojCheckboxset
+* @ojtsexample
+* &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-column">
+*   &lt;!-- Content -->
+* &lt;/oj-checkboxset>
+*/
+/**
+* Use this style class to lay out the checkboxes in a row.
+* @ojstyleclass oj-choice-direction-row
+* @ojdisplayname Row Layout
+* @memberof oj.ojCheckboxset
+* @ojtsexample
+* &lt;oj-checkboxset id="checkboxsetId" class="oj-choice-direction-row">
+*   &lt;!-- Content -->
+* &lt;/oj-checkboxset>
+*/
+/**
+* Use this style class if you don't want the chrome around the set.
+* @ojstyleclass oj-checkboxset-no-chrome
+* @ojdisplayname No Chrome
+* @memberof oj.ojCheckboxset
+* @ojtsexample
+* &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-no-chrome">
+*   &lt;!-- Content -->
+* &lt;/oj-checkboxset>
+*/
+/**
+* Use this style class to order the checkbox at the start and label text at the end, even if a theme has a different default order.
+* @ojstyleclass oj-checkboxset-input-start
+* @ojdisplayname Input Start
+* @memberof oj.ojCheckboxset
+* @ojtsexample
+* &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-start">
+*   &lt;!-- Content -->
+* &lt;/oj-checkboxset>
+*/
+/**
+* Use this style class to order the checkbox at the end and the label text at the start, even if a theme has a different default order.
+* @ojstyleclass oj-checkboxset-input-end
+* @ojdisplayname Input End
+* @memberof oj.ojCheckboxset
+* @ojtsexample
+* &lt;oj-checkboxset id="checkboxsetId" class="oj-checkboxset-input-end">
+*   &lt;!-- Content -->
+* &lt;/oj-checkboxset>
+*/
+
   oj.__registerWidget('oj.ojCheckboxset', $.oj.editableValue,
     {
       version: '1.0.0',
@@ -519,12 +612,11 @@ var __oj_checkboxset_metadata =
      * myComponent.readonly = false;
      *
      * @default false
-     * @name readOnly
      * @access public
      * @expose
      * @type {?boolean}
      * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
-     * @alias readonly
+     * @name readonly
      * @instance
      * @memberof oj.ojCheckboxset
      */
@@ -696,7 +788,7 @@ var __oj_checkboxset_metadata =
     /**
      * Specify the key names to use in the options array.
      * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
-     * <p>Best practice is to use a <a href="ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
+     * <p>Best practice is to use a <a href="ListDataProviderView.html">ListDataProviderView</a> with data mapping as a replacement.</p>
      * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="DataProvider.html">DataProvider</a> interface.</p>
      *
      * @expose
@@ -2032,7 +2124,7 @@ var __oj_checkboxset_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       getNodeBySubId: function (locator) {
         var node = this._super(locator);
         var checkboxes;
@@ -2080,7 +2172,7 @@ var __oj_checkboxset_metadata =
         return node || null;
       },
 
-  //* * @inheritdoc */
+
       getSubIdByNode: function (node) {
         var topElem = this._GetContentElement()[0].parentElement.parentElement.parentElement;
         var currentNode = node;
@@ -2121,135 +2213,5 @@ var __oj_checkboxset_metadata =
 
         return ret;
       }
-  /** ** end internal widget functions ****/
-   /**
-   * Removes the checkboxset functionality completely.
-   * This will return the element back to its pre-init state.
-   *
-   * <p>This method does not accept any arguments.
-   *
-   * @method
-   * @name oj.ojCheckboxset#destroy
-   * @memberof oj.ojCheckboxset
-   * @instance
-   * @ignore
-   *
-   * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-   * $( ".selector" ).ojCheckboxset( "destroy" );
-   */
-
-   // Fragments:
-
-  /**
-   * <p>The &lt;oj-checkboxset> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-   * accepted children and slots.</p>
-   *
-   * @ojchild Default
-   * @memberof oj.ojCheckboxset
-   * @ojshortdesc The oj-checkboxset element accepts oj-option elements as children.
-   * @ojpreferredcontent ["OptionElement"]
-   *
-   * @example <caption>Initialize the Checkboxset with child content specified:</caption>
-   * &lt;oj-checkboxset>
-   *   &lt;oj-option value="check1">Check 1&lt;/oj-option>
-   *   &lt;oj-option value="check2">Check 2&lt;/oj-option>
-   *   &lt;oj-option value="check3">Check 3&lt;/oj-option>
-   * &lt;/oj-checkboxset>
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *    <tr>
-   *       <td>Checkbox</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td> Select/unselect the checkbox</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Checkbox's Label</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td> Select/unselect the corresponding checkbox</td>
-   *    </tr>
-   *     <tr>
-   *       <td>Checkbox or Label</td>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>If hints, help.instruction or messages exist in a notewindow,
-     *           pop up the notewindow.</td>
-   *    </tr>
-   *   </tbody>
-   *  </table>
-   *
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojCheckboxset
-   */
-
-   /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Checkboxset</td>
-   *       <td><kbd>Tab In</kbd></td>
-   *       <td>Set focus to the first focusable checkbox in the checkboxset.
-   *       Disabled checkboxes are not focusable.
-   *       If hints, helpInstruction or messages exist in a notewindow,
-   *        pop up the notewindow.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Checkbox</td>
-   *       <td><kbd>Space</kbd></td>
-   *       <td>Toggles the checkbox; Iff the checkbox is unselected, it will select it and vice versa.</td>
-   *     </tr>
-   *    <tr>
-   *       <td>Checkbox</td>
-   *       <td><kbd>Tab</kbd></td>
-   *       <td>Sets focus to the next focusable checkbox in the checkboxset.
-   *        Disabled checkboxes are not focusable. If the target is the last focusable checkbox in the
-   *        checkboxset, focus goes to the next focusable item after the oj-checkboxset.</td>
-   *     </tr>
-   *    <tr>
-   *       <td>Checkbox</td>
-   *       <td><kbd>Shift+Tab</kbd></td>
-   *       <td>Sets focus to the previous focusable checkbox in the checkboxset.
-   *        Disabled checkboxes are not focusable. If the target is the first focusable checkbox in the
-   *        checkboxset, focus goes to the previous focusable item before the oj-checkboxset.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojCheckboxset
-   */
-
     });
-
-
-// ////////////////     SUB-IDS     //////////////////
-
-
-/**
- * <p>Sub-ID for the checkboxset's checkboxes.
- *
- * @ojsubid oj-checkboxset-inputs
- * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
- * @ignore
- * @memberof oj.ojCheckboxset
- * @example <caption>Get the nodes for the checkboxes:</caption>
- * var nodes = myComp.getNodeBySubId('oj-checkboxset-inputs');
- */
 }());

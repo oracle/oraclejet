@@ -5,15 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, Shadow, CSSStyle, JsonUtils, Rectangle, ArrayUtils, CustomAnimation, Animator, ColorUtils, AnimFadeIn, AnimFadeOut, PatternFill, SolidFill, Agent, SimpleObjPeer, DataAnimationHandler, BaseComponentDefaults, EventManager, EventFactory, KeyboardEvent, OutputText, DisplayableUtils, Rect, Button, TextUtils, Container, KeyboardFocusEffect, AfComponentFactory, MouseEvent, KeyboardHandler, Math as Math$1, Point, Path, Stroke, PathUtils, Circle, ToolkitUtils, IconButton, Displayable, MultilineText, Automation, BaseComponent, AfContext, BlackBoxAnimationHandler, CategoryRolloverHandler, SelectionHandler, ParallelPlayable } from 'ojs/ojdvt-toolkit';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import { Obj, Shadow, CSSStyle, JsonUtils, Rectangle, ArrayUtils, CustomAnimation, Animator, ColorUtils, AnimFadeIn, AnimFadeOut, PatternFill, SolidFill, Agent, SimpleObjPeer, DataAnimationHandler, BaseComponentDefaults, EventManager, EventFactory, KeyboardEvent, OutputText, DisplayableUtils, Rect, Button, TextUtils, Container, KeyboardFocusEffect, AfComponentFactory, MouseEvent, KeyboardHandler, Math as Math$1, Point, Path, Stroke, PathUtils, Circle, ToolkitUtils, IconButton, Displayable, MultilineText, Automation, CategoryRolloverHandler, BaseComponent, AfContext, BlackBoxAnimationHandler, SelectionHandler, ParallelPlayable } from 'ojs/ojdvt-toolkit';
 
 /**
  * Base class for tree component nodes.
@@ -344,6 +336,34 @@ DvtTreeNode.prototype.getDatatipColor = function() {
 DvtTreeNode.prototype.getShortDesc = function() {
   // Note: Called by automation APIs
   return this._shortDesc;
+};
+
+/**
+ * Returns the shortDesc Context of the node.
+ * @param {DvtTreeNode} node
+ * @return {object} The shortDesc Context object
+ */
+ DvtTreeNode.getShortDescContext = function(node) {
+  var options = node.getOptions();
+  var itemData;
+  var data = options;
+  if (options._noTemplate) {
+    itemData = options._itemData;
+    data = options._itemData;
+  }
+  else if (options._itemData) {
+    itemData = options._itemData;
+    options = JsonUtils.clone(options);
+    data = options;
+    delete options._itemData;
+  }
+  return {
+    'id': node.getId(),
+    'label': node.getLabel(),
+    'value': node.getSize(),
+    'data': data,
+    'itemData': itemData
+  };
 };
 
 /**
@@ -948,14 +968,6 @@ DvtTreeNode.prototype.isRootNode = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Simple logical object for drilling and tooltip support.
  * @param {DvtTreeNode} node The associated node, if it has been created.
  * @param {string} id The id of the associated node.
@@ -1025,14 +1037,6 @@ DvtTreePeer.prototype.handleMouseOut = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Utility functions for DvtTreeView.
  * @class
  */
@@ -1083,6 +1087,15 @@ DvtTreeUtils.getAllNodes = function(node) {
   var ret = [];
   DvtTreeUtils._addNodesToArray(node, ret);
   return ret;
+};
+
+/**
+ * Returns an array containing all the node ids in the subtree rooted at the specified node.
+ * @param {DvtTreeNode} node
+ * @return {array}
+ */
+ DvtTreeUtils.getAllIds = function(node) {
+  return DvtTreeUtils.getAllNodes(node).map(node => node.getId());
 };
 
 /**
@@ -1166,14 +1179,6 @@ DvtTreeUtils.findRootAndAncestors = function(context, nodes, rootId, ancestors) 
   }
   return null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Animation handler for tree data objects.
@@ -1265,14 +1270,6 @@ DvtTreeAnimationHandler._isAncestor = function(ancestors, node) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for breadcrumb versioning.
  * @class
  */
@@ -1333,14 +1330,6 @@ DvtBreadcrumbsDefaults._getDefaults = function(userOptions) {
 DvtBreadcrumbsDefaults.getGapSize = function(options, defaultSize) {
   return Math.ceil(defaultSize * options['layout']['gapRatio']);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Simple logical object for drilling and tooltip support.
@@ -1409,14 +1398,6 @@ DvtBreadcrumbsPeer.prototype.getTooltip = function(target) {
 DvtBreadcrumbsPeer.prototype.setTruncated = function(truncated){
   this._truncated = truncated;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for Breadcrumbs.
@@ -1488,14 +1469,6 @@ DvtBreadcrumbsEventManager.prototype.handleKeyboardEvent = function(event) {
 
   return eventConsumed;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for Breadcrumbs.
@@ -1837,14 +1810,6 @@ DvtBreadcrumbsRenderer._newSeparator = function(breadcrumbs) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * DvtBreadcrumbs component.
  * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
@@ -2114,14 +2079,6 @@ DvtBreadcrumbs.prototype.GetCrumbs = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Class representing a sunburst node.
  * @param {Sunburst} sunburst The owning sunburst component.
  * @param {object} props The properties for the node.
@@ -2144,7 +2101,7 @@ var DvtSunburstNode = function(sunburst, props)
   this._className = props['className'] || props['svgClassName'];
   this._style = props['style'] || props['svgStyle'];
 
-  this._showDisclosure = props['showDisclosure'] == 'on' || (props['showDisclosure'] != 'off' && nodeDefaults['showDisclosure'] == 'on');
+  this._showDisclosure = props['showDisclosure'] === 'on' || (props['showDisclosure'] !== 'off' && nodeDefaults['showDisclosure'] === 'on');
 };
 
 // Make DvtSunburstNode a subclass of DvtTreeNode
@@ -2213,7 +2170,6 @@ DvtSunburstNode.prototype.render = function(container) {
       afContext.setAvailableWidth(aw);
       afContext.setAvailableHeight(ah);
       afContext.setFontSize(this.GetTextSize());
-      //     this._contentRoot = dvt.AfComponentFactory.parseAndStamp(afContext, template, this._shape);
       var afRoot = AfComponentFactory.parseAndLayout(afContext, template, this._shape);
       this._contentRoot = afRoot;
 
@@ -2230,8 +2186,8 @@ DvtSunburstNode.prototype.render = function(container) {
       // For pattern nodes, add a background to make the text readable
       var backgroundColor = this.getLabelBackgroundColor();
       if (this.hasPattern() || backgroundColor) {
-        var dims = this._text.getDimensions();
-        this._textBackground = new Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
+        var txtDims = this._text.getDimensions();
+        this._textBackground = new Rect(this.getView().getCtx(), txtDims.x, txtDims.y, txtDims.w, txtDims.h);
         if (backgroundColor)
           this._textBackground.setSolidFill(backgroundColor);
         else
@@ -2273,12 +2229,11 @@ DvtSunburstNode.prototype.renderChildren = function(container) {
   if (children != null) {
     var prevEndCoord = 0;
     for (var i = 0; i < children.length; i++) {
+      var render = true;
       var angleExtent = children[i]._angleExtent;
 
       //  - rendering issues for funnel/pie/sunburst charts
-      if (angleExtent < DvtSunburstNode._MIN_ANGLE_EXTENT)
-        continue; // skip render
-
+      if (angleExtent >= DvtSunburstNode._MIN_ANGLE_EXTENT){
       // Skip rendering some of the thin sunburst outer nodes
       if (hasLargeNodeCount) {
         var nodeOuterRadius = children[i]._getOuterRadius();
@@ -2286,15 +2241,16 @@ DvtSunburstNode.prototype.renderChildren = function(container) {
         var endCoord = (children[i]._startAngle + angleExtent) * nodeOuterRadius;
 
         if (nodeArc < DvtSunburstNode._MIN_ARC_LENGTH && Math.abs(prevEndCoord - endCoord) < DvtSunburstNode._MIN_ARC_LENGTH) {
-          continue; // skip render
+          render = false;
         }
         else
           prevEndCoord = endCoord;
       }
-
-      children[i].render(container);
+      if(render)
+        children[i].render(container);
     }
   }
+}
 };
 
 /**
@@ -2388,14 +2344,14 @@ DvtSunburstNode.prototype.getNextNavigable = function(event)
   var idx;
   var root;
 
-  if (event.type == MouseEvent.CLICK)
+  if (event.type === MouseEvent.CLICK)
   {
     return DvtSunburstNode.superclass.getNextNavigable.call(this, event);
   }
 
   keyCode = event.keyCode;
 
-  if (keyCode == KeyboardEvent.SPACE && event.ctrlKey)
+  if (keyCode === KeyboardEvent.SPACE && event.ctrlKey)
   {
     // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
     // care of the selection
@@ -2468,13 +2424,13 @@ DvtSunburstNode.prototype.getNextNavigable = function(event)
       break;
 
     case KeyboardEvent.LEFT_ARROW:
-      if (navigables.length == 1)
+      if (navigables.length === 1)
       {
         next = this;
       }
       else
       {
-        if (idx == 0)
+        if (idx === 0)
           next = navigables[navigables.length - 1];
         else
           next = navigables[idx - 1];
@@ -2482,13 +2438,13 @@ DvtSunburstNode.prototype.getNextNavigable = function(event)
       break;
 
     case KeyboardEvent.RIGHT_ARROW:
-      if (navigables.length == 1)
+      if (navigables.length === 1)
       {
         next = this;
       }
       else
       {
-        if (idx == navigables.length - 1)
+        if (idx === navigables.length - 1)
           next = navigables[0];
         else
           next = navigables[idx + 1];
@@ -2656,7 +2612,7 @@ DvtSunburstNode.prototype.SetAnimationParams = function(params) {
  * @override
  */
 DvtSunburstNode.prototype.animateUpdate = function(handler, oldNode) {
-  if (this.isRootNode() && (oldNode._getOuterRadius() != this._getOuterRadius() || oldNode.getId() != this.getId()))
+  if (this.isRootNode() && (oldNode._getOuterRadius() !== this._getOuterRadius() || oldNode.getId() !== this.getId()))
     this._removeRootNodeContentOverlay();
 
   var oldNodeRendered = oldNode._hasLayout && oldNode._angleExtent > 0;
@@ -2693,7 +2649,6 @@ DvtSunburstNode.prototype.animateDelete = function(handler, container) {
 
   DvtSunburstNode.superclass.animateDelete.call(this, handler, container);
 };
-
 
 
 /**
@@ -2957,24 +2912,21 @@ DvtSunburstNode.prototype._positionButton = function(button) {
  */
 DvtSunburstNode.prototype._createTextNode = function(container) {
   // If no text or no container to place the text, return
-  if (!this._textStr || !container || !this._labelDisplay || this._labelDisplay == 'off')
+  if (!this._textStr || !container || !this._labelDisplay || this._labelDisplay === 'off')
     return null;
 
   // : If this is the root node, and the angleExtent is not the full circle, then skip.
-  if (this == this.getView().getRootNode() && this._angleExtent < DvtSunburstNode.TWO_PI)
+  if (this === this.getView().getRootNode() && this._angleExtent < DvtSunburstNode.TWO_PI)
     return null;
 
   // Determine whether the label is rotated. Rotation is only supported for SVG and XML for now
   var bRotated = false;
-  if (this._labelDisplay == 'auto') {
+  if (this._labelDisplay === 'auto') {
     // If labelDisplay is auto, don't use rotated labels for non-IE on windows, since rotated text does not look good
     // in those browsers.
-    if (Agent.browser !== 'ie' && Agent.browser !== 'edge' && Agent.os == 'windows' && !Agent.isEnvironmentTest())
-      bRotated = false;
-    else
-      bRotated = true;
+    bRotated = Agent.browser === 'ie' || Agent.browser === 'edge' || Agent.os !== 'windows' || Agent.isEnvironmentTest();
   }
-  else if (this._labelDisplay == 'rotated')
+  else if (this._labelDisplay === 'rotated')
     bRotated = true;
 
   // Don't use rotated labels for the center node or 100% nodes.
@@ -2993,7 +2945,7 @@ DvtSunburstNode.prototype._createTextNode = function(container) {
  */
 DvtSunburstNode.prototype._createTextHoriz = function(container) {
   var textAnchor;
-  if (this._innerRadius == 0)
+  if (this._innerRadius === 0)
     textAnchor = {x: 0, y: 0};
   else {
     // Calculate the anchor point for the text
@@ -3007,8 +2959,10 @@ DvtSunburstNode.prototype._createTextHoriz = function(container) {
       textAnchor = null;
   }
 
+  if(!textAnchor)
+    return null;
+
   // Now create the text
-  if (textAnchor) {
     var text = new OutputText(this.getView().getCtx(), this._textStr, textAnchor.x, textAnchor.y, null);
     text.setFontSize(this.GetTextSize());
     this.ApplyLabelTextStyle(text);
@@ -3056,7 +3010,6 @@ DvtSunburstNode.prototype._createTextHoriz = function(container) {
     // Truncate and return the text if it fits in the available space
     var labelMinLength = this.getView().getOptions()['nodeDefaults']['labelMinLength'];
     return TextUtils.fitText(text, usableSpace, textDims.h, container, labelMinLength) ? text : null;
-  }
 };
 
 
@@ -3093,14 +3046,14 @@ DvtSunburstNode.prototype._createTextRotated = function(container) {
 
   // Calculate the anchor point and alignment for the text
   var anchorRadius = (innerStartCoord + this._outerRadius) / 2;
-  if (this._labelHalign == 'inner' || this._labelHalign == 'outer') {
+  if (this._labelHalign === 'inner' || this._labelHalign === 'outer') {
     container.addChild(text);
     var actualTextWidth = text.getDimensions().w;
     var textBuffer = DvtSunburstNode.TEXT_BUFFER_HORIZ * 0.75; // Use a slightly greater proportion of the buffer for padding
 
-    if (this._labelHalign == 'inner')
+    if (this._labelHalign === 'inner')
       anchorRadius = innerStartCoord + textBuffer + actualTextWidth / 2;
-    else if (this._labelHalign == 'outer')
+    else if (this._labelHalign === 'outer')
       anchorRadius = this._outerRadius - textBuffer - actualTextWidth / 2;
   }
 
@@ -3277,8 +3230,7 @@ DvtSunburstNode.prototype._getButtonHelper = function(resourceKey) {
   var iconClass = resources[resourceKey];
   var iconStyle = ToolkitUtils.getIconStyle(context, iconClass);
   // Create button and hook up click listener
-  var button = new IconButton(context, 'outlined', {style: iconStyle, size: DvtSunburstNode._EXPAND_ICON_SIZE}, background, null, this.expandCollapse, this);
-  return button;
+  return new IconButton(context, 'outlined', {style: iconStyle, size: DvtSunburstNode._EXPAND_ICON_SIZE}, background, null, this.expandCollapse, this);
 };
 
 /**
@@ -3316,7 +3268,7 @@ DvtSunburstNode.prototype.getExpandCollapseButton = function() {
  * @private
  */
 DvtSunburstNode.prototype._showRootContent = function() {
-  return (! this._parent) && this._innerRadius == 0 && this._angleExtent == DvtSunburstNode.TWO_PI;
+  return (! this._parent) && this._innerRadius === 0 && this._angleExtent === DvtSunburstNode.TWO_PI;
 };
 
 
@@ -3364,7 +3316,7 @@ DvtSunburstNode.prototype.getAriaLabel = function() {
   if (this.isDrillReplaceEnabled())
     states.push(translations.stateDrillable);
 
-  return Displayable.generateAriaLabel(this.getShortDesc(), states);
+  return Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtTreeNode.getShortDescContext(this));
 };
 
 
@@ -3423,7 +3375,7 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
 
   var dataContext = {
     'outerBounds': {'x': centerCoord.x - outerRadius, 'y': centerCoord.y - outerRadius, 'width': 2 * outerRadius, 'height': 2 * outerRadius },
-    'innerBounds': {'x': (centerCoord.x - innerSquareDimension / 2), 'y': (centerCoord.y - innerSquareDimension / 2), 'width': innerSquareDimension, 'height': innerSquareDimension},
+    'innerBounds': {'x': (centerCoord.x - innerSquareDimension / 2), 'y': (centerCoord.y - innerSquareDimension / 2), 'width': innerSquareDimension, 'height':innerSquareDimension},
     'id': this._id,
     'data': data,
     'itemData': itemData,
@@ -3434,7 +3386,7 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
   var parentDiv = context.getContainer();
   var customContent = rootNodeRenderer(dataContext);
   if (!customContent)
-    return;
+    return false;
   var newOverlay = context.createOverlayDiv();
   if (Array.isArray(customContent)) {
     customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
@@ -3496,14 +3448,6 @@ DvtSunburstNode.prototype._evaluateExpanded = function(sunburst, props) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Class representing a treemap node.
  * @param {Treemap} treemap The owning treemap component.
  * @param {object} props The properties for the node.
@@ -3528,17 +3472,16 @@ var DvtTreemapNode = function(treemap, props) {
 
   this._headerHalign = headerOptions['labelHalign'] ? headerOptions['labelHalign'] : headerDefaults['labelHalign'];
   this._headerLabelStyle = headerOptions['labelStyle'] ? new CSSStyle(headerOptions['labelStyle']) : null;
-  this._bHeaderUseNodeColor = (headerOptions['useNodeColor'] ? headerOptions['useNodeColor'] : headerDefaults['useNodeColor']) == 'on';
+  this._bHeaderUseNodeColor = (headerOptions['useNodeColor'] ? headerOptions['useNodeColor'] : headerDefaults['useNodeColor']) === 'on';
 
   this._className = props['className'] || props['svgClassName'];
   this._style = props['style'] || props['svgStyle'];
 
   // Isolate Support
   this._isolate = headerOptions['isolate'] ? headerOptions['isolate'] : headerDefaults['isolate'];
-  if (this._isolate == 'auto')
+  if (this._isolate === 'auto')
     this._isolate = Agent.isTouchDevice() ? 'off' : 'on';
 
-  // TODO  Switch to determining dynamically, which involves changing how isolate/restore is handled
   this._bIsolated = (options['isolatedNode'] != null && Obj.compareValues(this.getView().getCtx(), options['isolatedNode'], this.getId()));
 };
 
@@ -3625,7 +3568,6 @@ DvtTreemapNode.prototype.render = function(container) {
       afContext.setAvailableWidth(aw);
       afContext.setAvailableHeight(ah);
       afContext.setFontSize(this.GetTextSize());
-      //     this._contentRoot = dvt.AfComponentFactory.parseAndStamp(afContext, template, this._shape);
       var afRoot = AfComponentFactory.parseAndLayout(afContext, template, this._shape);
       this._contentRoot = afRoot;
 
@@ -3646,7 +3588,7 @@ DvtTreemapNode.prototype.render = function(container) {
     if (this._text != null) {
       var backgroundColor = this.getLabelBackgroundColor();
       // For pattern nodes, add a background to make the text readable
-      if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER && (this.hasPattern() || backgroundColor)) {
+      if (this._textStyle !== DvtTreemapNode.TEXT_STYLE_HEADER && (this.hasPattern() || backgroundColor)) {
         var dims = this._text.getDimensions();
         this._textBackground = new Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
         if (backgroundColor)
@@ -3720,7 +3662,7 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     this._selectionInner.setPixelHinting(true);
     this._shape.addChild(this._selectionInner);
 
-    if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+    if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
       // Apply the selection effect to the header
       if (this.IsHover || this.isShowingKeyboardFocusEffect())
         this._innerShape.setSolidFill(nodeHeaderDefaults['hoverBackgroundColor']);
@@ -3762,7 +3704,7 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     if (Agent.isTouchDevice())
       this._removeIsolateRestoreButton();
 
-    if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+    if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
       // If this is a node with header, adjust it
       if (this.IsHover || this.isShowingKeyboardFocusEffect())
         this._innerShape.setSolidFill(nodeHeaderDefaults['hoverBackgroundColor']);
@@ -3819,13 +3761,13 @@ DvtTreemapNode.prototype.showHoverEffect = function() {
   // isolated node is selected, it is move to the front of the z-order.  During this move, the node behind it will
   // recieve a mouseOver event, which we should not show a hover effect for.
   var isolatedNode = this._view.__getLastIsolatedNode();
-  if (isolatedNode != null && isolatedNode != this && !this.isDescendantOf(isolatedNode))
+  if (isolatedNode != null && isolatedNode !== this && !this.isDescendantOf(isolatedNode))
     return;
 
   // Prepare the array of points and stroke for the hover effect
   var stroke;
   var x, y, w, h;
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Apply the hover effect to the header
     this._innerShape.setSolidFill(nodeHeaderDefaults['hoverBackgroundColor']);
 
@@ -3897,7 +3839,7 @@ DvtTreemapNode.prototype.hideHoverEffect = function() {
   var nodeHeaderDefaults = nodeDefaults['header'];
 
   // Remove the hover effect from the header
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     if (this.isSelected()) {
       this._innerShape.setSolidFill(nodeHeaderDefaults['selectedBackgroundColor']);
       this._selectionOuter.setSolidStroke(nodeHeaderDefaults['selectedOuterColor']);
@@ -3941,7 +3883,7 @@ DvtTreemapNode.prototype.highlight = function(bDimmed, alpha) {
 
     // Also dim the header if it's displaying the node color. Normal headers are not dimmed because of the border impl,
     // which causes the nodes to appear darker when alpha is applied.
-    if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER && this._bHeaderUseNodeColor && this._innerShape)
+    if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER && this._bHeaderUseNodeColor && this._innerShape)
       this._innerShape.setAlpha(alpha);
   }
   else
@@ -3953,7 +3895,7 @@ DvtTreemapNode.prototype.highlight = function(bDimmed, alpha) {
  * @return {boolean}
  */
 DvtTreemapNode.prototype.isIsolateEnabled = function() {
-  return this._isolate != 'off' && this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER;
+  return this._isolate !== 'off' && this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER;
 };
 
 /**
@@ -3965,25 +3907,25 @@ DvtTreemapNode.prototype.getNextNavigable = function(event) {
   var lastChild;
   var next;
 
-  if (event.type == MouseEvent.CLICK) {
+  if (event.type === MouseEvent.CLICK) {
     return DvtTreemapNode.superclass.getNextNavigable.call(this, event);
   }
 
   keyCode = event.keyCode;
 
-  if (keyCode == KeyboardEvent.SPACE && event.ctrlKey) {
+  if (keyCode === KeyboardEvent.SPACE && event.ctrlKey) {
     // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
     // care of the selection
     return this;
   }
 
   // if alt held, or a bracket, move focus up or down one level in tree
-  if ((keyCode == KeyboardEvent.UP_ARROW && event.altKey) || keyCode == KeyboardEvent.CLOSE_BRACKET) {
+  if ((keyCode === KeyboardEvent.UP_ARROW && event.altKey) || keyCode === KeyboardEvent.CLOSE_BRACKET) {
     // move up one level in the tree
     parent = this.GetParent();
 
     // we can move up one level if the parent is not the current root
-    if (parent && (parent.getId() != this.getView().getRootNode().getId())) {
+    if (parent && (parent.getId() !== this.getView().getRootNode().getId())) {
       next = parent;
 
       // update the grandparent's last visited child to be the current node's parent
@@ -3995,7 +3937,7 @@ DvtTreemapNode.prototype.getNextNavigable = function(event) {
       next = this;
     }
   }
-  else if ((keyCode == KeyboardEvent.DOWN_ARROW && event.altKey) || keyCode == KeyboardEvent.OPEN_BRACKET) {
+  else if ((keyCode === KeyboardEvent.DOWN_ARROW && event.altKey) || keyCode === KeyboardEvent.OPEN_BRACKET) {
     // move down one level in the tree
     lastChild = this.GetLastVisitedChild();
     if (lastChild) {
@@ -4019,13 +3961,10 @@ DvtTreemapNode.prototype.getNextNavigable = function(event) {
       // Isolated nodes are rendered on top of the other nodes in the treemap, so we have to exclude the
       // other non-visible nodes in the treemap when navigating through an isolated node.
       // Find the depth of the current node from the isolated node
-      if (this == root) {
-        depth = 0;
-      }
-      else {
-        var parent = this.GetParent();
+      if (this !== root) {
+        parent = this.GetParent();
         depth = 1;
-        while (root != parent) {
+        while (root !== parent) {
           depth++;
           parent = parent.GetParent();
         }
@@ -4085,7 +4024,7 @@ DvtTreemapNode.prototype.setZIndex = function(zIndex) {
 DvtTreemapNode.prototype.setLayoutParams = function(x, y, width, height) {
   // Nothing to render if either dimension is 0px
   if (width <= 0 || height <= 0)
-    return;
+    return undefined;
 
   // Set a flag indicating layout has been performed
   this._hasLayout = true;
@@ -4110,14 +4049,13 @@ DvtTreemapNode.prototype.setLayoutParams = function(x, y, width, height) {
     this._textStyle = DvtTreemapNode.TEXT_STYLE_OFF;
 
   // Return the subsection to allocate to children, ignored for leaf nodes
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Find the height of the header by creating and measuring the text node
     this._titleBarHeight = DvtTreemapNode._MIN_TITLE_BAR_HEIGHT;
     var text = new OutputText(this.getView().getCtx(), this._textStr);
     text.setFontSize(this.GetTextSize());
     this.ApplyHeaderTextStyle(text, 'labelStyle');
     var headerLabelHeight = text.getDimensions().h;
-    text = null;
     this._titleBarHeight = Math.max(this._titleBarHeight, headerLabelHeight);
 
     // Additional space for isolate/restore button
@@ -4238,7 +4176,7 @@ DvtTreemapNode.prototype.animateUpdate = function(handler, oldNode) {
   this._removeAllNodeContent();
   var oldNodeRendered = oldNode._hasLayout && oldNode._width > 0 && oldNode._height > 0;
   var nodeRendered = this._hasLayout && this._width > 0 && this._height > 0;
-  if (this.GetDepth() == 0 || ( oldNodeRendered && nodeRendered)) {
+  if (this.GetDepth() === 0 || ( oldNodeRendered && nodeRendered)) {
     // Current and old node exist and is visible, show the update animation
     // this.GetDepth() check since root will not have a size
     return DvtTreemapNode.superclass.animateUpdate.call(this, handler, oldNode);
@@ -4250,6 +4188,7 @@ DvtTreemapNode.prototype.animateUpdate = function(handler, oldNode) {
     // Current node is not visible, treat as delete
     return this.animateDelete(handler, handler.getDeleteContainer());
   }
+  return null;
 };
 
 /**
@@ -4278,11 +4217,11 @@ DvtTreemapNode.prototype.animateDelete = function(handler, container) {
 DvtTreemapNode.prototype._createShapeNode = function() {
   var context = this.getView().getCtx();
   var options = this.getView().getOptions();
-  var bNodeGaps = options['nodeSeparators'] == 'gaps';
+  var bNodeGaps = options['nodeSeparators'] === 'gaps';
 
   // Create the basic shape with geometry
   var shape;
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Create the header, which is made of an outer shape for the border and an inner shape for the fill
     if (bNodeGaps) {
       var rects = this._getGeometriesWithGaps();
@@ -4314,8 +4253,8 @@ DvtTreemapNode.prototype._createShapeNode = function() {
     // Non-header node.
     var fill = this.GetFill();
     if (bNodeGaps) {
-      var rects = this._getGeometriesWithGaps();
-      shape = new Rect(context, rects._shape.x, rects._shape.y, rects._shape.w, rects._shape.h);
+      var rectsGaps = this._getGeometriesWithGaps();
+      shape = new Rect(context, rectsGaps._shape.x, rectsGaps._shape.y, rectsGaps._shape.w, rectsGaps._shape.h);
 
       // If the non-header node has children, use invisible fill so that the gaps on the
       // children don't bleed through.
@@ -4332,14 +4271,6 @@ DvtTreemapNode.prototype._createShapeNode = function() {
       // Create the bevel effect for the node: Disabled on phones/tablets for 1000+ nodes for performance reasons.
       var bVisualEffects = this.getView().__getNodeCount() < 1000 || !Agent.isTouchDevice();
       if (bVisualEffects && this._width >= DvtTreemapNode.MIN_SIZE_FOR_BORDER && this._height >= DvtTreemapNode.MIN_SIZE_FOR_BORDER) {
-        // Figure out the stroke colors
-        var topLeft = new Stroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
-        var bottomRight = new Stroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
-        if (this.hasPattern()) {
-          topLeft = new Stroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
-          bottomRight = topLeft;
-        }
-
         // Retrieve the bevel colors and blend with the fill color to get the desired effect
         var fillColor = this.getColor();
         var topLeftColor = ColorUtils.interpolateColor(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR, fillColor, 1 - DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
@@ -4413,7 +4344,7 @@ DvtTreemapNode.prototype._createShapeNode = function() {
  * @private
  */
 DvtTreemapNode.prototype._createIsolateRestoreButton = function(container) {
-  if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER || !this.isIsolateEnabled())
+  if (this._textStyle !== DvtTreemapNode.TEXT_STYLE_HEADER || !this.isIsolateEnabled())
     return null;
 
   var button = null;
@@ -4435,7 +4366,11 @@ DvtTreemapNode.prototype._createIsolateRestoreButton = function(container) {
 
     // Add a buffer to make the objects easier to interact with on touch devices
     if (Agent.isTouchDevice()) {
-      var rect = new Rect(container.getCtx(), - DvtTreemapNode._ISOLATE_TOUCH_BUFFER, - DvtTreemapNode._ISOLATE_TOUCH_BUFFER, DvtTreemapNode._ISOLATE_ICON_SIZE + 2 * DvtTreemapNode._ISOLATE_TOUCH_BUFFER, DvtTreemapNode._ISOLATE_ICON_SIZE + 2 * DvtTreemapNode._ISOLATE_TOUCH_BUFFER);
+      var rect = new Rect(container.getCtx(),
+       - DvtTreemapNode._ISOLATE_TOUCH_BUFFER,
+       - DvtTreemapNode._ISOLATE_TOUCH_BUFFER,
+       DvtTreemapNode._ISOLATE_ICON_SIZE + 2 * DvtTreemapNode._ISOLATE_TOUCH_BUFFER,
+       DvtTreemapNode._ISOLATE_ICON_SIZE + 2 * DvtTreemapNode._ISOLATE_TOUCH_BUFFER);
       rect.setInvisibleFill();
       button.addChild(rect);
     }
@@ -4468,7 +4403,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
   var isRTL = Agent.isRightToLeft(container.getCtx());
 
   // If no text or no container to place the text, return
-  if (!this._textStr || !container || !this._textStyle || this._textStyle == DvtTreemapNode.TEXT_STYLE_OFF)
+  if (!this._textStr || !container || !this._textStyle || this._textStyle === DvtTreemapNode.TEXT_STYLE_OFF)
     return null;
 
   // Approximate whether the text could fit vertically
@@ -4478,11 +4413,11 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     return null;
 
   // Figure out the horizontal alignment
-  var hAlign = (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE) ? this._labelHalign : this._headerHalign;
+  var hAlign = (this._textStyle === DvtTreemapNode.TEXT_STYLE_NODE) ? this._labelHalign : this._headerHalign;
   if (isRTL) {
-    if (hAlign == 'start')
+    if (hAlign === 'start')
       hAlign = 'end';
-    else if (hAlign == 'end')
+    else if (hAlign === 'end')
       hAlign = 'start';
   }
 
@@ -4491,7 +4426,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
   var isolateWidth = 0;
   if (this.isIsolateEnabled()) {
     isolateWidth = DvtTreemapNode._ISOLATE_ICON_SIZE + DvtTreemapNode._ISOLATE_GAP_SIZE;
-    if (hAlign == 'center')
+    if (hAlign === 'center')
       availWidth -= 2 * isolateWidth;// center aligned text should always be centered, meaning space is reserved on either size for the button
     else
       availWidth -= isolateWidth;
@@ -4504,7 +4439,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
   // Create the text object. Use multiline for node text when there is space for multiple lines and not enough width to fit the label.
   var text;
   var computedTextStyle = this.getMergedLabelTextStyle();
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE && availHeight > textHeight * 2 && computedTextStyle.getStyle(CSSStyle.WHITE_SPACE) != 'nowrap' &&
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_NODE && availHeight > textHeight * 2 && computedTextStyle.getStyle(CSSStyle.WHITE_SPACE) !== 'nowrap' &&
       TextUtils.getTextStringWidth(this.getView().getCtx(), this._textStr, computedTextStyle) > availWidth) {
     text = new MultilineText(this.getView().getCtx(), this._textStr);
   }
@@ -4512,18 +4447,18 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     text = new OutputText(this.getView().getCtx(), this._textStr);
 
   // Calculate the horizontal text position
-  if (hAlign == 'start') {
+  if (hAlign === 'start') {
     if (isRTL)
       text.setX(this._x + DvtTreemapNode.TEXT_BUFFER_HORIZ + isolateWidth);
     else
       text.setX(this._x + DvtTreemapNode.TEXT_BUFFER_HORIZ);
     text.alignLeft();
   }
-  else if (hAlign == 'center') {
+  else if (hAlign === 'center') {
     text.setX(this._x + (this._width / 2));
     text.alignCenter();
   }
-  else if (hAlign == 'end') {
+  else if (hAlign === 'end') {
     if (isRTL)
       text.setX(this._x + this._width - DvtTreemapNode.TEXT_BUFFER_HORIZ);
     else
@@ -4531,14 +4466,14 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     text.alignRight();
   }
 
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_NODE) {
     // Update it with the correct style
     this.ApplyLabelTextStyle(text);
 
     // Set the correct available height
     availHeight = this._height - DvtTreemapNode.TEXT_BUFFER_VERT * 2;
   }
-  else if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  else if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Note: No need to worry about available height here.  Headers are sized based on the text size.
     var chromeAdjustment = (Agent.browser === 'safari' || Agent.engine === 'blink') ? DvtTreemapNode._LINE_FUDGE_FACTOR : 0;
     text.setY(this._y + DvtTreemapNode.DEFAULT_HEADER_BORDER_WIDTH + this._titleBarHeight / 2 + chromeAdjustment);
@@ -4546,8 +4481,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     this.ApplyHeaderTextStyle(text, 'labelStyle');
   }
 
-  if (text != null) {
-    if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER && this.isDrillReplaceEnabled()) {
+    if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER && this.isDrillReplaceEnabled()) {
       // Drillable text link
       this.ApplyHeaderTextStyle(text, '_drillableLabelStyle');
       text.setCursor('pointer');
@@ -4565,20 +4499,19 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
     var renderText = TextUtils.fitText(text, availWidth, availHeight, container, labelMinLength);
 
     // Calculate the vertical text position after the fitText call
-    if (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE) {
+    if (this._textStyle === DvtTreemapNode.TEXT_STYLE_NODE) {
       // Get the text height
-      var textHeight = text.getDimensions().h;
+      var textHeightDim = text.getDimensions().h;
 
       // Vertical Alignment
-      if (this._labelValign == 'top')
+      if (this._labelValign === 'top')
         text.setY(this._y + DvtTreemapNode.TEXT_BUFFER_VERT);
-      else if (this._labelValign == 'center')
-        text.setY(this._y + this._height / 2 - textHeight / 2);
-      else if (this._labelValign == 'bottom')
-        text.setY(this._y + this._height - DvtTreemapNode.TEXT_BUFFER_VERT - textHeight);
+      else if (this._labelValign === 'center')
+        text.setY(this._y + this._height / 2 - textHeightDim / 2);
+      else if (this._labelValign === 'bottom')
+        text.setY(this._y + this._height - DvtTreemapNode.TEXT_BUFFER_VERT - textHeightDim);
     }
     return renderText ? text : null;
-  }
 };
 
 /**
@@ -4630,7 +4563,7 @@ DvtTreemapNode.prototype.ApplyHeaderTextStyle = function(text, styleType) {
   textStyle.push(new CSSStyle(this.getView().getOptions()['nodeDefaults']['header']["labelStyle"]));
 
   // Header UseNodeColor for Non-Hover/Selected Labels
-  if (this._bHeaderUseNodeColor && (styleType == 'labelStyle' || styleType == '_drillableLabelStyle'))
+  if (this._bHeaderUseNodeColor && (styleType === 'labelStyle' || styleType === '_drillableLabelStyle'))
     textStyle.push(new CSSStyle('color: ' + DvtTreeNode.GetNodeTextColor(this)));
 
   text.setCSSStyle(CSSStyle.mergeStyles(textStyle));
@@ -4665,7 +4598,7 @@ DvtTreemapNode.prototype.handleMouseOut = function() {
  */
 DvtTreemapNode.prototype._getGeometriesWithGaps = function() {
   var ret = {};
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_HEADER) {
     ret._shape = new Rectangle(this._x, this._y, this._width - 1, this._titleBarHeight);
     ret._innerShape = new Rectangle(this._x + 1, this._y + 1, this._width - 3, this._titleBarHeight - 1);
 
@@ -4697,7 +4630,7 @@ DvtTreemapNode.prototype._updateShapes = function() {
     return;
 
   var options = this.getView().getOptions();
-  var bNodeGaps = options['nodeSeparators'] == 'gaps';
+  var bNodeGaps = options['nodeSeparators'] === 'gaps';
   if (bNodeGaps) {
     var rects = this._getGeometriesWithGaps();
     this._shape.setRect(rects._shape);
@@ -4716,7 +4649,7 @@ DvtTreemapNode.prototype._updateShapes = function() {
   }
 
   // Also update the color
-  if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER || this._bHeaderUseNodeColor) {
+  if (this._textStyle !== DvtTreemapNode.TEXT_STYLE_HEADER || this._bHeaderUseNodeColor) {
     this._shape.setFill(this.GetFill());
   }
 
@@ -4739,7 +4672,7 @@ DvtTreemapNode.prototype._updateShapes = function() {
     this._removeChildShape(this._contentRoot);
     this._contentRoot = null;
   }
-  else if (options['nodeContent'] && options['nodeContent']['renderer'] && this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER) {
+  else if (options['nodeContent'] && options['nodeContent']['renderer'] && this._textStyle !== DvtTreemapNode.TEXT_STYLE_HEADER) {
     this._removeAllNodeContent();
   }
   else {
@@ -4771,7 +4704,7 @@ DvtTreemapNode.prototype.getDropSiteFeedback = function() {
  * @param {dvt.Text} text
  */
 DvtTreemapNode.prototype._addChildText = function(text) {
-  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_NODE && this.hasChildren())
+  if (this._textStyle === DvtTreemapNode.TEXT_STYLE_NODE && this.hasChildren())
     this.getView().__getGroupTextLayer().addChild(text);
   else
     this._shape.addChild(text);
@@ -4915,7 +4848,7 @@ DvtTreemapNode.prototype.getAriaLabel = function() {
   if (this.isDrillReplaceEnabled())
     states.push(translations.stateDrillable);
 
-  return Displayable.generateAriaLabel(this.getShortDesc(), states);
+  return Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtTreeNode.getShortDescContext(this));
 };
 
 /**
@@ -4944,18 +4877,18 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
   var isolatedNodes = treemap.getIsolatedNodes();
   if (isolatedNodes.length <= 0 || this.isDescendantOf(isolatedNodes[treemap._isolatedNodes.length - 1])) {
     var context = treemap.getCtx();
-    var options = this.getOptions();
+    var nodeOptions = this.getOptions();
     var itemData;
-    var data = options;
-    if (options._noTemplate)   {
-      itemData = options._itemData;
-      data = options._itemData;
+    var data = nodeOptions;
+    if (nodeOptions._noTemplate)   {
+      itemData = nodeOptions._itemData;
+      data = nodeOptions._itemData;
       }
-    else if (options._itemData) {
-      itemData = options._itemData;
-      options = JsonUtils.clone(options);
-      data = options;
-      delete options._itemData;
+    else if (nodeOptions._itemData) {
+      itemData = nodeOptions._itemData;
+      nodeOptions = JsonUtils.clone(nodeOptions);
+      data = nodeOptions;
+      delete nodeOptions._itemData;
     }
 
     var dataContext = {
@@ -4963,14 +4896,14 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
       'id': id,
       'data': data,
       'itemData': itemData,
-      'component': options['_widgetConstructor']
+      'component': nodeOptions['_widgetConstructor']
     };
     dataContext = context.fixRendererContext(dataContext);
 
     var parentDiv = context.getContainer();
     var customContent = nodeRenderer(dataContext);
     if (!customContent)
-      return;
+      return false;
     var newOverlay = context.createOverlayDiv();
     if (Array.isArray(customContent)) {
       customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
@@ -5015,14 +4948,6 @@ DvtTreemapNode.prototype._removeAllNodeContent = function() {
     this._removeNodeContent(id);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Provides automation services for treemap/sunburst.  To obtain a
@@ -5344,14 +5269,6 @@ DvtTreeAutomation._getNodeByIndex = function(nodes, index) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Breadcrumb rendering utilities for tree components.
  * @class
  */
@@ -5412,12 +5329,73 @@ DvtTreeBreadcrumbsRenderer.render = function(treeView, availSpace, ancestors, ro
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * Category rollover handler for TreeView
+ * @param {function} callback A function that responds to component events.
+ * @param {object} callbackObj The object instance that the callback function is defined on.
+ * @class DvtTreeCategoryRolloverHandler
+ * @extends {dvt.CategoryRolloverHandler}
+ * @constructor
  */
+var DvtTreeCategoryRolloverHandler = function(callback, callbackObj) {
+  DvtTreeCategoryRolloverHandler.superclass.constructor.call(this, callback, callbackObj);
+  this._tree = callbackObj;
+};
+
+Obj.createSubclass(DvtTreeCategoryRolloverHandler, CategoryRolloverHandler, 'DvtTreeCategoryRolloverHandler');
+
+/**
+ * @override
+ */
+DvtTreeCategoryRolloverHandler.prototype.GetRolloverCallback = function(event, objs, bAnyMatched, customAlpha) {
+  var callback = function() {
+    this.SetHighlightMode(true);
+    this._processHighlighting();
+    this.FireCallback(event);
+  };
+  return Obj.createCallback(this, callback);
+};
+/**
+ * Highlights all the nodes and their descendants
+ * @param {DvtTreeNode} node
+ */
+DvtTreeCategoryRolloverHandler.prototype._highlightDescendants = function(node) {
+  var nodeAndDescendantsIds = new Set(DvtTreeUtils.getAllIds(node));
+  var allNodes = DvtTreeUtils.getAllNodes(this._tree.getRootNode());
+  var n, dim;
+  for (var i = 0; i < allNodes.length; i++) {
+    n = allNodes[i];
+    // If node is null, then we want to remove highlight and un-dim all the nodes
+    dim = node && !nodeAndDescendantsIds.has(n.getId());
+    n.highlight(dim, dim ? CategoryRolloverHandler._FADE_OUT_OPACITY : 1);
+  }
+ };
+/**
+ * @override
+ */
+DvtTreeCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, objs, bAnyMatched, customAlpha) {
+  var callback = function() {
+    this.SetHighlightModeTimeout();
+    this._processHighlighting();
+    this.FireCallback(event);
+  };
+  return Obj.createCallback(this, callback);
+};
+
+/**
+ * @override
+ */
+ DvtTreeCategoryRolloverHandler.prototype._processHighlighting = function() {
+  var tree = this._tree;
+  var options = tree.getOptions();
+  var highlightMode = options['highlightMode'];
+  if (highlightMode === 'descendants') {
+    var obj = tree.EventManager.getCurrentHoverObj();
+    this._highlightDescendants(obj);
+  } else {
+    // Perform the highlighting
+    CategoryRolloverHandler.highlight(options['highlightedCategories'], DvtTreeUtils.getAllNodes(tree.getRootNode()), options['highlightMatch'] == 'any');
+  }
+};
 
 /**
  * Event Manager for tree components.
@@ -5622,6 +5600,8 @@ DvtTreeEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
   if (options['hoverBehavior'] != 'dim')
     return;
 
+  this._currentHoverItem = bOver ? obj : null;
+
   // Compute the new highlighted categories and update the options
   var categories = obj.getCategories ? obj.getCategories() : [];
   options['highlightedCategories'] = bOver ? categories.slice() : null;
@@ -5633,20 +5613,24 @@ DvtTreeEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
   this.RolloverHandler.processEvent(rolloverEvent, nodes, hoverBehaviorDelay, options['highlightMatch'] == 'any');
 };
 
+
+/**
+ * @override
+ */
+ DvtTreeEventManager.prototype.CreateCategoryRolloverHandler = function(callback, callbackObj) {
+  return new DvtTreeCategoryRolloverHandler(callback, callbackObj);
+};
+
+DvtTreeEventManager.prototype.getCurrentHoverObj = function() {
+  return this._currentHoverItem;
+};
+
 /**
  * @override
  */
 DvtTreeEventManager.prototype.GetTouchResponse = function() {
   return this._view.getOptions()['touchResponse'];
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreeKeyboardHandler     Keyboard handler for Sunburst                   */
@@ -5681,14 +5665,6 @@ DvtTreeKeyboardHandler.prototype.isMultiSelectEvent = function(event)
 {
   return event.keyCode == KeyboardEvent.SPACE && event.ctrlKey;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Legend rendering utilies for tree components.
@@ -5925,14 +5901,6 @@ DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availW
   }
   return labelContainer;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * The base class for tree components.
@@ -6382,6 +6350,7 @@ DvtTreeView.prototype.highlight = function(categories) {
 
   // Perform the highlighting
   CategoryRolloverHandler.highlight(categories, DvtTreeUtils.getAllNodes(this._root), this.getOptions()['highlightMatch'] == 'any');
+
 };
 
 /**
@@ -6911,14 +6880,6 @@ DvtTreeView.prototype.hasDataProvider = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -6985,14 +6946,6 @@ DvtTreeDefaults.prototype.getAnimationDuration = function(options)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -7028,14 +6981,6 @@ DvtSunburstDefaults.SKIN_ALTA = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Event Manager for Sunburst.
  *
  * @param {Sunburst} view The Sunburst to associate with this event manager
@@ -7060,7 +7005,7 @@ DvtSunburstEventManager.ROTATION_ID = '_rotationShape'; // id used to identify t
 DvtSunburstEventManager.prototype.OnMouseDown = function(event) {
   // Rotation Support
   var obj = this.GetLogicalObject(event.target);
-  if (obj && obj.getId && obj.getId() == DvtSunburstEventManager.ROTATION_ID && !this._bRotating) {
+  if (obj && obj.getId && obj.getId() === DvtSunburstEventManager.ROTATION_ID && !this._bRotating) {
     this._bRotating = true;
 
     var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
@@ -7112,7 +7057,7 @@ DvtSunburstEventManager.prototype.ProcessKeyboardEvent = function(event)
   if (node.isExpandCollapseEnabled() &&
       ((KeyboardEvent.isPlus(event) && !node.isDisclosed()) ||
       (KeyboardEvent.isMinus(event) && node.isDisclosed()) ||
-      (event.ctrlKey && keyCode == KeyboardEvent.ENTER)))
+      (event.ctrlKey && keyCode === KeyboardEvent.ENTER)))
 
   {
     sunburst.expandCollapseNode(node.getId());
@@ -7120,11 +7065,11 @@ DvtSunburstEventManager.prototype.ProcessKeyboardEvent = function(event)
   }
   // rotation
   else if (sunburst && sunburst.__isRotationEnabled() &&
-          (keyCode == KeyboardEvent.LEFT_ARROW || keyCode == KeyboardEvent.RIGHT_ARROW) &&
+          (keyCode === KeyboardEvent.LEFT_ARROW || keyCode === KeyboardEvent.RIGHT_ARROW) &&
           !event.ctrlKey && event.altKey && event.shiftKey)
   {
     var newAngle;
-    if (keyCode == KeyboardEvent.LEFT_ARROW)
+    if (keyCode === KeyboardEvent.LEFT_ARROW)
       newAngle = -5 * (Math.PI / 180);
     else
       newAngle = 5 * (Math.PI / 180);
@@ -7146,7 +7091,7 @@ DvtSunburstEventManager.ROTATE_KEY = 'rotateKey';
 
 DvtSunburstEventManager.prototype.HandleImmediateTouchStartInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
-  if (obj && obj.getId && obj.getId() == DvtSunburstEventManager.ROTATION_ID) {
+  if (obj && obj.getId && obj.getId() === DvtSunburstEventManager.ROTATION_ID) {
     this.TouchManager.processAssociatedTouchAttempt(event, DvtSunburstEventManager.ROTATE_KEY, this.RotateStartTouch, this);
   }
 };
@@ -7163,7 +7108,14 @@ DvtSunburstEventManager.prototype.HandleImmediateTouchEndInternal = function(eve
 DvtSunburstEventManager.prototype.RotateStartTouch = function(event, touch) {
   var touchIds = this.TouchManager.getTouchIdsForObj(DvtSunburstEventManager.ROTATE_KEY);
   if (touchIds.length <= 1) {
-    this.TouchManager.saveProcessedTouch(touch.identifier, DvtSunburstEventManager.ROTATE_KEY, null, DvtSunburstEventManager.ROTATE_KEY, DvtSunburstEventManager.ROTATE_KEY, this.RotateMoveTouch, this.RotateEndTouch, this);
+    this.TouchManager.saveProcessedTouch(touch.identifier,
+      DvtSunburstEventManager.ROTATE_KEY,
+      null,
+      DvtSunburstEventManager.ROTATE_KEY,
+      DvtSunburstEventManager.ROTATE_KEY,
+      this.RotateMoveTouch,
+      this.RotateEndTouch,
+      this);
     this.TouchManager.setTooltipEnabled(touch.identifier, false);
     var pos = this._context.pageToStageCoords(touch.pageX, touch.pageY);
     this.GetView().__startRotation(pos.x, pos.y);
@@ -7180,14 +7132,6 @@ DvtSunburstEventManager.prototype.RotateMoveTouch = function(event, touch) {
 DvtSunburstEventManager.prototype.RotateEndTouch = function(event, touch) {
   this.GetView().__endRotation();
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Layout class for sunbursts.
@@ -7238,7 +7182,7 @@ DvtSunburstLayout._layout = function(radiusPerDepth, node, startAngle, angleExte
     var childStartAngle = startAngle;
 
     // Sorting
-    if (sorting == 'on') {
+    if (sorting === 'on') {
       // Copy and sort by decreasing size
       children = children.slice(0);
       children.sort(function(a, b) { return b.getSize() - a.getSize(); });
@@ -7259,9 +7203,7 @@ DvtSunburstLayout._layout = function(radiusPerDepth, node, startAngle, angleExte
       var child = children[i];
 
       // Ignore negative and zero sized nodes
-      if (child.getSize() <= 0)
-        continue;
-
+      if (child.getSize() > 0){
       // Calculate the bounds of the child
       var sizeRatio = child.getSize() / total;
       var childAngleExtent = sizeRatio * angleExtent;
@@ -7271,6 +7213,7 @@ DvtSunburstLayout._layout = function(radiusPerDepth, node, startAngle, angleExte
 
       // Update the start angle
       childStartAngle += childAngleExtent;
+      }
     }
   }
 };
@@ -7299,14 +7242,6 @@ DvtSunburstLayout._calcLargestRadius = function(node) {
     return node.__getRadius();
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @constructor
@@ -7385,7 +7320,7 @@ Sunburst.prototype.ApplyParsedProperties = function(props) {
     this._startAngle -= DvtSunburstNode.TWO_PI;
 
   // animationOnDisplay: auto defaults to fan
-  if (options['animationOnDisplay'] == 'auto')
+  if (options['animationOnDisplay'] === 'auto')
     options['animationOnDisplay'] = 'fan';
 };
 
@@ -7524,7 +7459,7 @@ Sunburst.prototype.OnAnimationEnd = function() {
     this.Render(this._container, availSpace);
 
     // Reselect the nodes using the selection handler's state
-    var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : new Array();
+    var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : [];
     for (var i = 0; i < selectedNodes.length; i++)
       selectedNodes[i].setSelected(true);
   }
@@ -7684,7 +7619,7 @@ Sunburst.prototype.expandCollapseNode = function(id) {
   var expanded = this.getOptions()['expanded'];
 
   // If expanded is 'all' replace with array of nodes
-  if (expanded == 'all') {
+  if (expanded === 'all') {
     var allNodes = DvtTreeUtils.getAllNodes(this._root);
     for (var i = 0; i < allNodes.length; i++) {
       allNodes[i] = allNodes[i].getId();
@@ -7704,7 +7639,8 @@ Sunburst.prototype.expandCollapseNode = function(id) {
   else if (expanded['has']) // key set
     expanded = bDisclosed ? expanded['add']([id]) : expanded['delete']([id]);
 
-  this.dispatchEvent(new EventFactory.newExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'], this.getOptions()['_widgetConstructor'], expanded));
+  var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'];
+  this.dispatchEvent(new EventFactory.newExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, rootAndAncestors, this.getOptions()['_widgetConstructor'], expanded));
   this.__setNavigableIdToFocus(id);
 };
 
@@ -7769,7 +7705,7 @@ Sunburst.prototype.__showDropSiteFeedback = function(node) {
  */
 Sunburst.prototype.__isRotationEnabled = function()
 {
-  return this.getOptions()['rotation'] != 'off';
+  return this.getOptions()['rotation'] !== 'off';
 };
 
 /**
@@ -7786,14 +7722,6 @@ Sunburst.prototype.CreateNode = function(nodeOptions) {
 Sunburst.prototype.getCenterPoint = function() {
   return this._translatePt;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Default values and utility functions for component versioning.
@@ -7851,14 +7779,6 @@ DvtTreemapDefaults.SKIN_ALTA = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Event Manager for Treemap.
  * @param {Treemap} view The treemap to associate with this event manager
  * @param {dvt.Context} context The platform specific context object.
@@ -7882,7 +7802,7 @@ DvtTreemapEventManager.prototype.ProcessKeyboardEvent = function(event)
   var eventConsumed = true;
   var keyCode = event.keyCode;
 
-  if (keyCode == KeyboardEvent.ENTER && event.ctrlKey)
+  if (keyCode === KeyboardEvent.ENTER && event.ctrlKey)
   {
     // isolate or restore
     var node = this.getFocus();
@@ -7902,14 +7822,6 @@ DvtTreemapEventManager.prototype.ProcessKeyboardEvent = function(event)
 
   return eventConsumed;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /*---------------------------------------------------------------------------------*/
 /*  DvtTreemapKeyboardHandler     Keyboard handler for Treemap                     */
@@ -7938,21 +7850,13 @@ DvtTreemapKeyboardHandler.prototype.isNavigationEvent = function(event)
   if (!isNavigable)
   {
     var keyCode = event.keyCode;
-    if (keyCode == KeyboardEvent.OPEN_BRACKET ||
-        keyCode == KeyboardEvent.CLOSE_BRACKET)
+    if (keyCode === KeyboardEvent.OPEN_BRACKET ||
+        keyCode === KeyboardEvent.CLOSE_BRACKET)
       isNavigable = true;
   }
 
   return isNavigable;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Base layout class for treemaps.
@@ -8038,21 +7942,13 @@ DvtTreemapLayoutBase.prototype.setNodeBounds = function(node, x, y, width, heigh
  */
 DvtTreemapLayoutBase.prototype.getGapSize = function(view, depth) {
   var groupGaps = view.getOptions()['groupGaps'];
-  if (groupGaps == 'outer')
-    return (depth == 1 && view.__getMaxDepth() >= 2) ? DvtTreemapLayoutBase._GROUP_GAP : 0;
-  else if (groupGaps == 'all')
+  if (groupGaps === 'outer')
+    return (depth === 1 && view.__getMaxDepth() >= 2) ? DvtTreemapLayoutBase._GROUP_GAP : 0;
+  else if (groupGaps === 'all')
     return (depth < view.__getMaxDepth()) ? DvtTreemapLayoutBase._GROUP_GAP : 0;
   else // none
     return 0;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Layout class for treemaps.  This layout allocates space across a single dimension for each layer,
@@ -8116,7 +8012,7 @@ DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x
       total += children[i].getSize() > 0 ? children[i].getSize() : 0; // ignore negatives, which skew child size calc
 
     // Sorting
-    if (options['sorting'] == 'on') {
+    if (options['sorting'] === 'on') {
       // Copy and sort by decreasing size
       children = children.slice(0);
       children.sort(function(a, b) { return b.getSize() - a.getSize(); });
@@ -8130,9 +8026,7 @@ DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x
       var child = children[i];
 
       // Ignore negative and zero sized nodes
-      if (child.getSize() <= 0)
-        continue;
-
+      if (child.getSize() > 0){
       // Calculate the bounds of the child
       var sizeRatio = child.getSize() / total;
       if (isHoriz)
@@ -8148,17 +8042,10 @@ DvtTreemapLayoutSliceAndDice.prototype._layout = function(isHoriz, view, node, x
         childX += childWidth;
       else
         childY += childHeight;
+      }
     }
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Layout class for treemaps.  This layout optimizes the aspect ratios, making the nodes as square as
@@ -8210,7 +8097,7 @@ DvtTreemapLayoutSquarifying.prototype._layout = function(node, x, y, width, heig
 
     var w = Math.min(availBounds.w, availBounds.h);
     var r = new Rectangle(availBounds.x, availBounds.y, availBounds.w, availBounds.h);
-    this._squarify(children, new Array(), w, r, Infinity);
+    this._squarify(children, [], w, r, Infinity);
   }
 };
 
@@ -8224,14 +8111,13 @@ DvtTreemapLayoutSquarifying.prototype._layout = function(node, x, y, width, heig
 DvtTreemapLayoutSquarifying.prototype._calcPixelSize = function(children, area) {
   // First calculate the total.
   var total = 0;
-  var i = 0;
-  for (i = 0; i < children.length; i++)
+  for (var i = 0; i < children.length; i++)
     total += children[i].getSize() > 0 ? children[i].getSize() : 0; // ignore negatives, which skew child size calc
 
   // Then set the size
-  var factor = (area == 0) ? 0 : area / total;
-  for (i = 0; i < children.length; i++) {
-    var child = children[i];
+  var factor = (area === 0) ? 0 : area / total;
+  for (var j = 0; j < children.length; j++) {
+    var child = children[j];
     child.__pxSize = child.getSize() * factor;
   }
 };
@@ -8252,7 +8138,7 @@ DvtTreemapLayoutSquarifying.prototype._squarify = function(children, row, w, r, 
   //       at dealing with 0 size nodes and with large breadth size.
 
   // If there are no more children, assign the row and return
-  if (children == null || children.length == 0) {
+  if (children == null || children.length === 0) {
     this._layoutRow(row, w, r);
     return;
   }
@@ -8276,10 +8162,10 @@ DvtTreemapLayoutSquarifying.prototype._squarify = function(children, row, w, r, 
       children.push(c); // add c back to the children
       row.pop(); // remove c from the row
       r = this._layoutRow(row, w, r);
-      this._squarify(children, new Array(), Math.min(r.w, r.h), r, Infinity);
+      this._squarify(children, [], Math.min(r.w, r.h), r, Infinity);
       return;
     }
-    else if (children.length == 0) {
+    else if (children.length === 0) {
       // No more children to allocate.  Assign layout and finish
       this._layoutRow(row, w, r);
       return;
@@ -8334,9 +8220,9 @@ DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
   var x = r.x;
   var y = r.y;
   var width, height;
-  if (w == r.w) {
+  if (w === r.w) {
     // Horizontal Layout
-    height = (w == 0) ? 0 : total / w;
+    height = (w === 0) ? 0 : total / w;
     for (i = 0; i < row.length; i++) {
       width = row[i].__pxSize / height;  // equivalent to w*size/total
       this._layout(row[i], x, y, width, height, false); // Set and recurse
@@ -8348,7 +8234,7 @@ DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
   }
   else {
     // Vertical Layout
-    width = (w == 0) ? 0 : total / w;
+    width = (w === 0) ? 0 : total / w;
     for (i = 0; i < row.length; i++) {
       height = row[i].__pxSize / width;  // equivalent to w*size/total
       this._layout(row[i], x, y, width, height, false); // Set and recurse
@@ -8359,14 +8245,6 @@ DvtTreemapLayoutSquarifying.prototype._layoutRow = function(row, w, r)
     return new Rectangle(r.x + width, r.y, r.w - width, r.h);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @constructor
@@ -8432,13 +8310,11 @@ Treemap.prototype.Init = function(context, callback, callbackObj) {
  */
 Treemap.prototype.ApplyParsedProperties = function(props) {
   Treemap.superclass.ApplyParsedProperties.call(this, props);
-
   var options = this.getOptions();
-
   // Layout
-  if (options['layout'] == 'sliceAndDiceHorizontal')
+  if (options['layout'] === 'sliceAndDiceHorizontal')
     this._layout = new DvtTreemapLayoutSliceAndDice(true);
-  else if (options['layout'] == 'sliceAndDiceVertical')
+  else if (options['layout'] === 'sliceAndDiceVertical')
     this._layout = new DvtTreemapLayoutSliceAndDice(false);
   else
     this._layout = new DvtTreemapLayoutSquarifying();
@@ -8448,7 +8324,7 @@ Treemap.prototype.ApplyParsedProperties = function(props) {
   this._processInitialIsolate(options['isolatedNode']);
 
   // animationOnDisplay: auto defaults to fan
-  if (options['animationOnDisplay'] == 'auto')
+  if (options['animationOnDisplay'] === 'auto')
     options['animationOnDisplay'] = 'alphaFade';
 };
 
@@ -8456,7 +8332,6 @@ Treemap.prototype.ApplyParsedProperties = function(props) {
  * @override
  */
 Treemap.prototype.Layout = function(availSpace) {
-  var options = this.getOptions();
 
   // Allocate buffer space for the container. The minimum buffer is used for JET, where no default border is shown.
   var bufferSpace = Treemap._MIN_BUFFER_SPACE;
@@ -8586,12 +8461,12 @@ Treemap.prototype.OnAnimationEnd = function() {
  * @protected
  */
 Treemap.prototype.ReselectNodes = function() {
-  var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : new Array();
+  var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : [];
   for (var i = 0; i < selectedNodes.length; i++) {
     // Don't show selection effect for obscured nodes when isolate is being used
     if (this._isolatedNodes.length > 0) {
       var lastIsolated = this._isolatedNodes[this._isolatedNodes.length - 1];
-      if (selectedNodes[i] == lastIsolated || selectedNodes[i].isDescendantOf(lastIsolated))
+      if (selectedNodes[i] === lastIsolated || selectedNodes[i].isDescendantOf(lastIsolated))
         selectedNodes[i].setSelected(true);
     }
     else
@@ -8772,10 +8647,10 @@ Treemap.prototype.__getLastIsolatedNode = function()
  */
 Treemap.prototype._renderIsolateRestore = function(node) {
   // Animate or re-render to display the updated state
-  if (this.getOptions()['animationOnDataChange'] != 'none') {
+  if (this.getOptions()['animationOnDataChange'] !== 'none') {
     // Deselect all nodes so that the selected layer doesn't display above the
     // isolated node during animation.  Nodes will be reselected at the end of animation.
-    var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : new Array();
+    var selectedNodes = this._selectionHandler ? this._selectionHandler.getSelection() : [];
     for (var i = 0; i < selectedNodes.length; i++) {
       selectedNodes[i].setSelected(false);
     }

@@ -11,13 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojbutton', 'ojs/ojedi
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   NumberRangeValidator = NumberRangeValidator && Object.prototype.hasOwnProperty.call(NumberRangeValidator, 'default') ? NumberRangeValidator['default'] : NumberRangeValidator;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 var __oj_input_number_metadata = 
 {
   "properties": {
@@ -305,20 +298,24 @@ var __oj_input_number_metadata =
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @preserve Copyright 2013 jQuery Foundation and other contributors
    * Released under the MIT license.
    * http://jquery.org/license
    */
 
   // jeanne retrieved from https://raw.github.com/jquery/jquery-ui/1-10-stable/ui/jquery.ui.spinner.js on 6/2013, and then modified
+
+  var _sDefaultNumberConverter;
+
+  /**
+   * For default converter
+   * @static
+   * @ignore
+   */
+   function _getNumberDefaultConverter() {
+    return new ojconverterNumber.IntlNumberConverter(null);
+  }
+
 
   /*!
    * JET InputNumber @VERSION
@@ -408,27 +405,9 @@ var __oj_input_number_metadata =
    * like aria-valuenow, aria-valuemax, aria-valuemin and aria-valuetext.
    * </p>
    * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate an oj-label to the oj-input-number component.
-   * For accessibility, you should associate an oj-label element with the oj-input-number component
-   * by putting an <code>id</code> on the oj-input-number element, and then setting the
-   * <code>for</code> attribute on the oj-label to be the component's id.
-   * </p>
-   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
    * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
    * {@ojinclude "name":"accessibilityDisabledEditableValue"}
-   * </p>
-   *
-   *
-   * <h3 id="label-section">
-   *   Label and InputNumber
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the
-   * application developer to associate the oj-label to the oj-input-number component.
-   * For accessibility, you should associate a oj-label element with the oj-input-number component
-   * by putting an <code class="prettyprint">id</code> on the oj-input-number element, and then setting the
-   * <code class="prettyprint">for</code> attribute on the oj-label to be the component's id.
    * </p>
    *
    * @example <caption>Declare the oj-input-number component with no attributes specified:</caption>
@@ -440,76 +419,211 @@ var __oj_input_number_metadata =
    * @example <caption>Initialize a component attribute via component binding:</caption>
    * &lt;oj-input-number id="numberId" value="{{currentValue}}">&lt;/oj-input-number>
    */
-  // --------------------------------------------------- oj.ojInputNumber Styling Start ------------------------------------------------------------
-    /**
-     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-     * The form control style classes can be applied to the component, or an ancestor element. <br/>
-     * When applied to an ancestor element, all form components that support the style classes will be affected.
-     */
+
+  //----------------------------------------------------------------
+  //      API doc for inherited methods with no JS in this file
+  //----------------------------------------------------------------
+
+  /**
+   * Removes the inputNumber functionality completely.
+   * This will return the element back to its pre-init state.
+   *
+   * <p>This method does not accept any arguments.
+   *
+   * @method
+   * @name oj.ojInputNumber#destroy
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @ignore
+   *
+   * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
+   * myComp.destroy();
+   */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Up Button</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Increment the number.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Down Button</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Decrement the number.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Input</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Set focus to the input. Show user assistance text. This may be inline or in a notewindow
+  * depending upon theme and property settings.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Elsewhere on Page</td>
+   *       <td><kbd>Touch</kbd></td>
+   *       <td>Submit the value you typed in the input field.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputNumber
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="4">Input</td>
+   *       <td><kbd>Enter</kbd> or <kbd>Tab</kbd></td>
+   *       <td>Submit the value you typed in the input field.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to input. Show user assistance text. This may be inline or in a notewindow
+  * depending upon theme and property settings.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Increment the number.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Decrement the number.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputNumber
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the inputNumber's Up arrow.</p>
+   *
+   * @ojsubid oj-inputnumber-up
+   * @memberof oj.ojInputNumber
+   *
+   * @example <caption>Get the node for the Up arrow:</caption>
+   * var node = myComp.getNodeBySubId('oj-inputnumber-up');
+   */
+
+  /**
+   * <p>Sub-ID for the inputNumber's Down arrow.</p>
+   *
+   * @ojsubid oj-inputnumber-down
+   * @memberof oj.ojInputNumber
+   *
+   * @example <caption>Get the node for the Down arrow:</caption>
+   * var node = myComp.getNodeBySubId('oj-inputnumber-down);
+   */
+
+  /**
+   * <p>Sub-ID for the inputNumber's input element.</p>
+   * @ojsubid oj-inputnumber-input
+   * @memberof oj.ojInputNumber
+   *
+   * @example <caption>Get the node for the input element:</caption>
+   * var node = myComp.getNodeBySubId('oj-inputnumber-input');
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
     // ---------------- oj-form-control-full-width --------------
-    /**
-    * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-    * @ojstyleclass oj-form-control-full-width
-    * @ojdisplayname Full Width
-    * @memberof oj.ojInputNumber
-    * @ojtsexample
-    * &lt;oj-input-number class="oj-form-control-full-width">
-    * &lt;/oj-input-number>
-    */
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojInputNumber
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-full-width">
+  * &lt;/oj-input-number>
+  */
 
    // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojInputNumber
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-input-number class="oj-form-control-max-width-md">&lt;/oj-input-number>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojInputNumber
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojInputNumber
-     */
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputNumber
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-max-width-md">&lt;/oj-input-number>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputNumber
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputNumber
+   */
 
     // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojInputNumber
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-input-number class="oj-form-control-width-md">&lt;/oj-input-number>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojInputNumber
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojInputNumber
-     */
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojInputNumber
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-input-number class="oj-form-control-width-md">&lt;/oj-input-number>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojInputNumber
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojInputNumber
+   */
 
    // ---------------- oj-form-control-text-align- --------------
   /**
@@ -727,7 +841,6 @@ var __oj_input_number_metadata =
            *
            * @expose
            * @type {boolean}
-           * @alias autofocus
            * @access public
            * @default false
            * @instance
@@ -742,7 +855,8 @@ var __oj_input_number_metadata =
 
           /**
            * A number converter instance or a Promise to a number converter instance
-           * or one that duck types {@link oj.NumberConverter}.
+           * or one that duck types {@link oj.NumberConverter}. The number converter instance defaults
+           * to options suitable for the current locale.
            * <p>
            * When no converter is specified, the default converter will be used,
            * and default option of "numeric" is used.
@@ -855,7 +969,7 @@ var __oj_input_number_metadata =
            *                  work again by importing the deprecated ojvalidation-number module.'}
            * @type {Object}
            */
-          converter: new ojconverterNumber.IntlNumberConverter(null),
+          converter: null,
         /**
          * <p>
          * The oj-label sets the labelledBy property programmatically on the form component
@@ -984,7 +1098,6 @@ var __oj_input_number_metadata =
            *
            * @expose
            * @type {string}
-           * @alias name
            * @ojshortdesc Specifies the name of the component.
            * @access public
            * @instance
@@ -1075,7 +1188,7 @@ var __oj_input_number_metadata =
            * @access public
            * @expose
            * @type {?boolean}
-           * @alias readonly
+           * @name readonly
            * @instance
            * @memberof oj.ojInputNumber
            * @ojshortdesc Specifies whether the component is read-only.  A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
@@ -1173,7 +1286,6 @@ var __oj_input_number_metadata =
            * If step is less than 0, an exception is thrown.
            * <p><code class="prettyprint">step</code> defaults to <code class="prettyprint">1</code>
            * in all themes except the redwood theme where it defaults to <code class="prettyprint">0</code>.
-           * Use the $inputNumberStepOptionDefault variable to change the default step (in SCSS).
            * </p>
            * <p>
            * <p>
@@ -1221,9 +1333,6 @@ var __oj_input_number_metadata =
            *
            * // Setter
            * myComponent.step = 5;
-           *
-           * @example <caption>Set the default in the theme (SCSS)</caption>
-           * $inputNumberStepOptionDefault: 1 !default;
            * */
           step: 1,
           /**
@@ -1425,11 +1534,6 @@ var __oj_input_number_metadata =
           value: null,
           /**
            * The type of virtual keyboard to display for entering a value on mobile browsers. This attribute has no effect on desktop browsers.
-           * <p>
-           * When setting the virual keyboard to "number", if the converter on the component formats the value with non-numeric characters the
-           * value will not display. oj-input-number's default converter formats with non-numeric characters. If applications want to use a
-           * "number" virtual keyboard they need to provide a converter that doesn't format with non-numeric characters.
-           * </p>
            * @example <caption>Initialize the component with the <code class="prettyprint">virtual-keyboard</code> attribute:</caption>
            * &lt;oj-input-number virtual-keyboard="number">&lt;/oj-input-number>
            *
@@ -1445,12 +1549,17 @@ var __oj_input_number_metadata =
            * @memberof oj.ojInputNumber
            * @ojshortdesc The type of virtual keyboard to display for entering a value on mobile browsers. See the Help documentation for more information.
            * @type {string}
-           * @ojvalue {string} "auto" The component will determine the best virtual keyboard to use.
-           * @ojvalue {string} "number" Use a virtual keyboard for entering numbers.
+           * @ojvalue {string} "auto" The component will determine the best mobile virtual keyboard to use. For example, it may look at the converter's resolvedOptions
+           *                          to determine if it formats using non-numeric characters or not. If it formats using non-numeric characters, like oj-input-number's default
+           *                          converter for 'en-US' loocale (1000 formats to "1,000"), then it will use "text".
+           * @ojvalue {string} "number" Use a mobile virtual keyboard for entering numbers. If using "number", you must set the converter attribute to a converter
+           *                            that formats to numeric characters only, otherwise the value will not be shown. The reason for this
+           *                            is oj-input-number uses the browser native input type='number'  and when you set an input value that contains a non-numeric character,
+         *                              browsers do not display the value. For example, "1,000" would not be shown. And oj-input-number's default converter for 'en-US' locale formats using non-numeric characters, e.g., 1000 formats to "1,000".
            *                            <p>Note that on Android and Windows Mobile, the "number" keyboard does
            *                            not contain the minus sign.  This value should not be used on fields that
            *                            accept negative values.</p>
-           * @ojvalue {string} "text" Use a virtual keyboard for entering text.
+           * @ojvalue {string} "text" Use a mobile virtual keyboard for entering text.
            * @default "auto"
            * @since 5.0.0
            */
@@ -1998,9 +2107,10 @@ var __oj_input_number_metadata =
          * @override
          */
         _GetConverter: function () {
-          return this.options.converter ?
-            this._getConverter() :
-            $.oj.ojInputNumber.prototype.options.converter;
+          if (this.options.converter) {
+            return this._getConverter();
+          }
+          return _getNumberDefaultConverter();
         },
         /**
          * This returns an array of all validators
@@ -2471,9 +2581,7 @@ var __oj_input_number_metadata =
             buttons[i].setAttribute('tabIndex', '-1');
           }
 
-          const defaultOptions = ThemeUtils.parseJSONFromFontFamily(
-            'oj-input-number-option-defaults') || {};
-          const buttonChromingDefault = defaultOptions.buttonChroming || 'solid';
+          const buttonChromingDefault = ThemeUtils.getCachedCSSVarValues(['--oj-private-input-number-button-global-chroming-default'])[0] || 'solid';
           var buttonsetDiv = buttonSetObj.upButton.parentNode;
           this.upButton = $(buttonSetObj.upButton).ojButton({ display: 'icons',
             chroming: buttonChromingDefault,
@@ -3545,147 +3653,24 @@ var __oj_input_number_metadata =
           this._on(this._regularEventsAndListeners);
           // will register these with the passive option in 8.1.0
           this._on(this._passiveEventsAndListeners);
-        },
-
-        // API doc for inherited methods with no JS in this file:
-
-        /**
-         * Removes the inputNumber functionality completely.
-         * This will return the element back to its pre-init state.
-         *
-         * <p>This method does not accept any arguments.
-         *
-         * @method
-         * @name oj.ojInputNumber#destroy
-         * @memberof oj.ojInputNumber
-         * @instance
-         * @ignore
-         *
-         * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
-         * myComp.destroy();
-         */
-
-        // Fragments:
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Gesture</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>Up Button</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Increment the number.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Down Button</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Decrement the number.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Input</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Set focus to the input. Show user assistance text. This may be inline or in a notewindow
-   * depending upon theme and property settings.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Elsewhere on Page</td>
-         *       <td><kbd>Touch</kbd></td>
-         *       <td>Submit the value you typed in the input field.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojInputNumber
-         */
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td rowspan="4">Input</td>
-         *       <td><kbd>Enter</kbd> or <kbd>Tab</kbd></td>
-         *       <td>Submit the value you typed in the input field.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>Tab In</kbd></td>
-         *       <td>Set focus to input. Show user assistance text. This may be inline or in a notewindow
-   * depending upon theme and property settings.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>UpArrow</kbd></td>
-         *       <td>Increment the number.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>DownArrow</kbd></td>
-         *       <td>Decrement the number.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojInputNumber
-         */
-
+        }
       });
 
     Components.setDefaultOptions({
       ojInputNumber: {
         step: Components.createDynamicPropertyGetter(function () {
-          return (ThemeUtils.parseJSONFromFontFamily('oj-input-number-option-defaults') || {}).step;
+          return ThemeUtils.getCachedCSSVarValues([
+            '--oj-private-input-number-global-step-default'
+          ])[0];
+        }),
+        converter: Components.createDynamicPropertyGetter(function () {
+          if (_sDefaultNumberConverter == null) {
+            _sDefaultNumberConverter = _getNumberDefaultConverter();
+          }
+          return _sDefaultNumberConverter;
         })
       }
     });
-
-  // -----------------------------------------------------------------------------
-  // "private static members" shared by all inputNumbers
-  // -----------------------------------------------------------------------------
-
-  // ////////////////     SUB-IDS     //////////////////
-
-  /**
-   * <p>Sub-ID for the inputNumber's Up arrow.</p>
-   *
-   * @ojsubid oj-inputnumber-up
-   * @memberof oj.ojInputNumber
-   *
-   * @example <caption>Get the node for the Up arrow:</caption>
-   * var node = myComp.getNodeBySubId('oj-inputnumber-up');
-   */
-
-  /**
-   * <p>Sub-ID for the inputNumber's Down arrow.</p>
-   *
-   * @ojsubid oj-inputnumber-down
-   * @memberof oj.ojInputNumber
-   *
-   * @example <caption>Get the node for the Down arrow:</caption>
-   * var node = myComp.getNodeBySubId('oj-inputnumber-down);
-   */
-
-  /**
-   * <p>Sub-ID for the inputNumber's input element.</p>
-   * @ojsubid oj-inputnumber-input
-   * @memberof oj.ojInputNumber
-   *
-   * @example <caption>Get the node for the input element:</caption>
-   * var node = myComp.getNodeBySubId('oj-inputnumber-input');
-   */
   }()); // end of inputNumber wrapper function
 
 });

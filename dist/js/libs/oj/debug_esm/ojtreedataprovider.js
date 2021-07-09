@@ -7,13 +7,6 @@
  */
 import oj from 'ojs/ojcore';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 const TreeDataProvider = function () {
 };
 // mapping variable definition, used in a no-require environment. Maps the TreeDataProvider function object to the name used in the require callback.

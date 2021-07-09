@@ -22,7 +22,7 @@ BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onC
         subscriber = {};
     }
     this.observers.push(subscriber);
-    let subscription = new SubjectSubscription(this, subscriber);
+    const subscription = new SubjectSubscription(this, subscriber);
     if (subscription && !subscription.closed) {
         subscriber.next(this._value);
     }
@@ -30,9 +30,9 @@ BehaviorSubject.prototype.subscribe = function (onNextOrSubscriber, onError, onC
 };
 BehaviorSubject.prototype.next = function (value) {
     this._value = value;
-    let { observers } = this;
-    let len = observers.length;
-    let copy = observers.slice();
+    const { observers } = this;
+    const len = observers.length;
+    const copy = observers.slice();
     for (let i = 0; i < len; i++) {
         copy[i].next(value);
     }
@@ -47,13 +47,13 @@ SubjectSubscription.prototype.unsubscribe = function () {
         return;
     }
     this.closed = true;
-    let subject = this.subject;
-    let observers = subject.observers;
+    const subject = this.subject;
+    const observers = subject.observers;
     this.subject = null;
     if (!observers || observers.length === 0) {
         return;
     }
-    let subscriberIndex = observers.indexOf(this.subscriber);
+    const subscriberIndex = observers.indexOf(this.subscriber);
     if (subscriberIndex !== -1) {
         observers.splice(subscriberIndex, 1);
     }

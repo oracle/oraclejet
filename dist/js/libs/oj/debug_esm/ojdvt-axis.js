@@ -5,15 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, Agent, Math as Math$1 } from 'ojs/ojdvt-toolkit';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import { IntlNumberConverter } from 'ojs/ojconverter-number';
 
 /**
  * Calculated axis information and drawable creation.  This class should
@@ -22,10 +14,9 @@ import { Obj, Agent, Math as Math$1 } from 'ojs/ojdvt-toolkit';
  * @constructor
  * @extends {dvt.Obj}
  */
-const BaseAxisInfo = function() {
+const BaseAxisInfo = function () {
 };
 
-Obj.createSubclass(BaseAxisInfo, Obj);
 
 /**
  * Minimum buffer for horizontal axis.
@@ -39,31 +30,27 @@ Obj.createSubclass(BaseAxisInfo, Obj);
  * @param {dvt.Rectangle} availSpace The available space.
  * @protected
  */
-BaseAxisInfo.prototype.Init = function(context, options, availSpace) {
+BaseAxisInfo.prototype.Init = function (context, options, availSpace) {
   this._context = context;
 
   // Figure out the start and end coordinate of the axis
-  this.Position = options['position'];
-  this._radius = options['_radius']; // for polar charts
+  this.Position = options.position;
+  this._radius = options._radius; // for polar charts
 
-  if (this.Position == 'top' || this.Position == 'bottom') {
+  if (this.Position === 'top' || this.Position === 'bottom') {
     this.StartCoord = availSpace.x;
     this.EndCoord = availSpace.x + availSpace.w;
-  }
-  else if (this.Position == 'left' || this.Position == 'right') {
+  } else if (this.Position === 'left' || this.Position === 'right') {
     this.StartCoord = availSpace.y;
     this.EndCoord = availSpace.y + availSpace.h;
-  }
-  else if (this.Position == 'radial') {
+  } else if (this.Position === 'radial') {
     this.StartCoord = 0;
     this.EndCoord = this._radius;
-  }
-  else if (this.Position == 'tangential') {
-    if (Agent.isRightToLeft(context)) {
+  } else if (this.Position === 'tangential') {
+    if (options.isRTL) {
       this.StartCoord = 2 * Math.PI;
       this.EndCoord = 0;
-    }
-    else {
+    } else {
       this.StartCoord = 0;
       this.EndCoord = 2 * Math.PI;
     }
@@ -82,10 +69,13 @@ BaseAxisInfo.prototype.Init = function(context, options, availSpace) {
   this.EndOverflow = 0;
 
   // Sets the buffers (the maximum amount the labels can go over before they overflow)
-  if (options['leftBuffer'] == null)
-    options['leftBuffer'] = Infinity;
-  if (options['rightBuffer'] == null)
-    options['rightBuffer'] = Infinity;
+  if (options.leftBuffer == null) {
+    options.leftBuffer = Infinity;
+  }
+
+  if (options.rightBuffer == null) {
+    options.rightBuffer = Infinity;
+  }
 
   // Store the options object
   this.Options = options;
@@ -96,7 +86,7 @@ BaseAxisInfo.prototype.Init = function(context, options, availSpace) {
  * Returns the dvt.Context associated with this instance.
  * @return {dvt.Context}
  */
-BaseAxisInfo.prototype.getCtx = function() {
+BaseAxisInfo.prototype.getCtx = function () {
   return this._context;
 };
 
@@ -105,7 +95,7 @@ BaseAxisInfo.prototype.getCtx = function() {
  * Returns the options settings for the axis.
  * @return {object} The options for the axis.
  */
-BaseAxisInfo.prototype.getOptions = function() {
+BaseAxisInfo.prototype.getOptions = function () {
   return this.Options;
 };
 
@@ -116,17 +106,18 @@ BaseAxisInfo.prototype.getOptions = function() {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-BaseAxisInfo.prototype.getValueAt = function(coord) {
-  if (coord == null)
+BaseAxisInfo.prototype.getValueAt = function (coord) {
+  if (coord == null) {
     return null;
+  }
 
   var minCoord = Math.min(this.StartCoord, this.EndCoord);
   var maxCoord = Math.max(this.StartCoord, this.EndCoord);
 
   // Return null if the coord is outside of the axis
-  if (coord < minCoord || coord > maxCoord)
+  if (coord < minCoord || coord > maxCoord) {
     return null;
-
+  }
   return this.getUnboundedValueAt(coord);
 };
 
@@ -137,14 +128,14 @@ BaseAxisInfo.prototype.getValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-BaseAxisInfo.prototype.getCoordAt = function(value) {
-  if (value == null)
+BaseAxisInfo.prototype.getCoordAt = function (value) {
+  if (value == null) {
     return null;
-
-  if (value < this.MinValue || value > this.MaxValue)
+  }
+  if (value < this.MinValue || value > this.MaxValue) {
     return null;
-  else
-    return this.getUnboundedCoordAt(value);
+  }
+  return this.getUnboundedCoordAt(value);
 };
 
 
@@ -154,19 +145,20 @@ BaseAxisInfo.prototype.getCoordAt = function(value) {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-BaseAxisInfo.prototype.getBoundedValueAt = function(coord) {
-  if (coord == null)
+BaseAxisInfo.prototype.getBoundedValueAt = function (coord) {
+  if (coord == null) {
     return null;
-
+  }
+  var cord = coord;
   var minCoord = Math.min(this.StartCoord, this.EndCoord);
   var maxCoord = Math.max(this.StartCoord, this.EndCoord);
 
-  if (coord < minCoord)
-    coord = minCoord;
-  else if (coord > maxCoord)
-    coord = maxCoord;
-
-  return this.getUnboundedValueAt(coord);
+  if (coord < minCoord) {
+    cord = minCoord;
+  } else if (coord > maxCoord) {
+    cord = maxCoord;
+  }
+  return this.getUnboundedValueAt(cord);
 };
 
 
@@ -176,16 +168,19 @@ BaseAxisInfo.prototype.getBoundedValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-BaseAxisInfo.prototype.getBoundedCoordAt = function(value) {
-  if (value == null)
+BaseAxisInfo.prototype.getBoundedCoordAt = function (value) {
+  if (value == null) {
     return null;
+  }
 
-  if (value < this.MinValue)
-    value = this.MinValue;
-  else if (value >= this.MaxValue)
-    value = this.MaxValue;
+  var val = value;
+  if (value < this.MinValue) {
+    val = this.MinValue;
+  } else if (value >= this.MaxValue) {
+    val = this.MaxValue;
+  }
 
-  return this.getUnboundedCoordAt(value);
+  return this.getUnboundedCoordAt(val);
 };
 
 
@@ -194,7 +189,7 @@ BaseAxisInfo.prototype.getBoundedCoordAt = function(value) {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-BaseAxisInfo.prototype.getUnboundedValueAt = function(coord) {
+BaseAxisInfo.prototype.getUnboundedValueAt = function (coord) {
   return null; // subclasses should override
 };
 
@@ -204,17 +199,9 @@ BaseAxisInfo.prototype.getUnboundedValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-BaseAxisInfo.prototype.getUnboundedCoordAt = function(value) {
+BaseAxisInfo.prototype.getUnboundedCoordAt = function (value) {
   return null; // subclasses should override
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Calculated axis information and drawable creation for a data axis.
@@ -225,8 +212,7 @@ BaseAxisInfo.prototype.getUnboundedCoordAt = function(value) {
  * @constructor
  * @extends {BaseAxisInfo}
  */
-const DataAxisInfoMixin = function(context, options, availSpace) {
-
+const DataAxisInfoMixin = function () {
   /** @private @const */
   this.MAX_NUMBER_OF_GRIDS_AUTO = 10;
   /** @private @const */
@@ -249,60 +235,62 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.MixinInit = function(context, options, availSpace) {
-
+  this.MixinInit = function (options) {
     // Figure out the coords for the min/max values
-    if (this.Position == 'top' || this.Position == 'bottom') {
+    if (this.Position === 'top' || this.Position === 'bottom') {
       // Provide at least the minimum buffer at each side to accommodate labels
-      if (options['tickLabel']['rendered'] != 'off' && options['rendered'] != 'off') {
-        this.StartOverflow = Math.max(BaseAxisInfo.MINIMUM_AXIS_BUFFER - options['leftBuffer'], 0);
-        this.EndOverflow = Math.max(BaseAxisInfo.MINIMUM_AXIS_BUFFER - options['rightBuffer'], 0);
+      if (options.tickLabel.rendered !== 'off' && options.rendered !== 'off') {
+        this.StartOverflow = Math.max(BaseAxisInfo.MINIMUM_AXIS_BUFFER - options.leftBuffer, 0);
+        this.EndOverflow = Math.max(BaseAxisInfo.MINIMUM_AXIS_BUFFER - options.rightBuffer, 0);
       }
 
       // Axis is horizontal, so flip for BIDI if needed
-      if (Agent.isRightToLeft(context)) {
+      if (options.isRTL) {
         this.MinCoord = this.EndCoord - this.EndOverflow;
         this.MaxCoord = this.StartCoord + this.StartOverflow;
-      }
-      else {
+      } else {
         this.MinCoord = this.StartCoord + this.StartOverflow;
         this.MaxCoord = this.EndCoord - this.EndOverflow;
       }
-    }
-    else if (this.Position == 'tangential' || this.Position == 'radial') {
+    } else if (this.Position === 'tangential' || this.Position === 'radial') {
       this.MinCoord = this.StartCoord;
       this.MaxCoord = this.EndCoord;
-    }
-    else {
+    } else {
       this.MinCoord = this.EndCoord;
       this.MaxCoord = this.StartCoord;
     }
 
-    this.DataMin = options['dataMin'];
-    this.DataMax = options['dataMax'];
-    this.IsLog = options['scale'] == 'log' && this.DataMin > 0 && this.DataMax > 0;
+    this.DataMin = options.dataMin;
+    this.DataMax = options.dataMax;
 
-    this.LinearGlobalMin = this.actualToLinear(options['min']);
-    this.LinearGlobalMax = this.actualToLinear(options['max']);
-    this.LinearMinValue = options['viewportMin'] == null ? this.LinearGlobalMin : this.actualToLinear(options['viewportMin']);
-    this.LinearMaxValue = options['viewportMax'] == null ? this.LinearGlobalMax : this.actualToLinear(options['viewportMax']);
+    this.utilsLogOptions = options._utils && options.scale === 'log';
+    this.IsLog = this.utilsLogOptions || (options.scale === 'log' && this.DataMin > 0 && this.DataMax > 0);
+
+    this.LinearGlobalMin = this.actualToLinear(options.min);
+    this.LinearGlobalMax = this.actualToLinear(options.max);
+    this.LinearMinValue = options.viewportMin == null ?
+                        this.LinearGlobalMin :
+                        this.actualToLinear(options.viewportMin);
+    this.LinearMaxValue = options.viewportMax == null ?
+                      this.LinearGlobalMax :
+                      this.actualToLinear(options.viewportMax);
     this._dataMin = this.actualToLinear(this.DataMin);
     this._dataMax = this.actualToLinear(this.DataMax);
 
-    this.MajorIncrement = this.actualToLinear(options['step']);
-    this.MinorIncrement = this.actualToLinear(options['minorStep']);
-    this._minMajorIncrement = this.actualToLinear(options['minStep']);
-    this.MajorTickCount = options['_majorTickCount'];
-    this.MinorTickCount = options['_minorTickCount'];
+    this.MajorIncrement = this.actualToLinear(options.step);
+    this.MinorIncrement = this.actualToLinear(options.minorStep);
+    this._minMajorIncrement = this.actualToLinear(options.minStep);
+    this.MajorTickCount = options._majorTickCount;
+    this.MinorTickCount = options._minorTickCount;
 
-    this.LogScaleUnit = options['_logScaleUnit'];
-
-    this.ZeroBaseline = !this.IsLog && options['baselineScaling'] == 'zero';
+    this.LogScaleUnit = options._logScaleUnit;
+    this.ZeroBaseline = !this.IsLog && options.baselineScaling === 'zero';
+    this._continuousExtent = this.Options ? this.Options._continuousExtent === 'on' : null;
 
     this.Converter = null;
-    if (options['tickLabel'] != null)
-      this.Converter = options['tickLabel']['converter'];
-
+    if (options.tickLabel != null) {
+      this.Converter = options.tickLabel.converter;
+    }
     this._calcAxisExtents();
 
     this.GlobalMin = this.linearToActual(this.LinearGlobalMin);
@@ -315,7 +303,7 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.getBaselineCoord = function() {
+  this.getBaselineCoord = function () {
     return this.IsLog ? this.MinCoord : this.getBoundedCoordAt(0);
   };
 
@@ -323,10 +311,10 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.getUnboundedValueAt = function(coord) {
-    if (coord == null)
+  this.getUnboundedValueAt = function (coord) {
+    if (coord == null) {
       return null;
-
+    }
     var ratio = (coord - this.MinCoord) / (this.MaxCoord - this.MinCoord);
     var value = this.LinearMinValue + (ratio * (this.LinearMaxValue - this.LinearMinValue));
     return this.linearToActual(value);
@@ -336,7 +324,7 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.getUnboundedCoordAt = function(value) {
+  this.getUnboundedCoordAt = function (value) {
     return this.GetUnboundedCoordAt(this.actualToLinear(value));
   };
 
@@ -347,15 +335,14 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
    * @return {number}
    * @private
    */
-  this.GetUnboundedCoordAt = function(value) {
-    if (value == null)
+  this.GetUnboundedCoordAt = function (value) {
+    if (value == null) {
       return null;
-
-    var ratio = (this.LinearMaxValue == this.LinearMinValue) ? 0 : (value - this.LinearMinValue) / (this.LinearMaxValue - this.LinearMinValue);
-
-    // : Make sure the the ratio is not way too large so the browser does not fail to render
+    }
+    var ratio = (this.LinearMaxValue === this.LinearMinValue) ? 0 :
+                    (value - this.LinearMinValue) / (this.LinearMaxValue - this.LinearMinValue);
+    // Make sure the the ratio is not way too large so the browser does not fail to render
     ratio = Math.max(Math.min(1000, ratio), -1000);
-
     return this.MinCoord + (ratio * (this.MaxCoord - this.MinCoord));
   };
 
@@ -366,34 +353,38 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
    * @param {number} scaleUnit The scale unit of the axis.
    * @private
    */
-  this.CalcMajorMinorIncr = function(scaleUnit) {
+  this.CalcMajorMinorIncr = function (scaleUnit) {
     if (!this.MajorIncrement) {
-      if (this.MajorTickCount)
+      if (this.MajorTickCount) {
         this.MajorIncrement = (this.LinearMaxValue - this.LinearMinValue) / this.MajorTickCount;
-      else
+      } else {
         this.MajorIncrement = Math.max(scaleUnit, this._minMajorIncrement);
+      }
     }
 
     if (!this.MajorTickCount) {
       this.MajorTickCount = ((this.LinearMaxValue - this.LinearMinValue) / this.MajorIncrement);
 
-      // : Check if we have a floating point inaccuracy that causes the tick count to be undercalculated
+      // Check if we have a floating point inaccuracy that causes the tick count to be undercalculated
       // within the allowable buffer. If so, tick count is supposed to be the rounded up integer.
-      if (Math.ceil(this.MajorTickCount) - this.MajorTickCount < this.MAJOR_TICK_INCREMENT_BUFFER)
+      if (Math.ceil(this.MajorTickCount) - this.MajorTickCount < this.MAJOR_TICK_INCREMENT_BUFFER) {
         this.MajorTickCount = Math.ceil(this.MajorTickCount);
+      }
     }
 
     if (!this.MinorTickCount) {
-      if (this.MinorIncrement)
+      if (this.MinorIncrement) {
         this.MinorTickCount = this.MajorIncrement / this.MinorIncrement;
-      else if (this.IsLog)
+      } else if (this.IsLog) {
         this.MinorTickCount = this.MajorIncrement;
-      else
+      } else {
         this.MinorTickCount = this.MINOR_TICK_COUNT;
+      }
     }
 
-    if (!this.MinorIncrement)
+    if (!this.MinorIncrement) {
       this.MinorIncrement = this.MajorIncrement / this.MinorTickCount;
+    }
   };
 
 
@@ -402,9 +393,7 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
    * or calculated from the min and max data values of the chart.
    * @private
    */
-  this._calcAxisExtents = function() {
-    var continuousExtent = this.Options['_continuousExtent'] == 'on';
-
+  this._calcAxisExtents = function () {
     // Include 0 in the axis if we're scaling from the baseline
     if (this.ZeroBaseline) {
       this._dataMin = Math.min(0, this._dataMin);
@@ -418,10 +407,10 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
 
     // If there's only a single value on the axis, we need to adjust the
     // this._dataMin and this._dataMax to produce a nice looking axis with around 6 ticks.
-    if (this._dataMin == this._dataMax) {
-      if (this._dataMin == 0)
+    if (this._dataMin === this._dataMax) {
+      if (this._dataMin === 0) {
         this._dataMax += 5 * scaleUnit;
-      else {
+      } else {
         this._dataMin -= 2 * scaleUnit;
         this._dataMax += 2 * scaleUnit;
       }
@@ -431,80 +420,86 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
     if (this.LinearGlobalMin == null) {
       if (this.ZeroBaseline && this._dataMin >= 0) {
         this.LinearGlobalMin = 0;
-      }
-      else if (continuousExtent) { // allow smooth pan/zoom transition
-        this.LinearGlobalMin = this._dataMin - (this._dataMax - this._dataMin) * 0.1;
-      }
-      else if (!this.ZeroBaseline && this.LinearGlobalMax != null) {
+      } else if (this._continuousExtent) { // allow smooth pan/zoom transition
+        this.LinearGlobalMin = this._dataMin - ((this._dataMax - this._dataMin) * 0.1);
+      } else if (!this.ZeroBaseline && this.LinearGlobalMax != null) {
         this.LinearGlobalMin = this.LinearGlobalMax;
-        this.LinearGlobalMin -= scaleUnit * (Math.floor((this.LinearGlobalMin - this._dataMin) / scaleUnit) + 1);
-      }
-      else {
+        this.LinearGlobalMin -= scaleUnit *
+                    (Math.floor((this.LinearGlobalMin - this._dataMin) / scaleUnit) + 1);
+      } else {
         this.LinearGlobalMin = (Math.ceil(this._dataMin / scaleUnit) - 1) * scaleUnit;
       }
 
       // If all data points are positive, the axis min shouldn't be less than zero
-      if (this._dataMin >= 0 && !this.IsLog)
+      if (this._dataMin >= 0 && !this.IsLog) {
         this.LinearGlobalMin = Math.max(this.LinearGlobalMin, 0);
+      }
     }
 
     // Set the default global max
     if (this.LinearGlobalMax == null) {
       if (this.MajorTickCount) {
-        this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+        this.LinearGlobalMax = this.LinearGlobalMin + (this.MajorTickCount * scaleUnit);
 
         // JET-28098 - wrong y2 max
         if (this.LinearGlobalMax < this._dataMax) {
           scaleUnit = Math.max(this._calcAxisScale(minValue, maxValue + scaleUnit),
             this._minMajorIncrement);
-          this.LinearGlobalMax = this.LinearGlobalMin + this.MajorTickCount * scaleUnit;
+          this.LinearGlobalMax = this.LinearGlobalMin + (this.MajorTickCount * scaleUnit);
         }
-      }
-      else if (this.ZeroBaseline && this._dataMax <= 0) {
+      } else if (this.ZeroBaseline && this._dataMax <= 0) {
         this.LinearGlobalMax = 0;
-      }
-      else if (continuousExtent) { // allow smooth pan/zoom transition
-        this.LinearGlobalMax = this._dataMax + (this._dataMax - this._dataMin) * 0.1;
-      }
-      else if (!this.ZeroBaseline) {
+      } else if (this._continuousExtent) { // allow smooth pan/zoom transition
+        this.LinearGlobalMax = this._dataMax + ((this._dataMax - this._dataMin) * 0.1);
+      } else if (!this.ZeroBaseline) {
         this.LinearGlobalMax = this.LinearGlobalMin;
-        this.LinearGlobalMax += scaleUnit * (Math.floor((this._dataMax - this.LinearGlobalMax) / scaleUnit) + 1);
-      }
-      else {
+        this.LinearGlobalMax += scaleUnit *
+                              (Math.floor((this._dataMax - this.LinearGlobalMax) / scaleUnit) + 1);
+      } else {
         this.LinearGlobalMax = (Math.floor(this._dataMax / scaleUnit) + 1) * scaleUnit;
       }
 
       // If all data points are negative, the axis max shouldn't be more that zero
-      if (this._dataMax <= 0)
+      if (this._dataMax <= 0) {
         this.LinearGlobalMax = Math.min(this.LinearGlobalMax, 0);
+      }
     }
 
-    if (this.LinearGlobalMax == this.LinearGlobalMin) { // happens if this._dataMin == this._dataMax == 0
+    if (this.LinearGlobalMax === this.LinearGlobalMin) { // happens if this._dataMin == this._dataMax == 0
       this.LinearGlobalMax = 100;
       this.LinearGlobalMin = 0;
       scaleUnit = (this.LinearGlobalMax - this.LinearGlobalMin) / this.MAX_NUMBER_OF_GRIDS_AUTO;
     }
 
-    if (this.LinearMinValue == null)
+    if (this.LinearMinValue == null) {
       this.LinearMinValue = this.LinearGlobalMin;
-    if (this.LinearMaxValue == null)
+    }
+    if (this.LinearMaxValue == null) {
       this.LinearMaxValue = this.LinearGlobalMax;
+    }
 
     // if data min and axis min are too close (less than 10px) in log scale, decrease the axis min by a step
-    var diff = Math.abs(this.GetUnboundedCoordAt(this.LinearGlobalMin) - this.GetUnboundedCoordAt(this._dataMin));
-    if (this.IsLog && diff < this.MIN_BAR_SIZE_IN_LOG){
-      this.LinearGlobalMin -=  scaleUnit;
+    // when called from ojchart-utils (getLabelsFormatInfo) - always subtract one log scale unit from axis min regardless the diff
+    var diff = Math.abs(
+      this.GetUnboundedCoordAt(this.LinearGlobalMin) - this.GetUnboundedCoordAt(this._dataMin));
+    if ((this.IsLog && diff < this.MIN_BAR_SIZE_IN_LOG) || this.utilsLogOptions) {
+      this.LinearGlobalMin -= scaleUnit;
       this.LinearMinValue = this.LinearGlobalMin;
     }
 
     // Recalc the scale unit if the axis viewport is limited
-    if (this.LinearMinValue != this.LinearGlobalMin || this.LinearMaxValue != this.LinearGlobalMax)
-      scaleUnit = this._calcAxisScale(this.LinearMinValue, this.LinearMaxValue);
+    if (this.LinearMinValue !== this.LinearGlobalMin
+        || this.LinearMaxValue !== this.LinearGlobalMax) {
+          scaleUnit = this._calcAxisScale(this.LinearMinValue, this.LinearMaxValue);
+        }
 
-    if (this.LinearGlobalMin > this.LinearMinValue)
+    if (this.LinearGlobalMin > this.LinearMinValue) {
       this.LinearGlobalMin = this.LinearMinValue;
-    if (this.LinearGlobalMax < this.LinearMaxValue)
+    }
+
+    if (this.LinearGlobalMax < this.LinearMaxValue) {
       this.LinearGlobalMax = this.LinearMaxValue;
+    }
 
     // Calculate major and minor gridlines
     this.CalcMajorMinorIncr(scaleUnit);
@@ -518,62 +513,64 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
    * @return {number} The scale unit of the axis.
    * @private
    */
-  this._calcAxisScale = function(min, max) {
-    if (this.MajorIncrement)
+  this._calcAxisScale = function (min, max) {
+    if (this.MajorIncrement) {
       return this.MajorIncrement;
-
+    }
     var spread = max - min;
 
     if (this.IsLog) {
       var scaleUnit = Math.floor(spread / 8) + 1;
 
       // Store the scaleUnit for aligning log axes
-      if (!this.LogScaleUnit || this.LogScaleUnit < scaleUnit)
+      if (!this.LogScaleUnit || this.LogScaleUnit < scaleUnit) {
         this.LogScaleUnit = scaleUnit;
-
+      }
       return this.LogScaleUnit;
     }
 
-    if (spread == 0) {
-      if (min == 0)
+    if (spread === 0) {
+      if (min === 0) {
         return 10;
-      else
-        return Math.pow(10, Math.floor(Math$1.log10(min)) - 1);
+      }
+      return Math.pow(10, Math.floor(Math.log10(min)) - 1);
     }
 
+    var testVal;
     if (this.MajorTickCount) {
       //  - y2 axis should show better labels when tick marks are aligned
       var increment = spread / this.MajorTickCount;
-      var testVal = Math.pow(10, Math.ceil(Math$1.log10(increment) - 1));
+      testVal = Math.pow(10, Math.ceil(Math.log10(increment) - 1));
       var firstDigit = increment / testVal;
-      if (firstDigit > 1 && firstDigit <= 1.5)
+      if (firstDigit > 1 && firstDigit <= 1.5) {
         firstDigit = 1.5;
-      else if (firstDigit > 5)
+      } else if (firstDigit > 5) {
         firstDigit = 10;
-      else
+      } else {
         firstDigit = Math.ceil(firstDigit);
+      }
       return firstDigit * testVal;
     }
 
-    var t = Math$1.log10(spread);
-    var testVal = Math.pow(10, Math.ceil(t) - 2);
+    var t = Math.log10(spread);
+    testVal = Math.pow(10, Math.ceil(t) - 2);
     var first2Digits = Math.round(spread / testVal);
 
     // Aesthetically choose a scaling factor limiting to a max number of steps
     var scaleFactor = 1;
-    if (first2Digits >= 10 && first2Digits <= 14)
+    if (first2Digits >= 10 && first2Digits <= 14) {
       scaleFactor = 2;
-    else if (first2Digits >= 15 && first2Digits <= 19)
+    } else if (first2Digits >= 15 && first2Digits <= 19) {
       scaleFactor = 3;
-    else if (first2Digits >= 20 && first2Digits <= 24)
+    } else if (first2Digits >= 20 && first2Digits <= 24) {
       scaleFactor = 4;
-    else if (first2Digits >= 25 && first2Digits <= 45)
+    } else if (first2Digits >= 25 && first2Digits <= 45) {
       scaleFactor = 5;
-    else if (first2Digits >= 46 && first2Digits <= 80)
+    } else if (first2Digits >= 46 && first2Digits <= 80) {
       scaleFactor = 10;
-    else
+    } else {
       scaleFactor = 20;
-
+    }
     return scaleFactor * testVal;
   };
 
@@ -581,9 +578,10 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.linearToActual = function(value) {
-    if (value == null)
+  this.linearToActual = function (value) {
+    if (value == null) {
       return null;
+    }
     return this.IsLog ? Math.pow(10, value) : value;
   };
 
@@ -591,22 +589,27 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
   /**
    * @override
    */
-  this.actualToLinear = function(value) {
-    if (value == null)
+  this.actualToLinear = function (value) {
+    if (value == null) {
       return null;
-    if (this.IsLog)
-      return value > 0 ? Math$1.log10(value) : null;
+    }
+
+    if (this.IsLog) {
+      return value > 0 ? Math.log10(value) : null;
+    }
     return value;
   };
-};
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+  this.getAxisData = function () {
+    return {
+      isLog: this.IsLog,
+      max: this.LinearGlobalMax,
+      min: this.LinearGlobalMin,
+      step: this.MajorIncrement,
+      numSteps: this.MajorTickCount
+    };
+  };
+};
 
 /**
  * Formatter for an axis with a linear scale.
@@ -622,7 +625,6 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
  *    minValue = 0, maxValue=10000, tickStep=1000, scale="thousand" -> formatted axis values: 0K , ..., 10K
  *    minValue = 0, maxValue=100, tickStep=10, scale="thousand" -> formatted axis values: 0.00K, 0.01K, ..., 0.10K
  *
- * @param {dvt.Context} context
  * @param {number} minValue the minimum value on the axis
  * @param {number} maxValue the maximum value on the axis
  * @param {number} tickStep the tick step between values on the axis
@@ -631,11 +633,11 @@ const DataAxisInfoMixin = function(context, options, availSpace) {
  * @param {object} translations the translations options from the containing component
  * @constructor
  */
-const LinearScaleAxisValueFormatter = function(context, minValue, maxValue, tickStep, scale, autoPrecision, translations) {
-  this.Init(context, minValue, maxValue, tickStep, scale, autoPrecision, translations);
+const LinearScaleAxisValueFormatter = function (minValue, maxValue,
+  tickStep, scale, autoPrecision, translations) {
+  this.Init(minValue, maxValue, tickStep, scale, autoPrecision, translations);
 };
 
-Obj.createSubclass(LinearScaleAxisValueFormatter, Obj);
 
 // Allowed scales that can be used as formatter scale param values
 /** @const **/
@@ -663,7 +665,6 @@ LinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE = 3;
 
 /**
  * Initializes the instance.
- * @param {object} context
  * @param {number} minValue
  * @param {number} maxValue
  * @param {number} tickStep
@@ -671,8 +672,8 @@ LinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE = 3;
  * @param {number} autoPrecision
  * @param {object} translations
  */
-LinearScaleAxisValueFormatter.prototype.Init = function(context, minValue, maxValue, tickStep, scale, autoPrecision, translations) {
-  this._context = context;
+LinearScaleAxisValueFormatter.prototype.Init = function (minValue, maxValue,
+  tickStep, scale, autoPrecision, translations) {
   this._translations = translations;
   // array of successive scale values
   this._scales = {
@@ -693,7 +694,7 @@ LinearScaleAxisValueFormatter.prototype.Init = function(context, minValue, maxVa
  * @protected
  *
  */
-LinearScaleAxisValueFormatter.prototype.InitScales = function() {
+LinearScaleAxisValueFormatter.prototype.InitScales = function () {
   /**
    * Creates scale object and refreshes formatter properties using it.
    * @param {string} scaleName one of allowed scale names (e.g. LinearScaleAxisValueFormatter.SCALE_THOUSAND)
@@ -701,10 +702,10 @@ LinearScaleAxisValueFormatter.prototype.InitScales = function() {
    * @param {string} scaleKey translation key which value (translated) represents given scale (e.g. for LinearScaleAxisValueFormatter.SCALE_THOUSAND an translated english suffix is 'K')
    * @this {LinearScaleAxisValueFormatter}
    */
-  var createScale = function(scaleName, scaleFactor, scaleKey) {
+  var createScale = function (scaleName, scaleFactor, scaleKey) {
     var suffix;
     if (scaleKey) {
-      suffix = this._translations[scaleKey];
+      suffix = this._translations ? this._translations[scaleKey] : null;
     }
 
     var scale = {
@@ -727,16 +728,13 @@ LinearScaleAxisValueFormatter.prototype.InitScales = function() {
   createScale.call(this, LinearScaleAxisValueFormatter.SCALE_QUADRILLION, 5 * diff, 'labelScalingSuffixQuadrillion');
 
   // sort _scalesOrder array
-  this._scalesOrder.sort(function(scale1, scale2) {
+  this._scalesOrder.sort(function (scale1, scale2) {
     if (scale1.scaleFactor < scale2.scaleFactor) {
-      return - 1;
-    }
-    else if (scale1.scaleFactor > scale2.scaleFactor) {
+      return -1;
+    } else if (scale1.scaleFactor > scale2.scaleFactor) {
       return 1;
     }
-    else {
       return 0;
-    }
   });
 };
 
@@ -752,8 +750,12 @@ LinearScaleAxisValueFormatter.prototype.InitScales = function() {
  * @protected
  *
  */
-LinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, maxValue, tickStep, scale, autoPrecision) {
-  var findScale = false, decimalPlaces, scaleFactor, useAutoPrecision = false;
+LinearScaleAxisValueFormatter.prototype.InitFormatter = function (
+  minValue, maxValue, tickStep, scale, autoPrecision) {
+  var findScale = false;
+  var decimalPlaces;
+  var scaleFactor;
+  var useAutoPrecision = false;
 
   // if autoPrecision doesn't equal "off" (i.e. is "on", null, undefined) then auto precision should be used.
   if (!(autoPrecision === 'off')) {
@@ -777,18 +779,20 @@ LinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, maxVa
   }
 
   if (useAutoPrecision === true) {
-    if (tickStep == 0 && minValue == maxValue) {
+    if (tickStep === 0 && minValue === maxValue) {
       // TODO:  Remove this hack for chart tooltips, which currently passes 0 as the tick step in all cases.
       // Workaround for now will be to add decimal places to show at least 1 and at most 4 significant digits
       var valuePowerOfTen = this._getPowerOfTen(maxValue);
       var scaleFactorDiff = scaleFactor - valuePowerOfTen;
-      if (scaleFactorDiff <= 0) // Value is same or larger than the scale factor, ensure 4 significant digits.
+      if (scaleFactorDiff <= 0) {
+        // Value is same or larger than the scale factor, ensure 4 significant digits.
         // Make sure that the number of decimal places is at least zero. 
         decimalPlaces = Math.max(scaleFactorDiff + 3, 0);
-      else // Value is smaller, ensure enough decimals to show 1 significant digit
+      } else {
+        // Value is smaller, ensure enough decimals to show 1 significant digit
         decimalPlaces = Math.max(scaleFactorDiff, 4);
-    }
-    else {
+      }
+    } else {
       // get the number of decimal places in the number by subtracting
       // the order of magnitude of the tick step from the order of magnitude
       // of the scale factor
@@ -811,18 +815,16 @@ LinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, maxVa
  * @return {number} a scale factor 'x' such that x <= value
  * @private
  */
-LinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function(value) {
+LinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function (value) {
   var scaleFactor = 0;
 
   if (value <= this._scalesOrder[0].scaleFactor) {
     // if the number is less than 10, don't scale
     scaleFactor = this._scalesOrder[0].scaleFactor;
-  }
-  else if (value >= this._scalesOrder[this._scalesOrder.length - 1].scaleFactor) {
+  } else if (value >= this._scalesOrder[this._scalesOrder.length - 1].scaleFactor) {
     // if the data is greater than or equal to 10 quadrillion, scale to quadrillions
     scaleFactor = this._scalesOrder[this._scalesOrder.length - 1].scaleFactor;
-  }
-  else {
+  } else {
     // else find the nearest scaleFactor such that scaleFactor <= value
     var end = this._scalesOrder.length - 1;
     for (var i = end; i >= 0; i--) {
@@ -842,12 +844,11 @@ LinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function(val
  * @return {number} scale factor of scale given by scale name
  * @private
  */
-LinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName) {
+LinearScaleAxisValueFormatter.prototype._getScaleFactor = function (scaleName) {
   // If no scaling factor defined, use auto by default.
-  if (!scaleName)
-    scaleName = LinearScaleAxisValueFormatter.SCALE_AUTO;
-
-  var scaleFactor, scale = this._scales[scaleName];
+  var sclName = !scaleName ? LinearScaleAxisValueFormatter.SCALE_AUTO : scaleName;
+  var scaleFactor;
+  var scale = this._scales[sclName];
   if (scale) {
     scaleFactor = scale.scaleFactor;
   }
@@ -862,40 +863,41 @@ LinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName) {
  * @param {Object} converter The converter
  * @return {string} formatted value as string
  */
-LinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
+LinearScaleAxisValueFormatter.prototype.format = function (value, converter) {
+  var defaultConverter;
   var parsed = value != null ? parseFloat(value) : value;
-  if (typeof(parsed) === 'number') {
+  if (typeof (parsed) === 'number') {
     var scale = Math.pow(10, this._scaleFactor);
-    var userConverterStyle = converter && converter.getOptions && converter.getOptions() && converter.getOptions().style;
-    var scaleConverterOptions = {style: 'decimal', decimalFormat: userConverterStyle === 'unit' ? 'standard' :'short', nu: 'latn', useGrouping: false}; // Use nu to make sure the digits are latin
-    var defaultConverter = this._context.getNumberConverter(scaleConverterOptions);
+    var userConverterStyle = converter && converter.getOptions &&
+                            converter.getOptions() && converter.getOptions().style;
+    // Use nu to make sure the digits are latin
+    var scaleConverterOptions = { style: 'decimal', decimalFormat: userConverterStyle === 'unit' ? 'standard' : 'short', nu: 'latn', useGrouping: false };
+    defaultConverter = new IntlNumberConverter(scaleConverterOptions);
 
     // Formatting for scale
     var _SCALE_REGEXP = /(\d+)(.*$)/;
     var formattedScale = defaultConverter.format(scale, scaleConverterOptions);
     var formattedScaleParts = _SCALE_REGEXP.exec(formattedScale);
     var suffix = formattedScaleParts[2]; // Reset the suffix
-    var formattedScaledNumber = (Number(formattedScaleParts[1]) / scale)*parsed;
+    var formattedScaledNumber = (Number(formattedScaleParts[1]) / scale) * parsed;
 
     // Formatting for scaled number
-    if (converter && converter['format']) {
-      formattedScaledNumber = converter['format'](formattedScaledNumber); // Convert the number itself
+    if (converter && converter.format) {
+      formattedScaledNumber = converter.format(formattedScaledNumber); // Convert the number itself
+    } else {
+      // skip nu if you want the digits in native locale digits
+      var numberConverterOptions = { style: 'decimal', minimumFractionDigits: this._decimalPlaces, maximumFractionDigits: this._decimalPlaces };
+      defaultConverter = new IntlNumberConverter(numberConverterOptions);
+      formattedScaledNumber = defaultConverter.format(
+                                    formattedScaledNumber, numberConverterOptions);
     }
-    else {
-      var numberConverterOptions= {style: 'decimal', minimumFractionDigits: this._decimalPlaces, maximumFractionDigits: this._decimalPlaces}; //skip nu if you want the digits in native locale digits
-      defaultConverter = this._context.getNumberConverter(numberConverterOptions);
-      formattedScaledNumber = defaultConverter.format(formattedScaledNumber, numberConverterOptions);
-    }
-
     // Add the scale factor suffix, unless value is zero
-    if (typeof suffix === 'string' && value != 0) {
+    if (typeof suffix === 'string' && value !== 0) {
       formattedScaledNumber += suffix;
     }
     return formattedScaledNumber;
   }
-  else {
     return value;
-  }
 };
 
 
@@ -905,17 +907,18 @@ LinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
  * @return {string} number with fraction part formatted as string
  * @private
  */
-LinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
+LinearScaleAxisValueFormatter.prototype._formatFraction = function (value) {
   var formatted = value.toString();
 
   // Don't format scientific notation (e.g. '1e-7')
-  if (formatted.indexOf('e') != -1)
+  if (formatted.indexOf('e') !== -1) {
     return formatted;
+  }
 
   var decimalSep = '.';
   // TODO: probably need some translation here?
   if (this._decimalPlaces > 0) {
-    if (formatted.indexOf('.') == -1) {
+    if (formatted.indexOf('.') === -1) {
       formatted += decimalSep;
     }
 
@@ -923,7 +926,7 @@ LinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
 
     while (existingPlacesCount < this._decimalPlaces) {
       formatted += '0';
-      existingPlacesCount++;
+      existingPlacesCount += 1;
     }
   }
   return formatted;
@@ -936,33 +939,38 @@ LinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
  * @return {number} order of magnitude for given value
  * @private
  */
-LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
+LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function (value) {
   // more comprehensive and easier than working with value returned by Math.log(value)/Math.log(10)
-  value = (value >= 0) ? value : - value;
+  var val = (value >= 0) ? value : -value;
   var power = 0;
 
   // Check for degenerate and zero values
-  if (value < 1E-15) {
+  if (val < 1E-15) {
     return 0;
-  }
-  else if (value == Infinity) {
+  } else if (val === Infinity) {
     return Number.MAX_VALUE;
   }
 
-  if (value >= 10) {
+  if (val >= 10) {
     // e.g. for 1000 the power should be 3
-    while (value >= 10) {
+    while (val >= 10) {
       power += 1;
-      value /= 10;
+      val /= 10;
     }
-  }
-  else if (value < 1) {
-    while (value < 1) {
+  } else if (val < 1) {
+    while (val < 1) {
       power -= 1;
-      value *= 10;
+      val *= 10;
     }
   }
   return power;
+};
+
+/**
+ * @returns {Number} number of fractional digits of the formatter
+ */
+LinearScaleAxisValueFormatter.prototype.getDecimalPlaces = function () {
+  return this._decimalPlaces;
 };
 
 export { BaseAxisInfo, DataAxisInfoMixin, LinearScaleAxisValueFormatter };

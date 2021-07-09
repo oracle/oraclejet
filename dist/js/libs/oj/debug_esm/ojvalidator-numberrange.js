@@ -12,14 +12,6 @@ import { ValidatorError } from 'ojs/ojvalidation-error';
 import ConverterUtils from 'ojs/ojconverterutils';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Constructs a NumberRangeValidator that ensures the value provided is within a given range.
  * @param {Object=} options an object literal used to provide the following properties
  * @export

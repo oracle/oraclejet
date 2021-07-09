@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dvt, ojdvtAxis) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -74,14 +66,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -106,14 +90,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Indicator for DialGauge.
@@ -160,14 +136,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     if (params && params.length == 1)
       this.setAngle(params[0]);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for gauge components.
@@ -262,14 +230,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Utility functions for Gauge.
    * @class
    */
@@ -283,14 +243,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       return !!options['label']['text'];
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtGauge.
@@ -404,7 +356,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     }
 
     // when scaling is set then init formatter
-    var formatter = new ojdvtAxis.LinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision, options.translations);
+    var formatter = new ojdvtAxis.LinearScaleAxisValueFormatter(minValue, maxValue, increment, scaling, autoPrecision, options.translations);
     if (converter && converter['format'])
       output = formatter.format(value, converter);
     else if (isPercent){
@@ -615,14 +567,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     }
     return value;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DialGauge.
@@ -1122,14 +1066,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Provides automation services for a DVT component.
    *  @class DvtGaugeAutomation
    *  @param {DvtGauge} dvtComponent
@@ -1200,14 +1136,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   DvtGaugeAutomation.prototype.getMetricLabel = function() {
     return DvtGaugeRenderer.getFormattedMetricLabel(this.getValue(), this._gauge);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Event Manager for DvtGauge.
@@ -1377,14 +1305,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @param {dvt.EventManager} manager The owning dvt.EventManager
    * @param {DvtGauge} gauge
    * @class DvtGaugeKeyboardHandler
@@ -1434,14 +1354,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
         this._oldValue = value;
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for gauge components.
@@ -1749,14 +1661,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
 
     return DvtGaugeStyleUtils._ALTA_INDICATOR;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Abstract Base Class for Gauge component.
@@ -2312,14 +2216,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Dial Gauge component.  This class should never be instantiated directly.  Use the
    * newInstance function instead.
    * @class
@@ -2494,14 +2390,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -2521,14 +2409,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   DvtLedGaugeDefaults.SKIN_ALTA = {
     'type': 'circle'
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for LedGauge.
@@ -2885,14 +2765,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * LED Gauge component.  This class should never be instantiated directly.  Use the
    * newInstance function instead.
    * @class
@@ -2971,14 +2843,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   LedGauge.prototype.getGaugeType = function() {
     return 'led';
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Default values and utility functions for component versioning.
@@ -3112,14 +2976,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Rating gauge tooltip support
    * @param {RatingGauge} gauge The rating gauge.
    * @class
@@ -3146,14 +3002,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     var threshold = DvtGaugeDataUtils.getThreshold(this._gauge, thresholdIndex);
     return (threshold && threshold['shortDesc']) ? threshold['shortDesc'] : options['shortDesc'];
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for RatingGauge.
@@ -3340,14 +3188,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
 
     return shape;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Rating Gauge component.  This class should never be instantiated directly.  Use the
@@ -3714,14 +3554,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -3751,39 +3583,23 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Calculated axis information and drawable creation.
    * @class
    * @constructor
    * @extends {BaseAxisInfo}
    */
-  var DvtGaugeDataAxisInfo = function(context, options, availSpace) {
+  var DvtGaugeDataAxisInfo = function (context, options, availSpace) {
     this.Init(context, options, availSpace);
   };
 
   dvt.Obj.createSubclass(DvtGaugeDataAxisInfo, ojdvtAxis.BaseAxisInfo);
 
-  DvtGaugeDataAxisInfo.prototype.Init = function(context, options, availSpace) {
+  DvtGaugeDataAxisInfo.prototype.Init = function (context, options, availSpace) {
     DvtGaugeDataAxisInfo.superclass.Init.call(this, context, options, availSpace);
-    this.MixinInit.call(this, context, options, availSpace);
+    this.MixinInit.call(this, options);
   };
 
   ojdvtAxis.DataAxisInfoMixin.call(DvtGaugeDataAxisInfo.prototype);
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for StatusMeter.
@@ -3858,14 +3674,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       return cmd;
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Indicator for the circular DvtStatusMetergauge.
@@ -3943,14 +3751,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     if (params && params.length == 5)
       this.setPath(params[0], params[1], params[2], params[3], params[4]);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Indicator for StatusMeterGauge.
@@ -4034,14 +3834,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     if (params && params.length == 4)
       this.setCoords(params[0], params[1], params[2], params[3]);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for StatusMeterGauge.
@@ -4214,6 +4006,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
       'layout' : {
       }
     };
+    axisOptions.isRTL = isRTL;
     axisOptions['layout']['gapRatio'] = 0;
     axisOptions['timeAxisType'] = 'disabled';
     axisOptions['position'] = isVert ? 'left' : 'bottom';
@@ -5113,14 +4906,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
         callback(newOverlay);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Status Meter Gauge component.  This class should never be instantiated directly.  Use the

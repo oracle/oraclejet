@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransformerError = void 0;
 class TransformerError extends Error {
-    constructor(message) {
-        super(message);
+    constructor(className, message) {
+        super(`${className}: ${message}`);
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, TransformerError);
         }

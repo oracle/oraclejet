@@ -10,14 +10,6 @@ define(['ojs/ojcore-base', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovide
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     /**
-     * @license
-     * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-
-    /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
      * Released under the MIT license.
      * http://jquery.org/license
@@ -32,7 +24,7 @@ define(['ojs/ojcore-base', 'ojs/ojcollectiontabledatasource', 'ojs/ojdataprovide
      * @class CollectionDataProvider
      * @implements DataProvider
      * @classdesc This class implements {@link DataProvider}.
-     *            This object represents a data provider that is created from an {@link oj.Collection} object, such as an external data source. It can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
+     *            This object represents a data provider that is created from an {@link Collection} object, such as an external data source. It can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
      *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
      * In general, apps should not listen to the underlying ojCollection events. They should only list to events from the DataProvider itself.
      * CollectionDataProvider may silence ojCollection events.  How CollectionDP uses ojCollection is entirely up to itself and not part of the CollectionDataProvider contract.

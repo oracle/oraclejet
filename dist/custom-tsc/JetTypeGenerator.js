@@ -22,8 +22,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.assembleTypes = exports.getTypeGenerator = void 0;
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
+const MetaUtils = __importStar(require("./utils/MetadataUtils"));
 const template_1 = require("./template");
 const glob = __importStar(require("glob"));
+const TransformerError_1 = require("./utils/TransformerError");
 const _REGEX_LINE_ENDING = new RegExp(/(\r\n|\r)/gm);
 const _REGEX_BLANK_LINES = new RegExp(/^(?:[\t ]*(?:\r?\n|\r))+/gm);
 const _REGEX_EMPTY_EXPORT = new RegExp(/export {};/gi);
@@ -31,27 +33,41 @@ function getTypeGenerator(buildOptions) {
     const templatePath = buildOptions.templatePath;
     const view = new template_1.Template(templatePath);
     return (fileName, content) => {
+        var _a;
         const dirname = path.dirname(fileName);
         if (!fs.existsSync(dirname)) {
             fs.mkdirSync(dirname, { recursive: true });
         }
+        let importComponentChildren = false;
         if (fileName.endsWith("d.ts")) {
             content = content.replace(_REGEX_EMPTY_EXPORT, "");
             content = content.replace(_REGEX_BLANK_LINES, "");
             if (buildOptions.componentToMetadata) {
-                content =
-                    "import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';\n" +
-                        "import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';\n" +
-                        content;
+                let typeImports = "";
+                if ("GlobalProps" in ((_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.exportToAlias)) {
+                    typeImports =
+                        "import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';\n" +
+                            "import 'ojs/oj-jsx-interfaces';\n";
+                }
+                else {
+                    typeImports =
+                        "import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';\n" +
+                            "import { GlobalProps } from 'ojs/ojvcomponent';\n" +
+                            "import 'ojs/oj-jsx-interfaces';\n";
+                }
+                content = typeImports + content;
                 const vcomponents = buildOptions.componentToMetadata;
-                for (let vcomponentName in vcomponents) {
-                    let metadata = vcomponents[vcomponentName];
+                for (let vcomponentClassName in vcomponents) {
+                    let metadata = vcomponents[vcomponentClassName];
                     const customElementName = metadata.name;
                     if (customElementName) {
-                        const data = getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentName);
-                        const exports = getComponentExportsString(data.vcomponentName, data.vpropsClassName, data.propsClassName, data.componentPropertyInterface, data.legacyComponentName);
+                        const data = getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentClassName);
+                        if (data.slots || data.dynamicSlots) {
+                            importComponentChildren = true;
+                        }
+                        const exports = getComponentExportsString(data, buildOptions);
                         const baseFileName = path.basename(fileName, ".d.ts");
-                        const exportContent = `\nexport { ${exports} } from './${baseFileName}';\n`;
+                        const exportContent = `export { ${exports} } from './${baseFileName}';`;
                         const exportsFile = path.join(path.dirname(fileName), `exports_${customElementName}.d.ts`);
                         try {
                             let generatedContent = view.render("container.tmpl", data);
@@ -69,6 +85,10 @@ function getTypeGenerator(buildOptions) {
                 }
             }
         }
+        if (importComponentChildren && !isUsingComponentChildren(content)) {
+            const statement = 'import { ComponentChildren } from "preact"\n';
+            content = statement + content;
+        }
         content = content.replace(_REGEX_LINE_ENDING, "\n");
         fs.writeFileSync(fileName, content);
     };
@@ -76,6 +96,7 @@ function getTypeGenerator(buildOptions) {
 exports.getTypeGenerator = getTypeGenerator;
 function assembleTypes(buildOptions) {
     var _a;
+    const coreJET = !!buildOptions.coreJetBuildOptions;
     const EXCLUDED_MODULES = ((_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.exclude) || [];
     function processImportedDependencies(typeDeclarName, seen) {
         const typeDeclarCont = fs.readFileSync(typeDeclarName, "utf-8");
@@ -107,24 +128,34 @@ function assembleTypes(buildOptions) {
             return;
         }
         const sourceFileContent = fs.readFileSync(entryFile, "utf-8");
-        let newIndexFileContent = sourceFileContent
-            .replace(regexImportDep, "")
-            .trim();
+        const finalExports = [];
+        if (!coreJET) {
+            finalExports.push(sourceFileContent.replace(regexImportDep, "").trim());
+        }
         moduleTypeDependencies[moduleName] = new Set();
+        const coreJETSuppressedExports = new Set();
+        exports_files.forEach((expfile) => {
+            const expFileContent = fs.readFileSync(expfile, "utf-8");
+            if (coreJET) {
+                let injectedMatches;
+                while ((injectedMatches = regexExportDep.exec(expFileContent)) !== null) {
+                    coreJETSuppressedExports.add(injectedMatches.groups.localdep);
+                }
+            }
+            finalExports.push(expFileContent);
+        });
         let matches;
         while ((matches = regexExportDep.exec(sourceFileContent)) !== null) {
             const exportTypeFile = matches.groups.localdep;
+            if (coreJET && !coreJETSuppressedExports.has(exportTypeFile)) {
+                finalExports.unshift(matches[0]);
+            }
             const typeDeclarFile = path.join(moduleDir, `${exportTypeFile}.d.ts`);
             if (!moduleTypeDependencies[moduleName].has(`${path.basename(typeDeclarFile)}`)) {
                 moduleTypeDependencies[moduleName].add(`${path.basename(typeDeclarFile)}`);
                 processImportedDependencies(typeDeclarFile, moduleTypeDependencies[moduleName]);
             }
         }
-        exports_files.forEach((expfile) => {
-            const expFileContent = fs.readFileSync(expfile, "utf-8");
-            newIndexFileContent += "\n";
-            newIndexFileContent += expFileContent;
-        });
         const destDir = buildOptions.coreJetBuildOptions
             ? `${buildOptions.typesDir}/${moduleName}`
             : `${buildOptions.typesDir}/${moduleName}/types/`;
@@ -136,7 +167,9 @@ function assembleTypes(buildOptions) {
         if (buildOptions.debug) {
             console.log(`create file ${destFilePath}`);
         }
-        fs.writeFileSync(destFilePath, newIndexFileContent, { encoding: "utf-8" });
+        fs.writeFileSync(destFilePath, finalExports.join("\n"), {
+            encoding: "utf-8",
+        });
         moduleTypeDependencies[moduleName].forEach((dtsFile) => {
             if (buildOptions.debug) {
                 console.log(`copy file ${path.join(moduleDir, dtsFile)} to ${path.join(destDir, dtsFile)}`);
@@ -146,11 +179,12 @@ function assembleTypes(buildOptions) {
     });
 }
 exports.assembleTypes = assembleTypes;
-function getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentName) {
+function getComponentTemplateData(metadata, buildOptions, customElementName, vcomponentClassName) {
     var _a, _b, _c, _d, _e, _f;
-    const legacyComponentName = getLegacyComponentName(metadata, buildOptions, vcomponentName);
-    const vcomponentElementName = `${vcomponentName}Element`;
+    const legacyComponentName = getLegacyComponentName(metadata, buildOptions, vcomponentClassName);
+    const vcomponentElementName = MetaUtils.tagNameToElementInterfaceName(customElementName);
     const classDataParam = (_a = metadata["classTypeParams"]) !== null && _a !== void 0 ? _a : "";
+    const classDataParamsAny = getTypeParamsAny(classDataParam);
     const classDataParamsDeclaration = (_b = metadata["classTypeParamsDeclaration"]) !== null && _b !== void 0 ? _b : "";
     const propsDataParam = (_c = metadata["propsTypeParams"]) !== null && _c !== void 0 ? _c : "";
     const propsClassDataParams = (_d = metadata["propsClassTypeParams"]) !== null && _d !== void 0 ? _d : "";
@@ -158,15 +192,15 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
     const data = {
         classTypeParams: classDataParam,
         classTypeParamsDeclaration: classDataParamsDeclaration,
+        classTypeParamsAny: classDataParamsAny,
         propsClassTypeParams: propsClassDataParams,
         propsClassTypeParamsDeclaration: propsClassDataParamsDeclaration,
         propsTypeParams: propsDataParam,
         propsTypeParamsAny: (_f = metadata["propsTypeParamsAny"]) !== null && _f !== void 0 ? _f : "",
         propsClassName: metadata["propsClassName"],
-        vpropsClassName: metadata["vpropsClassName"],
-        componentPropertyInterface: `${vcomponentName}Properties`,
+        componentPropertyInterface: `${vcomponentClassName}IntrinsicProps`,
         customElementName: customElementName,
-        vcomponentClassName: vcomponentName,
+        vcomponentClassName: vcomponentClassName,
         vcomponentName: vcomponentElementName,
         eventMapInterface: `${vcomponentElementName}EventMap`,
         settablePropertiesInterface: `${vcomponentElementName}SettableProperties`,
@@ -175,6 +209,8 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         properties: metadata.properties,
         events: metadata.events,
         methods: sortAndFilterMethods(metadata.methods),
+        slots: metadata.slots,
+        dynamicSlots: metadata.dynamicSlots,
     };
     if (legacyComponentName) {
         data.legacyComponentName = legacyComponentName;
@@ -184,6 +220,14 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         data.legacySettablePropertiesLenientInterface = `${legacyComponentName}SettablePropertiesLenient${propsClassDataParamsDeclaration}`;
     }
     return data;
+}
+function getTypeParamsAny(params) {
+    let retVal = "";
+    if (params && params.startsWith("<") && params.endsWith(">")) {
+        let retValArr = params.substring(1, params.length - 1).split(",");
+        retVal = `<${retValArr.map((val) => "any").join(",")}>`;
+    }
+    return retVal;
 }
 function sortAndFilterMethods(methods) {
     const filter = ["getProperty", "setProperty", "setProperties"];
@@ -196,26 +240,26 @@ function sortAndFilterMethods(methods) {
         return a;
     }, {});
 }
-function getComponentExportsString(vcomponentElementName, vpropsClassName, propsClassName, componentPropertyInterface, legacyComponentName) {
-    const exports = [
-        `${vcomponentElementName}EventMap`,
-        `${vcomponentElementName}SettableProperties`,
-        `${vcomponentElementName}SettablePropertiesLenient`,
-        vcomponentElementName,
-        vpropsClassName,
-    ];
-    if (propsClassName) {
-        exports.push(componentPropertyInterface);
+function getComponentExportsString(data, buildOptions) {
+    const coreJET = !!buildOptions.coreJetBuildOptions;
+    if (coreJET) {
+        const exports = [
+            data.eventMapInterface,
+            data.settablePropertiesInterface,
+            data.settablePropertiesLenientInterface,
+            data.vcomponentName,
+        ];
+        if (data.legacyComponentName) {
+            exports.push(data.legacyEventMapInterface);
+            exports.push(data.legacySettablePropertiesInterface);
+            exports.push(data.legacySettablePropertiesLenientInterface);
+            exports.push(data.legacyComponentName);
+        }
+        return exports.join(", ");
     }
-    if (legacyComponentName) {
-        exports.push(`${legacyComponentName}EventMap`);
-        exports.push(`${legacyComponentName}SettableProperties`);
-        exports.push(`${legacyComponentName}SettablePropertiesLenient`);
-        exports.push(`${legacyComponentName}`);
-    }
-    return exports.join(", ");
+    return data.vcomponentName;
 }
-function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
+function getLegacyComponentName(metadata, buildOptions, vcomponentClassName) {
     var _a;
     const legacyVersion = (_a = buildOptions.coreJetBuildOptions) === null || _a === void 0 ? void 0 : _a.enableLegacyElement;
     const sinceJetVersionStr = metadata["since"];
@@ -224,12 +268,16 @@ function getLegacyComponentName(metadata, buildOptions, vcomponentName) {
         try {
             const sinceJetVersion = Number(sinceJetVersionStr.match(/^([^.]+)/)[0]);
             if (sinceJetVersion < legacyVersion) {
-                legacyComponentName = `oj${vcomponentName}`;
+                legacyComponentName = `oj${vcomponentClassName}`;
             }
         }
         catch (err) {
-            throw new Error(`${vcomponentName}: invalid 'since' value: ${sinceJetVersionStr}.`);
+            throw new TransformerError_1.TransformerError(vcomponentClassName, `Invalid 'since' value: ${sinceJetVersionStr}.`);
         }
     }
     return legacyComponentName;
+}
+function isUsingComponentChildren(content) {
+    const regexp = new RegExp(/\s*import\s+\{[\w\,\s]+\bComponentChildren\b[\w\,\s]+\}\s+from\s+['"]preact['"]/, "g");
+    return regexp.test(content);
 }

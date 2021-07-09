@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojMenu extends baseComponent<ojMenuSettableProperties> {
     disabled: boolean;
@@ -170,4 +164,23 @@ export namespace MenuElement {
         horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
         vertical?: 'top' | 'bottom' | 'center';
     };
+}
+export interface MenuIntrinsicProps extends Partial<Readonly<ojMenuSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAction?: (value: ojMenuEventMap['ojAction']) => void;
+    onojAnimateEnd?: (value: ojMenuEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojMenuEventMap['ojAnimateStart']) => void;
+    onojBeforeOpen?: (value: ojMenuEventMap['ojBeforeOpen']) => void;
+    onojClose?: (value: ojMenuEventMap['ojClose']) => void;
+    onojMenuAction?: (value: ojMenuEventMap['ojMenuAction']) => void;
+    onojOpen?: (value: ojMenuEventMap['ojOpen']) => void;
+    ondisabledChanged?: (value: ojMenuEventMap['disabledChanged']) => void;
+    onopenOptionsChanged?: (value: ojMenuEventMap['openOptionsChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-menu": MenuIntrinsicProps;
+        }
+    }
 }

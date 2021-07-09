@@ -13,13 +13,6 @@ import { error } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *
  * @ojcomponent oj.ojBindDom
  * @ojdisplayname Bind DOM
@@ -105,15 +98,6 @@ import Context from 'ojs/ojcontext';
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * @protected
  * @ignore
  */
@@ -163,14 +147,6 @@ import Context from 'ojs/ojcontext';
     return null;
   }
 }());
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 bindingHandlers._ojBindDom_ = {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {

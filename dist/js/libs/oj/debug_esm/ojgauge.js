@@ -17,14 +17,6 @@ import { getResourceUrl } from 'ojs/ojconfig';
 import { DialGauge, LedGauge, RatingGauge, StatusMeterGauge } from 'ojs/ojgauge-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
@@ -914,14 +906,6 @@ var __oj_status_meter_gauge_metadata =
 }());
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.dvtBaseGauge
  * @augments oj.dvtBaseComponent
  * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
@@ -956,7 +940,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       this._super();
       this._SetLocaleHelpers(NumberConverter, ConverterUtils);
     },
-    //* * @inheritdoc */
+
     _ProcessStyles: function (optionsCopy) {
       var options = optionsCopy;
       // The superclass evaluates the style classes, including those in _GetChildStyleClasses
@@ -972,7 +956,6 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       options._threshold2 = null;
       options._threshold3 = null;
     },
-    //* * @override */
     _AfterCreate: function () {
       this._super();
       var flags = {};
@@ -983,13 +966,11 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
         this._labelledByUpdatedForSet(this.element[0].id, null, labelledBy, this.element);
       }
     },
-    //* * @inheritdoc */
-    //* * @override */
     _GetContentElement: function () {
       return this.element;
     },
 
-    //* * @inheritdoc */
+
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-gauge-metric-label'] = { path: 'metricLabel/style', property: 'TEXT' };
@@ -1000,12 +981,12 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _GetEventTypes: function () {
       return ['input', 'optionChange'];
     },
 
-    //* * @inheritdoc */
+
     _HandleEvent: function (event) {
       var type = event.type;
       if (type === 'valueChange') {
@@ -1065,7 +1046,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       this._super(key, value, flags);
     },
 
-    //* * @inheritdoc */
+
     _ConvertLocatorToSubId: function (locator) {
       var subId = locator.subId;
 
@@ -1085,14 +1066,6 @@ oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
       return subId;
     }
   }, true);
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @ojcomponent oj.ojDialGauge
@@ -1180,13 +1153,13 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
       rawValue: undefined
     },
 
-    //* * @inheritdoc */
+
     _CreateDvtComponent: function (context, callback, callbackObj) {
       this._focusable({ element: this.element, applyHighlight: true });
       return DialGauge.newInstance(context, callback, callbackObj);
     },
 
-    //* * @inheritdoc */
+
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
 
@@ -1196,14 +1169,14 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
       return locator;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-dialgauge');
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _Render: function () {
       // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
       if (this.element.attr('title')) {
@@ -1390,14 +1363,6 @@ oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
   });
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojLedGauge
  * @augments oj.dvtBaseGauge
  * @since 0.7.0
@@ -1467,7 +1432,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name borderColor
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojformat color
        */
       borderColor: '',
@@ -1478,7 +1443,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name color
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojformat color
        */
       color: '#393737',
@@ -1489,7 +1454,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name label
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       label: {
         /**
@@ -1526,7 +1491,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name metricLabel
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       metricLabel: {
         /**
@@ -1623,7 +1588,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name max
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 100
        */
       max: 100,
@@ -1634,7 +1599,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name min
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 0
        */
       min: 0,
@@ -1645,7 +1610,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name rotation
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @ojvalue {number} 90
        * @ojvalue {number} 180
        * @ojvalue {number} 270
@@ -1661,7 +1626,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name size
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 1
        * @ojmin 0
        * @ojmax 1
@@ -1675,7 +1640,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojLedGauge
        * @ojshortdesc The CSS style class to apply to the gauge. See the Help documentation for more information.
        * @instance
-       * @type {string}
+       * @type {string=}
        * @default ""
        */
       svgClassName: '',
@@ -1688,7 +1653,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojLedGauge
        * @ojshortdesc The inline style to apply to the gauge. See the Help documentation for more information.
        * @instance
-       * @type {Object}
+       * @type {Object=}
        * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
        * @default {}
        */
@@ -1701,7 +1666,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojLedGauge
        * @ojshortdesc An array of objects specifying the gauge thresholds.
        * @instance
-       * @type {Array.<Object>}
+       * @type {Array.<Object>=}
        * @ojsignature {target: "Type", value: "Array<oj.ojLedGauge.Threshold>", jsdocOverride: true}
        * @default []
        */
@@ -1713,7 +1678,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name tooltip
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       tooltip: {
         /**
@@ -1741,7 +1706,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name type
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string=} "arrow"
        * @ojvalue {string=} "diamond"
        * @ojvalue {string=} "square"
@@ -1760,7 +1725,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name value
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @ojwriteback
        * @ojeventgroup common
        */
@@ -1772,7 +1737,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojLedGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
        * @default "auto"
@@ -1780,13 +1745,13 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
       visualEffects: 'auto'
     },
 
-    //* * @inheritdoc */
+
     _CreateDvtComponent: function (context, callback, callbackObj) {
       this._focusable({ element: this.element, applyHighlight: true });
       return LedGauge.newInstance(context, callback, callbackObj);
     },
 
-    //* * @inheritdoc */
+
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
 
@@ -1796,14 +1761,14 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
       return locator;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-ledgauge');
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _Render: function () {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
       if (this.element.attr('title')) {
@@ -1833,13 +1798,6 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
     }
   });
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @ojcomponent oj.ojRatingGauge
  * @augments oj.dvtBaseGauge
@@ -1909,7 +1867,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name changed
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {boolean}
+       * @type {boolean=}
        * @default false
        * @ojwriteback
        */
@@ -1921,7 +1879,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name changedState
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       changedState: {
         /**
@@ -2010,7 +1968,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name hoverState
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       hoverState: {
         /**
@@ -2102,7 +2060,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
      * @name labelledBy
      * @memberof oj.ojRatingGauge
      * @ojshortdesc Establishes a relationship between this component and another element, typically an oj-label custom element. See the Help documentation for more information.
-     * @type {string|null}
+     * @type {(string|null)=}
      * @public
      * @instance
      * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
@@ -2126,10 +2084,9 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
      * @name describedBy
      * @memberof oj.ojRatingGauge
      * @ojshortdesc Specifies a relationship between this component and another element.
-     * @type {string|null}
+     * @type {(string|null)=}
      * @public
      * @instance
-     *
      * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
      * // getter
      * var descById = myRatingGauge.describedBy;
@@ -2146,7 +2103,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name max
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 5
        * @ojmin 0
        */
@@ -2158,7 +2115,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name min
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 0
        * @ojmin 0
        */
@@ -2170,7 +2127,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name orientation
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "vertical"
        * @ojvalue {string} "horizontal"
        * @default "horizontal"
@@ -2185,7 +2142,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojRatingGauge
        * @ojshortdesc Specifies whether the images provided should show up at their defined aspect ratios. See the Help documentation for more information.
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "meet"
        * @default "meet"
@@ -2200,7 +2157,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @expose
        * @alias transientValue
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @memberof oj.ojRatingGauge
        * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @since 4.2.0
@@ -2216,7 +2173,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name readonly
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {boolean}
+       * @type {boolean=}
        * @default false
        */
       readonly: false,
@@ -2227,7 +2184,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name disabled
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {boolean}
+       * @type {boolean=}
        * @default false
        */
       disabled: false,
@@ -2238,7 +2195,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       * @memberof oj.ojRatingGauge
       * @ojshortdesc Specifies the size of the rating gauge item.
       * @instance
-      * @type {string}
+      * @type {string=}
       * @ojvalue {string} "small" {"description": "Small size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
       * @ojvalue {string} "medium" {"description": "Medium size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
       * @ojvalue {string} "large" {"description": "Large size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes."}
@@ -2253,7 +2210,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name selectedState
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       selectedState: {
         /**
@@ -2342,7 +2299,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name step
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @ojvalue {number=} 0.5
        * @ojvalue {number=} 1
        * @default 1
@@ -2356,7 +2313,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojRatingGauge
        * @ojshortdesc An array of objects specifying the gauge thresholds.
        * @instance
-       * @type {Array.<Object>}
+       * @type {Array.<Object>=}
        * @ojsignature {target: "Type", value: "Array<oj.ojRatingGauge.Threshold>", jsdocOverride: true}
        * @default []
        */
@@ -2368,7 +2325,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name tooltip
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       tooltip: {
         /**
@@ -2396,7 +2353,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name unselectedState
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       unselectedState: {
         /**
@@ -2485,7 +2442,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name value
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @ojwriteback
        * @ojmin 0
        * @ojeventgroup common
@@ -2498,7 +2455,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojRatingGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
        * @default "auto"
@@ -2506,13 +2463,13 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       visualEffects: 'auto'
     },
 
-    //* * @inheritdoc */
+
     _CreateDvtComponent: function (context, callback, callbackObj) {
       this._focusable({ element: this.element, applyHighlight: true });
       return RatingGauge.newInstance(context, callback, callbackObj);
     },
 
-    //* * @inheritdoc */
+
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
 
@@ -2525,7 +2482,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       return locator;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-ratinggauge');
@@ -2536,7 +2493,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-rating-gauge-hover'] = [
@@ -2572,7 +2529,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       return styleClasses;
     },
 
-  //* * @inheritdoc */
+
     _Render: function () {
       // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
       if (this.element.attr('title')) {
@@ -2594,7 +2551,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       return this._IsCustomElement();
     },
 
-    //* * @inheritdoc */
+
     _ProcessStyles: function (optionsCopy) {
       var options = optionsCopy;
       this._super(options);
@@ -2609,7 +2566,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
         }
       },
 
-    //* * @inheritdoc */
+
     _ProcessOptions: function () {
       this._super();
 
@@ -2620,7 +2577,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
       }
     },
 
-    //* * @inheritdoc */
+
     // eslint-disable-next-line no-unused-vars
     _UserOptionChange: function (key, value) {
       this._superApply(arguments);
@@ -2633,13 +2590,6 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
 
   });
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @ojcomponent oj.ojStatusMeterGauge
  * @augments oj.dvtBaseGauge
@@ -2713,7 +2663,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name angleExtent
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 360
        * @ojunits degrees
        * @ojmin 0
@@ -2727,7 +2677,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name animationOnDataChange
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "auto"
        * @ojvalue {string} "none"
        * @default "none"
@@ -2740,7 +2690,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name animationOnDisplay
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "auto"
        * @ojvalue {string} "none"
        * @default "none"
@@ -2754,7 +2704,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @ojshortdesc The duration of the animations in milliseconds.
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @ojsignature {target: "Type", value: "?"}
        * @ojunits milliseconds
        * @ojmin 0
@@ -2767,7 +2717,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name borderColor
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojformat color
        */
       borderColor: '',
@@ -2779,7 +2729,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc Specifies the border radius of the indicator and plot area. See the Help documentation for more information.
        * @instance
-       * @type {string}
+       * @type {string=}
        * @default "auto"
        */
       borderRadius: 'auto',
@@ -2790,7 +2740,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name center
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       center: {
         /**
@@ -2820,7 +2770,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name color
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojformat color
        */
       color: '#393737',
@@ -2831,7 +2781,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name indicatorSize
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 1
        * @ojmin 0
        */
@@ -2843,7 +2793,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name innerRadius
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default .7
        * @ojmin 0
        * @ojmax 1
@@ -2856,7 +2806,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name label
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       label: {
         /**
@@ -2914,7 +2864,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @public
        * @instance
-       * @type {string|null}
+       * @type {(string|null)=}
        * @example <caption>Get or set the <code class="prettyprint">labelledBy</code> property after initialization:</caption>
        * // getter
        * var labelId = myStatusMeterGauge.labelledBy;
@@ -2938,7 +2888,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @public
        * @instance
-       * @type {string|null}
+       * @type {(string|null)=}
        *
        * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
        * // getter
@@ -2956,7 +2906,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name max
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 100
        */
       max: 100,
@@ -2967,7 +2917,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name metricLabel
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       metricLabel: {
         /**
@@ -3085,7 +3035,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name min
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 0
        */
       min: 0,
@@ -3096,7 +3046,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name orientation
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "circular"
        * @ojvalue {string} "vertical"
        * @ojvalue {string} "horizontal"
@@ -3110,7 +3060,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name plotArea
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       plotArea: {
         /**
@@ -3202,7 +3152,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @expose
        * @alias transientValue
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc Read-only property used for retrieving the transient value from the component. See the Help documentation for more information.
        * @since 4.2.0
@@ -3218,7 +3168,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name readonly
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {boolean}
+       * @type {boolean=}
        * @default false
        */
       readonly: false,
@@ -3230,7 +3180,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc An array of objects specifying the reference lines for the gauge.
        * @instance
-       * @type {Array.<Object>}
+       * @type {Array.<Object>=}
        * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.ReferenceLine>", jsdocOverride: true}
        * @default []
        */
@@ -3242,7 +3192,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name startAngle
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number}
+       * @type {number=}
        * @default 90
        * @ojunits degrees
        * @ojmin 0
@@ -3257,7 +3207,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc Specifies the increment by which values can be changed by the end user. See the Help documentation for more information.
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @ojexclusivemin 0
        */
       step: null,
@@ -3269,7 +3219,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc The CSS style class to apply to the gauge indicator. See the Help documentation for more information.
        * @instance
-       * @type {string}
+       * @type {string=}
        * @default ""
        */
       svgClassName: '',
@@ -3282,7 +3232,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc The inline style to apply to the gauge indicator. See the Help documentation for more information.
        * @instance
-       * @type {Object}
+       * @type {Object=}
        * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
        * @default {}
        */
@@ -3294,7 +3244,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name tooltip
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {Object=}
        */
       tooltip: {
         /**
@@ -3322,7 +3272,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name thresholdDisplay
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "currentOnly"
        * @ojvalue {string} "all"
        * @ojvalue {string} "onIndicator"
@@ -3337,7 +3287,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @memberof oj.ojStatusMeterGauge
        * @ojshortdesc An array of objects specifying the gauge thresholds.
        * @instance
-       * @type {Array.<Object>}
+       * @type {Array.<Object>=}
        * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.Threshold>", jsdocOverride: true}
        * @default []
        */
@@ -3349,7 +3299,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name value
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {number|null}
+       * @type {(number|null)=}
        * @ojwriteback
        * @ojeventgroup common
        */
@@ -3361,7 +3311,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
        * @default "auto"
@@ -3369,13 +3319,13 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
       visualEffects: 'auto'
     },
 
-    //* * @inheritdoc */
+
     _CreateDvtComponent: function (context, callback, callbackObj) {
       this._focusable({ element: this.element, applyHighlight: true });
       return StatusMeterGauge.newInstance(context, callback, callbackObj);
     },
 
-    //* * @inheritdoc */
+
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
 
@@ -3385,14 +3335,14 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
       return locator;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-statusmetergauge');
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentRendererOptions: function () {
       return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
               { path: 'center/renderer', slot: 'centerTemplate' }];
@@ -3405,7 +3355,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
       return this._IsCustomElement();
     },
 
-    //* * @inheritdoc */
+
     _ProcessOptions: function () {
       this._super();
       var center = this.options.center;
@@ -3421,7 +3371,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _Render: function () {
       // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
       if (this.element.attr('title')) {
@@ -3452,13 +3402,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
 
   });
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -4014,13 +3957,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * <p>This element has no touch interaction.  </p>
  *
  *
@@ -4095,13 +4031,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  * &lt;/oj-led-gauge>
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -4252,14 +4181,57 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  *  &lt;/template>
  * &lt;/oj-rating-gauge>
  */
-
+//-----------------------------------------------------
+//                   Styling
+//-----------------------------------------------------
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+ * @ojstylevariableset oj-rating-gauge-css-set1
+ * @ojstylevariable oj-rating-gauge-sm-size {description: "Rating gauge small size", formats: ["length"], help: "#css-variables"}
+ * @ojstylevariable oj-rating-gauge-md-size {description: "Rating gauge medium size",formats: ["length"], help: "#css-variables"}
+ * @ojstylevariable oj-rating-gauge-lg-size {description: "Rating gauge large size", formats: ["length"], help: "#css-variables"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set2
+ * @ojdisplayname Hovered
+ * @ojstylevariable oj-rating-gauge-border-color-hover {description: "Rating gauge border color when hovered", formats: ["color"], help: "#oj-rating-gauge-css-set2"}
+ * @ojstylevariable oj-rating-gauge-color-hover {description: "Rating gauge color when hovered", formats: ["color"], help: "#oj-rating-gauge-css-set2"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set3
+ * @ojdisplayname Unselected
+ * @ojstylevariable oj-rating-gauge-border-color-unselected {description: "Rating gauge border color when unselected", formats: ["color"], help: "#oj-rating-gauge-css-set3"}
+ * @ojstylevariable oj-rating-gauge-color-unselected {description: "Rating gauge color when unselected", formats: ["color"], help: "oj-rating-gauge-css-set3"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set4
+ * @ojdisplayname Selected
+ * @ojstylevariable oj-rating-gauge-border-color-selected {description: "Rating gauge border color when selected", formats: ["color"], help: "#oj-rating-gauge-css-set4"}
+ * @ojstylevariable oj-rating-gauge-color-selected {description: "Rating gauge color when selected", formats: ["color"], help: "oj-rating-gauge-css-set4"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set5
+ * @ojdisplayname Changed
+ * @ojstylevariable oj-rating-gauge-border-color-changed {description: "Rating gauge border color when changed", formats: ["color"], help: "#oj-rating-gauge-css-set5"}
+ * @ojstylevariable oj-rating-gauge-color-changed {description: "Rating gauge color when changed", formats: ["color"], help: "oj-rating-gauge-css-set5"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set6
+ * @ojdisplayname Selected and disabled
+ * @ojstylevariable oj-rating-gauge-color-selected-disabled {description: "Rating gauge color when selected and disabled", formats: ["color"], help: "oj-rating-gauge-css-set6"}
+ * @memberof oj.ojRatingGauge
+*/
+/**
+ * @ojstylevariableset oj-rating-gauge-css-set7
+ * @ojdisplayname Unselected and disabled
+ * @ojstylevariable oj-rating-gauge-color-unselected-disabled {description: "Rating gauge color when unselected and disabled", formats: ["color"], help: "oj-rating-gauge-css-set7"}
+ * @memberof oj.ojRatingGauge
+*/
+
 /**
  * <table class="keyboard-table">
  *   <thead>

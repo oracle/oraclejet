@@ -33,7 +33,7 @@ export interface <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclarati
   for (let m of methods) {?>
   <?js= m ?>: <?js= data.vcomponentClassName ?><?js= this.classTypeParams ?>['<?js= m ?>'];
   <?js
-  }?> 
+  }?>
 }
 <?js= this.partial('namespace.tmpl', { data, props, componentName: data.vcomponentName }) ?>
 export interface <?js= data.eventMapInterface ?><?js= this.classTypeParamsDeclaration ?> extends HTMLElementEventMap {
@@ -49,7 +49,7 @@ for (let event in data.events) {
 }
 if (props){
   for (let prop of props) {
-    let propEvent = `'${prop}Changed': JetElementCustomEvent<${data.vcomponentName}${data.classTypeParams}["${prop}"]>;`; ?>
+    let propEvent = `'${prop}Changed': JetElementCustomEventStrict<${data.vcomponentName}${data.classTypeParams}["${prop}"]>;`; ?>
   <?js= propEvent ?>
 <?js
   }
@@ -57,7 +57,7 @@ if (props){
 }
 export interface <?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParamsDeclaration ?> extends JetSettableProperties {
 <?js
-if (data.properties) { 
+if (data.properties) {
     data.propsToInclude = 'settable';
     data.typeParams = propsClassTypeParams;
   ?>

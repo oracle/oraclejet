@@ -10,14 +10,6 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     /**
-     * @license
-     * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-
-    /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
      * Released under the MIT license.
      * http://jquery.org/license
@@ -187,7 +179,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
             this.AsyncIterable = class {
                 constructor(_asyncIterator) {
                     this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = function () {
+                    this[Symbol.asyncIterator] = () => {
                         return this._asyncIterator;
                     };
                 }
@@ -197,36 +189,35 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
                     this._asyncIteratorPromise = _asyncIteratorPromise;
                 }
                 ['next']() {
-                    let self = this;
-                    return self._asyncIteratorPromise.then(function (asyncIterator) {
+                    return this._asyncIteratorPromise.then((asyncIterator) => {
                         return asyncIterator['next']();
                     });
                 }
             };
         }
         fetchFirst(params) {
-            let asyncIteratorPromise = this._getDataProvider().then(function (dataProvider) {
+            const asyncIteratorPromise = this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
             });
             return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
         }
         fetchByKeys(params) {
-            return this._getDataProvider().then(function (dataProvider) {
+            return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchByKeys(params);
             });
         }
         containsKeys(params) {
-            return this._getDataProvider().then(function (dataProvider) {
+            return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.containsKeys(params);
             });
         }
         fetchByOffset(params) {
-            return this._getDataProvider().then(function (dataProvider) {
+            return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.fetchByOffset(params);
             });
         }
         getTotalSize() {
-            return this._getDataProvider().then(function (dataProvider) {
+            return this._getDataProvider().then((dataProvider) => {
                 return dataProvider.getTotalSize();
             });
         }
@@ -242,12 +233,12 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
             return null;
         }
         addEventListener(eventType, listener) {
-            this._getDataProvider().then(function (dataProvider) {
+            this._getDataProvider().then((dataProvider) => {
                 dataProvider.addEventListener(eventType, listener);
             });
         }
         removeEventListener(eventType, listener) {
-            this._getDataProvider().then(function (dataProvider) {
+            this._getDataProvider().then((dataProvider) => {
                 dataProvider.removeEventListener(eventType, listener);
             });
         }
@@ -257,11 +248,10 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore'], function (oj, ojcomponentcore
             return this[this._DATAPROVIDER].dispatchEvent(evt);
         }
         _getDataProvider() {
-            let self = this;
-            return this._dataProvider.then(function (dataProvider) {
+            return this._dataProvider.then((dataProvider) => {
                 if (ojcomponentcore.DataProviderFeatureChecker.isDataProvider(dataProvider)) {
-                    if (!self[self._DATAPROVIDER])
-                        self[self._DATAPROVIDER] = dataProvider;
+                    if (!this[this._DATAPROVIDER])
+                        this[this._DATAPROVIDER] = dataProvider;
                     return dataProvider;
                 }
                 else

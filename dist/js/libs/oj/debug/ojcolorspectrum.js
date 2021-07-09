@@ -12,24 +12,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
   Color = Color && Object.prototype.hasOwnProperty.call(Color, 'default') ? Color['default'] : Color;
   LabeledByUtils = LabeledByUtils && Object.prototype.hasOwnProperty.call(LabeledByUtils, 'default') ? LabeledByUtils['default'] : LabeledByUtils;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   (function () {
-    /*
-    function debugObj(o)  {
-      var s ;
-      try { s = JSON.stringify(o) ; }
-      catch (e) { s = "ERROR";}
-      return s ;
-    };
-    */
-
     //  ojColorSpectrum class names
     var OJES_SPECTRUM = 'oj-colorspectrum-spectrum';
     var OJES_THUMB = 'oj-colorspectrum-thumb';
@@ -165,6 +148,262 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
      *
      *
      */
+    //-----------------------------------------------------
+    //                   Fragments
+    //-----------------------------------------------------
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan="6">Spectrum Thumb</td>
+     *       <td><kbd>LeftArrow</kbd></td>
+     *       <td>Moves the thumb to the left (decreasing saturation).  Holding the key down will cause the thumb to accelerate its movement.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>RightArrow</kbd></td>
+     *       <td>Moves the thumb to the right (increasing saturation).  Holding the key down will cause the thumb to accelerate its movement.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>PageUp</kbd></td>
+     *       <td>Moves the thumb vertically to the top of the spectrum (luminosity 100%).</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>PageDown</kbd></td>
+     *       <td>Moves the thumb vertically to the bottom of the spectrum (luminosity 0%).</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Home</kbd></td>
+     *       <td>Moves the thumb to the top left corner of the spectrum (saturation 0%, luminosity 100%).</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>End</kbd></td>
+     *       <td>Moves the thumb to the bottom right of the spectrum (saturation 100%, luminosity 0%).</td>
+     *     </tr>
+     *     <tr>
+     *       <td rowspan="8">Slider Thumb</td>
+     *       <td><kbd>LeftArrow</kbd></td>
+     *       <td>Moves the thumb to the left for the horizontal <code class="prettyprint">Opacity</code> slider,
+     * and downwards for the vertical <code class="prettyprint">Hue</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>RightArrow</kbd></td>
+     *       <td>Moves the thumb to the right for the horizontal <code class="prettyprint">Opacity</code> slider,
+     * and upwards for the vertical <code class="prettyprint">Hue</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>UpArrow</kbd></td>
+     *       <td>Moves the thumb upwards for the vertical <code class="prettyprint">Hue</code> slider,
+     * and to the right for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>DownArrow</kbd></td>
+     *       <td>Moves the thumb downwards for the vertical <code class="prettyprint">Hue</code> slider,
+     * and to the left for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Home</kbd></td>
+     *       <td>Moves the thumb to the leftmost (complete opacity) for the horizontal <code class="prettyprint">Opacity</code> slider,
+     *           and to the bottom for the vertical <code class="prettyprint">Hue</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>End</kbd></td>
+     *       <td>Moves the thumb to the rightmost (complete opacity) for the horizontal <code class="prettyprint">Opacity</code> slider,
+     * and to the top for the vertical <code class="prettyprint">Hue</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>PageUp</kbd></td>
+     *       <td>Moves the thumb 20% of the slider range - upwardsfor the vertical <code class="prettyprint">Hue</code> slider,
+     * and to the right (lower opacity) for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>PageDown</kbd></td>
+     *       <td>Moves the thumb 20% of the slider range - downwards for the vertical <code class="prettyprint">Hue</code> slider,
+     * and to the left (higher opacity) for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojColorSpectrum
+     */
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Slider Bar</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Repositions the thumb to the tapped position.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Slider Thumb</td>
+     *       <td><kbd>Swipe</kbd></td>
+     *       <td>Repositions the thumb to the swiped position.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Spectrum</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Repositions the thumb to the tapped position.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Spectrum Thumb</td>
+     *       <td><kbd>Swipe</kbd></td>
+     *       <td>Repositions the thumb to the swiped position.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc,
+     * and standalone gesture doc
+     * @memberof oj.ojColorSpectrum
+     */
+
+    /**
+     * Sets a property or a single subproperty for complex properties and notifies the component
+     * of the change, triggering a [property]Changed event.
+     *
+     * @function setProperty
+     * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+     * @param {any} value - The new value to set the property to.
+     *
+     * @expose
+     * @memberof oj.ojColorSpectrum
+     * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
+     * @instance
+     *
+     * @example <caption>Set a single subproperty of a complex property:</caption>
+     * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+     */
+    /**
+     * Retrieves a value for a property or a single subproperty for complex properties.
+     * @function getProperty
+     * @param {string} property - The property name to get. Supports dot notation for subproperty access.
+     * @return {any}
+     *
+     * @expose
+     * @memberof oj.ojColorSpectrum
+     * @instance
+     *
+     * @example <caption>Get a single subproperty of a complex property:</caption>
+     * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+     */
+    /**
+     * Performs a batch set of properties.
+     * @function setProperties
+     * @param {Object} properties - An object containing the property and value pairs to set.
+     *
+     * @expose
+     * @memberof oj.ojColorSpectrum
+     * @instance
+     *
+     * @example <caption>Set a batch of properties:</caption>
+     * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+     */
+    //----------------------------------------------
+    //             SUB-IDS
+    //----------------------------------------------
+    /**
+     * <p>Sub-ID for the vertical hue slider bar.</p>
+     *
+     * @ojsubid oj-hue-slider-bar
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the hue slider bar:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-bar'} );
+     */
+
+    /**
+     * <p>Sub-ID for the vertical hue slider bar value.</p>
+     *
+     * @ojsubid oj-hue-slider-bar-value
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the hue slider bar value:</caption>
+     * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-hue-slider-bar-value'} );
+     */
+
+    /**
+     * <p>Sub-ID for the vertical hue slider thumb.</p>
+     *
+     * @ojsubid oj-hue-slider-thumb
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the hue slider thumb:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-thumb'} );
+     */
+
+    /**
+     * <p>Sub-ID for the horizontal opacity slider bar.</p>
+     *
+     * @ojsubid oj-opacity-slider-bar
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the opacity slider bar:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar'} );
+     */
+
+    /**
+     * <p>Sub-ID for the horizontal opacity slider bar value.</p>
+     *
+     * @ojsubid oj-opacity-slider-bar-value
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the opacity slider bar value:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar-value'} );
+     */
+
+    /**
+     * <p>Sub-ID for the horizontal opacity slider thumb.</p>
+     *
+     * @ojsubid oj-opacity-slider-thumb
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the opacity slider thumb:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-thumb'} );
+     */
+
+    /**
+     * <p>Sub-ID for the saturation/luminosity spectrum. </p>
+     *
+     * @ojsubid oj-spectrum
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the saturation/luminosity spectrum:</caption>
+     * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-spectrum'} );
+     *
+     */
+
+    /**
+     * <p>Sub-ID for the saturation/luminosity spectrum thumb. </p>
+     *
+     * @ojsubid oj-spectrum-thumb
+     * @memberof oj.ojColorSpectrum
+     *
+     * @example <caption>Get the node for the saturation/luminosity spectrum thumb:</caption>
+     * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-spectrum-thumb'} );
+     *
+     */
+     //-----------------------------------------------------
+     //                   Styling
+     //-----------------------------------------------------
+     /**
+     * @ojstylevariableset oj-color-spectrum-css-set1
+     * @ojstylevariable oj-color-spectrum-border-color {description: "Color spectrum border color", formats: ["color"], help: "#css-variables"}
+     * @memberof oj.ojColorSpectrum
+     */
     oj.__registerWidget('oj.ojColorSpectrum', $.oj.editableValue,
       {
         widgetEventPrefix: 'oj',
@@ -235,7 +474,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
            * updated only after the respective thumb is released (or after a key press).
            * </p>
            * @ojshortdesc Retrieves the transient value of the component.
-           * @alias transientValue
+           * @name transientValue
            * @member
            * @ojformat color
            * @type {Object}
@@ -252,7 +491,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
 
         }, // end options
 
-        //* * @inheritdoc */
+
         getNodeBySubId: function (locator) {
           if (locator === null) {
             return this.element ? this.element[0] : null;
@@ -295,7 +534,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           return ret;
         },
 
-        //* * @inheritdoc */
+
         getSubIdByNode: function (elem) {
           if (!elem) {
             return null;
@@ -492,11 +731,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @instance
          */
         _comparedRoundedColor: function (val1, val2) {
-          var ret = ((val1.getRed() === val2.getRed()) &&
+          return ((val1.getRed() === val2.getRed()) &&
                      (val1.getGreen() === val2.getGreen()) &&
                      (val1.getBlue() === val2.getBlue()) &&
                      (val1.getAlpha() === val2.getAlpha()));
-          return ret;
         },
 
         /**
@@ -692,7 +930,6 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @private
          */
         _setSpectrumMask: function () {
-          var grad = ' -___-linear-gradient(top, hsl(0, 0%, 100%) 0%, hsla(0, 0%, 100%, 0) 50%, hsla(0, 0%, 0%, 0) 50%, hsl(0, 0%, 0%) 100%), -___-linear-gradient(left, hsl(0, 0%, 50%) 0%, hsla(0, 0%, 50%, 0) 100%)';
           var ai = oj.AgentUtils.getAgentInfo();
           var rep;
 
@@ -708,7 +945,8 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
               break;
           }
 
-          grad = ' -___-linear-gradient(top, hsl(0, 0%, 100%) 0%, hsla(0, 0%, 100%, 0) 50%, hsla(0, 0%, 0%, 0) 50%, hsl(0, 0%, 0%) 100%), -___-linear-gradient(left, hsl(0, 0%, 50%) 0%, hsla(0, 0%, 50%, 0) 100%)';
+          var grad = ' -___-linear-gradient(top, hsl(0, 0%, 100%) 0%, hsla(0, 0%, 100%, 0) 50%, hsla(0, 0%, 0%, 0) 50%, hsl(0, 0%, 0%) 100%),' +
+          ' -___-linear-gradient(left, hsl(0, 0%, 50%) 0%, hsla(0, 0%, 50%, 0) 100%)';
           grad = grad.replace(/___/g, rep);
           this._$spectrum.css('backgroundImage', grad);
         },
@@ -860,7 +1098,6 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           this._setSatLum(sat, lum);
 
           this._setThumbPosition(xDisp, yDisp);
-          // this._setContrastingThumb(hue, sat, lum) ;
           this._$spectrumThumb.focus();
         },
 
@@ -1075,7 +1312,6 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           this._value = color;
 
           this._setSatLum(sat, lum);
-          // this._setContrastingThumb(hue, sat, lum) ;    //  ensure thumb is easily viewable
 
           if (aria) {
             this._setAriaText(hue, sat, lum, this._alphaVal);
@@ -1117,7 +1353,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
 
           // Reverse the gradient if RTL
           if (this._isRtl) {
-            grad = to; to = from; from = grad;
+            grad = to;
+            to = from;
+            from = grad;
           }
           grad = 'linear-gradient(90deg, ' + from + ', ' + to + ')';
 
@@ -1664,258 +1902,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
         _EscapeXSS: function (escapeMe) {
           return $('<span>' + escapeMe + '</span>').text();
         }
-
-
-        // / ///////////////     KEYBOARD     //////////////////
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td rowspan="6">Spectrum Thumb</td>
-         *       <td><kbd>LeftArrow</kbd></td>
-         *       <td>Moves the thumb to the left (decreasing saturation).  Holding the key down will cause the thumb to accelerate its movement.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>RightArrow</kbd></td>
-         *       <td>Moves the thumb to the right (increasing saturation).  Holding the key down will cause the thumb to accelerate its movement.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>PageUp</kbd></td>
-         *       <td>Moves the thumb vertically to the top of the spectrum (luminosity 100%).</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>PageDown</kbd></td>
-         *       <td>Moves the thumb vertically to the bottom of the spectrum (luminosity 0%).</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>Home</kbd></td>
-         *       <td>Moves the thumb to the top left corner of the spectrum (saturation 0%, luminosity 100%).</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>End</kbd></td>
-         *       <td>Moves the thumb to the bottom right of the spectrum (saturation 100%, luminosity 0%).</td>
-         *     </tr>
-         *     <tr>
-         *       <td rowspan="8">Slider Thumb</td>
-         *       <td><kbd>LeftArrow</kbd></td>
-         *       <td>Moves the thumb to the left for the horizontal <code class="prettyprint">Opacity</code> slider, and downwards for the vertical <code class="prettyprint">Hue</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>RightArrow</kbd></td>
-         *       <td>Moves the thumb to the right for the horizontal <code class="prettyprint">Opacity</code> slider, and upwards for the vertical <code class="prettyprint">Hue</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>UpArrow</kbd></td>
-         *       <td>Moves the thumb upwards for the vertical <code class="prettyprint">Hue</code> slider, and to the right for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>DownArrow</kbd></td>
-         *       <td>Moves the thumb downwards for the vertical <code class="prettyprint">Hue</code> slider, and to the left for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>Home</kbd></td>
-         *       <td>Moves the thumb to the leftmost (complete opacity) for the horizontal <code class="prettyprint">Opacity</code> slider,
-         *           and to the bottom for the vertical <code class="prettyprint">Hue</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>End</kbd></td>
-         *       <td>Moves the thumb to the rightmost (complete opacity) for the horizontal <code class="prettyprint">Opacity</code> slider, and to the top for the vertical <code class="prettyprint">Hue</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>PageUp</kbd></td>
-         *       <td>Moves the thumb 20% of the slider range - upwardsfor the vertical <code class="prettyprint">Hue</code> slider, and to the right (lower opacity) for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>PageDown</kbd></td>
-         *       <td>Moves the thumb 20% of the slider range - downwards for the vertical <code class="prettyprint">Hue</code> slider, and to the left (higher opacity) for the horizontal <code class="prettyprint">Opacity</code> slider.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojColorSpectrum
-         */
-
-        // / ///////////////     TOUCH     //////////////////
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Gesture</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>Slider Bar</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Repositions the thumb to the tapped position.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Slider Thumb</td>
-         *       <td><kbd>Swipe</kbd></td>
-         *       <td>Repositions the thumb to the swiped position.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Spectrum</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Repositions the thumb to the tapped position.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Spectrum Thumb</td>
-         *       <td><kbd>Swipe</kbd></td>
-         *       <td>Repositions the thumb to the swiped position.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc,
-         * and standalone gesture doc
-         * @memberof oj.ojColorSpectrum
-         */
-
-        /**
-         * Sets a property or a single subproperty for complex properties and notifies the component
-         * of the change, triggering a [property]Changed event.
-         *
-         * @function setProperty
-         * @param {string} property - The property name to set. Supports dot notation for subproperty access.
-         * @param {any} value - The new value to set the property to.
-         *
-         * @expose
-         * @memberof oj.ojColorSpectrum
-         * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
-         * @instance
-         *
-         * @example <caption>Set a single subproperty of a complex property:</caption>
-         * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
-         */
-        /**
-         * Retrieves a value for a property or a single subproperty for complex properties.
-         * @function getProperty
-         * @param {string} property - The property name to get. Supports dot notation for subproperty access.
-         * @return {any}
-         *
-         * @expose
-         * @memberof oj.ojColorSpectrum
-         * @instance
-         *
-         * @example <caption>Get a single subproperty of a complex property:</caption>
-         * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
-         */
-        /**
-         * Performs a batch set of properties.
-         * @function setProperties
-         * @param {Object} properties - An object containing the property and value pairs to set.
-         *
-         * @expose
-         * @memberof oj.ojColorSpectrum
-         * @instance
-         *
-         * @example <caption>Set a batch of properties:</caption>
-         * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
-         */
-        // / ///////////////     SUB-IDS     //////////////////
-        /**
-         * <p>Sub-ID for the vertical hue slider bar.</p>
-         *
-         * @ojsubid oj-hue-slider-bar
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the hue slider bar:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-bar'} );
-         */
-
-        /**
-         * <p>Sub-ID for the vertical hue slider bar value.</p>
-         *
-         * @ojsubid oj-hue-slider-bar-value
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the hue slider bar value:</caption>
-         * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-hue-slider-bar-value'} );
-         */
-
-        /**
-         * <p>Sub-ID for the vertical hue slider thumb.</p>
-         *
-         * @ojsubid oj-hue-slider-thumb
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the hue slider thumb:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-hue-slider-thumb'} );
-         */
-
-        /**
-         * <p>Sub-ID for the horizontal opacity slider bar.</p>
-         *
-         * @ojsubid oj-opacity-slider-bar
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the opacity slider bar:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar'} );
-         */
-
-        /**
-         * <p>Sub-ID for the horizontal opacity slider bar value.</p>
-         *
-         * @ojsubid oj-opacity-slider-bar-value
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the opacity slider bar value:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-bar-value'} );
-         */
-
-        /**
-         * <p>Sub-ID for the horizontal opacity slider thumb.</p>
-         *
-         * @ojsubid oj-opacity-slider-thumb
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the opacity slider thumb:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-opacity-slider-thumb'} );
-         */
-
-        /**
-         * <p>Sub-ID for the saturation/luminosity spectrum. </p>
-         *
-         * @ojsubid oj-spectrum
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the saturation/luminosity spectrum:</caption>
-         * var node = myColorSpectrum.getNodeBySubId( {'subId': 'oj-spectrum'} );
-         *
-         */
-
-        /**
-         * <p>Sub-ID for the saturation/luminosity spectrum thumb. </p>
-         *
-         * @ojsubid oj-spectrum-thumb
-         * @memberof oj.ojColorSpectrum
-         *
-         * @example <caption>Get the node for the saturation/luminosity spectrum thumb:</caption>
-         * var node = myColorSpectrum.getNodeBySubId({'subId': 'oj-spectrum-thumb'} );
-         *
-         */
-
       }); // end    $.widget("oj.ojColorSpectrum"
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () {
 var __oj_color_spectrum_metadata = 
 {

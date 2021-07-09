@@ -8,14 +8,6 @@
 define(function () { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-    /**
      * Add a trailing slash to the given path if it doesn't already end with one.
      * @param {string} path
      * @ignore
@@ -48,7 +40,7 @@ define(function () { 'use strict';
      * Parse the param string and return the object representing it
      * @param {string} segment The individual segment of the URL to parse,
      * i.e., "list;param=123"
-     * @return {CoreRouter.Route} An object representing the state name and parameters,
+     * @return {CoreRouter.CoreRouterState} An object representing the state name and parameters,
      * i.e. { path: 'list', params: { param: 123 } }
      * @ignore
      */
@@ -88,12 +80,12 @@ define(function () { 'use strict';
      * @class UrlPathAdapter
      * @implements CoreRouter.UrlAdapter
      * @since 8.0.0
-     * @ojsortdesc Class to synchronize CoreRouter state with the browser URL using
+     * @classdesc Class to synchronize CoreRouter state with the browser URL using
      * path segments.
-     * @classdesc UrlPathAdapter class
      * <p>
      * A URL adapter that uses path segments to synchronize router state
-     * (/path1/path2/path3). This adapter is the default for {@link CoreRouter},
+     * (/path1;param=123/path2;param=456/path3;param=789). This adapter is the
+     * default for {@link CoreRouter},
      * and should be used when the web server serving up UI content has the ability
      * to internally proxy requests from one pseudo path to another.
      * </p>
@@ -101,7 +93,7 @@ define(function () { 'use strict';
      * For instance,
      * if the root of your application is <code>http://localhost/</code>, then
      * router states will be added onto this root using path segments, such as
-     * <code>http://localhost/path1/path</code>. This path may be bookmarked, and
+     * <code>http://localhost/path1;param=123/path2;param=456</code>. This path may be bookmarked, and
      * during restoration (or browser reload), the server will be asked to serve
      * up the content from that directory. Since these are presumably virtual
      * directories (they may or may not actually exist on the server), two things
@@ -113,7 +105,14 @@ define(function () { 'use strict';
      *       in this case--"http://localhost/"</li>
      * </ul>
      * </p>
-     * An alternative to UrlPathAdapter is {@link UrlParamAdapter}.
+     * <p>
+     * Note that this adapter uses [matrix parameters]{@link https://www.w3.org/DesignIssues/MatrixURIs.html}
+     * in the URL. This mechanism allows an arbitrary number of parameters to be
+     * passed to the state without have to pre-define them in the route configuration.
+     * </p>
+     * <p>
+     * Alternatives to UrlPathAdapter are {@link UrlParamAdapter} and {@link UrlPathParamAdapter}.
+     * </p>
      *
      * @param {string=} baseUrl The base URL from which the application is served.
      * This value may be any string value (even blank). If not specified at all
@@ -135,6 +134,7 @@ define(function () { 'use strict';
      * Build all routes for the given URL. The URL is expected to start with the
      * <code>baseUrl</code> set for this adapter, because it will be subtracted
      * out before routes are built.
+     * @param {object=} routePathParams
      * @param {string=} url Optional URL to use. If not specified, document.location.pathname
      * is used.
      * @return {Array.<CoreRouter.Route>} An array of routes starting from the path
@@ -146,7 +146,7 @@ define(function () { 'use strict';
      * @export
      * @ojsignature {target: "Type", value: "Array.<CoreRouter.Route<P>>", for: "returns"}
      */
-    UrlPathAdapter.prototype.getRoutesForUrl = function (url) {
+    UrlPathAdapter.prototype.getRoutesForUrl = function (routePathParams, url) {
       // If url is given, then a decorator (UrlParamAdapter) is calling us with a
       // value that it wants to have parsed. If undefined, then the router is
       // calling us directly.

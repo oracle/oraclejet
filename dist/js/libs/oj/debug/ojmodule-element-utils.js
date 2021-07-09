@@ -10,14 +10,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojhtmlutils'], function (exports, oj,
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace
    * @name ModuleElementUtils
    *

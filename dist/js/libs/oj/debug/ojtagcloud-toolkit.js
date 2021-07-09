@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @param {dvt.EventManager} manager The owning dvt.EventManager
    * @class DvtTagCloudKeyboardHandler
    * @extends {dvt.KeyboardHandler}
@@ -47,7 +39,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @override
    */
   DvtTagCloudKeyboardHandler.prototype.isMultiSelectEvent = function(event) {
-    return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
+    return event.keyCode === dvt.KeyboardEvent.SPACE && event.ctrlKey;
   };
 
   /**
@@ -58,21 +50,13 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @return {DvtKeyboardNavigable} The next navigable
    */
   DvtTagCloudKeyboardHandler.getNextNavigable = function(currentNavigable, event, navigableItems) {
-    var bNext = (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
+    var bNext = (event.keyCode === dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode === dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
     var nextIdx = navigableItems.indexOf(currentNavigable) + (bNext ? 1 : -1);
     if (nextIdx < navigableItems.length && nextIdx >= 0)
       return navigableItems[nextIdx];
     else
       return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Logical object for tag cloud data object displayables.
@@ -178,6 +162,19 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
+   * Returns the shortDesc Context of the node.
+   * @param {DvtTagCloudObjPeer} node
+   * @return {object} The shortDesc Context object
+   */
+   DvtTagCloudObjPeer$1.getShortDescContext = function(node) {
+    return {
+      'id': node.getId(),
+      'label': node.getLabel(),
+      'value': node.getValue()
+    };
+  };
+
+  /**
    * Returns the link callback
    * @return {function}
    */
@@ -249,7 +246,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtTagCloudObjPeer$1.prototype.getNextNavigable = function(event) {
     var keyboardHandler = this._view.EventManager.getKeyboardHandler();
-    if (event.type == dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event)) {
+    if (event.type === dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event)) {
       return this;
     }
     else if (keyboardHandler.isNavigationEvent(event)) {
@@ -320,7 +317,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     var states = [];
     if (this.isSelectable())
       states.push(this._view.getOptions().translations[this.isSelected() ? 'stateSelected' : 'stateUnselected']);
-    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
+    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtTagCloudObjPeer$1.getShortDescContext(this));
   };
 
   /**
@@ -367,14 +364,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Provides automation services for a DVT component.
    * @class  DvtTagCloudAutomation
    * @param {dvt.TagCloud} dvtComponent
@@ -413,7 +402,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @override
    */
   DvtTagCloudAutomation.prototype.getDomElementForSubId = function(subId) {
-    if (subId == dvt.Automation.TOOLTIP_SUBID)
+    if (subId === dvt.Automation.TOOLTIP_SUBID)
       return this.GetTooltipElement(this._tagCloud);
 
     var parenIdx = subId.indexOf('[');
@@ -464,14 +453,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -507,14 +488,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     },
     'touchResponse' : 'auto'
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Event Manager for tree components.
@@ -568,7 +541,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     var keyCode = event.keyCode;
     var focusObj = this.getFocus();
 
-    if (keyCode == dvt.KeyboardEvent.ENTER) {
+    if (keyCode === dvt.KeyboardEvent.ENTER) {
       this._handleLinkCallback(focusObj);
     } else {
       eventConsumed = DvtTagCloudEventManager.superclass.ProcessKeyboardEvent.call(this, event);
@@ -583,7 +556,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   DvtTagCloudEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver) {
     // Don't continue if not enabled
     var options = this._view.getOptions();
-    if (options['hoverBehavior'] != 'dim')
+    if (options['hoverBehavior'] !== 'dim')
       return;
 
     // Compute the new highlighted categories and update the options
@@ -593,7 +566,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     // Fire the event to the rollover handler, who will fire to the component callback.
     var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
     var hoverBehaviorDelay = dvt.CSSStyle.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
-    this.RolloverHandler.processEvent(rolloverEvent, this._view.getObjects(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
+    this.RolloverHandler.processEvent(rolloverEvent, this._view.getObjects(), hoverBehaviorDelay, options['highlightMatch'] === 'any');
   };
 
   /**
@@ -602,14 +575,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   DvtTagCloudEventManager.prototype.GetTouchResponse = function() {
     return this._view.getOptions()['touchResponse'];
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for DvtChartImpl.
@@ -629,14 +594,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   DvtTagCloudStyleUtils.getAnimationDuration = function(tagCloud) {
     return tagCloud.getOptions()['styleDefaults']['animationDuration'] / 1000;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Creates an instance of DvtTagCloudItem which extends dvt.BackgroundOutputText with hover and selection feedback.
@@ -712,7 +669,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @param {boolean} bSelected True if the currently selected
    */
   DvtTagCloudItem.prototype.setSelected = function(bSelected) {
-    if (this._isSelected == bSelected)
+    if (this._isSelected === bSelected)
       return;
 
     this._isSelected = bSelected;
@@ -766,7 +723,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     // Color change
     var startColor = oldStyle.getStyle(dvt.CSSStyle.COLOR);
     var endColor = style.getStyle(dvt.CSSStyle.COLOR);
-    if (startColor != endColor) {
+    if (startColor !== endColor) {
       var tag = this;
       var getColorStyle = function() {
         return tag.getCSSStyle().getStyle(dvt.CSSStyle.COLOR);
@@ -781,11 +738,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     // Size change
     var startSize = parseFloat(oldStyle.getStyle(dvt.CSSStyle.FONT_SIZE));
     var endSize = parseFloat(style.getStyle(dvt.CSSStyle.FONT_SIZE));
-    if (startSize != endSize) {
+    if (startSize !== endSize) {
       bSizeChange = true;
-      var tag = this;
+      var tagSize = this;
       var getFontSize = function() {
-        return parseFloat(tag.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
+        return parseFloat(tagSize.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
       };
       this.setFontSize(startSize);
       anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, getFontSize, this.setFontSize, endSize);
@@ -797,9 +754,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     var startAlign = oldObj.getHorizAlignment();
     var endAlign = this.getHorizAlignment();
-    if (endX != startX || (bSizeChange && endAlign != startAlign)) {
+    if (endX !== startX || (bSizeChange && endAlign !== startAlign)) {
       // Need to handle case where size change causes relayout
-      if (endAlign != startAlign) {
+      if (endAlign !== startAlign) {
         startX = DvtTagCloudItem._adjustX(oldObj, startX, startAlign);
       }
       this.setX(startX);
@@ -808,7 +765,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     var startY = oldObj.getY();
     var endY = this.getY();
-    if (endY != startY) {
+    if (endY !== startY) {
       this.setY(startY);
       anim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, this, this.getY, this.setY, endY);
     }
@@ -888,9 +845,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtTagCloudItem._adjustX = function(tag, x, hAlign) {
     var dims = tag.getTextDimensions();
-    if (hAlign == dvt.OutputText.H_ALIGN_LEFT)
+    if (hAlign === dvt.OutputText.H_ALIGN_LEFT)
       return x + dims.w;
-    else if (hAlign == dvt.OutputText.H_ALIGN_RIGHT)
+    else if (hAlign === dvt.OutputText.H_ALIGN_RIGHT)
       return x - dims.w;
     else
       return x;
@@ -913,14 +870,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     var lighterB = (1 - opacity) * 255 + opacity * b;
     return dvt.ColorUtils.makeRGB(Math.floor(lighterR), Math.floor(lighterG), Math.floor(lighterB));
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Layout utility class for dvt.TagCloud
@@ -1021,15 +970,17 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         step += stepIncrement;
       }
     }
-    var scale = Math.max(bounds.w / availSpace.w, bounds.h / availSpace.h);
-    var cx = bounds.x + bounds.w / 2;
-    var cy = bounds.y + bounds.h / 2;
-    for (var j = 0; j < items.length; j++) {
-      var tag = items[j];
-      tag.setX(availSpace.x + (tag.getX() / scale) + (availSpace.w / 2 - cx / scale));
-      tag.setY(availSpace.y + (tag.getY() / scale) + (availSpace.h / 2 - cy / scale));
-      var fontSize = parseFloat(tag.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
-      tag.setFontSize(fontSize / scale);
+    if(bounds){
+      var scale = Math.max(bounds.w / availSpace.w, bounds.h / availSpace.h);
+      var cx = bounds.x + bounds.w / 2;
+      var cy = bounds.y + bounds.h / 2;
+      for (var k = 0; k < items.length; k++) {
+        var tagItem = items[k];
+        tagItem.setX(availSpace.x + (tagItem.getX() / scale) + (availSpace.w / 2 - cx / scale));
+        tagItem.setY(availSpace.y + (tagItem.getY() / scale) + (availSpace.h / 2 - cy / scale));
+        var fontSize = parseFloat(tagItem.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
+        tagItem.setFontSize(fontSize / scale);
+      }
     }
   };
 
@@ -1100,30 +1051,30 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       }
       var bottomY = margin + (i + 1) * (maxHeight * scale + vPadding) - vPadding;
       var curX = isBidi ? availSpace.w - margin : margin;
-      for (var j = lineStart; j < lineEnd; j++) {
-        var tag = items[j];
-        var fontSize = parseFloat(tag.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
-        tag.setFontSize(fontSize * scale);
-        tag.setY(availSpace.y + bottomY);
-        if (justified && j == lineEnd - 1 && j != lineStart) {
+      for (var m = lineStart; m < lineEnd; m++) {
+        var tagLine = items[m];
+        var fontSize = parseFloat(tagLine.getCSSStyle().getStyle(dvt.CSSStyle.FONT_SIZE));
+        tagLine.setFontSize(fontSize * scale);
+        tagLine.setY(availSpace.y + bottomY);
+        if (justified && m === lineEnd - 1 && m !== lineStart) {
           if (isBidi) {
-            tag.alignLeft();
-            tag.setX(availSpace.x + margin);
+            tagLine.alignLeft();
+            tagLine.setX(availSpace.x + margin);
           }
           else {
-            tag.alignRight();
-            tag.setX(availSpace.x + availSpace.w - margin);
+            tagLine.alignRight();
+            tagLine.setX(availSpace.x + availSpace.w - margin);
           }
         }
         else {
-          tag.setX(availSpace.x + curX);
+          tagLine.setX(availSpace.x + curX);
           if (isBidi) {
-            tag.alignRight();
-            curX -= arDims[j].w * scale + hPadding;
+            tagLine.alignRight();
+            curX -= arDims[m].w * scale + hPadding;
           }
           else {
-            tag.alignLeft();
-            curX += arDims[j].w * scale + hPadding;
+            tagLine.alignLeft();
+            curX += arDims[m].w * scale + hPadding;
           }
         }
       }
@@ -1152,14 +1103,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     }
     return lines;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for dvt.TagCloud.
@@ -1257,8 +1200,8 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     if (defaultStyle && !(defaultStyle instanceof Object))
       defaultStyle = dvt.CSSStyle.cssStringToObject(defaultStyle);
     //Process tag cloud items
-    for (var i = 0; i < dataItems.length; i++) {
-      var data = dataItems[i];
+    for (var k = 0; k < dataItems.length; k++) {
+      var data = dataItems[k];
       // Default categories array to array of tag label if none provided
       if (!data['categories'])
         data['categories'] = [data['label']];
@@ -1272,8 +1215,9 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         itemStyle = dvt.CSSStyle.cssStringToObject(itemStyle);
       //Order of precedence of processing item color is,
       //Item style color > Data item color > Public default style color.
-      var color = (itemStyle && itemStyle['color']) ? itemStyle['color'] :
-          (data['color'] ? data['color'] : ((defaultStyle && defaultStyle['color']) ? defaultStyle['color'] : null));
+      var defaultStyleColor = defaultStyle && defaultStyle['color'] ? defaultStyle['color'] : null;
+      var dataColor = data['color'] ? data['color'] : defaultStyleColor;
+      var color = itemStyle && itemStyle['color'] ? itemStyle['color'] : dataColor;
 
       //Merge the item style and public default style
       itemStyle = dvt.JsonUtils.merge(itemStyle, defaultStyle);
@@ -1299,7 +1243,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className, data['id']);
       var peer = new DvtTagCloudObjPeer$1(tagCloud, item, data);
       tagCloud.EventManager.associate(item, peer);
-      tagCloud.registerObject(peer, i);
+      tagCloud.registerObject(peer, k);
 
       if (options['selectionMode'] !== 'none')
         peer.setSelectable(true);
@@ -1366,14 +1310,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * TagCloud component.  The component should never be instantiated directly.  Use the newInstance function instead
    * @param {dvt.Context} context The rendering context.
    * @param {string} callback The function that should be called to dispatch component events.
@@ -1389,7 +1325,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   dvt.Obj.createSubclass(TagCloud, dvt.BaseComponent);
 
   // TODO ADD TESTS: AUTOMATION & DVT-SHARED-JS
-  // TODO ADF HIDESHOWBHEAVIOR
   /**
    * Returns a new instance of TagCloud.
    * @param {dvt.Context} context The rendering context.
@@ -1655,22 +1590,22 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   TagCloud.prototype.processEvent = function(event, source) {
     var type = event['type'];
-    if (type == 'categoryHide' || type == 'categoryShow') {
+    if (type === 'categoryHide' || type === 'categoryShow') {
       var category = event['category'];
       var index = this.Options['hiddenCategories'].indexOf(category);
 
-      if (type == 'categoryHide' && index < 0)
+      if (type === 'categoryHide' && index < 0)
         this.Options['hiddenCategories'].push(category);
-      if (type == 'categoryShow' && index >= 0)
+      if (type === 'categoryShow' && index >= 0)
         this.Options['hiddenCategories'].splice(index, 1);
 
       this.render(this.Options, this.Width, this.Height);
     }
-    else if (type == 'categoryHighlight') {
+    else if (type === 'categoryHighlight') {
       // If the tag cloud is not the source of the event, perform highlighting.
-      if (this != source)
+      if (this !== source)
         this.highlight(event['categories']);
-      else if (this.legend && this.legend != source)
+      else if (this.legend && this.legend !== source)
         this.legend.processEvent(event, source);
     }
     // Dispatch the event to the callback

@@ -1,12 +1,7 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+export { customElement } from './customElement';
+export { Slot, TemplateSlot, DynamicSlots, DynamicTemplateSlots, PropertyChanged, Action, CancelableAction, Bubbles, ExtendGlobalProps, GlobalProps, ObservedGlobalProps, ElementReadOnly } from './metadataTypes';
+export { method } from './dtDecorators';
 
-export { VComponent, h, classPropToObject } from './VComponent';
-export { listener } from './listener';
-export { dynamicDefault } from './dynamicDefault';
-export { flattenChildren } from './utils';
+declare const getUniqueId: () => string;
+export { getUniqueId };
+export { Root } from './root';

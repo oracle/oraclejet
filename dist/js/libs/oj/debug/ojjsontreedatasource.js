@@ -10,13 +10,6 @@ define(['ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger'], function 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * A JsonNodeSet represents a collection of nodes.  The JsonNodeSet is an object returned by the success callback
    * of the fetchChildren method on TreeDataSource.
    * @implements oj.NodeSet
@@ -176,13 +169,6 @@ define(['ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger'], function 
     return new JsonNodeSet(0, results.length, results, key, 0);
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   // ////////////////// _JsonTreeNodeDataSource ///////////////////////////////////
   /**
    * Helper class to implement sort recursive features for tree.
@@ -282,7 +268,7 @@ define(['ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger'], function 
    * @classdesc TreeDataSource implementation that represents hierarchical data available from an array of JSON objects.  This data source can be used by [ListView]{@link oj.ojListView},
    *            [NavigationList]{@link oj.ojNavigationList}, and [TreeView]{@link oj.ojTreeView}.<br><br>
    *            See the Tree View - Data Source: JSON demo for an example.<br><br>
-   *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarchical data.
+   *            Refer to {@link TreeDataSource} for other data sources that represent hierarchical data.
    * @param {Object} data An array of JSON objects that represent the root nodes.
    *                      <p>Each node object can contain the following properties:</p>
    *                      <p>attr - an object of name-value pairs that represents data for the node.</p>
@@ -727,7 +713,6 @@ define(['ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger'], function 
   JsonTreeDataSource.prototype._getParentById = function (refNodeKey, currNode) {
     var i;
     var parent = null;
-    var parentIsFound = false;
 
     if ((refNodeKey === this.data.id)) {
       return null;
@@ -742,17 +727,13 @@ define(['ojs/ojcore-base', 'ojs/ojdatasource-common', 'ojs/ojlogger'], function 
       for (i = 0; i < currNode.children.length; i++) {
         if ((currNode.children[i].id && currNode.children[i].id === refNodeKey) ||
             (currNode.children[i].attr && currNode.children[i].attr.id === refNodeKey)) {
-          parentIsFound = true;
           return currNode;
         }
       }
-      if (!parentIsFound) {
-        for (i = 0; i < currNode.children.length; i++) {
-          parent = this._getParentById(refNodeKey, currNode.children[i]);
-          if (parent) {
-            parentIsFound = true;
-            return parent;
-          }
+      for (i = 0; i < currNode.children.length; i++) {
+        parent = this._getParentById(refNodeKey, currNode.children[i]);
+        if (parent) {
+          return parent;
         }
       }
     }

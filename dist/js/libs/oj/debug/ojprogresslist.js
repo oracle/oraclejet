@@ -11,6 +11,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomposite', 'ojs/ojknockoutte
 function(oj, $, ko, Composite, KnockoutTemplateUtils)
 {
   "use strict";
+
 var __oj_progress_list_metadata = 
 {
   "properties": {

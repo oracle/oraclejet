@@ -10,13 +10,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Internally used by the {@link oj.BusyContext} to track a components state
    * while it is performing a task such as animation or fetching data.
    *
@@ -118,14 +111,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * <p>The purpose of the BusyContext API is to accommodate sequential dependencies of asynchronous
    * operations. A common use cases defining the API is for automation testing (qunit and webdriver).
    * Automation test developers can use this API to wait until components finish animation effects
@@ -197,7 +182,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    *   </li>
    * </ul>
    *
-   * The BusyContext API utilizes {@link Logger.LEVEL_LOG} to log detail busy state activity.
+   * The BusyContext API utilizes {@link oj.Logger.LEVEL_LOG} to log detail busy state activity.
    * <pre class="prettyprint">
    * <code>
    *  Logger.option("level", Logger.LEVEL_LOG);
@@ -596,8 +581,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
     var statesMap = this._statesMap;
 
      /** @type {?} */
-    var busyStates = BusyContext._values(statesMap);
-    return busyStates;
+    return BusyContext._values(statesMap);
   };
 
   /**
@@ -827,21 +811,19 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   /**
    * <p>This function should be invoke by application domain logic to indicate all application
    * libraries are loaded and bootstrap processes complete.  The assumed strategy is that the
-   * application will set a single global variable "oj_whenReady" from a inline script from the
-   * document header section indicating the {@link oj.BusyContext#whenReady}
+   * application will set a single global variable "oj_whenReady" from its "main.js"
+   * script, indicating that the {@link oj.BusyContext#whenReady}
    * should {@link oj.BusyContext#addBusyState} until the application determines its bootstrap
    * sequence has completed.</p>
    *
-   * Inline Script Example:
+   * main.js Script Example:
    * <pre class="prettyprint">
+   * main.js:
    * <code>
-   * &lt;head&gt;
-   *   &lt;script type=&quot;text/javascript&quot;&gt;
    *     // The "oj_whenReady" global variable enables a strategy that the busy context whenReady,
    *     // will implicitly add a busy state, until the application calls applicationBootstrapComplete
    *     // on the busy state context.
    *     window["oj_whenReady"] = true;
-   *   &lt;/script&gt;
    * ...
    * ...
    * </code></pre>
@@ -1071,7 +1053,12 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
         // resovle the promise in the next-tick.
         getNextTickPromise().then(function () {
           _tracking = false;
-          _resolveCallback(true);
+          // Check that function hasn't been nullified after next-tick
+          // Can happen if multiple calls to applicationBootstrapComplete() on
+          // page load (esp during WebDriver testing)
+          if (typeof _resolveCallback === 'function') {
+            _resolveCallback(true);
+          }
           _resolveCallback = null;
         });
       } else {
@@ -1079,14 +1066,6 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       }
     };
   })();
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * <b>The constructor should never be invoked by an application directly</b>. Use
@@ -1256,7 +1235,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
       if (surrogate) { return surrogate.parentElement; }
     }
 
-    return element.parentElement;
+    // _ojReportBusy expando will be set by the TemplateEngine if busy states need to bubble
+    // up to an alternate parent
+    return element._ojReportBusy || element.parentElement;
   };
 
   return Context;

@@ -11,24 +11,11 @@ import { info, warn } from 'ojs/ojlogger';
 import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
-import { ElementState, CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import { ElementState, CustomElementUtils, ElementUtils, CHILD_BINDING_PROVIDER, JetElementError } from 'ojs/ojcustomelement-utils';
 
 const CompositeInternal = {};
 
 /**
- * @ignore
- */
-CompositeInternal.__BINDING_PROVIDER = '__oj_binding_prvdr';
-
-  /**
  * Finds the containing composite component for a given node. If the immediate enclosing
  * composite component is contained by another composite, the method will keep
  * walking up the composite hierarchy until the top-level composite
@@ -64,20 +51,7 @@ class CompositeState extends ElementState {
     getTrackChildrenOption() {
         return 'immediate';
     }
-    GetBindingProviderName(element) {
-        var _a;
-        const parent = element === null || element === void 0 ? void 0 : element.parentElement;
-        return (_a = parent === null || parent === void 0 ? void 0 : parent[CompositeInternal.__BINDING_PROVIDER]) !== null && _a !== void 0 ? _a : null;
-    }
 }
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * JET component custom element bridge.
@@ -108,6 +82,8 @@ CompositeElementBridge.DESC_KEY_PARSE_FUN = 'parseFunction';
 CompositeElementBridge.DESC_KEY_VIEW = 'view';
 /** @ignore */
 CompositeElementBridge.DESC_KEY_VIEW_MODEL = 'viewModel';
+/** @ignore */
+CompositeElementBridge.SUBID_MAP = 'data-oj-subid-map';
 
 oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
   {
@@ -178,16 +154,16 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
     },
 
     CreateComponent: function (element) {
+      const state = CustomElementUtils.getElementState(element);
+      const slotMap = state.getSlotMap();
       // Setup the ViewModel context to pass to lifecycle listeners
       var slotNodeCounts = {};
       // Generate slot map before we update DOM with view nodes
-      var slotMap = CustomElementUtils.getSlotMap(element);
       var slots = Object.keys(slotMap);
       for (var i = 0; i < slots.length; i++) {
         var slot = slots[i];
         slotNodeCounts[slot] = slotMap[slot].length;
       }
-      this._SLOT_MAP = slotMap;
       var unique = ElementUtils.getUniqueId();
       var vmContext = {
         element: element,
@@ -220,7 +196,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
       return activatedPromise.then(function () {
         var params = {
           props: bridge._PROPS,
-          slotMap: bridge._SLOT_MAP,
+          slotMap: slotMap,
           slotNodeCounts: slotNodeCounts,
           unique: bridge._VM_CONTEXT.unique,
           uniqueId: bridge._VM_CONTEXT.uniqueId,
@@ -231,7 +207,8 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
         // Store the name of the binding provider on the element when we are about
         // to insert the view. This will allow custom elements within the view to look
         // up the binding provider used by the composite (currently only KO).
-        Object.defineProperty(element, CompositeInternal.__BINDING_PROVIDER, { value: 'knockout' });
+        // eslint-disable-next-line no-param-reassign
+        element[CHILD_BINDING_PROVIDER] = 'knockout';
         // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
         if (oj.Components) {
           oj.Components.unmarkPendingSubtreeHidden(element);
@@ -258,16 +235,19 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
       var set = function (value, bOuterSet) {
         // Properties can be set before the component is created. These early
         // sets are actually saved until after component creation and played back.
+        if (bOuterSet) {
+          // eslint-disable-next-line no-param-reassign
+          value =
+          CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+        }
         if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
           // Property trackers are observables are referenced when the property is set or retrieved,
           // which allows us to automatically update the View when the property is mutated.
           var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE,
                                                                               property);
           var previousValue = propertyTracker.peek();
-          if (!oj.BaseCustomElementBridge.__CompareOptionValues(property,
-                                                                propertyMeta,
-                                                                value,
-                                                                previousValue)) { // We should consider supporting custom comparators
+          if (!ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
+            // We should consider supporting custom comparators
             // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
             if (bOuterSet) {
               // eslint-disable-next-line no-param-reassign
@@ -503,7 +483,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
       // Case #2
       var composite = CompositeInternal.getContainingComposite(node, this);
       if (composite != null) {
-        nodeKey = composite.node.getAttribute('data-oj-subid-map');
+        nodeKey = composite.node.getAttribute(CompositeElementBridge.SUBID_MAP);
         match = nodeMap[nodeKey];
         if (match) {
           if (composite.getSubIdByNode) {
@@ -524,7 +504,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
       var curNode = node;
       while (curNode !== this) {
         // We do not support an element having both attributes. If both are specified, -map takes precedence.
-        nodeKey = curNode.getAttribute('data-oj-subid-map')
+        nodeKey = curNode.getAttribute(CompositeElementBridge.SUBID_MAP)
           || curNode.getAttribute('data-oj-subid');
         if (nodeKey) {
           break;
@@ -559,7 +539,9 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
 
     _getViewModel: function () {
       if (!this._VIEW_MODEL) {
-        this.State.throwError('Cannot access methods before element is upgraded.');
+        throw new JetElementError(
+          this._ELEMENT, 'Cannot access methods before element is upgraded.'
+        );
       }
       return this._VIEW_MODEL;
     }
@@ -599,23 +581,21 @@ CompositeElementBridge.register = function (tagName, descriptor) {
     composite: true,
     cache: {}
   };
-  if (CustomElementUtils.registerElement(tagName, registration)) {
-    var metadata = descrip[oj.BaseCustomElementBridge.DESC_KEY_META];
-    if (!metadata) {
-      // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
-      warn("Composite registered'" + tagName.toLowerCase() + "' without Metadata.");
-      metadata = {};
-    }
-    var view = descrip[CompositeElementBridge.DESC_KEY_VIEW];
-    if (view == null) {
-      throw new Error("Cannot register composite '" + tagName.toLowerCase() + "' without a View.");
-    }
-
-    // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
-    descrip._metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
-    customElements.define(tagName,
-                          CompositeElementBridge.proto.getClass(descrip));
+  var metadata = descrip[oj.BaseCustomElementBridge.DESC_KEY_META];
+  if (!metadata) {
+    // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
+    warn("Composite registered'" + tagName.toLowerCase() + "' without Metadata.");
+    metadata = {};
   }
+  var view = descrip[CompositeElementBridge.DESC_KEY_VIEW];
+  if (view == null) {
+    throw new Error("Cannot register composite '" + tagName.toLowerCase() + "' without a View.");
+  }
+
+  // __ProcessEventListeners returns a copy of the metadata so we're not updating the original here.
+  descrip._metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
+  CustomElementUtils.registerElement(tagName, registration,
+    CompositeElementBridge.proto.getClass(descrip));
 };
 
 /** ***************************/
@@ -644,11 +624,10 @@ CompositeElementBridge._getDomNodes = function (content, element) {
     }
     return clonedContent;
   }
-  var bridge = CustomElementUtils.getElementBridge(element);
   // TODO update this error message once we remove support for Array of DOM nodes and DocumentFragment
-  bridge.State.throwError(
-    'The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment');
-  return undefined; // Not really reachable by ESLint doesn't know that
+  throw new JetElementError(
+    element, 'The composite View is not one of the following supported types: string, Array of DOM nodes, DocumentFragment'
+  );
 };
 
 /**
@@ -700,7 +679,7 @@ CompositeElementBridge._walkSubtree = function (subIdMap, nodeMap, node) {
  */
 CompositeElementBridge._addNodeToSubIdMap = function (subIdMap, nodeMap, node) {
   var nodeSubId = node.getAttribute('data-oj-subid');
-  var nodeSubIdMapStr = node.getAttribute('data-oj-subid-map');
+  var nodeSubIdMapStr = node.getAttribute(CompositeElementBridge.SUBID_MAP);
   // We do not support an element having both attributes. If both are specified, -map takes precedence.
   if (nodeSubIdMapStr) {
     var parsedValue = JSON.parse(nodeSubIdMapStr);
@@ -799,14 +778,6 @@ CompositeElementBridge._isDocumentFragment = function (content) {
 
   return content && content.nodeType === 11;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * <p>
@@ -924,13 +895,6 @@ Composite.getContainingComposite = CompositeInternal.getContainingComposite;
  */
 Composite.__COMPOSITE_PROP = '__oj_composite';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @ojoverviewdoc ComponentPackOverview - [7]JET Pack Metadata
  * @classdesc
@@ -1384,13 +1348,6 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @ojoverviewdoc ComponentTypeOverview - [1]JET Component Types
  * @classdesc
  * {@ojinclude "name":"componentTypeOverviewDoc"}
@@ -1470,13 +1427,6 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * @memberof ComponentTypeOverview
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @ojoverviewdoc CompositeOverview - [3]JET Custom Components
  * @classdesc
@@ -1785,13 +1735,6 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @ojoverviewdoc MetadataOverview - [6]JET Metadata
  * @classdesc
  * {@ojinclude "name":"metadataOverviewDoc"}
@@ -1961,13 +1904,6 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * @memberof MetadataOverview
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *
  * @ojcomponent oj.ojBindSlot
@@ -2271,13 +2207,6 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * @expose
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *
  * @ojcomponent oj.ojBindTemplateSlot

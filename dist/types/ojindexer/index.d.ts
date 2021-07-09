@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface IndexerModel {
     getIndexableSections(): IndexerModel.Section[];
@@ -71,4 +65,15 @@ export type IndexerElement = ojIndexer;
 export namespace IndexerElement {
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged = JetElementCustomEvent<ojIndexer["data"]>;
+}
+export interface IndexerIntrinsicProps extends Partial<Readonly<ojIndexerSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondataChanged?: (value: ojIndexerEventMap['dataChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-indexer": IndexerIntrinsicProps;
+        }
+    }
 }

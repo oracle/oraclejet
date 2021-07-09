@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojValidationGroup extends JetElement<ojValidationGroupSettableProperties> {
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
@@ -36,4 +30,15 @@ export type ValidationGroupElement = ojValidationGroup;
 export namespace ValidationGroupElement {
     // tslint:disable-next-line interface-over-type-literal
     type validChanged = JetElementCustomEvent<ojValidationGroup["valid"]>;
+}
+export interface ValidationGroupIntrinsicProps extends Partial<Readonly<ojValidationGroupSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onvalidChanged?: (value: ojValidationGroupEventMap['validChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-validation-group": ValidationGroupIntrinsicProps;
+        }
+    }
 }

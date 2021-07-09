@@ -11,14 +11,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    * @final
    * @class Events
@@ -614,7 +606,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
     var event;
     var attr;
     var eventObj;
-    var cxt = context;
+    var cxt;
     var prop;
 
     var obj = this._getEventMap(eventType, callback, context);
@@ -656,7 +648,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   Events._offInternal = function (eventType, callback, context, listen) {
     var eventMap;
     var obj;
-    var cxt = context;
+    var cxt;
     var prop;
 
     if (arguments == null || arguments.length === 0) {
@@ -857,14 +849,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   oj._registerLegacyNamespaceProp('Events', Events);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    * @final
    * @class oj.URLError
@@ -881,14 +865,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
 
   URLError.prototype = new Error();
   URLError.constructor = URLError;
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @private
@@ -908,21 +884,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   // Add the properties in options to starter, if not already there
   RestImpl.addOptions = function (starter, options, customOptions) {
     var initial = $.extend(true, starter, customOptions);
-    if (options) {
-      Object.keys(options || {}).forEach(function (prop) {
-        if (Object.prototype.hasOwnProperty.call(options, prop) && prop !== 'oauthHeader') {
-          if (!Object.prototype.hasOwnProperty.call(initial, prop)) {
-            initial[prop] = options[prop];
-          }
-          if (prop === RestImpl._HEADER_PROP) {
-                    // Deep merge
-            initial[prop] = $.extend(true, initial[prop], options[prop]);
-          }
+    var tempOpt = options || {};
+    Object.keys(tempOpt).forEach(function (prop) {
+      if (Object.prototype.hasOwnProperty.call(tempOpt, prop) && prop !== 'oauthHeader') {
+        if (!Object.prototype.hasOwnProperty.call(initial, prop)) {
+          initial[prop] = tempOpt[prop];
         }
-      });
-    }
+        if (prop === RestImpl._HEADER_PROP) {
+                  // Deep merge
+          initial[prop] = $.extend(true, initial[prop], tempOpt[prop]);
+        }
+      }
+    });
 
-    if (options.oauthHeader) {
+    if (options && options.oauthHeader) {
           // if there are no any headers then create a new one.
       if (!initial[RestImpl._HEADER_PROP]) initial[RestImpl._HEADER_PROP] = {};
       Object.keys(options.oauthHeader || {}).forEach(function (prop) {
@@ -1053,11 +1028,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       method = 'PUT';
     }
     if (RestImpl._emulateHTTP(options)) {
-          // Convert method to POST, put original method under data._method
-      var retObj = {};
-      retObj.method = 'POST';
-      retObj._method = method;
-      return retObj;
+      // Convert method to POST, put original method under data._method
+      return { method: 'POST', _method: method };
     }
     if (method === null) {
       method = 'GET';
@@ -1212,14 +1184,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
     }
     return $.isFunction(property) ? property() : property;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @export
@@ -2076,13 +2040,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
         this._clearChanged();
       }
 
-          // attrs[property] = undefined;
       delete this.attributes[property];
       this._addChange(property, undefined);
-          // if (!silent) {
       this._fireAttrChange(property, null, null, silent);
       this._fireChange(null, silent);
-          // }
     }
     this.SetupId();
     return true;
@@ -2428,8 +2389,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @export
    */
   Model.prototype.isValid = function () {
-    var options = {};
-    options.validate = this.validate;
+    var options = { validate: this.validate };
     return this._checkValid(this.attributes, options, false);
   };
 
@@ -3140,7 +3100,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       recordId = model.GetId();
     }
     var newOpt = {};
-    Object.keys(options || {}).forEach(function (prop) {
+    Object.keys(options).forEach(function (prop) {
       newOpt[prop] = options[prop];
     });
     var urlOpt = RestImpl.SetCustomURLOptions(recordId, model, options);
@@ -3260,14 +3220,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   oj._registerLegacyNamespaceProp('ajax', ajax);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @export
    * @class Collection
    * @classdesc Collection of Model objects
@@ -3336,7 +3288,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @type number
    * @since 1.0.0
    */
-  Collection.prototype.length = undefined;
+  Collection.prototype.length = null;
 
   /**
    * @export
@@ -3349,7 +3301,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @type {Array.<Model>}
    * @since 1.0.0
    */
-  Collection.prototype.models = undefined;
+  Collection.prototype.models = null;
 
   /**
    * Tracking indices used
@@ -3513,7 +3465,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @type number
    * @since 1.0.0
    */
-  Collection.prototype.lastFetchSize = undefined;
+  Collection.prototype.lastFetchSize = null;
 
   /**
    * @export
@@ -3534,7 +3486,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    *
    * @type number
    */
-  Collection.prototype.totalResults = undefined;
+  Collection.prototype.totalResults = null;
 
   /**
    *
@@ -3546,7 +3498,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    *
    * @type number
    */
-  Collection.prototype.lastFetchCount = undefined;
+  Collection.prototype.lastFetchCount = null;
 
   /**
    * @export
@@ -3566,7 +3518,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    *
    * @type number
    */
-  Collection.prototype.offset = undefined;
+  Collection.prototype.offset = null;
 
   /**
    * @export
@@ -3574,7 +3526,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * The server's fetch size comes back as the "limit" property.  The default value
    * of -1 indicates that virtualization is not being used or is not available,
    * and all records will be fetched.<br>
-   * The number of records actually fetched comes back as [count]{@link Collection#count}<br>
    * @memberof Collection
    *
    * @type number
@@ -3805,7 +3756,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
     for (var at = start; at < start + count; at++) {
       if (this.changes.indexOf(at) === -1) {
         this.changes.push(at);
-              // this.changes.sort(function(a,b) { return a-b;});
       }
     }
   };
@@ -4092,7 +4042,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       if (!(model && model.hasChanged())) {
         this.lruCount -= 1;
         if (index > -1) {
-                  // this._getModels()[index] = undefined;
           this._setModel(index, undefined);
           this._clearModelIndices(index, index);
         }
@@ -4274,7 +4223,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
     var validationValue;
     var opt = options || {};
 
-  //    opt.noparse = !parse;
     opt.ignoreDefaults = ignoreDefaults;
 
     if (m instanceof Model) {
@@ -5278,15 +5226,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       }
       this._spliceModels(n, 1);
       this._setLength();
-          // if (!silent) {
       var opt = {};
       oj.CollectionUtils.copyInto(opt, optCopy);
       opt.index = n;
       if (mod !== undefined) {
         mod.TriggerInternal(silent, Events.EventType.REMOVE, mod, this, opt);
       }
-        //  }
-          // Unlisten after event fired
+      // Unlisten after event fired
       this._unlistenToModel(mod);
     }
     return modInfo.m;
@@ -6607,9 +6553,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @private
    */
   Collection.prototype._resetModelsToFullLength = function (totalResults) {
-    // var totalResults = this.totalResults;
     if (totalResults !== undefined && this._getModelsLength() !== totalResults) {
-          // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to preallocate)
+      // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to preallocate)
       this._setModels(new Array(totalResults), true);
       this._resetLRU();
       this._setLength();
@@ -6747,7 +6692,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       return true;
     }
       // Not there: figure it out.  It's true unless we're walking off the end
-    return !((offset + lastFetchSize > totalResults));
+    return !(offset + lastFetchSize > totalResults);
   };
 
   /**
@@ -6891,8 +6836,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
 
     addOpts.merge = true;
     doAdd(newModel, addOpts);
-    var model = doSave(this, newModel, validate, opt);
-    return model;
+    return doSave(this, newModel, validate, opt);
   };
 
   /**
@@ -7619,10 +7563,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
       // Swap
     var oldModel = this._getModel(oldIndex);
     var newModel = this._getModel(newIndex);
-      // this._getModels()[oldIndex] = newModel;
     this._setModel(oldIndex, newModel);
     newModel.SetIndex(oldIndex);
-      // this._getModels()[newIndex] = oldModel;
     this._setModel(newIndex, oldModel);
     oldModel.SetIndex(newIndex);
 
@@ -8199,8 +8141,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
   };
 
   /**
-   * @export
-   * Called to perfrom server interactions, such as reading the collection.  Designed to be overridden by users
+   * Called to perfrom server interactions, such as reading the collection.  Designed to be overridden by users.
    *
    * @param {string} method "read"
    * @param {Collection} collection the collection to be read (fetched)
@@ -8213,7 +8154,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @since 1.0.0
    * @ojsignature {target: "Type", value:"{success?: (response?: any)=> void,
    *                                                  error?: (xhr: any, status: any, error: any)=> void, [propName: string]: any}", for: "options"}
-   * @alias Collection.prototype.sync
    */
   Collection.prototype.sync = function (method, collection, options) {
     return oj.sync(method, collection, options);
@@ -8224,14 +8164,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'jquery', 'ojs/ojconfig'],
    * @private
    */
   Collection._FETCH_SIZE_PROP = 'fetchSize';
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @export

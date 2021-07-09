@@ -1,12 +1,7 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { PagingModel } from '../ojpagingmodel';
+import NumberRangeValidator = require('../ojvalidator-numberrange');
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojPagingControl extends baseComponent<ojPagingControlSettableProperties> {
     data: PagingModel;
@@ -165,4 +160,20 @@ export namespace PagingControlElement {
     type pageOptionsChanged = JetElementCustomEvent<ojPagingControl["pageOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type pageSizeChanged = JetElementCustomEvent<ojPagingControl["pageSize"]>;
+}
+export interface PagingControlIntrinsicProps extends Partial<Readonly<ojPagingControlSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondataChanged?: (value: ojPagingControlEventMap['dataChanged']) => void;
+    onloadMoreOptionsChanged?: (value: ojPagingControlEventMap['loadMoreOptionsChanged']) => void;
+    onmodeChanged?: (value: ojPagingControlEventMap['modeChanged']) => void;
+    onoverflowChanged?: (value: ojPagingControlEventMap['overflowChanged']) => void;
+    onpageOptionsChanged?: (value: ojPagingControlEventMap['pageOptionsChanged']) => void;
+    onpageSizeChanged?: (value: ojPagingControlEventMap['pageSizeChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-paging-control": PagingControlIntrinsicProps;
+        }
+    }
 }

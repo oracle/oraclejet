@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'use strict';
 
     /**
-     * @license
-     * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-
-    /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
      * Released under the MIT license.
      * http://jquery.org/license
@@ -227,26 +219,21 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
                 }
                 ['next']() {
                     const promise = this._fetchNext();
-                    let self = this;
                     return promise.then((result) => {
-                        return self._parent._suppressNodeIfEmptyChildrenFirst(result);
+                        return this._parent._suppressNodeIfEmptyChildrenFirst(result);
                     });
                 }
             };
             this.AsyncIteratorYieldResult = class {
-                constructor(_parent, value) {
-                    this._parent = _parent;
+                constructor(value) {
                     this.value = value;
-                    this['value'] = value;
-                    this['done'] = false;
+                    this.done = false;
                 }
             };
             this.AsyncIteratorReturnResult = class {
-                constructor(_parent, value) {
-                    this._parent = _parent;
+                constructor(value) {
                     this.value = value;
-                    this['value'] = value;
-                    this['done'] = true;
+                    this.done = true;
                 }
             };
             this.FetchListResult = class {
@@ -254,29 +241,19 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
                     this.fetchParameters = fetchParameters;
                     this.data = data;
                     this.metadata = metadata;
-                    this[SuppressNodeTreeDataProvider._FETCHPARAMETERS] = fetchParameters;
-                    this[SuppressNodeTreeDataProvider._DATA] = data;
-                    this[SuppressNodeTreeDataProvider._METADATA] = metadata;
                 }
             };
             this.FetchByOffsetResults = class {
-                constructor(_parent, fetchParameters, results, done) {
-                    this._parent = _parent;
+                constructor(fetchParameters, results, done) {
                     this.fetchParameters = fetchParameters;
                     this.results = results;
                     this.done = done;
-                    this[SuppressNodeTreeDataProvider._FETCHPARAMETERS] = fetchParameters;
-                    this[SuppressNodeTreeDataProvider._RESULTS] = results;
-                    this[SuppressNodeTreeDataProvider._DONE] = done;
                 }
             };
             this.Item = class {
-                constructor(_parent, metadata, data) {
-                    this._parent = _parent;
+                constructor(metadata, data) {
                     this.metadata = metadata;
                     this.data = data;
-                    this[SuppressNodeTreeDataProvider._METADATA] = metadata;
-                    this[SuppressNodeTreeDataProvider._DATA] = data;
                 }
             };
         }
@@ -299,11 +276,12 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
             return this.treeDataProvider.createOptimizedKeyMap(initialMap);
         }
         getChildDataProvider(parentKey) {
-            let child = this.treeDataProvider.getChildDataProvider(parentKey);
-            if (child == null)
-                return null;
-            else
-                return new SuppressNodeTreeDataProvider(child, this.options);
+            const child = this.treeDataProvider.getChildDataProvider(parentKey);
+            return child === null ? null : new SuppressNodeTreeDataProvider(child, this.options);
+        }
+        fetchFirst(params) {
+            const asyncIterable = this.treeDataProvider.fetchFirst(params);
+            return new this.SuppressNodeTreeAsyncIterable(this, asyncIterable[Symbol.asyncIterator]());
         }
         fetchByOffset(params) {
             return this.treeDataProvider.fetchByOffset(params).then((result) => {
@@ -313,61 +291,91 @@ define(['exports', 'ojs/ojeventtarget'], function (exports, ojeventtarget) { 'us
         fetchByKeys(params) {
             return this.treeDataProvider.fetchByKeys(params);
         }
-        fetchFirst(params) {
-            let asyncIterable = this.treeDataProvider.fetchFirst(params);
-            return new this.SuppressNodeTreeAsyncIterable(this, asyncIterable[Symbol.asyncIterator]());
-        }
         _suppressNodeIfEmptyChildrenByOffset(result) {
-            let retResult = null;
             if (result.results && this.options && this.options.suppressNode == 'ifEmptyChildren') {
-                let metadata;
-                let data;
-                let resultArray = [];
-                for (let resulti of result.results) {
-                    metadata = resulti.metadata;
-                    data = resulti.data;
-                    let child = this.treeDataProvider.getChildDataProvider(metadata.key, this.options);
-                    if (child && child.isEmpty() == 'no') {
-                        resultArray.push(new this.Item(this, metadata, data));
+                const resultArray = [];
+                const promises = [];
+                const promiseItems = new Promise((resolve) => {
+                    for (let i = 0; i < result.results.length; i++) {
+                        const resulti = result.results[i];
+                        promises[i] = this._suppressChild(resulti.metadata.key, result.fetchParameters ? result.fetchParameters.filterCriterion : null);
                     }
-                }
-                if (resultArray.length > 0) {
-                    retResult = new this.FetchByOffsetResults(this, result.fetchParameters, resultArray, result.done);
-                }
+                    return Promise.all(promises).then((supressNodes) => {
+                        for (let i = 0; i < supressNodes.length; i++) {
+                            if (supressNodes[i] === false) {
+                                resultArray.push(new this.Item(result.results[i].metadata, result.results[i].data));
+                            }
+                        }
+                        return resolve(resultArray);
+                    });
+                });
+                return promiseItems.then((resultArray) => {
+                    return new this.FetchByOffsetResults(result.fetchParameters, resultArray, result.done);
+                });
             }
-            return retResult == null ? result : retResult;
+            else {
+                return Promise.resolve(result);
+            }
         }
         _suppressNodeIfEmptyChildrenFirst(result) {
-            let retResult = null;
+            const promises = [];
             if (!result.done && this.options && this.options.suppressNode == 'ifEmptyChildren') {
-                if (result && result.value && result.value.data) {
-                    let metadata = result.value.metadata;
-                    let data = result.value.data;
-                    let retData = Array();
-                    let retMetadata = Array();
-                    for (let i = 0; metadata && i < metadata.length; i++) {
-                        let child = this.treeDataProvider.getChildDataProvider(metadata[i].key, this.options);
-                        if (child && child.isEmpty() == 'no') {
-                            retData.push(data[i]);
-                            retMetadata.push(metadata[i]);
+                const promiseItems = new Promise((resolve) => {
+                    if (result && result.value && result.value.data) {
+                        const metadata = result.value.metadata;
+                        const data = result.value.data;
+                        const retItems = [];
+                        for (let i = 0; metadata && i < metadata.length; i++) {
+                            promises[i] = this._suppressChild(metadata[i].key, result.value.fetchParameters ? result.value.fetchParameters.filterCriterion : null);
                         }
+                        return Promise.all(promises).then((supressNodes) => {
+                            for (let i = 0; i < supressNodes.length; i++) {
+                                if (supressNodes[i] === false) {
+                                    retItems.push({ data: data[i], metadata: metadata[i] });
+                                }
+                            }
+                            return resolve(retItems);
+                        });
                     }
-                    if (retData.length > 0) {
-                        retResult = result.done
-                            ? new this.AsyncIteratorReturnResult(this, new this.FetchListResult(null, retData, retMetadata))
-                            : new this.AsyncIteratorYieldResult(this, new this.FetchListResult(null, retData, retMetadata));
+                    else {
+                        return { data: result.value.data, metadata: result.value.metadata };
                     }
+                });
+                return promiseItems.then((retItems) => {
+                    const retData = [];
+                    const retMetadata = [];
+                    for (const item of retItems) {
+                        retData.push(item.data);
+                        retMetadata.push(item.metadata);
+                    }
+                    return new this.AsyncIteratorYieldResult(new this.FetchListResult(result.value.fetchParameters, retData, retMetadata));
+                });
+            }
+            else {
+                return Promise.resolve(result);
+            }
+        }
+        _suppressChild(key, filterCriterion) {
+            const child = this.getChildDataProvider(key);
+            if (child == null || child.isEmpty() === 'yes') {
+                return Promise.resolve(child === null ? false : true);
+            }
+            else {
+                if (filterCriterion) {
+                    return child
+                        .fetchByOffset({ offset: 0, filterCriterion: filterCriterion })
+                        .then((childResult) => {
+                        return childResult && childResult.results && childResult.results.length > 0
+                            ? false
+                            : true;
+                    });
+                }
+                else {
+                    return Promise.resolve(false);
                 }
             }
-            return Promise.resolve(retResult == null ? result : retResult);
         }
     }
-    SuppressNodeTreeDataProvider._DATA = 'data';
-    SuppressNodeTreeDataProvider._METADATA = 'metadata';
-    SuppressNodeTreeDataProvider._FETCHPARAMETERS = 'fetchParameters';
-    SuppressNodeTreeDataProvider._RESULTS = 'results';
-    SuppressNodeTreeDataProvider._DONE = 'done';
-    SuppressNodeTreeDataProvider._KEY = 'key';
     ojeventtarget.EventTargetMixin.applyMixin(SuppressNodeTreeDataProvider);
 
     exports.SuppressNodeTreeDataProvider = SuppressNodeTreeDataProvider;

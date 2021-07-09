@@ -18,17 +18,9 @@ import { subtreeHidden } from 'ojs/ojcomponentcore';
 import { register } from 'ojs/ojcomposite';
 import Context from 'ojs/ojcontext';
 import { Swipe, DIRECTION_ALL } from 'hammerjs';
-import { info, warning } from 'ojs/ojlogger';
+import { info } from 'ojs/ojlogger';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { getComponentTranslations, getTranslatedString } from 'ojs/ojtranslation';
-
-/**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 const ojMessage = {};
 
@@ -55,9 +47,9 @@ const ojMessage = {};
  * <code>&lt;oj-message id="simpleMessage" message="[[messageData]]">
  * &lt;/oj-message>
  * </code></pre>
- * <h3 id="accessibility-section">
+ * <h3 id="a11y-section">
  *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
  * <p>The {@link oj.ojMessage#message.sound} property is an accessibility feature for playing a
@@ -999,7 +991,14 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
     var options = {
       recognizers: [
         [Swipe, { direction: DIRECTION_ALL }]
-      ]
+      ],
+      cssProps: {
+        // By default Hammer disables user selection when registering swipe events
+        // this is for improving the user interaction in touch based desktops. But, we
+        // need to override this behavior, as users should be able to copy the message
+        // text.
+        userSelect: 'auto'
+      }
     };
 
     var swipeDirections = getReadingDirection() === 'rtl' ?
@@ -1007,7 +1006,13 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
     this._hammerSwipe = messageContainerElement.ojHammer(options).on(swipeDirections,
       function (event) {
         event.preventDefault();
-        this._closeMessage();
+        // JET-33259 - research the ability to select text in message component while on a touch enabled desktop
+        // In touch enabled desktops, close the message only if the gesture is made using touch action. Do nothing
+        // if the gesture is made using mouse action. This would allow users to select text without dismissing the
+        // message.
+        if (event.gesture && event.gesture.pointerType !== 'mouse') {
+          this._closeMessage();
+        }
       }.bind(this));
   }
 };
@@ -1135,9 +1140,7 @@ MessageViewModel.prototype._formatTimestamp = function () {
         this.formattedTimestamp(formattedTimestamp);
       } catch (e) {
         // expect oj.ConverterError if supplied value is not valid
-        info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-          "': failed to parse or format the supplied value to message.timestamp='",
-          message.timestamp, "'."].join(''));
+        info(`JET oj-message: Invalid value for message.timestamp: ${message.timestamp}`);
       } finally {
         resolve();
       }
@@ -1149,12 +1152,6 @@ MessageViewModel.prototype._formatTimestamp = function () {
 
 MessageViewModel.prototype._getConverterPromise = function (timestamp) {
   const dateTimeConverterLoadPromise = import('ojs/ojconverter-datetime');
-  if (!dateTimeConverterLoadPromise) {
-    warning(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-      "': failed to parse message.timestamp='", timestamp,
-      "' because require() is not available"].join(''));
-  }
-
   return dateTimeConverterLoadPromise.then(function (__DateTimeConverter) {
     // use default format as in UX specs
     var pattern = this._isDateToday(timestamp) ? 'hh:mm a' : 'MM/dd/yy, hh:mm a';
@@ -1465,10 +1462,8 @@ MessageViewModel.prototype._playSound = function (sound) {
 
     // Handle any error due to possible invalid URL.
     audio.addEventListener('error', function () {
-      info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-        "': failed to load or play media file for URL in property message.sound='",
-        sound, "'."].join(''));
-    }.bind(this));
+      info(`JET oj-message: Failed to load media from URL in message.sound='${sound}'.`);
+    });
 
     var promise = audio.play();
 
@@ -1477,18 +1472,14 @@ MessageViewModel.prototype._playSound = function (sound) {
         // All is well with autoplay
       }).catch(function (error) {
         // Autoplay failed. Possible causes 1. Browser prevents auto-play unless certain rules are
-        //  met (which varies by browsers), 2. The audio file resource does not exist or cannot be
-        //  loaded.
-        info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-          "': failed to load or play specified sound: '", sound,
-          "': error details: '", error].join(''));
-      }.bind(this));
+        // met (which varies by browsers), 2. The audio file resource does not exist or cannot be
+        // loaded.
+        info(`JET oj-message: Failed to play specified sound: '${sound}'. Error: ${error}`);
+      });
     }
   } else if (window.audioContext === undefined) {
     // User agent does not support web audio API
-    info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
-      "': failed to load or play default sound for message because user agent does\n",
-      "not support Web Audio API'"].join(''));
+    info('JET oj-message: Failed to play default sound as the browser does not support Web Audio API');
   } else {
     // Default gain value will be 100% of speaker volume which is fine
     var gainNode = window.audioContext.createGain();
@@ -1638,27 +1629,6 @@ MessageViewModel.prototype._getAnimateOptionDefaults = function (action) {
   return MessageViewModel._DEFAULTS.animation[action];
 };
 
-MessageViewModel._toSelector = function (node) {
-  var selector = '';
-  if (node) {
-    if (node.id && node.id.length > 0) {
-      selector = '#' + node.id;
-    } else {
-      selector = node.nodeName;
-      var clazz = node.getAttribute('class');
-      if (clazz) {
-        selector += '.' + clazz.split(' ').join('.');
-      }
-
-      if (node.parentNode) {
-        return MessageViewModel._toSelector(node.parentNode) + ' > ' + selector;
-      }
-    }
-  }
-
-  return selector;
-};
-
 /**
  * Coordinate communications between an event being fulfilled and one or more promises
  * being resolved.  The window of time between the instance creation and the associated event
@@ -1722,8 +1692,7 @@ OperationMediator.prototype._init = function () {
  * @returns {string} description of the busy state animation operation.
  */
 OperationMediator.prototype._getBusyStateDescription = function (element, operation) {
-  return [element.nodeName, " identified by '", MessageViewModel._toSelector(element),
-    "' is busy animating on the '", operation, "' operation."].join('');
+  return `${element.nodeName} is busy animating on the ${operation} operation`;
 };
 
 /**
@@ -1818,14 +1787,12 @@ OperationMediator.prototype.isOperationPending = function (operation, callback) 
   var pendingOperation = this.getPendingOperation();
   if (operation === pendingOperation) {
     // Same request is already pending. Silently fail.
-    info(["An oj-message id='", MessageViewModel._toSelector(this._element),
-      "' invoked a '", operation,
+    info(["JET oj-message: invoked a '", operation,
       "' operation while pending animation of the same type of operation. ",
       'The second request will be ignored.'].join(''));
     isPending = true;
   } else if (pendingOperation !== 'none') {
-    info(["An oj-message id='", MessageViewModel._toSelector(this._element),
-      "' invoked a '", operation,
+    info(["JET oj-message: invoked a '", operation,
       "' operation while pending animation of a '", pendingOperation,
       "' operation. The second request will be invoked after the pending ",
       'operation completes.'].join(''));

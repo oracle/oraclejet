@@ -1,33 +1,26 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { ExtendGlobalProps, Slot } from 'ojs/ojvcomponent';
+import { h, Component, ComponentChildren } from 'preact';
 declare class ListItemLayoutProps {
-    children?: ElementVComponent.Children;
-    overline?: ElementVComponent.Slot;
-    selector?: ElementVComponent.Slot;
-    leading?: ElementVComponent.Slot;
-    secondary?: ElementVComponent.Slot;
-    tertiary?: ElementVComponent.Slot;
-    metadata?: ElementVComponent.Slot;
-    trailing?: ElementVComponent.Slot;
-    action?: ElementVComponent.Slot;
-    quaternary?: ElementVComponent.Slot;
-    navigation?: ElementVComponent.Slot;
+    children?: ComponentChildren;
+    overline?: Slot;
+    selector?: Slot;
+    leading?: Slot;
+    secondary?: Slot;
+    tertiary?: Slot;
+    metadata?: Slot;
+    trailing?: Slot;
+    action?: Slot;
+    quaternary?: Slot;
+    navigation?: Slot;
 }
-export declare class ListItemLayout extends ElementVComponent<ListItemLayoutProps> {
+export declare class ListItemLayout extends Component<ExtendGlobalProps<ListItemLayoutProps>> {
     private _hasContent;
     private _getWrappedSlotContent;
     private _getWrappedSlotContentWithClickThroughDisabled;
-    protected render(): any;
-    protected _vprops?: VListItemLayoutProps;
+    render(props: ExtendGlobalProps<ListItemLayoutProps>): h.JSX.Element;
 }
 // Custom Element interfaces
 export interface ListItemLayoutElement extends JetElement<ListItemLayoutElementSettableProperties>, ListItemLayoutElementSettableProperties {
@@ -46,14 +39,13 @@ export interface ListItemLayoutElementSettableProperties extends JetSettableProp
 export interface ListItemLayoutElementSettablePropertiesLenient extends Partial<ListItemLayoutElementSettableProperties> {
   [key: string]: any;
 }
-export interface ListItemLayoutProperties extends Partial<ListItemLayoutElementSettableProperties>, GlobalAttributes {
-}
-export interface VListItemLayoutProps extends ListItemLayoutProps, GlobalAttributes {
+export interface ListItemLayoutIntrinsicProps extends Partial<Readonly<ListItemLayoutElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  children?: ComponentChildren;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-list-item-layout": ListItemLayoutProperties;
+      "oj-list-item-layout": ListItemLayoutIntrinsicProps;
     }
   }
 }

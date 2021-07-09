@@ -162,8 +162,8 @@ return (${String(select)})(n);
   }
 
   _stringifyOptions(obj) {
-    if (opts === undefined)
-      return opts;
+    if (obj === undefined)
+      return obj;
     const inner = Object.keys(obj)
       .map(key => `${key}:${JSON.stringify(obj[key])}`)
       .join(',');

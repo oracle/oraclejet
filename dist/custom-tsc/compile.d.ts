@@ -7,6 +7,7 @@ declare type CompileOptions = {
 };
 export declare type BuildOptions = {
     dtDir: string;
+    isolationMode: boolean;
     coreJetBuildOptions?: {
         exclude?: Array<string>;
         enableLegacyElement?: number;
@@ -15,11 +16,10 @@ export declare type BuildOptions = {
     importMaps?: {
         exportToAlias?: Record<string, string>;
         aliasToExport?: Record<string, string>;
-        propsToModule?: Record<string, string>;
-        moduleToProps?: Record<string, string[]>;
     };
     componentToMetadata?: Record<string, MetadataTypes.ComponentMetadata>;
     templatePath?: string;
+    reservedGlobalProps?: Array<string>;
     tsBuiltDir: string;
     mainEntryFile: string;
     typesDir: string;

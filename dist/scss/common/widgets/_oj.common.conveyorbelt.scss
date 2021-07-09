@@ -188,16 +188,5 @@
         @extend .oj-fwk-icon-caret-s;
     }
 
-    // Option defaults
-    //----------------------------------
-     $conveyorBeltDefaultOptions: ();
-
-     @if ($conveyorBeltArrowVisibilityOptionDefault != null) {
-         $conveyorBeltDefaultOptions: map-merge($conveyorBeltDefaultOptions, (arrowVisibility: $conveyorBeltArrowVisibilityOptionDefault));
-     }
-
-     .oj-conveyorbelt-option-defaults {
-         font-family: oj-json-from-map($conveyorBeltDefaultOptions);
-     }
   }
 }

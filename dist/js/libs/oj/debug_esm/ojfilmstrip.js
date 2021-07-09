@@ -10,17 +10,9 @@ import $ from 'jquery';
 import Context from 'ojs/ojcontext';
 import { subtreeDetached, subtreeAttached, subtreeShown, subtreeHidden } from 'ojs/ojcomponentcore';
 import { warn } from 'ojs/ojlogger';
-import { isTouchSupported, addResizeListener, removeResizeListener, isValidIdentifier } from 'ojs/ojdomutils';
+import { isValidIdentifier, isTouchSupported, addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
 import FocusUtils from 'ojs/ojfocusutils';
 import 'touchr';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 var __oj_film_strip_metadata = 
 {
@@ -119,14 +111,6 @@ var __oj_film_strip_metadata =
   oj.CustomElementBridge.register('oj-film-strip', { metadata: __oj_film_strip_metadata });
 }());
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /* jslint browser: true*/
 /**
  * Implementation of PagingModel used by FilmStrip.
@@ -136,7 +120,6 @@ var __oj_film_strip_metadata =
  * @implements PagingModel
  * @constructor
  * @ignore
- * @ojtsignore
  */
 
 const FilmStripPagingModel = function () {
@@ -336,14 +319,6 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 // end PagingModel interface methods ////////////////////////////////////////
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojFilmStrip
  * @augments oj.baseComponent
  * @since 1.1.0
@@ -352,6 +327,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * @ojrole region
  * @class oj.ojFilmStrip
  *
+ * @ojtsimport {module: "ojpagingmodel", type: "AMD", imported: ["PagingModel"]}
  * @ojpropertylayout [ {propertyGroup: "common", items: ["orientation", "maxItemsPerPage", "arrowPlacement", "arrowVisibility", "looping"]},
  *                     {propertyGroup: "data", items: ["currentItem"]} ]
  * @ojvbdefaultcolumns 12
@@ -435,9 +411,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * hidden from the tab order.
  *
  *
- * <h3 id="accessibility-section">
+ * <h3 id="a11y-section">
  *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
  * <p>FilmStrip is for layout only.  It is the responsibility of the
@@ -487,6 +463,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  * (LTR or RTL) changes post-init, the FilmStrip must be
  * <code class="prettyprint">refresh()</code>ed.
  */
+
+//-----------------------------------------------------
+//                   Slots
+//-----------------------------------------------------
 /**
  * <p>The &lt;oj-film-strip> element lays out its children in a single row or column across logical pages and allows navigating through them.<p>
  *
@@ -503,90 +483,214 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
  *   &lt;div class='my-filmstrip-item'>Zeta&lt;/div>
  * &lt;/oj-film-strip>
  */
+
+//-----------------------------------------------------
+//                   Sub-ids
+//-----------------------------------------------------
+/**
+ * <p>Sub-ID for the start navigation arrow of a horizontal FilmStrip.</p>
+ *
+ * @ojsubid oj-filmstrip-start-arrow
+ * @memberof oj.ojFilmStrip
+ *
+ * @example <caption>Get the start navigation arrow:</caption>
+ * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-start-arrow'} );
+ */
+
+/**
+ * <p>Sub-ID for the end navigation arrow of a horizontal FilmStrip.</p>
+ *
+ * @ojsubid oj-filmstrip-end-arrow
+ * @memberof oj.ojFilmStrip
+ *
+ * @example <caption>Get the end navigation arrow:</caption>
+ * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-end-arrow'} );
+ */
+
+/**
+ * <p>Sub-ID for the top navigation arrow of a vertical FilmStrip.</p>
+ *
+ * @ojsubid oj-filmstrip-top-arrow
+ * @memberof oj.ojFilmStrip
+ *
+ * @example <caption>Get the top navigation arrow:</caption>
+ * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-top-arrow'} );
+ */
+
+/**
+ * <p>Sub-ID for the bottom navigation arrow of a vertical FilmStrip.</p>
+ *
+ * @ojsubid oj-filmstrip-bottom-arrow
+ * @memberof oj.ojFilmStrip
+ *
+ * @example <caption>Get the bottom navigation arrow:</caption>
+ * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-bottom-arrow'} );
+ */
+
+//-----------------------------------------------------
+//                   Fragments
+//-----------------------------------------------------
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>FilmStrip</td>
+ *       <td><kbd>Swipe</kbd></td>
+ *       <td>Transition to an adjacent logical page of child items.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Navigation Arrow</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Transition to an adjacent logical page of child items.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojFilmStrip
+ */
+
+/**
+ * <p>FilmStrip itself is a tabstop and supports the following keyboard interactions:
+ *
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>FilmStrip</td>
+ *       <td><kbd>UpArrow or LeftArrow</kbd> (<kbd>RightArrow</kbd> in RTL)</td>
+ *       <td>Transition to the previous logical page of child items.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>FilmStrip</td>
+ *       <td><kbd>DownArrow or RightArrow</kbd> (<kbd>LeftArrow</kbd> in RTL)</td>
+ *       <td>Transition to the next logical page of child items.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>FilmStrip</td>
+ *       <td><kbd>Home</kbd></td>
+ *       <td>Transition to the first logical page of child items.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>FilmStrip</td>
+ *       <td><kbd>End</kbd></td>
+ *       <td>Transition to the last logical page of child items.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Navigation Arrow</td>
+ *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+ *       <td>Transition to an adjacent logical page of child items.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojFilmStrip
+ */
 (function () {
   // start static members and functions //////////////////////////////////////////
 
-  var _ADJACENT = 'adjacent';
+  const _ADJACENT = 'adjacent';
   // aria-hidden DOM attribute
-  var _ARIA_HIDDEN = 'aria-hidden';
-  var _AUTO = 'auto';
+  const _ARIA_HIDDEN = 'aria-hidden';
+  const _AUTO = 'auto';
   // display CSS attribute
-  var _DISPLAY = 'display';
+  const _DISPLAY = 'display';
 
   // threshold to initialize a drag scroll (pixels)
-  var _DRAG_SCROLL_INIT_THRESHOLD = 3;
+  const _DRAG_SCROLL_INIT_THRESHOLD = 3;
   // drag scroll threshold (percentage of filmStrip size)
-  var _DRAG_SCROLL_THRESHOLD = 0.33;
+  const _DRAG_SCROLL_THRESHOLD = 0.33;
   // drag scroll threshold (max distance, pixels)
-  var _DRAG_SCROLL_MAX_THRESHOLD = 100;
+  const _DRAG_SCROLL_MAX_THRESHOLD = 100;
 
-  var _EMPTY_STRING = '';
+  const _EMPTY_STRING = '';
   // throw an error when invalid "currentItem" property set
-  var _ERROR_CURRENT_ITEM_NOT_FOUND = "JET FilmStrip: Value of 'currentItem' property not found: ";
+  const _ERROR_CURRENT_ITEM_NOT_FOUND = 'JET FilmStrip: Value of \'currentItem\' property is invalid. No such item exists: ';
   // throw an error when "orientation" property set to invalid value
-  var _ERROR_INVALID_ORIENTATION = "JET FilmStrip: Unsupported value set as 'orientation' property: ";
+  const _ERROR_INVALID_ORIENTATION = 'JET FilmStrip: Unsupported value set as \'orientation\' property: ';
   // throw an error when "arrowPlacement" property set to invalid value
-  var _ERROR_INVALID_NAV_ARROW_PLACEMENT = "Unsupported value set as 'arrowPlacement' property: ";
+  const _ERROR_INVALID_NAV_ARROW_PLACEMENT = 'JET FilmStrip: Unsupported value set as \'arrowPlacement\' property: ';
   // throw an error when "arrowVisibility" property set to invalid value
-  var _ERROR_INVALID_NAV_ARROW_VISIBILITY = "Unsupported value set as 'arrowVisibility' property: ";
+  const _ERROR_INVALID_NAV_ARROW_VISIBILITY = 'JET FilmStrip: Unsupported value set as \'arrowVisibility\' property: ';
   // throw an error when "looping" property set to invalid value
-  var _ERROR_INVALID_LOOPING = "Unsupported value set as 'looping' property: ";
-  var _FLEX_BASIS = 'flex-basis';
-  var _HIDDEN = 'hidden';
+  const _ERROR_INVALID_LOOPING = 'JET FilmStrip: Unsupported value set as \'looping\' property: ';
+  const _FLEX_BASIS = 'flex-basis';
+  const _HIDDEN = 'hidden';
   // jQuery hidden selector
-  var _HIDDEN_SELECTOR = ':hidden';
-  var _HORIZONTAL = 'horizontal';
-  var _HOVER = 'hover';
-  var _CURRENT_ITEM = 'currentItem';
-  var _MS_TRANSFORM = '-ms-transform';
-  var _NONE = 'none';
+  const _HIDDEN_SELECTOR = ':hidden';
+  const _HORIZONTAL = 'horizontal';
+  const _HOVER = 'hover';
+  const _CURRENT_ITEM = 'currentItem';
+  const _MS_TRANSFORM = '-ms-transform';
+  const _NONE = 'none';
 
-  var _OJ_BOTTOM = 'oj-bottom';
-  var _OJ_END = 'oj-end';
-  var _OJ_FILMSTRIP_ARROW = 'oj-filmstrip-arrow';
-  var _OJ_FILMSTRIP_ARROW_CONTAINER = 'oj-filmstrip-arrow-container';
-  var _OJ_FILMSTRIP_ARROW_TRANSITION = 'oj-filmstrip-arrow-transition';
-  var _OJ_FILMSTRIP_CONTAINER = 'oj-filmstrip-container';
-  var _OJ_FILMSTRIP_HOVER = 'oj-filmstrip-hover';
-  var _OJ_FILMSTRIP_ITEM = 'oj-filmstrip-item';
-  var _OJ_FILMSTRIP_ITEM_CONTAINER = 'oj-filmstrip-item-container';
-  var _OJ_FILMSTRIP_PAGE = 'oj-filmstrip-page';
-  var _OJ_FILMSTRIP_PAGES_CONTAINER = 'oj-filmstrip-pages-container';
-  var _OJ_FILMSTRIP_TRANSITION = 'oj-filmstrip-transition';
-  var _OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_FROM = 'oj-filmstrip-transition-next-newpage-from';
-  var _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_FROM = 'oj-filmstrip-transition-next-oldpage-from';
-  var _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_FROM = 'oj-filmstrip-transition-prev-newpage-from';
-  var _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_FROM = 'oj-filmstrip-transition-prev-oldpage-from';
-  var _OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_TO = 'oj-filmstrip-transition-next-newpage-to';
-  var _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_TO = 'oj-filmstrip-transition-next-oldpage-to';
-  var _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_TO = 'oj-filmstrip-transition-prev-newpage-to';
-  var _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_TO = 'oj-filmstrip-transition-prev-oldpage-to';
-  var _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE = 'oj-filmstrip-transition-display-as-firstpage';
-  var _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE = 'oj-filmstrip-transition-display-as-lastpage';
-  var _OJ_FILMSTRIP_VERTICAL = 'oj-filmstrip-vertical';
-  var _OJ_START = 'oj-start';
-  var _OJ_TOP = 'oj-top';
-  var _LOOPING_OFF = 'off';
-  var _LOOPING_PAGE = 'page';
-  var _LOOPING_DIRECTION_NEXT = 'next';
-  var _LOOPING_DIRECTION_PREV = 'prev';
+  const _OJ_BOTTOM = 'oj-bottom';
+  const _OJ_END = 'oj-end';
+  const _OJ_FILMSTRIP_ARROW = 'oj-filmstrip-arrow';
+  const _OJ_FILMSTRIP_ARROW_CONTAINER = 'oj-filmstrip-arrow-container';
+  const _OJ_FILMSTRIP_ARROW_TRANSITION = 'oj-filmstrip-arrow-transition';
+  const _OJ_FILMSTRIP_CONTAINER = 'oj-filmstrip-container';
+  const _OJ_FILMSTRIP_HOVER = 'oj-filmstrip-hover';
+  const _OJ_FILMSTRIP_ITEM = 'oj-filmstrip-item';
+  const _OJ_FILMSTRIP_ITEM_CONTAINER = 'oj-filmstrip-item-container';
+  const _OJ_FILMSTRIP_PAGE = 'oj-filmstrip-page';
+  const _OJ_FILMSTRIP_PAGES_CONTAINER = 'oj-filmstrip-pages-container';
+  const _OJ_FILMSTRIP_TRANSITION = 'oj-filmstrip-transition';
+  const _OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_FROM = 'oj-filmstrip-transition-next-newpage-from';
+  const _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_FROM = 'oj-filmstrip-transition-next-oldpage-from';
+  const _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_FROM = 'oj-filmstrip-transition-prev-newpage-from';
+  const _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_FROM = 'oj-filmstrip-transition-prev-oldpage-from';
+  const _OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_TO = 'oj-filmstrip-transition-next-newpage-to';
+  const _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_TO = 'oj-filmstrip-transition-next-oldpage-to';
+  const _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_TO = 'oj-filmstrip-transition-prev-newpage-to';
+  const _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_TO = 'oj-filmstrip-transition-prev-oldpage-to';
+  const _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE = 'oj-filmstrip-transition-display-as-firstpage';
+  const _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE = 'oj-filmstrip-transition-display-as-lastpage';
+  const _OJ_FILMSTRIP_LABELLEDBY = 'aria-labelledby';
+  const _OJ_FILMSTRIP_START_ARROW = 'oj-filmstrip-start-arrow';
+  const _OJ_FILMSTRIP_END_ARROW = 'oj-filmstrip-end-arrow';
+  const _OJ_FILMSTRIP_TOP_ARROW = 'oj-filmstrip-top-arrow';
+  const _OJ_FILMSTRIP_BOTTOM_ARROW = 'oj-filmstrip-bottom-arrow';
+  const _OJ_FILMSTRIP_VERTICAL = 'oj-filmstrip-vertical';
+  const _OJ_START = 'oj-start';
+  const _OJ_TOP = 'oj-top';
+  const _LOOPING_OFF = 'off';
+  const _LOOPING_PAGE = 'page';
+  const _LOOPING_DIRECTION_NEXT = 'next';
+  const _LOOPING_DIRECTION_PREV = 'prev';
 
-  var _OVERLAY = 'overlay';
-  var _PERIOD = '.';
-  var _PX = 'px';
+  const _OVERLAY = 'overlay';
+  const _PERIOD = '.';
+  const _PX = 'px';
   // make sure the collapseEventTimeout param is less than the one used in the unit tests
   // in order to ensure that the filmStrip listener gets the resize event before the unit test
-  var _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25;
-  var _TRANSFORM = 'transform';
-  var _VERTICAL = 'vertical';
-  var _VISIBLE = 'visible';
+  const _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25;
+  const _TRANSFORM = 'transform';
+  const _VERTICAL = 'vertical';
+  const _VISIBLE = 'visible';
   // jQuery visible selector
-  var _VISIBLE_SELECTOR = ':visible';
-  var _WEBKIT_FLEX_BASIS = '-webkit-flex-basis';
-  var _WEBKIT_TRANSFORM = '-webkit-transform';
+  const _VISIBLE_SELECTOR = ':visible';
+  const _WEBKIT_FLEX_BASIS = '-webkit-flex-basis';
+  const _WEBKIT_TRANSFORM = '-webkit-transform';
 
   // log warning message when "disabled" property set
-  var _WARNING_DISABLED_OPTION = "JET FilmStrip: 'disabled' property not supported";
+  const _WARNING_DISABLED_OPTION = 'JET FilmStrip: \'disabled\' property not supported';
+  // log a warning when filmstrip has no children present
+  const _WARNING_FILMSTRIP_EMPTY = 'JET FilmStrip: There are no nested children!';
 
   /**
    * Apply a CSS transform to the given object.
@@ -624,12 +728,20 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
    */
   function _escapeHtml(text) {
     // let jQuery escape the text
-    var jqDiv = $('<div></div>');
+    const jqDiv = $('<div></div>');
     jqDiv.text(text);
     return jqDiv[0].innerHTML; // @HTMLUpdateOK
   }
 
   // end static members and functions ////////////////////////////////////////////
+
+  function _isInvalidCurrentItemId(id, elem) {
+    return id && isValidIdentifier(id) && !elem.find(`#${id}`).length;
+  }
+
+  function _isInvalidCurrentItemIndex(index, elem) {
+    return index != null && (index < 0 || index >= elem.children().length);
+  }
 
   oj.__registerWidget('oj.ojFilmStrip', $.oj.baseComponent,
     {
@@ -900,7 +1012,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // call superclass first
         this._super();
 
-        var elem = this.element;
+        const elem = this.element;
         elem
           .addClass('oj-filmstrip oj-component')
           .attr('tabindex', 0)
@@ -912,7 +1024,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         this._focusable({ element: elem, applyHighlight: true });
 
         // log warning message when "disabled" property set
-        var options = this.options;
+        const options = this.options;
         if (options.disabled) {
           warn(_WARNING_DISABLED_OPTION);
         }
@@ -947,12 +1059,19 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         this.navArrowHoverableEventNamespace = this.eventNamespace + 'NavArrowHoverable';
 
         // Make sure currentItem is an object of (id, index)
-        options.currentItem = this._convertItemToObj(options.currentItem);
+        options.currentItem = this._convertCurrentItemToObj(options.currentItem);
+
+        if (elem.children().length && options.currentItem) {
+          if (_isInvalidCurrentItemId(options.currentItem.id, elem)
+              || _isInvalidCurrentItemIndex(options.currentItem.index, elem)) {
+            throw new Error(_ERROR_CURRENT_ITEM_NOT_FOUND + JSON.stringify(options.currentItem));
+          }
+        }
 
         this._setup(true);
 
         // update the currentItem object in options.
-        this._populateItemObj(options.currentItem);
+        this._populateCurrentItemObj(options.currentItem);
         this.option(_CURRENT_ITEM, options.currentItem, {
           _context: { internalSet: true, writeback: true }
         });
@@ -1005,7 +1124,6 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * provides information about the FilmStrip's logical pages and a way to
        * programmatically change pages.
        * @returns {Object} The instance of the PagingModel created and used by the FilmStrip.
-       * @ojtsignore
        * @ojsignature {target: "Type",
        *               value: "PagingModel",
        *               for: "returns"}
@@ -1031,8 +1149,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @protected
        * @override
        */
-      _NotifyShown: function () {
-        this._super();
+      _notifyCommon: function () {
         // perform a deferred layout
         if (this._needsSetup) {
           this._setup(this._needsSetup[0]);
@@ -1040,6 +1157,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           // explicitly handle a resize in case we don't get a notification when shown
           this._handleResize();
         }
+      },
+      _NotifyShown: function () {
+        this._super();
+        this._notifyCommon();
       },
 
       /**
@@ -1053,13 +1174,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        */
       _NotifyAttached: function () {
         this._super();
-        // perform a deferred layout
-        if (this._needsSetup) {
-          this._setup(this._needsSetup[0]);
-        } else {
-          // explicitly handle a resize in case we don't get a notification when attached
-          this._handleResize();
-        }
+        this._notifyCommon();
       },
 
       // isInit is true for init (create and re-init), false for refresh
@@ -1073,7 +1188,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _setup: function (isInit) { // Private, not an override (not in base class).
-        var self = this;
+        const self = this;
 
         // FIX : always create paging model, even if filmstrip is
         // detached or hidden, so that it's available for an assocated paging
@@ -1098,7 +1213,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // defer layout until filmStrip is attached or shown
         if (!this._canCalculateSizes()) {
           // want a true value of isInit to take precedence over a false value
-          var oldIsInit = false;
+          let oldIsInit = false;
           if (this._needsSetup) {
             oldIsInit = this._needsSetup[0];
           }
@@ -1109,7 +1224,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         this._bRTL = (this._GetReadingDirection() === 'rtl');
         this._bTouchSupported = isTouchSupported();
-        var elem = this.element;
+        const elem = this.element;
         if (isInit) {
           this._itemsPerPage = 0;
           this._handlePageFunc = function (event) {
@@ -1118,11 +1233,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._componentSize = 0;
           this._itemSize = -1;
           // eslint-disable-next-line no-unused-vars
-          this._handleTransitionEndFunc = function (event) {
+          this._handleTransitionEndFunc = function () {
             self._handleTransitionEnd();
           };
           // eslint-disable-next-line no-unused-vars
-          this._handleResizeFunc = function (width, height) {
+          this._handleResizeFunc = function () {
             self._handleResize();
           };
 
@@ -1133,8 +1248,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
             this._handleTouchMoveFunc = function (event) {
               self._handleTouchMove(event);
             };
-            this._handleTouchEndFunc = function (event) {
-              self._handleTouchEnd(event);
+            this._handleTouchEndFunc = function () {
+              self._handleTouchEnd();
             };
             this._addTouchListeners();
           }
@@ -1144,8 +1259,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._handleMouseMoveFunc = function (event) {
             self._handleMouseMove(event);
           };
-          this._handleMouseUpFunc = function (event) {
-            self._handleMouseUp(event);
+          this._handleMouseUpFunc = function () {
+            self._handleMouseUp();
           };
           this._addMouseListeners();
           this._handleKeyDownFunc = function (event) {
@@ -1158,13 +1273,13 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         // notify the original children of the filmStrip that they were detached from
         // the DOM BEFORE actually detaching so that components can save state
-        var originalItems = elem.children();
-        var i;
-        for (i = 0; i < originalItems.length; i++) {
+        const originalItems = elem.children();
+
+        for (let i = 0; i < originalItems.length; i++) {
           subtreeDetached(originalItems[i]);
         }
 
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (isInit) {
           // register the page change listener
           pagingModel.on('page', this._handlePageFunc);
@@ -1177,19 +1292,21 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // wrap the original child DOM BEFORE adding the resize listener
         this._wrapChildren();
 
-        // FIX : only need to calculate layout if the filmstrip is
-        // not empty
-        if (originalItems.length > 0) {
-          this._adjustSizes();
+        this._adjustSizes();
 
-          // notify the original children of the filmStrip that they were attached
-          // again after wrapping them
-          for (i = 0; i < originalItems.length; i++) {
-            subtreeAttached(originalItems[i]);
-          }
+        // notify the original children of the filmStrip that they were attached
+        // again after wrapping them
+        for (let i = 0; i < originalItems.length; i++) {
+          subtreeAttached(originalItems[i]);
+        }
 
+        if (originalItems.length === 0) {
+          warn(_WARNING_FILMSTRIP_EMPTY);
+        }
+
+        if (isInit) {
           addResizeListener(elem[0], this._handleResizeFunc,
-                                     _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
+              _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
         }
       },
 
@@ -1223,11 +1340,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         this._handleTransitionEndFunc = null;
         this._filterNestedFilmStripsFunc = null;
 
-        var elem = this.element;
+        const elem = this.element;
         elem
           .removeClass('oj-filmstrip oj-component ' + _OJ_FILMSTRIP_HOVER)
           .removeAttr('tabindex role')
-          .removeAttr('aria-labelledby');
+          .removeAttr(_OJ_FILMSTRIP_LABELLEDBY);
 
         // remove a generated unique id
         elem.removeUniqueId();
@@ -1258,7 +1375,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // FIX : resolve busy state when destroying
         this._resolveBusyState();
 
-        var elem = this.element;
+        const elem = this.element;
         removeResizeListener(elem[0], this._handleResizeFunc);
         // reset item size so it will be recalculated at the next layout
         this._itemSize = -1;
@@ -1267,8 +1384,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._queuedHandleResize = null;
         }
 
-        var originalItems = this._getItems();
-        var i;
+        const originalItems = this._getItems();
+        let i;
         // notify the original children of the filmStrip that they were detached from
         // the DOM BEFORE actually detaching so that components can save state
         for (i = 0; i < originalItems.length; i++) {
@@ -1276,7 +1393,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         }
 
         this._clearCalculatedSizes();
-        var itemContainers = this._getItemContainers();
+        const itemContainers = this._getItemContainers();
         // remove logical page containers here instead of in _unwrapChildren because
         // they're added in _adjustSizes, not in _wrapChildren
         itemContainers.unwrap();
@@ -1299,11 +1416,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        */
       _setOption: function (key, value, flags) { // Override of protected base class method.
         // Method name needn't be quoted since is in externs.js.
-        var options = this.options;
-        var bRefresh = false;
-        var newPageIndex = -1;
-        var pagingModel = this._pagingModel;
-        var oldPageIndex = pagingModel.getPage();
+        const options = this.options;
+        let bRefresh = false;
+        let newPageIndex = -1;
+        const pagingModel = this._pagingModel;
+        const oldPageIndex = pagingModel.getPage();
 
         switch (key) {
           case 'disabled':
@@ -1345,15 +1462,15 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           case _CURRENT_ITEM:
             // Make sure currentItem value is an object of (id, index)
             // eslint-disable-next-line no-param-reassign
-            value = this._convertItemToObj(value);
-            this._populateItemObj(value);
+            value = this._convertCurrentItemToObj(value);
+            this._populateCurrentItemObj(value);
             var currentItem = options.currentItem;
             if (currentItem && value &&
                 (currentItem.id !== value.id || currentItem.index !== value.index)) {
               newPageIndex = this._findPage(value);
               // throw error if item not found
               if (newPageIndex < 0 || newPageIndex >= pagingModel.getPageCount()) {
-                throw new Error(_ERROR_CURRENT_ITEM_NOT_FOUND + value);
+                throw new Error(_ERROR_CURRENT_ITEM_NOT_FOUND + JSON.stringify(value));
               }
             }
             break;
@@ -1363,15 +1480,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         this._super(key, value, flags);
 
-        switch (key) {
-          case _CURRENT_ITEM:
-            if (newPageIndex > -1 && newPageIndex !== oldPageIndex) {
-              pagingModel.setPage(newPageIndex);
-            }
-            break;
-          default:
-            break;
-        }
+          if (key === _CURRENT_ITEM && (newPageIndex > -1 && newPageIndex !== oldPageIndex)) {
+            pagingModel.setPage(newPageIndex);
+          }
 
         if (bRefresh) {
           this._setup(false);
@@ -1396,7 +1507,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._bHandlingResize = false;
         } else if (!this._queuedHandleResize) {
           // if already handling a resize, queue another one
-          var self = this;
+          const self = this;
           this._queuedHandleResize = setTimeout(function () {
             self._queuedHandleResize = null;
             self._handleResize();
@@ -1412,7 +1523,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _isHorizontal: function () {
-        var options = this.options;
+        const options = this.options;
         return (options.orientation !== _VERTICAL);
       },
 
@@ -1424,7 +1535,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _isLoopingPage: function () {
-        var options = this.options;
+        const options = this.options;
         return (options.looping === _LOOPING_PAGE);
       },
 
@@ -1436,7 +1547,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getCssPositionAttr: function () {
-        var bHorizontal = this._isHorizontal();
+        const bHorizontal = this._isHorizontal();
         if (bHorizontal) {
           if (this._bRTL) {
             return 'right';
@@ -1454,7 +1565,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getCssSizeAttr: function () {
-        var bHorizontal = this._isHorizontal();
+        const bHorizontal = this._isHorizontal();
         return bHorizontal ? 'width' : 'height';
       },
 
@@ -1467,16 +1578,16 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _canCalculateSizes: function () {
-        var div = document.createElement('div');
-        var style = div.style;
+        const div = document.createElement('div');
+        const style = div.style;
         // need to set absolute position in order to get correct offsetwidth when
         // flexbox layout is applied; otherwise the offsetwidth becomes 0
         style.position = 'absolute';
         style.width = '10px';
         style.height = '10px';
-        var elem = this.element[0];
+        const elem = this.element[0];
         elem.appendChild(div); // @HTMLUpdateOK div is created locally at the beginning of this function
-        var bCanCalcSizes = false;
+        let bCanCalcSizes = false;
         try {
           bCanCalcSizes = div.offsetWidth > 0 && div.offsetHeight > 0;
         } catch (e) {
@@ -1494,32 +1605,32 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _wrapChildren: function () {
-        var elem = this.element;
-        var bHorizontal = this._isHorizontal();
-        var originalItems = elem.children();
+        const elem = this.element;
+        const bHorizontal = this._isHorizontal();
+        const originalItems = elem.children();
 
         originalItems
           .addClass(_OJ_FILMSTRIP_ITEM)
-          .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
-                ' ' + _OJ_FILMSTRIP_ITEM_CONTAINER + "'></div>");
+          .wrap(`<div class="${_OJ_FILMSTRIP_CONTAINER} ${// @HTMLUpdateOK
+          _OJ_FILMSTRIP_ITEM_CONTAINER}"></div>`);
 
         // need to initially specify the position on the pagesWrapper so that we can
         // always get the value later
-        var cssAttr = this._getCssPositionAttr();
-        var pagesWrapper = elem.children()
-            .wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
-                     _OJ_FILMSTRIP_PAGES_CONTAINER + "'></div>")
+        const cssAttr = this._getCssPositionAttr();
+        const pagesWrapper = elem.children()
+            .wrapAll(`<div class="${_OJ_FILMSTRIP_CONTAINER} ${// @HTMLUpdateOK
+                _OJ_FILMSTRIP_PAGES_CONTAINER}"></div>`)
             .parent().css(cssAttr, '0px');
         this._pagesWrapper = pagesWrapper;
 
-        var options = this.options;
+        const options = this.options;
         if (options.arrowVisibility !== _HIDDEN &&
             options.arrowPlacement === _ADJACENT) {
           // FIX : add the oj-filmstrip-container class to the content
           // container so that it is a flexbox layout
           this._contentWrapper = pagesWrapper
-            .wrap("<div class='" + _OJ_FILMSTRIP_CONTAINER + // @HTMLUpdateOK
-                  " oj-filmstrip-content-container'></div>")
+            .wrap(`<div class="${_OJ_FILMSTRIP_CONTAINER// @HTMLUpdateOK
+            } oj-filmstrip-content-container"></div>`)
             .parent();
         }
 
@@ -1530,11 +1641,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
         // Create a page info element that will contain the current page information for accessibility
-        var pageInfoElem = this._createPageInfoElem();
-        var elementId = elem.attr('id');
-        var pageInfoId = pageInfoElem.attr('id');
+        const pageInfoElem = this._createPageInfoElem();
+        const elementId = elem.attr('id');
+        const pageInfoId = pageInfoElem.attr('id');
         elem.append(pageInfoElem); // @HTMLUpdateOK
-        elem.attr('aria-labelledby', elementId + ' ' + pageInfoId);
+        elem.attr(_OJ_FILMSTRIP_LABELLEDBY, `${elementId} ${pageInfoId}`); // @HTMLUpdateOK
         this._pageInfoElem = pageInfoElem;
 
         // FIX : only need to create nav buttons if the filmstrip
@@ -1559,8 +1670,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _unwrapChildren: function () {
-        var elem = this.element;
-        var originalItems = this._getItems();
+        const elem = this.element;
+        const originalItems = this._getItems();
 
         // unregister elem as hoverable
         this._tearDownNavArrowsHoverable();
@@ -1574,7 +1685,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._UnregisterChildNode(this._nextButton);
           this._nextButton = null;
         }
-        var navArrowContainers = elem.children(_PERIOD + _OJ_FILMSTRIP_ARROW_CONTAINER);
+        const navArrowContainers = elem.children(_PERIOD + _OJ_FILMSTRIP_ARROW_CONTAINER);
         if (navArrowContainers) {
           navArrowContainers.remove();
         }
@@ -1598,7 +1709,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._contentWrapper = null;
         }
 
-        elem.removeClass(_OJ_FILMSTRIP_CONTAINER + ' ' + _OJ_FILMSTRIP_VERTICAL);
+        elem.removeClass(`${_OJ_FILMSTRIP_CONTAINER} ${_OJ_FILMSTRIP_VERTICAL}`);
       },
 
       /**
@@ -1609,7 +1720,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _createPageInfoElem: function () {
-        var pageInfoElem = $(document.createElement('div'));
+        const pageInfoElem = $(document.createElement('div'));
         pageInfoElem.uniqueId();
         pageInfoElem.addClass('oj-helper-hidden-accessible oj-filmstrip-liveregion');
         pageInfoElem.attr({ 'aria-live': 'polite', 'aria-atomic': 'true' });
@@ -1624,12 +1735,12 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _updatePageInfoElem: function () {
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
-        var pageCount = pagingModel.getPageCount();
-        var pageInfo = _escapeHtml(this.getTranslatedString('labelAccFilmStrip',
-                                        { pageIndex: pageIndex + 1, pageCount: pageCount }));
-        var pageInfoElem = this._pageInfoElem;
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
+        const pageCount = pagingModel.getPageCount();
+        const pageInfo = _escapeHtml(this.getTranslatedString('labelAccFilmStrip',
+            { pageIndex: pageIndex + 1, pageCount: pageCount }));
+        const pageInfoElem = this._pageInfoElem;
         if (pageInfoElem) {
           pageInfoElem.text(pageInfo);
         }
@@ -1649,7 +1760,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // root node, all hoverables inside the filmStrip appear as if the mouse
         // were hovering over them.
         // Note: keep this logic updated if superclass _hoverable method changes.
-        var elem = this.element;
+        const elem = this.element;
         elem
           .on('mouseenter' + this.navArrowHoverableEventNamespace, function (event) {
             if (!$(event.currentTarget).hasClass('oj-disabled')) {
@@ -1670,7 +1781,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _tearDownNavArrowsHoverable: function () {
-        var elem = this.element;
+        const elem = this.element;
         elem.off(this.navArrowHoverableEventNamespace);
       },
 
@@ -1683,8 +1794,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _navArrowsShownOnHover: function () {
-        var options = this.options;
-        var arrowVisibility = options.arrowVisibility;
+        const options = this.options;
+        const arrowVisibility = options.arrowVisibility;
         return (arrowVisibility === _HOVER ||
                 (arrowVisibility === _AUTO && options.arrowPlacement === _OVERLAY));
       },
@@ -1697,7 +1808,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _hasPrevPage: function () {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         return pagingModel.getPage() > 0;
       },
 
@@ -1709,7 +1820,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _hasNextPage: function () {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         return pagingModel.getPage() < pagingModel.getPageCount() - 1;
       },
 
@@ -1721,11 +1832,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _prevPage: function () {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (this._hasPrevPage()) {
           pagingModel.setPage(pagingModel.getPage() - 1);
         } else {
-          var pageCount = pagingModel.getPageCount();
+          const pageCount = pagingModel.getPageCount();
           // navigate from first page to last page
           if (this._isLoopingPage() && pageCount > 1) {
             pagingModel.setPage(pageCount - 1, { loopDirection: _LOOPING_DIRECTION_PREV });
@@ -1741,11 +1852,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _nextPage: function () {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (this._hasNextPage()) {
           pagingModel.setPage(pagingModel.getPage() + 1);
         } else {
-          var pageCount = pagingModel.getPageCount();
+          const pageCount = pagingModel.getPageCount();
           // navigate from last page to first page
           if (this._isLoopingPage() && pageCount > 1) {
             pagingModel.setPage(0, { loopDirection: _LOOPING_DIRECTION_NEXT });
@@ -1763,8 +1874,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _displayNavigationArrow: function (bShow, jqNavArrow) {
-        var options = this.options;
-        var navArrowPlacement = options.arrowPlacement;
+        const options = this.options;
+        const navArrowPlacement = options.arrowPlacement;
         if (navArrowPlacement === _ADJACENT) {
           jqNavArrow.css('visibility', bShow ? '' : _HIDDEN);
         } else {
@@ -1780,13 +1891,13 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _updateNavigationArrowsDisplay: function () {
-        var options = this.options;
-        var navArrowVisibility = options.arrowVisibility;
+        const options = this.options;
+        const navArrowVisibility = options.arrowVisibility;
         if (navArrowVisibility !== _HIDDEN) {
-          var pagingModel = this._pagingModel;
-          var pageIndex = pagingModel.getPage();
-          var pageCount = pagingModel.getPageCount();
-          var bLooping = this._isLoopingPage() && (pageCount > 1);
+          const pagingModel = this._pagingModel;
+          const pageIndex = pagingModel.getPage();
+          const pageCount = pagingModel.getPageCount();
+          const bLooping = this._isLoopingPage() && (pageCount > 1);
           this._displayNavigationArrow(bLooping || (pageIndex !== 0),
                                        this._prevButton);
           this._displayNavigationArrow(bLooping || (pageIndex !== pageCount - 1),
@@ -1802,13 +1913,13 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _createPrevNavArrow: function () {
-        var elem = this.element;
-        var bHorizontal = this._isHorizontal();
-        var locationMarker = bHorizontal ? _OJ_START : _OJ_TOP;
-        var container = this._createNavigationArrowContainer(locationMarker);
+        const elem = this.element;
+        const bHorizontal = this._isHorizontal();
+        const locationMarker = bHorizontal ? _OJ_START : _OJ_TOP;
+        const container = this._createNavigationArrowContainer(locationMarker);
 
-        var options = this.options;
-        var navArrowPlacement = options.arrowPlacement;
+        const options = this.options;
+        const navArrowPlacement = options.arrowPlacement;
 
         // need to append prev button when overlay so that it is in front of the
         // filmstrip items in z-order
@@ -1818,10 +1929,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           elem.prepend(container); // @HTMLUpdateOK
         }
 
-        var label = _escapeHtml(this.getTranslatedString('labelAccArrowPreviousPage'));
-        var tooltip = _escapeHtml(this.getTranslatedString('tipArrowPreviousPage'));
-        var navArrow = this._createNavigationArrow(container, locationMarker, label, tooltip);
-        var self = this;
+        const label = _escapeHtml(this.getTranslatedString('labelAccArrowPreviousPage'));
+        const tooltip = _escapeHtml(this.getTranslatedString('tipArrowPreviousPage'));
+        const navArrow = this._createNavigationArrow(container, locationMarker, label, tooltip);
+        const self = this;
         navArrow.on('click', function () {
           self._prevPage();
         });
@@ -1837,16 +1948,16 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _createNextNavArrow: function () {
-        var elem = this.element;
-        var bHorizontal = this._isHorizontal();
-        var locationMarker = bHorizontal ? _OJ_END : _OJ_BOTTOM;
-        var container = this._createNavigationArrowContainer(locationMarker);
+        const elem = this.element;
+        const bHorizontal = this._isHorizontal();
+        const locationMarker = bHorizontal ? _OJ_END : _OJ_BOTTOM;
+        const container = this._createNavigationArrowContainer(locationMarker);
         elem.append(container); // @HTMLUpdateOK
 
-        var label = _escapeHtml(this.getTranslatedString('labelAccArrowNextPage'));
-        var tooltip = _escapeHtml(this.getTranslatedString('tipArrowNextPage'));
-        var navArrow = this._createNavigationArrow(container, locationMarker, label, tooltip);
-        var self = this;
+        const label = _escapeHtml(this.getTranslatedString('labelAccArrowNextPage'));
+        const tooltip = _escapeHtml(this.getTranslatedString('tipArrowNextPage'));
+        const navArrow = this._createNavigationArrow(container, locationMarker, label, tooltip);
+        const self = this;
         navArrow.on('click', function () {
           self._nextPage();
         });
@@ -1864,10 +1975,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _createNavigationArrowContainer: function (locationMarker) {
-        var container = $(document.createElement('div'));
+        const container = $(document.createElement('div'));
         container.addClass(_OJ_FILMSTRIP_ARROW_CONTAINER + ' ' + locationMarker);
-        var options = this.options;
-        var navArrowPlacement = options.arrowPlacement;
+        const options = this.options;
+        const navArrowPlacement = options.arrowPlacement;
         if (navArrowPlacement === _OVERLAY) {
           container.addClass('oj-filmstrip-arrow-container-overlay');
 
@@ -1891,15 +2002,12 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _createNavigationArrow: function (parentElem, locationMarker, label, tooltip) {
-        var str = "<div class='" + _OJ_FILMSTRIP_ARROW +
-            ' oj-default oj-enabled ' + locationMarker +
-            "' role='button' tabindex='-1'";
-        str += "><span class='oj-filmstrip-arrow-icon " + locationMarker +
-          " oj-component-icon'></span></div>";
+        const str = `<div class='${_OJ_FILMSTRIP_ARROW} oj-default oj-enabled ${locationMarker}' role='button' tabindex='-1'><span class='oj-filmstrip-arrow-icon ${locationMarker} oj-component-icon'></span></div>`;
+
         parentElem.append(str); // @HTMLUpdateOK
-        var arrowElem = parentElem.children(_PERIOD + _OJ_FILMSTRIP_ARROW).eq(0);
+        const arrowElem = parentElem.children(_PERIOD + _OJ_FILMSTRIP_ARROW).eq(0);
         arrowElem.uniqueId();
-        var arrowId = arrowElem.attr('id');
+        const arrowId = arrowElem.attr('id');
         if (label) {
           arrowElem.attr('aria-label', label);
         }
@@ -1907,16 +2015,16 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           arrowElem.attr('title', tooltip);
         }
         // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
-        var pageInfoElem = this._pageInfoElem;
-        var pageInfoId = pageInfoElem.attr('id');
-        arrowElem.attr('aria-labelledby', pageInfoId + ' ' + arrowId);
+        const pageInfoElem = this._pageInfoElem;
+        const pageInfoId = pageInfoElem.attr('id');
+        arrowElem.attr(_OJ_FILMSTRIP_LABELLEDBY, `${pageInfoId} ${arrowId}`); // @HTMLUpdateOK
 
         //  - filmstrip: next/previous oj-hover colors doesn't go away in touch device
         this._AddHoverable(arrowElem);
         this._AddActiveable(arrowElem);
 
-        var options = this.options;
-        var navArrowPlacement = options.arrowPlacement;
+        const options = this.options;
+        const navArrowPlacement = options.arrowPlacement;
         if (navArrowPlacement === _ADJACENT) {
           if (this._navArrowsShownOnHover()) {
             arrowElem.addClass(_OJ_FILMSTRIP_ARROW_TRANSITION);
@@ -1934,10 +2042,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getItemContainers: function () {
-        var pagesWrapper = this._pagesWrapper;
-        var items = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM_CONTAINER)
+        const pagesWrapper = this._pagesWrapper;
+        return pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM_CONTAINER)
             .filter(this._filterNestedFilmStripsFunc);
-        return items;
       },
 
       /**
@@ -1948,10 +2055,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getItems: function () {
-        var pagesWrapper = this._pagesWrapper;
-        var originalItems = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM)
+        const pagesWrapper = this._pagesWrapper;
+        return pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM)
             .filter(this._filterNestedFilmStripsFunc);
-        return originalItems;
       },
 
       /**
@@ -1962,9 +2068,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getPages: function () {
-        var pagesWrapper = this._pagesWrapper;
-        var pages = pagesWrapper.children(_PERIOD + _OJ_FILMSTRIP_PAGE);
-        return pages;
+        const pagesWrapper = this._pagesWrapper;
+        return pagesWrapper.children(_PERIOD + _OJ_FILMSTRIP_PAGE);
       },
 
       /**
@@ -1975,12 +2080,12 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _clearCalculatedSizes: function () {
-        var pagesWrapper = this._pagesWrapper;
-        var pages = this._getPages();
+        const pagesWrapper = this._pagesWrapper;
+        const pages = this._getPages();
         pages
           .css(_FLEX_BASIS, _EMPTY_STRING)
           .css(_WEBKIT_FLEX_BASIS, _EMPTY_STRING);
-        var items = this._getItemContainers();
+        const items = this._getItemContainers();
         items
           .css(_FLEX_BASIS, _EMPTY_STRING)
           .css(_WEBKIT_FLEX_BASIS, _EMPTY_STRING);
@@ -2001,35 +2106,49 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // clear previously calculated values before recalculating
         this._clearCalculatedSizes();
 
-        var options = this.options;
-        var bHorizontal = this._isHorizontal();
-        var itemsPerPage = options.maxItemsPerPage;
-        var bCalcItemsPerPage = (itemsPerPage < 1);
-        var elem = this.element;
+        const options = this.options;
+        const bHorizontal = this._isHorizontal();
+        let itemsPerPage = options.maxItemsPerPage;
+        const bCalcItemsPerPage = (itemsPerPage < 1);
+        const elem = this.element;
 
-        var items = this._getItemContainers();
+        const itemContainers = this._getItemContainers();
         // if we haven't saved the item size yet, do it now
         if (this._itemSize < 0) {
-          // use the size of the item specified in the options
-          var optionItemIndex = this._getItemIndex(options.currentItem);
-          var optionItemContainer = $(items[optionItemIndex]);
+          const items = this._getItems();
+          if (items.length) {
+            // use the size of the item specified in the options
+            const optionItemIndex = this._getItemIndex(options.currentItem);
 
-          // unhide the item, in case the app has initially hidden it
-          var optionItem = optionItemContainer.children(_PERIOD + _OJ_FILMSTRIP_ITEM);
-          optionItem.css(_DISPLAY, _EMPTY_STRING);
-          // notify the item that it's being shown
-          subtreeShown(optionItem[0]);
+            let optionItemContainer;
+            if (optionItemIndex > -1 && itemContainers[optionItemIndex]) {
+              optionItemContainer = $(itemContainers[optionItemIndex]);
+            } else {
+              // if size can't be determined from the selected try to use the first one
+              optionItemContainer = $(itemContainers[0]);
+            }
 
-          this._itemSize = bHorizontal ? optionItemContainer.width() : optionItemContainer.height();
+            // unhide the item, in case the app has initially hidden it
+            const optionItem = optionItemContainer.children(_PERIOD + _OJ_FILMSTRIP_ITEM);
+            optionItem.css(_DISPLAY, _EMPTY_STRING);
+            // notify the item that it's being shown
+            subtreeShown(optionItem[0]);
+
+            this._itemSize = bHorizontal ?
+                optionItemContainer.width() :
+                optionItemContainer.height();
+          }
         }
 
         // get component size after itemSize, in case item needed to be unhidden
-        var componentSize = bHorizontal ? elem.width() : elem.height();
+        let componentSize = bHorizontal ? elem.width() : elem.height();
         if (options.arrowVisibility !== _HIDDEN &&
             options.arrowPlacement === _ADJACENT) {
-          var arrowContainers = elem.children(_PERIOD + _OJ_FILMSTRIP_ARROW_CONTAINER);
-          var firstArrowContainer = arrowContainers.eq(0);
-          var arrowSize = bHorizontal ? firstArrowContainer.width() : firstArrowContainer.height();
+          const arrowContainers = elem.children(_PERIOD + _OJ_FILMSTRIP_ARROW_CONTAINER);
+          const firstArrowContainer = arrowContainers.eq(0);
+          const arrowSize = bHorizontal ?
+              firstArrowContainer.width() :
+              firstArrowContainer.height();
           componentSize -= 2 * arrowSize;
         }
         this._componentSize = componentSize;
@@ -2038,60 +2157,60 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         // won't fit, then reduce the number to what will fit
         if (!bCalcItemsPerPage) {
           // use min of 1 to prevent browser crash
-          var calcFitCount = Math.max(Math.floor(componentSize / this._itemSize), 1);
+          const calcFitCount = Math.max(Math.floor(componentSize / this._itemSize), 1);
           if (calcFitCount < itemsPerPage) {
             itemsPerPage = calcFitCount;
           }
         }
 
         // if calculating fitCount, use min of 1 to prevent browser crash
-        var fitCount = (bCalcItemsPerPage ?
-                        Math.max(Math.floor(componentSize / this._itemSize), 1) :
-                        itemsPerPage);
-        var fitItemSize = componentSize / fitCount;
-        items
+        const fitCount = (bCalcItemsPerPage ?
+            Math.max(Math.floor(componentSize / this._itemSize), 1) :
+            itemsPerPage);
+        const fitItemSize = componentSize / fitCount;
+        itemContainers
           .css(_FLEX_BASIS, fitItemSize + _PX)
           .css(_WEBKIT_FLEX_BASIS, fitItemSize + _PX);
 
-        var newPageCount = Math.ceil(items.length / fitCount);
+        const newPageCount = Math.ceil(itemContainers.length / fitCount);
         // wrap items in logical page containers
-        var pages = this._getPages();
-        var bCreatePages = false;
+        let pages = this._getPages();
+        let bCreatePages = false;
         // need to create logical pages if page layout changed, or if we haven't
         // yet created logical pages
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (pagingModel.getPageCount() !== newPageCount ||
             this._itemsPerPage !== fitCount ||
             !pages || pages.length < 1) {
           bCreatePages = true;
-          var i;
+          let i;
           if (bNotifyAttach) {
             // notify the original children of the filmStrip that they were detached from
             // the DOM BEFORE actually detaching so that components can save state
-            for (i = 0; i < items.length; i++) {
-              subtreeDetached(items[i]);
+            for (i = 0; i < itemContainers.length; i++) {
+              subtreeDetached(itemContainers[i]);
             }
           }
 
           if (pages && pages.length > 0) {
             // remove old logical page containers
-            items.unwrap();
+            itemContainers.unwrap();
           }
 
           // create new logical page containers
-          for (i = 0; i < items.length; i += fitCount) {
-            var itemsOnPage = items.slice(i, i + fitCount);
+          for (i = 0; i < itemContainers.length; i += fitCount) {
+            const itemsOnPage = itemContainers.slice(i, i + fitCount);
             // initially hide the page container
-            itemsOnPage.wrapAll("<div class='" + _OJ_FILMSTRIP_CONTAINER + ' ' + // @HTMLUpdateOK
-                                _OJ_FILMSTRIP_PAGE + "' " + _ARIA_HIDDEN + "='true'></div>")
+            itemsOnPage.wrapAll(`<div class="${_OJ_FILMSTRIP_CONTAINER} ${// @HTMLUpdateOK
+                _OJ_FILMSTRIP_PAGE}" ${_ARIA_HIDDEN}="true"></div>`)
                                 .parent().css('display', _NONE);
           }
 
           if (bNotifyAttach) {
             // notify the original children of the filmStrip that they were attached
             // again after wrapping them
-            for (i = 0; i < items.length; i++) {
-              subtreeAttached(items[i]);
+            for (i = 0; i < itemContainers.length; i++) {
+              subtreeAttached(itemContainers[i]);
             }
           }
         }
@@ -2102,29 +2221,32 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           .css(_WEBKIT_FLEX_BASIS, componentSize + _PX);
 
         // always need to update the pages container size
-        var pagesWrapper = this._pagesWrapper;
-        var contentWrapper = this._contentWrapper;
+        const pagesWrapper = this._pagesWrapper;
+        const contentWrapper = this._contentWrapper;
         // only show a single page at a time
         pagesWrapper.css(this._getCssSizeAttr(), componentSize);
         if (contentWrapper) {
           contentWrapper.css(this._getCssSizeAttr(), componentSize);
         }
 
-        var newPageIndex = 0;
-        if (options.currentItem) {
-          newPageIndex = this._findPage(options.currentItem, fitCount);
-        }
+        if (itemContainers.length) {
+          let newPageIndex = 0;
+          if (options.currentItem) {
+            newPageIndex = this._findTargetPage(options.currentItem, fitCount);
+          }
 
-        if (pagingModel.getPageCount() !== newPageCount ||
-            this._itemsPerPage !== fitCount ||
-            pagingModel.getPage() !== newPageIndex) {
-          pagingModel.setPage(newPageIndex, { pageSize: fitCount });
-        } else if (bCreatePages) {
-          // if the page layout didn't change, but we recreated the logical page
-          // containers, then simply go to the current logical page to make sure that
-          // pages and items are hidden or shown as appropriate
-          var currPage = pagingModel.getPage();
-          this._handlePage({ previousPage: currPage, page: currPage });
+          if (newPageIndex > -1 &&
+              (pagingModel.getPageCount() !== newPageCount ||
+                  this._itemsPerPage !== fitCount ||
+                  pagingModel.getPage() !== newPageIndex)) {
+            pagingModel.setPage(newPageIndex, { pageSize: fitCount });
+          } else if (bCreatePages) {
+            // if the page layout didn't change, but we recreated the logical page
+            // containers, then simply go to the current logical page to make sure that
+            // pages and items are hidden or shown as appropriate
+            const currPage = pagingModel.getPage();
+            this._handlePage({ previousPage: currPage, page: currPage });
+          }
         }
       },
 
@@ -2137,37 +2259,37 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handlePage: function (event) {
-        var pageIndex = event.page;
-        var loopDirection = event.loopDirection;
-        var prevPageIndex = event.previousPage;
-        var pagesWrapper = this._pagesWrapper;
-        var pages = this._getPages();
-        var pagingModel = this._pagingModel;
-        var pageSize = pagingModel.getPageSize();
-        var pageCount = pagingModel.getPageCount();
-        var bImmediate = prevPageIndex < 0 || prevPageIndex === pageIndex ||
+        const pageIndex = event.page;
+        const loopDirection = event.loopDirection;
+        const prevPageIndex = event.previousPage;
+        const pagesWrapper = this._pagesWrapper;
+        const pages = this._getPages();
+        const pagingModel = this._pagingModel;
+        const pageSize = pagingModel.getPageSize();
+        const pageCount = pagingModel.getPageCount();
+        const bImmediate = prevPageIndex < 0 || prevPageIndex === pageIndex ||
             this._itemsPerPage !== pageSize;
-        var bLooping = this._isLoopingPage();
+        const bLooping = this._isLoopingPage();
         // update _itemsPerPage AFTER using it to initialize bImmediate above
         this._itemsPerPage = pageSize;
 
         // get the old page, if there is one
-        var oldPage = null;
+        let oldPage = null;
         if (!bImmediate) {
           oldPage = $(pages[prevPageIndex]);
         }
 
-        var cssAttr = this._getCssPositionAttr();
+        const cssAttr = this._getCssPositionAttr();
 
         // unhide the new page
-        var newPage = $(pages[pageIndex]);
-        var bPageHidden = newPage.is(_HIDDEN_SELECTOR);
+        const newPage = $(pages[pageIndex]);
+        const bPageHidden = newPage.is(_HIDDEN_SELECTOR);
         if (bPageHidden) {
           this._unhidePage(newPage);
         }
         // defer the scroll if we're dragging so that we can animate it
-        var bDeferScroll = this._bDragInit;
-        var bNext;
+        let bDeferScroll = this._bDragInit;
+        let bNext;
         if (prevPageIndex > -1 && !bImmediate) {
           bNext = pageIndex > prevPageIndex;
           // if looping is enabled, continue in the direction of the navigation
@@ -2176,8 +2298,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           }
 
           // check if navigating from first page to last page or from last page to first page
-          var bFirstToLast = bLooping && !bNext && (pageCount > 1) && (prevPageIndex === 0);
-          var bLastToFirst = bLooping && bNext && (pageCount > 1) &&
+          const bFirstToLast = bLooping && !bNext && (pageCount > 1) && (prevPageIndex === 0);
+          const bLastToFirst = bLooping && bNext && (pageCount > 1) &&
               (prevPageIndex === pageCount - 1);
 
           bDeferScroll = true;
@@ -2196,13 +2318,17 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
           // set initial transition states on the pages
           if (bNext) {
-            oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_FROM);
+            if (oldPage) {
+              oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_FROM);
+            }
             newPage.addClass(_OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_FROM);
             if (bLastToFirst) {
               newPage.addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE);
             }
           } else {
-            oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_FROM);
+            if (oldPage) {
+              oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_FROM);
+            }
             newPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_FROM);
             if (bFirstToLast) {
               newPage.addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE);
@@ -2214,13 +2340,13 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         this._busyStateResolveFunc = this._addBusyState('scrolling');
 
         if (bDeferScroll) {
-          var self = this;
-          var bDragInit = this._bDragInit;
+          const self = this;
+          const bDragInit = this._bDragInit;
           // if bouncing back because a drag scroll didn't cross the threshold,
           // add the transition class before the timeout because the transforms
           // are removed and reapplied in the timeout
           if (bDragInit && prevPageIndex < 0) {
-            var visiblePages = pages.filter(_VISIBLE_SELECTOR);
+            const visiblePages = pages.filter(_VISIBLE_SELECTOR);
             visiblePages.addClass(_OJ_FILMSTRIP_TRANSITION);
           }
           // FIX : In Safari on Mac OS X, sometimes when changing pages
@@ -2251,18 +2377,18 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _finishHandlePage: function (pageIndex, prevPageIndex, bNext, bImmediate, bDragInit) {
-        var pagesWrapper = this._pagesWrapper;
+        const pagesWrapper = this._pagesWrapper;
         if (!bImmediate) {
           this._bPageChangeTransition = true;
           pagesWrapper
-            .on('transitionend' + this.eventNamespace + ' webkitTransitionEnd' + this.eventNamespace,
+            .on(`transitionend${this.eventNamespace} webkitTransitionEnd${this.eventNamespace}`,
                 this._handleTransitionEndFunc);
         }
 
         if (bImmediate) {
           this._handleTransitionEnd();
         } else {
-          var pages = this._getPages();
+          const pages = this._getPages();
           // if we're currently drag scrolling, remove the transforms that we used
           // to scroll while we were under the drag threshold
           if (bDragInit) {
@@ -2273,8 +2399,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           if (prevPageIndex > -1) {
             // remove initial transition states and set destination states, and
             // transition between them
-            var oldPage = $(pages[prevPageIndex]);
-            var newPage = $(pages[pageIndex]);
+            const oldPage = $(pages[prevPageIndex]);
+            const newPage = $(pages[pageIndex]);
             oldPage.addClass(_OJ_FILMSTRIP_TRANSITION);
             newPage.addClass(_OJ_FILMSTRIP_TRANSITION);
             if (bNext) {
@@ -2290,7 +2416,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
             }
           } else if (bDragInit) {
             // bouncing back to current page after drag scrolling under the threshold
-            var visiblePages = pages.filter(_VISIBLE_SELECTOR);
+            const visiblePages = pages.filter(_VISIBLE_SELECTOR);
             _applyTransform(visiblePages, 'translate3d(0, 0, 0)');
           }
         }
@@ -2305,8 +2431,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        */
       _handleTransitionEnd: function () {
         this._bPageChangeTransition = false;
-        var pagesWrapper = this._pagesWrapper;
-        var cssAttr = this._getCssPositionAttr();
+        const pagesWrapper = this._pagesWrapper;
+        const cssAttr = this._getCssPositionAttr();
         pagesWrapper
           .off(this.eventNamespace)
           .css(this._getCssSizeAttr(), this._componentSize)
@@ -2314,19 +2440,19 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         // if the filmStrip contains the focus element, we may need to focus a new
         // element if the old one is on a page that's being hidden
-        var focusElem = null;
+        let focusElem = null;
         if (FocusUtils.containsFocus(pagesWrapper[0]) ||
             (this._nextButton && FocusUtils.containsFocus(this._nextButton[0])) ||
             (this._prevButton && FocusUtils.containsFocus(this._prevButton[0]))) {
           focusElem = document.activeElement;
         }
 
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
 
         // hide all pages except for current one
-        var pages = this._getPages();
-        for (var i = 0; i < pages.length; i++) {
+        const pages = this._getPages();
+        for (let i = 0; i < pages.length; i++) {
           if (i !== pageIndex) {
             this._hidePage($(pages[i]));
           }
@@ -2348,10 +2474,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
         // if the old focus element is being hidden, transfer focus to something visible
         if (focusElem && $(focusElem).is(_HIDDEN_SELECTOR)) {
-          var elem = this.element;
+          const elem = this.element;
           // focus an element in the new logical page if possible, otherwise focus
           // the filmStrip itself
-          var firstTabStop = FocusUtils.getFirstTabStop(pages[pageIndex]);
+          const firstTabStop = FocusUtils.getFirstTabStop(pages[pageIndex]);
           if (firstTabStop) {
             FocusUtils.focusElement(firstTabStop);
           } else {
@@ -2360,10 +2486,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         }
 
         // update currentItem property if it's not on the current page
-        var options = this.options;
-        var currItemPage = this._findPage(options.currentItem);
+        const options = this.options;
+        const currItemPage = this._findPage(options.currentItem);
         if (currItemPage !== pageIndex) {
-          var newFirstItem = this._getFirstItemOnPage(pageIndex);
+          const newFirstItem = this._getFirstItemOnPage(pageIndex);
           // FIX : only update currentItem property if the filmstrip is not empty
           if (newFirstItem) {
             this.option(_CURRENT_ITEM, newFirstItem, { _context: { writeback: true } });
@@ -2392,14 +2518,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getItemIndex: function (item) {
-        var itemIndex = -1;
+        let itemIndex = -1;
         if (item) {
-          var items = this._getItems();
+          const items = this._getItems();
           // If the item contains both id and index, item id takes precedence.
           if (item.id && isValidIdentifier(item.id)) {
-            for (var i = 0; i < items.length; i++) {
-              var itemElem = items[i];
-              var itemId = itemElem.id;
+            for (let i = 0; i < items.length; i++) {
+              const itemElem = items[i];
+              const itemId = itemElem.id;
               if (itemId && itemId.length > 0 && itemId === item.id) {
                 itemIndex = i;
                 break;
@@ -2420,10 +2546,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @instance
        * @private
        */
-      _convertItemToObj: function (item) {
-        var itemObj = null;
+      _convertCurrentItemToObj: function (item) {
+        let itemObj = null;
         if (typeof item === 'object') {
-          itemObj = item;
+          // copy it to prevent any pollution from other possible attributes
+          itemObj = {
+            index: item.index,
+            id: item.id
+          };
         } else if (typeof item === 'number') {
           itemObj = { index: item };
         } else if (typeof item === 'string') {
@@ -2440,13 +2570,13 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @instance
        * @private
        */
-      _populateItemObj: function (item) {
+      _populateCurrentItemObj: function (item) {
         if (item && this._pagingModel.getPage() >= 0) {
-          var index = this._getItemIndex(item);
+          const index = this._getItemIndex(item);
           // eslint-disable-next-line no-param-reassign
           item.index = index;
-          if (item.id == null && index !== -1) {
-            var items = this._getItems();
+          if (item.id == null && index > -1) {
+            const items = this._getItems();
             // eslint-disable-next-line no-param-reassign
             item.id = items[index].id;
           }
@@ -2464,14 +2594,40 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _findPage: function (item, itemsPerPage) {
-        var itemIndex = this._getItemIndex(item);
-        var pageIndex = -1;
+        const itemIndex = this._getItemIndex(item);
+        let pageIndex = -1;
         if (itemIndex > -1) {
           if (itemsPerPage === undefined) {
             // eslint-disable-next-line no-param-reassign
             itemsPerPage = this._itemsPerPage;
           }
           pageIndex = Math.floor(itemIndex / itemsPerPage);
+        }
+        return pageIndex;
+      },
+
+      /**
+       * Find the logical page containing the specified item.
+       * If the item no longer exists, try to find the closest page.
+       * @param {Object} item The item object.
+       * @param {?number} itemsPerPage The number of items on each logical page.
+       * @returns {number} The 0-based index of the logical page containing the item,
+       *          or -1 if not found.
+       * @memberof oj.ojFilmStrip
+       * @instance
+       * @private
+       */
+      _findTargetPage: function (item, itemsPerPage) {
+        let pageIndex = this._findPage(item, itemsPerPage);
+        if (pageIndex < 0) {
+          const items = this._getItems();
+          if (items.length > 0 && item && item.index != null && item.index >= items.length) {
+            if (itemsPerPage === undefined) {
+              // eslint-disable-next-line no-param-reassign
+              itemsPerPage = this._itemsPerPage;
+            }
+            pageIndex = Math.floor((items.length - 1) / itemsPerPage);
+          }
         }
         return pageIndex;
       },
@@ -2487,23 +2643,22 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _getFirstItemOnPage: function (pageIndex, pageCount, itemsPerPage) {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (pageCount === undefined) {
           // eslint-disable-next-line no-param-reassign
           pageCount = pagingModel.getPageCount();
         }
         if (pageIndex >= 0 && pageIndex < pageCount) {
-          var items = this._getItems();
+          const items = this._getItems();
           if (itemsPerPage === undefined) {
             // eslint-disable-next-line no-param-reassign
             itemsPerPage = this._itemsPerPage;
           }
-          var itemIndex = pageIndex * itemsPerPage;
+          const itemIndex = pageIndex * itemsPerPage;
           if (itemIndex < items.length) {
-            var firstItemOnPage = items[itemIndex];
-            var firstId = firstItemOnPage.id;
-            var firstItem = { id: firstId, index: itemIndex };
-            return firstItem;
+            const firstItemOnPage = items[itemIndex];
+            const firstId = firstItemOnPage.id;
+            return { id: firstId, index: itemIndex };
           }
         }
         return null;
@@ -2527,7 +2682,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           .attr(_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
 
         // hide the items explicitly; unhiding will unhide them explicitly
-        var items =
+        const items =
             page.find(_PERIOD + _OJ_FILMSTRIP_ITEM).filter(this._filterNestedFilmStripsFunc);
         items.css(_DISPLAY, _NONE);
       },
@@ -2546,7 +2701,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           .removeAttr(_ARIA_HIDDEN);
 
         // unhide the items explicitly because the app may have initially hidden them
-        var items =
+        const items =
             page.find(_PERIOD + _OJ_FILMSTRIP_ITEM).filter(this._filterNestedFilmStripsFunc);
         items.css(_DISPLAY, _EMPTY_STRING);
 
@@ -2562,8 +2717,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _addKeyListeners: function () {
-        var elem = this.element;
-        elem.on('keydown' + this.keyEventNamespace, this._handleKeyDownFunc);
+        const elem = this.element;
+        elem.on(`keydown${this.keyEventNamespace}`, this._handleKeyDownFunc);
       },
 
       /**
@@ -2574,7 +2729,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _removeKeyListeners: function () {
-        var elem = this.element;
+        const elem = this.element;
         elem.off(this.keyEventNamespace);
       },
 
@@ -2586,11 +2741,11 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _addMouseListeners: function () {
-        var elem = this.element;
+        const elem = this.element;
         elem
-          .on('mousedown' + this.mouseEventNamespace, this._handleMouseDownFunc)
-          .on('mousemove' + this.mouseEventNamespace, this._handleMouseMoveFunc)
-          .on('mouseup' + this.mouseEventNamespace, this._handleMouseUpFunc);
+          .on(`mousedown${this.mouseEventNamespace}`, this._handleMouseDownFunc)
+          .on(`mousemove${this.mouseEventNamespace}`, this._handleMouseMoveFunc)
+          .on(`mouseup${this.mouseEventNamespace}`, this._handleMouseUpFunc);
       },
 
       /**
@@ -2601,7 +2756,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _removeMouseListeners: function () {
-        var elem = this.element;
+        const elem = this.element;
         elem.off(this.mouseEventNamespace);
       },
 
@@ -2613,9 +2768,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _addTouchListeners: function () {
-        var elem = this.element;
+        const elem = this.element;
         if (this._IsCustomElement()) {
-          var createDelegatedListener = function (listener) {
+          const createDelegatedListener = function (listener) {
             return function (event) {
               listener($.Event(event));
             };
@@ -2625,14 +2780,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           elem[0].addEventListener('touchstart', this._delegatedHandleTouchStartFunc, { passive: true });
           elem[0].addEventListener('touchmove', this._delegatedHandleTouchMoveFunc, { passive: false });
           elem
-          .on('touchend' + this.touchEventNamespace, this._handleTouchEndFunc)
-          .on('touchcancel' + this.touchEventNamespace, this._handleTouchEndFunc);
+          .on(`touchend${this.touchEventNamespace}`, this._handleTouchEndFunc)
+          .on(`touchcancel${this.touchEventNamespace}`, this._handleTouchEndFunc);
         } else {
           elem
-          .on('touchstart' + this.touchEventNamespace, this._handleTouchStartFunc)
-          .on('touchmove' + this.touchEventNamespace, this._handleTouchMoveFunc)
-          .on('touchend' + this.touchEventNamespace, this._handleTouchEndFunc)
-          .on('touchcancel' + this.touchEventNamespace, this._handleTouchEndFunc);
+          .on(`touchstart${this.touchEventNamespace}`, this._handleTouchStartFunc)
+          .on(`touchmove${this.touchEventNamespace}`, this._handleTouchMoveFunc)
+          .on(`touchend${this.touchEventNamespace}`, this._handleTouchEndFunc)
+          .on(`touchcancel${this.touchEventNamespace}`, this._handleTouchEndFunc);
         }
       },
 
@@ -2644,7 +2799,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _removeTouchListeners: function () {
-        var elem = this.element;
+        const elem = this.element;
         elem.off(this.touchEventNamespace);
       },
 
@@ -2657,10 +2812,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handleKeyDown: function (event) {
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
-        var pageCount = pagingModel.getPageCount();
-        var newPageIndex = -2;
+        // ignore the event unless filmstrip is the target
+        if (event.target !== this.element[0]) {
+          return;
+        }
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
+        const pageCount = pagingModel.getPageCount();
+        let newPageIndex;
         switch (event.keyCode) {
           case $.ui.keyCode.RIGHT:
             if (this._bRTL) {
@@ -2695,7 +2854,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         if (newPageIndex > -1 && newPageIndex < pageCount) {
           pagingModel.setPage(newPageIndex);
         } else if (this._isLoopingPage() && pageCount > 1) {
-          var optionsObj = {};
+          const optionsObj = {};
           // navigate from last page to first page
           if (newPageIndex === pageCount) {
             newPageIndex = 0;
@@ -2721,7 +2880,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handleMouseDown: function (event) {
-        var originalEvent = event.originalEvent;
+        const originalEvent = event.originalEvent;
         this._dragScrollStart(originalEvent);
       },
 
@@ -2734,7 +2893,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handleMouseMove: function (event) {
-        var originalEvent = event.originalEvent;
+        const originalEvent = event.originalEvent;
         this._dragScrollMove(event, originalEvent);
       },
 
@@ -2746,8 +2905,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @instance
        * @private
        */
-      // eslint-disable-next-line no-unused-vars
-      _handleMouseUp: function (event) {
+      _handleMouseUp: function () {
         this._dragScrollEnd();
       },
 
@@ -2760,10 +2918,10 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handleTouchStart: function (event) {
-        var originalEvent = event.originalEvent;
-        var eventTouches = originalEvent.touches;
+        const originalEvent = event.originalEvent;
+        const eventTouches = originalEvent.touches;
         if (eventTouches.length === 1) {
-          var firstTouch = eventTouches[0];
+          const firstTouch = eventTouches[0];
           this._dragScrollStart(firstTouch);
         }
       },
@@ -2777,9 +2935,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _handleTouchMove: function (event) {
-        var originalEvent = event.originalEvent;
-        var eventTouches = originalEvent.touches;
-        var firstTouch = eventTouches[0];
+        const originalEvent = event.originalEvent;
+        const eventTouches = originalEvent.touches;
+        const firstTouch = eventTouches[0];
         this._dragScrollMove(event, firstTouch);
 
         // FIX : if the drag scroll was started, prevent the page
@@ -2800,8 +2958,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @instance
        * @private
        */
-      // eslint-disable-next-line no-unused-vars
-      _handleTouchEnd: function (event) {
+      _handleTouchEnd: function () {
         this._dragScrollEnd();
       },
 
@@ -2814,14 +2971,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _dragScrollStart: function (coordsObj) {
-        var pagingModel = this._pagingModel;
+        const pagingModel = this._pagingModel;
         if (pagingModel.getPageCount() > 1 && !this._bPageChangeTransition) {
           this._bTouch = true;
           this._bDragInit = false;
           this._bFirstToLast = false;
           this._bLastToFirst = false;
 
-          var bHorizontal = this._isHorizontal();
+          const bHorizontal = this._isHorizontal();
           this._touchStartCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
           this._touchStartCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
         }
@@ -2841,20 +2998,20 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        */
       _initDragScroll: function (coordsObj, bFirstToLast, bLastToFirst) {
         // save off some initial information at the start of a swipe
-        var bHorizontal = this._isHorizontal();
+        const bHorizontal = this._isHorizontal();
         this._touchStartCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
         this._touchStartCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
 
-        var cssAttr = this._getCssPositionAttr();
-        var pagesWrapper = this._pagesWrapper;
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
-        var pageCount = pagingModel.getPageCount();
+        const cssAttr = this._getCssPositionAttr();
+        const pagesWrapper = this._pagesWrapper;
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
+        const pageCount = pagingModel.getPageCount();
 
         // unhide adjacent pages (unhide both because we don't know which way user
         // will scroll)
-        var pages = this._getPages();
-        var pageCountToShow = 1;
+        const pages = this._getPages();
+        let pageCountToShow = 1;
 
         if (bFirstToLast || bLastToFirst) {
           if (bFirstToLast) {
@@ -2922,25 +3079,25 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           return;
         }
 
-        var bHorizontal = this._isHorizontal();
-        var touchCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
-        var diff = touchCoord - this._touchStartCoord;
+        const bHorizontal = this._isHorizontal();
+        const touchCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
+        const diff = touchCoord - this._touchStartCoord;
 
         //  - cannot scroll vertically in filmstrip component
-        var touchCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
-        var diff2 = touchCoord2 - this._touchStartCoord2;
+        const touchCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
+        const diff2 = touchCoord2 - this._touchStartCoord2;
 
         // in non-RTL, if swiping left or up, scroll next; otherwise scroll prev
         // in RTL, if swiping right or up, scroll next; otherwise scroll prev
-        var bNext = (bHorizontal && this._bRTL) ? (diff > 0) : (diff < 0);
+        const bNext = (bHorizontal && this._bRTL) ? (diff > 0) : (diff < 0);
         // determine whether the filmStrip can be scrolled in the direction of the swipe
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
-        var pageCount = pagingModel.getPageCount();
-        var bLooping = this._isLoopingPage();
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
+        const pageCount = pagingModel.getPageCount();
+        const bLooping = this._isLoopingPage();
 
-        var bFirstToLast = bLooping && !bNext && (pageCount > 1) && (pageIndex === 0);
-        var bLastToFirst = bLooping && bNext && (pageCount > 1) && (pageIndex === pageCount - 1);
+        const bFirstToLast = bLooping && !bNext && (pageCount > 1) && (pageIndex === 0);
+        const bLastToFirst = bLooping && bNext && (pageCount > 1) && (pageIndex === pageCount - 1);
 
         if (!this._bDragInit) {
           //  - cannot scroll vertically in filmstrip component
@@ -2976,34 +3133,34 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           this._bLastToFirst = bLastToFirst;
         }
 
-        var canScrollInSwipeDirection = (bNext && pageIndex < (pagingModel.getPageCount() - 1)) ||
+        const canScrollInSwipeDirection = (bNext && pageIndex < (pagingModel.getPageCount() - 1)) ||
             (!bNext && pageIndex > 0);
         // only need to do something if we can scroll in the swipe direction
         // if looping is enabled, continue in the direction of the swipe
         if (canScrollInSwipeDirection || bLooping) {
           // only scroll next/prev if the swipe is longer than the threshold; if it's
           // less, then just drag the items with the swipe
-          var elem = this.element[0];
-          var threshold = Math.min(_DRAG_SCROLL_THRESHOLD * (bHorizontal ?
-                                                             elem.offsetWidth :
-                                                             elem.offsetHeight),
-                                   _DRAG_SCROLL_MAX_THRESHOLD);
-          var cssAttr = this._getCssPositionAttr();
-          var pagesWrapper = this._pagesWrapper;
-          var pages = this._getPages();
+          const elem = this.element[0];
+          const threshold = Math.min(_DRAG_SCROLL_THRESHOLD * (bHorizontal ?
+              elem.offsetWidth :
+              elem.offsetHeight),
+              _DRAG_SCROLL_MAX_THRESHOLD);
+          const cssAttr = this._getCssPositionAttr();
+          const pagesWrapper = this._pagesWrapper;
+          const pages = this._getPages();
 
           // if swiping beyond the threshold, scroll to the next/prev page
           if (Math.abs(diff) >= threshold) {
-            var newPageIndex;
-            var pageToHide;
-            var optionsObj = {};
+            let newPageIndex;
+            let pageToHide;
+            const optionsObj = {};
 
             if (bFirstToLast || bLastToFirst) {
               if (bFirstToLast) {
                 newPageIndex = pageCount - 1;
                 // Hide only if more than 2 pages are available
                 pageToHide = pageCount > 2 ? 1 : -1;
-              } else if (bLastToFirst) {
+              } else {
                 newPageIndex = 0;
                 // Hide only if more than 2 pages are available
                 pageToHide = pageCount > 2 ? (pageCount - 2) : -1;
@@ -3022,7 +3179,7 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
             // when hiding previous page, need to adjust current scroll position
             // to continue showing current page
             if (bNext && pageToHide > -1 && !bLastToFirst) {
-              var currScroll = parseInt(pagesWrapper.css(cssAttr), 10);
+              const currScroll = parseInt(pagesWrapper.css(cssAttr), 10);
               pagesWrapper.css(cssAttr, (currScroll + this._componentSize) + _PX);
             }
 
@@ -3035,9 +3192,9 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
             pagingModel.setPage(newPageIndex, optionsObj);
           } else {
             // if swiping under the threshold, just move the conveyor with the swipe
-            var scrollVal = diff;
-            var transform = bHorizontal ? 'translate3d(' + scrollVal + 'px, 0, 0)' :
-                'translate3d(0, ' + scrollVal + 'px, 0)';
+            const scrollVal = diff;
+            const transform = bHorizontal ? `translate3d(${scrollVal}px, 0, 0)` :
+                `translate3d(0, ${scrollVal}px, 0)`;
             _applyTransform(pages.filter(_VISIBLE_SELECTOR), transform);
           }
 
@@ -3063,8 +3220,8 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
       _dragScrollEnd: function () {
         // if a full page swipe hasn't happened, scroll back to the original position
         if (this._bTouch && this._bDragInit) {
-          var pagingModel = this._pagingModel;
-          var pageIndex = pagingModel.getPage();
+          const pagingModel = this._pagingModel;
+          const pageIndex = pagingModel.getPage();
           this._handlePage({ previousPage: pageIndex, page: pageIndex });
         }
         this._bTouch = false;
@@ -3084,14 +3241,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _dragScrollResetPages: function () {
-        var pagesWrapper = this._pagesWrapper;
-        var cssAttr = this._getCssPositionAttr();
-        var pagingModel = this._pagingModel;
-        var pageIndex = pagingModel.getPage();
-        var pageCount = pagingModel.getPageCount();
+        const pagesWrapper = this._pagesWrapper;
+        const cssAttr = this._getCssPositionAttr();
+        const pagingModel = this._pagingModel;
+        const pageIndex = pagingModel.getPage();
+        const pageCount = pagingModel.getPageCount();
         // hide all pages except for current one
-        var pages = this._getPages();
-        for (var i = 0; i < pages.length; i++) {
+        const pages = this._getPages();
+        for (let i = 0; i < pages.length; i++) {
           if (i !== pageIndex) {
             this._hidePage($(pages[i]));
           }
@@ -3112,16 +3269,14 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
        * @private
        */
       _addBusyState: function (description) {
-        var element = this.element;
-        var context = Context.getContext(element[0]);
-        var busyContext = context.getBusyContext();
+        const element = this.element;
+        const context = Context.getContext(element[0]);
+        const busyContext = context.getBusyContext();
 
-        var desc = 'FilmStrip';
-        var id = element.attr('id');
-        desc += " (id='" + id + "')";
-        desc += ': ' + description;
+        const id = element.attr('id');
+        const desc = `FilmStrip (id='${ id }'): ${description}`;
 
-        var busyStateOptions = { description: desc };
+        const busyStateOptions = { description: desc };
         return busyContext.addBusyState(busyStateOptions);
       },
 
@@ -3145,20 +3300,20 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
           return this.element ? this.element[0] : null;
         }
 
-        var subId = locator.subId;
-        if (subId === 'oj-filmstrip-start-arrow') {
+        const subId = locator.subId;
+        if (subId === _OJ_FILMSTRIP_START_ARROW) {
           return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_START)
             .filter(this._filterNestedFilmStripsFunc)[0];
         }
-        if (subId === 'oj-filmstrip-end-arrow') {
+        if (subId === _OJ_FILMSTRIP_END_ARROW) {
           return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_END)
             .filter(this._filterNestedFilmStripsFunc)[0];
         }
-        if (subId === 'oj-filmstrip-top-arrow') {
+        if (subId === _OJ_FILMSTRIP_TOP_ARROW) {
           return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_TOP)
             .filter(this._filterNestedFilmStripsFunc)[0];
         }
-        if (subId === 'oj-filmstrip-bottom-arrow') {
+        if (subId === _OJ_FILMSTRIP_BOTTOM_ARROW) {
           return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_BOTTOM)
             .filter(this._filterNestedFilmStripsFunc)[0];
         }
@@ -3169,21 +3324,21 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
 
       // @inheritdoc
       getSubIdByNode: function (node) {
-        var startArrow = this.getNodeBySubId({ subId: 'oj-filmstrip-start-arrow' });
-        var endArrow = this.getNodeBySubId({ subId: 'oj-filmstrip-end-arrow' });
-        var topArrow = this.getNodeBySubId({ subId: 'oj-filmstrip-top-arrow' });
-        var bottomArrow = this.getNodeBySubId({ subId: 'oj-filmstrip-bottom-arrow' });
-        var currentNode = node;
-        var elem = this.element[0];
+        const startArrow = this.getNodeBySubId({ subId: _OJ_FILMSTRIP_START_ARROW });
+        const endArrow = this.getNodeBySubId({ subId: _OJ_FILMSTRIP_END_ARROW });
+        const topArrow = this.getNodeBySubId({ subId: _OJ_FILMSTRIP_TOP_ARROW });
+        const bottomArrow = this.getNodeBySubId({ subId: _OJ_FILMSTRIP_BOTTOM_ARROW });
+        let currentNode = node;
+        const elem = this.element[0];
         while (currentNode && currentNode !== elem) {
           if (currentNode === startArrow) {
-            return { subId: 'oj-filmstrip-start-arrow' };
+            return { subId: _OJ_FILMSTRIP_START_ARROW };
           } else if (currentNode === endArrow) {
-            return { subId: 'oj-filmstrip-end-arrow' };
+            return { subId: _OJ_FILMSTRIP_END_ARROW };
           } else if (currentNode === topArrow) {
-            return { subId: 'oj-filmstrip-top-arrow' };
+            return { subId: _OJ_FILMSTRIP_TOP_ARROW };
           } else if (currentNode === bottomArrow) {
-            return { subId: 'oj-filmstrip-bottom-arrow' };
+            return { subId: _OJ_FILMSTRIP_BOTTOM_ARROW };
           }
 
           currentNode = currentNode.parentElement;
@@ -3198,122 +3353,6 @@ FilmStripPagingModel.prototype.totalSizeConfidence = function () {
         }
         return this._super(option, value1, value2);
       }
-
-  // start API doc fragments /////////////////////////////////////////////////////
-
-  /**
-   * <p>Sub-ID for the start navigation arrow of a horizontal FilmStrip.</p>
-   *
-   * @ojsubid oj-filmstrip-start-arrow
-   * @memberof oj.ojFilmStrip
-   *
-   * @example <caption>Get the start navigation arrow:</caption>
-   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-start-arrow'} );
-   */
-
-  /**
-   * <p>Sub-ID for the end navigation arrow of a horizontal FilmStrip.</p>
-   *
-   * @ojsubid oj-filmstrip-end-arrow
-   * @memberof oj.ojFilmStrip
-   *
-   * @example <caption>Get the end navigation arrow:</caption>
-   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-end-arrow'} );
-   */
-
-  /**
-   * <p>Sub-ID for the top navigation arrow of a vertical FilmStrip.</p>
-   *
-   * @ojsubid oj-filmstrip-top-arrow
-   * @memberof oj.ojFilmStrip
-   *
-   * @example <caption>Get the top navigation arrow:</caption>
-   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-top-arrow'} );
-   */
-
-  /**
-   * <p>Sub-ID for the bottom navigation arrow of a vertical FilmStrip.</p>
-   *
-   * @ojsubid oj-filmstrip-bottom-arrow
-   * @memberof oj.ojFilmStrip
-   *
-   * @example <caption>Get the bottom navigation arrow:</caption>
-   * var node = myFilmStrip.getNodeBySubId({'subId': 'oj-filmstrip-bottom-arrow'} );
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>FilmStrip</td>
-   *       <td><kbd>Swipe</kbd></td>
-   *       <td>Transition to an adjacent logical page of child items.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Navigation Arrow</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Transition to an adjacent logical page of child items.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojFilmStrip
-   */
-
-  /**
-   * <p>FilmStrip itself is a tabstop and supports the following keyboard interactions:
-   *
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>FilmStrip</td>
-   *       <td><kbd>UpArrow or LeftArrow</kbd> (<kbd>RightArrow</kbd> in RTL)</td>
-   *       <td>Transition to the previous logical page of child items.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>FilmStrip</td>
-   *       <td><kbd>DownArrow or RightArrow</kbd> (<kbd>LeftArrow</kbd> in RTL)</td>
-   *       <td>Transition to the next logical page of child items.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>FilmStrip</td>
-   *       <td><kbd>Home</kbd></td>
-   *       <td>Transition to the first logical page of child items.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>FilmStrip</td>
-   *       <td><kbd>End</kbd></td>
-   *       <td>Transition to the last logical page of child items.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Navigation Arrow</td>
-   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-   *       <td>Transition to an adjacent logical page of child items.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojFilmStrip
-   */
-
-  // end API doc fragments ///////////////////////////////////////////////////////
-
     }); // end of oj.__registerWidget
 }()); // end of FilmStrip wrapper function
 

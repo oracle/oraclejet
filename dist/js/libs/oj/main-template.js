@@ -9,34 +9,31 @@
  * Example of Require.js boostrap javascript
  */
 
+
 /* global requirejs:false */
 (function () {
-  
-  function _ojIsIE11() {
-    var nAgt = navigator.userAgent;
-    return nAgt.indexOf('MSIE') !== -1 || !!nAgt.match(/Trident.*rv:11./);
-  };
-  var _ojNeedsES5 = _ojIsIE11();
-
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      knockout: 'libs/knockout/knockout-3.5.1',
-      jquery: 'libs/jquery/jquery-3.5.1.min',
-      'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.12.1.min',
-      ojs: 'libs/oj/v10.1.0/min' + (_ojNeedsES5 ? '_es5' : ''),
-      ojL10n: 'libs/oj/v10.1.0/ojL10n',
-      ojtranslations: 'libs/oj/v10.1.0/resources',
-      text: 'libs/require/text',
-      hammerjs: 'libs/hammer/hammer-2.0.8.min',
-      signals: 'libs/js-signals/signals.min',
-      ojdnd: 'libs/dnd-polyfill/dnd-polyfill-1.0.2.min',
-      css: 'libs/require-css/css.min',
-      customElements: 'libs/webcomponents/custom-elements.min',
-      proj4: 'libs/proj4js/dist/proj4',
-      touchr: 'libs/touchr/touchr',
-      corejs: 'libs/corejs/shim.min',
-      'regenerator-runtime': 'libs/regenerator-runtime/runtime'
+      'ojs': 'libs/oj/v11.0.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/v11.0.0/ojL10n',
+      'ojtranslations': 'libs/oj/v11.0.0/resources',
+      
+  'knockout': 'libs/knockout/knockout-3.5.1',
+  'knockout-mapping': 'libs/knockout/knockout.mapping-latest',
+  'jquery': 'libs/jquery/jquery-3.6.0.min',
+  'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.12.1.min',
+  'text': 'libs/require/text',
+  'hammerjs': 'libs/hammer/hammer-2.0.8.min',
+  'signals': 'libs/js-signals/signals.min',
+  'ojdnd': 'libs/dnd-polyfill/dnd-polyfill-1.0.2.min',
+  'css': 'libs/require-css/css.min',
+  'css-builder': 'libs/require-css/css-builder',
+  'normalize': 'libs/require-css/normalize',
+  'preact': 'libs/preact/dist/preact.umd',
+  'preact/hooks': 'libs/preact/hooks/dist/hooks.umd',
+  'proj4': 'libs/proj4js/dist/proj4',
+  'touchr': 'libs/touchr/touchr'
     },
     // Shim configurations for modules that do not expose AMD
     shim: {
@@ -70,18 +67,6 @@
         }
       }
     }
-  });
-
-  
-  if (_ojNeedsES5) {
-    define('polyfills', ['corejs', 'regenerator-runtime']);
-  } else {
-    define('polyfills', []);
-  };
-  
-  define('promise', ['polyfills'], function () {
-    Promise.polyfill = function () {};
-    return Promise;
   });
 }());
 

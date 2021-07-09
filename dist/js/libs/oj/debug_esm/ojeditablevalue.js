@@ -11,7 +11,7 @@ import $ from 'jquery';
 import 'ojs/ojlabel';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import Context from 'ojs/ojcontext';
-import { info, error, warn, level, LEVEL_WARN } from 'ojs/ojlogger';
+import { error, info, warn, level, LEVEL_WARN } from 'ojs/ojlogger';
 import RequiredValidator from 'ojs/ojvalidator-required';
 import LabelledByUtils from 'ojs/ojlabelledbyutils';
 import { getTranslatedString } from 'ojs/ojtranslation';
@@ -24,14 +24,6 @@ import 'ojs/ojjquery-hammer';
 import { isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from 'ojs/ojdomutils';
 import { startAnimation } from 'ojs/ojanimation';
 import FocusUtils from 'ojs/ojfocusutils';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Base class for rendering the 'inside' labels. This is so InsideLabelStrategy
@@ -268,14 +260,6 @@ BaseInsideLabelStrategy._helpHintsChangedHandler = function (label, component, e
     label.help = event.detail.value;
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @class oj.EditableValueUtils
@@ -693,13 +677,9 @@ EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes) {
 
     var styleValue = pickerAttributes.style;
     if (styleValue) {
-      var pickerElem = picker[0];
-      var currStyle = pickerElem.getAttribute('style');
-      if (currStyle) {
-        pickerElem.setAttribute('style', currStyle + ';' + styleValue); // @HTMLUpdateOK
-      } else {
-        pickerElem.setAttribute('style', styleValue); // @HTMLUpdateOK
-      }
+      error(`picker-attributes.style attribute violates the recommended
+        Content Security Policy which disallows inline styles and is therefore ignored.
+        Use the picker-attributes.class attribute instead.`);
     }
   }
 };
@@ -1615,14 +1595,6 @@ EditableValueUtils._getReadonlyDiv = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * The various validation modes
  * @ignore
  */
@@ -1881,7 +1853,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
        *
        * @expose
-       * @alias help.definition
+       * @name help.definition
        * @memberof! oj.editableValue
        * @instance
        * @type {?string}
@@ -1899,7 +1871,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
        *
        * @expose
-       * @alias help.source
+       * @name help.source
        * @memberof! oj.editableValue
        * @instance
        * @ignore
@@ -1989,7 +1961,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
          *
          * @ojshortdesc Hint for help definition text associated with the label.
          * @expose
-         * @alias helpHints.definition
+         * @name helpHints.definition
          * @memberof! oj.editableValue
          * @instance
          * @type {string}
@@ -2016,7 +1988,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
          *
          * @ojshortdesc Help source URL associated with the component.
          * @expose
-         * @alias helpHints.source
+         * @name helpHints.source
          * @memberof! oj.editableValue
          * @instance
          * @type {string}
@@ -2060,7 +2032,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @expose
        * @access public
        * @instance
-       * @alias labelHint
+       * @name labelHint
        * @ojtranslatable
        * @default ""
        * @memberof oj.editableValue
@@ -2108,7 +2080,13 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
        * back to an empty array.<br/>
        * <p>Each message in the array is an object that duck types oj.Message.
-       * See {@link oj.Message} for details.
+       * See {@link Message} for details.
+       * message detail text can include formatted HTML text, whereas
+       * hints and message summary text cannot. If you use formatted text, it should be accessible
+       * and make sense to the user if formatting wasn't there.
+       * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
+       * To format the message detail, you could do this:
+       * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
        * </p>
        * <p>
        * See the <a href="#validation-section">Validation and Messages</a> section
@@ -2163,7 +2141,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       /**
        * List of messages currently hidden on component, these are added by component when it runs
        * deferred validation. Each message in the array is an object that duck types oj.Message.
-       * See {@link oj.Message} for
+       * See {@link Message} for
        * details. <br/>
        *
        * <p>
@@ -2197,7 +2175,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * List of messages currently shown on component, these include messages generated both by the
        * component and ones provided by app using <code class="prettyprint">messagesCustom</code>.
        * Each message in the array is an object that duck types oj.Message.
-       * See {@link oj.Message} for details. <br/>
+       * See {@link Message} for details. <br/>
        *
        * <p>
        * This is a read-only option so page authors cannot set or change it directly.
@@ -2256,6 +2234,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        *
        * <p>
        * To include formatted text in the help.instruction, format the string using html tags.
+       * The allowed html tags are: span, b, i, em, br, hr, li, ol, ul, p, small, pre.
        * For example the
        * help.instruction might look like:
        * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
@@ -2285,7 +2264,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * @expose
        * @access public
        * @instance
-       * @alias help.instruction
+       * @name help.instruction
        * @ojtranslatable
        * @default ""
        * @memberof! oj.editableValue
@@ -2461,7 +2440,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
        * or it should be called when the custom animation ends if the application is invoking another animation function.  Failure to
        * call <code class="prettyprint">event.detail.endCallback</code> may prevent the component from working properly.</p>
        * <p>For more information on customizing animations, see the documentation of
-       * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
+       * <a href="AnimationUtils.html">AnimationUtils</a>.</p>
        *
        * <caption>The default animations are controlled via the theme:</caption>
        * <pre class="prettyprint"><code>
@@ -2589,7 +2568,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       // Non-null locators have to be handled by the component subclasses
       return node || null;
     },
-    //* * @inheritdoc */
+
     getSubIdByNode: function (elem) {
       var $node;
       var anchor;
@@ -4520,7 +4499,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       return resolvedState;
     },
 
-    //* * @inheritdoc */
+
     _CompareOptionValues: function (option, value1, value2) {
       if (option === 'value' || option === 'rawValue') {
         return oj.Object.compareValues(value1, value2);
@@ -6113,7 +6092,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
         return ci;
       });
     },
-/**
+    /**
      * @param {Object|undefined} value
      * @param {number} context in which validation was run.
      * @return {Promise<null> | null} a Promise to indicate validation has finished or null if sync
@@ -6731,13 +6710,13 @@ setDefaultOptions(
  *  <li>when disabled property changes. See <a href="#disabled">disabled</a> property for details.</li>
  *  <li>when refresh method is called. See <a href="#refresh">refresh</a> method for details.</li>
  *  <li>when converter property changes. Not all EditableValue components have the converter property. See
- *  the sub-classes that have the converter property for details, e.g., {@link oj.inputBase#converter}.</li>
+ *  the sub-classes that have the converter property for details, e.g., {@link oj.ojInputText#converter}.</li>
  *  <li>when required property changes. Not all EditableValue components have the required property. See
  *  the sub-classes that have the required property for details, e.g., {@link oj.inputBase#required}.</li>
  *  <li>when validators property changes. Not all EditableValue components have the validators property. See
  *  the sub-classes that have the validators property for details, e.g., {@link oj.inputBase#validators}.</li>
  *  <li>when asyncValidators property changes. Not all EditableValue components have the asyncValidators property. See
- *  the sub-classes that have the asyncValidators property for details, e.g., {@link oj.inputBase#async-validators}.</li>
+ *  the sub-classes that have the asyncValidators property for details, e.g., {@link oj.inputBase#asyncValidators}.</li>
  *
  * </ul>
  * </p>
@@ -6805,6 +6784,35 @@ setDefaultOptions(
  * @memberof oj.editableValue
  */
 /**
+ * <p>
+ * For accessibility, set label-hint or associate an oj-label with the form component.
+ * If there is no visible label, then to make this accessible to screen reader users,
+ * set the label-hint and label-edge='none'
+ * which renders an aria-label with the label-hint text.
+ * If using an oj-label instead of the <code class="prettyprint">label-hint</code> attribute, then
+ * put an <code>id</code> on the form component element, and set the oj-label's
+ * <code>for</code> attribute to be the form component's id.
+ * </p>
+ *
+ * @ojfragment accessibilityLabelEditableValue
+ * @memberof oj.editableValue
+ * @instance
+ */
+/**
+ * <p>
+ * For accessibility, set label-hint or associate an oj-label with the form component.
+ * If there is no visible label, then to make this accessible to screen reader users,
+ * set the label-hint and label-edge='none' which renders an aria-label with the label-hint text.
+ * If using an oj-label instead of the <code class="prettyprint">label-hint</code> attribute,
+ * then put an <code>id</code> on the oj-label component element, and set the form component's
+ * <code>labelled-by</code> attribute to be the oj-label component's id.
+ * </p>
+ *
+ * @ojfragment accessibilitySetLabelEditableValue
+ * @memberof oj.editableValue
+ * @instance
+ */
+/**
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
  * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
  * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
@@ -6824,14 +6832,6 @@ setDefaultOptions(
  * @ojfragment accessibilityPlaceholderEditableValue
  * @memberof oj.editableValue
  * @instance
- */
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
  */
 
 /**
@@ -8354,14 +8354,6 @@ PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING = 'oj-messaging-popup';
 PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = '__oj_messaging_popup_pool';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Adapter for handling inline Help and Hints text.
  * Extends the MessagingStrategy which does more now than messages.
  *
@@ -8967,15 +8959,6 @@ InlineHelpHintsStrategy.prototype._clearBusyState = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * A messaging strategy that places the messaging content inline (underneath) the editableValue
  * component.
  *
@@ -9535,14 +9518,6 @@ InlineMessagingStrategy.prototype._isMessagingContentRootDomInDocument = functio
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Adapter for handling inline Required text.
  * Extends the MessagingStrategy which does more now than messages.
  *
@@ -9745,14 +9720,6 @@ InlineRequiredStrategy.prototype._isContainerRootDomInDocument = function () {
   }
   return containerRootExistsInDocument !== null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Redwood wants messages to always show up inline, nowhere else.
@@ -10164,14 +10131,6 @@ function (options = this.GetComponent().options) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Adapter for rendering fixed labels within the form component's root dom node as the first
  * child of the root dom element,
  * and smaller to match a text field's 'inside' label.
@@ -10324,14 +10283,6 @@ InsideFormControlLabelStrategy._labelHintChangedHandler = function (span, event)
   // eslint-disable-next-line no-param-reassign
   span.textContent = event.detail.value;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Adapter for handling dynamically setting the inputs placeholder attribute
@@ -10566,14 +10517,6 @@ InsideLabelPlaceholderStrategy._blurHandler = function (element) {
     component._SetPlaceholder('');
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Adapter for handling aspects of floating labels.

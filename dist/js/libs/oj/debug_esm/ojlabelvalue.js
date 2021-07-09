@@ -11,14 +11,6 @@ import 'ojs/ojlabel';
 import oj from 'ojs/ojcore-base';
 
 /**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojLabelValue
  * @since 5.1.0
  * @ojshortdesc A label value is used to lay out a label and value, it is most commonly used in a form layout.
@@ -414,13 +406,6 @@ function ojLabelValue(context) {
   }
 }
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_label_value_metadata = 
 {

@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Constructs an immutable instance of Converter.
    * @param {Object=} options an object literal used to provide an optional information to
    * initialize the converter.<p>

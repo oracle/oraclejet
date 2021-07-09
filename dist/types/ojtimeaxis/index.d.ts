@@ -1,18 +1,13 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
+import { DvtTimeComponentScale } from '../ojdvttimecomponentscale';
 import Converter = require('../ojconverter');
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTimeAxis extends dvtBaseComponent<ojTimeAxisSettableProperties> {
     converter: ojTimeAxis.Converters | Converter<string>;
     end: string;
-    scale: 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'quarters' | 'years';
+    scale?: (string | DvtTimeComponentScale);
     start: string;
     translations: {
         componentName?: string;
@@ -50,6 +45,11 @@ export namespace ojTimeAxis {
     type scaleChanged = JetElementCustomEvent<ojTimeAxis["scale"]>;
     // tslint:disable-next-line interface-over-type-literal
     type startChanged = JetElementCustomEvent<ojTimeAxis["start"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged = dvtBaseComponent.trackResizeChanged<ojTimeAxisSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type Converters = {
         days?: Converter<string>;
@@ -68,11 +68,12 @@ export interface ojTimeAxisEventMap extends dvtBaseComponentEventMap<ojTimeAxisS
     'endChanged': JetElementCustomEvent<ojTimeAxis["end"]>;
     'scaleChanged': JetElementCustomEvent<ojTimeAxis["scale"]>;
     'startChanged': JetElementCustomEvent<ojTimeAxis["start"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojTimeAxis["trackResize"]>;
 }
 export interface ojTimeAxisSettableProperties extends dvtBaseComponentSettableProperties {
     converter: ojTimeAxis.Converters | Converter<string>;
     end: string;
-    scale: 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'quarters' | 'years';
+    scale?: (string | DvtTimeComponentScale);
     start: string;
     translations: {
         componentName?: string;
@@ -107,6 +108,11 @@ export namespace TimeAxisElement {
     type scaleChanged = JetElementCustomEvent<ojTimeAxis["scale"]>;
     // tslint:disable-next-line interface-over-type-literal
     type startChanged = JetElementCustomEvent<ojTimeAxis["start"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged = dvtBaseComponent.trackResizeChanged<ojTimeAxisSettableProperties>;
     // tslint:disable-next-line interface-over-type-literal
     type Converters = {
         days?: Converter<string>;
@@ -119,4 +125,19 @@ export namespace TimeAxisElement {
         weeks?: Converter<string>;
         years?: Converter<string>;
     };
+}
+export interface TimeAxisIntrinsicProps extends Partial<Readonly<ojTimeAxisSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onconverterChanged?: (value: ojTimeAxisEventMap['converterChanged']) => void;
+    onendChanged?: (value: ojTimeAxisEventMap['endChanged']) => void;
+    onscaleChanged?: (value: ojTimeAxisEventMap['scaleChanged']) => void;
+    onstartChanged?: (value: ojTimeAxisEventMap['startChanged']) => void;
+    ontrackResizeChanged?: (value: ojTimeAxisEventMap['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-time-axis": TimeAxisIntrinsicProps;
+        }
+    }
 }

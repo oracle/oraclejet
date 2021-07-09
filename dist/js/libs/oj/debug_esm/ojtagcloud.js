@@ -12,13 +12,6 @@ import 'ojs/ojdvt-base';
 import { TagCloud } from 'ojs/ojtagcloud-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * <table class="keyboard-table">
  *   <thead>
  *     <tr>
@@ -135,13 +128,14 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @property {string=} color The color of the text. Will be overridden by any color defined in the style option. The default value comes from the CSS and varies based on theme.
  * @property {any=} id The item id should be set by the application if the DataProvider is not being used. The row key will be used as id in the DataProvider case.
  * @property {string} label The text of the item.
- * @property {string=} shortDesc The description of the item. This is used for customizing the tooltip text.
+ * @property {(string|function)=} shortDesc The description of the item. This is used for customizing the tooltip text.
  * @property {Object=} svgStyle The CSS style object defining the style of the item text. Only SVG CSS style properties are supported. The default value comes from the CSS and varies based on theme.
  * @property {string=} svgClassName The CSS style class defining the style of the item text.
  * @property {string=} url The url this item references.
  * @property {number} value The value of this item which will be used to scale its font-size within the tag cloud.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
+ *               {target: "Type", value: "?(string | ((context: oj.ojTagCloud.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
  *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
  */
 /**
@@ -151,6 +145,14 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @property {any} id The id of the hovered item.
  * @property {string} label The data label of the hovered item.
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+ * @property {number} value The value of the hovered item.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
+ */
+/**
+ * @typedef {Object} oj.ojTagCloud.ItemShortDescContext
+ * @property {any} id The id of the hovered item.
+ * @property {string} label The data label of the hovered item.
  * @property {number} value The value of the hovered item.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
@@ -300,16 +302,19 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @ojcomponent oj.ojTagCloudItem
  * @ojshortdesc The oj-tag-cloud-item element is used to declare properties for tag cloud items. See the Help documentation for more information.
- * @ojsignature {target: "Type", value:"class ojTagCloudItem extends JetElement<ojTagCloudItemSettableProperties>"}
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojTagCloudItem<K=any> extends dvtBaseComponent<ojTagCloudItemSettableProperties<K>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}]
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojTagCloudItemSettableProperties<K=any> extends dvtBaseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @ojslotcomponent
  * @ojsubcomponenttype data
  * @since 5.2.0
@@ -340,7 +345,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name categories
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {Array.<string>}
+ * @type {(Array.<string>)=}
  * @default []
  *
  * @example <caption>Initialize tag cloud item with the
@@ -376,7 +381,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name label
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @default ""
  * @ojtranslatable
  *
@@ -394,9 +399,9 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name shortDesc
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {string}
+ * @type {(string|function)=}
  * @default ""
- *
+ * @ojsignature [{target: "Type", value: "?(string | ((context: oj.ojTagCloud.ItemShortDescContext<K>) => string))", jsdocOverride: true}]
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">short-desc</code> attribute specified:</caption>
  * &lt;oj-tag-cloud data='[[dataProvider]]'>
@@ -412,7 +417,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name svgStyle
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {Object}
+ * @type {Object=}
  * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
  * @default {}
  *
@@ -430,7 +435,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name svgClassName
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @default ""
  *
  * @example <caption>Initialize tag cloud item with the
@@ -447,7 +452,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name url
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @default ""
  *
  * @example <caption>Initialize tag cloud item with the
@@ -464,7 +469,7 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * @name value
  * @memberof! oj.ojTagCloudItem
  * @instance
- * @type {number|null}
+ * @type {(number|null)=}
  * @default null
  *
  * @example <caption>Initialize tag cloud item with the
@@ -476,13 +481,6 @@ import { TagCloud } from 'ojs/ojtagcloud-toolkit';
  * &lt;/oj-tag-cloud>
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 var __oj_tag_cloud_metadata = 
 {
   "properties": {
@@ -507,7 +505,18 @@ var __oj_tag_cloud_metadata =
       "value": ""
     },
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "hiddenCategories": {
       "type": "Array<string>",
@@ -697,7 +706,7 @@ var __oj_tag_cloud_item_metadata =
       "value": ""
     },
     "shortDesc": {
-      "type": "string",
+      "type": "string|function",
       "value": ""
     },
     "svgClassName": {
@@ -833,7 +842,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name animationOnDataChange
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "auto"
        * @ojvalue {string} "none"
        * @default "none"
@@ -857,7 +866,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name animationOnDisplay
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "auto"
        * @ojvalue {string} "none"
        * @default "none"
@@ -882,14 +891,14 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       * @ojshortdesc An alias for the '$current' context variable passed to slot content for the itemTemplate slot.
       * @memberof oj.ojTagCloud
       * @instance
-      * @type {string}
+      * @type {string=}
       * @default ''
       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
       **/
       as: '',
       /**
       * The DataProvider for the tag cloud. It should provide rows where each row corresponds to a single tag cloud item.
-      * The DataProvider can either have an arbitrary data shape, in which case an <oj-tag-cloud-item> element must be specified in the itemTemplate slot or it can have [oj.ojTagCloud.Item]{@link oj.ojTagCloud#Item} as its data shape, in which case no template is required.
+      * The DataProvider can either have an arbitrary data shape, in which case an <oj-tag-cloud-item> element must be specified in the itemTemplate slot or it can have [oj.ojTagCloud.Item]{@link oj.ojTagCloud.Item} as its data shape, in which case no template is required.
       * @expose
       * @name data
       * @ojshortdesc Specifies the DataProvider for the tag cloud. See the Help documentation for more information.
@@ -898,6 +907,9 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       * @type {Object|null}
       * @ojsignature {target: "Type", value: "DataProvider<K, D>|null", jsdocOverride:true}
       * @default null
+      * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+      *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+      *
       * @example <caption>Initialize the tag cloud with the
       * <code class="prettyprint">data</code> attribute specified:</caption>
       * &lt;oj-tag-cloud data='[[dataProvider]]'>&lt;/oj-tag-cloud>
@@ -918,7 +930,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name hiddenCategories
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Array.<string>}
+       * @type {(Array.<string>)=}
        * @default []
        * @ojwriteback
        *
@@ -944,7 +956,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name highlightedCategories
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Array.<string>}
+       * @type {(Array.<string>)=}
        * @default []
        * @ojwriteback
        *
@@ -974,7 +986,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "any"
        * @ojvalue {string} "all"
        * @default "all"
@@ -998,7 +1010,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name hoverBehavior
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "dim"
        * @ojvalue {string} "none"
        * @default "none"
@@ -1062,7 +1074,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name layout
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "cloud"
        * @ojvalue {string} "rectangular"
        * @default "rectangular"
@@ -1086,7 +1098,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name selection
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Array.<any>}
+       * @type {(Array.<any>)=}
        * @ojsignature [{target: "Type", value: "Array<K>"}]
        * @default []
        * @ojwriteback
@@ -1121,7 +1133,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @ojshortdesc Specifies the selection mode.
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "none" Selection is disabled.
        * @ojvalue {string} "single" Only a single item can be selected at a time.
        * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
@@ -1146,7 +1158,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @name tooltip
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Object}
+       * @type {Object=}
        *
        * @example <caption>Initialize the tag cloud with the
        * <code class="prettyprint">tooltip</code> attribute specified:</caption>
@@ -1197,7 +1209,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @ojshortdesc An object defining the style defaults for this tag cloud.
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {Object}
+       * @type {Object=}
        *
        * @example <caption>Initialize the tag cloud with the
        * <code class="prettyprint">style-defaults</code> attribute specified:</caption>
@@ -1280,7 +1292,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
        * @memberof oj.ojTagCloud
        * @instance
-       * @type {string}
+       * @type {string=}
        * @ojvalue {string} "touchStart"
        * @ojvalue {string} "auto"
        * @default "auto"
@@ -1300,12 +1312,12 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       touchResponse: 'auto'
     },
 
-    //* * @inheritdoc */
+
     _CreateDvtComponent: function (context, callback, callbackObj) {
       return TagCloud.newInstance(context, callback, callbackObj);
     },
 
-    //* * @inheritdoc */
+
     _ConvertLocatorToSubId: function (locator) {
       var subId = locator.subId;
 
@@ -1322,7 +1334,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       return subId;
     },
 
-    //* * @inheritdoc */
+
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
 
@@ -1337,14 +1349,14 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       return locator;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-tagcloud');
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-dvtbase oj-tagcloud'] =
@@ -1353,12 +1365,12 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       return styleClasses;
     },
 
-    //* * @inheritdoc */
+
     _GetEventTypes: function () {
       return ['optionChange'];
     },
 
-    //* * @inheritdoc */
+
     _InitOptions: function (originalDefaults, constructorOptions) {
       this._super(originalDefaults, constructorOptions);
 
@@ -1422,12 +1434,12 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       return null;
     },
 
-    //* * @inheritdoc */
+
     _GetComponentDeferredDataPaths: function () {
       return { root: ['items', 'data'] };
     },
 
-    //* * @inheritdoc */
+
     _GetSimpleDataProviderConfigs: function () {
       return {
         data: {

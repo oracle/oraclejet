@@ -5,257 +5,178 @@
 //          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.treeview.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 @import "../../utilities/oj.utilities";
-
-@if $includeTreeViewClasses != false  {
-  @include module-include-once("common.treeview") {
-
-    // Prevents the flash of unstyled content before the HTML becomes JET components.
-    @if $initialVisibility == hidden {
-      oj-tree-view:not(.oj-complete) {
-        visibility: hidden;
-      }
-    }
-
-    // Prevents the grey background that appears on tap on iOS
-    oj-tree-view {
-      display: block;
-      overflow: auto;
-      -webkit-tap-highlight-color: transparent;
-      // Padding-bottom so container does not expand when dropline is rendered at bottom of treeview
-      padding-bottom: .25rem;
-    }
-
-    // Remove focus ring
-    .oj-treeview-list:focus {
-      outline: none;
-    }
-
-    // Base style for treeview and items
-    .oj-treeview-list,
-    .oj-treeview-item {
-      display: block;
-      margin: 0 ;
-      padding: 0;
-      list-style-type: none;
-
-
-        @include oj-user-select-property(none);
-
-    }
-
-    // Basic item
-    .oj-treeview-item {
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-
-    .oj-treeview-list.oj-treeview-drag-image > .oj-treeview-item {
-      @include oj-ltr() {
-        margin-left: 0;
-      }
-      @include oj-rtl() {
-        margin-right: 0;
-      }
-    }
-
-    // Treeview icon (item, disclosure)
-    .oj-treeview-icon {
-      display: inline-block;
-      text-decoration: none;
-      vertical-align: middle;
-      @include oj-ltr() {
-        text-align: right;
-      }
-      @include oj-rtl() {
-        text-align: left;
-      }
-    }
-
-    // Item icon
-    .oj-treeview-item-icon {
-      cursor: default;
-      margin: 4px;
-    }
-
-    // Default expanded parent image
-    .oj-expanded > .oj-treeview-item-content > .oj-treeview-item-icon {
-      @extend .oj-fwk-icon-folder-open;
-    }
-
-    // Default collapsed parent image
-    .oj-collapsed > .oj-treeview-item-content > .oj-treeview-item-icon {
-      @extend .oj-fwk-icon-folder-collapsed;
-    }
-
-    // Default leaf item image
-    .oj-treeview-leaf > .oj-treeview-item-content > .oj-treeview-item-icon {
-      @extend .oj-fwk-icon-document;
-    }
-
-    // Item text
-    .oj-treeview-item-text {
-
-        color: $treeViewTextColor;
-
-
-      cursor: default;
-      vertical-align: middle;
-      @include oj-ltr() {
-        margin-left: 2px;
-        margin-right: 4px;
-      }
-      @include oj-rtl() {
-        margin-left: 4px;
-        margin-right: 2px;
-      }
-    }
-
-    .oj-treeview-item-content-icon {
-      vertical-align: middle;
-      font-size: $fontSize;
-      display: inline-block;
-      @include oj-ltr() {
-        margin: 0 0.5rem 0 0.5rem;
-      }
-      @include oj-rtl() {
-        margin: 0 0.5rem 0 0.5rem;
-      }
-    }
-    
-    .oj-treeview-item-content {
-      width: 100%;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .oj-treeview-selector {
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    // Hovered item content
-    .oj-treeview-item-content.oj-hover {
-
-        background-color: $treeViewItemBgColorHover;
-
-    }
-
-    // Selected item content when the root is focused
-    .oj-treeview-list:focus .oj-treeview-item-content.oj-selected {
-
-        background-color: $treeViewItemBgColorSelected;
-
-    }
-
-    // Selected item content when the root is NOT focused
-    .oj-treeview-item-content.oj-selected {
-
-        background-color: $treeViewItemBgColorSelectedInactive;
-
-    }
-
-    // Styling for the list item elements in selected state when treeview is in high contrast mode.
-    .oj-hicontrast .oj-treeview-item-content.oj-selected {
-      border-width: 1px 2px 2px 1px;
-      border-style: solid;
-      border-color: initial;
-    }
-
-    // Styling for the list item elements in focus state when treeview is in high contrast mode.
-    .oj-hicontrast .oj-treeview-item-content.oj-focus-highlight{
-      outline-width: 2px;
-      outline-style: dotted;
-      border-width: 0 1px 1px 0;
-      border-style: dotted;
-    }
-
-    // Focused item content
-    .oj-treeview-item-content.oj-focus-highlight {
-
-        @include oj-browser-focus-outline-approximation($primaryTextColor);
-
-    }
-
-    // Disclosure icon or the spacer
-    .oj-treeview-spacer {
-        height: $treeViewSpacerHeight;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    .oj-treeview-disclosure-icon {
-      cursor: pointer;
-    }
-
-    .oj-treeview-disclosure-icon:before {
-      margin: 7px 4px;
-    }
-
-    // DnD reorder insert position pointer line when dropping between items
-    .oj-treeview-drop-line {
-      height: 1px;
-      width: 100px;
-      position: absolute;
-      background-color: $treeViewDropLineColor;
-      pointer-events: none;
-    }
-
-    .oj-treeview-drop-zone {
-      background-color: $treeViewDropItemBackground;
-      border-radius: .25rem;
-    }
-
-    // Make sure drag image isn't visible to the end user
-    .oj-treeview-drag-image {
-      position: fixed;
-      top: 10000px;
-      overflow: visible;
-    }
-
-    .oj-treeview-drag-image .oj-treeview-item {
-      position: absolute;
-    }
-    @include oj-property-multiplier($selectorName: 'oj-treeview-depth', $propertyName: 'width', $propertyMultiplicand: $treeViewSpacerWidth, $minMultiplier: 1, $maxMultiplier: 15);
-
-    // Animation defaults
-    $treeViewAnimationDefaults: ();
-
-    @if ($treeViewExpandAnimation) {
-      $treeViewAnimationDefaults: map-merge($treeViewAnimationDefaults, (expand: $treeViewExpandAnimation));
-    }
-
-    @if ($treeViewCollapseAnimation) {
-      $treeViewAnimationDefaults: map-merge($treeViewAnimationDefaults, (collapse: $treeViewCollapseAnimation));
-    }
-
-    // Option defaults
-    $treeViewDefaultOptions: ();
-
-    @if ($treeViewAnimationDefaults) {
-      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (animation: $treeViewAnimationDefaults));
-    }
-    
-    @if ($treeViewLoadIndicator) {
-      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (loadIndicator: $treeViewLoadIndicator));
-    }
-
-    @if ($loadingIndicatorDelayDuration) {
-      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
-    }
-
-    @if ($treeViewDataFadeInDuration) {
-      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (dataFadeInDuration: $treeViewDataFadeInDuration));
-    }
-    
-    @if ($treeViewMultipleSelectionAffordance) {
-      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (multipleSelectionAffordance: $treeViewMultipleSelectionAffordance));
-    }
-
-    // Component default options selector
-    .oj-treeview-option-defaults {
-      font-family: oj-json-from-map($treeViewDefaultOptions);
-    }
-  }
+@if $includeTreeViewClasses !=false {
+	@include module-include-once("common.treeview") {
+		// Prevents the flash of unstyled content before the HTML becomes JET components.
+		@if $initialVisibility==hidden {
+			oj-tree-view:not(.oj-complete) {
+				visibility: hidden;
+			}
+		}
+		// Prevents the grey background that appears on tap on iOS
+		oj-tree-view {
+			display: block;
+			overflow: auto;
+			-webkit-tap-highlight-color: transparent;
+			// Padding-bottom so container does not expand when dropline is rendered at bottom of treeview
+			padding-bottom: .25rem;
+		}
+		// Remove focus ring
+		oj-tree-view:focus {
+			outline: none;
+		}
+		// Remove focus ring
+		.oj-treeview-list:focus {
+			outline: none;
+		}
+		// Base style for treeview and items
+		.oj-treeview-list,
+		.oj-treeview-item {
+			display: block;
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+			@include oj-user-select-property(none);
+		}
+		// Basic item
+		.oj-treeview-item {
+			white-space: nowrap;
+			vertical-align: middle;
+		}
+		.oj-treeview-list.oj-treeview-drag-image>.oj-treeview-item {
+			@include oj-ltr() {
+				margin-left: 0;
+			}
+			@include oj-rtl() {
+				margin-right: 0;
+			}
+		}
+		// Treeview icon (item, disclosure)
+		.oj-treeview-icon {
+			display: inline-block;
+			text-decoration: none;
+			vertical-align: middle;
+			@include oj-ltr() {
+				text-align: right;
+			}
+			@include oj-rtl() {
+				text-align: left;
+			}
+		}
+		// Item icon
+		.oj-treeview-item-icon {
+			cursor: default;
+			margin: 4px;
+		}
+		// Default expanded parent image
+		.oj-expanded>.oj-treeview-item-content>.oj-treeview-item-icon {
+			@extend .oj-fwk-icon-folder-open;
+		}
+		// Default collapsed parent image
+		.oj-collapsed>.oj-treeview-item-content>.oj-treeview-item-icon {
+			@extend .oj-fwk-icon-folder-collapsed;
+		}
+		// Default leaf item image
+		.oj-treeview-leaf>.oj-treeview-item-content>.oj-treeview-item-icon {
+			@extend .oj-fwk-icon-document;
+		}
+		// Item text
+		.oj-treeview-item-text {
+			color: $treeViewTextColor;
+			cursor: default;
+			vertical-align: middle;
+			@include oj-ltr() {
+				margin-left: 2px;
+				margin-right: 4px;
+			}
+			@include oj-rtl() {
+				margin-left: 4px;
+				margin-right: 2px;
+			}
+		}
+		.oj-treeview-item-content-icon {
+			vertical-align: middle;
+			font-size: $fontSize;
+			display: inline-block;
+			@include oj-ltr() {
+				margin: 0 0.5rem 0 0.5rem;
+			}
+			@include oj-rtl() {
+				margin: 0 0.5rem 0 0.5rem;
+			}
+		}
+		.oj-treeview-item-content {
+			width: 100%;
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.oj-treeview-selector {
+			display: inline-block;
+			vertical-align: middle;
+		}
+		// Hovered item content
+		.oj-treeview-item-content.oj-hover {
+			background-color: $treeViewItemBgColorHover;
+		}
+		// Selected item content when the root is focused
+		.oj-treeview-list:focus .oj-treeview-item-content.oj-selected {
+			background-color: $treeViewItemBgColorSelected;
+		}
+		// Selected item content when the root is NOT focused
+		.oj-treeview-item-content.oj-selected {
+			background-color: $treeViewItemBgColorSelectedInactive;
+		}
+		// Styling for the list item elements in selected state when treeview is in high contrast mode.
+		.oj-hicontrast .oj-treeview-item-content.oj-selected {
+			border-width: 1px 2px 2px 1px;
+			border-style: solid;
+			border-color: initial;
+		}
+		// Styling for the list item elements in focus state when treeview is in high contrast mode.
+		.oj-hicontrast .oj-treeview-item-content.oj-focus-highlight {
+			outline-width: 2px;
+			outline-style: dotted;
+			border-width: 0 1px 1px 0;
+			border-style: dotted;
+		}
+		// Focused item content
+		.oj-treeview-item-content.oj-focus-highlight {
+			@include oj-browser-focus-outline-approximation($primaryTextColor);
+		}
+		// Disclosure icon or the spacer
+		.oj-treeview-spacer {
+			height: $treeViewSpacerHeight;
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.oj-treeview-disclosure-icon {
+			cursor: pointer;
+		}
+		.oj-treeview-disclosure-icon:before {
+			margin: 7px 4px;
+		}
+		// DnD reorder insert position pointer line when dropping between items
+		.oj-treeview-drop-line {
+			height: 1px;
+			width: 100px;
+			position: absolute;
+			background-color: $treeViewDropLineColor;
+			pointer-events: none;
+		}
+		.oj-treeview-drop-zone {
+			background-color: $treeViewDropItemBackground;
+			border-radius: .25rem;
+		}
+		// Make sure drag image isn't visible to the end user
+		.oj-treeview-drag-image {
+			position: fixed;
+			top: 10000px;
+			overflow: visible;
+		}
+		.oj-treeview-drag-image .oj-treeview-item {
+			position: absolute;
+		}
+		@include oj-property-multiplier($selectorName: 'oj-treeview-depth', $propertyName: 'width', $propertyMultiplicand: $treeViewSpacerWidth, $minMultiplier: 1, $maxMultiplier: 15);
+	}
 }

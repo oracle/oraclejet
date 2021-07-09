@@ -10,13 +10,6 @@ import 'ojs/ojrowexpander';
 import 'ojs/ojdatasource-common';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @class FlattenedTreeCellSet
  * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
  * of the fetchCells method on DataGridDataSource.  The FlattenedTreeCellSet is a FlattenedDataGridDataSource specific
@@ -255,13 +248,6 @@ FlattenedTreeCellSet.prototype.getExtent = function (indexes) {
     column: { extent: 1, more: { before: false, after: false } } };
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * The DataGrid specific implementation of the FlattenedTreeDataSource class.
  * @param {Object} treeDataSource the instance of TreeDataSource to flattened
@@ -862,14 +848,6 @@ FlattenedTreeDataGridDataSource.prototype.handleMaxCountReached = function (rang
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @class FlattenedTreeHeaderSet
  * @classdesc A HeaderSet represents a collection of headers.  The HeaderSet is an object returned by the success callback
  * of the fetchHeaders method on DataGridDataSource.  This is an flattened tree specific implementation of the HeaderSet.
@@ -1055,13 +1033,6 @@ FlattenedTreeHeaderSet.prototype.getLabel = function () {
   return null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
 
 var FlattenedTreeDataGridDataSource$1 = {};

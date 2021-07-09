@@ -10,38 +10,28 @@ import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 
 /**
- * @license
- * Copyright (c) 2004 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * DOM utilities.
  * @ignore
  */
-const DomUtils = {};
-
-DomUtils._HTML_START_TAG = '\x3chtml\x3e';
-DomUtils._HTML_END_TAG = '\x3c/html\x3e';
-DomUtils._LEGAL_ELEMENTS = {
-  SPAN: 1,
-  B: 1,
-  I: 1,
-  EM: 1,
-  BR: 1,
-  HR: 1,
-  LI: 1,
-  OL: 1,
-  UL: 1,
-  P: 1,
-  TT: 1,
-  BIG: 1,
-  SMALL: 1,
-  PRE: 1
-};
-DomUtils._LEGAL_ATTRIBUTES = { class: 1, style: 1 };
+const DomUtils = { _HTML_START_TAG: '\x3chtml\x3e',
+  _HTML_END_TAG: '\x3c/html\x3e',
+  _LEGAL_ELEMENTS: {
+    SPAN: 1,
+    B: 1,
+    I: 1,
+    EM: 1,
+    BR: 1,
+    HR: 1,
+    LI: 1,
+    OL: 1,
+    UL: 1,
+    P: 1,
+    TT: 1,
+    BIG: 1,
+    SMALL: 1,
+    PRE: 1
+  },
+  _LEGAL_ATTRIBUTES: { class: 1, style: 1 } };
 
 /**
  * Returns true if the value is null or if the trimmed value is of zero length.
@@ -268,6 +258,11 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
     div = div[0];
   }
 
+  // The 'data-oj-resize-notify' attribute has been added to be used in qunit tests.
+  // Previously a test added a resize listener called on timeout, which made the test brittle.
+  // Now a resize test might add the 'data-oj-resize-notify' attribute to the component
+  // and get notified when the component receives resize notification.
+  var _fireResizeDomEvent = div.hasAttribute('data-oj-resize-notify');
   var _listeners = $.Callbacks();
   var _collapsingManagers = [];
   var _collapsingListeners = [];
@@ -287,8 +282,16 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
       || collapseEventTimeout === 0) {
       _listeners.add(listener);
     } else {
+      // See comments above for _fireResizeDomEvent.
+      var _wrappedOrigListener = ()=>{
+        listener.apply(null, arguments);
+        div.dispatchEvent(new Event('oj-resize'));
+      };
       _collapsingManagers.push(
-              new DomUtils._collapsingListenerManager(listener, collapseEventTimeout));
+          new DomUtils._collapsingListenerManager(
+            _fireResizeDomEvent ? _wrappedOrigListener : listener,
+            collapseEventTimeout
+      ));
       _collapsingListeners.push(listener);
     }
   };
@@ -414,9 +417,15 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
   function _notifyListeners(useAfterPaint, size) {
     var newWidth = size ? size[0] : div.offsetWidth;
     var newHeight = size ? size[1] : div.offsetHeight;
+    var listenersWrapper = (width, height) => {
+      _listeners.fire(width, height);
+      if (_fireResizeDomEvent) {
+        div.dispatchEvent(new Event('oj-resize'));
+      }
+    };
     if (_listeners.has()) {
       if (!useAfterPaint) {
-        _listeners.fire(newWidth, newHeight);
+        listenersWrapper(newWidth, newHeight);
       } else {
         if (_invokeId !== null) {
           DomUtils._cancelInvokeAfterPaint(_invokeId);
@@ -425,7 +434,7 @@ DomUtils._ResizeTracker = function (div, useResizeObserver) {
         _invokeId = DomUtils._invokeAfterPaint(
         function () {
           _invokeId = null;
-          _listeners.fire(newWidth, newHeight);
+          listenersWrapper(newWidth, newHeight);
         }
       );
       }
@@ -579,69 +588,6 @@ DomUtils.unwrap = function (locator, replaceLocator) {
  * @public
  */
 DomUtils.isChromeEvent = function (event) {
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventGecko(_event) {
-    // assume that if we can't access the original target of the event, then it's because
-    // the target was implemented in XUL and is part of the chrome;
-    try {
-      return !_event.originalTarget.localName;
-    } catch (e) {
-      return true;
-    }
-  }
-
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventIE(_event) {
-    /*
-      //IE has a specific API for this but doesn't seem to want to work in automation.
-      //The webkit method works in IE too.  Using that over componentFromPoint but leaving
-      //the code for future reference.
-      //
-      var target = event.target;
-      var chromePart = target.componentFromPoint(event.clientX, event.clientY);
-      if (oj.StringUtils.isEmpty(chromePart))
-        return false;
-      else
-        return true;
-    */
-    return _isChromeEventWebkit(_event);
-  }
-
-  /**
-   * @param {Event} event
-   * @return {boolean}
-   */
-  function _isChromeEventWebkit(_event) {
-    var domTarget = _event.target;
-    var target = $(domTarget);
-
-    var pos = domTarget.getBoundingClientRect();
-    var sbw = DomUtils.getScrollBarWidth();
-    var isLTR = DomUtils.getReadingDirection() === 'ltr';
-    if (isLTR && ((domTarget.nodeName === 'HTML' || target.css('overflow-x') !== 'visible') &&
-                  _event.clientX > (pos.right - sbw))) {
-      return true;
-    } else if (!isLTR && domTarget.nodeName === 'HTML' && _event.clientX > (pos.left - sbw)) {
-      // ltr scrollbar is always on the right
-      return true;
-    } else if (!isLTR && target.css('overflow-x') !== 'visible' &&
-             _event.clientX < (pos.left + sbw)) {
-      // RTL scrollbar on the document is still on the right
-      return true;
-    } else if ((domTarget.nodeName === 'HTML' || target.css('overflow-y') !== 'visible') &&
-             _event.clientY > (pos.bottom - sbw)) {
-      // RTL scrollbar not on the document is on the left
-      return true;
-    } // below the scrollbar
-    return false;
-  }
-
   // verify event is a mouse event
   if (!('clientX' in event) || !('clientY' in event)) {
     return false;
@@ -654,14 +600,40 @@ DomUtils.isChromeEvent = function (event) {
     return false;
   }
 
-  if (oj.AgentUtils.ENGINE.GECKO === agentInfo.engine) {
-    return _isChromeEventGecko(event);
-  } else if (oj.AgentUtils.ENGINE.WEBKIT === agentInfo.engine ||
-             oj.AgentUtils.ENGINE.BLINK === agentInfo.engine) {
-    return _isChromeEventWebkit(event);
+  if (agentInfo.engine !== oj.AgentUtils.ENGINE.GECKO
+      && agentInfo.engine !== oj.AgentUtils.ENGINE.WEBKIT
+      && agentInfo.engine !== oj.AgentUtils.ENGINE.BLINK
+      && agentInfo.browser !== oj.AgentUtils.BROWSER.IE) {
+    // unknown engine/browser
+    return false;
   }
-  if (oj.AgentUtils.BROWSER.IE === agentInfo.browser) {
-    return _isChromeEventIE(event);
+
+  var isLTR = DomUtils.getReadingDirection() === 'ltr';
+  // Safari puts the main scrollbar on the left in RTL
+  var isMainScrollbarOnTheLeft = !isLTR && agentInfo.browser === oj.AgentUtils.BROWSER.SAFARI;
+
+  var domTarget = event.target;
+  var target = $(domTarget);
+
+  var pos = domTarget.getBoundingClientRect();
+  var sbw = DomUtils.getScrollBarWidth();
+
+  if (isLTR && ((domTarget.nodeName === 'HTML'
+      || target.css('overflow-x') !== 'visible') && event.clientX > (pos.right - sbw))) {
+    // ltr scrollbar is always on the right
+    return true;
+  } else if (!isLTR && !isMainScrollbarOnTheLeft
+        && domTarget.nodeName === 'HTML' && event.clientX > (pos.right - sbw)) {
+    // RTL scrollbar on the document is still on the right
+    return true;
+  } else if (!isLTR && target.css('overflow-x') !== 'visible'
+        && event.clientX < (pos.left + sbw)) {
+    // RTL scrollbar is on the left
+    return true;
+  } else if ((domTarget.nodeName === 'HTML' || target.css('overflow-y') !== 'visible')
+        && event.clientY > (pos.bottom - sbw)) {
+    // below the scrollbar
+    return true;
   }
   return false;
 };
@@ -670,33 +642,8 @@ DomUtils.isChromeEvent = function (event) {
  * @returns {number} width of the browser scrollbar
  */
 DomUtils.getScrollBarWidth = function () {
-  var scrollBarWidth = DomUtils._scrollBarWidth;
-  if ($.isNumeric(scrollBarWidth)) {
-    return scrollBarWidth;
-  }
-
-  /** @type {jQuery} **/
-  var scrollBarMeasure = $('<div></div>');
-  $(document.body).append(scrollBarMeasure); // @HTMLUpdateOK scrollBarMeasure constructed by the code above
-  scrollBarMeasure.width(50).height(50)
-    .css({
-      overflow: 'scroll',
-      visibility: 'hidden',
-      position: 'absolute'
-    });
-
-  /** @type {jQuery} **/
-  var scrollBarMeasureContent = $('<div></div>');
-  scrollBarMeasureContent.height(1);
-  scrollBarMeasure.append(scrollBarMeasureContent); // @HTMLUpdateOK scrollBarMeasureContent constructed by the code above
-
-  var insideWidth = scrollBarMeasureContent.width();
-  var outsideWitdh = scrollBarMeasure.width();
-  scrollBarMeasure.remove();
-
-  scrollBarWidth = outsideWitdh - insideWidth;
-  DomUtils._scrollBarWidth = scrollBarWidth;
-  return scrollBarWidth;
+  // delegate to our (CSP compliant) version of jqueryUI's $.position.scrollBarWidth
+  return $.position.scrollbarWidth();
 };
 
 /**
@@ -717,24 +664,31 @@ DomUtils.getReadingDirection = function () {
  * @param {number} scrollLeft the element's new scrollLeft
  */
 DomUtils.setScrollLeft = function (elem, scrollLeft) {
+  // eslint-disable-next-line no-param-reassign
+  elem.scrollLeft = DomUtils.calculateScrollLeft(scrollLeft);
+};
+/**
+ * Calculates the bidi independent position of the horizontal scroll position that
+ * is consistent across all browsers.
+ * @param {number} scrollLeft the element's new scrollLeft
+ * @returns {number} new scroll left value
+ */
+DomUtils.calculateScrollLeft = function (scrollLeft) {
+  // eslint-disable-next-line no-param-reassign
+  var resultScrollLeft = scrollLeft;
   if (DomUtils.getReadingDirection() === 'rtl') {
     var browser = oj.AgentUtils.getAgentInfo().browser;
-    if (browser === oj.AgentUtils.BROWSER.IE ||
-               browser === oj.AgentUtils.BROWSER.EDGE) {
+    if (browser !== oj.AgentUtils.BROWSER.IE &&
+               browser !== oj.AgentUtils.BROWSER.EDGE) {
       // old ie/edge still have positive values for scrollLeft
-      // eslint-disable-next-line no-param-reassign
-      elem.scrollLeft = scrollLeft;
-    } else {
       // webkit used to not support -scrollLeft and had to be calculated, chromium 
       // mozilla always supported this a -scrollLeft, mozilla 
       // expect a negative value for RTL
       // eslint-disable-next-line no-param-reassign
-      elem.scrollLeft = -scrollLeft;
+      resultScrollLeft = -scrollLeft;
     }
-  } else {
-    // eslint-disable-next-line no-param-reassign
-    elem.scrollLeft = scrollLeft;
   }
+  return resultScrollLeft;
 };
 
 /**
@@ -784,6 +738,46 @@ DomUtils.getCSSLengthAsFloat = function (cssLength) {
     }
 
     return floatLength;
+  }
+
+  return 0;
+};
+
+/**
+ * Converts a CSS time unit (s, ms) into milliseconds.
+ *
+ * @param {?} cssTimeUnit value in css time unit
+ * @return {number} value in milliseconds
+ */
+DomUtils.getCSSTimeUnitAsMillis = function (cssTimeUnit) {
+  if (!isNaN(cssTimeUnit)) {
+    // assume time is already in milliseconds
+    return parseInt(cssTimeUnit, 10);
+  }
+
+  if (cssTimeUnit && cssTimeUnit.length > 0) {
+    var timeValue = parseFloat(cssTimeUnit);
+
+    if (isNaN(timeValue)) {
+      timeValue = 0;
+    } else {
+      var str = cssTimeUnit + '';
+      var lastDigit;
+      if (str.length > 2 && str.endsWith('ms')) {
+        lastDigit = str.slice(-3, -2);
+      } else if (str.length > 1 && str.endsWith('s')) {
+        lastDigit = str.slice(-2, -1);
+      }
+
+      if (isNaN(lastDigit)) {
+        // all bogus value that isn't in the format of [number]['s'|'ms']
+        timeValue = 0;
+      } else if (!str.endsWith('ms') && str.endsWith('s')) {
+        timeValue *= 1000;
+      }
+    }
+
+    return timeValue;
   }
 
   return 0;
@@ -1066,8 +1060,7 @@ DomUtils.recentPointer = (function () {
   return function () {
     var millisSincePointer = Date.now() - pointerTimestamp;
     var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
-    var isRecent = millisSincePointer < threshold;
-    return isRecent;
+    return millisSincePointer < threshold;
   };
 }());
 
@@ -1246,6 +1239,22 @@ DomUtils.makeFocusable = (function () {
   return makeFocusable;
 }());
 
+
+// ------------------------------------------------------------------------------------------------
+// Utility for supporting makeFocusable by providing setupHandlers in and out handlers
+// ------------------------------------------------------------------------------------------------
+DomUtils.getNoJQFocusHandlers = function (focusIn, focusOut) {
+  var noJQFocusInHandler = function (element) {
+    return focusIn($(element));
+  };
+
+  var noJQFocusOutHandler = function (element) {
+    return focusOut($(element));
+  };
+
+  return { focusIn: noJQFocusInHandler, focusOut: noJQFocusOutHandler };
+};
+
 const isHTMLContent = DomUtils.isHTMLContent;
 const cleanHtml = DomUtils.cleanHtml;
 const isAncestor = DomUtils.isAncestor;
@@ -1263,8 +1272,10 @@ const isChromeEvent = DomUtils.isChromeEvent;
 const getScrollBarWidth = DomUtils.getScrollBarWidth;
 const getReadingDirection = DomUtils.getReadingDirection;
 const setScrollLeft = DomUtils.setScrollLeft;
+const calculateScrollLeft = DomUtils.calculateScrollLeft;
 const getCSSLengthAsInt = DomUtils.getCSSLengthAsInt;
 const getCSSLengthAsFloat = DomUtils.getCSSLengthAsFloat;
+const getCSSTimeUnitAsMillis = DomUtils.getCSSTimeUnitAsMillis;
 const getLogicalParent = DomUtils.getLogicalParent;
 const setLogicalParent = DomUtils.setLogicalParent;
 const isLogicalAncestorOrSelf = DomUtils.isLogicalAncestorOrSelf;
@@ -1273,6 +1284,7 @@ const PRESS_HOLD_THRESHOLD = DomUtils.PRESS_HOLD_THRESHOLD;
 const recentTouchEnd = DomUtils.recentTouchEnd;
 const recentTouchStart = DomUtils.recentTouchStart;
 const recentPointer = DomUtils.recentPointer;
+const getNoJQFocusHandlers = DomUtils.getNoJQFocusHandlers;
 const makeFocusable = DomUtils.makeFocusable;
 
-export { PRESS_HOLD_THRESHOLD, addResizeListener, cleanHtml, dispatchEvent, fixResizeListeners, getCSSLengthAsFloat, getCSSLengthAsInt, getLogicalParent, getReadingDirection, getScrollBarWidth, isAncestor, isAncestorOrSelf, isChromeEvent, isHTMLContent, isLogicalAncestorOrSelf, isMetaKeyPressed, isTouchSupported, isValidIdentifier, makeFocusable, recentPointer, recentTouchEnd, recentTouchStart, removeResizeListener, setInKoCleanExternal, setLogicalParent, setScrollLeft, unwrap, validateURL };
+export { PRESS_HOLD_THRESHOLD, addResizeListener, calculateScrollLeft, cleanHtml, dispatchEvent, fixResizeListeners, getCSSLengthAsFloat, getCSSLengthAsInt, getCSSTimeUnitAsMillis, getLogicalParent, getNoJQFocusHandlers, getReadingDirection, getScrollBarWidth, isAncestor, isAncestorOrSelf, isChromeEvent, isHTMLContent, isLogicalAncestorOrSelf, isMetaKeyPressed, isTouchSupported, isValidIdentifier, makeFocusable, recentPointer, recentTouchEnd, recentTouchStart, removeResizeListener, setInKoCleanExternal, setLogicalParent, setScrollLeft, unwrap, validateURL };

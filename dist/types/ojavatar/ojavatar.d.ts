@@ -1,23 +1,22 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props {
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { ExtendGlobalProps } from 'ojs/ojvcomponent';
+import { Component, ComponentChild } from 'preact';
+declare type Props = {
     background?: 'neutral' | 'orange' | 'green' | 'teal' | 'blue' | 'slate' | 'mauve' | 'pink' | 'purple' | 'lilac' | 'gray' | 'red' | 'forest';
     initials?: string | null;
     size?: 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
     src?: string | null;
-}
-export declare class Avatar extends ElementVComponent<Props> {
-    protected render(): any;
-    protected _vprops?: VProps;
+    iconClass?: string;
+    shape?: 'square' | 'circle';
+};
+export declare class Avatar extends Component<ExtendGlobalProps<Props>> {
+    static defaultProps: Props;
+    render(props: ExtendGlobalProps<Props>): ComponentChild;
+    private _getClasses;
+    private _getInnerContent;
+    private _getSecondaryInnerContent;
 }
 // Custom Element interfaces
 export interface AvatarElement extends JetElement<AvatarElementSettableProperties>, AvatarElementSettableProperties {
@@ -31,19 +30,25 @@ export interface AvatarElement extends JetElement<AvatarElementSettablePropertie
 }
 export namespace AvatarElement {
   // tslint:disable-next-line interface-over-type-literal
-  type backgroundChanged = JetElementCustomEvent<AvatarElement["background"]>;
+  type backgroundChanged = JetElementCustomEventStrict<AvatarElement["background"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type initialsChanged = JetElementCustomEvent<AvatarElement["initials"]>;
+  type iconClassChanged = JetElementCustomEventStrict<AvatarElement["iconClass"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type sizeChanged = JetElementCustomEvent<AvatarElement["size"]>;
+  type initialsChanged = JetElementCustomEventStrict<AvatarElement["initials"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type srcChanged = JetElementCustomEvent<AvatarElement["src"]>;
+  type shapeChanged = JetElementCustomEventStrict<AvatarElement["shape"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type sizeChanged = JetElementCustomEventStrict<AvatarElement["size"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type srcChanged = JetElementCustomEventStrict<AvatarElement["src"]>;
 }
 export interface AvatarElementEventMap extends HTMLElementEventMap {
-  'backgroundChanged': JetElementCustomEvent<AvatarElement["background"]>;
-  'initialsChanged': JetElementCustomEvent<AvatarElement["initials"]>;
-  'sizeChanged': JetElementCustomEvent<AvatarElement["size"]>;
-  'srcChanged': JetElementCustomEvent<AvatarElement["src"]>;
+  'backgroundChanged': JetElementCustomEventStrict<AvatarElement["background"]>;
+  'iconClassChanged': JetElementCustomEventStrict<AvatarElement["iconClass"]>;
+  'initialsChanged': JetElementCustomEventStrict<AvatarElement["initials"]>;
+  'shapeChanged': JetElementCustomEventStrict<AvatarElement["shape"]>;
+  'sizeChanged': JetElementCustomEventStrict<AvatarElement["size"]>;
+  'srcChanged': JetElementCustomEventStrict<AvatarElement["src"]>;
 }
 export interface AvatarElementSettableProperties extends JetSettableProperties {
   /**
@@ -51,9 +56,17 @@ export interface AvatarElementSettableProperties extends JetSettableProperties {
   */
   background?: Props['background'];
   /**
+  * The icon class to be displayed.
+  */
+  iconClass?: Props['iconClass'];
+  /**
   * Specifies the initials of the avatar.
   */
   initials?: Props['initials'];
+  /**
+  * Specifies the shape of the avatar.
+  */
+  shape?: Props['shape'];
   /**
   * Specifies the size of the avatar.
   */
@@ -69,25 +82,33 @@ export interface AvatarElementSettablePropertiesLenient extends Partial<AvatarEl
 export type ojAvatar = AvatarElement;
 export namespace ojAvatar {
   // tslint:disable-next-line interface-over-type-literal
-  type backgroundChanged = JetElementCustomEvent<ojAvatar["background"]>;
+  type backgroundChanged = JetElementCustomEventStrict<ojAvatar["background"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type initialsChanged = JetElementCustomEvent<ojAvatar["initials"]>;
+  type iconClassChanged = JetElementCustomEventStrict<ojAvatar["iconClass"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type sizeChanged = JetElementCustomEvent<ojAvatar["size"]>;
+  type initialsChanged = JetElementCustomEventStrict<ojAvatar["initials"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type srcChanged = JetElementCustomEvent<ojAvatar["src"]>;
+  type shapeChanged = JetElementCustomEventStrict<ojAvatar["shape"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type sizeChanged = JetElementCustomEventStrict<ojAvatar["size"]>;
+  // tslint:disable-next-line interface-over-type-literal
+  type srcChanged = JetElementCustomEventStrict<ojAvatar["src"]>;
 }
 export type ojAvatarEventMap = AvatarElementEventMap;
 export type ojAvatarSettableProperties = AvatarElementSettableProperties;
 export type ojAvatarSettablePropertiesLenient = AvatarElementSettablePropertiesLenient;
-export interface AvatarProperties extends Partial<AvatarElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface AvatarIntrinsicProps extends Partial<Readonly<AvatarElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  onbackgroundChanged?: (value: AvatarElementEventMap['backgroundChanged']) => void;
+  oniconClassChanged?: (value: AvatarElementEventMap['iconClassChanged']) => void;
+  oninitialsChanged?: (value: AvatarElementEventMap['initialsChanged']) => void;
+  onshapeChanged?: (value: AvatarElementEventMap['shapeChanged']) => void;
+  onsizeChanged?: (value: AvatarElementEventMap['sizeChanged']) => void;
+  onsrcChanged?: (value: AvatarElementEventMap['srcChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-avatar": AvatarProperties;
+      "oj-avatar": AvatarIntrinsicProps;
     }
   }
 }

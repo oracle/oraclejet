@@ -10,14 +10,6 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_treemap_metadata = 
 {
   "properties": {
@@ -53,7 +45,18 @@ var __oj_treemap_metadata =
       "value": ""
     },
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "displayLevels": {
       "type": "number",
@@ -88,6 +91,14 @@ var __oj_treemap_metadata =
         "any"
       ],
       "value": "all"
+    },
+    "highlightMode": {
+      "type": "string",
+      "enumValues": [
+        "categories",
+        "descendants"
+      ],
+      "value": "categories"
     },
     "highlightedCategories": {
       "type": "Array<string>",
@@ -519,7 +530,7 @@ var __oj_treemap_node_metadata =
       "value": "auto"
     },
     "shortDesc": {
-      "type": "string",
+      "type": "string|function",
       "value": ""
     },
     "svgClassName": {
@@ -545,13 +556,6 @@ var __oj_treemap_node_metadata =
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojTreemap
    * @augments oj.dvtBaseComponent
    * @since 0.7.0
@@ -571,7 +575,8 @@ var __oj_treemap_node_metadata =
    *               }
    *              ]
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["colorLabel", "sizeLabel", "nodeSeparators", "groupGaps", "nodeDefaults.groupLabelDisplay", "nodeDefaults.labelDisplay", "nodeDefaults.labelHalign", "nodeDefaults.labelValign", "layout", "sorting", "animationOnDataChange", "animationOnDisplay", "style"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["colorLabel", "sizeLabel", "nodeSeparators", "groupGaps", "nodeDefaults.groupLabelDisplay", "nodeDefaults.labelDisplay",
+   * "nodeDefaults.labelHalign", "nodeDefaults.labelValign", "layout", "sorting", "animationOnDataChange", "animationOnDisplay", "style"]}
    * @ojpropertylayout {propertyGroup: "data", items: ["data", "selection"]}
    * @ojvbdefaultcolumns 12
    * @ojvbmincolumns 6
@@ -656,7 +661,7 @@ var __oj_treemap_node_metadata =
          * @ojshortdesc Specifies the animation duration in milliseconds. For data change animations with multiple stages, the value specifies the duration of each stage.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {number}
+         * @type {number=}
          * @ojunits milliseconds
          */
         animationDuration: undefined,
@@ -667,7 +672,7 @@ var __oj_treemap_node_metadata =
          * @name animationOnDataChange
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -680,7 +685,7 @@ var __oj_treemap_node_metadata =
          * @name animationOnDisplay
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "auto"
          * @ojvalue {string} "none"
          * @default "none"
@@ -694,7 +699,7 @@ var __oj_treemap_node_metadata =
          * @ojshortdesc Specifies the color displayed during a data change animation when a node is updated.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojformat color
          * @default ""
          */
@@ -707,7 +712,7 @@ var __oj_treemap_node_metadata =
          * @ojshortdesc An alias for the '$current' context variable passed to slot content for the nodeTemplate slot.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @default ""
          * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
          */
@@ -717,7 +722,8 @@ var __oj_treemap_node_metadata =
          * The DataProvider for the nodes of the treemap. It should provide a data tree where each node in the data tree corresponds to a node in the treemap.
          * The row key will be used as the id for treemap nodes. Note that when
          * using this attribute, a template for the <a href="#nodeTemplate">nodeTemplate</a> slot should be provided.
-         * The DataProvider can either have an arbitrary data shape, in which case an <oj-treemap-node> element must be specified in the nodeTemplate slot or it can have [oj.oj.ojTreemap.Node]{@link oj.ojTreemap#Node} as its data shape, in which case no template is required.
+         * The DataProvider can either have an arbitrary data shape, in which case an <oj-treemap-node> element must be specified in the nodeTemplate slot or
+         * it can have [oj.oj.ojTreemap.Node]{@link oj.ojTreemap.Node} as its data shape, in which case no template is required.
          * @expose
          * @name data
          * @ojshortdesc Specifies the DataProvider for the treemap. See the Help documentation for more information.
@@ -726,6 +732,8 @@ var __oj_treemap_node_metadata =
          * @type {Object|null}
          * @ojsignature {target: "Type", value: "DataProvider<K, D>|null"}
          * @default null
+         * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+         *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
          *
          * @example <caption>Initialize the treemap with the
          * <code class="prettyprint">data</code> attribute specified:</caption>
@@ -747,7 +755,7 @@ var __oj_treemap_node_metadata =
          * @name hiddenCategories
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Array.<string>}
+         * @type {Array.<string>=}
          * @default []
          * @ojwriteback
          */
@@ -759,20 +767,21 @@ var __oj_treemap_node_metadata =
          * @name highlightedCategories
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Array.<string>}
+         * @type {Array.<string>=}
          * @default []
          * @ojwriteback
          */
         highlightedCategories: [],
 
         /**
-         * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+         * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the
+         * highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
          * @expose
          * @name highlightMatch
          * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "any"
          * @ojvalue {string} "all"
          * @default "all"
@@ -780,12 +789,29 @@ var __oj_treemap_node_metadata =
         highlightMatch: 'all',
 
         /**
+         * Controls which nodes are highlighted when hoverBehavior is set to 'dim'.
+         * If highlight-mode is set to 'categories', nodes with the same category as the hovered node will be highlighted.
+         * If highlight-mode is set to 'descendants', descendants of the hovered node will be highlighted; the highlighted-categories attribute will also be ignored in this case.
+         * If hover-behavior is set to 'none', highlighting can only be done by setting highlight-mode to 'categories' and populating the highlighted-categories attribute
+         * @expose
+         * @name highlightMode
+         * @ojshortdesc Specifies whether the highlight-mode should be by category or descendants.
+         * @memberof oj.ojTreemap
+         * @instance
+         * @type {string=}
+         * @ojvalue {string} "categories"
+         * @ojvalue {string} "descendants"
+         * @default "categories"
+         */
+        highlightMode: 'categories',
+
+        /**
          * Defines the behavior applied when hovering over the nodes.
          * @expose
          * @name hoverBehavior
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "dim"
          * @ojvalue {string} "none"
          * @default "none"
@@ -798,7 +824,7 @@ var __oj_treemap_node_metadata =
          * @name hoverBehaviorDelay
          * @memberof oj.ojTreemap
          * @instance
-         * @type {number}
+         * @type {number=}
          * @default 200
          * @ojunits milliseconds
          */
@@ -810,7 +836,7 @@ var __oj_treemap_node_metadata =
          * @name nodeContent
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Object}
+         * @type {Object=}
          */
         nodeContent: {
           /**
@@ -825,7 +851,8 @@ var __oj_treemap_node_metadata =
            *
            * @expose
            * @name nodeContent.renderer
-           * @ojshortdesc A function that returns custom node content. The function takes a context argument, provided by the treemap. See the Help documentation for more information.
+           * @ojshortdesc A function that returns custom node content. The function takes a context argument, provided by the treemap.
+           * See the Help documentation for more information.
            * @memberof! oj.ojTreemap
            * @instance
            * @type {function(Object):Object|null}
@@ -841,7 +868,7 @@ var __oj_treemap_node_metadata =
          * @name tooltip
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Object}
+         * @type {Object=}
          */
         tooltip: {
           /**
@@ -849,7 +876,9 @@ var __oj_treemap_node_metadata =
            * provided by the treemap. The function should return an Object that contains only one of the two properties:
            * <ul>
            *   <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
-           *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+           *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip,
+           *       since this is a default behavior.
+           *   </li>
            * </ul>
            *
            * @expose
@@ -870,7 +899,7 @@ var __oj_treemap_node_metadata =
          * @name groupGaps
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "all"
          * @ojvalue {string} "none"
          * @ojvalue {string} "outer"
@@ -884,19 +913,20 @@ var __oj_treemap_node_metadata =
          * @name displayLevels
          * @memberof oj.ojTreemap
          * @instance
-         * @type {number}
+         * @type {number=}
          * @default Number.MAX_VALUE
          */
         displayLevels: Number.MAX_VALUE,
 
         /**
-         * Specifies the layout of the treemap. The squarified layout results in nodes that are as square as possible, for easier comparison of node sizes. The sliceAndDice layouts are useful for animation, as the ordering of the data is maintained. SliceAndDice layouts are also useful for small form factor treemaps.
+         * Specifies the layout of the treemap. The squarified layout results in nodes that are as square as possible, for easier comparison of node sizes.
+         * The sliceAndDice layouts are useful for animation, as the ordering of the data is maintained. SliceAndDice layouts are also useful for small form factor treemaps.
          * @expose
          * @name layout
          * @ojshortdesc Specifies the layout of the treemap. See the Help documentation for more information.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "sliceAndDiceHorizontal"
          * @ojvalue {string} "sliceAndDiceVertical"
          * @ojvalue {string} "squarified"
@@ -905,14 +935,15 @@ var __oj_treemap_node_metadata =
         layout: 'squarified',
 
         /**
-         * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.
+         * An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering.
+         * No data will be rendered if the Promise is rejected.
          * @expose
          * @ojtsignore
          * @name nodes
          * @ojshortdesc An array of objects defining the data for the nodes. Also accepts a Promise for deferred data rendering.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Array.<Object>|Promise|null}
+         * @type {(Array.<Object>|Promise|null)=}
          * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojTreemap.Node<K>>>|null",
          *                                           SetterType: "Array<oj.ojTreemap.Node<K>>|Promise<Array<oj.ojTreemap.Node<K>>>|null"},
          *                                           jsdocOverride: true}
@@ -929,7 +960,7 @@ var __oj_treemap_node_metadata =
          * @ojshortdesc An object defining default properties for the nodes. See the Help documentation for more information.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Object}
+         * @type {Object=}
          */
         nodeDefaults: {
           /**
@@ -941,7 +972,7 @@ var __oj_treemap_node_metadata =
            * @ojshortdesc The CSS style object defining the style of the label. See the Help documentation for more information.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {Object}
+           * @type {Object=}
            * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
            */
           labelStyle: undefined,
@@ -952,7 +983,7 @@ var __oj_treemap_node_metadata =
            * @name nodeDefaults.labelDisplay
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "off"
            * @ojvalue {string} "node"
            * @default "node"
@@ -965,7 +996,7 @@ var __oj_treemap_node_metadata =
            * @name nodeDefaults.groupLabelDisplay
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "node"
            * @ojvalue {string} "off"
            * @ojvalue {string} "header"
@@ -979,7 +1010,7 @@ var __oj_treemap_node_metadata =
            * @name nodeDefaults.labelHalign
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "start"
            * @ojvalue {string} "end"
            * @ojvalue {string} "center"
@@ -988,13 +1019,14 @@ var __oj_treemap_node_metadata =
           labelHalign: 'center',
 
           /**
-           * The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.
+           * The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the
+           * truncated label then the label is not displayed.
            * @expose
            * @name nodeDefaults.labelMinLength
            * @ojshortdesc The minimum number of visible characters needed to render a truncated label. See the Help documentation for more information.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {number}
+           * @type {number=}
            * @default 1
            * @ojunits pixels
            */
@@ -1006,7 +1038,7 @@ var __oj_treemap_node_metadata =
            * @name nodeDefaults.labelValign
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojvalue {string} "top"
            * @ojvalue {string} "bottom"
            * @ojvalue {string} "center"
@@ -1021,7 +1053,7 @@ var __oj_treemap_node_metadata =
            * @ojshortdesc The color of the node hover feedback.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojformat color
            */
           hoverColor: undefined,
@@ -1033,7 +1065,7 @@ var __oj_treemap_node_metadata =
            * @ojshortdesc The inner color of the node selection feedback.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojformat color
            */
           selectedInnerColor: undefined,
@@ -1045,7 +1077,7 @@ var __oj_treemap_node_metadata =
            * @ojshortdesc The outer color of the node selection feedback.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {string}
+           * @type {string=}
            * @ojformat color
            */
           selectedOuterColor: undefined,
@@ -1058,7 +1090,7 @@ var __oj_treemap_node_metadata =
            * @ojshortdesc An object defining default properties for the node header. See the Help documentation for more information.
            * @memberof! oj.ojTreemap
            * @instance
-           * @type {Object}
+           * @type {Object=}
            */
           header: {
             /**
@@ -1068,7 +1100,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The background color of the node headers.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             backgroundColor: undefined,
@@ -1080,7 +1112,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The border color of the node headers.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             borderColor: undefined,
@@ -1092,7 +1124,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The background color of the node hover feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             hoverBackgroundColor: undefined,
@@ -1104,7 +1136,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The inner color of the node hover feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             hoverInnerColor: undefined,
@@ -1115,7 +1147,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The outer color of the node hover feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             hoverOuterColor: undefined,
@@ -1127,7 +1159,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The background color of the node selection feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             selectedBackgroundColor: undefined,
@@ -1139,7 +1171,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The inner color of the node selection feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             selectedInnerColor: undefined,
@@ -1151,7 +1183,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The outer color of the node selection feedback.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojformat color
              */
             selectedOuterColor: undefined,
@@ -1162,7 +1194,7 @@ var __oj_treemap_node_metadata =
              * @name nodeDefaults.header.labelHalign
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "center"
              * @ojvalue {string} "end"
              * @ojvalue {string} "start"
@@ -1179,7 +1211,7 @@ var __oj_treemap_node_metadata =
              * @ojshortdesc The CSS style string defining the style of the header title.
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {Object}
+             * @type {Object=}
              * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
              */
             labelStyle: undefined,
@@ -1190,7 +1222,7 @@ var __oj_treemap_node_metadata =
              * @name nodeDefaults.header.isolate
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "off"
              * @ojvalue {string} "on"
              * @default "on"
@@ -1203,7 +1235,7 @@ var __oj_treemap_node_metadata =
              * @name nodeDefaults.header.useNodeColor
              * @memberof! oj.ojTreemap
              * @instance
-             * @type {string}
+             * @type {string=}
              * @ojvalue {string} "on"
              * @ojvalue {string} "off"
              * @default "off"
@@ -1218,7 +1250,7 @@ var __oj_treemap_node_metadata =
          * @name nodeSeparators
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "bevels"
          * @ojvalue {string} "gaps"
          * @default "gaps"
@@ -1226,10 +1258,13 @@ var __oj_treemap_node_metadata =
         nodeSeparators: 'gaps',
 
         /**
-         * <p>The type of selection behavior that is enabled on the treemap. This attribute controls the number of selections that can be made via selection gestures at any given time.
+         * <p>The type of selection behavior that is enabled on the treemap. This attribute controls the number of selections that can be made via selection gestures at any given
+         * time.
          *
-         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the treemap's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-         * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the treemap's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+         * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the treemap's selection
+         * styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+         * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the treemap's selection styling will not be applied to any items specified
+         * by the <a href="#selection">selection</a> attribute.
          *
          * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
          *
@@ -1238,7 +1273,7 @@ var __oj_treemap_node_metadata =
          * @memberof oj.ojTreemap
          * @ojshortdesc Specifies the selection behavior on the treemap. See the Help documentation for more information.
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "none" Selection is disabled.
          * @ojvalue {string} "single" Only a single item can be selected at a time.
          * @ojvalue {string} "multiple" Multiple items can be selected at the same time.
@@ -1253,7 +1288,7 @@ var __oj_treemap_node_metadata =
          * @ojshortdesc Specifies whether the nodes are sorted by size. Nodes with the same parent are sorted in order of descending size.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "on"
          * @ojvalue {string} "off"
          * @default "off"
@@ -1268,7 +1303,7 @@ var __oj_treemap_node_metadata =
          * @ojtranslatable
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @default ""
          */
         colorLabel: '',
@@ -1281,20 +1316,23 @@ var __oj_treemap_node_metadata =
          * @ojtranslatable
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @default ""
          */
         sizeLabel: '',
 
         /**
          * Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire an
-         * <code class="prettyprint">ojBeforeDrill</code> and <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Drilling on a node causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use "on" to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.
+         * <code class="prettyprint">ojBeforeDrill</code> and <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Drilling on a node
+         * causes a property change to the rootNode attribute. The displayLevels attribute can be used in conjunction with drilling to display very deep hieracrchies. Use "on"
+         * to enable drilling for all nodes. To enable or disable drilling on individual nodes use the drilling attribute in each node.
          * @expose
          * @name drilling
-         * @ojshortdesc Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire ojBeforeDrill and ojDrill events on click (double click if selection is enabled). See the Help documentation for more information.
+         * @ojshortdesc Specifies whether drilling is enabled. Drillable nodes will show a pointer cursor on hover and fire ojBeforeDrill and ojDrill events on click (double click
+         * if selection is enabled). See the Help documentation for more information.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "on"
          * @ojvalue {string} "off"
          * @default "off"
@@ -1307,7 +1345,7 @@ var __oj_treemap_node_metadata =
          * @name rootNode
          * @memberof oj.ojTreemap
          * @instance
-         * @type {any}
+         * @type {any=}
          * @default ""
          */
         rootNode: '',
@@ -1318,7 +1356,7 @@ var __oj_treemap_node_metadata =
          * @name selection
          * @memberof oj.ojTreemap
          * @instance
-         * @type {Array.<any>}
+         * @type {Array.<any>=}
          * @default []
          * @ojwriteback
          * @ojeventgroup common
@@ -1331,22 +1369,25 @@ var __oj_treemap_node_metadata =
          * @name isolatedNode
          * @memberof oj.ojTreemap
          * @instance
-         * @type {any}
+         * @type {any=}
          * @default ""
          * @ojwriteback
          */
         isolatedNode: '',
 
         /**
-         * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive.
-         * For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning.
-         * If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+         * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning,
+         * but these hold delays can make applications seem slower and less responsive.
+         * For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if
+         * there is sufficient space outside of the visualization for panning.
+         * If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events. If touchResponse is auto, the element will behave
+         *  like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
          * @expose
          * @name touchResponse
          * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
          * @memberof oj.ojTreemap
          * @instance
-         * @type {string}
+         * @type {string=}
          * @ojvalue {string} "touchStart"
          * @ojvalue {string} "auto"
          * @default "auto"
@@ -1389,26 +1430,24 @@ var __oj_treemap_node_metadata =
         drill: null,
       },
 
-      //* * @inheritdoc */
+
       _CreateDvtComponent: function (context, callback, callbackObj) {
         return ojdvtTreeview.Treemap.newInstance(context, callback, callbackObj);
       },
 
-      //* * @inheritdoc */
+
       _GetSimpleDataProviderConfigs: function () {
         return {
           data: {
             templateName: 'nodeTemplate',
             templateElementName: 'oj-treemap-node',
             resultPath: 'nodes',
-            // TODO:  - allow lazy loading of data from tree data provider
-            // if these become dynamic see example in ojsunburst
             expandedKeySet: new ojkeyset.AllKeySetImpl()
           }
         };
       },
 
-      //* * @inheritdoc */
+
       _OptionChangeHandler: function (options) {
         // If there is a change in the expanded property, the data provider state needs to be cleared
         if (Object.prototype.hasOwnProperty.call(options, 'displayLevels')) {
@@ -1417,7 +1456,7 @@ var __oj_treemap_node_metadata =
         this._super(options);
       },
 
-      //* * @inheritdoc */
+
       _ConvertLocatorToSubId: function (locator) {
         var subId = locator.subId;
 
@@ -1434,7 +1473,7 @@ var __oj_treemap_node_metadata =
         return subId;
       },
 
-      //* * @inheritdoc */
+
       _ConvertSubIdToLocator: function (subId) {
         var locator = {};
         if (subId.indexOf('node') === 0) {
@@ -1447,14 +1486,14 @@ var __oj_treemap_node_metadata =
         return locator;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses.push('oj-treemap');
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetChildStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses['oj-dvtbase oj-treemap'] =
@@ -1495,12 +1534,12 @@ var __oj_treemap_node_metadata =
         return styleClasses;
       },
 
-      //* * @inheritdoc */
+
       _GetEventTypes: function () {
         return ['optionChange', 'drill', 'beforeDrill'];
       },
 
-      //* * @inheritdoc */
+
       _HandleEvent: function (event) {
         var type = event.type;
         if (type === 'isolate') {
@@ -1549,13 +1588,13 @@ var __oj_treemap_node_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _GetComponentRendererOptions: function () {
         return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
                 { path: 'nodeContent/renderer', slot: 'nodeContentTemplate' }];
       },
 
-      //* * @inheritdoc */
+
       _ProcessOptions: function () {
         this._super();
         var nodeContent = this.options.nodeContent;
@@ -1564,7 +1603,7 @@ var __oj_treemap_node_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       _LoadResources: function () {
         // Ensure the resources object exists
         if (this.options._resources == null) {
@@ -1618,19 +1657,12 @@ var __oj_treemap_node_metadata =
         return null;
       },
 
-      //* * @inheritdoc */
+
       _GetComponentDeferredDataPaths: function () {
         return { root: ['nodes', 'data'] };
       }
     });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * <table class="keyboard-table">
    *   <thead>
@@ -1770,34 +1802,41 @@ var __oj_treemap_node_metadata =
 
   /**
    * @typedef {Object} oj.ojTreemap.Node
-   * @property {Array.<string>=} categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.
+   * @property {Array.<string>=} categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data
+   * items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of
+   * its parent node. If not specified, the ids of the node and its ancestors will be used.
    * @property {string=} color The fill color of the node.
-   * @property {"inherit"|"off"|"on"} [drilling="inherit"] Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
+   * @property {"inherit"|"off"|"on"} [drilling="inherit"] Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an
+   * ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
    * @property {string=} groupLabelDisplay The label display behavior for group nodes.
    * @property {Object=} header An object defining the properties for the node header.
    * @property {"off"|"on"} [header.isolate="on"] Specifies whether isolate behavior is enabled on the node.
    * @property {"center"|"end"|"start"} [header.labelHalign="start"] The horizontal alignment of the header title.
-   * @property {Object=} header.labelStyle The CSS style object defining the style of the header title. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * @property {Object=} header.labelStyle The CSS style object defining the style of the header title. The following style properties are supported: color, cursor, fontFamily,
+   * fontSize, fontStyle, fontWeight, textDecoration.
    * @property {"off"|"on"} [header.useNodeColor="off"] Specifies whether the node color should be displayed in the header.
    * @property {any=} id The id of the node. For the DataProvider case, the key for the node will be used as the id.
    * @property {string=} label The label for this node.
    * @property {"node"|"off"} [labelDisplay="node"] The label display behavior for leaf nodes.
    * @property {"center"|"end"|"start"} [labelHalign="center"] The horizontal alignment for labels displayed within the node.
-   * @property {Object=} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
+   * @property {Object=} labelStyle The CSS style object defining the style of the label. The following style properties are supported: color, cursor, fontFamily, fontSize,
+   * fontStyle, fontWeight, textDecoration.
    * @property {"bottom"|"center"|"top"} [labelValign="center"] The vertical alignment for labels displayed within the node.
    * @property {Array.<Object>=} nodes An array of objects with properties for the child nodes.
-   * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the node.
+   * @property {"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"
+   * |"smallDiagonalRight"|"smallDiamond"|"smallTriangle"} [pattern="none"] The pattern used to fill the node.
    * @property {"auto"|"off"} [selectable="auto"] Specifies whether or not the node will be selectable.
-   * @property {string=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
+   * @property {(string|function)=} shortDesc The description of this element. Will be lazily created if a function is used.  This is used for accessibility and also for customizing the tooltip text.
    * @property {string=} svgClassName The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
    * @property {Object=} svgStyle The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute. Only SVG CSS style properties are supported.
-   * @property {number=} value The value of the node, which determines the relative size of the node.
+   * @property {number} value The value of the node, which determines the relative size of the node.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "Array.<oj.ojTreemap.Node<K>>=", for: "nodes"},
    *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "CSSStyleDeclaration", for: "header.labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
-   *               {target: "Type", value: "<K>", for: "genericTypeParameters"}] */
+   *               {target: "Type", value: "?(string | ((context: oj.ojTreemap.NodeShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
+   *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}] */
 
    /**
    * @typedef {Object} oj.ojTreemap.NodeContentContext
@@ -1830,6 +1869,19 @@ var __oj_treemap_node_metadata =
    *               {target: "Type", value: "ojTreemap.Node<K>", for: "data"},
    *               {target: "Type", value: "D", for: "itemData"},
    *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
+   */
+
+   /**
+   * @typedef {Object} oj.ojTreemap.NodeShortDescContext
+   * @property {any} id The id of the hovered node.
+   * @property {string} label The label of the hovered node.
+   * @property {number} value The value of the hovered node.
+   * @property {Object} data The data object of the hovered node.
+   * @property {Object} itemData The row data object for the hovered node. This will only be set if a DataProvider is being used.
+   * @ojsignature [{target: "Type", value: "K", for: "id"},
+   *               {target: "Type", value: "ojTreemap.Node<K>", for:"data"},
+   *               {target: "Type", value: "D", for: "itemData"},
+   *               {target: "Type", value: "<K,D>", for: "genericTypeParameters"}]
    */
 
    // METHOD TYPEDEFS
@@ -1902,7 +1954,9 @@ var __oj_treemap_node_metadata =
    * for leaf nodes of a treemap. The slot content must be a single &lt;template> element. This slot takes precedence over the nodeContent.renderer property if specified.
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
    * <ul>
-   *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.NodeContentContext]{@link oj.ojTreemap.NodeContentContext} or the table below for a list of properties available on $current) </li>
+   *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.NodeContentContext]{@link oj.ojTreemap.NodeContentContext} or the table below for
+   *       a list of properties available on $current)
+   *   </li>
    * </ul>
    *
    *
@@ -1931,7 +1985,9 @@ var __oj_treemap_node_metadata =
    * This slot takes precedence over the tooltip.renderer property if specified.
    * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
    * <ul>
-   *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.TooltipContext]{@link oj.ojTreemap.TooltipContext} or the table below for a list of properties available on $current) </li>
+   *   <li>$current - an object that contains information for the current node. (See [oj.ojTreemap.TooltipContext]{@link oj.ojTreemap.TooltipContext} or the table below for a list
+   *      of properties available on $current)
+   *   </li>
    * </ul>
    *
    *
@@ -1990,16 +2046,19 @@ var __oj_treemap_node_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojcomponent oj.ojTreemapNode
    * @ojshortdesc The oj-treemap-node element is used to declare properties for treemap nodes. See the Help documentation for more information.
-   * @ojsignature {target: "Type", value:"class ojTreemapNode extends JetElement<ojTreemapNodeSettableProperties>"}
+    * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojTreemapNode<K=any, D=any> extends dvtBaseComponent<ojTreemapNodeSettableProperties<K, D>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojTreemapNodeSettableProperties<K=any, D=any> extends dvtBaseComponentSettableProperties",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
    * @ojslotcomponent
    * @ojsubcomponenttype data
    * @since 6.0.0
@@ -2013,7 +2072,7 @@ var __oj_treemap_node_metadata =
    *
    * <p>
    *  The oj-treemap-node element is used to declare properties for treemap nodes and is only valid as the
-   *  child of a template element for the [nodeTemplate]{@link oj.ojTreemapNode#nodeTemplate}
+   *  child of a template element for the [nodeTemplate]{@link oj.ojTreemap#nodeTemplate}
    *  slot of oj-treemap.
    * </p>
    *
@@ -2030,7 +2089,9 @@ var __oj_treemap_node_metadata =
    */
 
   /**
-   * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.
+   * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and
+   * other visualization elements.The categories array of each node is required to be a superset of the categories array of its parent node.
+   * If not specified, the ids of the node and its ancestors will be used.
    * @expose
    * @name categories
    * @ojshortdesc An optional array of category strings corresponding to this data item. See the Help documentation for more information.
@@ -2058,7 +2119,8 @@ var __oj_treemap_node_metadata =
    * @default "#000000"
    */
   /**
-   * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+   * The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties.
+   * For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
    * @expose
    * @name svgClassName
    * @ojshortdesc The CSS style class to apply to the node. See the Help documentation for more information.
@@ -2068,7 +2130,8 @@ var __oj_treemap_node_metadata =
    * @default ""
    */
   /**
-   * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
+   * The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties.
+   * For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.
    * Only SVG CSS style properties are supported.
    * @expose
    * @name svgStyle
@@ -2089,7 +2152,8 @@ var __oj_treemap_node_metadata =
    * @default ""
    */
   /**
-   * Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
+   * Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code>
+   * event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.
    * @expose
    * @name drilling
    * @ojshortdesc Specifies whether drilling is enabled for the node. See the Help documentation for more information.
@@ -2102,13 +2166,14 @@ var __oj_treemap_node_metadata =
    * @default "inherit"
    */
   /**
-   * The description of this node. This is used for accessibility and also for customizing the tooltip text.
+   * The description of this node. Will be lazily created if a function is used.  This is used for accessibility and also for customizing the tooltip text.
    * @expose
    * @name shortDesc
    * @memberof! oj.ojTreemapNode
    * @instance
-   * @type {string=}
+   * @type {(string|function)=}
    * @default ""
+   * @ojsignature [{target: "Type", value: "?(string | ((context: oj.ojTreemap.NodeShortDescContext<K,D>) => string))", jsdocOverride: true}]
    */
   /**
    * The pattern used to fill the node.
@@ -2248,5 +2313,28 @@ var __oj_treemap_node_metadata =
    * @ojvalue {string} "on"
    * @ojvalue {string} "off"
    */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+   * @ojstylevariableset oj-tree-map-node-css-set1
+   * @ojstylevariable oj-treemap-node-header-bg-color {description: "Treemap node header background color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-treemap-node-header-border-color {description: "Treemap node header border color", formats: ["color"], help: "#css-variables"}
+   * @memberof! oj.ojTreemapNode
+  */
+  /**
+   * @ojstylevariableset oj-tree-map-node-css-set2
+   * @ojdisplayname Selected
+   * @ojstylevariable oj-treemap-node-header-bg-color-selected {description: "Treemap node header background color when selected", formats: ["color"], help: "#oj-tree-map-node-css-set2"}
+
+   * @memberof! oj.ojTreemapNode
+  */
+  /**
+   * @ojstylevariableset oj-tree-map-node-css-set3
+   * @ojdisplayname Hovered
+   * @ojstylevariable oj-treemap-node-header-border-color-hover {description: "Treemap node header border color when hovered", formats: ["color"], help: "#oj-tree-map-node-css-set3"}
+   * @memberof! oj.ojTreemapNode
+  */
 
 });

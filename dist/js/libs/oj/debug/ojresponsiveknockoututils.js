@@ -11,14 +11,6 @@ define(['exports', 'ojs/ojcore-base', 'knockout', 'jquery', 'ojs/ojresponsiveuti
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace oj.ResponsiveKnockoutUtils
    * @classdesc Utilities for creating knockout observables to implement responsive pages.
    * For example you could use oj.ResponsiveKnockoutUtils.createMediaQueryObservable to
@@ -38,7 +30,7 @@ define(['exports', 'ojs/ojcore-base', 'knockout', 'jquery', 'ojs/ojresponsiveuti
   /**
    * <p>creates an observable that
    * returns true or false based on a media query string.
-   * Can be used in conjuntion with {@link oj.ResponsiveUtils.getFrameworkQuery}
+   * Can be used in conjuntion with {@link ResponsiveUtils.getFrameworkQuery}
    * to create an observable based on a framework media query.</p>
    *
    * <p>Example:</p>
@@ -74,7 +66,6 @@ define(['exports', 'ojs/ojcore-base', 'knockout', 'jquery', 'ojs/ojresponsiveuti
     // add a listener for future changes
     query.addListener(function (_query) {
       observable(_query.matches);
-      // console.log("query listener called! query.matches = " + query.matches + ", size = " + (document.outerWidth || document.body.clientWidth));
     });
 
 
@@ -95,8 +86,6 @@ define(['exports', 'ojs/ojcore-base', 'knockout', 'jquery', 'ojs/ojresponsiveuti
     if (navigator.userAgent.indexOf('WebKit') !== -1 &&
         navigator.userAgent.indexOf('Chrome') === -1) {
       $(window).resize(function () {
-        // console.log("Resize called! Size = " + (document.outerWidth || document.body.clientWidth));
-
         // Somehow if I change some text in the dom on resize
         // the query listener is called
         var selector = 'oj-webkit-bug-123293';
@@ -121,7 +110,7 @@ define(['exports', 'ojs/ojcore-base', 'knockout', 'jquery', 'ojs/ojresponsiveuti
 
   /**
    * This function creates a computed observable, the
-   * value of which is one of the {@link oj.ResponsiveUtils.SCREEN_RANGE} constants.
+   * value of which is one of the {@link ResponsiveUtils.SCREEN_RANGE} constants.
    * For example when the width is in the
    * range defined by the sass variable $mediumScreenRange then
    * the observable returns <code>oj.ResponsiveUtils.SCREEN_RANGE.MD</code>,

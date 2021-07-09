@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports, dvt, Translations) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * NBox Constants
    * @class
    */
@@ -359,14 +351,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   NBoxConstants.WIDTH = 'width';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Utility functions for NBox.
    * @class
    */
@@ -512,14 +496,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       return index == null ? null : displayables[index];
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Data related utility functions for NBox.
@@ -1251,9 +1227,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
    * @param {DvtNBoxNode|DvtNBoxCategoryNode|DvtNBoxDrawer} object an object that need a description
    * @param {string} datatip a datatip to use as part of description
    * @param {boolean} selected true if the object is selected
+   * @param {function} context shortDesc Context object
    * @return {string} aria-label description for the object
    */
-  DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected) {
+   DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected, context) {
     var translations = nbox.getOptions().translations;
     var baseDesc = (object.nboxType === 'categoryNode' || object.nboxType === 'drawer') ?
         dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelGroup, datatip]) :
@@ -1277,7 +1254,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       states.push(dvt.ResourceUtils.format(translations.labelAndValue, [translations.labelSize, nodeCount]));
     }
 
-    return dvt.Displayable.generateAriaLabel(baseDesc, states);
+    return dvt.Displayable.generateAriaLabel(baseDesc, states, context);
   };
 
   /**
@@ -1453,14 +1430,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Keyboard handler for the NBox component
    * @param {dvt.EventManager} manager The owning dvt.EventManager
    * @param {NBox} nbox The owning NBox component
@@ -1600,14 +1569,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     }
     return next;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for NBox.
@@ -2352,14 +2313,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Animation handler for NBox
    * @param {dvt.Context} context the platform specific context object
    * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
@@ -2422,14 +2375,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
     return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtNBoxNode.
@@ -3539,14 +3484,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * An NBox node.
    * @param {NBox} nbox the parent nbox
    * @param {object} data the data for this node
@@ -3845,6 +3782,29 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
+   * @override
+   */
+   DvtNBoxNode.prototype.getAriaLabel = function() {
+    return DvtNBoxDataUtils.buildAriaDesc(this._nbox, this, this.getShortDesc(), this.isSelected(), () => DvtNBoxNode.getShortDescContext(this));
+  };
+
+  /**
+   * Returns the shortDesc Context of the node.
+   * @param {DvtNBoxNode} node
+   * @return {object} The shortDesc Context object
+   */
+   DvtNBoxNode.getShortDescContext = function(node) {
+    var data = node.getData();
+    return {
+      'id': data['id'],
+      'label': data['label'],
+      'secondaryLabel': data['secondaryLabel'],
+      'row': data['row'],
+      'column': data['column']
+    };
+  };
+
+  /**
    * Gets the highlight/filter categories for this node.
    * @return {array} categories
    */
@@ -4038,14 +3998,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   DvtNBoxNode.prototype.setChildContainer = function(container) {
     this._childContainer = container;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtNBoxCell.
@@ -4865,14 +4817,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     return null;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   var DvtNBoxCell = function() {};
 
   dvt.Obj.createSubclass(DvtNBoxCell, dvt.Container);
@@ -5342,14 +5286,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Renderer for DvtNBoxCategoryNode.
    * @class
    */
@@ -5690,14 +5626,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
         object.setAriaProperty(NBoxConstants.LABEL, desc);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for DvtNBoxDrawer.
@@ -6122,14 +6050,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     }
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   var DvtNBoxDrawer = function() {};
 
   dvt.Obj.createSubclass(DvtNBoxDrawer, dvt.Container);
@@ -6394,14 +6314,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     return null;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   var DvtNBoxNodeOverflow = function() {};
 
   dvt.Obj.createSubclass(DvtNBoxNodeOverflow, dvt.Container);
@@ -6640,14 +6552,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     var newPrevNode = DvtNBoxUtils.getDisplayable(this._nbox, newPrevNodeData);
     return newPrevNode.nextNavigable;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    *  Provides automation services for a DVT nBox component.
@@ -7448,14 +7352,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -7581,14 +7477,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Category rollover handler for NBox
    * @param {function} callback A function that responds to component events.
    * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -7632,14 +7520,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
     };
     return callback.bind(this);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Event Manager for NBox.
@@ -7774,14 +7654,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
     return dvt.EventManager.TOUCH_RESPONSE_AUTO;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   var DvtNBoxCategoryNode = function() {};
 
@@ -8261,14 +8133,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
   };
 
   /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Vector math utilities.
    * @class DvtVectorUtils
    */
@@ -8328,14 +8192,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
       return Math.sqrt(v.x * v.x + v.y * v.y);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for NBox.
@@ -9391,14 +9247,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtranslation'], function (exports,
         new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
         nbox.getEventManager(), options['_statusMessageStyle']);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * NBox component.  This nbox should never be instantiated directly.  Use the

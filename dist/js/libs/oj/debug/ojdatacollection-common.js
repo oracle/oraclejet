@@ -11,14 +11,6 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * This class contains utility methods used by the data collection components (DataGrid, Listview, and Table).
    * @private
    */
@@ -38,6 +30,11 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @private
    */
   DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY = "input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex='-1'])";
+
+  /**
+   * @private
+   */
+  DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG = ['input', 'select', 'button', 'a', 'textarea', 'object'];
 
   /**
    * Number of times checkViewport occured during initial fetch before log a warning
@@ -138,7 +135,17 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   };
 
   /**
-   * Finds all the focusable elements in a node including ones with tabmod on them (disbaled by us)
+   * Helper method to check if click target is selector
+   * @param {Event} event
+   * @return {boolean} boolean if the click event target is selector
+   * @private
+   */
+  DataCollectionUtils.isFromDefaultSelector = function (event) {
+    return event.target.classList.contains('oj-selectorbox');
+  };
+
+  /**
+   * Finds all the focusable elements in a node including ones with tabmod on them (disabled by us)
    * @param {Element} element
    * @return {Element[]} An array of the enabled elements
    * @private
@@ -153,6 +160,26 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
       }
     }
     return inputElems;
+  };
+
+  /**
+   * Checks if the element is focusable or is contained inside a focusable element
+   * @param {Element|undefined|null} element
+   * @param {function=} stopCondition
+   */
+  DataCollectionUtils.isElementOrAncestorFocusable = function (element, stopCondition) {
+    if (element == null || (stopCondition && stopCondition(element))) {
+      return false;
+    } else if (element.hasAttribute(DataCollectionUtils._DATA_OJ_TABMOD)) {
+      return true;
+    } else if (parseInt(element.getAttribute(DataCollectionUtils._TAB_INDEX), 10) >= 0) {
+      return true;
+    } else if (DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG.indexOf(element.tagName.toLowerCase())
+      > -1) {
+      return true;
+    }
+
+    return DataCollectionUtils.isElementOrAncestorFocusable(element.parentElement, stopCondition);
   };
 
   /**
@@ -337,15 +364,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   };
 
   DataCollectionUtils.getNoJQFocusHandlers = function (focusIn, focusOut) {
-    var noJQFocusInHandler = function (element) {
-      return focusIn($(element));
-    };
-
-    var noJQFocusOutHandler = function (element) {
-      return focusOut($(element));
-    };
-
-    return { focusIn: noJQFocusInHandler, focusOut: noJQFocusOutHandler };
+    return DomUtils.getNoJQFocusHandlers(focusIn, focusOut);
   };
 
   /** ******************* selected KeySet related methods *****************/
@@ -422,7 +441,12 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
     _ESCAPE_IE: 'Esc',
     _ESCAPE_CODE: 27,
     _F2: 'F2',
-    _F2_CODE: 113
+    _F2_CODE: 113,
+    _NUM5_KEY: '5',
+    _NUM5_KEY_CODE: 53,
+    _LETTER_A: 'a',
+    _LETTER_A_UPPERCASE: 'A',
+    _LETTER_A_CODE: 65
   };
 
   /**
@@ -519,6 +543,23 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
            eventKey === DataCollectionUtils.KEYBOARD_KEYS._RIGHT_CODE;
   };
 
+  /**
+   * @private
+   */
+  DataCollectionUtils.isNumberFiveKeyEvent = function (eventKey) {
+    return eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY ||
+           eventKey === DataCollectionUtils.KEYBOARD_KEYS._NUM5_KEY_CODE;
+  };
+
+  /**
+   * @private
+   */
+  DataCollectionUtils.isLetterAKeyEvent = function (eventKey) {
+    return eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A ||
+           eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_UPPERCASE ||
+           eventKey === DataCollectionUtils.KEYBOARD_KEYS._LETTER_A_CODE;
+  };
+
   /** **************** data mutation event handling methods ****************** */
 
   /**
@@ -555,6 +596,9 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
         eventBeforeKeys.push(key);
       });
     }
+
+    var eventIndexes = addEventDetail.indexes;
+
     // if beforeKeys are specified, they take precedence over index values.
     if (eventBeforeKeys.length === eventKeys.length) {
       // loop through the beforeKeys, and perform insertions as we find them.
@@ -585,10 +629,9 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
           }
         }
       }
-    } else {
+    } else if (eventIndexes != null && eventIndexes.length === eventKeys.length) {
       // if beforeKeys are not specified, we need to rely on the index values.
       // in order to be safely added, we need to ensure they are ordered in ascending order
-      var eventIndexes = addEventDetail.indexes;
       var indexItems = [];
       for (i = 0; i < eventKeys.length; i++) {
         eventKey = eventKeys[i];
@@ -624,6 +667,11 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
           returnKeys.push(indexItem.key);
         }
       }
+    } else if (isLoadAll) {
+      // if neither beforeKeys nor indexes are specified, just add all keys to the end in the current order
+      eventKeys.forEach(function (key) {
+        returnKeys.push(key);
+      });
     }
 
     // return updated keys since any remaining beforeKey rows and index rows are not connected to the viewport
@@ -655,6 +703,23 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   };
 
   /**
+   * Helper method to calculate the offsetTop from element to ancestor
+   * @param {Element} ancestor the ancestor element
+   * @param {Element} element the element
+   * @return {number} the distance between the specified element and ancestor
+   */
+  DataCollectionUtils.calculateOffsetTop = function (ancestor, element) {
+    var offset = 0;
+    var current = element;
+    while (current && current !== ancestor && ancestor.contains(current)) {
+      offset += current.offsetTop;
+      current = current.offsetParent;
+    }
+
+    return offset;
+  };
+
+  /**
    * Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
    * focusout, but components don't want to exit actionable/edit mode in those cases.
    * This method should be used inside the component's focusout handler.
@@ -680,6 +745,26 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
     return null;
   };
 
+  /**
+   * Helper method to determine if an element is within the current viewport
+   * @param {Element} elem
+   * @param {Element} scroller
+   */
+  DataCollectionUtils.isElementInScrollerBounds = function (elem, scroller) {
+    var top;
+    var bottom;
+    if (scroller === document.documentElement) {
+      top = 0;
+      bottom = document.documentElement.clientHeight;
+    } else {
+      var scrollerBounds = scroller.getBoundingClientRect();
+      top = scrollerBounds.top;
+      bottom = scrollerBounds.bottom;
+    }
+    var bounds = elem.getBoundingClientRect();
+    return (bounds.top >= top && bounds.bottom <= bottom);
+  };
+
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
   const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
@@ -692,6 +777,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   const getAddEventKeysResult = DataCollectionUtils.getAddEventKeysResult;
   const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
   const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
+  const isElementOrAncestorFocusable = DataCollectionUtils.isElementOrAncestorFocusable;
   const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
   const getLogicalChildPopup = DataCollectionUtils.getLogicalChildPopup;
   const getNoJQFocusHandlers = DataCollectionUtils.getNoJQFocusHandlers;
@@ -706,19 +792,25 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   const isEnterKeyEvent = DataCollectionUtils.isEnterKeyEvent;
   const isEscapeKeyEvent = DataCollectionUtils.isEscapeKeyEvent;
   const isEventClickthroughDisabled = DataCollectionUtils.isEventClickthroughDisabled;
+  const isFromDefaultSelector = DataCollectionUtils.isFromDefaultSelector;
   const isF2KeyEvent = DataCollectionUtils.isF2KeyEvent;
   const isHomeKeyEvent = DataCollectionUtils.isHomeKeyEvent;
   const isMobileTouchDevice = DataCollectionUtils.isMobileTouchDevice;
   const isSpaceBarKeyEvent = DataCollectionUtils.isSpaceBarKeyEvent;
   const isTabKeyEvent = DataCollectionUtils.isTabKeyEvent;
+  const isNumberFiveKeyEvent = DataCollectionUtils.isNumberFiveKeyEvent;
+  const isLetterAKeyEvent = DataCollectionUtils.isLetterAKeyEvent;
   const KEYBOARD_KEYS = DataCollectionUtils.KEYBOARD_KEYS;
   const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
+  const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
+  const isElementInScrollerBounds = DataCollectionUtils.isElementInScrollerBounds;
 
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
   exports.KEYBOARD_KEYS = KEYBOARD_KEYS;
   exports.applyMergedInlineStyles = applyMergedInlineStyles;
   exports.applyStyleObj = applyStyleObj;
   exports.areKeySetsEqual = areKeySetsEqual;
+  exports.calculateOffsetTop = calculateOffsetTop;
   exports.containsKey = containsKey;
   exports.convertStringToStyleObj = convertStringToStyleObj;
   exports.disableAllFocusableElements = disableAllFocusableElements;
@@ -738,13 +830,18 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   exports.isArrowRightKeyEvent = isArrowRightKeyEvent;
   exports.isArrowUpKeyEvent = isArrowUpKeyEvent;
   exports.isClickthroughDisabled = isClickthroughDisabled;
+  exports.isElementInScrollerBounds = isElementInScrollerBounds;
+  exports.isElementOrAncestorFocusable = isElementOrAncestorFocusable;
   exports.isEndKeyEvent = isEndKeyEvent;
   exports.isEnterKeyEvent = isEnterKeyEvent;
   exports.isEscapeKeyEvent = isEscapeKeyEvent;
   exports.isEventClickthroughDisabled = isEventClickthroughDisabled;
   exports.isF2KeyEvent = isF2KeyEvent;
+  exports.isFromDefaultSelector = isFromDefaultSelector;
   exports.isHomeKeyEvent = isHomeKeyEvent;
+  exports.isLetterAKeyEvent = isLetterAKeyEvent;
   exports.isMobileTouchDevice = isMobileTouchDevice;
+  exports.isNumberFiveKeyEvent = isNumberFiveKeyEvent;
   exports.isSpaceBarKeyEvent = isSpaceBarKeyEvent;
   exports.isTabKeyEvent = isTabKeyEvent;
 

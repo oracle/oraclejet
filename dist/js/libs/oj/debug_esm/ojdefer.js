@@ -9,13 +9,6 @@ import BindingProviderImpl from 'ojs/ojkoshared';
 import { bindingHandlers, applyBindingsToDescendants } from 'knockout';
 import oj from 'ojs/ojcore-base';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
   BindingProviderImpl.addPostprocessor(
     {
@@ -40,16 +33,7 @@ import oj from 'ojs/ojcore-base';
     );
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-bindingHandlers._ojDefer_ =
-{
+bindingHandlers._ojDefer_ = {
   init: function (_element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     var element = _element;
 
@@ -57,26 +41,21 @@ bindingHandlers._ojDefer_ =
     // we can directly call ko.applyBindingsToDescendants() without waiting for subtreeShown
     // because it was already called.
     if (!element._shown) {
-      // stash away the children
-      if (!element._savedChildNodes) {
-        var fragment = document.createDocumentFragment();
-        var childNodes = element.childNodes;
-
-        while (childNodes.length > 0) {
-          fragment.appendChild(childNodes[0]);
-        }
-        element._savedChildNodes = fragment;
-      }
-
-      // this _activateDescedantBindings function will be called from the element's
+      // this _activateSubtree function will be called from the element's
       // _activate API.
-      Object.defineProperty(element, '_activateDescedantBindings', {
-        value: function () {
-          applyBindingsToDescendants(bindingContext, element);
-          delete element._activateDescedantBindings;
-        },
-        configurable: true
-      });
+      if (!element._activateSubtree) {
+        // Stash away the children into a node array and pass them through closure
+        // to _activateSubtree() function.
+        var nodesArray = [];
+        while (element.firstChild) {
+          nodesArray.push(element.firstChild);
+          element.removeChild(element.firstChild);
+        }
+        element._activateSubtree = (parentNode) => {
+          nodesArray.forEach(node => parentNode.appendChild(node));
+          applyBindingsToDescendants(bindingContext, parentNode);
+        };
+      }
     } else {
       applyBindingsToDescendants(bindingContext, element);
     }
@@ -84,13 +63,6 @@ bindingHandlers._ojDefer_ =
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 const DeferElement = {};
 oj._registerLegacyNamespaceProp('DeferElement', DeferElement);
 
@@ -127,29 +99,34 @@ oj._registerLegacyNamespaceProp('DeferElement', DeferElement);
     var deferElementProto = Object.create(HTMLElement.prototype);
     // define a non-public _activate API which will only be called
     // by subtreeAttach
-    Object.defineProperty(deferElementProto, '_activate',
-      {
+    Object.defineProperties(deferElementProto, {
+      _activate: {
         value: function () {
-          if (!this._activateDescedantBindings) {
-            // if the _activateDescedantBindings function is not there then
+          if (!this._activateSubtree) {
+            // if the _activateSubtree function is not there then
             // that means we have not been bound yet. Set a flag to activate when bound
             Object.defineProperty(this, '_shown', {
               configurable: false,
               value: true
             });
           } else {
-            // if we have stashed away children, put them back
-            /* istanbul ignore else: Can only have saved nodes iff there is a deferred binding */
-            if (this._savedChildNodes) {
-              this.appendChild(this._savedChildNodes);
-              delete this._savedChildNodes;
-            }
-            // if the _activateDescedantBindings function is there then just call it
-            this._activateDescedantBindings();
+            // if we have stashed away children, put them back, apply binding and remove the property
+            this._activateSubtree(this);
+            delete this._activateSubtree;
           }
         },
         writable: false
-      });
+      },
+      // A non-public property will be defined as a function by
+      // either ko.bindingHandlers or VTemplateEngine. The function will attach
+      // saved child nodes to oj-defer element and apply bindings if necessary.
+      // The property will be deleted by the caller after a single use.
+      _activateSubtree: {
+        value: null,
+        writable: true,
+        configurable: true
+      }
+    });
     var constructorFunc = function () {
       const reflect = window.Reflect;
       let ret;

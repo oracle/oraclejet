@@ -6,14 +6,6 @@
  * @ignore
  */
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Timing related utilities
  * @namespace
  * @name oj.TimerUtils
@@ -35,7 +27,7 @@ function Timer() {}
   * passed a single boolean value indicating if the timer's timeout expired
   * normally (without being canceled/cleared).  If the timer is left to expire
   * after its configured timeout has been exceeded, then it will pass
-  * boolean(true) to the callbacks.  If the timer's {@link #clear} method is
+  * boolean(true) to the callbacks.  If the timer's {@link Timer#clear} method is
   * called before its configured timeout has been reached, then the callbacks
   * will receive boolean(false).
   * @memberof Timer

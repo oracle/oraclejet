@@ -9,14 +9,6 @@ import oj$1 from 'ojs/ojcore-base';
 import { GenericEvent } from 'ojs/ojeventtarget';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
@@ -87,7 +79,7 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *         {@link CollectionDataProvider}
  *       </td>
  *       <td>
- *         DataProvider implementation that takes the data from a {@link oj.Collection} object. {@link oj.Collection} is an older class that represents data usually comes from external source such as a REST.
+ *         DataProvider implementation that takes the data from a {@link Collection} object. {@link Collection} is an older class that represents data usually comes from external source such as a REST.
  *       </td>
  *     </tr>
  *     <tr>
@@ -403,8 +395,11 @@ oj.DataProvider = function () {
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<FetchByKeysResults<K, D>>"}
  * @ojtsexample <caption>Fetch for keys 1001 and 556</caption>
- * let fetchKeys = [1001, 556];
- * let value = await dataprovider.fetchByKeys({keys: fetchKeys});
+ * let keySet = new Set();
+ * keySet.add(1001);
+ * keySet.add(556);
+ *
+ * let value = await dataprovider.fetchByKeys({keys: keySet});
  * // get the data for key 1001
  * console.log(value.results.get(1001).data);
  */
@@ -425,8 +420,11 @@ oj.DataProvider = function () {
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<ContainsKeysResults<K>>"}
  * @ojtsexample <caption>Check if keys 1001 and 556 are contained</caption>
- * let containsKeys = [1001, 556];
- * let value = await dataprovider.containsKeys({keys: containsKeys});
+ * let keySet = new Set();
+ * keySet.add(1001);
+ * keySet.add(556);
+ *
+ * let value = await dataprovider.containsKeys({keys: keySet});
  * let results = value['results'];
  * if (results.has(1001)) {
  *   console.log('Has key 1001');
@@ -639,43 +637,42 @@ oj$1._registerLegacyNamespaceProp('CompoundFilterOperator', CompoundFilterOperat
 class DataCache {
     constructor() {
         this._handleMutationAdd = function (eventDetail) {
-            var _a, _b;
-            let self = this;
-            let eventDetailBeforeKeys = eventDetail[DataCache._BEFOREKEYS];
-            let eventDetailKeys = eventDetail[DataCache._KEYS];
-            let eventDetailKeysArray = [];
-            eventDetailKeys.forEach(function (key) {
+            var _a;
+            const eventDetailBeforeKeys = eventDetail[DataCache._BEFOREKEYS];
+            const eventDetailKeys = eventDetail[DataCache._KEYS];
+            const eventDetailKeysArray = [];
+            eventDetailKeys.forEach((key) => {
                 eventDetailKeysArray.push(key);
             });
-            let eventDetailData = eventDetail[DataCache._DATA];
-            let eventDetailMetadata = eventDetail[DataCache._METADATA];
-            let eventDetailIndexes = eventDetail[DataCache._INDEXES];
+            const eventDetailData = eventDetail[DataCache._DATA];
+            const eventDetailMetadata = eventDetail[DataCache._METADATA];
+            const eventDetailIndexes = eventDetail[DataCache._INDEXES];
             if (eventDetailKeysArray && eventDetailKeysArray.length > 0) {
                 if (eventDetailIndexes) {
-                    eventDetailKeysArray.forEach(function (key, index) {
-                        self._items.splice(eventDetailIndexes[index], 0, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                    eventDetailKeysArray.forEach((key, index) => {
+                        this._items.splice(eventDetailIndexes[index], 0, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                     });
                 }
                 else if (eventDetailBeforeKeys) {
-                    let eventDetailBeforeKeysClone = Object.assign([], eventDetailBeforeKeys);
-                    let eventDetailKeysClone = Object.assign(new Set(), eventDetail[DataCache._KEYS]);
-                    let eventDetailDataClone = Object.assign([], eventDetail[DataCache._DATA]);
-                    let eventDetailMetadataClone = Object.assign([], eventDetail[DataCache._METADATA]);
-                    let outOfRangeKeys = [];
-                    let i, j, key, findKey, outOfRange;
-                    for (i = 0; i < eventDetailBeforeKeys.length; i++) {
-                        key = eventDetailBeforeKeys[i];
+                    const eventDetailBeforeKeysClone = Object.assign([], eventDetailBeforeKeys);
+                    const eventDetailKeysClone = Object.assign(new Set(), eventDetail[DataCache._KEYS]);
+                    const eventDetailDataClone = Object.assign([], eventDetail[DataCache._DATA]);
+                    const eventDetailMetadataClone = Object.assign([], eventDetail[DataCache._METADATA]);
+                    const outOfRangeKeys = [];
+                    let key, findKey, outOfRange;
+                    for (const beforeKey of eventDetailBeforeKeys) {
+                        key = beforeKey;
                         outOfRange = true;
                         if (key != null) {
-                            for (j = 0; j < eventDetailKeysArray.length; j++) {
-                                if (oj$1.Object.compareValues(eventDetailKeysArray[j], key)) {
+                            for (const keyArray of eventDetailKeysArray) {
+                                if (oj$1.Object.compareValues(keyArray, key)) {
                                     outOfRange = false;
                                     break;
                                 }
                             }
                             if (outOfRange) {
-                                for (j = 0; j < self._items.length; j++) {
-                                    if (oj$1.Object.compareValues((_b = (_a = self._items[j]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, key)) {
+                                for (const item of this._items) {
+                                    if (oj$1.Object.compareValues((_a = item === null || item === void 0 ? void 0 : item.metadata) === null || _a === void 0 ? void 0 : _a.key, key)) {
                                         outOfRange = false;
                                         break;
                                     }
@@ -691,8 +688,8 @@ class DataCache {
                     }
                     let keysToCheck = eventDetailBeforeKeys.length;
                     while (keysToCheck > 0) {
-                        for (i = 0; i < eventDetailBeforeKeys.length; i++) {
-                            findKey = eventDetailBeforeKeys[i];
+                        for (const beforeKey of eventDetailBeforeKeys) {
+                            findKey = beforeKey;
                             if (outOfRangeKeys.indexOf(findKey) >= 0) {
                                 outOfRangeKeys.push(findKey);
                                 break;
@@ -700,7 +697,7 @@ class DataCache {
                         }
                         keysToCheck--;
                     }
-                    for (i = eventDetailBeforeKeysClone.length - 1; i >= 0; i--) {
+                    for (let i = eventDetailBeforeKeysClone.length - 1; i >= 0; i--) {
                         if (outOfRangeKeys.indexOf(eventDetailBeforeKeysClone[i]) >= 0) {
                             delete eventDetailBeforeKeysClone[i];
                             eventDetailKeysClone.delete(eventDetailBeforeKeysClone[i]);
@@ -708,15 +705,15 @@ class DataCache {
                             delete eventDetailMetadataClone[i];
                         }
                     }
-                    eventDetailBeforeKeysClone.forEach(function (beforeKey, beforeKeyIndex) {
+                    eventDetailBeforeKeysClone.forEach((beforeKey, beforeKeyIndex) => {
                         var _a, _b;
                         if (beforeKey === null) {
-                            self._items.push(new self.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
+                            this._items.push(new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
                         }
                         else {
-                            for (i = 0; i < self._items.length; i++) {
-                                if (oj$1.Object.compareValues((_b = (_a = self._items[i]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, beforeKey)) {
-                                    self._items.splice(i, 0, new self.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
+                            for (let i = 0; i < this._items.length; i++) {
+                                if (oj$1.Object.compareValues((_b = (_a = this._items[i]) === null || _a === void 0 ? void 0 : _a.metadata) === null || _b === void 0 ? void 0 : _b.key, beforeKey)) {
+                                    this._items.splice(i, 0, new this.Item(eventDetailMetadata[beforeKeyIndex], eventDetailData[beforeKeyIndex]));
                                     break;
                                 }
                             }
@@ -724,47 +721,46 @@ class DataCache {
                     });
                 }
                 else {
-                    if (self._fetchParams && self._fetchParams.sortCriteria != null) {
-                        let sortCriteria = self._fetchParams.sortCriteria;
+                    if (this._fetchParams && this._fetchParams.sortCriteria != null) {
+                        const sortCriteria = this._fetchParams.sortCriteria;
                         if (sortCriteria) {
-                            let comparator = self._getSortComparator(sortCriteria);
+                            const comparator = this._getSortComparator(sortCriteria);
                             let i, currentData, currentCompare;
-                            let insertedIndexes = [];
-                            eventDetailData.forEach(function (data, index) {
-                                for (i = 0; i < self._items.length; i++) {
-                                    currentData = self._items[i].data;
+                            const insertedIndexes = [];
+                            eventDetailData.forEach((data, index) => {
+                                for (i = 0; i < this._items.length; i++) {
+                                    currentData = this._items[i].data;
                                     currentCompare = comparator(data, currentData);
                                     if (currentCompare < 0) {
-                                        self._items.splice(i, 0, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                                        this._items.splice(i, 0, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                                         insertedIndexes.push(index);
                                         break;
                                     }
                                 }
                             });
-                            eventDetailData.forEach(function (data, index) {
+                            eventDetailData.forEach((data, index) => {
                                 if (insertedIndexes.indexOf(index) < 0) {
-                                    self._items.push(new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                                    this._items.push(new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                                 }
                             });
                         }
                     }
                     else {
-                        eventDetailData.forEach(function (data, index) {
-                            self._items.push(new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                        eventDetailData.forEach((data, index) => {
+                            this._items.push(new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                         });
                     }
                 }
             }
         };
         this._handleMutationRemove = function (eventDetail) {
-            let self = this;
-            let eventDetailKeys = eventDetail[DataCache._KEYS];
+            const eventDetailKeys = eventDetail[DataCache._KEYS];
             if (eventDetailKeys && eventDetailKeys.size > 0) {
                 let i;
-                eventDetailKeys.forEach(function (key) {
-                    for (i = self._items.length - 1; i >= 0; i--) {
-                        if (oj$1.Object.compareValues(self._items[i].metadata.key, key)) {
-                            self._items.splice(i, 1);
+                eventDetailKeys.forEach((key) => {
+                    for (i = this._items.length - 1; i >= 0; i--) {
+                        if (oj$1.Object.compareValues(this._items[i].metadata.key, key)) {
+                            this._items.splice(i, 1);
                             break;
                         }
                     }
@@ -772,16 +768,15 @@ class DataCache {
             }
         };
         this._handleMutationUpdate = function (eventDetail) {
-            let self = this;
-            let eventDetailKeys = eventDetail[DataCache._KEYS];
-            let eventDetailData = eventDetail[DataCache._DATA];
-            let eventDetailMetadata = eventDetail[DataCache._METADATA];
+            const eventDetailKeys = eventDetail[DataCache._KEYS];
+            const eventDetailData = eventDetail[DataCache._DATA];
+            const eventDetailMetadata = eventDetail[DataCache._METADATA];
             if (eventDetailData && eventDetailData.length > 0) {
                 let i, index = 0;
-                eventDetailKeys.forEach(function (key) {
-                    for (i = self._items.length - 1; i >= 0; i--) {
-                        if (oj$1.Object.compareValues(self._items[i].metadata.key, key)) {
-                            self._items.splice(i, 1, new self.Item(eventDetailMetadata[index], eventDetailData[index]));
+                eventDetailKeys.forEach((key) => {
+                    for (i = this._items.length - 1; i >= 0; i--) {
+                        if (oj$1.Object.compareValues(this._items[i].metadata.key, key)) {
+                            this._items.splice(i, 1, new this.Item(eventDetailMetadata[index], eventDetailData[index]));
                             break;
                         }
                     }
@@ -818,10 +813,9 @@ class DataCache {
         this._items = [];
     }
     addListResult(result) {
-        let self = this;
-        let items = [];
-        result.value.data.forEach(function (data, index) {
-            items.push(new self.Item(result.value.metadata[index], data));
+        const items = [];
+        result.value.data.forEach((data, index) => {
+            items.push(new this.Item(result.value.metadata[index], data));
         });
         this._items = this._items.concat(items);
         this._done = result.done;
@@ -830,31 +824,29 @@ class DataCache {
         this._fetchParams = params;
         let fetchSize = 25;
         if (params.size != null) {
-            if (params.size == -1) {
+            if (params.size === -1) {
                 fetchSize = this.getSize();
             }
             else {
                 fetchSize = params.size;
             }
         }
-        let items = this._items.slice(offset, offset + fetchSize);
-        let data = [];
-        let metadata = [];
-        items.forEach(function (item) {
+        const items = this._items.slice(offset, offset + fetchSize);
+        const data = [];
+        const metadata = [];
+        items.forEach((item) => {
             data.push(item.data);
             metadata.push(item.metadata);
         });
-        return { fetchParameters: params, data: data, metadata: metadata };
+        return { fetchParameters: params, data, metadata };
     }
     getDataByKeys(params) {
-        let self = this;
-        let results = new Map();
+        const results = new Map();
         if (params && params.keys) {
-            let i;
-            params.keys.forEach(function (key) {
-                for (i = 0; i < self._items.length; i++) {
-                    if (self._items[i].metadata.key == key) {
-                        results.set(key, self._items[i]);
+            params.keys.forEach((key) => {
+                for (const item of this._items) {
+                    if (item.metadata.key === key) {
+                        results.set(key, item);
                         break;
                     }
                 }
@@ -863,11 +855,10 @@ class DataCache {
         return new this.FetchByKeysResults(params, results);
     }
     getDataByOffset(params) {
-        let self = this;
         let results = [];
-        let done = true;
+        const done = true;
         if (params) {
-            results = self._items.slice(params.offset, params.offset + params.size);
+            results = this._items.slice(params.offset, params.offset + params.size);
         }
         return new this.FetchByOffsetResults(params, results, done);
     }
@@ -893,19 +884,17 @@ class DataCache {
         return this._done;
     }
     _getSortComparator(sortCriteria) {
-        let self = this;
-        return function (x, y) {
-            let i, direction, attribute, comparator, xval, yval;
-            for (i = 0; i < sortCriteria.length; i++) {
-                direction = sortCriteria[i][DataCache._DIRECTION];
-                attribute = sortCriteria[i][DataCache._ATTRIBUTE];
-                comparator = null;
-                xval = self._getVal(x, attribute);
-                yval = self._getVal(y, attribute);
+        return (x, y) => {
+            let direction, attribute, xval, yval;
+            for (const sort of sortCriteria) {
+                direction = sort[DataCache._DIRECTION];
+                attribute = sort[DataCache._ATTRIBUTE];
+                xval = this._getVal(x, attribute);
+                yval = this._getVal(y, attribute);
                 let compareResult = 0;
-                let strX = typeof xval === 'string' ? xval : new String(xval).toString();
-                let strY = typeof yval === 'string' ? yval : new String(yval).toString();
-                if (direction == 'ascending') {
+                const strX = typeof xval === 'string' ? xval : String(xval).toString();
+                const strY = typeof yval === 'string' ? yval : String(yval).toString();
+                if (direction === 'ascending') {
                     compareResult = strX.localeCompare(strY, undefined, {
                         numeric: true,
                         sensitivity: 'base'
@@ -917,7 +906,7 @@ class DataCache {
                         sensitivity: 'base'
                     });
                 }
-                if (compareResult != 0) {
+                if (compareResult !== 0) {
                     return compareResult;
                 }
             }
@@ -925,18 +914,18 @@ class DataCache {
         };
     }
     _getVal(val, attr) {
-        if (typeof attr == 'string') {
-            let dotIndex = attr.indexOf('.');
+        if (typeof attr === 'string') {
+            const dotIndex = attr.indexOf('.');
             if (dotIndex > 0) {
-                let startAttr = attr.substring(0, dotIndex);
-                let endAttr = attr.substring(dotIndex + 1);
-                let subObj = val[startAttr];
+                const startAttr = attr.substring(0, dotIndex);
+                const endAttr = attr.substring(dotIndex + 1);
+                const subObj = val[startAttr];
                 if (subObj) {
                     return this._getVal(subObj, endAttr);
                 }
             }
         }
-        if (typeof val[attr] == 'function') {
+        if (typeof val[attr] === 'function') {
             return val[attr]();
         }
         return val[attr];
@@ -971,7 +960,7 @@ oj$1._registerLegacyNamespaceProp('DataCache', DataCache);
 
 class DataProviderMutationEvent extends GenericEvent {
     constructor(detail) {
-        let eventOptions = {};
+        const eventOptions = {};
         eventOptions[DataProviderMutationEvent._DETAIL] = detail;
         super('mutate', eventOptions);
     }
@@ -981,7 +970,7 @@ oj$1._registerLegacyNamespaceProp('DataProviderMutationEvent', DataProviderMutat
 
 class DataProviderRefreshEvent extends GenericEvent {
     constructor(detail) {
-        let eventOptions = {};
+        const eventOptions = {};
         eventOptions['detail'] = detail;
         super('refresh', eventOptions);
     }
@@ -991,24 +980,24 @@ oj$1._registerLegacyNamespaceProp('DataProviderRefreshEvent', DataProviderRefres
 class FetchByKeysMixin {
     fetchByKeys(params) {
         let fetched = 0;
-        let limit = this['getIterationLimit'] ? this['getIterationLimit']() : -1;
-        let options = {};
+        const limit = this['getIterationLimit'] ? this['getIterationLimit']() : -1;
+        const options = {};
         options['size'] = 25;
-        let resultMap = new Map();
-        let dataProviderAsyncIterator = this['fetchFirst'](options)[Symbol.asyncIterator]();
+        const resultMap = new Map();
+        const dataProviderAsyncIterator = this['fetchFirst'](options)[Symbol.asyncIterator]();
         function _fetchNextSet(params, dataProviderAsyncIterator, resultMap) {
             return dataProviderAsyncIterator.next().then(function (result) {
-                let value = result['value'];
-                let data = value['data'];
-                let metadata = value['metadata'];
-                let keys = metadata.map(function (metadata) {
+                const value = result['value'];
+                const data = value['data'];
+                const metadata = value['metadata'];
+                const keys = metadata.map(function (metadata) {
                     return metadata['key'];
                 });
                 let foundAllKeys = true;
                 params['keys'].forEach(function (findKey) {
                     if (!resultMap.has(findKey)) {
                         keys.map(function (key, index) {
-                            if (key == findKey) {
+                            if (key === findKey) {
                                 resultMap.set(key, { metadata: metadata[index], data: data[index] });
                             }
                         });
@@ -1032,9 +1021,9 @@ class FetchByKeysMixin {
             });
         }
         return _fetchNextSet(params, dataProviderAsyncIterator, resultMap).then(function (resultMap) {
-            let mappedResultMap = new Map();
+            const mappedResultMap = new Map();
             resultMap.forEach(function (value, key) {
-                let mappedItem = [value];
+                const mappedItem = [value];
                 mappedResultMap.set(key, mappedItem[0]);
             });
             return { fetchParameters: params, results: mappedResultMap };
@@ -1042,17 +1031,17 @@ class FetchByKeysMixin {
     }
     containsKeys(params) {
         return this.fetchByKeys(params).then(function (fetchByKeysResult) {
-            let results = new Set();
+            const results = new Set();
             params['keys'].forEach(function (key) {
                 if (fetchByKeysResult['results'].get(key) != null) {
                     results.add(key);
                 }
             });
-            return Promise.resolve({ containsParameters: params, results: results });
+            return Promise.resolve({ containsParameters: params, results });
         });
     }
     getCapability(capabilityName) {
-        if (capabilityName == 'fetchByKeys') {
+        if (capabilityName === 'fetchByKeys') {
             return { implementation: 'iteration' };
         }
         let cap = null;
@@ -1073,8 +1062,8 @@ class FetchByKeysMixin {
         return cap;
     }
     static applyMixin(derivedCtor) {
-        let _lastGetCapability = derivedCtor.prototype['getCapability'];
-        let baseCtors = [FetchByKeysMixin];
+        const _lastGetCapability = derivedCtor.prototype['getCapability'];
+        const baseCtors = [FetchByKeysMixin];
         baseCtors.forEach((baseCtor) => {
             Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
                 if (name !== 'constructor') {
@@ -1095,28 +1084,28 @@ oj$1._registerLegacyNamespaceProp('FetchByKeysMixin', FetchByKeysMixin);
 
 class FetchByOffsetMixin {
     fetchByOffset(params) {
-        let size = params && params['size'] > 0 ? params['size'] : 25;
-        let sortCriteria = params ? params['sortCriteria'] : null;
-        let offset = params && params['offset'] > 0 ? params['offset'] : 0;
+        const size = params && params['size'] > 0 ? params['size'] : 25;
+        const sortCriteria = params ? params['sortCriteria'] : null;
+        const offset = params && params['offset'] > 0 ? params['offset'] : 0;
         let fetched = 0;
-        let limit = this['getIterationLimit'] ? this['getIterationLimit']() : -1;
+        const limit = this['getIterationLimit'] ? this['getIterationLimit']() : -1;
         let done = false;
-        let options = {};
+        const options = {};
         options['size'] = size;
         options['sortCriteria'] = sortCriteria;
-        let resultArray = new Array();
-        let dataProviderAsyncIterator = this['fetchFirst'](options)[Symbol.asyncIterator]();
+        const resultArray = new Array();
+        const dataProviderAsyncIterator = this['fetchFirst'](options)[Symbol.asyncIterator]();
         function _fetchNextSet(params, dataProviderAsyncIterator, resultArray) {
             return dataProviderAsyncIterator.next().then(function (result) {
                 done = result['done'];
-                let value = result['value'];
-                let data = value['data'];
-                let metadata = value['metadata'];
-                let dataLen = data.length;
+                const value = result['value'];
+                const data = value['data'];
+                const metadata = value['metadata'];
+                const dataLen = data.length;
                 if (offset < fetched + dataLen) {
-                    let start = offset <= fetched ? 0 : offset - fetched;
+                    const start = offset <= fetched ? 0 : offset - fetched;
                     for (let index = start; index < dataLen; index++) {
-                        if (resultArray.length == size) {
+                        if (resultArray.length === size) {
                             break;
                         }
                         resultArray.push({ metadata: metadata[index], data: data[index] });
@@ -1124,7 +1113,7 @@ class FetchByOffsetMixin {
                 }
                 fetched += dataLen;
                 if (resultArray.length < size && !done) {
-                    if (limit != -1 && fetched >= limit) {
+                    if (limit !== -1 && fetched >= limit) {
                         return resultArray;
                     }
                     else {
@@ -1141,7 +1130,7 @@ class FetchByOffsetMixin {
         });
     }
     getCapability(capabilityName) {
-        if (capabilityName == 'fetchByOffset') {
+        if (capabilityName === 'fetchByOffset') {
             return { implementation: 'iteration' };
         }
         let cap = null;
@@ -1162,8 +1151,8 @@ class FetchByOffsetMixin {
         return cap;
     }
     static applyMixin(derivedCtor) {
-        let _lastGetCapability = derivedCtor.prototype['getCapability'];
-        let baseCtors = [FetchByOffsetMixin];
+        const _lastGetCapability = derivedCtor.prototype['getCapability'];
+        const baseCtors = [FetchByOffsetMixin];
         baseCtors.forEach((baseCtor) => {
             Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
                 if (name !== 'constructor') {
@@ -1189,17 +1178,17 @@ var FilterUtils;
             return true;
         }
         else {
-            var expTree = _buildExpressionTree(selector);
+            const expTree = _buildExpressionTree(selector);
             return _evaluateExpressionTree(expTree, itemData);
         }
     }
     FilterUtils.satisfy = satisfy;
     function _buildExpressionTree(expression) {
-        var subTree;
-        var itemTreeArray = [];
-        for (var key in expression) {
+        let subTree;
+        const itemTreeArray = [];
+        for (const key in expression) {
             if (expression.hasOwnProperty(key)) {
-                var value = expression[key];
+                const value = expression[key];
                 if (key.indexOf('$') === 0) {
                     if (_isMultiSelector(key)) {
                         if (value instanceof Array) {
@@ -1207,8 +1196,8 @@ var FilterUtils;
                                 operator: key,
                                 array: []
                             };
-                            for (var subindex = 0; subindex < value.length; subindex++) {
-                                var itemTree = _buildExpressionTree(value[subindex]);
+                            for (const val of value) {
+                                const itemTree = _buildExpressionTree(val);
                                 subTree.array.push(itemTree);
                             }
                         }
@@ -1228,7 +1217,7 @@ var FilterUtils;
                     });
                 }
                 else {
-                    var partialTree = {
+                    const partialTree = {
                         left: key
                     };
                     _completePartialTree(partialTree, value);
@@ -1248,10 +1237,10 @@ var FilterUtils;
         return subTree;
     }
     function _completePartialTree(partialTree, expression) {
-        var found = false;
-        for (var key in expression) {
+        let found = false;
+        for (const key in expression) {
             if (expression.hasOwnProperty(key)) {
-                var value = expression[key];
+                const value = expression[key];
                 if (found || !_isSingleSelector(key)) {
                     throw new Error('parsing error ' + expression);
                 }
@@ -1262,16 +1251,16 @@ var FilterUtils;
         }
     }
     function _evaluateExpressionTree(expTree, itemData) {
-        var operator = expTree.operator;
+        const operator = expTree.operator;
         if (_isMultiSelector(operator)) {
             if (expTree.left || !(expTree.array instanceof Array)) {
                 throw new Error('invalid expression tree!' + expTree);
             }
             else {
-                var result;
-                var subTreeArray = expTree.array;
-                for (var subIndex = 0; subIndex < subTreeArray.length; subIndex++) {
-                    var subResult = _evaluateExpressionTree(subTreeArray[subIndex], itemData);
+                let result;
+                const subTreeArray = expTree.array;
+                for (const subTree of subTreeArray) {
+                    const subResult = _evaluateExpressionTree(subTree, itemData);
                     if (operator === '$or' && subResult === true) {
                         return true;
                     }
@@ -1284,17 +1273,16 @@ var FilterUtils;
             }
         }
         else if (_isSingleSelector(operator)) {
-            var value = expTree.right;
-            var itemValue;
+            const value = expTree.right;
+            let itemValue;
             if (expTree.left != '*') {
                 itemValue = getValue(expTree.left, itemData);
                 return _evaluateSingleSelectorExpression(operator, value, itemValue);
             }
             else {
-                var i;
-                var itemProperties = Object.keys(itemData);
-                for (i = 0; i < itemProperties.length; i++) {
-                    itemValue = getValue(itemProperties[i], itemData);
+                const itemProperties = Object.keys(itemData);
+                for (const itemProp of itemProperties) {
+                    itemValue = getValue(itemProp, itemData);
                     if (_evaluateSingleSelectorExpression(operator, value, itemValue)) {
                         return true;
                     }
@@ -1308,25 +1296,25 @@ var FilterUtils;
     }
     function _evaluateSingleSelectorExpression(operator, value, itemValue) {
         if (operator === '$lt') {
-            var fixedTokens = _fixNullForString(itemValue, value);
+            const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
             return itemValue < value;
         }
         else if (operator === '$gt') {
-            var fixedTokens = _fixNullForString(itemValue, value);
+            const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
             return itemValue > value;
         }
         else if (operator === '$lte') {
-            var fixedTokens = _fixNullForString(itemValue, value);
+            const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
             return itemValue <= value;
         }
         else if (operator === '$gte') {
-            var fixedTokens = _fixNullForString(itemValue, value);
+            const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
             return itemValue >= value;
@@ -1350,7 +1338,7 @@ var FilterUtils;
                         }
                     }
                 }
-                var matchResult = itemValue.match(value);
+                const matchResult = itemValue.match(value);
                 return matchResult !== null;
             }
             return false;
@@ -1397,10 +1385,10 @@ var FilterUtils;
         return [leftToken, rightToken];
     }
     function getValue(path, itemValue) {
-        var paths = path.split('.');
-        var returnValue = itemValue;
-        for (var index = 0; index < paths.length; index++) {
-            returnValue = returnValue[paths[index]];
+        const paths = path.split('.');
+        let returnValue = itemValue;
+        for (const path of paths) {
+            returnValue = returnValue[path];
         }
         return returnValue;
     }
@@ -1412,7 +1400,7 @@ class FilterImpl {
         this._textFilterAttributes = options['filterOptions']
             ? options['filterOptions']['textFilterAttributes']
             : null;
-        let filterDef = options.filterDef;
+        const filterDef = options.filterDef;
         if (filterDef) {
             if (filterDef['op']) {
                 this['op'] = filterDef['op'];
@@ -1453,7 +1441,7 @@ class FilterImpl {
                     op = '$exists';
                 }
             }
-            if (op != '$and' && op != '$or') {
+            if (op !== '$and' && op !== '$or') {
                 if (filter['text']) {
                     filterValue = new RegExp(filter['text'].replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i');
                 }
@@ -1461,9 +1449,9 @@ class FilterImpl {
                     filterValue = filter.value;
                 }
                 transformedExpr = {};
-                let attributeExpr = filter.attribute;
+                const attributeExpr = filter.attribute;
                 if (attributeExpr) {
-                    let operatorExpr = {};
+                    const operatorExpr = {};
                     if (op === '$sw' || op === '$ew' || op === '$co') {
                         op = '$regex';
                         filterValue = FilterImpl._fixStringExpr(op, filterValue);
@@ -1472,12 +1460,12 @@ class FilterImpl {
                     transformedExpr[attributeExpr] = operatorExpr;
                 }
                 else if (filter['text']) {
-                    let operatorExpr = {};
+                    const operatorExpr = {};
                     operatorExpr[op] = filterValue;
                     if (filter._textFilterAttributes && filter._textFilterAttributes.length > 0) {
-                        let textFilterArray = [];
+                        const textFilterArray = [];
                         filter._textFilterAttributes.forEach(function (field) {
-                            let textFilter = {};
+                            const textFilter = {};
                             textFilter[field] = operatorExpr;
                             textFilterArray.push(textFilter);
                         });
@@ -1488,13 +1476,13 @@ class FilterImpl {
                     }
                 }
                 else {
-                    let criteriaArray = [];
+                    const criteriaArray = [];
                     FilterImpl._transformObjectExpr(filterValue, op, null, criteriaArray);
                     transformedExpr['$and'] = criteriaArray;
                 }
             }
             else {
-                let criteriaArray = [];
+                const criteriaArray = [];
                 filter.criteria.forEach(function (criterion) {
                     if (criterion && criterion['text'] && filter._textFilterAttributes) {
                         criterion['_textFilterAttributes'] = filter._textFilterAttributes;
@@ -1508,20 +1496,19 @@ class FilterImpl {
         return transformedExpr;
     }
     static _transformObjectExpr(objectExpr, op, path, criteriaArray) {
-        let self = this;
-        let objectProps = Object.keys(objectExpr);
+        const objectProps = Object.keys(objectExpr);
         if (objectProps.length > 0) {
             Object.keys(objectExpr).forEach(function (fieldAttribute) {
                 let fieldValue = objectExpr[fieldAttribute];
-                let fieldAttributePath = path ? path + '.' + fieldAttribute : fieldAttribute;
+                const fieldAttributePath = path ? path + '.' + fieldAttribute : fieldAttribute;
                 if (!(fieldValue instanceof Object)) {
-                    let operatorExpr = {};
+                    const operatorExpr = {};
                     if (op === '$sw' || op === '$ew' || op === '$co') {
                         op = '$regex';
                         fieldValue = FilterImpl._fixStringExpr(op, fieldValue);
                     }
                     operatorExpr[op] = fieldValue;
-                    let fieldExpr = {};
+                    const fieldExpr = {};
                     fieldExpr[fieldAttributePath] = operatorExpr;
                     criteriaArray.push(fieldExpr);
                 }
@@ -1531,9 +1518,9 @@ class FilterImpl {
             });
         }
         else {
-            let operatorExpr = {};
+            const operatorExpr = {};
             operatorExpr[op] = objectExpr;
-            let fieldExpr = {};
+            const fieldExpr = {};
             fieldExpr[path] = operatorExpr;
             criteriaArray.push(fieldExpr);
         }

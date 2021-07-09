@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, CachedIteratorResultsDataProvider, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcachediteratorresultsdataprovider'], function (oj, ojdataprovider, ojeventtarget, CachedIteratorResultsDataProvider) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     CachedIteratorResultsDataProvider = CachedIteratorResultsDataProvider && Object.prototype.hasOwnProperty.call(CachedIteratorResultsDataProvider, 'default') ? CachedIteratorResultsDataProvider['default'] : CachedIteratorResultsDataProvider;
@@ -13,7 +13,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
     /**
      * @license
      * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
+     * Licensed under The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */
     /**
@@ -168,31 +168,30 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
                     this._cachedOffset = 0;
                 }
                 ['next']() {
-                    let self = this;
-                    let cachedKeys = new Set();
+                    const cachedKeys = new Set();
                     if (this.params.size > 0) {
-                        let cachedFetchByOffsetResults = this._parent.cache.getDataByOffset({
+                        const cachedFetchByOffsetResults = this._parent.cache.getDataByOffset({
                             offset: 0,
                             size: this._cachedOffset
                         });
-                        cachedFetchByOffsetResults.results.forEach(function (item) {
+                        cachedFetchByOffsetResults.results.forEach((item) => {
                             cachedKeys.add(item.metadata.key);
                         });
                     }
                     return this.asyncIterator.next().then((result) => {
-                        let value = result[DedupDataProvider._VALUE];
-                        let keys = value.metadata.map(function (value) {
+                        const value = result[DedupDataProvider._VALUE];
+                        const keys = value.metadata.map((value) => {
                             return value[DedupDataProvider._KEY];
                         });
                         this._cachedOffset = this._cachedOffset + keys.length;
-                        let fetchKeys = new Set();
-                        keys.forEach(function (key) {
+                        const fetchKeys = new Set();
+                        keys.forEach((key) => {
                             fetchKeys.add(key);
                         });
-                        let removeKeysArray = [];
-                        let removeDataArray = [];
-                        let removeMetadataArray = [];
-                        fetchKeys.forEach(function (fetchKey, index) {
+                        const removeKeysArray = [];
+                        const removeDataArray = [];
+                        const removeMetadataArray = [];
+                        fetchKeys.forEach((fetchKey, index) => {
                             if (cachedKeys.has(fetchKey)) {
                                 removeKeysArray.push(fetchKey);
                                 removeDataArray.push(value.data[index]);
@@ -200,16 +199,16 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
                             }
                         });
                         if (removeKeysArray.length > 0) {
-                            let removekeySet = new Set();
-                            removeKeysArray.map(function (key) {
+                            const removekeySet = new Set();
+                            for (const key of removeKeysArray) {
                                 removekeySet.add(key);
-                            });
-                            let operationRemoveEventDetail = new self._parent.DataProviderOperationEventDetail(self._parent, removekeySet, removeMetadataArray, removeDataArray, []);
-                            let mutationRemoveEventDetail = new self._parent.DataProviderMutationEventDetail(self._parent, null, operationRemoveEventDetail, null);
-                            self._parent.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationRemoveEventDetail));
+                            }
+                            const operationRemoveEventDetail = new this._parent.DataProviderOperationEventDetail(this._parent, removekeySet, removeMetadataArray, removeDataArray, []);
+                            const mutationRemoveEventDetail = new this._parent.DataProviderMutationEventDetail(this._parent, null, operationRemoveEventDetail, null);
+                            this._parent.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationRemoveEventDetail));
                         }
-                        if (!(self._parent.dataProvider instanceof CachedIteratorResultsDataProvider)) {
-                            self._parent.cache.addListResult(result);
+                        if (!(this._parent.dataProvider instanceof CachedIteratorResultsDataProvider)) {
+                            this._parent.cache.addListResult(result);
                         }
                         return result;
                     });
@@ -239,7 +238,6 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
                     this[DedupDataProvider._INDEXES] = indexes;
                 }
             };
-            let self = this;
             if (dataProvider instanceof CachedIteratorResultsDataProvider) {
                 this.cache = dataProvider.cache;
             }
@@ -260,11 +258,11 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
                 if (event.detail && event.detail.add) {
                     this._processAddMutations(event.detail.add);
                 }
-                self.dispatchEvent(event);
+                this.dispatchEvent(event);
             });
             dataProvider.addEventListener(DedupDataProvider._REFRESH, (event) => {
-                self.cache.reset();
-                self.dispatchEvent(event);
+                this.cache.reset();
+                this.dispatchEvent(event);
             });
         }
         containsKeys(params) {
@@ -281,7 +279,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
             return new this.DedupAsyncIterable(this, params, asyncIterable[Symbol.asyncIterator](), this.cache);
         }
         getCapability(capabilityName) {
-            let capability = this.dataProvider.getCapability(capabilityName);
+            const capability = this.dataProvider.getCapability(capabilityName);
             if (capabilityName === 'dedup') {
                 return { type: 'iterator' };
             }
@@ -294,22 +292,21 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
             return this.dataProvider.isEmpty();
         }
         _processAddMutations(detail) {
-            let self = this;
-            let eventDetailKeys = detail[DedupDataProvider._KEYS];
+            const eventDetailKeys = detail[DedupDataProvider._KEYS];
             if (eventDetailKeys && eventDetailKeys.size > 0) {
-                let removeKeys = new Set();
-                let removeDataArray = [];
-                let removeMetadataArray = [];
-                let value = this.cache.getDataByKeys({ keys: eventDetailKeys });
-                value.results.forEach(function (item, key) {
+                const removeKeys = new Set();
+                const removeDataArray = [];
+                const removeMetadataArray = [];
+                const value = this.cache.getDataByKeys({ keys: eventDetailKeys });
+                value.results.forEach((item, key) => {
                     removeKeys.add(key);
                     removeDataArray.push(item.data);
                     removeMetadataArray.push(item.metadata);
                 });
                 if (removeKeys.size > 0) {
-                    let operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, removeKeys, removeMetadataArray, removeDataArray, []);
-                    let mutationRemoveEventDetail = new self.DataProviderMutationEventDetail(self, null, operationRemoveEventDetail, null);
-                    self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationRemoveEventDetail));
+                    const operationRemoveEventDetail = new this.DataProviderOperationEventDetail(this, removeKeys, removeMetadataArray, removeDataArray, []);
+                    const mutationRemoveEventDetail = new this.DataProviderMutationEventDetail(this, null, operationRemoveEventDetail, null);
+                    this.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationRemoveEventDetail));
                 }
             }
         }

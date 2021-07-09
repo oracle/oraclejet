@@ -52,11 +52,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     if (this._fetchTrigger == null || isNaN(this._fetchTrigger)) {
       this._fetchTrigger = 0;
     }
-    this._offsetTop = isNaN(options.offsetTop) ? 0 : options.offsetTop;
     this._initialScrollTop = this._element.scrollTop;
     this._lastFetchTrigger = 0;
     this._isScrollTriggeredByMouseWheel = false;
     this._checkViewportCount = 0;
+    this._fetchThreshold = 0.25;
 
     var elem = this._getScrollEventElement();
     this._scrollEventListener = function () {
@@ -64,14 +64,14 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
         this._beforeScrollCallback();
       }
       var scrollTop = this._element.scrollTop;
-      // scrollHeight can't be use in cases where the scroller contains a element that is taller
-      // than the actual content itself, in which case we'll use the content's clientHeight to
-      // determine the scroll height
-      var maxScrollTop = this._contentElement ? this._offsetTop +
-        this._contentElement.clientHeight : this._element.scrollHeight;
-      maxScrollTop -= this._element.clientHeight;
+      var scrollerHeight = this._element.clientHeight;
+      var maxScrollTop = this._element.scrollHeight - scrollerHeight;
       if (maxScrollTop > 0) {
-        this._handleScrollerScrollTop(scrollTop, maxScrollTop);
+        if (this._contentElement) {
+          this._handleExternalScrollerScrollTop(scrollTop, scrollerHeight);
+        } else {
+          this._handleScrollerScrollTop(scrollTop, maxScrollTop);
+        }
       }
     }.bind(this);
     elem.addEventListener('scroll', this._scrollEventListener);
@@ -118,23 +118,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   };
 
   /**
-   * Helper method to calculate the offsetTop from element to ancestor
-   * @param {Element} ancestor the ancestor element
-   * @param {Element} element the element
-   * @return {number} the distance between the specified element and ancestor
-   */
-  DomScroller.calculateOffsetTop = function (ancestor, element) {
-    var offset = 0;
-    var current = element;
-    while (current && current !== ancestor && $.contains(ancestor, current)) {
-      offset += current.offsetTop;
-      current = current.offsetParent;
-    }
-
-    return offset;
-  };
-
-  /**
    * Destroys the dom scroller, unregister any event handlers.
    * @export
    * @expose
@@ -164,7 +147,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
    */
   DomScroller.prototype.checkViewport = function (forceFetch) {
     if (this._asyncIterator && this._element.clientHeight > 0 &&
-        (forceFetch || !this.isOverflow())) {
+        (forceFetch || !this.isOverflow() || this._isEndReached())) {
       this._checkViewportCount += 1;
       if (this._checkViewportCount === DataCollectionUtils.CHECKVIEWPORT_THRESHOLD) {
         Logger.warn('Viewport not satisfied after multiple fetch, make sure the component is height constrained or specify a scroller.');
@@ -210,6 +193,16 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     }
   };
 
+  DomScroller.prototype._handleExternalScrollerScrollTop = function (scrollTop, scrollerHeight) {
+    if (!this._fetchPromise && this._asyncIterator) {
+      var bounds = this._contentElement.getBoundingClientRect();
+      var bottom = bounds.bottom - this._fetchTrigger - (bounds.height * this._fetchThreshold);
+      if (bottom <= scrollerHeight) {
+        this._doFetch(scrollTop);
+      }
+    }
+  };
+
   /**
    * Handle scrollTop on scroller
    * @private
@@ -217,8 +210,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
   DomScroller.prototype._handleScrollerScrollTop = function (scrollTop, maxScrollTop) {
     if (!this._fetchPromise && this._asyncIterator) {
       if (maxScrollTop !== this._lastMaxScrollTop) {
-        this._nextFetchTrigger = this._offsetTop +
-          Math.max(0, (maxScrollTop - this._fetchTrigger - this._offsetTop - scrollTop) / 2);
+        this._nextFetchTrigger = Math.max(0, (maxScrollTop - this._fetchTrigger - scrollTop) / 2);
         this._lastMaxScrollTop = maxScrollTop;
       }
 
@@ -232,7 +224,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
       }
     }
 
-    if (this._isEndReached(maxScrollTop, scrollTop) && scrollTop > this._fetchTrigger) {
+    if (maxScrollTop - scrollTop < 1 && scrollTop > this._fetchTrigger) {
       if (this._fetchPromise) {
         // at the bottom but fetch has not return yet, in which case we will block UI via requestCallback
         if (this._asyncIterator) {
@@ -247,23 +239,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
         this._doFetch(scrollTop);
       }
     }
-  };
-
-  /**
-   * @private
-   */
-  DomScroller.prototype._isEndReached = function (maxScrollTop, scrollTop) {
-    if (maxScrollTop - scrollTop < 1) {
-      return true;
-    }
-
-    if ((this._element.scrollHeight - this._element.clientHeight - this._element.scrollTop)
-      < Math.max(1, this._fetchTrigger)) {
-      // this could happen if the offsetTop is not correct
-      return true;
-    }
-
-    return false;
   };
 
   /**
@@ -285,6 +260,18 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdatacollection-common', 'ojs/ojlogge
     }
 
     return (diff > 0);
+  };
+
+  /**
+   * @private
+   */
+  DomScroller.prototype._isEndReached = function () {
+    if ((this._element.scrollHeight - this._element.clientHeight - this._element.scrollTop)
+      < Math.max(1, this._fetchTrigger)) {
+      // this could happen if the offsetTop is not correct
+      return true;
+    }
+    return false;
   };
 
   /**

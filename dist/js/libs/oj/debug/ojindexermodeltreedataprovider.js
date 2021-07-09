@@ -12,14 +12,6 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
     ArrayTreeDataProvider = ArrayTreeDataProvider && Object.prototype.hasOwnProperty.call(ArrayTreeDataProvider, 'default') ? ArrayTreeDataProvider['default'] : ArrayTreeDataProvider;
 
     /**
-     * @license
-     * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-
-    /**
      * Implementation of the IndexerModel and TreeDataProvider based on an array of data set.
      * This should be used with the Indexer and its associated ListView.
      * By default, this DataProvider groups the data based on the first letter of the data and the alphabet of the current locale.
@@ -212,37 +204,36 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             this.options = options;
             let sections = options.sections;
             if (sections == null) {
-                let resource = Translations.getTranslatedString('oj-ojIndexer.indexerCharacters');
+                const resource = Translations.getTranslatedString('oj-ojIndexer.indexerCharacters');
                 sections = resource.split('|');
             }
             sections.push(oj.IndexerModel.SECTION_OTHERS);
             let strategy = options.groupingStrategy;
             if (strategy == null) {
-                let field = this.options.groupingAttribute;
-                strategy = function (value) {
-                    let content = value[field] ? value[field] : value;
-                    let char = content.toString().toUpperCase()[0];
+                const field = this.options.groupingAttribute;
+                strategy = (value) => {
+                    const content = value[field] ? value[field] : value;
+                    const char = content.toString().toUpperCase()[0];
                     return sections.indexOf(char) > -1 ? char : oj.IndexerModel.SECTION_OTHERS;
                 };
             }
-            data = data.sort(function (a, b) {
-                let section1 = strategy(a);
-                let section2 = strategy(b);
-                let index1 = sections.indexOf(section1);
-                let index2 = sections.indexOf(section2);
+            data.sort((a, b) => {
+                const section1 = strategy(a);
+                const section2 = strategy(b);
+                const index1 = sections.indexOf(section1);
+                const index2 = sections.indexOf(section2);
                 return index1 - index2;
             });
             let current;
             for (let i = 0; i < this.data.length; i++) {
-                let section = strategy(this.data[i]);
+                const section = strategy(this.data[i]);
                 if (current !== section) {
                     current = section;
                     this._set(section, i);
                 }
             }
-            let self = this;
-            let available = sections.filter(function (aSection) {
-                return self._get(aSection) != null;
+            const available = sections.filter((aSection) => {
+                return this._get(aSection) != null;
             });
             this.sections = sections;
             this.baseDataProvider = new ArrayDataProvider(available, { keys: available });
@@ -251,12 +242,12 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             if (this.pos == null) {
                 this.pos = [];
             }
-            this.pos.push({ key: key, value: value });
+            this.pos.push({ key, value });
         }
         _get(key) {
-            for (let i = 0; i < this.pos.length; i++) {
-                if (this.pos[i].key === key) {
-                    return this.pos[i].value;
+            for (const pos of this.pos) {
+                if (pos.key === key) {
+                    return pos.value;
                 }
             }
             return null;
@@ -266,9 +257,9 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
         }
         getMissingSections() {
             if (this.missing == null) {
-                let missing = [];
+                const missing = [];
                 for (let i = 0; i < this.sections.length - 1; i++) {
-                    let section = this.sections[i];
+                    const section = this.sections[i];
                     if (this._get(section) == null) {
                         missing.push(section);
                     }
@@ -283,32 +274,35 @@ define(['ojs/ojcore-base', 'ojs/ojtranslation', 'ojs/ojarraydataprovider', 'ojs/
             }
             return Promise.resolve(section);
         }
+        _getData(pos, index) {
+            let next = this.sections[index];
+            let nextPos = this._get(next);
+            while (nextPos == null && index < this.sections.length) {
+                index += 1;
+                next = this.sections[index];
+                nextPos = this._get(next);
+            }
+            if (isNaN(nextPos) || nextPos == null) {
+                nextPos = this.data.length;
+            }
+            return this.data.slice(pos, nextPos);
+        }
         getChildDataProvider(parentKey, options) {
             if (parentKey === null) {
                 return this;
             }
-            let section = parentKey;
+            const section = parentKey;
             let index = this.sections.indexOf(section);
             if (index > -1) {
                 let childData;
-                let pos = this._get(parentKey);
+                const pos = this._get(parentKey);
                 if (pos != null) {
                     if (index === this.sections.length - 1) {
                         childData = this.data.slice(pos);
                     }
                     else {
                         index += 1;
-                        let next = this.sections[index];
-                        let nextPos = this._get(next);
-                        while (nextPos == null && index < this.sections.length) {
-                            index += 1;
-                            next = this.sections[index];
-                            nextPos = this._get(next);
-                        }
-                        if (isNaN(nextPos) || nextPos == null) {
-                            nextPos = this.data.length;
-                        }
-                        childData = this.data.slice(pos, nextPos);
+                        childData = this._getData(pos, index);
                     }
                 }
                 else {

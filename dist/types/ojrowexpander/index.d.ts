@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import ojDataGrid = require('../ojdatagrid');
 import ojTable = require('../ojtable');
 import { DataProvider } from '../ojdataprovider';
@@ -101,4 +95,17 @@ export namespace RowExpanderElement {
         parentKey: K;
         treeDepth: number;
     };
+}
+export interface RowExpanderIntrinsicProps extends Partial<Readonly<ojRowExpanderSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojCollapse?: (value: ojRowExpanderEventMap<any, any>['ojCollapse']) => void;
+    onojExpand?: (value: ojRowExpanderEventMap<any, any>['ojExpand']) => void;
+    oncontextChanged?: (value: ojRowExpanderEventMap<any, any>['contextChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-row-expander": RowExpanderIntrinsicProps;
+        }
+    }
 }

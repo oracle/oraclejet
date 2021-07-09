@@ -5,19 +5,12 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojinputtext', 'ojs/ojjquery-hammer', 'ojs/ojpagingmodel', 'ojs/ojvalidation-number', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojcontext', 'hammerjs', 'ojs/ojlogger', 'ojs/ojconverter-number'], function (ojinputtext, ojjqueryHammer, ojpagingmodel, ojvalidationNumber, oj, $, DomUtils, Context, hammerjs, ojlogger, ojconverterNumber) { 'use strict';
+define(['ojs/ojinputtext', 'ojs/ojjquery-hammer', 'ojs/ojpagingmodel', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojcontext', 'hammerjs', 'ojs/ojlogger', 'ojs/ojconverter-number', 'ojs/ojvalidator-numberrange'], function (ojinputtext, ojjqueryHammer, ojpagingmodel, oj, $, DomUtils, Context, hammerjs, ojlogger, ojconverterNumber, NumberRangeValidator) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
+  NumberRangeValidator = NumberRangeValidator && Object.prototype.hasOwnProperty.call(NumberRangeValidator, 'default') ? NumberRangeValidator['default'] : NumberRangeValidator;
 
   (function () {
 var __oj_paging_control_metadata = 
@@ -221,14 +214,6 @@ var __oj_paging_control_metadata =
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojPagingControl
    * @augments oj.baseComponent
    *
@@ -236,6 +221,7 @@ var __oj_paging_control_metadata =
    * @ojshortdesc A paging control provides paging functionality for data collections.
    * @ojrole navigation
    * @ojrole button
+   * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
    * @ojtsimport {module: "ojpagingmodel", type: "AMD", imported: ["PagingModel"]}
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["pageOptions.layout", "pageOptions.orientation", "pageOptions.type", "pageOptions.maxPageLinks", "overflow", "pageSize"]}
@@ -271,15 +257,264 @@ var __oj_paging_control_metadata =
    *
    * {@ojinclude "name":"touchDoc"}
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
    * <p>Application should specify an id for the paging control to generate an aria-label value.
    *
    * <p>The paging control also uses aria role = "region".
    *
+   */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Page Navigation Bar</td>
+   *       <td><kbd>Swipe</kbd></td>
+   *       <td>When mode='page', swiping left or right on the page navigation bar will either increment or decrement the page respectively.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Page Number Input</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Set focus to the input.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Arrow Page Navigation</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Navigates to the first, previous, next, or last page.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Numbered Page Links</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Navigates to the page.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
+   * @memberof oj.ojPagingControl
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Page Number Input</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the input.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Arrow Page Navigation</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td>Set focus to the first, previous, next, or last page arrow.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Numbered Page Links</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td>Set focus to to the page link.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojPagingControl
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the PagingControl page number navigation input.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-input
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the page number navigation input:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl current maximum page text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-input-max
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the current maximum page text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-max'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl summary items text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-input-summary
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the summary items text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl summary current items text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-input-summary-current
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the summary current items text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-current'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl summary max items text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-input-summary-max
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the summary max items text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-max'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl first page button.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-first
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the first page button:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-first'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl next page button.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-next
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the next page button:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-next'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl previous page button.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-previous
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the previous page button:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-previous'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl previous page button.</p>
+   *
+   * @ojsubid oj-pagingcontrol-nav-last
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the last page button:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-last'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl page button.</p>
+   * To lookup a page button the locator object should have the following:
+   * <ul>
+   * <li><b>index</b>zero-based index of page number node</li>
+   * </ul>
+   *
+   * @ojsubid oj-pagingcontrol-nav-page
+   * @memberof oj.ojPagingControl
+   *
+   * @example <caption>Get the page button:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-page', 'index': 1} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl Show More link.</p>
+   *
+   * @ojsubid oj-pagingcontrol-load-more-link
+   * @memberof oj.ojPagingControl
+   * @ojdeprecated {since: '7.0.0', description: 'this option is deprecated and will be removed in the future.
+   *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).'}
+   *
+   * @example <caption>Get the Show More link:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-link'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl load more range text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-load-more-range
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the load more range text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl load more range current items text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-load-more-range-current
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the load more range current items text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-current'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl load more range max items text.</p>
+   *
+   * @ojsubid oj-pagingcontrol-load-more-range-max
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the load more range max items text:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-max'} );
+   */
+
+  /**
+   * <p>Sub-ID for the PagingControl load more max message.</p>
+   *
+   * @ojsubid oj-pagingcontrol-load-more-max-rows
+   * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
+   * @memberof oj.ojPagingControl
+   * @ignore
+   *
+   * @example <caption>Get the load more max message:</caption>
+   * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-max-rows'} );
    */
   (function () {
     oj.__registerWidget('oj.ojPagingControl', $.oj.baseComponent,
@@ -639,6 +874,8 @@ var __oj_paging_control_metadata =
           _PAGING_CONTROL_LOAD_MORE_RANGE_CURRENT_CLASS: 'oj-pagingcontrol-loadmore-range-current',
           _PAGING_CONTROL_LOAD_MORE_RANGE_MAX_CLASS: 'oj-pagingcontrol-loadmore-range-max',
           _PAGING_CONTROL_NAV_CLASS: 'oj-pagingcontrol-nav',
+          _PAGING_CONTROL_NAV_CLASS_STANDARD: 'oj-pagingcontrol-nav-standard',
+          _PAGING_CONTROL_NAV_DOTS_VERTICAL_CLASS: 'oj-pagingcontrol-nav-dots-vertical',
           _PAGING_CONTROL_NAV_ARROW_CLASS: 'oj-pagingcontrol-nav-arrow',
           _PAGING_CONTROL_NAV_ARROW_SECTION_CLASS: 'oj-pagingcontrol-nav-arrow-section',
           _PAGING_CONTROL_NAV_PAGE_CLASS: 'oj-pagingcontrol-nav-page',
@@ -1199,21 +1436,13 @@ var __oj_paging_control_metadata =
            * invoke loading page of data
            */
           'click .oj-pagingcontrol-nav-dot': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
-              this.page(pageNum);
-            }
-            event.preventDefault();
+            this._invokeLoadPageDataFromEvent(event);
           },
           /*
            * invoke loading page of data
            */
           'click .oj-pagingcontrol-nav-page': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
-              this.page(pageNum);
-            }
-            event.preventDefault();
+            this._invokeLoadPageDataFromEvent(event);
           },
           /*
            * invoke loading first page of data
@@ -1265,93 +1494,73 @@ var __oj_paging_control_metadata =
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-first': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              $(event.target).addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            }
-            event.preventDefault();
+            this._setActive(event);
           },
           /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-previous': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              $(event.target).addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            }
-            event.preventDefault();
+            this._setActive(event);
           },
           /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-next': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              $(event.target).addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            }
-            event.preventDefault();
+            this._setActive(event);
           },
           /*
            * Add oj-active
            */
           'mousedown .oj-pagingcontrol-nav-last': function (event) {
-            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
-              $(event.target).addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            }
-            event.preventDefault();
+            this._setActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-first': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-previous': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-next': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseup .oj-pagingcontrol-nav-last': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-first': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-previous': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-next': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           },
           /*
            * Remove oj-active
            */
           'mouseleave .oj-pagingcontrol-nav-last': function (event) {
-            $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
-            event.preventDefault();
+            this._removeActive(event);
           }
         },
         /**
@@ -1443,6 +1652,35 @@ var __oj_paging_control_metadata =
           this._cachedDomPagingControlNavInputSummary = null;
         },
         /**
+         * On Page link/dot click
+         * @private
+         */
+        _invokeLoadPageDataFromEvent: function (event) {
+          if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
+            var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
+            this.page(pageNum);
+          }
+          event.preventDefault();
+        },
+        /**
+         * Helper method to add oj-active
+         * @private
+         */
+        _setActive: function (event) {
+          if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED)) {
+            $(event.target).addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
+          }
+          event.preventDefault();
+        },
+        /**
+         * Helper method to remove oj-active
+         * @private
+         */
+        _removeActive: function (event) {
+          $(event.target).removeClass(this._MARKER_STYLE_CLASSES._ACTIVE);
+          event.preventDefault();
+        },
+        /**
          * Create navigation arrow element
          * @param {string} typeClass  CSS class for the arrow type
          * @param {string} iconClass  CSS class for the arrow icon
@@ -1479,7 +1717,10 @@ var __oj_paging_control_metadata =
           navArrow.attr('title', navArrowTip);
           navArrow.attr(this._TAB_INDEX, '0'); // @HTMLUpdateOK
           navArrow.attr('href', '#');
-          navArrow.attr('oncontextmenu', 'return false;'); // @HTMLUpdateOK
+          navArrow[0].oncontextmenu = function () {
+            return false;
+          };
+
           var accLabelText = this.getTranslatedString(accLabelKey);
 
           // Add an aria-label on the button.  Otherwise screen reader will
@@ -1616,17 +1857,13 @@ var __oj_paging_control_metadata =
                 itemRangeCurrentText =
                   this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_NO_TOTAL,
                     { pageFrom: 0 });
-              } else if (size !== 0) {
+              } else {
                 itemRangeCurrentText =
                   this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_NO_TOTAL,
                     { pageFrom: pageFrom, pageTo: pageTo });
               }
             }
           } else if (data != null && data.totalSize() != null && size != null) {
-            itemRangeCurrentText =
-                this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE,
-                                        { pageFrom: pageFrom });
-
             pageTo = parseInt(startIndex, 10) + parseInt(size, 10);
             pageFrom = pageTo > 0 ? pageFrom + 1 : 0;
 
@@ -2230,30 +2467,23 @@ var __oj_paging_control_metadata =
               return;
             }
             if (self._pageFetchCount === 0 && !self._componentDestroyed) {
-              self._pendingPageFetch = undefined;
+              self._pendingPageFetch = null;
               self._invokeDataSetPage(self._pageFetchLatestPage).then(
                 function () {
                   self = null;
-                },
-                function (error) {
-                  self._pageFetchCount -= 1;
-                  if (self._pageFetchCount <= 0) {
-                    self._pendingPageFetch = undefined;
-                    ojlogger.error(error);
-                    self = null;
-                  }
-                }
+                }, self._queueFetchError
               );
             }
-          },
-          function (error) {
-            self._pageFetchCount -= 1;
-            if (self._pageFetchCount <= 0) {
-              self._pendingPageFetch = undefined;
-              ojlogger.error(error);
-              self = null;
-            }
-          });
+          }, self._queueFetchError);
+        },
+        // error on fetching
+        _queueFetchError: function (error) {
+          this._pageFetchCount -= 1;
+          if (this._pageFetchCount <= 0) {
+            this._pendingPageFetch = null;
+            ojlogger.error(error);
+            this._setComponentReady();
+          }
         },
         _queueRefresh: function () {
           var self = this;
@@ -2267,7 +2497,7 @@ var __oj_paging_control_metadata =
           .then(function () {
             self._refreshCount -= 1;
             if (self._refreshCount === 0) {
-              self._pendingRefreshes = undefined;
+              self._pendingRefreshes = null;
               if (!self._componentDestroyed) {
                 self._refresh();
                 self._trigger('ready');
@@ -2279,7 +2509,7 @@ var __oj_paging_control_metadata =
           function (error) {
             self._refreshCount -= 1;
             if (self._refreshCount === 0) {
-              self._pendingRefreshes = undefined;
+              self._pendingRefreshes = null;
               ojlogger.error(error);
               self._setComponentReady();
               self = null;
@@ -2369,28 +2599,23 @@ var __oj_paging_control_metadata =
                 pagingControlNavInputSummaryWidth;
 
             if (pagingControlNavWidth > elementWidth) {
-              if (pagingControlNavWidth
-                  - pagingControlNavPageLinksWidth <= elementWidth) {
-                // hide only the page links
+              // hide the page Links
+              if (pagingControlNavPageLinks != null) {
                 pagingControlNavPageLinks.css('display', 'none');
-              } else if (pagingControlNavWidth
-                       - pagingControlNavPageLinksWidth
-                       - pagingControlNavInputSummaryWidth <= elementWidth) {
+              }
+
+              if (pagingControlNavWidth
+                  - pagingControlNavPageLinksWidth > elementWidth) {
                 // hide the range text too
-                if (pagingControlNavPageLinks != null) {
-                  pagingControlNavPageLinks.css('display', 'none');
-                }
                 if (pagingControlNavInputSummary != null) {
                   pagingControlNavInputSummary.css('display', 'none');
                 }
-              } else {
+              }
+
+              if (pagingControlNavWidth
+                  - pagingControlNavPageLinksWidth
+                  - pagingControlNavInputSummaryWidth > elementWidth) {
                 // hide the arrows too
-                if (pagingControlNavPageLinks != null) {
-                  pagingControlNavPageLinks.css('display', 'none');
-                }
-                if (pagingControlNavInputSummary != null) {
-                  pagingControlNavInputSummary.css('display', 'none');
-                }
                 if (pagingControlNavArrowSection != null) {
                   pagingControlNavArrowSection.css('display', 'none');
                 }
@@ -2538,12 +2763,34 @@ var __oj_paging_control_metadata =
           }
         },
         /**
+         * Helper function to set the page input to readonly. We also need to set the aria-labelledby
+         * property to make sure the label is pointing to the correct element
+         * @param {Element} pagingControlNavInput Nav Input element
+         * @private
+         */
+        _setReadOnlyPageInput: function (pagingControlNavInput) {
+          var isCustomElement = this._IsCustomElement();
+          if (!isCustomElement) {
+            pagingControlNavInput.ojInputText('option', 'readOnly', true);
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            pagingControlNavInput[0].readonly = true;
+          }
+
+          // aria-labelledby no longer associated with the right element as the input-text is
+          // converted into a textbox (on redwood). Add the attribute to the textbox element to force the labelling
+          // on Alta, no change needed
+          var textboxElement = pagingControlNavInput[0].getElementsByClassName('oj-text-field-readonly');
+          if (textboxElement.length > 0) {
+            textboxElement[0].setAttribute('aria-labelledby', pagingControlNavInput[0].id + '|label');
+          }
+        },
+        /**
          * @param {number} size Number of rows
          * @param {number} startIndex Start index
          * @private
          */
-        // eslint-disable-next-line no-unused-vars
-        _refreshPagingControlNavMaxPageVal: function (size, startIndex) {
+        _refreshPagingControlNavMaxPageVal: function (size) {
           var maxPageVal = this._getMaxPageVal(size);
 
           var pagingControlNavMaxLabel = this._getPagingControlNav()
@@ -2594,13 +2841,10 @@ var __oj_paging_control_metadata =
           if (pagingControlNavInput != null && pagingControlNavInput.length > 0) {
             pagingControlNavInput = $(pagingControlNavInput.get(0));
             var messagesShown;
-            var validatorOptions = [{
-              type: 'numberRange',
-              options: { min: 1, max: maxPageVal }
-            }];
+            var validator = [new NumberRangeValidator({ min: 1, max: maxPageVal })];
             if (!isCustomElement) {
               pagingControlNavInput.ojInputText();
-              pagingControlNavInput.ojInputText('option', 'validators', validatorOptions);
+              pagingControlNavInput.ojInputText('option', 'validators', validator);
               messagesShown = pagingControlNavInput.ojInputText('option', 'messagesShown');
               if (messagesShown == null || messagesShown.length === 0) {
                 // only reset the value to the current page if there is currently no validation message displayed
@@ -2608,22 +2852,20 @@ var __oj_paging_control_metadata =
               }
 
               if (maxPageVal === 1) {
-                // make readOnly if we only have one page
-                pagingControlNavInput.ojInputText('option', 'readOnly', true);
+                this._setReadOnlyPageInput(pagingControlNavInput);
               } else {
                 pagingControlNavInput.ojInputText('option', 'readOnly', false);
               }
             } else {
               pagingControlNavInput = this._getPagingControlNavInput();
-              pagingControlNavInput.get(0).setAttribute('validators', JSON.stringify(validatorOptions));
+              pagingControlNavInput[0].validators = validator;
               messagesShown = pagingControlNavInput.messagesShown;
               if (messagesShown == null || messagesShown.length === 0) {
                 // only reset the value to the current page if there is currently no validation message displayed
                 this._resetPagingControlNavInput();
               }
               if (maxPageVal === 1) {
-                // make readOnly if we only have one page
-                pagingControlNavInput[0].readonly = true;
+                this._setReadOnlyPageInput(pagingControlNavInput);
               } else {
                 pagingControlNavInput[0].readonly = false;
               }
@@ -2968,11 +3210,8 @@ var __oj_paging_control_metadata =
         _createPagingControlAccNavPageLabel: function () {
           var pagingControlAccNavPageLabelText =
               this.getTranslatedString(this._BUNDLE_KEY._LABEL_ACC_NAV_PAGE);
-          var pagingControlAccNavPageLabel =
-              this._createAccLabelSpan(pagingControlAccNavPageLabelText,
-                                       this._CSS_CLASSES._PAGING_CONTROL_NAV_PAGE_ACC_LABEL_CLASS);
-
-          return pagingControlAccNavPageLabel;
+          return this._createAccLabelSpan(pagingControlAccNavPageLabelText,
+                                        this._CSS_CLASSES._PAGING_CONTROL_NAV_PAGE_ACC_LABEL_CLASS);
         },
         /**
          * Create an paging content div
@@ -3077,6 +3316,13 @@ var __oj_paging_control_metadata =
           var pagingControlContent = this._getPagingControlContent();
           var pagingControlNav = $(document.createElement('div'));
           pagingControlNav.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_CLASS);
+          // add dots vertical class if needed
+          if (isDot && isVertical) {
+            pagingControlNav.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOTS_VERTICAL_CLASS);
+          } else {
+            pagingControlNav.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_CLASS_STANDARD);
+          }
+
           pagingControlContent.append(pagingControlNav); // @HTMLUpdateOK
 
           // page input section
@@ -3089,6 +3335,7 @@ var __oj_paging_control_metadata =
             pagingControlNav.append(pagingControlNavInputSection); // @HTMLUpdateOK
             var pagingControlNavLabel = $(document.createElement('label'));
             pagingControlNavLabel.attr('for', this.element.attr('id') + '_nav_input|input');
+            pagingControlNavLabel.attr('id', this.element.attr('id') + '_nav_input|label');
             pagingControlNavLabel.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_LABEL_CLASS);
             pagingControlNavLabel.addClass('oj-label-inline');
             var navInputPageLabel = this.getTranslatedString(this._BUNDLE_KEY._LABEL_NAV_INPUT_PAGE);
@@ -3133,13 +3380,14 @@ var __oj_paging_control_metadata =
               converterHint: ['notewindow'],
               validatorHint: ['notewindow']
             };
-            var validatorOptions = [{ type: 'numberRange', options: { min: 1, max: maxPageVal } }];
+            var validator = [new NumberRangeValidator({ min: 1, max: maxPageVal })];
+
             if (!isCustomElement) {
               pagingControlNavInput.ojInputText({
                 displayOptions: displayOptions,
                 userAssistanceDensity: 'compact',
                 converter: new ojconverterNumber.IntlNumberConverter(),
-                validators: validatorOptions
+                validators: validator
               }).attr('data-oj-internal', '');
               pagingControlNavInput[0].style.width = 'auto';
               pagingControlNavInput[0].style.minWidth = 0;
@@ -3160,7 +3408,7 @@ var __oj_paging_control_metadata =
               };
               pagingControlNavInput.converter = new ojconverterNumber.IntlNumberConverter(
                 converterOptions);
-              pagingControlNavInput.setAttribute('validators', JSON.stringify(validatorOptions));
+              pagingControlNavInput.validators = validator;
               pagingControlNavInput.addEventListener('valueChanged', this._handlePageChange.bind(this));
             }
           }
@@ -3427,7 +3675,9 @@ var __oj_paging_control_metadata =
             this._AddHoverable(pagingControlNavPage);
             this._focusable({ element: pagingControlNavPage, applyHighlight: true });
             pagingControlNavPage.attr('title', pageTitle);
-            pagingControlNavPage.attr('oncontextmenu', 'return false;'); // @HTMLUpdateOK
+            pagingControlNavPage[0].oncontextmenu = function () {
+              return false;
+            };
             // create the acc label for the page link
             var accPageLabel = this._createPagingControlAccNavPageLabel();
             pagingControlNavPage.append(accPageLabel); // @HTMLUpdateOK
@@ -3670,248 +3920,6 @@ var __oj_paging_control_metadata =
         }
         /** ** end internal DOM functions ****/
       });
-      // ////////////////     FRAGMENTS    //////////////////
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Page Navigation Bar</td>
-       *       <td><kbd>Swipe</kbd></td>
-       *       <td>When mode='page', swiping left or right on the page navigation bar will either increment or decrement the page respectively.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Page Number Input</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Set focus to the input.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Arrow Page Navigation</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Navigates to the first, previous, next, or last page.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Numbered Page Links</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Navigates to the page.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
-       * @memberof oj.ojPagingControl
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Page Number Input</td>
-       *       <td><kbd>Tab In</kbd></td>
-       *       <td>Set focus to the input.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Arrow Page Navigation</td>
-       *       <td><kbd>Tab</kbd></td>
-       *       <td>Set focus to the first, previous, next, or last page arrow.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Numbered Page Links</td>
-       *       <td><kbd>Tab</kbd></td>
-       *       <td>Set focus to to the page link.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojPagingControl
-       */
-
-      // ////////////////     SUB-IDS     //////////////////
-      /**
-       * <p>Sub-ID for the PagingControl page number navigation input.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-input
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the page number navigation input:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl current maximum page text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-input-max
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the current maximum page text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-max'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl summary items text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-input-summary
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the summary items text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl summary current items text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-input-summary-current
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the summary current items text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-current'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl summary max items text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-input-summary-max
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the summary max items text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-input-summary-max'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl first page button.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-first
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the first page button:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-first'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl next page button.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-next
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the next page button:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-next'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl previous page button.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-previous
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the previous page button:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-previous'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl previous page button.</p>
-       *
-       * @ojsubid oj-pagingcontrol-nav-last
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the last page button:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-last'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl page button.</p>
-       * To lookup a page button the locator object should have the following:
-       * <ul>
-       * <li><b>index</b>zero-based index of page number node</li>
-       * </ul>
-       *
-       * @ojsubid oj-pagingcontrol-nav-page
-       * @memberof oj.ojPagingControl
-       *
-       * @example <caption>Get the page button:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-nav-page', 'index': 1} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl Show More link.</p>
-       *
-       * @ojsubid oj-pagingcontrol-load-more-link
-       * @memberof oj.ojPagingControl
-       * @ojdeprecated {since: '7.0.0', description: 'this option is deprecated and will be removed in the future.
-       *                         Please use native component high-water mark scrolling API instead (see Table, ListView, DataGrid).'}
-       *
-       * @example <caption>Get the Show More link:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-link'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl load more range text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-load-more-range
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the load more range text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl load more range current items text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-load-more-range-current
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the load more range current items text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-current'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl load more range max items text.</p>
-       *
-       * @ojsubid oj-pagingcontrol-load-more-range-max
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the load more range max items text:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-range-max'} );
-       */
-
-      /**
-       * <p>Sub-ID for the PagingControl load more max message.</p>
-       *
-       * @ojsubid oj-pagingcontrol-load-more-max-rows
-       * @deprecated 2.0.2 This sub-ID is not needed since it is not an interactive element.
-       * @memberof oj.ojPagingControl
-       * @ignore
-       *
-       * @example <caption>Get the load more max message:</caption>
-       * var node = myPagingControl.getNodeBySubId( {'subId': 'oj-pagingcontrol-load-more-max-rows'} );
-       */
   }());
 
 });

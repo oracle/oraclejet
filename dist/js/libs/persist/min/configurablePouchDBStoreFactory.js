@@ -1,1 +1,6 @@
-define(["./impl/pouchDBPersistenceStore"],function(a){"use strict";var b=function(a){this._options=a};return b.prototype.createPersistenceStore=function(b,c){var d=new a(b),e=this._options;if(c)if(e){var f={};for(var g in e)Object.prototype.hasOwnProperty.call(e,g)&&(f[g]=e[g]);for(var g in c)Object.prototype.hasOwnProperty.call(c,g)&&(f[g]=c[g]);e=f}else e=c;return d.Init(e).then(function(){return d})},b});
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define(["./impl/pouchDBPersistenceStore"],(function(t){"use strict";var e=function(t){this._options=t};return e.prototype.createPersistenceStore=function(e,r){var n=new t(e),o=this._options;if(r)if(o){var i={};for(var c in o)Object.prototype.hasOwnProperty.call(o,c)&&(i[c]=o[c]);for(var c in r)Object.prototype.hasOwnProperty.call(r,c)&&(i[c]=r[c]);o=i}else o=r;return n.Init(o).then((function(){return n}))},e}));

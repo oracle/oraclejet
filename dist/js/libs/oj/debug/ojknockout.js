@@ -15,13 +15,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   templateEngine = templateEngine && Object.prototype.hasOwnProperty.call(templateEngine, 'default') ? templateEngine['default'] : templateEngine;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @ojoverviewdoc BindingOverview - [4]JET Binding Elements
    * @classdesc
    * {@ojinclude "name":"bindingOverviewDoc"}
@@ -63,7 +56,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    *       <td class="rt">attr</td>
    *       <td>:[attribute]="[[attrValue]]", e.g. :id="[[inputId]]"</td>
    *       <td>See the custom element
-   *           <a href="./CustomElementOverview.html#ce-databind-global-section">global attribute</a>
+   *           <a href="CustomElementOverview.html#ce-databind-global-section">global attribute</a>
    *           data binding doc for details.</td>
    *     </tr>
    *     <tr>
@@ -72,7 +65,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    *       <td>Supports the normal space delimited string of classes,
    *           an array of classes, or a map of class to boolean values
    *           for toggling classes in the DOM. See the custom element
-   *           <a href="./CustomElementOverview.html#ce-databind-class-section">class</a>
+   *           <a href="CustomElementOverview.html#ce-databind-class-section">class</a>
    *           data binding doc for details.</td>
    *     </tr>
    *     <tr>
@@ -83,45 +76,45 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    *           this.clickListener=function(event, data, bindingContext) {..}
    *           If the component has its own event equivalent, use those instead.
    *           Eg: oj-button should use on-oj-action not on-click. See the custom element
-   *           <a href="./CustomElementOverview.html#ce-events-section">event</a>
+   *           <a href="CustomElementOverview.html#ce-events-section">event</a>
    *           data binding doc for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">foreach</td>
    *       <td>oj-bind-for-each</td>
-   *       <td>See the <a href="./oj.ojBindForEach.html">oj-bind-for-each</a> binding element doc
+   *       <td>See the <a href="oj.ojBindForEach.html">oj-bind-for-each</a> binding element doc
    *           for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">html</td>
    *       <td>oj-bind-dom</td>
-   *       <td>See the <a href="./oj.ojBindDom.html">oj-bind-dom</a> binding element doc
+   *       <td>See the <a href="oj.ojBindDom.html">oj-bind-dom</a> binding element doc
    *           for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">if</td>
    *       <td>oj-bind-if</td>
-   *       <td>See the <a href="./oj.ojBindIf.html">oj-bind-if</a> binding element doc
+   *       <td>See the <a href="oj.ojBindIf.html">oj-bind-if</a> binding element doc
    *           for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">template</td>
    *       <td>oj-bind-template-slot if being used inside a composite or oj-module for other cases</td>
-   *       <td>See the <a href="./oj.ojBindTemplateSlot.html">oj-bind-template-slot</a> binding element and
-   *           <a href="./oj.ojModule.html">oj-module</a> element doc
+   *       <td>See the <a href="oj.ojBindTemplateSlot.html">oj-bind-template-slot</a> binding element and
+   *           <a href="oj.ojModule.html">oj-module</a> element doc
    *           for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">text</td>
    *       <td>oj-bind-text</td>
-   *       <td>See the <a href="./oj.ojBindText.html">oj-bind-text</a> binding element doc
+   *       <td>See the <a href="oj.ojBindText.html">oj-bind-text</a> binding element doc
    *           for details.</td>
    *     </tr>
    *     <tr>
    *       <td class="rt">visible</td>
    *       <td>:style.display="[[ CONDITION ? '' : 'none' ]]"</td>
    *       <td> See the custom element
-   *           <a href="./CustomElementOverview.html#ce-databind-style-section">style</a>
+   *           <a href="CustomElementOverview.html#ce-databind-style-section">style</a>
    *           data binding doc for details.</td>
    *     </tr>
    *   </tbody>
@@ -130,14 +123,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    *
    * @ojfragment bindingOverviewDoc
    * @memberof BindingOverview
-   */
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
    */
 
   /**
@@ -216,14 +201,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     return (count >= 1);
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const __ExpressionUtils = {};
   oj$1._registerLegacyNamespaceProp('__ExpressionUtils', __ExpressionUtils);
   (function () {
@@ -265,14 +242,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       return evaluator[_KO_WRITER_KEY];
     };
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * To create a custom binding,
@@ -1150,14 +1119,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   ComponentBinding._INSTANCE = ComponentBinding.create(['ojComponent', 'jqueryUI']);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ignore
    */
   BindingProviderImpl.addPostprocessor({
@@ -1342,7 +1303,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       },
 
       getBindingAccessors: function (node, bindingContext, wrappedReturn) {
-        if (node.nodeType === 1 && oj$1.BaseCustomElementBridge) {
+        if (node.nodeType === 1) {
           var name = node.nodeName;
 
           if (ojcustomelementUtils.CustomElementUtils.isElementRegistered(name)) {
@@ -1351,7 +1312,9 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
             // eslint-disable-next-line no-param-reassign
             wrappedReturn._ojCustomElement = function () {
-              return { composite: ojcustomelementUtils.CustomElementUtils.isComposite(name) };
+              const isComposite = ojcustomelementUtils.CustomElementUtils.isComposite(name);
+              const isVComponent = ojcustomelementUtils.CustomElementUtils.isVComponent(name);
+              return { skipThrottling: isComposite || isVComponent };
             };
           }
         }
@@ -1360,14 +1323,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       }
     }
   );
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * This is added so that we could cleanup any ko references on the element when it is removed.
@@ -1405,14 +1360,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       }
     }
   );
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Returns a renderer function and executes the template specified in the binding attribute. (for example, a knockout template).
@@ -1500,15 +1447,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-
-  /**
    * Common method to handle managed attributes for both init and update
    * @param {string} name the name of the attribute
    * @param {Object} value the value of the attribute
@@ -1538,14 +1476,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     },
     for: 'ojChart'
   });
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Returns a renderer function executes the template specified in the binding attribute.
@@ -1638,14 +1568,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       use: 'ComboboxOptionRenderer'
     });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /* jslint browser: true, devel: true*/
 
   // TODO: do we have JSDoc / API doc for bindings?  (Latest answer: no for now, just doc it briefly in baseComponent's contextMenu option for now.)
@@ -1733,7 +1655,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         .on('keydown' + eventNamespace + ' ' +
             'contextmenu' + eventNamespace, function (event) {
               if (event.type === 'contextmenu' // right-click.  pressHold for Android but not iOS
-                  || (event.which === 121 && event.shiftKey)) { // Shift-F10
+                  || (event.keyCode === 121 && event.shiftKey)) { // Shift-F10
                 var eventType;
                 if (touchInProgress) {
                   eventType = 'touch';
@@ -1773,7 +1695,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       // , on Chrome preventDefault on "keyup" will avoid triggering contextmenu event
       // which will display native contextmenu.This also need to be added on document as event target is not menu launcher.
       function preventKeyUpEventIfMenuOpen(event) {
-        if (event.which === 121 && event.shiftKey) { // Shift-F10
+        if (event.keyCode === 121 && event.shiftKey) { // Shift-F10
           if (getContextMenuNode().is(':visible')) {
             event.preventDefault();
           }
@@ -1942,14 +1864,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       }
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ignore
@@ -2164,16 +2078,13 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
         // this isn't actually a property, just transforming names...
         var property = ojcustomelementUtils.AttributeUtils.eventTypeToEventListenerProperty(event);
         var attribute = ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(property);
-        var message = "Invalid type '" + (typeof listener) + "' found for attribute '" +
-          attribute + "'. Expected value of type 'function'.";
+        var message = `Invalid type '${typeof listener}' found for attribute '${attribute}'.\
+ Expected value of type 'function'."`;
         if (ojcustomelementUtils.CustomElementUtils.isElementRegistered(element.tagName)) {
           const elementState = ojcustomelementUtils.CustomElementUtils.getElementState(element);
           elementState.rejectBindingProvider(message);
-          elementState.throwError(message);
-        } else {
-          var elementInfo = ojcustomelementUtils.CustomElementUtils.getElementInfo(element);
-          throw new Error(elementInfo + ': ' + message);
         }
+        throw new ojcustomelementUtils.JetElementError(element, message);
       }
     }
 
@@ -2329,14 +2240,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ignore
    * @constructor
    * @private
@@ -2416,6 +2319,64 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     this.__GetThrottlePromise = function () {
       return BindingProviderImpl.getGlobalChangeQueue().getThrottlePromise();
     };
+
+    /**
+      * A wrapper function used by VTemplateEngine that extends binding context with given extra properties.
+     * @ignore
+     */
+     this.__ExtendBindingContext = function (context, current, alias, templateAlias, cacheKey) {
+      return BindingProviderImpl.extendBindingContext(
+        context, current, alias, templateAlias, cacheKey);
+    };
+
+    /**
+     * A wrapper function used by VTemplateEngine that gets binding context object applied in a node.
+     * @ignore
+     */
+    this.__ContextFor = function (node) {
+      // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
+      return node.__ojBindingContext ?
+        node.__ojBindingContext : ko.contextFor(node);
+    };
+
+    /**
+     * A wrapper function used by VTemplateEngine that accepts an observable or plain value and returns a plain value.
+     * @ignore
+     */
+    this.__UnwrapObservable = function (value) {
+      return ko.utils.unwrapObservable(value);
+    };
+
+    /**
+     * A wrapper function used by VTemplateEngine to check if a value is observable.
+     * @ignore
+     */
+    this.__IsObservable = function (value) {
+      return ko.isObservable(value);
+    };
+
+    /**
+     * A wrapper function used by VTemplateEngine to create a computed observable.
+     * @ignore
+     */
+      this.__KoComputed = function (evaluator, targetObject, options) {
+      return ko.computed(evaluator, targetObject, options);
+    };
+
+    /**
+     * A wrapper function used by VTemplateEngine to check if called during the first evaluation of the current computed observable.
+     * @ignore
+     */
+      this.__KoIsInitial = function () {
+      return ko.computedContext.isInitial();
+    };
+
+    /**
+     * @ignore
+     */
+    this.__CleanNode = function (n) {
+      ko.cleanNode(n);
+    };
   };
 
   /**
@@ -2474,8 +2435,8 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
           disposeProviderListeners();
         }
 
-        function setup(isComposite, isInitial) {
-          _expressionHandler = new ExpressionPropertyUpdater(element, bindingContext, isComposite);
+        function setup(skipThrottling, isInitial) {
+          _expressionHandler = new ExpressionPropertyUpdater(element, bindingContext, skipThrottling);
 
           // Dummy metadata for passing to the ExpressionPropertyUpdater for DOM listener attributes i.e. on-*
           var domListenerMetadata = { _domListener: true };
@@ -2483,7 +2444,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
           // Set a flag on the bridge to indicate that we are initializing expressions from the DOM
           // to avoid overriding any property sets that could have occured after
           const elementState = ojcustomelementUtils.CustomElementUtils.getElementState(element);
-          elementState.isInitializingProperties = true;
+          elementState.beginApplyingBindings();
 
           // setupPropertyBinding will only update properties defined in metadata so it's safe to iterate through all element attributes
           // including ones defined on the base HTML prototype
@@ -2533,8 +2494,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
             }
           });
 
-          elementState.isInitializingProperties = false;
-
           attributeListener = function (evt) {
             var detail = evt.detail;
             var _attr = detail.attribute;
@@ -2561,14 +2520,14 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
           function () {
             // Access valueAccesor to ensure that the binding is re-initialized when an
             // observable ViewModel is mutated
-            var isComposite = valueAccessor().composite;
+            var skipThrottling = valueAccessor().skipThrottling;
 
             const isInitial = ko.computedContext.isInitial();
             if (!isInitial) {
               cleanup();
             }
 
-            setup(isComposite, isInitial);
+            setup(skipThrottling, isInitial);
           },
           null,
           { disposeWhenNodeIsRemoved: element }
@@ -2654,7 +2613,8 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
                 const attrVal = element.getAttribute(attrName);
                 if (!ojcustomelementUtils.AttributeUtils.getExpressionInfo(attrVal).expr) {
                   set(
-                    ojcustomelementUtils.AttributeUtils.coerceValue(element, attrName, attrVal, metadataProps[pName].type)
+                    ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(element, attrName, attrVal,
+                      metadataProps[pName])
                   );
                 }
               }
@@ -2753,14 +2713,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       return (val) => observables.forEach((observable) => observable(val));
     }
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Returns a header renderer function executes the template specified in the binding attribute.
@@ -2997,14 +2949,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   function _handleManagedDiagramAttributes(name, value, bindingContext) {
@@ -3028,14 +2972,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     },
     for: 'ojDiagram'
   });
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ignore
@@ -3387,8 +3323,17 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   /**
    * @license
    * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
+   * Licensed under The Universal Permissive License (UPL), Version 1.0
    * as shown at https://oss.oracle.com/licenses/upl/
+   *
+   * @license
+   * Knockout Fast Foreach v0.6.0 (2016-07-28T11:02:54.197Z)
+   * By: Brian M Hunt (C) 2015 | License: MIT
+   *
+   * Adds `fastForEach` to `ko.bindingHandlers`.
+   *
+   * Modification notice: The code is obtained from https://github.com/brianmhunt/knockout-fast-foreach
+   * and modified by Oracle JET team to be included into Oracle JET project.
    * @ignore
    */
 
@@ -4332,13 +4277,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     ko.virtualElements.allowedBindings._ojBindForEach_ = true;
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   //
   // Define a template source that allows the use of a knockout array (ko[])
   // to provide storage for a template string.
@@ -4444,13 +4382,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Returns a renderer function executes the template specified in the binding attribute.
    * (for example, a knockout template).
    * @param {Object} bindingContext the ko binding context
@@ -4537,24 +4468,9 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     use: 'ojListViewRenderer'
   });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   oj$1._registerLegacyNamespaceProp('ResponsiveKnockoutUtils', ResponsiveKnockoutUtils);
   oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils);
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    *
    * @ojcomponent oj.ojBindForEach
@@ -4684,13 +4600,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    *
    * @ojcomponent oj.ojBindIf
    * @ojshortdesc An oj-bind-if renders its contents only if a provided test returns true.
@@ -4745,13 +4654,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    *
    * @ojcomponent oj.ojBindText
    * @ojshortdesc An oj-bind-text binds a text node to an expression.
@@ -4795,13 +4697,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    */
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Common method to handle managed attributes for both init and update
    * @param {string} name the name of the attribute
    * @param {Object} value the value of the attribute
@@ -4833,13 +4728,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
   });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Common method to handle managed attributes for both init and update
    * @param {string} name the name of the attribute
    * @param {Object} value the value of the attribute
@@ -4870,13 +4758,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     for: 'ojSunburst'
   });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /* jslint browser: true, devel: true*/
 
   /**
@@ -5046,13 +4927,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Common method to handle managed attributes for both init and update
    * @param {string} name the name of the attribute
    * @param {Object} value the value of the attribute
@@ -5102,13 +4976,6 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
     for: 'ojThematicMap'
   });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Common method to handle managed attributes for both init and update
    * @param {string} name the name of the attribute

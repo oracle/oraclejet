@@ -13,14 +13,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @preserve Copyright 2013 jQuery Foundation and other contributors
    * Released under the MIT license.
    * http://jquery.org/license
@@ -36,13 +28,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * End of jsdoc
    */
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * This picks a strategy for where to put each piece of information
    * that is on a component. It started out being messaging pieces: like
@@ -92,6 +77,11 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @ignore
    */
   ComponentMessaging._STRATEGY_TYPE_TO_CALLBACK = {};
+
+  /**
+   * @private
+   */
+  const _DESCBY = 'aria-describedby';
 
   /**
    * Stores the constructor function callback object used to constuct a strategy object for the
@@ -946,7 +936,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    */
   MessagingStrategy.prototype.HasMessages = function () {
     var messages = this.GetMessages();
-    return !!((messages && messages.length > 0));
+    return !!(messages && messages.length > 0);
   };
 
   /**
@@ -1012,7 +1002,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
     $contentElems.each(function () {
       // get ariaAttr that is on the content element(s)
-      let ariaAttributeValue = this.getAttribute('aria-describedby');
+      let ariaAttributeValue = this.getAttribute(_DESCBY);
       // split into tokens
       let tokens = ariaAttributeValue ? ariaAttributeValue.split(/\s+/) : [];
       // Get index that id is in the tokens, if at all.
@@ -1023,7 +1013,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       }
       // join the tokens together
       let newValue = tokens.join(' ').trim();
-      this.setAttribute('aria-describedby', newValue); // @HTMLUpdateOK
+      this.setAttribute(_DESCBY, newValue); // @HTMLUpdateOK
     });
   };
 
@@ -1064,7 +1054,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
     $contentElems.each(function () {
       // get ariaAttr that is on the content element(s)
-      let ariaAttributeValue = this.getAttribute('aria-describedby');
+      let ariaAttributeValue = this.getAttribute(_DESCBY);
       // split into tokens
       let tokens = ariaAttributeValue ? ariaAttributeValue.split(/\s+/) : [];
       // Get index that id is in the tokens, if at all.
@@ -1076,9 +1066,9 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       }
       let newValue = tokens.join(' ').trim();
       if (newValue) {
-        this.setAttribute('aria-describedby', newValue); // @HTMLUpdateOK
+        this.setAttribute(_DESCBY, newValue); // @HTMLUpdateOK
       } else {
-        this.removeAttribute('aria-describedby');
+        this.removeAttribute(_DESCBY);
       }
     });
   };
@@ -1273,8 +1263,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       // don't override the placeholder with the converter hint if it's empty
       if (oj.StringUtils.isEmptyOrUndefined(content)) return;
 
-      var context = {};
-      context.internalMessagingSet = true; // to indicate to component that placeholder is being
+      var context = { internalMessagingSet: true };
       // set from messaging module
       this.GetComponent().option({ placeholder: content }, { _context: context });
     }
@@ -1400,14 +1389,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace Components
    * @classdesc JET Component services
    * @since 1.0
@@ -1448,6 +1429,11 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @private
    */
   var _OJ_PENDING_SUBTREE_HIDDEN_CLASS = 'oj-pending-subtree-hidden';
+
+  /**
+   * @private
+   */
+  const _NOT_COMP = 'node is not a component element';
 
   /**
    * Sets default options values for JET components.
@@ -1657,10 +1643,15 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     unmarkSubtreeHidden(_node);
 
     _applyHideShowToComponents(_node, function (instance) {
-      if (isInitialRender) {
-        instance._NotifyInitShown();
-      } else {
-        instance._NotifyShown();
+      ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+      try {
+        if (isInitialRender) {
+          instance._NotifyInitShown();
+        } else {
+          instance._NotifyShown();
+        }
+      } finally {
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
       }
     }, true);
   };
@@ -1683,7 +1674,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     }
 
     _applyHideShowToComponents(_node, function (instance) {
-      instance._NotifyHidden();
+      ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+      try {
+        instance._NotifyHidden();
+      } finally {
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+      }
     }, false);
 
     markSubtreeHidden(_node);
@@ -1876,7 +1872,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   */
   Components.getComponentOption = function (componentElement, option) {
     if (!_isComponentElement(componentElement)) {
-      throw new Error('node is not a component element');
+      throw new Error(_NOT_COMP);
     } else if (_isCompositeOrCustom(componentElement)) {
       if (componentElement.getProperty) {
         return componentElement.getProperty.call(componentElement, option);
@@ -1899,7 +1895,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   */
   Components.setComponentOption = function (componentElement, option, value) {
     if (!_isComponentElement(componentElement)) {
-      throw new Error('node is not a component element');
+      throw new Error(_NOT_COMP);
     } else if (_isCompositeOrCustom(componentElement)) {
       if (componentElement.setProperty) {
         componentElement.setProperty.call(componentElement, option, value);
@@ -1922,7 +1918,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   // eslint-disable-next-line no-unused-vars
   Components.callComponentMethod = function (componentElement, method, methodArguments) {
     if (!_isComponentElement(componentElement)) {
-      throw new Error('node is not a component element');
+      throw new Error(_NOT_COMP);
     } else if (_isCompositeOrCustom(componentElement)) {
       if (componentElement[method]) {
         return componentElement[method].apply(componentElement, [].slice.call(arguments, 2));
@@ -2114,14 +2110,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   }
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * A bridge for a custom element that renders using a constructor
    * function. Note that when a constructor function is provided, the new instance isn't
    * created until the CreateComponent method so property changes that occur before the
@@ -2233,7 +2221,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           this._INSTANCE.createDOM();
         }
         if (this._INSTANCE.updateDOM) {
-          this._INSTANCE.updateDOM();
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+          try {
+            this._INSTANCE.updateDOM();
+          } finally {
+            ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+          }
         }
       }
     },
@@ -2254,10 +2247,14 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       function set(value, bOuterSet) {
         // Properties can be set before the component is created. These early
         // sets are actually saved until after component creation and played back.
+        if (bOuterSet) {
+          // eslint-disable-next-line no-param-reassign
+          value =
+          ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+        }
         if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
           var previousValue = this._BRIDGE._PROPS[property];
-          if (!oj.BaseCustomElementBridge.__CompareOptionValues(property, propertyMeta,
-                                                                value, previousValue)) {
+          if (!ojcustomelementUtils.ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
             // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
             if (bOuterSet) {
               // eslint-disable-next-line no-param-reassign
@@ -2361,7 +2358,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     // eslint-disable-next-line no-unused-vars
     _fullRender: function (element) {
       if (this._INSTANCE && this._INSTANCE.updateDOM) {
-        this._INSTANCE.updateDOM();
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+        try {
+          this._INSTANCE.updateDOM();
+        } finally {
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+        }
       }
     },
 
@@ -2372,7 +2374,12 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         var handlePropChangedFun = this._INSTANCE.handlePropertyChanged;
         var fullRender = !handlePropChangedFun || !handlePropChangedFun(property, value);
         if (fullRender && this._INSTANCE.updateDOM) {
-          this._INSTANCE.updateDOM();
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+          try {
+            this._INSTANCE.updateDOM();
+          } finally {
+            ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+          }
         }
       }
     },
@@ -2400,14 +2407,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       }
   }
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const CustomElementBridge = {};
 
   /**
@@ -2415,7 +2414,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    */
   CustomElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
   oj._registerLegacyNamespaceProp('CustomElementBridge', CustomElementBridge);
-
 
   oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
     // Provides a promise for JET's Knockout throttling timeout
@@ -2434,11 +2432,14 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       proto.setProperty = function (prop, value) {
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
         if (!bridge.SaveEarlyPropertySet(this, prop, value)) {
-          if (!bridge._setEventProperty(this, prop, value) &&
-              !bridge._validateAndSetCopyProperty(this, prop, value, null)) {
+          if (
+            !bridge._setEventProperty(this, prop, value) &&
+            !bridge._validateAndSetCopyProperty(this, prop, value, null)
+          ) {
             // If not an event or copy property, check to see if it's a component specific property
-            var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-              prop, ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
+            var meta = MetadataUtils.getPropertyMetadata(
+              prop,
+              ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
             );
             // For non component specific properties, just set directly on the element instead.
             if (!meta) {
@@ -2453,8 +2454,9 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       // eslint-disable-next-line no-param-reassign
       proto.getProperty = function (prop) {
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
-        var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-          prop, ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
+        var meta = MetadataUtils.getPropertyMetadata(
+          prop,
+          ojcustomelementUtils.CustomElementUtils.getElementProperties(this)
         );
 
         // For event listeners and non component specific properties, return the property from the element.
@@ -2518,8 +2520,10 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         var value = props[property];
 
         // exclude event proprties and transfer attributes from batch updates
-        if (!this._setEventProperty(elem, property, value) &&
-            !this._validateAndSetCopyProperty(elem, property, value, null)) {
+        if (
+          !this._setEventProperty(elem, property, value) &&
+          !this._validateAndSetCopyProperty(elem, property, value, null)
+        ) {
           value = this.ValidatePropertySet(elem, property, value);
 
           property = this.GetAliasForProperty(property);
@@ -2542,7 +2546,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     CreateComponent: function (element) {
       var innerDomFun = this._INNER_DOM_FUNCTION;
       this._WIDGET_ELEM = CustomElementBridge._getWidgetElement(
-        element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM
+        element,
+        innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM
       );
 
       // Transfer global attributes and copy tagged properties to child element if one exists
@@ -2596,8 +2601,13 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       proto[method] = function () {
         var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
         var methodName = methodMeta.internalName || method;
-        // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
-        return bridge._WIDGET.apply(null, [methodName].concat([].slice.call(arguments)));
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+        try {
+          // Pass in null as thisArg to apply since the widget constructor is prebound to the jQuery element
+          return bridge._WIDGET.apply(null, [methodName].concat([].slice.call(arguments)));
+        } finally {
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+        }
       };
     },
 
@@ -2619,6 +2629,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           var bridge = ojcustomelementUtils.CustomElementUtils.getElementBridge(this);
           // Properties can be set before the component is created. These early
           // sets are actually saved until after component creation and played back.
+          // eslint-disable-next-line no-param-reassign
+          value = ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this, propertyMeta, value);
           if (!bridge.SaveEarlyPropertySet(this, property, value)) {
             if (propertyMeta._eventListener) {
               bridge.SetEventListenerProperty(this, property, value);
@@ -2632,7 +2644,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     },
 
     GetAttributes: function (metadata) {
-      var attrs = oj.BaseCustomElementBridge.getAttributes(metadata.properties);
+      var attrs = MetadataUtils.getFlattenedAttributes(metadata.properties);
       if (metadata.extension._GLOBAL_TRANSFER_ATTRS) {
         attrs = attrs.concat(metadata.extension._GLOBAL_TRANSFER_ATTRS);
       }
@@ -2723,8 +2735,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
       this._EXTENSION = this.METADATA.extension || {};
 
-      this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ?
-        { _wrapper: element } : {};
+      this._PROPS =
+        this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION ? { _wrapper: element } : {};
       this._setupPropertyAccumulator(element, this._PROPS);
 
       // Checks metadata for copy and writeback properties
@@ -2756,10 +2768,14 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         // the app has set undefined, but we're setting the default value on the widget so
         // we'll handle firing the property changed from the bridge code for this case
         // and skip the event in the widget code.
-        if (this.State.isComplete) {
+        if (this.State.isComplete()) {
           const previousValue = element[property];
           oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
-            element, property, undefined, previousValue, 'external'
+            element,
+            property,
+            undefined,
+            previousValue,
+            'external'
           );
         }
       }
@@ -2790,13 +2806,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       if (ext._ATTRIBUTE_ONLY) {
         if (this._WIDGET_ELEM.hasAttribute(attrName)) {
           var value = this._WIDGET_ELEM.getAttribute(attrName);
-          var coercedValue;
-          try {
-            coercedValue = ojcustomelementUtils.AttributeUtils.coerceValue(elem, attrName, value, propMeta.type);
-          } catch (ex) {
-            this.State.throwError('Error parsing attribute value.', ex);
-          }
-          return coercedValue;
+          return ojcustomelementUtils.AttributeUtils.attributeToPropertyValue(elem, attrName, value, propMeta);
         }
         return null;
       }
@@ -2846,13 +2856,16 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         // Allow property access before widget is created for element binding and dynamic element creation
         if (method === 'option') {
           oj.BaseCustomElementBridge.__SetProperty(
-            this.GetAliasForProperty.bind(this), widgetOptions, prop, value
+            this.GetAliasForProperty.bind(this),
+            widgetOptions,
+            prop,
+            value
           );
           return widgetOptions[prop];
         }
 
         // throw is eslint hack to fix consistent-return
-        throw this.State.throwError('Cannot access methods before element is upgraded.');
+        throw new ojcustomelementUtils.JetElementError(element, 'Cannot access methods before element is upgraded.');
       };
     },
 
@@ -2870,8 +2883,9 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         if (this._WIDGET_ELEM) {
           if (!propMeta) {
             // eslint-disable-next-line no-param-reassign
-            propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(
-              prop, ojcustomelementUtils.CustomElementUtils.getElementProperties(elem)
+            propMeta = MetadataUtils.getPropertyMetadata(
+              prop,
+              ojcustomelementUtils.CustomElementUtils.getElementProperties(elem)
             );
           }
 
@@ -2881,7 +2895,11 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           // these to the widget. The widget will never update these properties themselves so
           // all updates are external.
           oj.BaseCustomElementBridge.__FirePropertyChangeEvent(
-            elem, prop, this._getCopyProperty(elem, prop, propMeta), previousValue, 'external'
+            elem,
+            prop,
+            this._getCopyProperty(elem, prop, propMeta),
+            previousValue,
+            'external'
           );
         } else {
           // Save the value until inner widget is created and we can copy them over
@@ -2898,9 +2916,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         elem[prop] = value;
       }
       return isEvent;
-    },
-
-
+    }
   });
 
   /** ***********************/
@@ -2993,8 +3009,8 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
     var ext = meta.extension;
     // Use the simple definitional element prototype if no real widget is associated with this custom element
-    var bridgeProto = ext &&
-        ext._WIDGET_NAME ? CustomElementBridge.proto : DefinitionalElementBridge.proto;
+    var bridgeProto =
+      ext && ext._WIDGET_NAME ? CustomElementBridge.proto : DefinitionalElementBridge.proto;
     const stateClass = ext && ext._WIDGET_NAME ? WidgetState : ojcustomelementUtils.ElementState;
 
     // Create component to element property alias mapping for easy optionChange lookup and stash it in the extension object
@@ -3008,9 +3024,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     }
 
     const registration = { descriptor, bridgeProto, stateClass };
-    if (ojcustomelementUtils.CustomElementUtils.registerElement(tagName, registration)) {
-      customElements.define(tagName, bridgeProto.getClass(descriptor));
-    }
+    ojcustomelementUtils.CustomElementUtils.registerElement(tagName, registration, bridgeProto.getClass(descriptor));
   };
 
   /** ***************************/
@@ -3107,14 +3121,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
   oj$1._registerLegacyNamespaceProp('DataProviderFeatureChecker', DataProviderFeatureChecker);
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   var _OJ_TRANSLATIONS_OPTION = 'translations';
@@ -3123,6 +3129,16 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * @private
    */
   var _OJ_TRANSLATIONS_PREFIX = _OJ_TRANSLATIONS_OPTION + '.';
+
+  /**
+   * @private
+   */
+  const _DISABLED = 'oj-disabled';
+
+  /**
+   * @private
+   */
+  const _START_BOTTOM = 'start bottom';
 
   /**
    * @private
@@ -3461,13 +3477,9 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           var styleValue = value.style;
 
           if (styleValue) {
-            var currStyle = widget.attr('style');
-
-            if (currStyle) {
-              widget.attr('style', currStyle + ';' + styleValue); // @HTMLUpdateOK
-            } else {
-              widget.attr('style', styleValue); // @HTMLUpdateOK
-            }
+            Logger.error(`The rootAttributes.style option violates the recommended
+          Content Security Policy which disallows inline styles and is therefore ignored.
+          Use the rootAttributes.class option instead.`);
           }
 
           // make shallow copy, remove class and style from the copy, and set all
@@ -4097,7 +4109,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
         // clean up states
         this.element.removeClass(_OJ_COMPONENT_NODE_CLASS);
-        this.widget().removeClass('oj-disabled');
+        this.widget().removeClass(_DISABLED);
 
         // pass init node (this.element), not root node if different (this.widget()), since all elements in
         // the root node subtree but not the init node subtree should have been removed by the call to _super.
@@ -4256,10 +4268,15 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         if (Object.keys(newOptions).length > 0) {
           // Avoid _setOption() calls for internal sets, since component's _setOption()
           // and setOptions() overrides do not expect to be called in that case
-          if (internalSet) {
-            this._internalSetOptions(newOptions, flags);
-          } else {
-            this._setOptions(newOptions, flags);
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+          try {
+            if (internalSet) {
+              this._internalSetOptions(newOptions, flags);
+            } else {
+              this._setOptions(newOptions, flags);
+            }
+          } finally {
+            ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
           }
         }
 
@@ -4293,13 +4310,17 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
        * @ignore
        */
       _setOptions: function (options, flags) {
-        var keys = Object.keys(options);
-        for (var i = 0; i < keys.length; i++) {
-          var key = keys[i];
-          var value = options[key];
-          this._setOption(key, value, flags);
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+        try {
+          var keys = Object.keys(options);
+          for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var value = options[key];
+            this._setOption(key, value, flags);
+          }
+        } finally {
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
         }
-
         return this;
       },
 
@@ -4328,7 +4349,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           // default to that.
           // Update: this issue is getting even more awkward now that we have "effectively disabled".  Probably need to refactor this code!
           this.widget()
-            .toggleClass('oj-disabled', !!value)
+            .toggleClass(_DISABLED, !!value)
             .attr('aria-disabled', value);
 
           if (value) {
@@ -4917,19 +4938,19 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           var position = {
             mouse: {
               my: 'start top',
-              at: 'start bottom',
+              at: _START_BOTTOM,
               of: event,
               collision: 'flipfit'
             },
             touch: {
               my: 'start>40 center',
-              at: 'start bottom',
+              at: _START_BOTTOM,
               of: event,
               collision: 'flipfit'
             },
             keyboard: {
               my: 'start top',
-              at: 'start bottom',
+              at: _START_BOTTOM,
               of: 'launcher',
               collision: 'flipfit'
             }
@@ -5167,7 +5188,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         }
 
         // do this for either touchstart or real mouse events, but not mouse compatibility event
-        if (!elem.hasClass('oj-disabled') &&
+        if (!elem.hasClass(_DISABLED) &&
             (event.type === 'touchstart' || this._isRealMouseEvent(event))) {
           elem.addClass('oj-active');
           afterToggleFunction(event.type);
@@ -5190,7 +5211,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
       _hoverStartHandler: function (afterToggleFunction, event) {
         // do this for real mouseenter, but not mouse compatibility event
         var elem = $(event.currentTarget);
-        if (!elem.hasClass('oj-disabled') && this._isRealMouseEvent(event)) {
+        if (!elem.hasClass(_DISABLED) && this._isRealMouseEvent(event)) {
           elem.addClass('oj-hover');
           afterToggleFunction(event.type);
         }
@@ -5769,11 +5790,10 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
        */
       _WrapCustomElementRenderer: function (origRenderer) {
         if (this._IsCustomElement() && typeof origRenderer === 'function') {
-          var customRenderer = function (context) {
+          return function (context) {
             var obj = origRenderer(context);
             return obj && obj.insert ? obj.insert : null;
           };
-          return customRenderer;
         }
         return origRenderer;
       },
@@ -6115,7 +6135,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     }
 
     if (hasGetters) {
-      var getter = function (context) {
+      return function (context) {
         var resolvedVals = [];
         values.forEach(function (_value) {
           if (_value != null && _value instanceof __ojDynamicGetter) {
@@ -6127,7 +6147,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
 
         return _mergeOptionLayers(resolvedVals);
       };
-      return getter;
     }
 
     return null;
@@ -6366,14 +6385,6 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
    * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
    */
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   // override jQuery's cleanData method to bypass cleanup of custom elements and composites
   $.cleanData = (function (orig) {
     return function (elems) {
@@ -6404,13 +6415,45 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     };
   }($.cleanData));
 
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
+  // Override addClass + removeClass to use classList instead of add/removeAttribute in order
+  // to avoid conflicting with fixes to work with Preact's class patching logic
+
+  // Copied from jQuery
+  function getClass(elem) {
+    return (elem.getAttribute && elem.getAttribute('class')) || '';
+  }
+
+  $.fn.addClass = function (value) {
+    if (typeof value === 'function') {
+      return this.each(function (j) {
+        $(this).addClass(value.call(this, j, getClass(this)));
+      });
+    }
+
+    const iterableClasses = Array.isArray(value) ? value : ojcustomelementUtils.CustomElementUtils.getClassSet(value);
+    this.each(function () {
+      if (this.nodeType === 1) {
+        this.classList.add(...iterableClasses);
+      }
+    });
+    return this;
+  };
+
+  $.fn.removeClass = function (value) {
+    if (typeof value === 'function') {
+      return this.each(function (j) {
+        $(this).removeClass(value.call(this, j, getClass(this)));
+      });
+    }
+
+    const iterableClasses = Array.isArray(value) ? value : ojcustomelementUtils.CustomElementUtils.getClassSet(value);
+    this.each(function () {
+      if (this.nodeType === 1) {
+        this.classList.remove(...iterableClasses);
+      }
+    });
+    return this;
+  };
 
   /**
    * @export

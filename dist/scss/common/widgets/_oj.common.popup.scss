@@ -197,34 +197,5 @@
     .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
       display: block;
     }
-    
-    // POPUP animation defaults
-    //----------------------------------
-    $popupAnimationDefaults: ();
- 
-    @if ($popupOpenAnimation) {
-      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (open: $popupOpenAnimation));
-    }
- 
-    @if ($popupCloseAnimation) {
-      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (close: $popupCloseAnimation));
-    }
-
-    // option defaults
-    //----------------------------------
-    $popupDefaultOptions: ();
- 
-    @if ($popupModalityOptionDefault) {
-      $popupDefaultOptions: map-merge($popupDefaultOptions, (modality: $popupModalityOptionDefault));
-    }
-
-    @if ($popupAnimationDefaults) {
-      $popupDefaultOptions: map-merge($popupDefaultOptions, (animation: $popupAnimationDefaults));
-    }
-
-    // component default options selector 
-    .oj-popup-option-defaults {
-      font-family: oj-json-from-map($popupDefaultOptions);
-    }
   }
 }

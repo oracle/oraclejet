@@ -6,6 +6,8 @@
  * @ignore
  */
 
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { DataProvider } from '../ojdataprovider';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojProgressList extends JetElement<ojProgressListSettableProperties> {
@@ -43,4 +45,15 @@ export type ProgressListElement = ojProgressList;
 export namespace ProgressListElement {
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged = JetElementCustomEvent<ojProgressList["data"]>;
+}
+export interface ProgressListIntrinsicProps extends Partial<Readonly<ojProgressListSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondataChanged?: (value: ojProgressListEventMap['dataChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-progress-list": ProgressListIntrinsicProps;
+        }
+    }
 }

@@ -8,78 +8,95 @@
 define(['exports'], function (exports) { 'use strict';
 
     /**
-     * @license
-     * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
-    /**
-     * @namespace VComponentBinding
-     * @ojmodule ojvcomponent-binding
+     * @ojmodulecontainer ojvcomponent-binding
+     * @ojhidden
      * @since 10.0.0
      * @ojtsimport {module: "ojmetadata", type: "AMD", importName:"MetadataTypes"}
      *
      * @classdesc
-     * <h3>JET VComponentBinding</h3>
-     * The namespace contains VComponent property binding decorators.
-     * <p>These decorators are designed to be used on VComponent properties when a particular property value
-     * has to propagate to the descendant components or a particular property value should be received
-     * from a parent component, if the property is provided by the parent.</p>
+     * This module contains VComponent property binding decorators.
+     * <p>These decorators are designed to be used on VComponent classes when a particular property value
+     * has to propagate to descendant components or a particular property value should be received
+     * from a parent component, if that property value is provided by the parent.</p>
      * <p>Note that the property binding decorators can only be used by VComponents that have Knockout binding applied to them.</p>
      *
-     * <h6>Example:</h6>
      * <pre class="prettyprint">
      * <code>
-     * class Props {
-     *   // Indicate that the component will consume the 'containerlabelEdge' property value provided by the parent
-     *   &#64;consumeBinding({name: 'containerlabelEdge'})
+     * import { consumedBindings, providedBindings} from "ojs/ojvcomponent-binding";
+     * import { customElement, ExtendGlobalProps } from "ojs/ojvcomponent";
+     * import { h, Component } from "preact";
      *
-     *   // Provide the 'labelEdge' property value under two different keys using different transform logic for different consumers.
-     *   &#64;provideBinding({name: 'containerlabelEdge', default: 'inside'})
-     *   &#64;provideBinding({name: 'labelEdge', default: 'inside', transform: {top: 'provided', start: 'provided'}})
-     *   labelEdge?: 'inside' | 'start' | 'top' = 'inside';
+     * type Props = {
+     *   labelEdge?: 'inside' | 'start' | 'top';
+     *   readonly?: boolean;
+     * };
+     *
+     * // Indicate that the component's 'labelEdge' and 'readonly' properties will consume
+     * // the 'containerlabelEdge' and 'containerReadonly' variable values, respectively,
+     * // provided by the parent.
+     * &#64;consumedBindings( { labelEdge: { name: 'containerLabelEdge' },
+     *                      readonly: { name: 'containerReadonly' }
+     *                    } )
+     * // Indicate that the component will provide the 'labelEdge' and 'readonly' property values
+     * // under different keys and with different transforms as required for different consumers.
+     * &#64;providedBindings( { labelEdge: [
+     *                                  { name: 'containerLabelEdge', default: 'inside' },
+     *                                  { name: 'labelEdge', default: 'inside', transform: {  top: 'provided', start: 'provided'  } }
+     *                                 ],
+     *                      readonly: [
+     *                                  { name: 'containerReadonly' },
+     *                                  { name: 'readonly' }
+     *                                ]
+     *                    } )
+     * &#64;customElement('my-form-subsection-component')
+     * class FormSubsectionComponent extends Component&lt;ExtendGlobalProps&lt;Props&gt;&gt; {
+     *   static defaultProps = {
+     *     labelEdge: 'inside',
+     *     readonly: false
+     *   };
+     *   ...
      * }
      * </code>
      * </pre>
      */
 
     /**
-     * Property decorator for VComponent that allows the property to consume a value provided by an ancestor component.
-     * The value will be consumed only if the property's attribute has not been set, i.e. the provided value is used as a default.
-     * The 'name' property should be set to the name of the variable published by an ancestor component.
-     * @param {object} consume Options object that contains a name of the variable published by an ancestor component.
+     * Class decorator for VComponent specifying that one or more component properties can consume a value provided by an ancestor component.
+     * The value will be consumed only if the specified component property's attribute has not been set, i.e. the consumed value is used as a default.
+     * The 'name' property should be set to the name of the variable published by an ancestor component that is the source of the consumed value.
+     * @param {object} consumes Object that maps component properties to the names of variables published by an ancestor component.
      * @return {Function}
-     * @name consumeBinding
+     * @name consumedBindings
      * @function
-     * @memberof! VComponentBinding
-     * @ojsignature {target:"Type", value:"{name: string}", for: "consume"}
+     * @ojexports
+     * @memberof ojvcomponent-binding
+     * @ojsignature {target:"Type", value: "{ [key: string]: { name: string } }", for: "consumes"}
      * @ojdecorator
      */
 
     /**
-     * Property decorator for VComponent that allows the property to provide a value to be consumed by descendant components.
-     * Use multiple provideBinding decorators to provide more than one value to the descendants. See example above.
-     * The provided value will come from the literal attribute value, explicit expression binding or an implicit (consumed) binding
+     * Class decorator for VComponent specifying that one or more component properties will provide one or more values to be consumed by descendant components.
+     * See example above. Provided values will come from the literal attribute values, explicit expression bindings, or implicit (consumed) bindings
      * provided by an ancestor component.
-     * @param {object} provide Options object.
+     * @param {object} provides Object that maps component properties to one or more variables published to its descendant components.
      * @return {Function}
-     * @name provideBinding
+     * @name providedBindings
      * @function
-     * @ojsignature {target:"Type", value:"MetadataTypes.ProvideProperty", for:"provide"}
-     * @memberof! VComponentBinding
+     * @ojexports
+     * @ojsignature {target:"Type", value:"{ [key: string]: Array<MetadataTypes.ProvideProperty> }", for: "provides"}
+     * @memberof ojvcomponent-binding
      * @ojdecorator
      */
 
-    function consumeBinding(consume) {
-        return function (target, propertyKey) { };
+    function consumedBindings(consumes) {
+        return function (constructor) { };
     }
-    function provideBinding(provide) {
-        return function (target, propertyKey) { };
+    function providedBindings(provides) {
+        return function (constructor) { };
     }
 
-    exports.consumeBinding = consumeBinding;
-    exports.provideBinding = provideBinding;
+    exports.consumedBindings = consumedBindings;
+    exports.providedBindings = providedBindings;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

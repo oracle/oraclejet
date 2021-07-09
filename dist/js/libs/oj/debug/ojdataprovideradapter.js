@@ -69,14 +69,14 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             this._removeTableDataSourceEventListeners();
         }
         containsKeys(params) {
-            let self = this;
-            let resultsPromiseArray = [];
+            const self = this;
+            const resultsPromiseArray = [];
             params[TableDataSourceAdapter._KEYS].forEach(function (key) {
                 resultsPromiseArray.push(self.tableDataSource.get(key));
             });
             return Promise.all(resultsPromiseArray).then(function (resultsArray) {
-                let results = new Set();
-                resultsArray.map(function (value) {
+                const results = new Set();
+                resultsArray.forEach((value) => {
                     if (value != null) {
                         results.add(value[TableDataSourceAdapter._KEY]);
                     }
@@ -85,19 +85,19 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             });
         }
         fetchByKeys(params) {
-            let self = this;
-            let resultsPromiseArray = [];
+            const self = this;
+            const resultsPromiseArray = [];
             params[TableDataSourceAdapter._KEYS].forEach(function (key) {
                 resultsPromiseArray.push(self.tableDataSource.get(key));
             });
             return Promise.all(resultsPromiseArray).then(function (resultsArray) {
-                let results = new Map();
+                const results = new Map();
                 for (let i = 0; i < resultsArray.length; i++) {
-                    let value = resultsArray[i];
+                    const value = resultsArray[i];
                     if (value != null) {
-                        let itemKey = value[TableDataSourceAdapter._KEY];
-                        let data = value[TableDataSourceAdapter._DATA];
-                        let itemMetadata = new self.ItemMetadata(self, itemKey);
+                        const itemKey = value[TableDataSourceAdapter._KEY];
+                        const data = value[TableDataSourceAdapter._DATA];
+                        const itemMetadata = new self.ItemMetadata(self, itemKey);
                         self._extractMetaData(self.dataSource, i, itemMetadata);
                         results.set(itemKey, new self.Item(self, itemMetadata, data));
                     }
@@ -106,24 +106,24 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             });
         }
         fetchByOffset(params) {
-            let self = this;
-            let size = params != null ? params[TableDataSourceAdapter._SIZE] : -1;
-            let sortCriteria = params != null ? params[TableDataSourceAdapter._SORTCRITERIA] : null;
-            let offset = params != null
+            const self = this;
+            const size = params != null ? params[TableDataSourceAdapter._SIZE] : -1;
+            const sortCriteria = params != null ? params[TableDataSourceAdapter._SORTCRITERIA] : null;
+            const offset = params != null
                 ? params[TableDataSourceAdapter._OFFSET] > 0
                     ? params[TableDataSourceAdapter._OFFSET]
                     : 0
                 : 0;
-            let fetchParams = new this.FetchListParameters(this, size, sortCriteria);
+            const fetchParams = new this.FetchListParameters(this, size, sortCriteria);
             this._startIndex = 0;
             return this._getFetchFunc(fetchParams, offset)(fetchParams, true).then(function (iteratorResults) {
-                let value = iteratorResults[TableDataSourceAdapter._VALUE];
-                let done = iteratorResults[TableDataSourceAdapter._DONE];
-                let data = value[TableDataSourceAdapter._DATA];
-                let keys = value[TableDataSourceAdapter._METADATA].map(function (value) {
+                const value = iteratorResults[TableDataSourceAdapter._VALUE];
+                const done = iteratorResults[TableDataSourceAdapter._DONE];
+                const data = value[TableDataSourceAdapter._DATA];
+                const keys = value[TableDataSourceAdapter._METADATA].map(function (value) {
                     return value[TableDataSourceAdapter._KEY];
                 });
-                let resultsArray = new Array();
+                const resultsArray = new Array();
                 data.map(function (value, index) {
                     resultsArray.push(new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]));
                 });
@@ -201,10 +201,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             return null;
         }
         _getFetchFunc(params, offset) {
-            let self = this;
+            const self = this;
             if (params != null && params[TableDataSourceAdapter._SORTCRITERIA] != null) {
-                let attribute = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._ATTRIBUTE];
-                let direction = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._DIRECTION];
+                const attribute = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._ATTRIBUTE];
+                const direction = params[TableDataSourceAdapter._SORTCRITERIA][0][TableDataSourceAdapter._DIRECTION];
                 this._ignoreSortEvent = true;
                 if (!this._isPagingModelTableDataSource()) {
                     this._startIndex = 0;
@@ -212,7 +212,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                 return (function (attribute, direction) {
                     return function (params, fetchFirst) {
                         if (fetchFirst) {
-                            let sortParam = {};
+                            const sortParam = {};
                             sortParam[TableDataSourceAdapter._KEY] = attribute;
                             sortParam[TableDataSourceAdapter._DIRECTION] = direction;
                             self[TableDataSourceAdapter._OFFSET] = 0;
@@ -237,7 +237,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                 dataSource = dataSource.getWrappedDataSource();
             }
             if (dataSource._getMetadata) {
-                let metadata = dataSource._getMetadata(index);
+                const metadata = dataSource._getMetadata(index);
                 if (metadata) {
                     Object.keys(metadata).forEach(function (key) {
                         itemMetadata[key] = metadata[key];
@@ -246,9 +246,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             }
         }
         _getTableDataSourceFetch(params, offset) {
-            let self = this;
+            const self = this;
             return function (params, fetchFirst) {
-                let options = {};
+                const options = {};
                 offset = offset > 0 ? offset : 0;
                 if (self._startIndex != null) {
                     options[TableDataSourceAdapter._STARTINDEX] = self._startIndex + offset;
@@ -263,7 +263,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                 if (self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA] != null &&
                     params[TableDataSourceAdapter._SORTCRITERIA] == null) {
                     params[TableDataSourceAdapter._SORTCRITERIA] = [];
-                    let sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
+                    const sortCriterion = new self.SortCriterion(self, self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._KEY], self.tableDataSource[TableDataSourceAdapter._SORTCRITERIA][TableDataSourceAdapter._DIRECTION]);
                     params[TableDataSourceAdapter._SORTCRITERIA].push(sortCriterion);
                 }
                 options[TableDataSourceAdapter._FETCHTYPE] = params[TableDataSourceAdapter._FETCHTYPE];
@@ -313,7 +313,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                                         options[TableDataSourceAdapter._PAGESIZE]) {
                                     done = true;
                                 }
-                                else if (result[TableDataSourceAdapter._DATA].length == 0) {
+                                else if (result[TableDataSourceAdapter._DATA].length === 0) {
                                     done = true;
                                 }
                                 self._fetchResolveFunc = null;
@@ -357,7 +357,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             this._startIndex = offset;
         }
         _handleSync(event) {
-            let self = this;
+            const self = this;
             if (self._ignoreDataSourceEvents.length > 0) {
                 return;
             }
@@ -368,7 +368,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             }
             if (self._fetchResolveFunc && event[TableDataSourceAdapter._KEYS] != null) {
                 self._isFetching = false;
-                let resultMetadata = event[TableDataSourceAdapter._KEYS].map(function (value) {
+                const resultMetadata = event[TableDataSourceAdapter._KEYS].map(function (value) {
                     return new self.ItemMetadata(self, value);
                 });
                 for (let i = 0; i < resultMetadata.length; i++) {
@@ -397,63 +397,63 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
         }
         _handleAdd(event) {
             var _a;
-            let self = this;
-            let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+            const self = this;
+            const metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
             });
-            let keySet = new Set();
+            const keySet = new Set();
             event[TableDataSourceAdapter._KEYS].map(function (key) {
                 keySet.add(key);
             });
-            let operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-            let mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
+            const operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, null, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+            const mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
             self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
             this._adjustIteratorOffset(null, (_a = mutationEventDetail.add) === null || _a === void 0 ? void 0 : _a.indexes);
         }
         _handleRemove(event) {
             var _a;
-            let self = this;
-            let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+            const self = this;
+            const metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
             });
-            let keySet = new Set();
+            const keySet = new Set();
             event[TableDataSourceAdapter._KEYS].map(function (key) {
                 keySet.add(key);
             });
-            let operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-            let mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
+            const operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+            const mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
             self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
             this._adjustIteratorOffset((_a = mutationEventDetail.remove) === null || _a === void 0 ? void 0 : _a.indexes, null);
         }
         _handleReset(event) {
-            let self = this;
+            const self = this;
             if (!self._requestEventTriggered && !self._isPagingModelTableDataSource()) {
                 self._startIndex = 0;
                 self.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
             }
         }
         _handleSort(event) {
-            let self = this;
+            const self = this;
             if (!self._ignoreSortEvent) {
                 self._startIndex = null;
                 self.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
             }
         }
         _handleChange(event) {
-            let self = this;
-            let metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
+            const self = this;
+            const metadataArray = event[TableDataSourceAdapter._KEYS].map(function (value) {
                 return new self.ItemMetadata(self, value);
             });
-            let keySet = new Set();
+            const keySet = new Set();
             event[TableDataSourceAdapter._KEYS].map(function (key) {
                 keySet.add(key);
             });
-            let operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
-            let mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
+            const operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[TableDataSourceAdapter._DATA], event[TableDataSourceAdapter._INDEXES]);
+            const mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
             self.dispatchEvent(new ojdataprovider.DataProviderMutationEvent(mutationEventDetail));
         }
         _handleRefresh(event) {
-            let self = this;
+            const self = this;
             if (!self._isFetching && !self._requestEventTriggered) {
                 if (event[TableDataSourceAdapter._OFFSET] != null) {
                     self._startIndex = event[TableDataSourceAdapter._OFFSET];
@@ -466,7 +466,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             self._requestEventTriggered = false;
         }
         _handleRequest(event) {
-            let self = this;
+            const self = this;
             if (self._ignoreDataSourceEvents.length > 0) {
                 return;
             }
@@ -474,7 +474,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                 return;
             }
             if (!self._isFetching) {
-                if (event[TableDataSourceAdapter._STARTINDEX] > 0 && self.getStartItemIndex() == 0) {
+                if (event[TableDataSourceAdapter._STARTINDEX] > 0 && self.getStartItemIndex() === 0) {
                     self._startIndex = event[TableDataSourceAdapter._STARTINDEX];
                 }
                 self._requestEventTriggered = true;
@@ -482,7 +482,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             }
         }
         _handleError(event) {
-            let self = this;
+            const self = this;
             if (self._fetchRejectFunc) {
                 self._fetchRejectFunc(event);
             }
@@ -490,10 +490,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             self._requestEventTriggered = false;
         }
         _handlePage(event) {
-            let self = this;
+            const self = this;
             self._isFetching = false;
             self._requestEventTriggered = false;
-            let options = {};
+            const options = {};
             options['detail'] = event;
             self.dispatchEvent(new ojeventtarget.GenericEvent(oj.PagingModel.EventType['PAGE'], options));
         }

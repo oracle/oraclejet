@@ -1,0 +1,13 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import dependencies
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+@import "../../../panel/themes/stable/_oj-panel.cssvars.scss";
+
+@include module-include-once("stable.variables.actioncard") {
+  :root {
+    /* card                 */
+    /* -------------------------- */
+    --oj-action-card-scale-hover: 1;
+    
+  }
+}

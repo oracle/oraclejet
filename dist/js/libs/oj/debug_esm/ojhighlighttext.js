@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ElementVComponent, h, customElement } from 'ojs/ojvcomponent-element';
+import { Component, h } from 'preact';
+import { Root, customElement } from 'ojs/ojvcomponent';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -13,21 +14,14 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-class Props {
+let HighlightText = class HighlightText extends Component {
     constructor() {
-        this.text = '';
-        this.matchText = '';
-    }
-}
-let HighlightText = class HighlightText extends ElementVComponent {
-    constructor(props) {
-        super(props);
+        super(...arguments);
         this._HIGHLIGHT_TOKEN = '__@@__';
     }
-    render() {
-        const props = this.props;
+    render(props) {
         const content = this._highlighter(props.text, props.matchText);
-        return h("oj-highlight-text", { class: 'oj-highlighttext' }, content);
+        return h(Root, { class: 'oj-highlighttext' }, content);
     }
     _highlighter(unhighlightedText, matchText) {
         if (matchText) {
@@ -43,7 +37,11 @@ let HighlightText = class HighlightText extends ElementVComponent {
         return str.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
     }
 };
-HighlightText.metadata = { "extension": { "_DEFAULTS": Props }, "properties": { "text": { "type": "string", "value": "" }, "matchText": { "type": "string", "value": "" } } };
+HighlightText.defaultProps = {
+    text: '',
+    matchText: ''
+};
+HighlightText.metadata = { "properties": { "text": { "type": "string" }, "matchText": { "type": "string" } } };
 HighlightText = __decorate([
     customElement('oj-highlight-text')
 ], HighlightText);

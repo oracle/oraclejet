@@ -11,21 +11,18 @@ import 'jqueryui-amd/widgets/mouse';
 import 'jqueryui-amd/widgets/draggable';
 import $ from 'jquery';
 import oj from 'ojs/ojcore-base';
-import { isAncestorOrSelf, getCSSLengthAsFloat } from 'ojs/ojdomutils';
+import { removeResizeListener, addResizeListener, isAncestorOrSelf, getCSSLengthAsFloat } from 'ojs/ojdomutils';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { subtreeAttached, subtreeDetached, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
 import { startAnimation } from 'ojs/ojanimation';
 import FocusUtils from 'ojs/ojfocusutils';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { getDeviceRenderMode } from 'ojs/ojconfig';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
+  const OJ_RESIZABLE_HANDLE_SELECTOR = '.oj-resizable-handle';
+  const OJ_RESIZABLE_RESIZE = 'oj-resizable-alsoresize';
+
   $.widget('oj.ojResizable', {
     version: '1.0.0',
     widgetEventPrefix: 'oj',
@@ -369,7 +366,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this._initialResize = true;
 
-      this.handles = o.handles || (!$('.oj-resizable-handle',
+      this.handles = o.handles || (!$(OJ_RESIZABLE_HANDLE_SELECTOR,
                                       this.element).length ? 'e,s,se' :
       {
         n: '.oj-resizable-n',
@@ -395,14 +392,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           hname = 'oj-resizable-' + handle;
           axis = $("<div class='oj-resizable-handle " + hname + "'></div>");
 
-          // axis.css({ zIndex: o.zIndex });
-
-          // Todo: refine for alta styles
-          //
-          // if ("se" === handle) {
-          // axis.addClass("ui-icon ui-icon-gripsmall-diagonal-se");
-          // }
-
           this.handles[handle] = '.oj-resizable-' + handle;
           this.element.append(axis); // @HTMLUpdateOK
         }
@@ -416,7 +405,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         }
       }
 
-      this._handles = $('.oj-resizable-handle', this.element);
+      this._handles = $(OJ_RESIZABLE_HANDLE_SELECTOR, this.element);
 
       this._handles.mouseover(function () {
         if (!that.resizing) {
@@ -463,7 +452,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           .removeData('resizable')
           .removeData('oj-resizable')
           .unbind('.resizable')
-          .find('.oj-resizable-handle')
+          .find(OJ_RESIZABLE_HANDLE_SELECTOR)
           .remove();
       };
 
@@ -524,7 +513,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this.aspectRatio = (this.originalSize.width / this.originalSize.height) || 1;
 
-      // cursor = $(".oj-resizable-" + this.axis).css("cursor");
       cursor = /** @type string */ ($('.oj-resizable-' + this.axis).css('cursor'));
       $('body').css('cursor', cursor === 'auto' ? this.axis + '-resize' : cursor);
 
@@ -843,13 +831,12 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // var that = $(this).data("oj-resizable"), // w
       var that = this;
       var o = that.options;
-      // var initialR = that._initialResize;
 
       var _store = function (exp) {
         $(exp).each(function () {
           var el = $(this);
 
-          el.data('oj-resizable-alsoresize', {
+          el.data(OJ_RESIZABLE_RESIZE, {
             width: parseInt(el.width(), 10),
             height: parseInt(el.height(), 10),
             left: parseInt(el.css('left'), 10),
@@ -889,7 +876,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var _alsoResize = function (exp, c) {
         $(exp).each(function () {
           var el = $(this);
-          var start = $(this).data('oj-resizable-alsoresize');
+          var start = $(this).data(OJ_RESIZABLE_RESIZE);
           var style = {};
           var css;
           if (c && c.length) {
@@ -903,7 +890,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           $.each(css, function (i, prop) {
             var sum = (start[prop] || 0) + (delta[prop] || 0);
             if (sum && sum >= 0) {
-              style[prop] = sum || null;
+              style[prop] = sum;
             }
           });
 
@@ -920,8 +907,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
     },
     _alsoresize_stop: function () {
-      // $(this).removeData("resizable-alsoresize");
-      $(this).removeData('oj-resizable-alsoresize');
+      $(this).removeData(OJ_RESIZABLE_RESIZE);
     },
     // ///////////////////////////////////////////////////////////////////////////////
     //
@@ -940,7 +926,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var width;
       var height;
 
-      // var that = $(this).data("oj-resizable");
       var that = this;
 
       var o = that.options;
@@ -1089,7 +1074,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
     },
     _containment_stop: function () {
-      // var that = $(this).data("oj-resizable"),
       var that = this;
       var o = that.options;
       var co = that.containerOffset;
@@ -1133,27 +1117,26 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
   // class name constants
   var /** @const */ OJD_BODY = 'oj-dialog-body';
+  var /** @const */ OJD_CONTAINER = 'oj-dialog-container';
   var /** @const */ OJD_CONTENT = 'oj-dialog-content';
   var /** @const */ OJD_FOOTER = 'oj-dialog-footer';
   var /** @const */ OJD_HEADER = 'oj-dialog-header';
   var /** @const */ OJD_HEADER_CLOSE = 'oj-dialog-header-close';
   var /** @const */ OJD_HEADER_CLOSE_WRAPPER = 'oj-dialog-header-close-wrapper';
   var /** @const */ OJD_OPTION_DEFAULTS = 'oj-dialog-option-defaults';
+  var /** @const */ OJD_HELPER_ELEMENT_DIALOG = 'oj-helper-element-in-dialog-with-accesskey';
+  var /** @const */ OJD_ACCESS_KEY = 'data-ojAccessKey';
+
 
   var /** @const */ OJD_TITLE_CLASS = '.oj-dialog-title';
   var /** @const */ OJD_FOOTER_CLASS = '.oj-dialog-footer';
+  var /** @const */ OJD_HEADER_CLASS = '.oj-dialog-header';
   var /** @const */ OJD_BODY_CLASS = '.oj-dialog-body';
+  var /** @const */ OJD_CONTENT_CLASS = '.oj-dialog-content';
+  var /** @const */ OJD_CONTAINER_CLASS = '.oj-dialog-container';
 
   var /** @const */ OJ_RESIZABLE = 'oj-resizable';
   var /** @const */ OJ_RESIZABLE_N = 'oj-resizable-n';
@@ -1176,7 +1159,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
   /**
    * @typedef {Object} oj.ojDialog.PositionAlign
    * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
-   * @property {"start"|"end"|"left"|"center"|"bottom"} [horizontal] Horizontal alignment. <p>
+   * @property {"start"|"end"|"left"|"center"|"right"} [horizontal] Horizontal alignment. <p>
    * <ul>
    *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
    *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
@@ -1289,8 +1272,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    *
    *<ul>
    *  <li> <code class="prettyprint">height: auto</code> </li>
-   *  <li> <code class="prettyprint">width: 300px</code> </li>
+   *  <li> <code class="prettyprint">width: 600px</code> </li>
    *  <li> <code class="prettyprint">min-width: 200px</code> </li>
+   *  <li> <code class="prettyprint">max-width: 100vw - 3rem</code> </li>
+   *  <li> <code class="prettyprint">max-height: 100vh - 3rem</code> </li>
    *</ul>
    *
    * In most cases, you will want to use the default <code class="prettyprint">height:auto</code>, since this will automatically adjust the height based on the content.
@@ -1305,9 +1290,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * &lt;/oj-dialog&gt;
    * </code></pre>
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <h4> role </h4>
    * By default, the role will be set to dialog.
@@ -1406,7 +1391,300 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * &lt;/oj-dialog&gt;
    * </code></pre>
    */
-// ------------------------------------------------ oj-dialog Styling start ------------------------------------------------
+  //-----------------------------------------------------
+  //                   Slots
+  //-----------------------------------------------------
+  /**
+   * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code>
+   * element accepts DOM nodes as children for the default slot.
+   * The default slot can also be named with "body".
+   * For styling, the default body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
+   *
+   * @ojchild Default
+   * @ojshortdesc The default slot is the dialog's body. It is the same as the named "body" slot.
+   * @memberof oj.ojDialog
+   * @since 4.0.0
+   *
+   * @example <caption>Initialize the Dialog with body content (using the default slot name):</caption>
+   * &lt;oj-dialog>
+   *   &lt;div>Dialog Content&lt;/div>
+   * &lt;/oj-dialog>
+   *
+   */
+
+  /**
+   * <p>The <code class="prettyprint">header</code> slot is for the dialog's header area.
+   * The  <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+   * with the header slot.
+   * For styling, the header slot will be rendered with the <code class="prettyprint">oj-dialog-header</code> class.
+   * </p>
+   * If a header slot is not specified by the user, a header will automatically be created.
+   * The automatically generated header will contain a close button, and the header title will be set
+   * to the dialog title.
+   *
+   * @ojslot header
+   * @ojshortdesc The header slot is for the dialog's header area. See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   * @since 4.0.0
+   *
+   * @example <caption>Initialize the Dialog with header and body content:</caption>
+   * &lt;oj-dialog>
+   *   &lt;div slot='header'>Header Content&lt;/div>
+   *   &lt;div>Dialog Content&lt;/div>
+   * &lt;/oj-dialog>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">body</code> slot is for the dialog's body area.
+   * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+   * with the body slot.
+   * For styling, the body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
+   * Note that "body" is the default slot.
+   *
+   * @ojslot body
+   * @ojshortdesc The body slot is for the dialog's body area. See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   * @since 4.0.0
+   *
+   * @example <caption>Initialize the Dialog with body content:</caption>
+   * &lt;oj-dialog>
+   *   &lt;div slot="body">Dialog Content&lt;/div>
+   * &lt;/oj-dialog>
+   */
+
+  /**
+   * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area.
+   * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
+   * with the footer slot.
+   * For styling, the footer slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
+   *
+   * @ojslot footer
+   * @ojshortdesc The footer slot is for the dialog's footer area. See the Help documentation for more information.
+   * @memberof oj.ojDialog
+   * @since 4.0.0
+   *
+   * @example <caption>Initialize the Dialog with body and footer content:</caption>
+   * &lt;oj-dialog>
+   *   &lt;div>Dialog Content&lt;/div>
+   *   &lt;div slot='footer'>Footer Content&lt;/div>
+   * &lt;/oj-dialog>
+   */
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Dialog Close Icon</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Close the dialog.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojDialog
+   */
+
+  /**
+   * The JET Dialog can be closed with keyboard actions:
+   *
+   * <p>
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Dialog</td>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>Close the dialog.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Dialog Close Icon</td>
+   *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+   *       <td>Close the dialog.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojDialog
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+  /**
+   * <p>Sub-ID for the dialog header.</p>
+   *
+   * @ojsubid oj-dialog-header
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog footer.</p>
+   *
+   * @ojsubid oj-dialog-footer
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog footer:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-footer'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog body.</p>
+   *
+   * @ojsubid oj-dialog-body
+   * @memberof oj.ojDialog
+   * @ojdeprecated {since:"1.2.0", description:"This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed."}
+   *
+   * @example <caption>Get the node for the dialog body:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-body'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog content.</p>
+   *
+   * @ojsubid oj-dialog-content
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog content:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-content'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog header-close-wrapper.</p>
+   *
+   * @ojsubid oj-dialog-header-close-wrapper
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header-close-wrapper:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header-close-wrapper'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog close-icon.</p>
+   *
+   * @ojsubid oj-dialog-close-icon
+   * @memberof oj.ojDialog
+   * @ojdeprecated {since: "1.2.0", description: "This sub-ID is deprecated."}
+   *
+   * @example <caption>Get the node for the dialog close-icon:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close-icon'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog close affordance.</p>
+   *
+   * @ojsubid oj-dialog-close
+   * @memberof oj.ojDialog
+   * @ojdeprecated {since: "2.1.0", description: "This sub-ID is deprecated."}
+   *
+   * @example <caption>Get the node for the dialog close affordance:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the north location.</p>
+   *
+   * @ojsubid oj-resizable-n
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-n'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the south location.</p>
+   *
+   * @ojsubid oj-resizable-s
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-s'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the east location.</p>
+   *
+   * @ojsubid oj-resizable-e
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-e'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the west location.</p>
+   *
+   * @ojsubid oj-resizable-w
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-w'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the northeast location.</p>
+   *
+   * @ojsubid oj-resizable-ne
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-ne'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the northwest location.</p>
+   *
+   * @ojsubid oj-resizable-nw
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-nw'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the southwest location.</p>
+   *
+   * @ojsubid oj-resizable-sw
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-sw'});
+   */
+
+  /**
+   * <p>Sub-ID for the dialog resizable handle at the southeast location.</p>
+   *
+   * @ojsubid oj-resizable-se
+   * @memberof oj.ojDialog
+   *
+   * @example <caption>Get the node for the dialog header:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-se'});
+   */
+
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+
   // ----------------------------------- oj-dialog-title--------------
   /**
    * Class used to format the dialog title. Automatically created headers use oj-dialog-title to format the title.<br/>
@@ -1414,6 +1692,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * is stylistically similar to a default title.<br/>
    * @ojstyleclass oj-dialog-title
    * @ojdisplayname Dialog Title
+   * @ojstyleselector oj-dialog *
    * @ojshortdesc Class used to format the dialog title. See the Help documentation for more information.
    * @memberof oj.ojDialog
    */
@@ -1424,6 +1703,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * Note that for themes that have a built-in footer separator (specifically the iOS theme), this class has no effect.<br/>
    * @ojstyleclass oj-dialog-footer-separator
    * @ojdisplayname Footer Separator
+   * @ojstyleselector oj-dialog > div
    * @ojshortdesc Class used to specify a separator between the dialog body and the dialog footer. See the Help documentation for more information.
    * @memberof oj.ojDialog
    */
@@ -1448,6 +1728,36 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * @ojshortdesc Allows per-instance control of the focus highlight policy (not typically required). See the Help documentation for more information.
    * @memberof oj.ojDialog
    */
+  /**
+   * @ojstylevariableset oj-dialog-css-set1
+   * @ojstylevariable oj-dialog-border-radius {description: "Dialog border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-bg-color {description: "Dialog background color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-border-color {description: "Dialog border color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-box-shadow {description: "Dialog box shadow", help: "#css-variables"}
+   * @ojstylevariable oj-dialog-header-bg-color {description: "Dialog header background color", formats: ["color"],help: "#css-variables"}
+   * @ojstylevariable oj-dialog-header-border-color {description: "Border color between the dialog header and body", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-header-padding {description: "Dialog header padding", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-body-padding {description: "Dialog body padding", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-dialog-footer-padding {description: "Dialog footer padding", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojDialog
+  */
+  /**
+   * @ojstylevariableset oj-dialog-css-set2
+   * @ojdisplayname Title
+   * @ojstylevariable oj-dialog-title-font-size {description: "Dialog title font size", formats: ["length"], help: "#oj-dialog-css-set2"}
+   * @ojstylevariable oj-dialog-title-line-height {description: "Dialog title line height", formats: ["number"], help: "#oj-dialog-css-set2"}
+   * @ojstylevariable oj-dialog-title-font-weight {description: "Dialog title font weight", formats: ["font_weight"], help: "#oj-dialog-css-set2"}
+   * @ojstylevariable oj-dialog-title-text-color {description: "Dialog title text color", formats: ["color"], help: "#oj-dialog-css-set2"}
+   * @memberof oj.ojDialog
+  */
+
+  /**
+   * @ojstylevariableset oj-dialog-css-set3
+   * @ojdisplayname Cancel icon
+   * @ojstylevariable oj-dialog-cancel-icon-margin-top {description: "Dialog cancel icon margin top", formats: ["length"], help: "#oj-dialog-css-set3"}
+   * @ojstylevariable oj-dialog-cancel-icon-margin-end {description: "Dialog cancel icon margin end", formats: ["length"], help: "#oj-dialog-css-set3"}
+   * @memberof oj.ojDialog
+  */
   // ------------------------------------------------ oj-dialog Styling end ------------------------------------------------
 
   oj.__registerWidget('oj.ojDialog', $.oj.baseComponent, {
@@ -1570,6 +1880,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
            * represents the other element that can be identified by "of". The values of these properties
            * describe horizontal and vertical alignments.</p>
            *
+           * <p>If none of the <code class="prettyprint">position</code> properties are specified,
+           * the default dialog position is "center" on desktop and "bottom" on phone.</p>
            *
            * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
            * "my" or "at" is not supported.</b>
@@ -1609,7 +1921,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                * @expose
                * @memberof! oj.ojDialog
                * @instance
-               * @alias position.my
+               * @name position.my
                * @name position.my
                * @type {{horizontal:string, vertical:string}}
                */
@@ -1618,7 +1930,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.my.horizontal
+                 * @name position.my.horizontal
                  * @name position.my.horizontal
                  * @type {string}
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
@@ -1633,7 +1945,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.my.vertical
+                 * @name position.my.vertical
                  * @name position.my.vertical
                  * @type {string}
                  * @ojvalue {string} "top"
@@ -1648,7 +1960,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                * @expose
                * @memberof! oj.ojDialog
                * @instance
-               * @alias position.offset
+               * @name position.offset
                * @name position.offset
                * @type {{x:number, y:number}}
                */
@@ -1658,7 +1970,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.offset.x
+                 * @name position.offset.x
                  * @name position.offset.x
                  * @type {number}
                  * @default 0
@@ -1669,7 +1981,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.offset.y
+                 * @name position.offset.y
                  * @name position.offset.y
                  * @type {number}
                  * @default 0
@@ -1683,7 +1995,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                * @expose
                * @memberof! oj.ojDialog
                * @instance
-               * @alias position.at
+               * @name position.at
                * @name position.at
                * @type {{horizontal:string, vertical:string}}
                */
@@ -1692,7 +2004,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.at.horizontal
+                 * @name position.at.horizontal
                  * @name position.at.horizontal
                  * @type {string}
                  * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
@@ -1707,7 +2019,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                  * @expose
                  * @memberof! oj.ojDialog
                  * @instance
-                 * @alias position.at.vertical
+                 * @name position.at.vertical
                  * @name position.at.vertical
                  * @type {string}
                  * @ojvalue {string} "top"
@@ -1734,7 +2046,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                * @memberof! oj.ojDialog
                * @ojshortdesc Specifies which element to position the dialog against. See the Help documentation for more information.
                * @instance
-               * @alias position.of
+               * @name position.of
                * @name position.of
                * @type {string|{x: number, y: number}}
                * @default "window"
@@ -1746,7 +2058,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
                * @expose
                * @memberof! oj.ojDialog
                * @instance
-               * @alias position.collision
+               * @name position.collision
                * @name position.collision
                * @type {string}
                * @ojvalue {string} "flip" Flip the element to the opposite side of the target and the
@@ -2072,6 +2384,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
        * @override
        * @return {void}
        */
+
     _ComponentCreate: function () {
       this._super();
       var self = this;
@@ -2111,37 +2424,35 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      // of the root node.
       this.userDefinedDialogHeader = false;
 
+      this._createContainer();
+
       if (!this._IsCustomElement()) {
         var children = this.element.children();
         for (var i = 0; i < children.length; i++) {
           var child = $(children[i]);
-          if (child.is('.oj-dialog-header')) {
+          if (child.is(OJD_HEADER_CLASS)) {
             this.userDefinedDialogHeader = true;
             this._userDefinedHeader = child;
             this._userDefinedHeaderDiv = children[i];
+            this._dialogContainer.appendChild(this._userDefinedHeader[0]); // @HTMLUpdateOK
+            subtreeAttached(this._userDefinedHeader);
           } else if (child.is(OJD_BODY_CLASS)) {
             this._createContentDiv();
             this._uiDialogContent = $(this._contentDiv);
-            //
-            // insert content after the body, e.g.
-            // <div class='oj-dialog-body'>
-            // <div class='oj-dialog-content'>
-            //
-            this.element[0].insertBefore(this._contentDiv, children[i]); // @HTMLUpdateOK
-            subtreeAttached(this._contentDiv);
-            //
-            // Then make content the parent of body, e.g.
-            // <div class='oj-dialog-content'>
-            //   <div class='oj-dialog-body'>
-            //
+
             this._contentDiv.appendChild(children[i]); // @HTMLUpdateOK
             subtreeAttached(children[i]);
+
+            this._dialogContainer.appendChild(this._contentDiv); // @HTMLUpdateOK
+            subtreeAttached(this._contentDiv);
 
             this._uiDialogBody = child;
             this._uiDialogBodyDiv = children[i];
           } else if (child.is(OJD_FOOTER_CLASS)) {
             this._uiDialogFooter = child;
             this._uiDialogFooterDiv = children[i];
+            this._dialogContainer.appendChild(this._uiDialogFooter[0]); // @HTMLUpdateOK
+            subtreeAttached(this._uiDialogFooter);
           }
         }
       }
@@ -2149,6 +2460,9 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       if (this._IsCustomElement()) {
         this._processSlottedChildren();
       }
+
+      this.element[0].appendChild(this._dialogContainer); // @HTMLUpdateOK
+      subtreeAttached(this._dialogContainer);
 
      // fixup dialog header
       if (this.userDefinedDialogHeader) {
@@ -2172,9 +2486,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         this._uiDialogContent = $(this._contentDiv);
 
         if (this._userDefinedHeader) {
-          this.element[0].insertBefore(this._contentDiv, this._userDefinedHeaderDiv); // @HTMLUpdateOK
+          this._dialogContainer.insertBefore(this._contentDiv, // @HTMLUpdateOK
+            this._userDefinedHeaderDiv.nextSibling);
         } else {
-          this.element[0].insertBefore(this._contentDiv, this._uiDialogTitlebarDiv); // @HTMLUpdateOK
+          this._dialogContainer.insertBefore(this._contentDiv, // @HTMLUpdateOK
+            this._uiDialogTitlebarDiv.nextSibling);
         }
         subtreeAttached(this._contentDiv);
       }
@@ -2203,12 +2519,16 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       }
     },
 
-    // Create the header slot element
+    _createContainer: function () {
+      this._dialogContainer = document.createElement('div');
+      this._dialogContainer.classList.add(OJD_CONTAINER);
+    },
+
     _createHeaderSlot: function () {
       this._headerSlot = document.createElement('div');
       this._headerSlot.classList.add(OJD_HEADER);
 
-      this.element[0].appendChild(this._headerSlot); // @HTMLUpdateOK
+      this._dialogContainer.appendChild(this._headerSlot); // @HTMLUpdateOK
       subtreeAttached(this._headerSlot);
 
       this.userDefinedDialogHeader = true;
@@ -2220,7 +2540,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _createFooterSlot: function () {
       this._footerSlot = document.createElement('div');
 
-      this.element[0].appendChild(this._footerSlot); // @HTMLUpdateOK
+      this._dialogContainer.appendChild(this._footerSlot); // @HTMLUpdateOK
       subtreeAttached(this._footerSlot);
       this._uiDialogFooterDiv = this._footerSlot;
       this._uiDialogFooter = $(this._footerSlot);
@@ -2235,7 +2555,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _createBodySlot: function () {
       this._createContentDiv();
 
-      this.element[0].appendChild(this._contentDiv); // @HTMLUpdateOK
+      this._dialogContainer.appendChild(this._contentDiv); // @HTMLUpdateOK
       subtreeAttached(this._contentDiv);
 
       this._bodySlot = document.createElement('div');
@@ -2482,13 +2802,13 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          // Find elements within dialog that have accesskey and remove marker added during open
         var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('.oj-helper-element-in-dialog-with-accesskey');
         forEach.call(elementsInDialogWithAccesskey, function (element) {
-          element.classList.remove('oj-helper-element-in-dialog-with-accesskey');
+          element.classList.remove(OJD_HELPER_ELEMENT_DIALOG);
         });
          // Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
         var elementsInDOMWithAccesskey = document.querySelectorAll('.oj-helper-element-with-accesskey');
         forEach.call(elementsInDOMWithAccesskey, function (element) {
-          element.setAttribute('accesskey', element.getAttribute('data-ojAccessKey'));
-          element.removeAttribute('data-ojAccessKey');
+          element.setAttribute('accesskey', element.getAttribute(OJD_ACCESS_KEY));
+          element.removeAttribute(OJD_ACCESS_KEY);
           element.classList.remove('oj-helper-element-with-accesskey');
         });
       }
@@ -2510,16 +2830,36 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     _beforeCloseHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      var isFull = this._isFullDisplay();
+      var isSheet = this._isSheetDisplay();
+
+      this._unregisterResizeListener(rootElement[0]);
+
       this._destroyResizable();
+      if (isSheet) {
+        // turn off body overflow for animation duration in 'sheet' mode
+        this._disableBodyOverflow();
+      }
+
       var animationOptions = (parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
         || {}).animation;
-      if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
+      var closeAnimation;
+      if (animationOptions) {
+        if (isSheet && !isFull && animationOptions.sheet) {
+          closeAnimation = animationOptions.sheet.close;
+        } else if (animationOptions.normal) {
+          closeAnimation = animationOptions.normal.close;
+        } else if (animationOptions.close) {
+          // compatibility with older themes
+          closeAnimation = animationOptions.close;
+        }
+      }
+      if (!this._ignoreBeforeCloseResultant && closeAnimation) {
         // eslint-disable-next-line no-undef
-        var promise = startAnimation(rootElement[0], 'close',
-          animationOptions.close, this).then(function () {
+        return startAnimation(rootElement[0], 'close',
+          closeAnimation, this).then(function () {
             rootElement.hide();
           });
-        return promise;
       }
 
       rootElement.hide();
@@ -2536,6 +2876,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     _afterCloseHandler: function (psOptions) {
       var context = psOptions[oj.PopupService.OPTION.CONTEXT];
+      this._restoreBodyOverflow();
       var event;
       if (context) {
         event = context.closeEvent;
@@ -2602,6 +2943,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         return;
       }
 
+      this._isDefaultPosition = !this._hasPositionAttribute();
+
       // status change is needed to prevent calling open from an on before open
       // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
       oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
@@ -2632,12 +2975,22 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this.opener = $(this.document[0].activeElement);
 
-      if (this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
+      var isSheetDisplay = this._isSheetDisplay();
+
+      if (isSheetDisplay) {
+        this.element[0].classList.add('oj-dialog-sheet');
+      }
+
+      if (!isSheetDisplay && this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
         this._makeDraggable();
       }
       // normalize alignments, so that start and end keywords work as expected.
       var isRtl = this._GetReadingDirection() === 'rtl';
-      var position = oj.PositionUtils.coerceToJqUi(this.options.position);
+      var position = this.options.position;
+      if (isSheetDisplay) {
+        position = this._setSheetPosition(this.options.position);
+      }
+      position = oj.PositionUtils.coerceToJqUi(position);
       position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
       // if modality is set to modal, prevent accesskey events
@@ -2647,14 +3000,14 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
          // Mark elements within the dialog that have an accesskey attr. Those shouldn't have accesskey attr removed
         var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('[accesskey]');
         forEach.call(elementsInDialogWithAccesskey, function (element) {
-          element.classList.add('oj-helper-element-in-dialog-with-accesskey');
+          element.classList.add(OJD_HELPER_ELEMENT_DIALOG);
         });
          // Mark elements with accesskey attr, move accesskey value to data attr, remove accesskey attr from elements
         var elementsInDOMWithAccesskey = document.querySelectorAll('[accesskey]');
         forEach.call(elementsInDOMWithAccesskey, function (element) {
-          if (!element.classList.contains('oj-helper-element-in-dialog-with-accesskey')) {
+          if (!element.classList.contains(OJD_HELPER_ELEMENT_DIALOG)) {
             element.classList.add('oj-helper-element-with-accesskey');
-            element.setAttribute('data-ojAccessKey', element.getAttribute('accesskey'));
+            element.setAttribute(OJD_ACCESS_KEY, element.getAttribute('accesskey')); // @HTMLUpdateOK
             element.removeAttribute('accesskey');
           }
         });
@@ -2685,8 +3038,22 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       var position = psOptions[oj.PopupService.OPTION.POSITION];
 
+      var isSheet = this._isSheetDisplay();
+      if (isSheet) {
+        // turn off overflow before animating in 'sheet' mode
+        this._disableBodyOverflow();
+      }
+
       rootElement.show();
+
+      var isFull = this._isFullDisplay();
+      if (isFull) {
+        this.element[0].classList.add('oj-dialog-full');
+      }
+
       rootElement.position(position);
+
+      this._registerResizeListener(this.element[0]);
 
       // We add .oj-animate-open when the dialog is animating on open.
       // This supports maintaing the visibility of a nested dialog during animation open.
@@ -2694,10 +3061,21 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       var animationOptions = (parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) ||
         {}).animation;
-      if (animationOptions && animationOptions.open) {
+      var openAnimation;
+      if (animationOptions) {
+        if (isSheet && !isFull && animationOptions.sheet) {
+          openAnimation = animationOptions.sheet.open;
+        } else if (animationOptions.normal) {
+          openAnimation = animationOptions.normal.open;
+        } else if (animationOptions.open) {
+          // compatibility with older themes
+          openAnimation = animationOptions.open;
+        }
+      }
+      if (openAnimation) {
         // eslint-disable-next-line no-undef
         return startAnimation(rootElement[0], 'open',
-          animationOptions.open, this);
+          openAnimation, this);
       }
 
       return undefined;
@@ -2713,6 +3091,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _afterOpenHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       rootElement.parent().removeClass('oj-animate-open');
+      this._restoreBodyOverflow();
       this._makeResizable();
       this._trigger('open');
       this._focusTabbable();
@@ -2731,6 +3110,47 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
      */
     refresh: function () {
       this._super();
+    },
+
+    /**
+     * Unregister event listeners for resize the dialog element.
+     * @param {Element} element  DOM element
+     * @private
+     */
+      _unregisterResizeListener: function (element) {
+      if (element && this._resizeHandler) {
+        // remove existing listener
+        removeResizeListener(element, this._resizeHandler);
+        this._resizeHandler = null;
+      }
+    },
+
+    /**
+     * Register event listeners for resize the dialog element.
+     * @param {Element} element  DOM element
+     * @private
+     */
+    _registerResizeListener: function (element) {
+      if (element) {
+        if (this._resizeHandler == null) {
+          this._resizeHandler = this._handleResize.bind(this);
+        }
+        addResizeListener(element, this._resizeHandler, 100, true);
+      }
+    },
+
+    /**
+     * Resize handler to adujust dialog position when the size changes after
+     * initial render.
+     *
+     * @memberof oj.ojDialog
+     * @instance
+     * @private
+     */
+     _handleResize: function () {
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        this._adjustPosition();
+      }
     },
 
     /**
@@ -2768,9 +3188,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // 4. The close button
       // 5. The dialog itself
 
-      if (!hasFocus) {
-        hasFocus = this.element.find('[autofocus]');
-      }
+      hasFocus = this.element.find('[autofocus]');
+
       if (hasFocus == null || !hasFocus.length) {
         hasFocus = FocusUtils.getFirstTabStop(this._contentDiv);
         if (hasFocus != null) return hasFocus;
@@ -2853,6 +3272,25 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           });
         }
       });
+    },
+
+    _disableBodyOverflow: function () {
+      var body = $(document.body);
+      this._origBodyOverflow = {
+        x: body.css('overflow-x'),
+        y: body.css('overflow-y')
+      };
+      body.css('overflow-x', 'hidden');
+      body.css('overflow-y', 'hidden');
+    },
+
+    _restoreBodyOverflow: function () {
+      if (this._origBodyOverflow) {
+        var body = $(document.body);
+        body.css('overflow-x', this._origBodyOverflow.x);
+        body.css('overflow-y', this._origBodyOverflow.y);
+        this._origBodyOverflow = null;
+      }
     },
 
     _destroyCloseButton: function () {
@@ -2973,7 +3411,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     _createTitlebar: function () {
       this._uiDialogTitlebarDiv = document.createElement('div');
       this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
-      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild); // @HTMLUpdateOK
+
+      this._dialogContainer.insertBefore(this._uiDialogTitlebarDiv, // @HTMLUpdateOK
+        this._dialogContainer.firstChild);
+
       subtreeAttached(this._uiDialogTitlebarDiv);
 
       this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
@@ -3095,7 +3536,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         minHeight: minHeight,
         maxWidth: maxWidth,
         maxHeight: maxHeight,
-        cancel: '.oj-dialog-content',
+        cancel: OJD_CONTENT_CLASS,
         containment: 'document',
         handles: resizeHandles,
         start: function (event, ui) {
@@ -3121,7 +3562,11 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // Extended position objects with better names to support RTL.
       //
       var isRtl = this._GetReadingDirection() === 'rtl';
-      var position = oj.PositionUtils.coerceToJqUi(this.options.position);
+      var position = this.options.position;
+      if (this._isSheetDisplay()) {
+        position = this._setSheetPosition(position);
+      }
+      position = oj.PositionUtils.coerceToJqUi(position);
       position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
       this.element.position(position);
 
@@ -3143,6 +3588,46 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         this._position();
       }
     },
+    _isSheetDisplay: function () {
+      if (this._isDefaultPosition) {
+        var behavior = parseJSONFromFontFamily('oj-theme-json').behavior;
+        var isPhone = getDeviceRenderMode() === 'phone';
+        if (behavior.includes('redwood') && isPhone) {
+          return true;
+        }
+      }
+      return false;
+    },
+    _isFullDisplay: function () {
+      if (!this._isSheetDisplay()) {
+        // full display supported on Reddwood mobile only
+        return false;
+      }
+      var height = window.innerHeight;
+      var width = window.innerWidth;
+      var elemHeight = this.element[0].offsetHeight;
+      var elemWidth = this.element[0].offsetWidth;
+      if ((elemHeight >= height * 0.95) && (elemWidth >= width * 0.95)) {
+        return true;
+      }
+      return false;
+    },
+    _hasPositionAttribute: function () {
+      var attrs = this.element[0].attributes;
+      for (var i = 0; i < attrs.length; i++) {
+        if (attrs[i].name.startsWith('position')) {
+          return true;
+        }
+      }
+      return false;
+    },
+    _setSheetPosition: function (position) {
+      var pos = $.extend({}, position);
+      pos.my.vertical = 'bottom';
+      pos.at.vertical = 'bottom';
+      pos.of = window;
+      return pos;
+    },
     _setOption: function (key, value, flags) {
       /* jshint maxcomplexity:15*/
       var isDraggable;
@@ -3157,7 +3642,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       switch (key) {
         case 'dragAffordance':
 
-        // isDraggable = uiDialog.is(":data(oj-draggable)");
           isDraggable = this.element.hasClass(OJ_DRAGGABLE);
 
           if (isDraggable && value === 'none') {
@@ -3165,7 +3649,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
             this.element.removeClass(OJ_DRAGGABLE);
           }
 
-          if (!isDraggable && value === 'title-bar') {
+          if (!this._isSheetDisplay() && !isDraggable && value === 'title-bar') {
             this._makeDraggable();
           }
 
@@ -3173,6 +3657,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
         case 'position':
         // convert to the internal position format and reevaluate the position.
+          this._isDefaultPosition = false;
           var options = this.options;
           options.position = oj.PositionUtils.coerceToJet(value, options.position);
           this._position();
@@ -3274,8 +3759,17 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
         switch (subId) {
           case OJD_HEADER:
-          case OJD_FOOTER:
           case OJD_CONTENT:
+          case OJD_FOOTER:
+            selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ' + OJD_CONTAINER_CLASS + ' > ';
+            selector += '.' + subId;
+            node = this.element.parent().find(selector);
+            if (!node || node.length === 0) {
+              return null;
+            }
+
+            return (node[0]);
+
           case OJ_RESIZABLE_N:
           case OJ_RESIZABLE_E:
           case OJ_RESIZABLE_S:
@@ -3304,7 +3798,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
           // "oj-dialog-body" is deprecated as of 1.2
           case OJD_BODY:
             selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
-            selector += '.oj-dialog-content > ';
+            selector += OJD_CONTAINER_CLASS + ' > ' + OJD_CONTENT_CLASS + ' > ';
             selector += '.' + subId;
             node = this.element.parent().find(selector);
             if (!node || node.length === 0) {
@@ -3315,7 +3809,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
           case OJD_HEADER_CLOSE_WRAPPER:
             selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
-            selector += '.oj-dialog-header > ';
+            selector += OJD_CONTAINER_CLASS + ' > ' + OJD_HEADER_CLASS + ' > ';
             selector += '.' + subId;
             node = this.element.parent().find(selector);
             if (!node || node.length === 0) { return null; }
@@ -3330,7 +3824,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       // Non-null locators have to be handled by the component subclasses
       return null;
     },
-    //* * @inheritdoc */
+
     getSubIdByNode: function (node) {
       if (node != null) {
         var nodeCached = $(node);
@@ -3495,288 +3989,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
       this._super();
     }
-
-    /**
-     * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code>
-     * element accepts DOM nodes as children for the default slot.
-     * The default slot can also be named with "body".
-     * For styling, the default body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
-     *
-     * @ojchild Default
-     * @ojshortdesc The default slot is the dialog's body. It is the same as the named "body" slot.
-     * @memberof oj.ojDialog
-     * @since 4.0.0
-     *
-     * @example <caption>Initialize the Dialog with body content (using the default slot name):</caption>
-     * &lt;oj-dialog>
-     *   &lt;div>Dialog Content&lt;/div>
-     * &lt;/oj-dialog>
-     *
-     */
-
-    /**
-     * <p>The <code class="prettyprint">header</code> slot is for the dialog's header area.
-     * The  <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
-     * with the header slot.
-     * For styling, the header slot will be rendered with the <code class="prettyprint">oj-dialog-header</code> class.
-     * </p>
-     * If a header slot is not specified by the user, a header will automatically be created.
-     * The automatically generated header will contain a close button, and the header title will be set
-     * to the dialog title.
-     *
-     * @ojslot header
-     * @ojshortdesc The header slot is for the dialog's header area. See the Help documentation for more information.
-     * @memberof oj.ojDialog
-     * @since 4.0.0
-     *
-     * @example <caption>Initialize the Dialog with header and body content:</caption>
-     * &lt;oj-dialog>
-     *   &lt;div slot='header'>Header Content&lt;/div>
-     *   &lt;div>Dialog Content&lt;/div>
-     * &lt;/oj-dialog>
-     */
-
-    /**
-     * <p>The <code class="prettyprint">body</code> slot is for the dialog's body area.
-     * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
-     * with the body slot.
-     * For styling, the body slot will be rendered with the <code class="prettyprint">oj-dialog-body</code> class.
-     * Note that "body" is the default slot.
-     *
-     * @ojslot body
-     * @ojshortdesc The body slot is for the dialog's body area. See the Help documentation for more information.
-     * @memberof oj.ojDialog
-     * @since 4.0.0
-     *
-     * @example <caption>Initialize the Dialog with body content:</caption>
-     * &lt;oj-dialog>
-     *   &lt;div slot="body">Dialog Content&lt;/div>
-     * &lt;/oj-dialog>
-     */
-
-    /**
-     * <p>The <code class="prettyprint">footer</code> slot is for the dialog's footer area.
-     * The <code class="prettyprint">&lt;oj-dialog></code> element accepts DOM nodes as children
-     * with the footer slot.
-     * For styling, the footer slot will be rendered with the <code class="prettyprint">oj-dialog-footer</code> class.
-     *
-     * @ojslot footer
-     * @ojshortdesc The footer slot is for the dialog's footer area. See the Help documentation for more information.
-     * @memberof oj.ojDialog
-     * @since 4.0.0
-     *
-     * @example <caption>Initialize the Dialog with body and footer content:</caption>
-     * &lt;oj-dialog>
-     *   &lt;div>Dialog Content&lt;/div>
-     *   &lt;div slot='footer'>Footer Content&lt;/div>
-     * &lt;/oj-dialog>
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Dialog Close Icon</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Close the dialog.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojDialog
-     */
-
-    /**
-     * The JET Dialog can be closed with keyboard actions:
-     *
-     * <p>
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Dialog</td>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td>Close the dialog.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Dialog Close Icon</td>
-     *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-     *       <td>Close the dialog.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojDialog
-     */
-
-    // ////////////////     SUB-IDS     //////////////////
-    /**
-     * <p>Sub-ID for the dialog header.</p>
-     *
-     * @ojsubid oj-dialog-header
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog footer.</p>
-     *
-     * @ojsubid oj-dialog-footer
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog footer:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-footer'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog body.</p>
-     *
-     * @ojsubid oj-dialog-body
-     * @memberof oj.ojDialog
-     * @ojdeprecated {since:"1.2.0", description:"This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed."}
-     *
-     * @example <caption>Get the node for the dialog body:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-body'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog content.</p>
-     *
-     * @ojsubid oj-dialog-content
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog content:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-content'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog header-close-wrapper.</p>
-     *
-     * @ojsubid oj-dialog-header-close-wrapper
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header-close-wrapper:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-header-close-wrapper'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog close-icon.</p>
-     *
-     * @ojsubid oj-dialog-close-icon
-     * @memberof oj.ojDialog
-     * @ojdeprecated {since: "1.2.0", description: "This sub-ID is deprecated."}
-     *
-     * @example <caption>Get the node for the dialog close-icon:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close-icon'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog close affordance.</p>
-     *
-     * @ojsubid oj-dialog-close
-     * @memberof oj.ojDialog
-     * @ojdeprecated {since: "2.1.0", description: "This sub-ID is deprecated."}
-     *
-     * @example <caption>Get the node for the dialog close affordance:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-dialog-close'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the north location.</p>
-     *
-     * @ojsubid oj-resizable-n
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-n'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the south location.</p>
-     *
-     * @ojsubid oj-resizable-s
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-s'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the east location.</p>
-     *
-     * @ojsubid oj-resizable-e
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-e'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the west location.</p>
-     *
-     * @ojsubid oj-resizable-w
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-w'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the northeast location.</p>
-     *
-     * @ojsubid oj-resizable-ne
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-ne'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the northwest location.</p>
-     *
-     * @ojsubid oj-resizable-nw
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-nw'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the southwest location.</p>
-     *
-     * @ojsubid oj-resizable-sw
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-sw'});
-     */
-
-    /**
-     * <p>Sub-ID for the dialog resizable handle at the southeast location.</p>
-     *
-     * @ojsubid oj-resizable-se
-     * @memberof oj.ojDialog
-     *
-     * @example <caption>Get the node for the dialog header:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-resizable-se'});
-     */
   });
 
   setDefaultOptions(
@@ -3802,13 +4014,6 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     });
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_dialog_metadata = 
 {

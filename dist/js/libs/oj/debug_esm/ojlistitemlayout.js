@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ElementVComponent, h, customElement } from 'ojs/ojvcomponent-element';
+import { customElement } from 'ojs/ojvcomponent';
+import { Component, h } from 'preact';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,7 +16,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
 };
 class ListItemLayoutProps {
 }
-let ListItemLayout = class ListItemLayout extends ElementVComponent {
+let ListItemLayout = class ListItemLayout extends Component {
     constructor() {
         super(...arguments);
         this._hasContent = (slotContent) => (Array.isArray(slotContent) && slotContent.length > 0) || slotContent;
@@ -38,8 +39,7 @@ let ListItemLayout = class ListItemLayout extends ElementVComponent {
         }
         return null;
     }
-    render() {
-        const props = this.props;
+    render(props) {
         const hasExtra = this._hasContent(props.metadata) ||
             this._hasContent(props.action) ||
             this._hasContent(props.trailing);
@@ -56,24 +56,23 @@ let ListItemLayout = class ListItemLayout extends ElementVComponent {
             textSlotClass = textSlotClass + ' oj-listitemlayout-start-padding';
             quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
         }
-        return (h("oj-list-item-layout", null,
-            h("div", { class: 'oj-listitemlayout-grid' },
-                this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector'),
-                this._getWrappedSlotContent(props.leading, leadingClass),
-                h("div", { class: textSlotClass },
-                    this._getWrappedSlotContent(props.overline),
-                    this._getWrappedSlotContent(props.children),
-                    this._getWrappedSlotContent(props.secondary),
-                    this._getWrappedSlotContent(props.tertiary, tertiaryClass)),
-                hasExtra ? (h("div", { class: 'oj-listitemlayout-extra' },
-                    this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding'),
-                    this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding'),
-                    this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding'))) : null,
-                this._getWrappedSlotContent(props.quaternary, quaternaryClass),
-                this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation'))));
+        return (h("div", { class: 'oj-listitemlayout-grid' },
+            this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector'),
+            this._getWrappedSlotContent(props.leading, leadingClass),
+            h("div", { class: textSlotClass },
+                this._getWrappedSlotContent(props.overline),
+                this._getWrappedSlotContent(props.children),
+                this._getWrappedSlotContent(props.secondary),
+                this._getWrappedSlotContent(props.tertiary, tertiaryClass)),
+            hasExtra ? (h("div", { class: 'oj-listitemlayout-extra' },
+                this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding'),
+                this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding'),
+                this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding'))) : null,
+            this._getWrappedSlotContent(props.quaternary, quaternaryClass),
+            this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation')));
     }
 };
-ListItemLayout.metadata = { "extension": { "_DEFAULTS": ListItemLayoutProps }, "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };
+ListItemLayout.metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };
 ListItemLayout = __decorate([
     customElement('oj-list-item-layout')
 ], ListItemLayout);

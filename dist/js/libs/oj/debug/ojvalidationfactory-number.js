@@ -12,6 +12,7 @@ function(oj, __ValidationFactoryBase, __ConverterNumber, NumberRangeValidator)
 {
   "use strict";
 
+
 /* global __ValidationFactoryBase:false, __ConverterNumber:false, NumberRangeValidator:false */
 /**
  * A factory implementation to create the built-in number converter of type

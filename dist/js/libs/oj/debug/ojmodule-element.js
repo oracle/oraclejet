@@ -10,14 +10,6 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
   /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ojcomponent oj.ojModule
    * @since 4.2.0
    * @ojdisplayname ojModule Element
@@ -120,13 +112,13 @@ define(['knockout', 'ojs/ojcontext', 'ojs/ojmodule', 'ojs/ojcomposite'], functio
   /**
    * Defines model for the view.
    * <p>The following optional lifecycle methods can be defined on the ViewModel object and will be called
-   * at the corresponding lifecycle stage. See <a href="./oj.ojModule.html#lifecycle">View Model Lifecycle section</a></p>
+   * at the corresponding lifecycle stage. See <a href="oj.ojModule.html#lifecycle">View Model Lifecycle section</a></p>
    * @expose
    * @name config.viewModel
    * @ojshortdesc The ViewModel instance.
    * @memberof! oj.ojModule
    * @instance
-   * @type {Object|null}
+   * @type {(Object|null)=}
    * @ojsignature {target: "Type", value: "oj.ModuleViewModel|null", jsdocOverride:true}
    * @default null
    */

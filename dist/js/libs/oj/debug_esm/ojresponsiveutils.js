@@ -9,14 +9,6 @@ import oj from 'ojs/ojcore-base';
 import { warn } from 'ojs/ojlogger';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @namespace
  * @classdesc Utilities for working with the framework's responsive screen widths
  * and ranges. Often used in conjunction with {@link oj.ResponsiveKnockoutUtils}

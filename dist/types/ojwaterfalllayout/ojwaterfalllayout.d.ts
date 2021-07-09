@@ -1,18 +1,13 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
+import { ComponentChildren } from "preact"
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { h, Component } from 'preact';
+import { ExtendGlobalProps, ObservedGlobalProps, TemplateSlot, PropertyChanged } from 'ojs/ojvcomponent';
 import { DataProvider } from 'ojs/ojdataprovider';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props<Key, Data> {
+declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     data?: DataProvider<Key, Data> | null;
-    itemTemplate?: ElementVComponent.TemplateSlot<ItemTemplateContext<Key, Data>>;
+    itemTemplate?: TemplateSlot<ItemTemplateContext<Key, Data>>;
     scrollPolicy?: 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions?: {
         fetchSize?: number;
@@ -24,14 +19,12 @@ declare class Props<Key, Data> {
         key?: Key;
         offsetY?: number;
     };
-    onScrollPositionChanged?: ElementVComponent.PropertyChanged<{
+    onScrollPositionChanged?: PropertyChanged<{
         y?: number;
         key?: Key;
         offsetY?: number;
     }>;
-    'aria-label'?: string;
-    'aria-labelledby'?: string;
-}
+};
 declare type QuerySelector = keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
 declare type State = {
     renderedData: any;
@@ -46,13 +39,12 @@ interface ItemTemplateContext<Key, Data> {
     index: number;
     key: Key;
 }
-export declare class WaterfallLayout<K extends string | number, D> extends ElementVComponent<Props<K, D>, State> {
+export declare class WaterfallLayout<K extends string | number, D> extends Component<ExtendGlobalProps<Props<K, D>>, State> {
     private root;
     private contentHandler;
     private currentItem;
     private currentKey;
     private skeletonWidth;
-    private restoreFocus;
     private actionableMode;
     private renderCompleted;
     private resizeObserver;
@@ -61,29 +53,34 @@ export declare class WaterfallLayout<K extends string | number, D> extends Eleme
     private lastInternalScrollPositionUpdate;
     private focusInHandler;
     private focusOutHandler;
-    constructor(props: Readonly<Props<K, D>>);
+    constructor();
+    static defaultProps: Partial<Props<any, any>>;
     private static readonly gutterWidth;
     private static readonly minResizeWidthThreshold;
-    private _handleFocusIn;
-    private _handleFocusOut;
-    private _handleClick;
-    private _handleKeyDown;
-    private _touchStartHandler;
-    protected render(): any;
+    private static readonly debounceThreshold;
+    private static readonly _CSS_Vars;
+    private readonly _handleFocusIn;
+    private readonly _handleFocusOut;
+    private readonly _handleClick;
+    private readonly _handleKeyDown;
+    private readonly _touchStartHandler;
+    render(): h.JSX.Element;
     private _getScrollPolicyOptions;
-    protected mounted(): void;
+    private _debounce;
+    componentDidMount(): void;
     private _handleNewData;
-    protected updated(oldProps: Readonly<Props<K, D>>, oldState: Readonly<State>): void;
-    protected unmounted(): void;
+    componentDidUpdate(oldProps: Readonly<Props<K, D>>, oldState: Readonly<State>): void;
+    componentWillUnmount(): void;
     private _delayShowSkeletons;
     private _updatePositionsForSkeletons;
     private _getOptionDefaults;
+    private _getStyleValues;
     private _getShowSkeletonsDelay;
+    private _getCardEntranceAnimationDelay;
     addBusyState(description: string): Function;
-    private _isReady;
     private _findSkeletons;
     private getRootElement;
-    private setRootElement;
+    private readonly setRootElement;
     private isAvailable;
     private getCurrentItem;
     private setCurrentItem;
@@ -102,20 +99,21 @@ export declare class WaterfallLayout<K extends string | number, D> extends Eleme
     private _applyEntranceAnimation;
     private _applyExitAnimation;
     private _applyLoadMoreEntranceAnimation;
-    private scrollListener;
+    private readonly scrollListener;
     private _updateScrollPosition;
     private _syncScrollTopWithProps;
+    handleItemRemoved(key: K): void;
     private _handleTouchOrClickEvent;
     private _resetFocus;
     private _setFocus;
     private _updateCurrentItem;
     private _scrollToVisible;
     private _getScroller;
+    private _getContentDiv;
     private _getContentDivStyle;
     private _getRootElementStyle;
     private _renderInitialSkeletons;
     private _getPositionsForSkeletons;
-    private _isInViewport;
     private _restoreCurrentItem;
     private _disableAllTabbableElements;
     private _enterActionableMode;
@@ -123,7 +121,6 @@ export declare class WaterfallLayout<K extends string | number, D> extends Eleme
     private renderComplete;
     private renderSkeletons;
     private _renderSkeleton;
-    protected _vprops?: VProps<K, D>;
 }
 // Custom Element interfaces
 export interface WaterfallLayoutElement<K extends string | number,D> extends JetElement<WaterfallLayoutElementSettableProperties<K, D>>, WaterfallLayoutElementSettableProperties<K, D> {
@@ -137,19 +134,19 @@ export interface WaterfallLayoutElement<K extends string | number,D> extends Jet
 }
 export namespace WaterfallLayoutElement {
   // tslint:disable-next-line interface-over-type-literal
-  type dataChanged<K extends string | number,D> = JetElementCustomEvent<WaterfallLayoutElement<K,D>["data"]>;
+  type dataChanged<K extends string | number,D> = JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["data"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPolicyChanged<K extends string | number,D> = JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPolicy"]>;
+  type scrollPolicyChanged<K extends string | number,D> = JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPolicy"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPolicyOptionsChanged<K extends string | number,D> = JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPolicyOptions"]>;
+  type scrollPolicyOptionsChanged<K extends string | number,D> = JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPolicyOptions"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPositionChanged<K extends string | number,D> = JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPosition"]>;
+  type scrollPositionChanged<K extends string | number,D> = JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPosition"]>;
 }
 export interface WaterfallLayoutElementEventMap<K extends string | number,D> extends HTMLElementEventMap {
-  'dataChanged': JetElementCustomEvent<WaterfallLayoutElement<K,D>["data"]>;
-  'scrollPolicyChanged': JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPolicy"]>;
-  'scrollPolicyOptionsChanged': JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPolicyOptions"]>;
-  'scrollPositionChanged': JetElementCustomEvent<WaterfallLayoutElement<K,D>["scrollPosition"]>;
+  'dataChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["data"]>;
+  'scrollPolicyChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPolicy"]>;
+  'scrollPolicyOptionsChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPolicyOptions"]>;
+  'scrollPositionChanged': JetElementCustomEventStrict<WaterfallLayoutElement<K,D>["scrollPosition"]>;
 }
 export interface WaterfallLayoutElementSettableProperties<Key,Data> extends JetSettableProperties {
   /**
@@ -163,23 +160,26 @@ export interface WaterfallLayoutElementSettableProperties<Key,Data> extends JetS
   /**
   * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
   */
-  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
+  scrollPolicyOptions?: Props<Key,Data>['scrollPolicyOptions'];
   /**
   * Specifies the current scroll position of the WaterfallLayout. See the Help documentation for more information.
   */
-  scrollPosition: Props<Key,Data>['scrollPosition'];
+  scrollPosition?: Props<Key,Data>['scrollPosition'];
 }
 export interface WaterfallLayoutElementSettablePropertiesLenient<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export interface WaterfallLayoutProperties<Key,Data> extends Partial<WaterfallLayoutElementSettableProperties<Key,Data>>, GlobalAttributes {
-}
-export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {
+export interface WaterfallLayoutIntrinsicProps extends Partial<Readonly<WaterfallLayoutElementSettableProperties<any,any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  children?: ComponentChildren;
+  ondataChanged?: (value: WaterfallLayoutElementEventMap<any,any>['dataChanged']) => void;
+  onscrollPolicyChanged?: (value: WaterfallLayoutElementEventMap<any,any>['scrollPolicyChanged']) => void;
+  onscrollPolicyOptionsChanged?: (value: WaterfallLayoutElementEventMap<any,any>['scrollPolicyOptionsChanged']) => void;
+  onscrollPositionChanged?: (value: WaterfallLayoutElementEventMap<any,any>['scrollPositionChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-waterfall-layout": WaterfallLayoutProperties<any,any>;
+      "oj-waterfall-layout": WaterfallLayoutIntrinsicProps;
     }
   }
 }

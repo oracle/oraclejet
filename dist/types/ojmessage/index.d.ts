@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojMessage extends JetElement<ojMessageSettableProperties> {
     displayOptions: ojMessage.DisplayOptions;
@@ -96,4 +90,18 @@ export namespace MessageElement {
     type DisplayOptions = {
         category?: 'header' | 'none' | 'auto';
     };
+}
+export interface MessageIntrinsicProps extends Partial<Readonly<ojMessageSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojClose?: (value: ojMessageEventMap['ojClose']) => void;
+    ondisplayOptionsChanged?: (value: ojMessageEventMap['displayOptionsChanged']) => void;
+    onmessageChanged?: (value: ojMessageEventMap['messageChanged']) => void;
+    ontranslationsChanged?: (value: ojMessageEventMap['translationsChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-message": MessageIntrinsicProps;
+        }
+    }
 }

@@ -1,36 +1,28 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { ExtendGlobalProps, ObservedGlobalProps, PropertyChanged } from 'ojs/ojvcomponent';
+import { h, Component } from 'preact';
 import { KeySet } from 'ojs/ojkeyset';
-declare class Props<Key> {
+declare type Props<Key> = ObservedGlobalProps<'aria-label' | 'aria-labelledby'> & {
     rowKey?: Key | null;
     indeterminate?: boolean;
     selectedKeys: KeySet<Key> | null;
-    onSelectedKeysChanged?: ElementVComponent.PropertyChanged<KeySet<Key> | null>;
-    onIndeterminateChanged?: ElementVComponent.PropertyChanged<boolean>;
+    onSelectedKeysChanged?: PropertyChanged<KeySet<Key> | null>;
+    onIndeterminateChanged?: PropertyChanged<boolean>;
     selectionMode?: 'all' | 'multiple' | 'single';
-    'aria-label'?: string;
-    'aria-labelledby'?: string;
-}
+};
 declare type State = {
     focus?: boolean;
 };
-export declare class Selector<K> extends ElementVComponent<Props<K>, State> {
-    constructor(props: Readonly<Props<K>>);
-    protected render(): any;
+export declare class Selector<K> extends Component<ExtendGlobalProps<Props<K>>, State> {
+    constructor(props: ExtendGlobalProps<Props<K>>);
+    static defaultProps: Props<any>;
+    render(props: ExtendGlobalProps<Props<K>>, state: Readonly<State>): h.JSX.Element;
     private _handleFocusin;
     private _handleFocusout;
     private _checkboxListener;
     private _isSelected;
-    protected _vprops?: VProps<K>;
 }
 // Custom Element interfaces
 export interface SelectorElement<K> extends JetElement<SelectorElementSettableProperties<K>>, SelectorElementSettableProperties<K> {
@@ -44,19 +36,19 @@ export interface SelectorElement<K> extends JetElement<SelectorElementSettablePr
 }
 export namespace SelectorElement {
   // tslint:disable-next-line interface-over-type-literal
-  type indeterminateChanged<K> = JetElementCustomEvent<SelectorElement<K>["indeterminate"]>;
+  type indeterminateChanged<K> = JetElementCustomEventStrict<SelectorElement<K>["indeterminate"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type rowKeyChanged<K> = JetElementCustomEvent<SelectorElement<K>["rowKey"]>;
+  type rowKeyChanged<K> = JetElementCustomEventStrict<SelectorElement<K>["rowKey"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectedKeysChanged<K> = JetElementCustomEvent<SelectorElement<K>["selectedKeys"]>;
+  type selectedKeysChanged<K> = JetElementCustomEventStrict<SelectorElement<K>["selectedKeys"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type selectionModeChanged<K> = JetElementCustomEvent<SelectorElement<K>["selectionMode"]>;
+  type selectionModeChanged<K> = JetElementCustomEventStrict<SelectorElement<K>["selectionMode"]>;
 }
 export interface SelectorElementEventMap<K> extends HTMLElementEventMap {
-  'indeterminateChanged': JetElementCustomEvent<SelectorElement<K>["indeterminate"]>;
-  'rowKeyChanged': JetElementCustomEvent<SelectorElement<K>["rowKey"]>;
-  'selectedKeysChanged': JetElementCustomEvent<SelectorElement<K>["selectedKeys"]>;
-  'selectionModeChanged': JetElementCustomEvent<SelectorElement<K>["selectionMode"]>;
+  'indeterminateChanged': JetElementCustomEventStrict<SelectorElement<K>["indeterminate"]>;
+  'rowKeyChanged': JetElementCustomEventStrict<SelectorElement<K>["rowKey"]>;
+  'selectedKeysChanged': JetElementCustomEventStrict<SelectorElement<K>["selectedKeys"]>;
+  'selectionModeChanged': JetElementCustomEventStrict<SelectorElement<K>["selectionMode"]>;
 }
 export interface SelectorElementSettableProperties<Key> extends JetSettableProperties {
   /**
@@ -79,14 +71,16 @@ export interface SelectorElementSettableProperties<Key> extends JetSettablePrope
 export interface SelectorElementSettablePropertiesLenient<Key> extends Partial<SelectorElementSettableProperties<Key>> {
   [key: string]: any;
 }
-export interface SelectorProperties<Key> extends Partial<SelectorElementSettableProperties<Key>>, GlobalAttributes {
-}
-export interface VProps<Key> extends Props<Key>, GlobalAttributes {
+export interface SelectorIntrinsicProps extends Partial<Readonly<SelectorElementSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  onindeterminateChanged?: (value: SelectorElementEventMap<any>['indeterminateChanged']) => void;
+  onrowKeyChanged?: (value: SelectorElementEventMap<any>['rowKeyChanged']) => void;
+  onselectedKeysChanged?: (value: SelectorElementEventMap<any>['selectedKeysChanged']) => void;
+  onselectionModeChanged?: (value: SelectorElementEventMap<any>['selectionModeChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-selector": SelectorProperties<any>;
+      "oj-selector": SelectorIntrinsicProps;
     }
   }
 }

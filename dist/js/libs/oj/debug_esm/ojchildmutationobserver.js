@@ -9,14 +9,6 @@ import 'ojs/ojcustomelement';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
 
 /**
- * @license
- * Copyright (c) 2018 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Child mutation observer.
  * The implementation of the class is based on DOM MutationObserver and it is intended
  * for watching mutations for a custom element registered in JET.

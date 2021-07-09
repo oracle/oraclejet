@@ -11,15 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'o
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2016 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-
-  /**
    * @ojcomponent oj.dvtTimeComponent
    * @augments oj.dvtBaseComponent
    * @since 2.1.0
@@ -37,12 +28,12 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'o
         this._super();
         this._SetLocaleHelpers(NumberConverter, ConverterUtils);
       },
-      //* * @inheritdoc */
+
       _GetEventTypes: function () {
         return ['optionChange', 'viewportChange'];
       },
 
-      //* * @inheritdoc */
+
       _HandleEvent: function (event) {
         var type = event.type;
         if (type === 'viewportChange') {
@@ -64,7 +55,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'o
         }
       },
 
-      //* * @inheritdoc */
+
       _LoadResources: function () {
         // Ensure the resources object exists
         if (this.options._resources == null) {
@@ -113,7 +104,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'o
         resources.firstDayOfWeek = LocaleData.getFirstDayOfWeek();
       },
 
-      //* * @inheritdoc */
+
       _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
         parentKey, isRoot, updateChildren) {
         var results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;

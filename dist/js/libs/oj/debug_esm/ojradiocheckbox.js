@@ -11,14 +11,6 @@ import { error, warn } from 'ojs/ojlogger';
 import { subtreeAttached } from 'ojs/ojcomponentcore';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
- /**
  * The _ojRadio component enhances a browser input element into one that is
  * of type=radio. This is a private component used by ojRadioset.
  *
@@ -233,7 +225,7 @@ oj.__registerWidget('oj._ojRadioCheckbox', $.oj.baseComponent,
       this.$choiceItem = this._getChoiceItem();
 
       var iElem = document.createElement('span');
-      iElem.setAttribute('class', 'oj-radiocheckbox-icon');
+      iElem.setAttribute('class', 'oj-radiocheckbox-icon oj-component-icon');
       this.element.wrapAll(iElem); // @HTMLUpdateOK iElem constructed locally
 
       var self = this;
@@ -552,14 +544,6 @@ oj.__registerWidget('oj._ojRadioCheckbox', $.oj.baseComponent,
     /** ** end internal widget functions ****/
 
   });
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @class RadioCheckboxUtils

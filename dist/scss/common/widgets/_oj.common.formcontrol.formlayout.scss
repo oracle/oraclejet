@@ -33,15 +33,6 @@
       column-gap: $formLayoutColumnGutter;
     }
     
-    // in direction row, things are a little more complex, so we need to apply spacing
-    // to the flex-item divs.
-    oj-form-layout > .oj-form.oj-formlayout-form-across {
-      padding-left: 0px;
-      padding-right: 0px;
-      column-gap: 0px;
-    }
-
-
     
     // When labels are inline, we shouldn't ever wrap as it produces difficult
     // to understand layouts.

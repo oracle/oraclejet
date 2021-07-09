@@ -7,17 +7,11 @@
  */
 import oj from 'ojs/ojcore';
 import { warn } from 'ojs/ojlogger';
-import 'customElements';
-import { CustomElementUtils, AttributeUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { CustomElementUtils, AttributeUtils, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
+import { traceDispatchEvent } from 'ojs/ojtrace-event';
+import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues } from 'ojs/ojmetadatautils';
 import { whenDocumentReady } from 'ojs/ojbootstrap';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+import oj$1 from 'ojs/ojcore-base';
 
 /**
  * Custom element bridge prototype.
@@ -36,6 +30,8 @@ BaseCustomElementBridge.proto =
   getClass: function (descriptor) {
     var proto = Object.create(HTMLElement.prototype);
     this.InitializePrototype(proto);
+
+    proto.dispatchEvent = traceDispatchEvent(HTMLElement.prototype.dispatchEvent);
 
     var metadata = this.GetMetadata(descriptor);
     // Enumerate metadata to define the prototype properties, methods, and events
@@ -58,6 +54,40 @@ BaseCustomElementBridge.proto =
     proto.connectedCallback = this._connectedCallback;
     proto.disconnectedCallback = this._detachedCallback;
 
+    // Override appendChild/insertBefore to work around JET-43356 issue w/ Preact
+    const origAppendChild = proto.appendChild;
+    proto.appendChild = function (newNode) {
+      if (CustomElementUtils.canRelocateNode(this, newNode)) {
+        return origAppendChild.call(this, newNode);
+      }
+      return newNode;
+    };
+    const origInsertBefore = proto.insertBefore;
+    proto.insertBefore = function (newNode, refNode) {
+      if (CustomElementUtils.canRelocateNode(this, newNode)) {
+        return origInsertBefore.call(this, newNode, refNode);
+      }
+      return newNode;
+    };
+
+    // Override set/removeAttribute to only allow toggling of classes applied by application/parent component
+    // This is necessary to work with Preact's class patching logic
+    proto.setAttribute = function (qualifiedName, value) {
+      if (qualifiedName === 'class') {
+        const outerClasses = CustomElementUtils.getClassSet(value);
+        CustomElementUtils.getElementState(this).setOuterClasses(outerClasses);
+      } else {
+        HTMLElement.prototype.setAttribute.call(this, qualifiedName, value);
+      }
+    };
+
+    proto.removeAttribute = function (qualifiedName) {
+      if (qualifiedName === 'class') {
+        this.setAttribute('class', '');
+      } else {
+        HTMLElement.prototype.removeAttribute.call(this, qualifiedName);
+      }
+    };
     var constructorFunc = function () {
       var reflect = window.Reflect;
       var ret;
@@ -141,8 +171,8 @@ BaseCustomElementBridge.proto =
 
         var expression = AttributeUtils.getExpressionInfo(newValue).expr;
         if (!expression) {
-          const propMeta = BaseCustomElementBridge
-            .__GetPropertyMetadata(prop, CustomElementUtils.getElementProperties(this));
+          const propMeta = getPropertyMetadata(prop,
+            CustomElementUtils.getElementProperties(this));
           if (propMeta) {
             this.setProperty(prop, BaseCustomElementBridge
               .__ParseAttrValue(this, attr, prop, newValue, propMeta));
@@ -165,7 +195,7 @@ BaseCustomElementBridge.proto =
   DefinePropertyCallback: function (proto, property, propertyMeta) {},
 
   GetAttributes: function (metadata) {
-    return metadata ? BaseCustomElementBridge.getAttributes(metadata.properties) : [];
+    return metadata ? getFlattenedAttributes(metadata.properties) : [];
   },
 
   GetMetadata: function (descriptor) {
@@ -187,7 +217,7 @@ BaseCustomElementBridge.proto =
    */
   // eslint-disable-next-line no-unused-vars
   ShouldHandleAttributeChanged: function (element) {
-    return this._bCreateCalled;
+    return this.State.canHandleAttributes();
   },
 
   /**
@@ -241,8 +271,8 @@ BaseCustomElementBridge.proto =
   },
 
   GetProperty: function (element, prop, props) {
-    var meta = BaseCustomElementBridge
-      .__GetPropertyMetadata(prop, CustomElementUtils.getElementProperties(element));
+    var meta = getPropertyMetadata(prop,
+      CustomElementUtils.getElementProperties(element));
 
     // For event listener and non component properties, retrieve the value directly stored on the element.
     // For top level properties, this will delegate to our 'set' methods so we can handle default values.
@@ -250,7 +280,7 @@ BaseCustomElementBridge.proto =
     if (AttributeUtils.isEventListenerProperty(prop) || !meta || prop.indexOf('.') === -1) {
       return props[prop];
     }
-    return CustomElementUtils.getComplexProperty(props, prop);
+    return CustomElementUtils.getPropertyValue(props, prop);
   },
 
   // VComponent hook to queue property change events to be fired asynchronously
@@ -264,8 +294,6 @@ BaseCustomElementBridge.proto =
     // Once the binding provider has resolved and we are about
     // to render the component, we no longer need to track early
     // property sets to avoid overriding data bound DOM attributes
-    this._allowPropertSets = true;
-
     if (this._earlySets) {
       while (this._earlySets.length) {
         var setObj = this._earlySets.shift();
@@ -287,7 +315,7 @@ BaseCustomElementBridge.proto =
     // Do not save sets that occur during BaseCustomElementBridge.__InitProperties
     // or expression evaluation. We can process these as normal. Playback occurs before the
     // binding provider promise is resolved leading to component creation.
-    if (this.State.isInitializingProperties || this._allowPropertSets) {
+    if (this.State.allowPropertySets()) {
       return false;
     }
 
@@ -318,8 +346,8 @@ BaseCustomElementBridge.proto =
 
   SetProperty: function (element, prop, value, props, bOuter) {
     // Check value against any defined enums
-    var meta = BaseCustomElementBridge
-      .__GetPropertyMetadata(prop, CustomElementUtils.getElementProperties(element));
+    var meta = getPropertyMetadata(prop,
+      CustomElementUtils.getElementProperties(element));
     if (AttributeUtils.isEventListenerProperty(prop) || !meta) {
       // eslint-disable-next-line no-param-reassign
       element[prop] = value;
@@ -335,7 +363,7 @@ BaseCustomElementBridge.proto =
         topPropPrevValue = oj.CollectionUtils.copyInto({}, topPropPrevValue, undefined, true);
       }
 
-      if (!BaseCustomElementBridge.__CompareOptionValues(prop, meta, value, previousValue)) {
+      if (!ElementUtils.comparePropertyValues(meta, value, previousValue)) {
         var isSubprop = prop.indexOf('.') !== -1;
         if (isSubprop) {
           // Set a flag for the case a subproperty results in a set of the top level property
@@ -386,7 +414,7 @@ BaseCustomElementBridge.proto =
 
   ValidatePropertySet: function (element, property, value) {
     var propsMeta = CustomElementUtils.getElementProperties(element);
-    var propMeta = BaseCustomElementBridge.__GetPropertyMetadata(property, propsMeta);
+    var propMeta = getPropertyMetadata(property, propsMeta);
     var propAr = property.split('.');
 
     if (!propMeta) {
@@ -396,10 +424,13 @@ BaseCustomElementBridge.proto =
 
     // Check readOnly property for top level property
     if (propsMeta[propAr[0]].readOnly) {
-      this.State.throwError("Read-only property '" + property + "' cannot be set.");
+      throw new JetElementError(element, `Read-only property '${property}' cannot be set.`);
     }
-
-    BaseCustomElementBridge.checkEnumValues(element, property, value, propMeta);
+    try {
+      checkEnumValues(element, property, value, propMeta);
+    } catch (error) {
+      throw new JetElementError(element, error.message);
+    }
 
     if (value != null) {
       return BaseCustomElementBridge.checkType(element, property, value, propMeta);
@@ -418,43 +449,41 @@ BaseCustomElementBridge.proto =
 
   _connected: function (element) {
     const state = this.State;
-    state.isConnected = true;
-    if (!this._bCreateCalled) { // initial attach
-      this._bCreateCalled = true;
+    // If the component has not finished its creation cycle,
+    // attempt to create it vs handling as a reattached since
+    // the component could have finished in an error state.
+    // The element state will no-op the creation process if
+    // the component is already in an error state.
+    if (!state.isComplete()) {
+      state.startCreationCycle();
+      if (state.isCreating()) { // initial attach
+        // Initializing props from DOM needs to be called
+        // before we playback properties so we cannot call this
+        // inside the createComponentCallback
+        this.InitializeElement(element);
 
-      state.registerBusyState(element);
+        // Should be able to call PlaybackEarlyPropertySets inside
+        // createComponentCallback, but ojradioset/ojcheckboxset rely on
+        // on a side effect of the flow where we playback early property sets
+        // before resolving the binding provider. In those components the parent
+        // renders the oj-option instead of the ojOption's own render method.
+        state.setBindingProviderCallback(this.PlaybackEarlyPropertySets.bind(this, element));
 
-      this.InitializeElement(element);
+        const createComponentCallback = () => {
+          try {
+            // Cache the slot map since we don't support adding new
+            // slot content after initial render
+            state.getSlotMap(true);
 
-      // Should be able to call PlaybackEarlyPropertySets inside
-      // createComponentCallback, but ojradioset/ojcheckboxset rely on
-      // on a side effect of the flow where we playback early property sets
-      // before resolving the binding provider. In those components the parent
-      // renders the oj-option instead of the ojOption's own render method.
-      state.setBindingProviderCallback(this.PlaybackEarlyPropertySets.bind(this, element));
+            const createPromise = this.CreateComponent(element) || Promise.resolve();
+            return createPromise.then(this.PostCreate.bind(this, element));
+          } catch (error) {
+            return Promise.reject(error);
+          }
+        };
 
-      const createComponentCallback = () => {
-        // Short circuit component creation if disposed.
-        // The state of the various flags are being reset here, but that's
-        // not critical because attempting to reconnect a disposed node
-        // is an invalid use case.
-        //
-        // The create flag is reset here.  Busy states will have been
-        // resolved in the disposal (or disconnect) callback.
-        if (!state.isDisposed) {
-          const createPromise = this.CreateComponent(element) || Promise.resolve();
-          return createPromise.then(this.PostCreate.bind(this, element));
-        }
-        // Reset the create flag
-        this._bCreateCalled = false;
-        return Promise.reject();
-      };
-
-      state.beginCreate(createComponentCallback);
-    } else if (!state.isComplete) {
-      // If the component had been previously disconnected, and the 'ready'
-      // promise is still not resolved, we need to re-register the busy state
-      state.registerBusyState(element);
+        state.setCreateCallback(createComponentCallback);
+      }
     } else {
       this.HandleReattached(element);
     }
@@ -468,9 +497,8 @@ BaseCustomElementBridge.proto =
   _detachedCallback: function () {
     const bridge = CustomElementUtils.getElementBridge(this);
     const state = bridge.State;
-    state.isConnected = false;
-    if (!state.isComplete) {
-      state.resolveBusyState();
+    if (!state.isComplete()) {
+      state.pauseCreationCycle();
     } else {
       bridge.HandleDetached(this);
     }
@@ -544,48 +572,6 @@ BaseCustomElementBridge.proto =
 
 };
 
-/** ***********************/
-/* PUBLIC STATIC METHODS */
-/** ***********************/
-
-/**
- * Returns the attributes including the dot notation versions of all complex properties
- * not including readOnly properties.
- * @param {Object} props The properties object
- * @return {Array}
- * @ignore
- */
-BaseCustomElementBridge.getAttributes = function (props) {
-  var attrs = [];
-  BaseCustomElementBridge._getAttributesFromProperties('', props, attrs);
-  return attrs;
-};
-
-/**
- * Helper method for Returns the attributes including the dot notation versions of all complex attributes
- * stored on a bridge instance
- * @param {string} propName The property to evaluate
- * @param {Object} props The properties object
- * @param {Array} attrs The attribute array to add to
- * @ignore
- */
-BaseCustomElementBridge._getAttributesFromProperties = function (propName, props, attrs) {
-  if (props) {
-    var propKeys = Object.keys(props);
-    for (var i = 0; i < propKeys.length; i++) {
-      var prop = propKeys[i];
-      var propMeta = props[prop];
-      if (!propMeta.readOnly) {
-        var concatName = propName + prop;
-        attrs.push(AttributeUtils.propertyNameToAttribute(concatName));
-        if (propMeta.properties) {
-          BaseCustomElementBridge._getAttributesFromProperties(concatName + '.', propMeta.properties, attrs);
-        }
-      }
-    }
-  }
-};
-
 /** ***************************/
 /* NON PUBLIC STATIC METHODS */
 /** ***************************/
@@ -606,27 +592,6 @@ BaseCustomElementBridge._enumerateMetadataForKey = function (proto, metadata, ke
     }
   );
 };
-
-/**
- * Checks to see whether a value is valid for an element property's enum and throws an error if not.
- * @param  {Element}  element The custom element
- * @param  {string}  property The property to check
- * @param  {string}  value The property value
- * @param  {Object}  metadata The property metadata
- * @ignore
- */
-BaseCustomElementBridge.checkEnumValues = function (element, property, value, metadata) {
-  // Only check enum values for string types
-  if (typeof value === 'string' && metadata) {
-    var enums = metadata.enumValues;
-    if (enums && enums.indexOf(value) === -1) {
-      var bridge = CustomElementUtils.getElementBridge(element);
-      bridge.State.throwError("Invalid value '" + value + "' found for property '" + property +
-        "'. Expected one of the following '" + enums.toString() + "'.");
-    }
-  }
-};
-
 
 /**
  * Checks to see whether a value is valid for an element property and throws an error if not.
@@ -657,25 +622,11 @@ BaseCustomElementBridge.checkType = function (element, property, value, metadata
 };
 
 /**
- * Compares two values, returning true if they are equal. Does a deeper check for writeback values
- * because we can't prevent knockout from triggering a second property set with the same values
- * when writing back, but we do want to prevent the addtional update and property changed event.
- * @ignore
- */
-BaseCustomElementBridge.__CompareOptionValues = function (property, metadata, value1, value2) {
-  if (metadata.writeback) {
-    return oj.Object.compareValues(value1, value2);
-  }
-  return value1 === value2;
-};
-
-/**
  * @ignore
  */
 BaseCustomElementBridge.__ThrowTypeError = function (element, property, value, type) {
-  var bridge = CustomElementUtils.getElementBridge(element);
-  bridge.State.throwError("Invalid type '" + (typeof value) + "' found for property '" +
-    property + "'. Expected value of type '" + type + "'.");
+  throw new JetElementError(element, `Invalid type '${typeof value}' found for property '${property}'.\
+ Expected value of type '${type}'.`);
 };
 
 /**
@@ -689,42 +640,11 @@ BaseCustomElementBridge.__CheckOverlappingAttribute = function (element, attr) {
     while (attrPath.length) {
       var attrSubPath = attrPath.join('.');
       if (element.hasAttribute(attrSubPath)) {
-        var bridge = CustomElementUtils.getElementBridge(element);
-        bridge.State.throwError("Cannot set overlapping attributes '" + attr + "' and '" + attrSubPath + "'.");
+        throw new JetElementError(element, `Cannot set overlapping attributes '${attr}' and '${attrSubPath}'.`);
       }
       attrPath.pop();
     }
   }
-};
-
-/**
-  * Returns the metadata for the property, walking down the metadata hierarchy
-  * for subproperties.
-  * @param {string} prop The property including dot notation if applicable
-  * @param {Object} metadata The component metadata
-  * @return {Object|null} The metadata for the property or subproperty or
-  *                       null if not a component property, e.g. a global attribute
-  * @ignore
-  */
-BaseCustomElementBridge.__GetPropertyMetadata = function (prop, metadata) {
-  var meta = metadata;
-  if (meta) {
-    var propAr = prop.split('.');
-    for (var i = 0; i < propAr.length; i++) {
-      meta = meta[propAr[i]];
-      if (!meta) {
-        break;
-      }
-
-      if (propAr.length > 1 && i < propAr.length - 1) {
-        meta = meta.properties;
-        if (!meta) {
-          break;
-        }
-      }
-    }
-  }
-  return meta;
 };
 
 /**
@@ -734,16 +654,13 @@ BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
   const bridge = CustomElementUtils.getElementBridge(element);
   var metaProps = CustomElementUtils.getElementProperties(element);
   if (metaProps) {
-    const elementState = bridge.State;
-    elementState.isInitializingProperties = true;
-
     var attrs = element.attributes; // attrs is a NodeList
     for (var i = 0; i < attrs.length; i++) {
       var attr = attrs[i];
       var property = AttributeUtils.attributeToPropertyName(attr.nodeName);
 
       // See if attribute is a component property
-      var meta = BaseCustomElementBridge.__GetPropertyMetadata(property, metaProps);
+      var meta = getPropertyMetadata(property, metaProps);
       if (meta && !meta.readOnly) {
         // If complex property, check if there are any overlapping attributes
         BaseCustomElementBridge.__CheckOverlappingAttribute(element, attr.nodeName);
@@ -760,8 +677,6 @@ BaseCustomElementBridge.__InitProperties = function (element, componentProps) {
         }
       }
     }
-
-    elementState.isInitializingProperties = false;
   }
 };
 
@@ -814,16 +729,8 @@ BaseCustomElementBridge.__ParseAttrValue = function (elem, attr, prop, val, meta
     return val;
   }
 
-  var type = metadata.type;
-  var bridge = CustomElementUtils.getElementBridge(elem);
   function _coerceVal(value) {
-    var coercedValue;
-    try {
-      coercedValue = AttributeUtils.coerceValue(elem, attr, value, type);
-    } catch (ex) {
-      bridge.State.throwError('Error parsing attribute value.', ex);
-    }
-    return coercedValue;
+    return AttributeUtils.attributeToPropertyValue(elem, attr, value, metadata);
   }
 
   var parseFunction = CustomElementUtils.getElementDescriptor(elem.tagName).parseFunction;
@@ -892,7 +799,7 @@ BaseCustomElementBridge.__FirePropertyChangeEvent =
       // The bridge sets the ready to fire flag after the component has been instantiated.
       // We shouldn't fire property changed events before then unless the update comes from internally
       // for cases like readOnly property updates.
-      if (updatedFrom !== 'external' || bridge.State.isComplete) {
+      if (updatedFrom !== 'external' || bridge.State.isComplete()) {
         element.dispatchEvent(new CustomEvent(name + 'Changed', { detail: detail }));
       }
     }
@@ -914,14 +821,6 @@ BaseCustomElementBridge.__DefineDynamicObjectProperty =
 BaseCustomElementBridge.DESC_KEY_META = 'metadata';
 
 oj._registerLegacyNamespaceProp('BaseCustomElementBridge', BaseCustomElementBridge);
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * in some OS/browser combinations you can attempt to detect high contrast mode
@@ -970,13 +869,6 @@ whenDocumentReady().then(function () {
 });
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @ojoverviewdoc CustomElementOverview - [2]JET Web Components
  * @classdesc
  * {@ojinclude "name":"customElementOverviewDoc"}
@@ -995,7 +887,7 @@ whenDocumentReady().then(function () {
  *   and programmatic access to these components is similar to interacting with native HTML elements.
  *   All JET components live in the "oj" namespace and have HTML element names starting with "oj-". We will use
  *   the term "JET component" to refer to both native JET custom elements and custom elements implemented using the
- *   <a href="oj.Composite.html">Composite</a> component APIs after this point.
+ *   <a href="Composite.html">Composite</a> component APIs after this point.
  * </p>
  * <h2 id="ce-overview-upgrade-section" class="subsection-title">
  *   Upgrading a Custom Element<a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-overview-upgrade-section"></a>
@@ -1009,6 +901,7 @@ whenDocumentReady().then(function () {
  *   this process completes. Additionally, JET components will resolve any data bindings during the upgrade process.
  *   The application is responsible for calling their binding provider to apply bindings or for adding a
  *   <code>data-oj-binding-provider="none"</code> attribute in their page to indicate that no data bindings exist.
+ *   If an application is rendered using Preact, <code>data-oj-binding-provider="preact"</code> should be set instead.
  *   Note that the JET custom element upgrade process will not complete until data bindings
  *   are resolved or no binding provider is indicated using the <code>data-oj-binding-provider</code> attribute.
  *   Also, due to JET components' data binding support, all JET component upgrades will occur asynchronously regardless
@@ -1441,3 +1334,20 @@ whenDocumentReady().then(function () {
  * @ojfragment customElementOverviewDoc - General description doc fragment that shows up in every component's page via a link.
  * @memberof CustomElementOverview
  */
+
+/**
+ * Add's the os and browser agent classes to the body tag
+ * @private
+ */
+function _ojApplyAgentClasses() {
+  let classes = [];
+      const ai = oj$1.AgentUtils.getAgentInfo();
+      classes.push(`oj-agent-os-${ai.os.toLowerCase()}`);
+      classes.push(`oj-agent-browser-${ai.browser.toLowerCase()}`);
+      var html = document.documentElement;
+      html.classList.add(...classes);
+}
+
+whenDocumentReady().then(function () {
+  _ojApplyAgentClasses();
+});

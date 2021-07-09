@@ -5,18 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojdatasource-common', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojcomponentcore', 'ojs/ojlogger'], function (ojdatasourceCommon, oj, $, DomUtils, ojcomponentcore, ojlogger) { 'use strict';
+define(['ojs/ojdatasource-common', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojdatacollection-common'], function (ojdatasourceCommon, oj, $, DomUtils, ojcomponentcore, ojlogger, DataCollectionUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   (function () {
 var __oj_row_expander_metadata = 
@@ -71,14 +63,6 @@ var __oj_row_expander_metadata =
     __oj_row_expander_metadata.extension._WIDGET_NAME = 'ojRowExpander';
     oj.CustomElementBridge.register('oj-row-expander', { metadata: __oj_row_expander_metadata });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Convenient class that represents an empty node set
@@ -150,14 +134,6 @@ var __oj_row_expander_metadata =
   EmptyNodeSet.prototype.getMetadata = function (index) {
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Flattens a hierarchical node set, which can happen in node set returned from
@@ -338,14 +314,6 @@ var __oj_row_expander_metadata =
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Wraps around the NodeSet to provide additional metadata
    * @param {Object} nodeSet the node set to wrap
    * @param {function(Object, Object)} metadataCallback callback to inject additional metadata information
@@ -481,14 +449,6 @@ var __oj_row_expander_metadata =
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Combines two NodeSets together into one.
    * @param {Object} nodeSet1 the first node set
    * @param {Object} nodeSet2 the second node set
@@ -614,14 +574,6 @@ var __oj_row_expander_metadata =
       index: (index - this.m_mergeAt - 1) + this.m_nodeSet2.getStart()
     };
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Base class for FlattenedTreeDataGridDataSource and FlattenedTreeTableDataSource
@@ -1058,11 +1010,13 @@ var __oj_row_expander_metadata =
 
       // if the nodeSet contains less nodes than originally requested, attempt to fetch the remainder from the ancestors
       if (nodeSet.getCount() < originalRange.count && parent != null && depth > 0) {
-        var remainingRange = {};
-        remainingRange.start = originalRange.start + nodeSet.getCount();
-        remainingRange.count = originalRange.count - nodeSet.getCount();
-
-        var remainingOptions = {};
+        var remainingRange = {
+          start: originalRange.start + nodeSet.getCount(),
+          count: originalRange.count - nodeSet.getCount()
+        };
+        var remainingOptions = {
+          prevNodeSet: null
+        };
         remainingOptions.prevNodeSet = mergedNodeSet == null ? nodeSet : mergedNodeSet;
 
         processed = this._fetchFromAncestors(parent, depth, remainingRange,
@@ -1161,7 +1115,7 @@ var __oj_row_expander_metadata =
             if (countUnknown) {
               fetchRange.count = Math.min(maxFetchSize, Math.max(0, fetchSize));
               // if count is unknown, we cannot do batch fetch
-              batchFetchOptions = undefined;
+              batchFetchOptions = null;
               // stop going up parents
             } else {
               fetchRange.count = Math.min(maxFetchSize,
@@ -1339,6 +1293,7 @@ var __oj_row_expander_metadata =
         }
 
         if (callbacks != null && callbacks.success != null) {
+          /*
           if (options != null) {
             if (options.count === 0) {
               // nothing is used from node set, just return a empty node set
@@ -1350,6 +1305,15 @@ var __oj_row_expander_metadata =
             }
           } else {
             _nodeSet = new FlattenedNodeSet(_nodeSet);
+          }
+          */
+         if (options.count === 0) {
+            // nothing is used from node set, just return a empty node set
+            _nodeSet = new EmptyNodeSet(null, range.start);
+          } else {
+            // wraps node set with a filter that only returns nodes that
+            // have not been fetched already
+            _nodeSet = new FlattenedNodeSet(_nodeSet, actualStart);
           }
           callbacks.success.call(null, _nodeSet);
         }
@@ -1392,7 +1356,7 @@ var __oj_row_expander_metadata =
 
         // see if we need to check depth
         if (options.checkDepth) {
-          if (lastEntry.depth >= depth) {
+          if (lastEntry && lastEntry.depth >= depth) {
             // eslint-disable-next-line no-param-reassign
             options.found = true;
             // eslint-disable-next-line no-param-reassign
@@ -2202,11 +2166,12 @@ var __oj_row_expander_metadata =
    * @private
    */
   FlattenedTreeDataSource.prototype._addEntry = function (key, depth, index, parent, insertAt) {
-    var rowData = {};
-    rowData.key = key;
-    rowData.depth = depth;
-    rowData.index = index;
-    rowData.parent = parent;
+    var rowData = {
+      key: key,
+      depth: depth,
+      index: index,
+      parent: parent
+    };
 
     if (insertAt === undefined) {
       this.m_cache.push(rowData);
@@ -2246,15 +2211,6 @@ var __oj_row_expander_metadata =
   FlattenedTreeDataSource.prototype.getCapability = function (feature) {
     return this.m_wrapped.getCapability(feature);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 
   /**
    * @ojcomponent oj.ojRowExpander
@@ -2323,6 +2279,93 @@ var __oj_row_expander_metadata =
    * <h4>Initial expansion</h4>
    * <p>To specify initial expanded rows with RowExpander, it is recommended that applications do this through the initial options in oj.FlattenedTreeDataProvider, especially for expanding all rows initially.</p>
    */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Icon</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Expand or collapse the row with the icon in it.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRowExpander
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="2">Focused Row or Cell with RowExpander</td>
+   *       <td><kbd>Ctrl + RightArrow</kbd></td>
+   *       <td>Expand</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+   *       <td>Collapse</td>
+   *     </tr>
+   *     <tr>
+   *       <td rowspan="1">Icon</td>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Expand or Collapse</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRowExpander
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the ojRowExpander's icon.</p>
+   *
+   * @ojsubid oj-rowexpander-disclosure
+   * @memberof oj.ojRowExpander
+   *
+   * @example <caption>Get the icon from the RowExpander:</caption>
+   * var node = myRowExpander.getNodeBySubId({subId: 'oj-rowexpander-disclosure'});
+   */
+
+  /**
+   * @typedef {Object} oj.ojRowExpander.Context context object used by cell callbacks.
+   * @property {DataProvider<K, D>|null} datasource a reference to the data source object
+   * @property {Object?} keys the object that contains both the row key and column key which identifies the cell
+   * @property {any} keys.row the row key
+   * @property {any} keys.column the column key
+   * @property {any?} key the row key
+   * @property {any} parentKey the parent row key
+   * @property {number} treeDepth the depth of the node
+   * @property {boolean} isLeaf true if it is a leaf node
+   * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
+   *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"key", jsdocOverride:true},
+   *               {target:"Type", value:"K", for:"parentKey", jsdocOverride:true}]
+   */
+
   oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
     {
       version: '1.0.0',
@@ -2415,8 +2458,7 @@ var __oj_row_expander_metadata =
         depth7: 'oj-rowexpander-depth-7'
       },
       constants: {
-        MAX_STYLE_DEPTH: 7,
-        NUM5_KEY: 53
+        MAX_STYLE_DEPTH: 7
       },
       /**
        * Create the row expander
@@ -2426,7 +2468,7 @@ var __oj_row_expander_metadata =
        */
       _ComponentCreate: function () {
         this._super();
-        this.element.addClass(this.classNames.root);
+        this.element[0].classList.add(this.classNames.root);
         this._initContent();
       },
       /**
@@ -2434,8 +2476,6 @@ var __oj_row_expander_metadata =
        * @private
        */
       _initContent: function () {
-        var self = this;
-
         var context = this.options.context;
         if (context === null) {
           ojlogger.warn('Context is not setup for the rowExpander');
@@ -2449,9 +2489,9 @@ var __oj_row_expander_metadata =
             context.component;
         } else if (context.componentElement) {
           var widgetElem = context.componentElement;
-          widgetElem = $(widgetElem).hasClass('oj-component-initnode') ?
+          widgetElem = widgetElem.classList.contains('oj-component-initnode') ?
             widgetElem :
-            $(widgetElem).find('.oj-component-initnode')[0];
+            widgetElem.querySelector('.oj-component-initnode');
           this.component = ojcomponentcore.__GetWidgetConstructor(widgetElem)('instance');
         }
         this.datasource = context.datasource;
@@ -2479,33 +2519,14 @@ var __oj_row_expander_metadata =
         this._addIcon();
         this._setIconStateClass();
 
+        // listen for key down event from host component
+        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
+        this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
+
         if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
-          $(this.toucharea).on('touchend', function (event) {
-            // prevent scroll to top and # append, also prevents the following click
-            event.preventDefault();
-            self._fireExpandCollapse();
-          });
-
-          $(this.toucharea).on('click', function (event) {
-            // prevent scroll to top and # append
-            event.preventDefault();
-            self._fireExpandCollapse();
-          });
-          $(this.element).on('keypress', function (event) {
-            var code = event.keyCode || event.which;
-            if (code === $.ui.keyCode.ENTER || code === $.ui.keyCode.SPACE) {
-              // do expand or collapse
-              self._fireExpandCollapse();
-              // stop browser from for example scrolling the page
-              event.preventDefault();
-              // ensure focus stays
-              event.target.focus();
-            }
-          });
-
-          // listen for key down event from host component
-          this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-          this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
+          this.toucharea.addEventListener('touchend', this._touchEndListener.bind(this));
+          this.toucharea.addEventListener('click', this._clickListener.bind(this));
+          this.element[0].addEventListener('keypress', this._keyPressListener.bind(this));
 
           // listens for expand and collapse event from flattened datasource
           // this could be due to user clicks, keyboard shortcuts or programmatically
@@ -2513,6 +2534,7 @@ var __oj_row_expander_metadata =
           this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
 
           if (!this._isDataProvider()) {
+            // addEventListener not supported on datasource
             this.datasource.on('expand', this.handleExpandCallback, this);
             this.datasource.on('collapse', this.handleCollapseCallback, this);
           }
@@ -2521,19 +2543,52 @@ var __oj_row_expander_metadata =
           this._initExpanded();
         } else if (this.iconState === 'leaf') {
           // we'll still need to handle ctrl+alt+5 for leaf node
-          // listen for key down event from host component
-          this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-          this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
-          $(this.icon).attr('tabindex', -1);
+          this.icon.setAttribute('tabindex', -1);
         }
 
         // listen for active key change event from host component
         this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
+
+        // These on methods need to stay jquery because were relying on jquery additions in the call
         if (this.component._IsCustomElement()) {
           $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
         } else {
           $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
         }
+      },
+      /**
+       * Listens for touch end events on touch area.
+       * @private
+       */
+      _touchEndListener: function (event) {
+        // prevent scroll to top and # append, also prevents the following click
+        event.preventDefault();
+        this._fireExpandCollapse();
+      },
+      /**
+       * Listens for key press events on this.element[0].
+       * @private
+       */
+      _keyPressListener: function (event) {
+        var eventKey = event.key || event.keyCode;
+        if (DataCollectionUtils.isSpaceBarKeyEvent(eventKey)
+          || DataCollectionUtils.isEnterKeyEvent(eventKey)) {
+          // do expand or collapse
+          this._fireExpandCollapse();
+          // stop browser from for example scrolling the page
+          event.preventDefault();
+          // ensure focus stays
+          event.target.focus();
+        }
+      },
+      /**
+       * Listens for click events on touch area.
+       * @private
+       */
+      _clickListener: function (event) {
+        // prevent scroll to top and # append
+        event.preventDefault();
+        this._fireExpandCollapse();
       },
       /**
        * Sync initial state of expanded with context/FlattenedTreeModel
@@ -2689,9 +2744,16 @@ var __oj_row_expander_metadata =
        */
       _destroy: function () {
         // unregister keydown and active key change handlers
-        this.component.element.get(0).removeEventListener('ojkeydown',
-                                                          this.handleKeyDownCallback, true);
-        $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
+        this.toucharea.removeEventListener('touchend', this._touchEndListener);
+        this.toucharea.removeEventListener('click', this._clickListener);
+        this.element[0].removeEventListener('keypress', this._keyPressListener);
+
+        if (this.component._IsCustomElement()) {
+          $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+        } else {
+          $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        }
 
         // unregister expand/collapse events
         if (this._isDataProvider()) {
@@ -2701,7 +2763,7 @@ var __oj_row_expander_metadata =
           this.datasource.off('collapse', this.handleCollapseCallback, this);
         }
 
-        this.element.removeClass(this.classNames.root);
+        this.element[0].classList.remove(this.classNames.root);
         this.element.empty();
       },
 
@@ -2747,8 +2809,8 @@ var __oj_row_expander_metadata =
        */
       _expand: function () {
         if (this.iconState === 'collapsed') {
-          this._loading();
           if (!this._isDataProvider()) {
+            this._loading();
             this.datasource.expand(this.rowKey);
           } else {
             this._getFlattenedDataProvider().setExpanded(
@@ -2766,8 +2828,8 @@ var __oj_row_expander_metadata =
        */
       _collapse: function () {
         if (this.iconState === 'expanded') {
-          this._loading();
           if (!this._isDataProvider()) {
+            this._loading();
             this.datasource.collapse(this.rowKey);
           } else {
             this._getFlattenedDataProvider().setExpanded(
@@ -2831,10 +2893,10 @@ var __oj_row_expander_metadata =
        * @private
        */
       _appendSpacer: function (depth) {
-        var spacer = $(document.createElement('span'))
-            .addClass(this.classNames.indent)
-            .addClass(this.classNames['depth' + depth]);
-        this.element.append(spacer); // @HTMLUpdateOK
+        var spacer = document.createElement('span');
+            spacer.classList.add(this.classNames.indent);
+            spacer.classList.add(this.classNames['depth' + depth]);
+        this.element[0].appendChild(spacer); // @HTMLUpdateOK
       },
 
       /**
@@ -2842,21 +2904,25 @@ var __oj_row_expander_metadata =
        * @private
        */
       _addIcon: function () {
-        var iconSpacer = $(document.createElement('div')).addClass(this.classNames.iconspacer);
-        this.toucharea = $(document.createElement('div')).addClass(this.classNames.toucharea);
+        var iconSpacer = document.createElement('div');
+        iconSpacer.classList.add(this.classNames.iconspacer);
+        this.toucharea = document.createElement('div');
+        this.toucharea.classList.add(this.classNames.toucharea);
         // if icon is a leaf do not add # because that will trigger navigation if entered in JAWS
-        this.icon = $(document.createElement('a'))
-          .attr('href', this.iconState === 'leaf' ? '' : '#')
-          .attr('aria-labelledby', this._getLabelledBy())
-          .addClass(this.classNames.icon)
-          .addClass(this.classNames.clickable)
-          .attr('aria-label',
+        this.icon = document.createElement('a');
+        this.icon.setAttribute('href', this.iconState === 'leaf' ? '' : '#');
+        this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
+        this.icon.classList.add(this.classNames.icon);
+        this.icon.classList.add(this.classNames.clickable);
+        this.icon.setAttribute('aria-label',
                 this.getTranslatedString('accessibleLevelDescription', { level: this.depth }));
-        this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); // @HTMLUpdateOK
+        this.toucharea.appendChild(this.icon); // @HTMLUpdateOK
+        iconSpacer.appendChild(this.toucharea); // @HTMLUpdateOK
+        this.element[0].appendChild(iconSpacer); // @HTMLUpdateOK
 
         var self = this;
         this._focusable({
-          element: self.icon,
+          element: $(self.icon),
           applyHighlight: true
         });
       },
@@ -2867,7 +2933,7 @@ var __oj_row_expander_metadata =
        * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
        */
       _addIconClass: function (classKey) {
-        this.icon.addClass(this.classNames[classKey]);
+        this.icon.classList.add(this.classNames[classKey]);
       },
 
       /**
@@ -2876,7 +2942,7 @@ var __oj_row_expander_metadata =
        * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
        */
       _removeIconClass: function (classKey) {
-        this.icon.removeClass(this.classNames[classKey]);
+        this.icon.classList.remove(this.classNames[classKey]);
       },
 
       /**
@@ -2990,31 +3056,37 @@ var __oj_row_expander_metadata =
        */
       _handleKeyDownEvent: function (event) {
         var targetContext =
-            ojcomponentcore.__GetWidgetConstructor(this.component.element.get(0))('getContextByNode',
+            ojcomponentcore.__GetWidgetConstructor(this.component.element[0])('getContextByNode',
                                                                                 event.target);
+        var rowKey;
         if (targetContext == null) {
-          return;
-        }
-
-        var rowKey = targetContext.key;
-        if (rowKey == null) {
-          rowKey = targetContext.keys.row;
+          var currentRow = this.component.options.currentRow;
+          if (currentRow == null || currentRow.rowKey == null) {
+            return;
+          }
+          rowKey = currentRow.rowKey;
+        } else {
+          rowKey = targetContext.key;
+          if (rowKey == null) {
+            rowKey = targetContext.keys.row;
+          }
         }
         if (this.rowKey === rowKey) {
-          var code = event.keyCode || event.which;
+          var eventKey = event.key || event.keyCode;
           // ctrl (or equivalent) is pressed
           if (DomUtils.isMetaKeyPressed(event)) {
             // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
             // consume the event as it's processed
-            if (code === $.ui.keyCode.RIGHT) {
+            if (DataCollectionUtils.isArrowRightKeyEvent(eventKey)) {
               if (this._expand()) {
                 event.preventDefault();
               }
-            } else if (code === $.ui.keyCode.LEFT) {
+            } else if (DataCollectionUtils.isArrowLeftKeyEvent(eventKey)) {
               if (this._collapse()) {
                 event.preventDefault();
               }
-            } else if (event.altKey && code === this.constants.NUM5_KEY) {
+            } else if (event.altKey &&
+              DataCollectionUtils.isNumberFiveKeyEvent(eventKey)) {
               // read current cell context
               if (this.component._setAccessibleContext) {
                 var ancestorInfo;
@@ -3076,7 +3148,8 @@ var __oj_row_expander_metadata =
           // if the event is triggered by initial setting of expanded, we should not
           // fire expand or option change event
           var expanded = this.options.expanded;
-          if (expanded == null || (expanded != null && !expanded)) {
+          // if (expanded == null || (expanded != null && !expanded)) {
+          if (expanded == null || !expanded) {
             this._trigger('expand', null, { rowKey: rowKey });
             this._updateExpandedState(true);
           }
@@ -3101,7 +3174,8 @@ var __oj_row_expander_metadata =
           // if the event is triggered by initial setting of expanded, we should not
           // fire expand or option change event
           var expanded = this.options.expanded;
-          if (expanded == null || (expanded != null && expanded)) {
+          // if (expanded == null || (expanded != null && expanded)) {
+          if (expanded == null || expanded) {
             this._trigger('collapse', null, { rowKey: rowKey });
             this._updateExpandedState(false);
           }
@@ -3174,7 +3248,7 @@ var __oj_row_expander_metadata =
        * @private
        */
       _ariaExpanded: function (bool) {
-        this.icon.attr('aria-expanded', bool);
+        this.icon.setAttribute('aria-expanded', bool);
       },
 
       // @inheritdoc
@@ -3186,7 +3260,7 @@ var __oj_row_expander_metadata =
         var subId = locator.subId;
         if ((subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') &&
             this.icon != null) {
-          return this.icon.get(0);
+          return this.icon;
         }
         // Non-null locators have to be handled by the component subclasses
         return null;
@@ -3194,7 +3268,7 @@ var __oj_row_expander_metadata =
 
       // @inheritdoc
       getSubIdByNode: function (node) {
-        if (node === this.icon.get(0)) {
+        if (node === this.icon) {
           return { subId: 'oj-rowexpander-disclosure' };
         }
         return null;
@@ -3202,7 +3276,7 @@ var __oj_row_expander_metadata =
 
       _NotifyAttached: function () {
         this._super();
-        this.icon.attr('aria-labelledby', this._getLabelledBy());
+        this.icon.setAttribute('aria-labelledby', this._getLabelledBy());
       },
       /**
        * Get the aria label of the rowexpander from the closest row expander
@@ -3210,90 +3284,12 @@ var __oj_row_expander_metadata =
        * @private
        */
       _getLabelledBy: function () {
-        return this.element.parent().closest('[id]').attr('id');
+        const parentWithID = this.element[0].parentElement.closest('[id]');
+        if (parentWithID) {
+          return parentWithID.getAttribute('id');
+        }
+        return undefined;
       }
-
-      // ////////////////     FRAGMENTS    //////////////////
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Icon</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Expand or collapse the row with the icon in it.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDoc - Used in touch section of classdesc, and standalone gesture doc
-       * @memberof oj.ojRowExpander
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td rowspan="2">Focused Row or Cell with RowExpander</td>
-       *       <td><kbd>Ctrl + RightArrow</kbd></td>
-       *       <td>Expand</td>
-       *     </tr>
-       *     <tr>
-       *       <td><kbd>Ctrl + LeftArrow</kbd></td>
-       *       <td>Collapse</td>
-       *     </tr>
-       *     <tr>
-       *       <td rowspan="1">Icon</td>
-       *       <td><kbd>Enter</kbd></td>
-       *       <td>Expand or Collapse</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojRowExpander
-       */
-
-      // ////////////////     SUB-IDS     //////////////////
-
-      /**
-       * <p>Sub-ID for the ojRowExpander's icon.</p>
-       *
-       * @ojsubid oj-rowexpander-disclosure
-       * @memberof oj.ojRowExpander
-       *
-       * @example <caption>Get the icon from the RowExpander:</caption>
-       * var node = myRowExpander.getNodeBySubId({subId: 'oj-rowexpander-disclosure'});
-       */
-
-      /**
-       * @typedef {Object} oj.ojRowExpander.Context context object used by cell callbacks.
-       * @property {DataProvider<K, D>|null} datasource a reference to the data source object
-       * @property {Object?} keys the object that contains both the row key and column key which identifies the cell
-       * @property {any} keys.row the row key
-       * @property {any} keys.column the column key
-       * @property {any?} key the row key
-       * @property {any} parentKey the parent row key
-       * @property {number} treeDepth the depth of the node
-       * @property {boolean} isLeaf true if it is a leaf node
-       * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"},
-       *               {target:"Type", value:"K", for:"keys.row", jsdocOverride:true},
-       *               {target:"Type", value:"K", for:"keys.column", jsdocOverride:true},
-       *               {target:"Type", value:"K", for:"key", jsdocOverride:true},
-       *               {target:"Type", value:"K", for:"parentKey", jsdocOverride:true}]
-       */
     });
 
 });

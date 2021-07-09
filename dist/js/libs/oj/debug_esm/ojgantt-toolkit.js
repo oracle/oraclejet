@@ -5,17 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Obj, BaseComponentDefaults, CSSStyle, Agent, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, ToolkitUtils, Animator, Container, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, ResourceUtils, OutputText, IconButton, Displayable, SelectionEffectUtils, ColorUtils, Rectangle, AriaUtils, EventFactory, Point, EventManager, TextUtils, SolidFill, JsonUtils, Automation, Rect, Line, ClipPath, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
+import { Obj, BaseComponentDefaults, CSSStyle, Agent, Container, ToolkitUtils, Path, Stroke, PathUtils, KeyboardEvent, MouseEvent, OutputText, IconButton, Displayable, SelectionEffectUtils, ColorUtils, ResourceUtils, Rectangle, AriaUtils, EventFactory, Point, EventManager, ClipPath, TextUtils, SolidFill, JsonUtils, Rect, Line, AnimFadeIn, Easing, AnimFadeOut, CustomAnimation, ParallelPlayable, Playable, Animator, Automation, SvgShapeUtils, SimpleScrollbar, LayoutUtils, Dimension, MarqueeHandler, Matrix, SelectionHandler } from 'ojs/ojdvt-toolkit';
 import { TimeComponent, TimeComponentEventManager, TimeComponentKeyboardHandler } from 'ojs/ojdvt-timecomponent';
 import { TimeAxisUtils, TimeAxis } from 'ojs/ojtimeaxis-toolkit';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Style related utility functions for Gantt.
@@ -805,16 +797,16 @@ DvtGanttStyleUtils.getTaskResizeHandleWidth = function()
  * @return {number} The size of the subcomponent in pixels.
  */
 DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
-  if (typeof(size) == 'string') {
-    if (size.slice(-1) == '%')
+  if (typeof(size) === 'string') {
+    if (size.slice(-1) === '%')
       return totalSize * Number(size.slice(0, -1)) / 100;
-    else if (size.slice(-2) == 'px')
+    else if (size.slice(-2) === 'px')
       return Number(size.slice(0, -2));
     else
       size = Number(size);
   }
 
-  if (typeof(size) == 'number') {
+  if (typeof(size) === 'number') {
     if (size <= 1) // assume to be ratio
       return totalSize * size;
     else // assume to be absolute size in pixels
@@ -823,775 +815,6 @@ DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
   else
     return 0;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
- * Animation manager for Gantt
- * @param {Gantt} gantt the Gantt component
- * @class
- * @constructor
- */
-var DvtGanttAnimationManager = function(gantt)
-{
-  this.Init(gantt);
-};
-
-Obj.createSubclass(DvtGanttAnimationManager, Obj);
-
-/**
- * Initialize the animation manager
- * @param {Gantt} gantt the Gantt component
- * @protected
- */
-DvtGanttAnimationManager.prototype.Init = function(gantt)
-{
-  this._gantt = gantt;
-};
-
-/**
- * Initializes the necessary animators for animation.
- */
-DvtGanttAnimationManager.prototype.prepareForAnimations = function()
-{
-  var context = this._gantt.getCtx();
-
-  // Ensure clean slate
-  this._gantt.StopAnimation();
-
-  this._animationMode = 'none';
-
-  this._animationDuration = DvtGanttStyleUtils.getAnimationDuration(this._gantt.getOptions());
-
-  // Figure out animation mode
-  if (this._gantt.isInitialRender()) // initial render/display
-  {
-    if (this._gantt.isIRAnimationEnabled)
-      this._animationMode = 'onDisplay';
-  }
-  else // data change
-  {
-    if (this._gantt.isDCAnimationEnabled)
-      this._animationMode = 'dataChange';
-  }
-
-  // Initialize appropriate animators depending on animation mode
-  if (this._animationMode === 'onDisplay')
-  {
-    // For animating fade in
-    this.fadeInElemsIR = [];
-    this.fadeInPlayableIR = new AnimFadeIn(context, this.fadeInElemsIR, this._animationDuration, 0);
-
-    // Playable for animating dimension changes
-    this.dimensionsPlayableIR = this._createCustomPlayable(Easing.linear);
-
-    // For animating translations
-    this.translationsPlayableIR = this._createCustomPlayable(Easing.cubicInOut);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    // For animating fade in and out
-    this.fadeInElemsDC = [];
-    this.fadeInPlayableDC = new AnimFadeIn(context, this.fadeInElemsDC, this._animationDuration, 0);
-    this.fadeOutElemsDC = [];
-    this.fadeOutPlayableDC = new AnimFadeOut(context, this.fadeOutElemsDC, this._animationDuration, 0);
-
-    // For animating dimension changes
-    this.dimensionsPlayableDC = this._createCustomPlayable(Easing.linear);
-
-    // For animating translations
-    this.translationsPlayableDC = this._createCustomPlayable(Easing.cubicInOut);
-  }
-
-  // Callbacks to be executed at the end of animation
-  this._onEnds = [];
-};
-
-/**
- * Gets the current animation mode of the Gantt
- * @return {string} the animation mode ('dataChange', 'onDisplay', or 'none')
- */
-DvtGanttAnimationManager.prototype.getAnimationMode = function()
-{
-  return this._animationMode;
-};
-
-/**
- * Sets the animation mode of the Gantt
- * @param {string} animationMode The new animation mode
- */
-DvtGanttAnimationManager.prototype.setAnimationMode = function(animationMode)
-{
-  this._animationMode = animationMode;
-};
-
-/**
- * Generates a playable object with specified easing animation.
- * @param {function} easing The easing function to use when animating.
- * @return {dvt.CustomAnimation} The playable.
- * @private
- */
-DvtGanttAnimationManager.prototype._createCustomPlayable = function(easing)
-{
-  var playable;
-  playable = new CustomAnimation(this._gantt.getCtx(), this._gantt, this._animationDuration);
-  playable.setEasing(easing);
-  return playable;
-};
-
-/**
- * Starts all animations.
- */
-DvtGanttAnimationManager.prototype.triggerAnimations = function()
-{
-  var subPlayables, context, i;
-
-  // Stop any unfinished animations
-  this._gantt.StopAnimation();
-
-  context = this._gantt.getCtx();
-
-  // Plan the animation
-  if (this._animationMode === 'onDisplay')
-  {
-    // Parallel: Fade in all elements, animate any dimension changes
-    subPlayables = [this.fadeInPlayableIR, this.translationsPlayableIR, this.dimensionsPlayableIR];
-    this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    // Parallel: Fade in elements, translate elements, animate dimension changes, fade out elements
-    subPlayables = [this.fadeInPlayableDC, this.translationsPlayableDC, this.dimensionsPlayableDC, this.fadeOutPlayableDC];
-    this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
-  }
-
-  // If an animation was created, play it
-  if (this._gantt.Animation)
-  {
-    // Instead of animating dep lines, hide them, animate other things, then show them again.
-    // TODO: remove this and refine dependency lines animation instead.
-    this._hideDepLines();
-    Playable.appendOnEnd(this._gantt.Animation, this._showDepLines, this);
-
-    // Disable event listeners temporarily
-    // Only do this if DnD is not enabled, because
-    // 1) If animation is triggered by DnD, and listeners are removed, the dragEnd event will never fire.
-    // 2) If we try to limit this to explicit dragging cases, there'll be a slew of side effects/conflicts with pan drag events and DnD events
-    // 3) DnD with animation is not expected to be a common usecase, and it's only an "issue" if someone tries to scroll/zoom etc. in the half second animation is happening. Even so, nothing will break; animation will just look more chaotic.
-    if (!this._gantt.isDndEnabled())
-    {
-      this._gantt.EventManager.removeListeners(this._gantt);
-      this._bListenersRemoved = true;
-    }
-
-    // Append callbacks to be executed at the end of animation
-    for (var i = 0; i < this._onEnds.length; i++)
-    {
-      Playable.appendOnEnd(this._gantt.Animation, this._onEnds[i], this);
-    }
-    Playable.appendOnEnd(this._gantt.Animation, this._onAnimationEnd, this);
-
-    // Play!
-    this._gantt.Animation.play();
-  }
-};
-
-/**
- * Hides dependency lines (called before animation)
- * @private
- */
-DvtGanttAnimationManager.prototype._hideDepLines = function()
-{
-  var deplines = this._gantt.getDependenciesContainer();
-  if (deplines != null)
-    ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
-};
-
-/**
- * Shows dependency lines (called after animation)
- * @private
- */
-DvtGanttAnimationManager.prototype._showDepLines = function()
-{
-  var deplines = this._gantt.getDependenciesContainer();
-  if (deplines != null)
-    ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
-};
-
-/**
- * Hook for cleaning animation behavior at the end of the animation.
- * @private
- */
-DvtGanttAnimationManager.prototype._onAnimationEnd = function()
-{
-  // Fire ready event saying animation is finished.
-  if (!this._gantt.AnimationStopped)
-    this._gantt.RenderComplete();
-
-  // Restore event listeners if removed
-  if (this._bListenersRemoved)
-    this._gantt.EventManager.addListeners(this._gantt);
-
-  // Reset animation flags
-  this._gantt.Animation = null;
-  this._gantt.AnimationStopped = false;
-
-  this._animationMode = 'none';
-
-  // Refresh the viewport to absolutely ensure the final state looks right
-  // This also ensures a clean slate, and clears out any hidden things from the DOM that were there just for animation
-  this._gantt.renderViewport();
-};
-
-/*
-----------------------------------------------------------------------
-Methods below configure/define animations for specific elements
-----------------------------------------------------------------------
-*/
-
-/**
- * Prepares overall Gantt initial render animation.
- * @param {Gantt} gantt
- */
-DvtGanttAnimationManager.prototype.preAnimateGanttIR = function(gantt)
-{
-  if (this._animationMode === 'onDisplay')
-  {
-    // Fade in gantt on initial render
-    this.fadeInElemsIR.push(gantt._canvas);
-  }
-};
-
-/**
- * Prepares task node animation.
- * @param {DvtGanttTaskNode} taskNode
- * @param {object} finalStates Object defining the final animation state
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskNode = function(taskNode, finalStates)
-{
-  var translationsAnimator,
-      renderState = taskNode.getRenderState();
-
-  if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render, then fade it in
-      taskNode.setTranslate(finalStates['x'], finalStates['y']);
-      this.fadeInElemsDC.push(taskNode);
-    }
-    else if (renderState === 'exist' || renderState === 'migrate')
-    {
-      // Translate, then finalize render at the end of animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateX, taskNode.setTranslateX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateY, taskNode.setTranslateY, finalStates['y']);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    taskNode.setTranslate(finalStates['x'], finalStates['y']);
-  }
-};
-
-/**
- * Prepares task node animation.
- * @param {DvtGanttTaskNode} taskNode
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskNodeRemove = function(taskNode, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out, then finalize render at the end of animation
-    this.fadeOutElemsDC.push(taskNode);
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares task baseline shape animation.
- * @param {DvtGanttTask} task
- * @param {DvtGanttTaskShape} baselineShape
- * @param {object} finalStates Object defining the final animation state
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskBaseline = function(task, baselineShape, finalStates, onEnd)
-{
-  var dimensionsAnimator, translationsAnimator,
-      renderState = task.getRenderState('baseline');
-
-  if (this._animationMode === 'onDisplay')
-  {
-    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-    baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-    onEnd();
-
-    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-      onEnd();
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
-    }
-    else if (renderState === 'exist')
-    {
-      // Animate translation and dimensional changes, finalize render at the end of animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getX, baselineShape.setX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getY, baselineShape.setY, finalStates['y']);
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getHeight, baselineShape.setHeight, finalStates['h']);
-
-      baselineShape.setBorderRadius(finalStates['r']);
-
-      this._onEnds.push(onEnd);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    baselineShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
-    onEnd();
-  }
-};
-
-/**
- * Prepares task baseline shape removal animation.
- * @param {DvtGanttTaskShape} baselineShape
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskBaselineRemove = function(baselineShape, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out element, finalize render at the end of animation
-    this.fadeOutElemsDC.push(baselineShape);
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares task main shape animation.
- * @param {DvtGanttTask} task
- * @param {object} finalStates Object defining the final animation state
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskMain = function(task, finalStates, onEnd)
-{
-  var dimensionsAnimator, translationsAnimator,
-      renderState = task.getRenderState('main');
-
-  if (this._animationMode === 'onDisplay')
-  {
-    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-    task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-    onEnd();
-
-    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-      onEnd();
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
-    }
-    else if (renderState === 'exist')
-    {
-      // Animate translation and dimensional changes, finalize render at the end of animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainX, task.setMainX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainY, task.setMainY, finalStates['y']);
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainHeight, task.setMainHeight, finalStates['h']);
-
-      task.setMainBorderRadius(finalStates['r']);
-
-      this._onEnds.push(onEnd);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    task.setMainDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
-    onEnd();
-  }
-};
-
-/**
- * Prepares task main shape removal animation.
- * @param {DvtGanttTaskShape} mainShape
- * @param {DvtGanttTaskShape} selectShape
- * @param {DvtGanttTaskShape} hoverShape
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskMainRemove = function(mainShape, selectShape, hoverShape, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out elements related to the main shape, finalize render at the end of animation
-    this.fadeOutElemsDC.push(mainShape);
-    if (selectShape)
-    {
-      this.fadeOutElemsDC.push(selectShape);
-    }
-    if (hoverShape)
-    {
-      this.fadeOutElemsDC.push(hoverShape);
-    }
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares task progress shape animation.
- * @param {DvtGanttTask} task
- * @param {DvtGanttTaskShape} progressShape
- * @param {object} finalStates Object defining the final animation state
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskProgress = function(task, progressShape, finalStates, onEnd)
-{
-  var dimensionsAnimator, translationsAnimator,
-      renderState = task.getRenderState('progress');
-
-  if (this._animationMode === 'onDisplay')
-  {
-    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-    progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-    onEnd();
-
-    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
-    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
-      progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
-      onEnd();
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
-    }
-    else if (renderState === 'exist')
-    {
-      // Animate translation and dimensional changes, finalize render at the end of animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getX, progressShape.setX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getY, progressShape.setY, finalStates['y']);
-
-      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
-      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getHeight, progressShape.setHeight, finalStates['h']);
-
-      progressShape.setBorderRadius(finalStates['r']);
-
-      this._onEnds.push(onEnd);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    progressShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
-    onEnd();
-  }
-};
-
-/**
- * Prepares task progress shape removal animation.
- * @param {DvtGanttTaskShape} progressShape
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskProgressRemove = function(progressShape, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out element, finalize render at the end of animation
-    this.fadeOutElemsDC.push(progressShape);
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares task label animation.
- * @param {DvtGanttTaskNode} taskNode
- * @param {object} finalStates Object defining the final animation state
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskLabel = function(taskNode, finalStates, onEnd)
-{
-  var translationsAnimator,
-      task = taskNode.getTask(),
-      taskLabel = taskNode.getTaskLabel(),
-      labelOutputText = taskLabel.getLabelOutputText(),
-      renderState = taskLabel.getRenderState(),
-      taskMainRenderState = task.getRenderState('main');
-
-  if (this._animationMode === 'onDisplay')
-  {
-    // Finalize render, start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
-    onEnd();
-    labelOutputText.setY(finalStates['y']);
-    labelOutputText.setX(task.getShape('main').getX());
-    translationsAnimator = this.translationsPlayableIR.getAnimator();
-    translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-    translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
-  }
-  else if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render
-      labelOutputText.setX(finalStates['x']);
-      labelOutputText.setY(finalStates['y']);
-      onEnd();
-
-      if (taskMainRenderState === 'add')
-      {
-        // Start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
-        labelOutputText.setX(task.getShape('main').getX());
-        translationsAnimator = this.translationsPlayableDC.getAnimator();
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
-      }
-      else if (taskMainRenderState === 'exist')
-      {
-        // Fade in
-        this.fadeInElemsDC.push(labelOutputText);
-      }
-    }
-    else if (renderState === 'exist')
-    {
-      // Translate animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
-      this._onEnds.push(onEnd);
-    }
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    labelOutputText.setX(finalStates['x']);
-    labelOutputText.setY(finalStates['y']);
-    onEnd();
-  }
-};
-
-/**
- * Prepares task label animation.
- * @param {dvt.OutputText} labelOutputText
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateTaskLabelRemove = function(labelOutputText, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out, finalize render at the end of animation
-    this.fadeOutElemsDC.push(labelOutputText);
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares horizontal grid line animation.
- * @param {dvt.Line} line The horizontal grid line
- * @param {object} finalStates Object defining the final animation state
- * @param {string} renderState The render state of the line
- */
-DvtGanttAnimationManager.prototype.preAnimateHorizontalGridline = function(line, finalStates, renderState)
-{
-  var translationsAnimator;
-
-  if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      // Finalize render, then fade it in
-      line.setY1(finalStates['y1']);
-      line.setY2(finalStates['y2']);
-      line.setX1(finalStates['x1']);
-      line.setX2(finalStates['x2']);
-
-      this.fadeInElemsDC.push(line);
-    }
-    else if (renderState === 'exist')
-    {
-      // Translation animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX1, line.setX1, finalStates['x1']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX2, line.setX2, finalStates['x2']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY1, line.setY1, finalStates['y1']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY2, line.setY2, finalStates['y2']);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    line.setY1(finalStates['y1']);
-    line.setY2(finalStates['y2']);
-    line.setX1(finalStates['x1']);
-    line.setX2(finalStates['x2']);
-  }
-};
-
-/**
- * Prepares gantt background animation.
- * @param {dvt.Rect} background
- * @param {object} finalStates Object defining the final animation state
- * @param {string} renderState The render state of the background
- */
-DvtGanttAnimationManager.prototype.preAnimateRowBackground = function(background, finalStates, renderState)
-{
-  var dimensionsAnimator, translationsAnimator;
-
-  if (this._animationMode === 'dataChange')
-  {
-    if (renderState === 'add')
-    {
-      this.fadeInElemsDC.push(background);
-    }
-
-    // Animate dimension and translation changes
-    dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
-    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getHeight, background.setHeight, finalStates['h']);
-    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getWidth, background.setWidth, finalStates['w']);
-
-    translationsAnimator = this.translationsPlayableDC.getAnimator();
-    translationsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getY, background.setY, finalStates['y']);
-  }
-  else // No animation; finalize render immediately
-  {
-    background.setY(finalStates['y']);
-    background.setHeight(finalStates['h']);
-    background.setWidth(finalStates['w']);
-  }
-};
-
-/**
- * Prepares row node removal animation.
- * @param {DvtGanttRowNode} rowNode
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateRowNodeRemove = function(rowNode, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out, finalize rendering at the end
-    this.fadeOutElemsDC.push(rowNode);
-    this.fadeOutElemsDC.push(rowNode.getBackground());
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * Prepares row label animation.
- * @param {DvtGanttRowNode} rowNode
- * @param {DvtGanttRowLabelContent} labelContent
- * @param {object} finalStates Object defining the final animation state
- */
-DvtGanttAnimationManager.prototype.preAnimateRowLabel = function(rowNode, labelContent, finalStates)
-{
-  var rowRenderState = rowNode.getRenderState(),
-      translationsAnimator;
-
-  if (this._animationMode === 'dataChange')
-  {
-    if (rowRenderState === 'add')
-    {
-      // Finalize render, then fade in
-      labelContent.setY(finalStates['y']);
-      labelContent.setX(finalStates['x']);
-
-      this.fadeInElemsDC.push(labelContent.getDisplayable());
-    }
-    else if (rowRenderState === 'exist')
-    {
-      // Translation animation
-      translationsAnimator = this.translationsPlayableDC.getAnimator();
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getX, labelContent.setX, finalStates['x']);
-      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getY, labelContent.setY, finalStates['y']);
-    }
-  }
-  else // No animation; finalize render immediately
-  {
-    labelContent.setY(finalStates['y']);
-    labelContent.setX(finalStates['x']);
-  }
-};
-
-/**
- * Prepares row label removal animation.
- * @param {DvtGanttRowLabelContent} labelContent
- * @param {dvt.Line} horizontalLine
- * @param {function} onEnd callback that finalizes rendering
- */
-DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelContent, horizontalLine, onEnd)
-{
-  if (this._animationMode === 'dataChange')
-  {
-    // Fade out, then finalize render
-    this.fadeOutElemsDC.push(labelContent.getDisplayable());
-    this.fadeOutElemsDC.push(horizontalLine);
-    this._onEnds.push(onEnd);
-  }
-  else // No animation; just execute onEnd callback immediately to finalize render
-  {
-    onEnd();
-  }
-};
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Class representing a GanttDependency node.
@@ -1749,12 +972,13 @@ DvtGanttDependencyNode.prototype.getSuccessorNode = function()
 };
 
 /**
- * Determine the start position of the task node, taking label into account
+ * Determine the start position of the task node
  * @param {DvtGanttTaskNode} taskNode the task node
+ * @param {boolean=} toEdge Whether returned position is from the task edge. If false, label spaces and margins are taken into account. Default false.
  * @return {number} the start position of the task node in pixels
  * @private
  */
-DvtGanttDependencyNode._getTaskStart = function(taskNode)
+DvtGanttDependencyNode._getTaskStart = function(taskNode, toEdge)
 {
   var isRTL = Agent.isRightToLeft(taskNode.getGantt().getCtx()),
       options = taskNode.getGantt().getOptions(),
@@ -1763,11 +987,11 @@ DvtGanttDependencyNode._getTaskStart = function(taskNode)
       taskLabelOutputText = taskLabel.getLabelOutputText(),
       labelPosition = taskLabel.getEffectiveLabelPosition(),
       labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
-      taskMargin = DvtGanttStyleUtils.getTaskMargin(options);
+      taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
 
   if (isRTL)
   {
-    if (taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition == 'end')
+    if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'end')
     {
       return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getFinalWidth() - taskMainShape.getPhysicalEndOffset() - taskLabelOutputText.getDimensions().w - labelMargin * 2; // padding before + after
     }
@@ -1778,7 +1002,7 @@ DvtGanttDependencyNode._getTaskStart = function(taskNode)
   }
   else
   {
-    if (taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition == 'start')
+    if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'start')
     {
       return (taskNode.getFinalX() + taskMainShape.getFinalX()) - taskMainShape.getPhysicalStartOffset() - taskLabelOutputText.getDimensions().w - labelMargin * 2;
     }
@@ -1804,12 +1028,13 @@ DvtGanttDependencyNode._getTaskMiddle = function(taskNode)
 };
 
 /**
- * Determine the end position of the task node, taking label into account
+ * Determine the end position of the task node
  * @param {DvtGanttTaskNode} taskNode the task node to find the end
+ * @param {boolean=} toEdge Whether returned position is from the task edge. If false, label spaces and margins are taken into account. Default false.
  * @return {number} the end position of the task node in pixels
  * @private
  */
-DvtGanttDependencyNode._getTaskEnd = function(taskNode)
+DvtGanttDependencyNode._getTaskEnd = function(taskNode, toEdge)
 {
   var isRTL = Agent.isRightToLeft(taskNode.getGantt().getCtx()),
       options = taskNode.getGantt().getOptions(),
@@ -1818,11 +1043,11 @@ DvtGanttDependencyNode._getTaskEnd = function(taskNode)
       taskLabelOutputText = taskLabel.getLabelOutputText(),
       labelPosition = taskLabel.getEffectiveLabelPosition(),
       labelMargin = DvtGanttStyleUtils.getTaskLabelMargin(options),
-      taskMargin = DvtGanttStyleUtils.getTaskMargin(options);
+      taskMargin = toEdge ? 0 : DvtGanttStyleUtils.getTaskMargin(options);
 
   if (isRTL)
   {
-    if (taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition == 'start')
+    if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'start')
     {
       return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getPhysicalStartOffset() + taskLabelOutputText.getDimensions().w + labelMargin * 2;
     }
@@ -1833,7 +1058,7 @@ DvtGanttDependencyNode._getTaskEnd = function(taskNode)
   }
   else
   {
-    if (taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition == 'end')
+    if (!toEdge && taskLabelOutputText != null && taskLabelOutputText.getParent() != null && labelPosition === 'end')
     {
       return (taskNode.getFinalX() + taskMainShape.getFinalX()) + taskMainShape.getFinalWidth() + taskMainShape.getPhysicalEndOffset() + taskLabelOutputText.getDimensions().w + labelMargin * 2;
     }
@@ -1879,11 +1104,80 @@ DvtGanttDependencyNode._isValidType = function(type)
 };
 
 /**
+ * Returns whether line is provided from custom renderer.
+ * @return {boolean} true if content is from provided custom renderer, false otherwise.
+ */
+ DvtGanttDependencyNode.prototype.isCustomContent = function()
+{
+  var options = this._gantt.getOptions();
+  return options.dependencyContent && options.dependencyContent.renderer;
+};
+
+/**
+ * Gets the context to be passed into custom renderer callbacks
+ * @param {object} state The state payload
+ * @return {object} The renderer context
+ */
+ DvtGanttDependencyNode.prototype.getRendererContext = function(state) {
+  var options = this._gantt.getOptions();
+  var context = this._gantt.getCtx();
+  var type = this.getValue('type');
+  var predecessorNode = this.getPredecessorNode();
+  var successorNode = this.getSuccessorNode();
+  var typeState = DvtGanttDependencyNode._getRenderingTypeState(context, type);
+  var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, typeState.isTypeBeginFinish, typeState.isTypeEndFinish, true);
+  var dataContext = {
+    data: this.getLayoutObject().data,
+    itemData: options.dependencyData ? this.getLayoutObject()._itemData : null,
+    content: {
+      predecessorX: endPoints.predecessorX,
+      predecessorY: endPoints.predecessorY,
+      successorX: endPoints.successorX,
+      successorY: endPoints.successorY
+    },
+    state: state
+  };
+  return context.fixRendererContext(dataContext);
+};
+
+/**
+ * Renders custom content
+ * @param {object} state The state payload
+ * @private
+ */
+DvtGanttDependencyNode.prototype._renderCustomContent = function (state) {
+  var gantt = this.getGantt();
+  var options = gantt.getOptions();
+  if (this._content) {
+    this.removeChild(this._content);
+  }
+  this._content = new Container(gantt.getCtx());
+  this._content.setClassName(gantt.GetStyleClass('dependencyLineCustom'));
+  this.addChild(this._content);
+  var parentElem = this._content.getContainerElem();
+  var renderer = options.dependencyContent.renderer; // must have been defined if reached here
+  var dataContext = this.getRendererContext(state);
+  var customContent = renderer(dataContext);
+  if (customContent) {
+    if (Array.isArray(customContent)) {
+      customContent.forEach(function (node) {
+        ToolkitUtils.appendChildElem(parentElem, node);
+      });
+    } else {
+      ToolkitUtils.appendChildElem(parentElem, customContent);
+    }
+  }
+};
+
+/**
  * Renders the dependency line
  * @param {dvt.Container} container the container to render the dependency line in.
+ * @param {boolean=} bUpdateCustomContent Whether to do a full custom content re-render if it already exists. Default true.
  */
-DvtGanttDependencyNode.prototype.render = function(container)
+DvtGanttDependencyNode.prototype.render = function(container, bUpdateCustomContent)
 {
+  var bUpdateCustomContent = bUpdateCustomContent !== false;
+
   if (this.getParent() != container)
     container.addChild(this);
 
@@ -1894,74 +1188,77 @@ DvtGanttDependencyNode.prototype.render = function(container)
   var predecessorNode = this.getPredecessorNode();
   var successorNode = this.getSuccessorNode();
 
-  // update task about predecessors and successors
-  predecessorNode.addSuccessorDependency(this);
-  successorNode.addPredecessorDependency(this);
-
-  // for touch the aria-label needs to be available and aria-label on task needs to be updated
-  if (TimeAxisUtils.supportsTouch())
-  {
+  // set aria-label.
+  // Note task aria-label already incorporated dependency aria-label
+  // from the dependency layout object (task renders before dependency lines do, and
+  // previously, we call refreshAriaLabel on both the predecessor and successor node after this)
+  if (!Agent.deferAriaCreation()) {
     this.setAriaProperty('label', this.getAriaLabel());
-    predecessorNode.refreshAriaLabel();
-    successorNode.refreshAriaLabel();
   }
 
-  // due to IE bug https://connect.microsoft.com/IE/feedback/details/781964/,
-  // which happens only on older versions of Windows (<10), we'll need to re-render the path instead of just updating its command
-  if ((Agent.browser === 'ie' || Agent.browser === 'edge'))
-    this._cleanup();
-
-  if (this._line != null)
-  {
-    // update dependency line
-    this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
-    var elem = this._line.getElem();
-  }
-  else
-  {
-    var line = new Path(gantt.getCtx(), DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
-    // If arc radius > 0, then leave pixel hinting--otherwise they look weird and pixelated.
-    // Otherwise, the lines are rectilinear, and should be crisp.
-    if (DvtGanttStyleUtils.getDependencyLineArcRadius() === 0)
-    {
-      line.setPixelHinting(true);
+  if (this.isCustomContent()) {
+    if (!this._content || bUpdateCustomContent) {
+      this._renderCustomContent({ focused: false });
+    }
+  } else {
+    // due to IE bug https://connect.microsoft.com/IE/feedback/details/781964/,
+    // which happens only on older versions of Windows (<10), we'll need to re-render the path instead of just updating its command
+    if ((Agent.browser === 'ie' || Agent.browser === 'edge')) {
+      this._cleanup();
     }
 
-    elem = line.getElem();
+    if (this._line != null)
+    {
+      // update dependency line
+      this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+      var elem = this._line.getElem();
+    }
+    else
+    {
+      var line = new Path(gantt.getCtx(), DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+      // If arc radius > 0, then leave pixel hinting--otherwise they look weird and pixelated.
+      // Otherwise, the lines are rectilinear, and should be crisp.
+      if (DvtGanttStyleUtils.getDependencyLineArcRadius() === 0)
+      {
+        line.setPixelHinting(true);
+      }
 
-    this.addChild(line);
+      elem = line.getElem();
 
-    // set keyboard focus stroke
-    var his = new Stroke(DvtGanttStyleUtils.getFocusedDependencyLineInnerColor(), 1, DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth());
-    // the outer color won't matter since it will be override by style class
-    var hos = new Stroke('#000', 1, 1);
-    line.setHoverStroke(his, hos);
+      this.addChild(line);
 
-    this._line = line;
+      // set keyboard focus stroke
+      var his = new Stroke(DvtGanttStyleUtils.getFocusedDependencyLineInnerColor(), 1, DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth());
+      // the outer color won't matter since it will be override by style class
+      var hos = new Stroke('#000', 1, 1);
+      line.setHoverStroke(his, hos);
+
+      this._line = line;
+    }
+
+    // apply inline style
+    var style = this.getValue('svgStyle');
+    if (style)
+    {
+      this._line.setStyle(style); // works if style is object
+    }
+
+    // apply style class
+    // TODO: right now, the hover inner stroke (see var his) is set to have white color.
+    // However, if we use Using toolkit's setClassName method, i.e. this._line.setClassName(styleClass),
+    // it saves the class in an internal variable. When one focuses on the dep line,
+    // the saved class is applied on the inner stroke in UpdateSelectionEffect(), which
+    // overrides the white stroke...
+    // See filed  for more details.
+    // For now, revert back to not using the Toolkit setClassName and just apply the class on the
+    // line ourselves, to eliminate this regression from 2.3.0. Post 3.0.0, we should investigate a better way to do this.
+    var defaultStyleClass = gantt.GetStyleClass('dependencyLine');
+    var styleClass = this.getValue('svgClassName');
+    if (styleClass)
+      ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
+    else
+      ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass);
   }
-
-  // apply inline style
-  var style = this.getValue('svgStyle');
-  if (style)
-  {
-    this._line.setStyle(style); // works if style is object
-  }
-
-  // apply style class
-  // TODO: right now, the hover inner stroke (see var his) is set to have white color.
-  // However, if we use Using toolkit's setClassName method, i.e. this._line.setClassName(styleClass),
-  // it saves the class in an internal variable. When one focuses on the dep line,
-  // the saved class is applied on the inner stroke in UpdateSelectionEffect(), which
-  // overrides the white stroke...
-  // See filed  for more details.
-  // For now, revert back to not using the Toolkit setClassName and just apply the class on the
-  // line ourselves, to eliminate this regression from 2.3.0. Post 3.0.0, we should investigate a better way to do this.
-  var defaultStyleClass = gantt.GetStyleClass('dependencyLine');
-  var styleClass = this.getValue('svgClassName');
-  if (styleClass)
-    ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
-  else
-    ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass);
 };
 
 /**
@@ -1997,10 +1294,10 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
     for (var i = 0; i < deps.length; i++)
     {
       var depType = deps[i].getValue('type');
-      if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) &&
-          (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.FINISH_START)) ||
-          ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.FINISH_START) &&
-          (depType == DvtGanttDependencyNode.FINISH_FINISH || depType == DvtGanttDependencyNode.START_FINISH)))
+      if (((type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH) &&
+          (depType === DvtGanttDependencyNode.START_START || depType === DvtGanttDependencyNode.FINISH_START)) ||
+          ((type === DvtGanttDependencyNode.FINISH_FINISH || type === DvtGanttDependencyNode.FINISH_START) &&
+          (depType === DvtGanttDependencyNode.FINISH_FINISH || depType === DvtGanttDependencyNode.START_FINISH)))
       {
         predecessorConflict = true;
       }
@@ -2014,10 +1311,10 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
     for (i = 0; i < deps.length; i++)
     {
       depType = deps[i].getValue('type');
-      if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START) &&
-          (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.START_FINISH)) ||
-          ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.START_FINISH) &&
-          (depType == DvtGanttDependencyNode.FINISH_FINISH || depType == DvtGanttDependencyNode.FINISH_START)))
+      if (((type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.FINISH_START) &&
+          (depType === DvtGanttDependencyNode.START_START || depType === DvtGanttDependencyNode.START_FINISH)) ||
+          ((type === DvtGanttDependencyNode.FINISH_FINISH || type === DvtGanttDependencyNode.START_FINISH) &&
+          (depType === DvtGanttDependencyNode.FINISH_FINISH || depType === DvtGanttDependencyNode.FINISH_START)))
       {
         successorConflict = true;
       }
@@ -2038,6 +1335,71 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
 };
 
 /**
+ * Returns the endpoints of the line given.
+ * @param {DvtGanttTaskNode} predecessorNode The predecessor task node
+ * @param {DvtGanttTaskNode} successorNode The successor task node
+ * @param {boolean} isTypeBeginFinish true if typeBegin is finish, false otherwise
+ * @param {boolean} isTypeEndFinish true if typeEnd is finish, false otherwise
+ * @param {boolean} toEdge Whether returned position is from the task edge. If false, label spaces and margins are taken into account.
+ * @return {object} An object containing the predecessorX/Y and successorX/Y endpoints
+ * @private
+ */
+DvtGanttDependencyNode._getEndPoints = function (predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, toEdge) {
+  return {
+    predecessorX: isTypeBeginFinish ? DvtGanttDependencyNode._getTaskEnd(predecessorNode, toEdge) : DvtGanttDependencyNode._getTaskStart(predecessorNode, toEdge),
+    predecessorY: DvtGanttDependencyNode._getTaskMiddle(predecessorNode),
+    successorX: isTypeEndFinish ? DvtGanttDependencyNode._getTaskEnd(successorNode, toEdge) : DvtGanttDependencyNode._getTaskStart(successorNode, toEdge),
+    successorY: DvtGanttDependencyNode._getTaskMiddle(successorNode)
+  }
+};
+
+/**
+ * Returns the line type that should be rendered given the logical type. In LTR the rendered type is the logical type, in RTL it's flipped.
+ * @param {dvt.Context} context The rendering context.
+ * @param {string} logicalType the logical dependency type
+ * @return {object} Object of shape { isTypeBeginFinish: boolean, isTypeEndFinish: boolean }
+ * @private
+ */
+DvtGanttDependencyNode._getRenderingTypeState = function (context, logicalType) {
+  var isRTL = Agent.isRightToLeft(context);
+
+  // For RTL the rendering is flipped so for example for start-finish dependency the rendering
+  // in RTL would be exactly like finish-start in LTR
+  switch (logicalType)
+  {
+    case DvtGanttDependencyNode.START_START:
+      if (isRTL) {
+        return { isTypeBeginFinish: true, isTypeEndFinish: true };
+      } else {
+        return { isTypeBeginFinish: false, isTypeEndFinish: false };
+      }
+    case DvtGanttDependencyNode.START_FINISH:
+      if (isRTL) {
+        return { isTypeBeginFinish: true, isTypeEndFinish: false };
+      } else {
+        return { isTypeBeginFinish: false, isTypeEndFinish: true };
+      }
+    case DvtGanttDependencyNode.FINISH_START:
+      if (isRTL) {
+        return { isTypeBeginFinish: false, isTypeEndFinish: true };
+      } else {
+        return { isTypeBeginFinish: true, isTypeEndFinish: false };
+      }
+    case DvtGanttDependencyNode.FINISH_FINISH:
+      if (isRTL) {
+        return { isTypeBeginFinish: false, isTypeEndFinish: false };
+      } else {
+        return { isTypeBeginFinish: true, isTypeEndFinish: true };
+      }
+    default:
+      // invalid type, should not happen
+      break;
+  }
+
+  return null;
+};
+
+/**
  * Calculate path command for dependency lines
  * @param {dvt.Context} context The rendering context.
  * @param {DvtGanttTaskNode} predecessorNode the predecessor
@@ -2048,42 +1410,8 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
  */
 DvtGanttDependencyNode._calcDepLine = function(context, predecessorNode, successorNode, type)
 {
-  var isRTL = Agent.isRightToLeft(context);
-
-  // For RTL the rendering is flipped so for example for start-finish dependency the rendering
-  // in RTL would be exactly like finish-start in LTR
-  switch (type)
-  {
-    case DvtGanttDependencyNode.START_START:
-      if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, true);
-      else
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, false);
-      break;
-    case DvtGanttDependencyNode.START_FINISH:
-      if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, false);
-      else
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, true);
-      break;
-    case DvtGanttDependencyNode.FINISH_START:
-      if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, true);
-      else
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, false);
-      break;
-    case DvtGanttDependencyNode.FINISH_FINISH:
-      if (isRTL)
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, false, false);
-      else
-        return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, true, true);
-      break;
-    default:
-      // invalid type, should not happen
-      break;
-  }
-
-  return null;
+  var typeState = this._getRenderingTypeState(context, type);
+  return DvtGanttDependencyNode._calcDepLineHelper(predecessorNode, successorNode, typeState.isTypeBeginFinish, typeState.isTypeEndFinish);
 };
 
 /**
@@ -2102,10 +1430,12 @@ DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorN
   var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
   var taskFlankLength = DvtGanttStyleUtils.getDependencyLineTaskFlankLength();
 
-  var x1 = isTypeBeginFinish ? DvtGanttDependencyNode._getTaskEnd(predecessorNode) : DvtGanttDependencyNode._getTaskStart(predecessorNode);
-  var x2 = isTypeEndFinish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
-  var y1 = DvtGanttDependencyNode._getTaskMiddle(predecessorNode);
-  var y2 = DvtGanttDependencyNode._getTaskMiddle(successorNode);
+  var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, false);
+  var x1 = endPoints.predecessorX;
+  var x2 = endPoints.successorX;
+  var y1 = endPoints.predecessorY;
+  var y2 = endPoints.successorY;
+
   var options = predecessorNode.getGantt().getOptions();
   var dependencyLineGap = DvtGanttStyleUtils.getDependencyLineTaskGap(options);
   var y_intermediate = y2 >= y1 ? DvtGanttDependencyNode._getTaskBottom(predecessorNode) + dependencyLineGap : DvtGanttDependencyNode._getTaskTop(predecessorNode) - dependencyLineGap;
@@ -2281,7 +1611,7 @@ DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorN
  */
 DvtGanttDependencyNode.prototype.getNextNavigable = function(event)
 {
-  if (event.keyCode == KeyboardEvent.UP_ARROW || event.keyCode == KeyboardEvent.DOWN_ARROW)
+  if (event.keyCode === KeyboardEvent.UP_ARROW || event.keyCode === KeyboardEvent.DOWN_ARROW)
   {
     // this logic is identical to Diagram and TMap
     //if the dependency line got focus via keyboard, get the task where the focus came from
@@ -2296,7 +1626,7 @@ DvtGanttDependencyNode.prototype.getNextNavigable = function(event)
     var keyboardHandler = this.getGantt().getEventManager().getKeyboardHandler();
     if (keyboardHandler && keyboardHandler.getNextNavigableDependencyLine)
     {
-      var type = task == this.getPredecessorNode() ? 'successor' : 'predecessor';
+      var type = task === this.getPredecessorNode() ? 'successor' : 'predecessor';
       var dependencyLines = this.getGantt().getNavigableDependencyLinesForTask(task, type);
       nextDependencyLine = keyboardHandler.getNextNavigableDependencyLine(task, this, event, dependencyLines);
     }
@@ -2304,14 +1634,14 @@ DvtGanttDependencyNode.prototype.getNextNavigable = function(event)
     nextDependencyLine.setKeyboardFocusTask(task);
     return nextDependencyLine;
   }
-  else if (event.keyCode == KeyboardEvent.RIGHT_ARROW || event.keyCode == KeyboardEvent.LEFT_ARROW)
+  else if (event.keyCode === KeyboardEvent.RIGHT_ARROW || event.keyCode === KeyboardEvent.LEFT_ARROW)
   {
     if (Agent.isRightToLeft(this.getGantt().getCtx()))
-      return event.keyCode == KeyboardEvent.LEFT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+      return event.keyCode === KeyboardEvent.LEFT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
     else
-      return event.keyCode == KeyboardEvent.RIGHT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+      return event.keyCode === KeyboardEvent.RIGHT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
   }
-  else if (event.type == MouseEvent.CLICK)
+  else if (event.type === MouseEvent.CLICK)
   {
     return this;
   }
@@ -2349,7 +1679,7 @@ DvtGanttDependencyNode.prototype.getKeyboardBoundingBox = function(targetCoordin
  */
 DvtGanttDependencyNode.prototype.getTargetElem = function()
 {
-  return this._line.getElem();
+  return this._content ? this._content.getContainerElem() : this._line.getElem();
 };
 
 /**
@@ -2357,8 +1687,10 @@ DvtGanttDependencyNode.prototype.getTargetElem = function()
  */
 DvtGanttDependencyNode.prototype.showKeyboardFocusEffect = function()
 {
-  if (this._line)
-  {
+  if (this.isCustomContent()) {
+    this._renderCustomContent({ focused: true });
+    this._isShowingKeyboardFocusEffect = true;
+  } else if (this._line) {
     ToolkitUtils.addClassName(this._line.getElem(), this._gantt.GetStyleClass('focus'));
     this._line.showHoverEffect();
 
@@ -2371,10 +1703,13 @@ DvtGanttDependencyNode.prototype.showKeyboardFocusEffect = function()
  */
 DvtGanttDependencyNode.prototype.hideKeyboardFocusEffect = function()
 {
-  if (this.isShowingKeyboardFocusEffect())
-  {
-    this._line.hideHoverEffect();
-    ToolkitUtils.removeClassName(this._line.getElem(), this._gantt.GetStyleClass('focus'));
+  if (this.isShowingKeyboardFocusEffect()) {
+    if (this.isCustomContent()) {
+      this._renderCustomContent({ focused: false });
+    } else {
+      this._line.hideHoverEffect();
+      ToolkitUtils.removeClassName(this._line.getElem(), this._gantt.GetStyleClass('focus'));
+    }
     this._isShowingKeyboardFocusEffect = false;
   }
 };
@@ -2402,28 +1737,8 @@ DvtGanttDependencyNode.prototype.getDatatip = function(target, x, y)
  */
 DvtGanttDependencyNode.prototype.getAriaLabel = function()
 {
-  var desc = this.getValue('shortDesc');
-  if (desc != null)
-    return desc;
-
-  var translations = this._gantt.getOptions().translations;
-  var predecessorId = this.getValue('predecessorTaskId');
-  var successorId = this.getValue('successorTaskId');
-  var type = this.getValue('type');
-
-  var key = translations[type + 'DependencyAriaDesc'];
-
-  desc = ResourceUtils.format(translations.accessibleDependencyInfo, [key, predecessorId, successorId]);
-  return desc;
+  return this._dependencyObj.ariaLabel;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Class representing a Gantt row label content (plain text, or custom content from custom renderer)
@@ -2860,14 +2175,6 @@ DvtGanttRowLabelContent.prototype.getAriaLabel = function()
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Class representing a task element path shape.
  * @param {dvt.Context} context
  * @param {number} x position
@@ -3013,7 +2320,7 @@ DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
       diamondMargin;
 
   // Diamond shape for milestone
-  if (this._task.isMilestone(this._type) && (w == 0))
+  if (this._task.isMilestone(this._type) && (w === 0))
   {
     diamondMargin = margin * Math.sqrt(2);
     return this._generateDiamondCmd(x, y - diamondMargin, h + 2 * diamondMargin, r);
@@ -3174,7 +2481,7 @@ DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
     milestoneDefaultClass = gantt.GetStyleClass('taskMilestone');
     barDefaultClass = gantt.GetStyleClass('taskBar');
     summaryDefaultClass = gantt.GetStyleClass('taskSummary');
-    if (this._task.isMilestone(this._type) && this._w == 0)
+    if (this._task.isMilestone(this._type) && this._w === 0)
     {
       styleClass += ' ' + milestoneDefaultClass;
     }
@@ -3224,7 +2531,7 @@ DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
     styleClass = gantt.GetStyleClass('baseline');
     milestoneDefaultClass = gantt.GetStyleClass('baselineMilestone');
     barDefaultClass = gantt.GetStyleClass('baselineBar');
-    if (this._task.isMilestone(this._type) && this._w == 0)
+    if (this._task.isMilestone(this._type) && this._w === 0)
     {
       styleClass += ' ' + milestoneDefaultClass;
     }
@@ -3255,7 +2562,7 @@ DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
  */
 DvtGanttTaskShape.prototype.getFillColor = function()
 {
-  var elem, svgRoot, computedStyle, fill, computedFill, filter, isUrlFill, fillColor;
+  var elem, svgRoot, computedStyle, fill, computedFill, filter, isUrlFill, fillColor, fillOpacity;
 
   // we need to figure out the fill color, which could be set in style class
   // In touch devices, the shape may be wrapped with a g element for aria purposes, so make sure to grab the path element
@@ -3267,10 +2574,11 @@ DvtGanttTaskShape.prototype.getFillColor = function()
   try
   {
     computedStyle = window.getComputedStyle(elem);
-    fill = computedStyle['fill'];
-    filter = computedStyle['filter'];
+    fill = computedStyle.fill;
+    fillOpacity = Number(computedStyle.fillOpacity);
+    filter = computedStyle.filter;
     if (!String.prototype.startsWith) // internet explorer 11 doesn't support startsWith() yet...
-      isUrlFill = fill.indexOf('url(') == 0;
+      isUrlFill = fill.indexOf('url(') === 0;
     else
       isUrlFill = fill.startsWith('url(');
 
@@ -3290,6 +2598,9 @@ DvtGanttTaskShape.prototype.getFillColor = function()
         default:
           computedFill = fill;
           break;
+      }
+      if (fillOpacity !== 1 && !Number.isNaN(fillOpacity)) {
+        computedFill = ColorUtils.getBrighter(computedFill, 1 - fillOpacity);
       }
       fillColor = {'fill': fill, 'computedFill': computedFill, 'filter': filter};
     }
@@ -3627,14 +2938,6 @@ DvtGanttTaskShape.prototype.setDimensions = function(x, y, w, h, r)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Utility functions for Gantt tooltips.
  * @class
  */
@@ -3699,7 +3002,7 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
   // then new behavior will override the old aria-label format and any translation settings.
   if (isAria && !gantt.getCtx().isCustomElement()) {
     var valueFormats = gantt.getOptions()['valueFormats'];
-    if (!valueFormats || valueFormats.length == 0) {
+    if (!valueFormats || valueFormats.length === 0) {
       var task = taskNode.getTask();
       var start = taskNode.getValue('start');
       var end = taskNode.getValue('end');
@@ -3800,7 +3103,7 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
  */
 DvtGanttTooltipUtils._processDatatip = function(datatip, gantt, isTabular) {
   // Don't render tooltip if empty
-  if (datatip == '')
+  if (datatip === '')
     return null;
 
   // Add outer table tags
@@ -3941,7 +3244,7 @@ DvtGanttTooltipUtils._addDatatipRow = function(datatip, gantt, type, defaultLabe
   var valueFormat = DvtGanttTooltipUtils.getValueFormat(gantt, type);
   var tooltipDisplay = valueFormat['tooltipDisplay'];
 
-  if (tooltipDisplay == 'off')
+  if (tooltipDisplay === 'off')
     return datatip;
 
   // Create tooltip label
@@ -4030,13 +3333,13 @@ DvtGanttTooltipUtils.getValueFormat = function(gantt, type) {
 DvtGanttTooltipUtils.formatValue = function(gantt, type, valueFormat, value) {
   var converter = valueFormat['converter'];
 
-  if (type == 'start' || type == 'end' || type == 'date' || type == 'baselineStart' || type == 'baselineEnd' || type == 'baselineDate')
+  if (type === 'start' || type === 'end' || type === 'date' || type === 'baselineStart' || type === 'baselineEnd' || type === 'baselineDate')
     return gantt.getTimeAxis().formatDate(new Date(value), converter, 'general');
 
   if (converter && converter['format'])
     return converter['format'](value);
 
-  if (type == 'progress')
+  if (type === 'progress')
   {
     var resources = gantt.getOptions()['_resources'];
     if (resources)
@@ -4051,14 +3354,6 @@ DvtGanttTooltipUtils.formatValue = function(gantt, type, valueFormat, value) {
 
   return value;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Gantt event manager.
@@ -5008,6 +4303,28 @@ DvtGanttEventManager.prototype.ShowDropEffect = function(event) {
   }
   if (dropObj && dropObj.nodeType === 'row')
   {
+    // In firefox (and sometimes on mobile), when one drags a task
+    // to the edge such that the gantt starts panning, the drop effect doesn't clear
+    // from previous rows (normally the ClearDropEffect is invoked to clear them,
+    // but that's not happening in Firefox, perhaps because it couldn't handle the the conflicting
+    // speed at which mouse events are fired and the speed at which the viewport rerenders).
+    // Just for those platforms, iterate all rows in the viewport
+    // and ensure the drop effects are removed.
+    if (Agent.browser === 'firefox' || TimeAxisUtils.supportsTouch()) {
+      var rowLayoutObjects = this._gantt.getRowLayoutObjs();
+      var viewportYBounds = this._gantt.getViewportYBounds();
+      var viewportRowIndRange = this._gantt.getDataLayoutManager().findRowIndRange(
+        rowLayoutObjects, viewportYBounds.yMin, viewportYBounds.yMax);
+      for (var i = 0; i < rowLayoutObjects.length; i++) {
+        var rowNode = rowLayoutObjects[i].node;
+        if (rowNode && rowNode !== dropObj) {
+          var rowBackgroundElem = rowNode.getBackground().getElem();
+          ToolkitUtils.removeClassName(rowBackgroundElem, this._gantt.GetStyleClass('invalidDrop'));
+          ToolkitUtils.removeClassName(rowBackgroundElem, this._gantt.GetStyleClass('activeDrop'));
+        }
+      }
+    }
+
     var targetElem = dropObj.getBackground().getElem();
     ToolkitUtils.addClassName(targetElem, this._gantt.GetStyleClass('activeDrop'));
   };
@@ -5362,7 +4679,7 @@ DvtGanttEventManager.prototype.toggleRowExpandCollapse = function(event, rowObj)
  */
 DvtGanttEventManager.prototype.HandleImmediateTouchStartInternal = function(event) {
   // If draggable, prevent drag panning
-  if (event.targetTouches.length == 1)
+  if (event.targetTouches.length === 1)
   {
     var objAndDisp = this.GetLogicalObjectAndDisplayable(event.target);
     if (objAndDisp.logicalObject && objAndDisp.logicalObject.nodeType === 'task')
@@ -5401,14 +4718,6 @@ DvtGanttEventManager.prototype.OnTouchMoveBubble = function(event) {
   }
   DvtGanttEventManager.superclass.OnTouchMoveBubble.call(this, event);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Gantt keyboard handler.
@@ -5477,7 +4786,7 @@ DvtGanttKeyboardHandler._findNextTask = function(gantt, rowObjs, currentRowObj, 
   var taskObjs = currentRowObj['taskObjs'];
   if (taskObjs.length === 0)
   {
-    if (currentRowIndex == rowObjs.length - 1)
+    if (currentRowIndex === rowObjs.length - 1)
       return currentNavigable;
     else
       return DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[currentRowIndex + 1], currentRowIndex + 1, currentNavigable);
@@ -5515,7 +4824,7 @@ DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, eve
     case (!isRTL ? KeyboardEvent.LEFT_ARROW : KeyboardEvent.RIGHT_ARROW):
       var taskIndex = taskObjs.map(function(t) { return t['node']; }).indexOf(currentNavigable);
       // check if it's the first task in the row
-      if (taskIndex == 0)
+      if (taskIndex === 0)
       {
         // go to the last task of the previous row
         if (rowIndex > 0)
@@ -5533,7 +4842,7 @@ DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, eve
       break;
     case (!isRTL ? KeyboardEvent.RIGHT_ARROW : KeyboardEvent.LEFT_ARROW):
       taskIndex = taskObjs.map(function(t) { return t['node']; }).indexOf(currentNavigable);
-      if (taskIndex == taskObjs.length - 1)
+      if (taskIndex === taskObjs.length - 1)
       {
         // go to the first task of the next row
         if (rowIndex < rowObjs.length - 1)
@@ -5611,9 +4920,9 @@ DvtGanttKeyboardHandler.prototype._getDistance = function(dep)
   var predecessor = dep.getPredecessorNode();
   var successor = dep.getSuccessorNode();
 
-  var date1 = (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) ? predecessor.getValue('start') : predecessor.getValue('end');
+  var date1 = (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH) ? predecessor.getValue('start') : predecessor.getValue('end');
 
-  if (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START)
+  if (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.FINISH_START)
     var date2 = successor.getValue('start');
   else
     date2 = successor.getValue('end');
@@ -5665,7 +4974,7 @@ DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(tas
   {
     var dependencyLine = listOfLines[i];
 
-    if (direction == KeyboardEvent.CLOSE_ANGLED_BRACKET)
+    if (direction === KeyboardEvent.CLOSE_ANGLED_BRACKET)
       var taskToCompare = isRTL ? dependencyLine.getValue('predecessorTaskId') : dependencyLine.getValue('successorTaskId');
     else
       taskToCompare = isRTL ? dependencyLine.getValue('successorTaskId') : dependencyLine.getValue('predecessorTaskId');
@@ -5707,7 +5016,7 @@ DvtGanttKeyboardHandler.prototype.getNextNavigableDependencyLine = function(task
 
   listOfLines.sort(this._getDependencyComparator());
 
-  var bForward = (event.keyCode == KeyboardEvent.DOWN_ARROW) ? true : false;
+  var bForward = (event.keyCode === KeyboardEvent.DOWN_ARROW) ? true : false;
   var index = 0;
   for (var i = 0; i < listOfLines.length; i++)
   {
@@ -5715,9 +5024,9 @@ DvtGanttKeyboardHandler.prototype.getNextNavigableDependencyLine = function(task
     if (dependencyLine === currentDependencyLine)
     {
       if (bForward)
-        index = (i == listOfLines.length - 1) ? 0 : i + 1;
+        index = (i === listOfLines.length - 1) ? 0 : i + 1;
       else
-        index = (i == 0) ? listOfLines.length - 1 : i - 1;
+        index = (i === 0) ? listOfLines.length - 1 : i - 1;
       break;
     }
   }
@@ -5844,7 +5153,7 @@ DvtGanttKeyboardHandler.prototype.isDnDCancelEvent = function(event)
 DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 {
   var keyCode = event.keyCode;
-  if (keyCode == KeyboardEvent.TAB)
+  if (keyCode === KeyboardEvent.TAB)
   {
     var currentNavigable = this._eventManager.getFocus();
     if (currentNavigable)
@@ -5951,7 +5260,7 @@ DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 
   // Expand/collapse row
   // Note: Won't conflict with multiselect (ctrl + space) because that's normally handled in superclass method below.
-  if (keyCode == KeyboardEvent.SPACE && event.ctrlKey && event.shiftKey)
+  if (keyCode === KeyboardEvent.SPACE && event.ctrlKey && event.shiftKey)
   {
     var currentNavigable = this._eventManager.getFocus();
     if (currentNavigable && currentNavigable.nodeType === 'task')
@@ -5971,12 +5280,203 @@ DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * Class representing task content to be overlayed over the main task shape.
+ * @param {Gantt} gantt The gantt component
+ * @param {DvtGanttTask} task The task the content belongs to
+ * @class
+ * @constructor
  */
+const DvtGanttTaskContent = function (gantt, task) {
+  this.Init(gantt, task);
+};
+
+Obj.createSubclass(DvtGanttTaskContent, Container);
+
+/**
+ * @param {Gantt} gantt The gantt component
+ * @protected
+ */
+DvtGanttTaskContent.prototype.Init = function (gantt, task) {
+  DvtGanttTaskContent.superclass.Init.call(this, gantt.getCtx(), null);
+
+  this._gantt = gantt;
+  this._task = task;
+};
+
+/**
+ * Renders the task content.
+ * @param {boolean} hovered Whether task is hovered.
+ */
+DvtGanttTaskContent.prototype.render = function (hovered) {
+  const options = this._gantt.getOptions();
+  if (this._content) {
+    this.removeChild(this._content);
+  }
+  this._content = new Container(this._gantt.getCtx());
+  this._content.setClassName(this._gantt.GetStyleClass('taskCustom'));
+  this.addChild(this._content);
+  const parentElem = this._content.getContainerElem();
+  const renderer = options.taskContent.renderer; // must have been defined if reached here
+  const dataContext = this.getRendererContext(hovered);
+  const customContent = renderer(dataContext);
+  if (customContent) {
+    if (Array.isArray(customContent)) {
+      customContent.forEach(function (node) {
+        ToolkitUtils.appendChildElem(parentElem, node);
+      });
+    } else {
+      ToolkitUtils.appendChildElem(parentElem, customContent);
+    }
+  }
+
+  const cp = new ClipPath();
+  const cpDim = this._getClipPathDim();
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Destroys the task content.
+ */
+DvtGanttTaskContent.prototype.destroy = function () {
+  // unset clippath to prevent memory leaks
+  this.setClipPath(null);
+
+  this.removeFromParent();
+};
+
+/**
+ * Gets the context to be passed into custom renderer callbacks
+ * @param {object} hovered Whether state is hovered
+ * @return {object} The renderer context
+ */
+DvtGanttTaskContent.prototype.getRendererContext = function (hovered) {
+  const context = this._gantt.getCtx();
+  const mainShape = this._task.getShape('main');
+  const taskNode = this._task.getContainer();
+  const rowNode = taskNode.getRowNode();
+  const rowObj = rowNode.getLayoutObject();
+
+  const data = taskNode.getData();
+  const itemData = data._itemData;
+
+  const dataContext = {
+    data: taskNode.getData(true),
+    rowData: rowNode.getData(true),
+    itemData: itemData || null,
+    content: {
+      height: mainShape.getHeight(),
+      width: mainShape.getWidth() + mainShape.getPhysicalStartOffset() + mainShape.getPhysicalEndOffset()
+    },
+    state: {
+      expanded: !!rowObj.expanded,
+      focused: !!taskNode.isShowingKeyboardFocusEffect(),
+      hovered: hovered,
+      selected: !!taskNode.isSelected()
+    }
+  };
+  return context.fixRendererContext(dataContext);
+};
+
+/**
+ * Returns the clippath rect dimension around the content
+ * @param {object} refDim Any dimensions to be merged and processed
+ * @return {object} The rect x,y,w,h,r dimensions
+ * @private
+ */
+DvtGanttTaskContent.prototype._getClipPathDim = function (refDim) {
+  const dim = refDim || {};
+  const mainShape = this._task.getShape('main');
+  const isRTL = Agent.isRightToLeft(this._gantt.getCtx());
+
+  const refX = 0;
+  const refW = (dim.w != null) ? dim.w : mainShape.getWidth();
+  return {
+    x: isRTL ? (refX - refW - mainShape.getPhysicalEndOffset()) : (refX - mainShape.getPhysicalStartOffset()),
+    translateX: isRTL ? (refX + mainShape.getPhysicalStartOffset()) : (refX - mainShape.getPhysicalStartOffset()),
+    y: 0,
+    translateY: 0,
+    w: refW + mainShape.getPhysicalStartOffset() + mainShape.getPhysicalEndOffset(),
+    h: (dim.h != null) ? dim.h : mainShape.getHeight(),
+    r: (dim.r != null) ? dim.r : mainShape.getBorderRadius()
+  };
+};
+
+/**
+ * Sets the width of the content, by setting the appropriate clippath.
+ * @param {number} width The new width.
+ */
+DvtGanttTaskContent.prototype.setWidth = function (width) {
+  const cp = new ClipPath();
+  const cpDim = this._getClipPathDim({ w: width });
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Sets the height of the content, by setting the appropriate clippath.
+ * @param {number} height The new height.
+ */
+DvtGanttTaskContent.prototype.setHeight = function (height) {
+  const cp = new ClipPath();
+  const cpDim = this._getClipPathDim({ h: height });
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Sets the x of the content, by setting the appropriate clippath and translateX.
+ * @param {number} x The new x.
+ */
+DvtGanttTaskContent.prototype.setX = function (x) {
+  const cpDim = this._getClipPathDim({ x: x });
+  this.setTranslateX(cpDim.translateX);
+
+  const cp = new ClipPath();
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Sets the y of the content, by setting the appropriate clippath and translateY.
+ * @param {number} y The new y.
+ */
+DvtGanttTaskContent.prototype.setY = function (y) {
+  const cpDim = this._getClipPathDim({ y: y });
+  this.setTranslateY(cpDim.translateY);
+
+  const cp = new ClipPath();
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Sets the border radius of the content, by setting the appropriate clippath.
+ * @param {number} r The new border radius.
+ */
+DvtGanttTaskContent.prototype.setBorderRadius = function (r) {
+  const cp = new ClipPath();
+  const cpDim = this._getClipPathDim({ r: r });
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
+
+/**
+ * Sets the dimension of the content, by setting the appropriate clippath and translate.
+ * @param {number} x The new x.
+ * @param {number} y The new y.
+ * @param {number} w The new width.
+ * @param {number} h The new height.
+ * @param {number} r The new border radius.
+ */
+DvtGanttTaskContent.prototype.setDimensions = function (x, y, w, h, r) {
+  const cpDim = this._getClipPathDim({ x: x, y: y, w: w, h: h, r: r });
+  this.setTranslate(cpDim.translateX, cpDim.translateY);
+
+  const cp = new ClipPath();
+  cp.addRect(cpDim.x, cpDim.y, cpDim.w, cpDim.h, cpDim.r, cpDim.r);
+  this.setClipPath(cp);
+};
 
 /**
  * Class representing a task, which manages a collection
@@ -6234,20 +5734,35 @@ DvtGanttTask.prototype.removeEffect = function(effectType, enforceDOMLayering)
 
 /**
  * Renders the elements that make up the task
+ * @param {boolean} bUpdateCustomContent Whether to do a full custom content re-render if it already exists.
  */
-DvtGanttTask.prototype.render = function()
+DvtGanttTask.prototype.render = function(bUpdateCustomContent)
 {
   // Task elements y positioning depends on progress bar height.
   var progressHeight = this._container.getValue('progress', 'height');
 
   // Rendering in this order to ensure desired stacking on initial render
   this.renderBaseline(progressHeight);
-  this.renderMain(progressHeight);
+  this.renderMain(progressHeight, bUpdateCustomContent);
   this.renderProgress(progressHeight);
-  if (this._container.getValue('type') === 'summary' && this._mainShape)
-  {
-    this._container.addChild(this._mainShape); // summary shapes should be on top of everything
+  if (this._container.getValue('type') === 'summary' && this._mainShape) {
+    // summary shapes should be on top of all non-custom content
+    this._container.addChild(this._mainShape);
   }
+  if (this._mainCustomContent) {
+    // custom content should be on top of everything
+    this._container.addChild(this._mainCustomContent);
+  }
+};
+
+/**
+ * Returns whether custom content is provided on top of the main shape.
+ * @return {boolean} true if content is from provided custom renderer, false otherwise.
+ */
+DvtGanttTask.prototype.isMainCustomContent = function()
+{
+  var options = this._gantt.getOptions();
+  return options.taskContent && options.taskContent.renderer;
 };
 
 /**
@@ -6382,8 +5897,9 @@ DvtGanttTask.prototype.removeBaseline = function()
 /**
  * Renders the main shape of the task
  * @param {number} progressHeight The height of the progress bar, necessary for relative y positioning.
+ * @param {boolean} bUpdateCustomContent Whether to do a full custom content re-render if it already exists.
  */
-DvtGanttTask.prototype.renderMain = function(progressHeight)
+DvtGanttTask.prototype.renderMain = function(progressHeight, bUpdateCustomContent)
 {
   var taskProps = this._container.getData(),
       taskHeight = this._container.getValue('height'),
@@ -6411,6 +5927,15 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
         this._mainShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'main');
         this._container.addChild(this._mainShape);
         this._mainShape.setRenderState('add');
+
+        // render any custom content
+        if (this.isMainCustomContent()) {
+          if (this._mainCustomContent) {
+            this._mainCustomContent.destroy();
+          }
+          this._mainCustomContent = new DvtGanttTaskContent(this._gantt, this);
+          this._mainCustomContent.render(false);
+        }
       }
       else
       {
@@ -6429,6 +5954,11 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
         // Apply styles (default classes handled by DvtGanttTaskShape instance)
         self._fillColor = null; // clear cached fill color
         self._applyStyles(self._mainShape);
+
+        // Render final custom content
+        if (bUpdateCustomContent && self._mainCustomContent && self._mainShape.getRenderState() === 'exist') {
+          self._mainCustomContent.render(false);
+        }
       };
 
       finalStates = {
@@ -6474,8 +6004,13 @@ DvtGanttTask.prototype.showMainEffect = function(effectType)
     var taskNodeParent = taskNode.getParent();
     if (earliestOverlayTaskObj && taskObj['_overlayBehavior'] !== 'overlay') {
       var earliestOverlayTaskNode = earliestOverlayTaskObj['node'];
-      var earliestOverlayTaskNodeInd = taskNodeParent.getChildIndex(earliestOverlayTaskNode);
-      taskNodeParent.addChildAt(taskNode, earliestOverlayTaskNodeInd - 1);
+      if (earliestOverlayTaskNode.getParent()) {
+        var earliestOverlayTaskNodeInd = taskNodeParent.getChildIndex(earliestOverlayTaskNode);
+        taskNodeParent.addChildAt(taskNode, earliestOverlayTaskNodeInd - 1);
+      } else {
+        // earliest overlay task not in DOM. Just append current task to the end.
+        taskNodeParent.addChild(taskNode);
+      }
     } else {
       taskNodeParent.addChild(taskNode);
     }
@@ -6490,6 +6025,11 @@ DvtGanttTask.prototype.showMainEffect = function(effectType)
       // must be inserted before the main shape
       this._container.addChildAt(this._mainSelectShape, 0);
 
+      // Rerender custom content if any
+      if (this._mainCustomContent) {
+        this._mainCustomContent.render(false);
+      }
+
       // Layer this taskNode in front of all other taskNodes in the row (see )
       floatTaskToTop(this._container);
     }
@@ -6503,6 +6043,11 @@ DvtGanttTask.prototype.showMainEffect = function(effectType)
       // must be inserted before the shape and after selected effect (if any)
       // easiest way to gaurantee this would be to insert immediately before main shape
       this._container.addChildAt(this._mainHoverShape, this._container.getChildIndex(this._mainShape));
+
+      // Rerender custom content if any
+      if (this._mainCustomContent) {
+        this._mainCustomContent.render(effectType === 'hover');
+      }
 
       // Layer this taskNode in front of all other taskNodes in the row (see )
       floatTaskToTop(this._container);
@@ -6536,51 +6081,34 @@ DvtGanttTask.prototype.removeMainEffect = function(effectType, enforceDOMLayerin
     this._mainHoverShape = null;
   }
 
-  // Reparent the tasks such that selected tasks are on top in selection order,
-  // and all the other tasks are layered in render order (chronological order).
-  // Overlay tasks are placed at the very top.
-  if (enforceDOMLayering)
-  {
-    var selectedNonOverlayNodes = [];
-    var selectedOverlayNodes = [];
+  // Rerender custom content if any
+  if (this._mainCustomContent) {
+    this._mainCustomContent.render(false);
+  }
+
+  // Attempt to insert task back into render order, while making sure selected tasks are above it.
+  if (enforceDOMLayering) {
     var currentRowNode = this._container.getRowNode();
-    if (this._gantt.isSelectionSupported())
-    {
-      var selection = this._gantt.getSelectionHandler().getSelection();
-      for (var j = 0; j < selection.length; j++)
-      {
-        if (selection[j] && selection[j].nodeType === 'task' && selection[j].getRowNode() === currentRowNode)
-        {
-          var selectionTaskObj = selection[j].getLayoutObject();
-          if (selectionTaskObj['overlapBehavior'] === 'overlay') {
-            selectedOverlayNodes.push(selection[j]);
-          } else {
-            selectedNonOverlayNodes.push(selection[j]);
-          }
-        }
-      }
+    var rowTasks = currentRowNode.getRenderOrderTaskObjs();
+    if (rowTasks.length < 2) {
+      return;
     }
+
     var containerParent = this._container.getParent();
-    var rowTaskObjs = currentRowNode.getRenderOrderTaskObjs();
-    var earliestOverlayTaskNode = currentRowNode.getLayoutObject()['earliestOverlayTaskObj'];
-    for (var i = 0; i < rowTaskObjs.length; i++)
-    {
-      var taskObj = rowTaskObjs[i];
-      var taskNode = taskObj['node'];
-      if (taskNode === earliestOverlayTaskNode)
-      {
-        selectedNonOverlayNodes.forEach(containerParent.addChild, containerParent);
-      }
-      if (!taskNode.isSelected())
-      {
-        containerParent.addChild(taskNode);
+    var taskObj = this._container.getLayoutObject();
+    var taskNode = this._container;
+    // renderIndex should never be -1
+    var renderIndex = rowTasks.indexOf(taskObj);
+    for (var i = renderIndex - 1; i >= 0; i--) {
+      var beforeTaskNode = rowTasks[i].node;
+      if (beforeTaskNode && !beforeTaskNode.isSelected() && beforeTaskNode.getParent()) {
+        var beforeTaskNodeIndex = containerParent.getChildIndex(beforeTaskNode);
+        // beforeTaskNodeIndex should not be -1 due to getParent() check
+        containerParent.addChildAt(taskNode, beforeTaskNodeIndex);
+        return;
       }
     }
-    if (earliestOverlayTaskNode == null)
-    {
-      selectedNonOverlayNodes.forEach(containerParent.addChild, containerParent);
-    }
-    selectedOverlayNodes.forEach(containerParent.addChild, containerParent);
+    containerParent.addChildAt(taskNode, 0);
   }
 };
 
@@ -6608,6 +6136,10 @@ DvtGanttTask.prototype.setMainWidth = function(width)
   {
     this._mainHoverShape.setWidth(width);
   }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setWidth(width);
+  }
 };
 
 /**
@@ -6633,6 +6165,10 @@ DvtGanttTask.prototype.setMainHeight = function(height)
   if (this._mainHoverShape)
   {
     this._mainHoverShape.setHeight(height);
+  }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setHeight(height);
   }
 };
 
@@ -6660,6 +6196,10 @@ DvtGanttTask.prototype.setMainX = function(x)
   {
     this._mainHoverShape.setX(x);
   }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setX(x);
+  }
 };
 
 /**
@@ -6686,6 +6226,10 @@ DvtGanttTask.prototype.setMainY = function(y)
   {
     this._mainHoverShape.setY(y);
   }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setY(y);
+  }
 };
 
 /**
@@ -6694,7 +6238,7 @@ DvtGanttTask.prototype.setMainY = function(y)
  */
 DvtGanttTask.prototype.getMainBorderRadius = function()
 {
-  return this._mainShape.getY();
+  return this._mainShape.getBorderRadius();
 };
 
 /**
@@ -6711,6 +6255,10 @@ DvtGanttTask.prototype.setMainBorderRadius = function(r)
   if (this._mainHoverShape)
   {
     this._mainHoverShape.setBorderRadius(r);
+  }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setBorderRadius(r);
   }
 };
 
@@ -6733,6 +6281,10 @@ DvtGanttTask.prototype.setMainDimensions = function(x, y, w, h, r)
   {
     this._mainHoverShape.setDimensions(x, y, w, h, r);
   }
+  if (this._mainCustomContent)
+  {
+    this._mainCustomContent.setDimensions(x, y, w, h, r);
+  }
 };
 
 /**
@@ -6744,6 +6296,13 @@ DvtGanttTask.prototype.removeMain = function()
   if (this._mainShape)
   {
     onRemoveEnd = function() {
+      // Remove any custom content
+      if (self._mainCustomContent) {
+        self._mainCustomContent.destroy();
+        self._mainCustomContent = null;
+      }
+
+      // Remove main shapes
       self.removeMainEffect('selected', false);
       self._container.removeChild(self._mainShape);
       self._mainShape = null;
@@ -6751,7 +6310,7 @@ DvtGanttTask.prototype.removeMain = function()
       // remove progress as well
       self.removeProgress();
     };
-    this._gantt.getAnimationManager().preAnimateTaskMainRemove(this._mainShape, this._mainSelectShape, this._mainHoverShape, onRemoveEnd);
+    this._gantt.getAnimationManager().preAnimateTaskMainRemove(this._mainShape, this._mainSelectShape, this._mainHoverShape, this._mainCustomContent, onRemoveEnd);
   }
 };
 
@@ -6861,12 +6420,11 @@ DvtGanttTask.prototype.renderMainResizeHandles = function(container)
 
     var self = this;
     var setHandleAriaProperties = function(handle, type) {
-      if (Agent.isTouchDevice()) {
+      if (Agent.isTouchDevice() || Agent.isEnvironmentTest()) {
         var translations = self._gantt.getOptions().translations;
         var ariaLabel = type === 'start' ? translations.taskResizeStartHandle : translations.taskResizeEndHandle;
         handle.setAriaRole('img');
         handle.setAriaProperty('label', ariaLabel);
-        handle.applyAriaProperties();
       }
     };
 
@@ -6911,14 +6469,6 @@ DvtGanttTask.prototype.removeHandles = function(exclude)
     this._mainHandleEnd = null;
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Class that manages a task label
@@ -7113,8 +6663,10 @@ DvtGanttTaskLabel.prototype._placeLabel = function(effectiveLabelPosition)
  */
 DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
 {
-  var startBarrier, endBarrier,
-      previousAdjacentTaskNode, nextAdjacentTaskNode, task,
+  var startBarrier, endBarrier, taskObj = this._container.getLayoutObject(),
+      previousAdjacentTaskObj, nextAdjacentTaskObj, task = this._container.getTask(),
+      nextAdjacentMilestoneBaselineTaskObj, previousAdjacentMilestoneBaselineTaskObj,
+      previousAdjacentTaskNode, nextAdjacentTaskNode,
       nextAdjacentMilestoneBaselineTaskNode, previousAdjacentMilestoneBaselineTaskNode,
       taskMainBounds, progressShape, progressWidth, progressHeight, insideWidth, oProgressWidth,
       availableWidth, effectivePosition, labelDimensions,
@@ -7137,33 +6689,51 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
     case 'end_ABSOLUTE':
       effectivePosition = 'end';
       endBarrier = ganttEndPos;
-      nextAdjacentTaskNode = this._container.getNextAdjacentTaskNode();
-      nextAdjacentMilestoneBaselineTaskNode = this._container.getNextAdjMilestoneBaselineTaskNode();
+      nextAdjacentTaskObj = taskObj.nextAdjacentTaskObj;
+      nextAdjacentMilestoneBaselineTaskObj = taskObj.nextAdjMilestoneBaselineTaskObj;
 
       // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
-      if (nextAdjacentTaskNode &&
-          nextAdjacentTaskNode.getValue('start') < this._container.getValue('end') &&
-          nextAdjacentTaskNode.getValue('end') > this._container.getValue('end'))
+      if (nextAdjacentTaskObj &&
+          nextAdjacentTaskObj.startTime < taskObj.endTime &&
+          nextAdjacentTaskObj.endTime > taskObj.endTime)
       {
         availableWidth = 0;
         break;
       }
-      while (nextAdjacentTaskNode &&
-            nextAdjacentTaskNode.getValue('start') < this._container.getValue('end') &&
-            nextAdjacentTaskNode.getValue('end') < this._container.getValue('end'))
+      while (nextAdjacentTaskObj &&
+            nextAdjacentTaskObj.startTime < taskObj.endTime &&
+            nextAdjacentTaskObj.endTime < taskObj.endTime)
       {
-        nextAdjacentTaskNode = nextAdjacentTaskNode.getNextAdjacentTaskNode();
+        nextAdjacentTaskObj = nextAdjacentTaskObj.nextAdjacentTaskObj;
       }
 
-      if (nextAdjacentTaskNode)
+      if (nextAdjacentTaskObj)
       {
-        endBarrier = nextAdjacentTaskNode.getTaskShapePhysicalBounds('main')['startPos'];
+        nextAdjacentTaskNode = nextAdjacentTaskObj.node;
+        if (nextAdjacentTaskNode && nextAdjacentTaskNode.getParent()) {
+          endBarrier = nextAdjacentTaskNode.getTaskShapePhysicalBounds('main')['startPos'];
+        } else if (!(nextAdjacentTaskObj.startTime == null && nextAdjacentTaskObj.endTime == null)) {
+          // else next node not in DOM; estimate the end barrier.
+          // Unless next node is a milestone, the estimation is basically the true endBarrier value.
+          var nextAdjacentDim = task.getTimeSpanDimensions(nextAdjacentTaskObj.startTime, nextAdjacentTaskObj.endTime);
+          endBarrier = nextAdjacentDim.startPos;
+        }
       }
-      if (nextAdjacentMilestoneBaselineTaskNode)
+      if (nextAdjacentMilestoneBaselineTaskObj)
       {
-        endBarrier = isRTL ?
+        nextAdjacentMilestoneBaselineTaskNode = nextAdjacentMilestoneBaselineTaskObj.node;
+        if (nextAdjacentMilestoneBaselineTaskNode && nextAdjacentMilestoneBaselineTaskNode.getParent()) {
+          endBarrier = isRTL ?
                      Math.max(endBarrier, nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['startPos']) :
                      Math.min(endBarrier, nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['startPos']);
+        } else if (!(nextAdjacentMilestoneBaselineTaskObj.startTime == null && nextAdjacentMilestoneBaselineTaskObj.endTime == null)) {
+          // else next node not in DOM; estimate the end barrier.
+          var adjacentMilestoneBaselineStartPos = task.getTimeSpanDimensions(nextAdjacentMilestoneBaselineTaskObj.baselineStartTime,
+            nextAdjacentMilestoneBaselineTaskObj.baselineEndTime).startPos;
+          endBarrier = isRTL ?
+                     Math.max(endBarrier, adjacentMilestoneBaselineStartPos) :
+                     Math.min(endBarrier, adjacentMilestoneBaselineStartPos);
+        }
       }
       availableWidth = Math.abs(this._container.getTaskShapePhysicalBounds('main')['endPos'] - endBarrier) - 2 * margin;
       break;
@@ -7173,13 +6743,13 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
       // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
       // Only consider this case in the array label position cases. In the absolute cases, and all innerStart cases,
       // just show the labels anyway.
-      nextAdjacentTaskNode = this._container.getNextAdjacentTaskNode();
-      if (nextAdjacentTaskNode)
+      nextAdjacentTaskObj = taskObj.nextAdjacentTaskObj;
+      if (nextAdjacentTaskObj)
       {
         if (position === 'innerCenter')
-          isPositionBlocked = nextAdjacentTaskNode.getValue('start') < (this._container.getValue('start') + ((this._container.getValue('end') - this._container.getValue('start')) / 2));
+          isPositionBlocked = nextAdjacentTaskObj.startTime < (taskObj.startTime + ((taskObj.endTime - taskObj.startTime) / 2));
         else if (position === 'innerEnd')
-          isPositionBlocked = nextAdjacentTaskNode.getValue('start') < this._container.getValue('end');
+          isPositionBlocked = nextAdjacentTaskObj.startTime < taskObj.endTime;
       }
     case 'innerCenter_ABSOLUTE':
     case 'innerStart_ABSOLUTE':
@@ -7189,7 +6759,6 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
         position = position.slice(0, -('_ABSOLUTE'.length));
 
       hasProgress = typeof this._container.getValue('progress', 'value') === 'number';
-      task = this._container.getTask();
       isMilestone = task.isMilestone('main');
       if (!isMilestone)
       {
@@ -7263,26 +6832,44 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
     case 'start_ABSOLUTE':
       effectivePosition = 'start';
       startBarrier = ganttStartPos;
-      previousAdjacentTaskNode = this._container.getPreviousAdjacentTaskNode();
-      previousAdjacentMilestoneBaselineTaskNode = this._container.getPrevAdjMilestoneBaselineTaskNode();
+      previousAdjacentTaskObj = taskObj.previousAdjacentTaskObj;
+      previousAdjacentMilestoneBaselineTaskObj = taskObj.previousAdjacentMilestoneBaselineTaskObj;
 
       // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
-      if (previousAdjacentTaskNode &&
-          previousAdjacentTaskNode.getValue('end') > this._container.getValue('start'))
+      if (previousAdjacentTaskObj &&
+          previousAdjacentTaskObj.endTime > taskObj.startTime &&
+          previousAdjacentTaskObj.startTime < taskObj.startTime)
       {
         availableWidth = 0;
         break;
       }
 
-      if (previousAdjacentTaskNode)
+      if (previousAdjacentTaskObj)
       {
-        startBarrier = previousAdjacentTaskNode.getTaskShapePhysicalBounds('main', true)['endPos'];
+        previousAdjacentTaskNode = previousAdjacentTaskObj.node;
+        if (previousAdjacentTaskNode && previousAdjacentTaskNode.getParent()) {
+          startBarrier = previousAdjacentTaskNode.getTaskShapePhysicalBounds('main', true)['endPos'];
+        } else if (!(previousAdjacentTaskObj.startTime == null && previousAdjacentTaskObj.endTime == null)) {
+          // else previous node not in DOM; estimate the start barrier.
+          var previousAdjacentDim = task.getTimeSpanDimensions(previousAdjacentTaskObj.startTime, previousAdjacentTaskObj.endTime);
+          startBarrier = previousAdjacentDim.endPos;
+        }
       }
-      if (previousAdjacentMilestoneBaselineTaskNode)
+      if (previousAdjacentMilestoneBaselineTaskObj)
       {
-        startBarrier = isRTL ?
+        previousAdjacentMilestoneBaselineTaskNode = previousAdjacentMilestoneBaselineTaskObj.node;
+        if (previousAdjacentMilestoneBaselineTaskNode && previousAdjacentMilestoneBaselineTaskNode.getParent()) {
+          startBarrier = isRTL ?
                        Math.min(startBarrier, previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['endPos']) :
                        Math.max(startBarrier, previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['endPos']);
+        } else if (!(previousAdjacentMilestoneBaselineTaskObj.startTime == null && previousAdjacentMilestoneBaselineTaskObj.endTime == null)) {
+          // else next node not in DOM; estimate the end barrier.
+          var adjacentMilestoneBaselineEndPos = task.getTimeSpanDimensions(previousAdjacentMilestoneBaselineTaskObj.baselineStartTime,
+            previousAdjacentMilestoneBaselineTaskObj.baselineEndTime).endPos;
+          startBarrier = isRTL ?
+                     Math.max(startBarrier, adjacentMilestoneBaselineEndPos) :
+                     Math.min(startBarrier, adjacentMilestoneBaselineEndPos);
+        }
       }
       availableWidth = Math.abs(startBarrier - this._container.getTaskShapePhysicalBounds('main')['startPos']) - 2 * margin;
       break;
@@ -7557,14 +7144,6 @@ DvtGanttTaskLabel.prototype.setFinalY = function(y)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Class representing a task container (i.e. container for shapes and labels that make up a task).
  * @param {Gantt} gantt The gantt component
  * @class
@@ -7699,6 +7278,9 @@ DvtGanttTaskNode.prototype.getValue = function(property, subProperty)
     default: // assume top level property access
       value = this._taskObj['data'][property] != null ? this._taskObj['data'][property] : taskDefaults[property];
   }
+  if (property === 'shortDesc' && typeof value === 'function') {
+    return value(DvtGanttTaskNode.getShortDescContext(this));
+  }
   return value;
 };
 
@@ -7784,39 +7366,39 @@ DvtGanttTaskNode.prototype.getRenderState = function()
 };
 
 /**
- * Gets the chronologically previous adjacent task node on the same row level
- * @return {DvtGanttTaskNode} the previous adjacent task node on the same row level
+ * Gets the chronologically previous adjacent task obj on the same row level
+ * @return {object} the previous adjacent task layout obj on the same row level
  */
-DvtGanttTaskNode.prototype.getPreviousAdjacentTaskNode = function()
+DvtGanttTaskNode.prototype.getPreviousAdjacentTaskObj = function()
 {
-  return this._taskObj['previousAdjacentTaskObj'] ? this._taskObj['previousAdjacentTaskObj']['node'] : null;
+  return this._taskObj.previousAdjacentTaskObj;
 };
 
 /**
- * Gets the chronologically next adjacent task node on the same row level
- * @return {DvtGanttTaskNode} the next adjacent task node on the same row level
+ * Gets the chronologically next adjacent task obj on the same row level
+ * @return {object} the next adjacent task layout obj on the same row level
  */
-DvtGanttTaskNode.prototype.getNextAdjacentTaskNode = function()
+DvtGanttTaskNode.prototype.getNextAdjacentTaskObj = function()
 {
-  return this._taskObj['nextAdjacentTaskObj'] ? this._taskObj['nextAdjacentTaskObj']['node'] : null;
+  return this._taskObj.nextAdjacentTaskObj;
 };
 
 /**
- * Gets the chronologically previous adjacent baseline task node on the same row level
- * @return {DvtGanttTaskNode} the previous adjacent task node on the same row level
+ * Gets the chronologically previous adjacent baseline task obj on the same row level
+ * @return {object} the previous adjacent task layout obj on the same row level
  */
-DvtGanttTaskNode.prototype.getPrevAdjMilestoneBaselineTaskNode = function()
+DvtGanttTaskNode.prototype.getPrevAdjMilestoneBaselineTaskObj = function()
 {
-  return this._taskObj['prevAdjMilestoneBaselineTaskObj'] ? this._taskObj['prevAdjMilestoneBaselineTaskObj']['node'] : null;
+  return this._taskObj.prevAdjMilestoneBaselineTaskObj;
 };
 
 /**
- * Gets the chronologically next adjacent task node on the same row level
- * @return {DvtGanttTaskNode} the next adjacent task node on the same row level
+ * Gets the chronologically next adjacent task obj on the same row level
+ * @return {object} the next adjacent task layout obj on the same row level
  */
-DvtGanttTaskNode.prototype.getNextAdjMilestoneBaselineTaskNode = function()
+DvtGanttTaskNode.prototype.getNextAdjMilestoneBaselineTaskObj = function()
 {
-  return this._taskObj['nextAdjMilestoneBaselineTaskObj'] ? this._taskObj['nextAdjMilestoneBaselineTaskObj']['node'] : null;
+  return this._taskObj.nextAdjMilestoneBaselineTaskObj;
 };
 
 /**
@@ -8261,7 +7843,7 @@ DvtGanttTaskNode.prototype._updateDragFeedbacks = function()
       dragFeedback.setWidth(this.getTask().getShape('main').getFinalWidth());
 
       // update the source/reference feedback localpos (first maindragfeedback is that of the source)
-      if (i == 0 && this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos)
+      if (i === 0 && this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos)
         this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos.x = dragFeedbackX;
     }
   }
@@ -8278,7 +7860,7 @@ DvtGanttTaskNode.prototype._updateDragFeedbacks = function()
       dragFeedback.setWidth(Math.abs(dragFeedbackEndX - dragFeedbackStartX));
 
       // update the source/reference feedback localpos (first maindragfeedback is that of the source)
-      if (i == 0 && this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos)
+      if (i === 0 && this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos)
         this._gantt.getEventManager()._keyboardDnDFeedbackLocalPos.x = dragFeedbackX;
     }
   }
@@ -8342,13 +7924,12 @@ DvtGanttTaskNode.prototype.getTaskLabel = function()
 /**
  * Renders the task node
  * @param {dvt.Container} container the container to render the task container into.
+ * @param {boolean=} bUpdateCustomContent Whether to do a full custom content re-render if it already exists. Default true.
  */
-DvtGanttTaskNode.prototype.render = function(container)
+DvtGanttTaskNode.prototype.render = function(container, bUpdateCustomContent)
 {
+  var bUpdateCustomContent = bUpdateCustomContent !== false;
   var finalStates;
-
-  // Clear any dependencies from previous renders
-  this.clearDependencies();
 
   if (this.isSelectable())
     this.setCursor(SelectionEffectUtils.getSelectingCursor());
@@ -8359,13 +7940,10 @@ DvtGanttTaskNode.prototype.render = function(container)
   // Render task elements (labels will be rendered later, see DvtGanttRowNode.render())
   // If resize enabled, handles will be rendered after labels are rendered (see DvtGanttRowNode.render())
   // to sure handles are on top of everything
-  this._task.render();
+  this._task.render(bUpdateCustomContent);
 
   this._getAriaTarget().setAriaRole('img');
-  if (TimeAxisUtils.supportsTouch())
-  {
-    this.refreshAriaLabel();
-  }
+  this.refreshAriaLabel();
 
   // Update drag feedback positions
   this._updateDragFeedbacks();
@@ -8392,43 +7970,20 @@ DvtGanttTaskNode.prototype.remove = function()
 };
 
 /**
- * Clears any stored predecessors and successors of the task
- */
-DvtGanttTaskNode.prototype.clearDependencies = function()
-{
-  this._successors = null;
-  this._predecessors = null;
-};
-
-/**
- * Adds a dependency line object that connects to its predecessor
- * @param {DvtGanttDependencyNode} predecessor
- */
-DvtGanttTaskNode.prototype.addPredecessorDependency = function(predecessor)
-{
-  if (this._predecessors == null)
-    this._predecessors = [];
-  this._predecessors.push(predecessor);
-};
-
-/**
  * Gets a list of dependency line objects that connects to its predecessor
  * @return {DvtGanttDependencyNode[]} an array of dependency nodes
  */
 DvtGanttTaskNode.prototype.getPredecessorDependencies = function()
 {
-  return this._predecessors;
-};
-
-/**
- * Adds a dependency line object that connects to its successor
- * @param {DvtGanttDependencyNode} successor
- */
-DvtGanttTaskNode.prototype.addSuccessorDependency = function(successor)
-{
-  if (this._successors == null)
-    this._successors = [];
-  this._successors.push(successor);
+  var dataLayoutManager = this._gantt.getDataLayoutManager();
+  return this._taskObj.predecessorDepObjs.map(
+    function (depObj) {
+      if (!depObj.node) {
+        dataLayoutManager.ensureInDOM(depObj, 'dependency');
+      }
+      return depObj.node;
+    }
+  );
 };
 
 /**
@@ -8437,7 +7992,15 @@ DvtGanttTaskNode.prototype.addSuccessorDependency = function(successor)
  */
 DvtGanttTaskNode.prototype.getSuccessorDependencies = function()
 {
-  return this._successors;
+  var dataLayoutManager = this._gantt.getDataLayoutManager();
+  return this._taskObj.successorDepObjs.map(
+    function (depObj) {
+      if (!depObj.node) {
+        dataLayoutManager.ensureInDOM(depObj, 'dependency');
+      }
+      return depObj.node;
+    }
+  );
 };
 
 /**
@@ -8481,7 +8044,7 @@ DvtGanttTaskNode.prototype.getDuration = function(startTime, endTime)
   var days = hours * 24;
   var duration = endTime - startTime;
   var scale = this._gantt.getMinorAxis().getScale();
-  if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
+  if (scale === 'hours' || scale === 'minutes' || scale === 'seconds')
   {
     duration = Math.round((duration / hours) * 100) / 100;
     return ResourceUtils.format(translations.accessibleDurationHours, [duration]);
@@ -8540,33 +8103,35 @@ DvtGanttTaskNode.prototype.getAriaLabel = function()
   }
   shortDesc = treeLevelDesc + shortDesc;
 
+  var predecessorDepObjs = this._taskObj.predecessorDepObjs;
+  var successorDepObjs = this._taskObj.successorDepObjs;
   // include hint of whether there are predecessors or successors
-  if (this._predecessors != null || this._successors != null)
+  if (predecessorDepObjs.length > 0 || successorDepObjs.length > 0)
   {
     var depDesc = '';
-    if (this._predecessors != null && this._predecessors.length > 0)
+    if (predecessorDepObjs.length > 0)
     {
-      depDesc = ResourceUtils.format(translations.accessiblePredecessorInfo, [this._predecessors.length]);
+      depDesc = ResourceUtils.format(translations.accessiblePredecessorInfo, [predecessorDepObjs.length]);
 
       // for VoiceOver/Talkback we'll need to include the full detail of the dependency in the task since we can't
       // navigate to the dependency line directly
-      if (TimeAxisUtils.supportsTouch())
+      if (TimeAxisUtils.supportsTouch() || Agent.isEnvironmentTest())
       {
-        for (var i = 0; i < this._predecessors.length; i++)
-          depDesc = depDesc + ', ' + this._predecessors[i].getAriaLabel();
+        for (var i = 0; i < predecessorDepObjs.length; i++)
+          depDesc = depDesc + ', ' + predecessorDepObjs[i].ariaLabel;
       }
     }
 
-    if (this._successors != null && this._successors.length > 0)
+    if (successorDepObjs.length > 0)
     {
       if (depDesc.length > 0)
         depDesc = depDesc + ', ';
-      depDesc = depDesc + ResourceUtils.format(translations.accessibleSuccessorInfo, [this._successors.length]);
+      depDesc = depDesc + ResourceUtils.format(translations.accessibleSuccessorInfo, [successorDepObjs.length]);
 
-      if (TimeAxisUtils.supportsTouch())
+      if (TimeAxisUtils.supportsTouch() || Agent.isEnvironmentTest())
       {
-        for (i = 0; i < this._successors.length; i++)
-          depDesc = depDesc + ', ' + this._successors[i].getAriaLabel();
+        for (i = 0; i < successorDepObjs.length; i++)
+          depDesc = depDesc + ', ' + successorDepObjs[i].ariaLabel;
       }
     }
 
@@ -8618,9 +8183,10 @@ DvtGanttTaskNode.prototype.refreshAriaLabel = function()
  */
 DvtGanttTaskNode.prototype._updateAriaLabel = function()
 {
-  var ariaTarget = this._getAriaTarget();
-  ariaTarget.setAriaProperty('label', this.getAriaLabel());
-  ariaTarget.applyAriaProperties();
+  if (!Agent.deferAriaCreation()) {
+    var ariaTarget = this._getAriaTarget();
+    ariaTarget.setAriaProperty('label', this.getAriaLabel());
+  }
 };
 
 /**
@@ -8639,6 +8205,21 @@ DvtGanttTaskNode.prototype.getDataContext = function()
     'component': this._gantt.getOptions()['_widgetConstructor']
   };
 };
+
+/**
+ * Returns the shortDesc Context of the node.
+ * @param {DvtGanttTaskNode} node
+ * @return {object}
+ */
+ DvtGanttTaskNode.getShortDescContext = function(node)
+ {
+   var itemData = node.getData()['_itemData'];
+   return {
+     'data': node.getData(true),
+     'rowData': node.getRowNode().getData(true),
+     'itemData': itemData ? itemData : null
+   };
+ };
 
 /**
  * Gets a dataContext object that is meant to be updated/manipulated to reflect
@@ -8778,18 +8359,18 @@ DvtGanttTaskNode.prototype.getNextNavigable = function(event)
 {
   var next = null;
   var keyboardHandler = this._gantt.getEventManager().getKeyboardHandler();
-  if (event.type == MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event))
+  if (event.type === MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event))
     next = this;
-  else if ((event.keyCode == KeyboardEvent.OPEN_ANGLED_BRACKET || KeyboardEvent.CLOSE_ANGLED_BRACKET) && event.altKey)
+  else if ((event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET || KeyboardEvent.CLOSE_ANGLED_BRACKET) && event.altKey)
   {
     // get first navigable dependency line if exists
     var keyboardHandler = this._gantt.getEventManager().getKeyboardHandler();
     if (keyboardHandler && keyboardHandler.getFirstNavigableDependencyLine)
     {
       if (Agent.isRightToLeft(this.getGantt().getCtx()))
-        var type = event.keyCode == KeyboardEvent.CLOSE_ANGLED_BRACKET ? 'predecessor' : 'successor';
+        var type = event.keyCode === KeyboardEvent.CLOSE_ANGLED_BRACKET ? 'predecessor' : 'successor';
       else
-        type = event.keyCode == KeyboardEvent.OPEN_ANGLED_BRACKET ? 'predecessor' : 'successor';
+        type = event.keyCode === KeyboardEvent.OPEN_ANGLED_BRACKET ? 'predecessor' : 'successor';
       var dependencyLines = this._gantt.getNavigableDependencyLinesForTask(this, type);
       next = keyboardHandler.getFirstNavigableDependencyLine(this, event, dependencyLines);
     }
@@ -8886,154 +8467,6 @@ DvtGanttTaskNode.prototype.getDragFeedback = function(mouseX, mouseY) {
   // return null to not use the default ghost image--show something specific in showDragFeedback method instead.
   return null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
- * Gantt automation service.
- * @param {Gantt} gantt The owning Gantt.
- * @class  DvtGanttAutomation
- * @implements {dvt.Automation}
- * @constructor
- */
-var DvtGanttAutomation = function(gantt)
-{
-  this._gantt = gantt;
-};
-
-Obj.createSubclass(DvtGanttAutomation, Automation);
-
-/**
- * Valid subIds inlcude:
- * <ul>
- * <li>taskbar[rowIndex][index]</li>
- * <li>rowLabel[index]</li>
- * </ul>
- * @override
- */
-DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
-{
-  var logicalObj = this._gantt.getEventManager().GetLogicalObject(displayable);
-  if (logicalObj && (logicalObj instanceof DvtGanttTaskNode))
-  {
-    var taskObj = logicalObj.getLayoutObject();
-    var rowObj = taskObj['rowObj'];
-    var rowIndex = rowObj['index'];
-    // Albeit not as efficient, simple one liner below should be sufficiently fast for most usecases.
-    var taskIndex = rowObj['taskObjs'].map(function(t) { return t['node']; }).indexOf(logicalObj);
-    return 'taskbar[' + rowIndex + '][' + taskIndex + ']';
-  }
-  else if (logicalObj && (logicalObj instanceof DvtGanttRowLabelContent))
-  {
-    var rowIndex = logicalObj.getRowIndex();
-    return 'rowLabel[' + rowIndex + ']';
-  }
-  else if (logicalObj && (logicalObj instanceof DvtGanttDependencyNode))
-  {
-    var dependencyObj = logicalObj.getLayoutObject();
-    var dependencyIndex = dependencyObj['index'];
-    return dependencyIndex;
-  }
-
-  return null;
-};
-
-/**
- * Valid subIds inlcude:
- * <ul>
- * <li>taskbar[rowIndex][index]</li>
- * <li>rowLabel[index]</li>
- * </ul>
- * @override
- */
-DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
-{
-  // TOOLTIP
-  if (subId == Automation.TOOLTIP_SUBID)
-    return this.GetTooltipElement(this._gantt);
-
-  var openParen1 = subId.indexOf('[');
-  var closeParen1 = subId.indexOf(']');
-  var component = subId.substring(0, openParen1);
-
-  if (openParen1 > -1 && closeParen1 > -1)
-  {
-    if (component == 'taskbar')
-    {
-      var openParen2 = subId.indexOf('[', openParen1 + 1);
-      var closeParen2 = subId.indexOf(']', openParen2 + 1);
-      if (openParen2 > -1 && closeParen2 > -1)
-      {
-        var rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
-        var taskIndex = parseInt(subId.substring(openParen2 + 1, closeParen2));
-        if (isNaN(rowIndex) || isNaN(taskIndex))
-          return null;
-
-        var rowObjs = this._gantt.getRowLayoutObjs();
-        if (rowObjs.length > rowIndex)
-        {
-          var taskObjs = rowObjs[rowIndex]['taskObjs'];
-          if (taskObjs.length > taskIndex)
-          {
-            var taskObj = taskObjs[taskIndex];
-            this._gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
-            var taskNode = taskObj['node'];
-            var repShape = taskNode.getTask().getShape('main');
-            if (repShape != null)
-              return repShape.getElem();
-          }
-        }
-      }
-    }
-    else if (component == 'rowLabel')
-    {
-      rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
-      var rowObjs = this._gantt.getRowLayoutObjs();
-      if (rowObjs.length > rowIndex)
-      {
-        var rowObj = rowObjs[rowIndex];
-        this._gantt.getDataLayoutManager().ensureInDOM(rowObj, 'rowLabel');
-        var rowLabelContent = rowObj['node'].getRowLabelContent();
-        if (rowLabelContent != null)
-          return rowLabelContent.getDisplayable().getElem();
-      }
-    }
-    else if (component == 'dependency')
-    {
-      var dependencyIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
-      var dependencyObjs = this._gantt.getDependencyLayoutObjs();
-      if (dependencyObjs.length > dependencyIndex)
-      {
-        for (var i = 0; i < dependencyObjs.length; i++)
-        {
-          var dependencyObj = dependencyObjs[i];
-          if (dependencyObj['index'] === dependencyIndex)
-          {
-            this._gantt.getDataLayoutManager().ensureInDOM(dependencyObj, 'dependency');
-            var dependencyNode = dependencyObj['node'];
-            if (dependencyNode != null)
-              return dependencyNode.getElem();
-          }
-        }
-      }
-    }
-  }
-  return null;
-};
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Class representing a Gantt Row node.
@@ -9140,15 +8573,6 @@ DvtGanttRowNode.prototype.getLabel = function()
 };
 
 /**
- * Gets final y (animation independent, e.g. final y after animation finishes)
- * @return {number} The final y.
- */
-DvtGanttRowNode.prototype.getFinalY = function()
-{
-  return this._rowObj['y'];
-};
-
-/**
  * Sets the row label content object
  * @param {DvtGanttRowLabelContent} rowLabelText The row label content object
  */
@@ -9195,12 +8619,15 @@ DvtGanttRowNode.prototype.getTaskObjs = function()
 
 /**
  * Returns an array of task layout objects ordered as they should be rendered
+ * @param {Array=} subsetTaskObjs A subset of taskObjs to consider. If not specified, all tasks in the row are used.
  * @return {Array} An array of task layout objects
  */
-DvtGanttRowNode.prototype.getRenderOrderTaskObjs = function()
+DvtGanttRowNode.prototype.getRenderOrderTaskObjs = function(subsetTaskObjs)
 {
-  // taskObjs should already be sorted in chronological order
-  var taskObjs = this._rowObj['taskObjs'];
+  var taskObjs = subsetTaskObjs
+    ? subsetTaskObjs.sort(function (a, b) { return a.startTime - b.startTime; })
+    : this._rowObj['taskObjs']; // taskObjs should already be sorted in chronological order
+
   if (this._rowObj['earliestOverlayTaskObj']) {
     var overlayTasks = [];
     var nonOverlayTasks = [];
@@ -9218,61 +8645,122 @@ DvtGanttRowNode.prototype.getRenderOrderTaskObjs = function()
 };
 
 /**
- * Renders the row to specified container.
- * @param {dvt.Container} container the container
+ * Renders tasks belonging to this row.
+ * @param {Object=} subsetRenderOperations Object specifying a subset of tasks to render (see DvtGanttDataLayoutManager._computeViewportRenderOperations). If not specified all tasks are rendered.
+ * @private
  */
-DvtGanttRowNode.prototype.render = function(container)
+DvtGanttRowNode.prototype._renderTasks = function (subsetRenderOperations)
 {
-  var taskObjs = this.getRenderOrderTaskObjs();
-  for (var i = 0; i < taskObjs.length; i++)
-  {
-    var taskObj = taskObjs[i];
-    var taskNode = taskObj['node'];
-    if (!taskNode)
-    {
-      var taskNode = new DvtGanttTaskNode(this._gantt);
-      taskNode.setLayoutObject(taskObj);
-      taskObj['node'] = taskNode;
-    }
-
-    var task = taskNode.getTask();
-    var taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('start'), taskNode.getValue('end'));
-    if (!taskRepBounds)
-    {
-      taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('baseline', 'start'), taskNode.getValue('baseline', 'end'));
-    }
-    taskObj['x'] = taskRepBounds['startPos'];
-    taskNode.render(this);
+  // Remove Tasks
+  if (subsetRenderOperations) {
+    subsetRenderOperations.tasksDelete.forEach(function (taskObj) {
+      taskObj.node.remove();
+    });
   }
 
-  // Need to render task labels AFTER all task shapes are rendered for auto label positioning
-  for (var j = 0; j < taskObjs.length; j++)
-  {
-    taskObj = taskObjs[j];
-    taskNode = taskObj['node'];
+  // Update and Add Tasks in proper layering order
+  // In the Add case, just appendChild through render call; layering will be correct
+  // In the Update case:
+  //    both for updateRender true (e.g. zoom) and updateRender false (e.g. translate):
+  //      only explicitly appendChild to put it on top if:
+  //        1) it overlaps with previous task.
+  //        2) the previous task is newly added. Otherwise it's already layered correctly so no need to touch it.
+  var taskObjs = this.getRenderOrderTaskObjs(subsetRenderOperations ? [...subsetRenderOperations.tasksAdd, ...subsetRenderOperations.tasksUpdate] : null);
+  var taskObjsAdd = subsetRenderOperations ? subsetRenderOperations.tasksAdd : new Set();
+  var shouldUpdateRender = !subsetRenderOperations || subsetRenderOperations.updateRender;
+  var prevTaskObj;
+  for (let i = 0; i < taskObjs.length; i++) {
+    var taskObj = taskObjs[i];
+    var taskNode = taskObj.node;
+    if (!taskNode) {
+      taskNode = new DvtGanttTaskNode(this._gantt);
+      taskNode.setLayoutObject(taskObj);
+      // eslint-disable-next-line no-param-reassign
+      taskObj.node = taskNode;
+    }
+
+    var isTaskAdd = taskObjsAdd.has(taskObj);
+    if (shouldUpdateRender || isTaskAdd) {
+      var task = taskNode.getTask();
+      var taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('start'), taskNode.getValue('end'));
+      if (!taskRepBounds) {
+        taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('baseline', 'start'), taskNode.getValue('baseline', 'end'));
+      }
+      // eslint-disable-next-line no-param-reassign
+      taskObj.x = taskRepBounds.startPos;
+      taskNode.render(this, true);
+    }
+    if (!isTaskAdd && prevTaskObj && taskObjsAdd.has(prevTaskObj)) {
+      // Ensure current task is layered on top of the previous task
+      this.addChild(taskNode);
+    }
+
+    prevTaskObj = taskObj;
+  }
+
+  // Need to render task labels (and resize handles) AFTER all task shapes are rendered for auto label positioning
+  var renderLabelAndHandles = function (taskObj) {
+    var taskNode = taskObj.node;
     var taskLabel = taskNode.getTaskLabel();
     var task = taskNode.getTask();
     taskLabel.setAssociatedShape(task.getShape('main'));
     taskLabel.render();
 
     // If resize enabled, render resize handles
-    if (this._gantt.isTaskResizeEnabled())
-    {
+    if (this._gantt.isTaskResizeEnabled()) {
       task.renderMainResizeHandles(taskNode);
-    }
-    else
-    {
+    } else {
       task.removeHandles();
     }
+  }.bind(this);
+  for (let i = 0; i < taskObjs.length; i++) {
+    var taskObj = taskObjs[i];
+    var isTaskAdd = taskObjsAdd.has(taskObj);
+    // (Re)render labels if at least one is true:
+    //    - task marked for update
+    //    - task is newly added to DOM
+    //    - (first inner if) task not marked for update, but next adjacent task is newly added to DOM -- it's possible the label needs to truncate or move.
+    //    - (the else if) task is newly added, but next adjacent tasks not marked for update. The added task can cause a necessary cascade of label positioning updates.
+    if (shouldUpdateRender || isTaskAdd) {
+      // If current task is added, and previous adjacent task in DOM, then additionally update the previous task's label rendering in case it should truncate/move.
+      if (isTaskAdd &&
+          !shouldUpdateRender &&
+          taskObj.previousAdjacentTaskObj &&
+          !taskObjsAdd.has(taskObj.previousAdjacentTaskObj) &&
+          taskObj.previousAdjacentTaskObj.node &&
+          taskObj.previousAdjacentTaskObj.node.getParent()) {
+        renderLabelAndHandles(taskObj.previousAdjacentTaskObj);
+      }
+      renderLabelAndHandles(taskObj);
+    } else if (taskObjsAdd.has(taskObj.previousAdjacentTaskObj)) {
+      // cascade the label updates on tasks not marked for updates until no more position changes
+      var currTaskObj = taskObj;
+      while (currTaskObj && !taskObjsAdd.has(currTaskObj)) {
+        var taskLabel = currTaskObj.node.getTaskLabel();
+        var prevLabelPosition = taskLabel.getEffectiveLabelPosition();
+        renderLabelAndHandles(currTaskObj);
+        currTaskObj = prevLabelPosition === taskLabel.getEffectiveLabelPosition() ? null : currTaskObj.nextAdjacentTaskObj;
+      }
+    }
   }
+};
 
+/**
+ * Renders the row to specified container.
+ * @param {dvt.Container=} container the container. If not provided, update render is assumed.
+ */
+DvtGanttRowNode.prototype.render = function(container, subsetRenderOperations)
+{
+  this._renderTasks(subsetRenderOperations);
   this._renderBackground(this._gantt, this._gantt.getDatabodyBackground());
   this._renderHorizontalGridline(this._gantt, this);
 
-  if (this._gantt.isRowAxisEnabled() && this._gantt.getRowAxis())
-    this._finalizeRowLabelRender(this._gantt);
-
-  container.addChild(this);
+  if (container) {
+    if (this._gantt.isRowAxisEnabled() && this._gantt.getRowAxis()) {
+      this._finalizeRowLabelRender(this._gantt);
+    }
+    container.addChild(this);
+  }
 };
 
 /**
@@ -9560,14 +9048,6 @@ DvtGanttRowNode.prototype.getDataContext = function()
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Data view layout manager for Gantt
  * @param {Gantt} gantt the Gantt component
  * @class
@@ -9579,6 +9059,30 @@ var DvtGanttDataLayoutManager = function(gantt)
 };
 
 Obj.createSubclass(DvtGanttDataLayoutManager, Obj);
+
+/**
+ * Viewport change due to translation action (e.g. panning)
+ * @type {string}
+ */
+DvtGanttDataLayoutManager.VPC_TRANSLATE = 'vpc_translate';
+
+/**
+ * Viewport change due to scaling action (e.g. zooming)
+ * @type {string}
+ */
+DvtGanttDataLayoutManager.VPC_SCALE = 'vpc_scale';
+
+/**
+ * Viewport change due to animation rerender
+ * @type {string}
+ */
+ DvtGanttDataLayoutManager.VPC_ANIMATE = 'vpc_animate';
+
+/**
+ * Viewport refresh action (i.e. clear everything and render viewport from scratch)
+ * @type {string}
+ */
+ DvtGanttDataLayoutManager.VPC_REFRESH = 'vpc_refresh';
 
 /**
  * Initialize the layout manager
@@ -9603,8 +9107,7 @@ DvtGanttDataLayoutManager.prototype.clear = function()
   this._dependencyObjs = [];
   this._contentHeight = 0;
 
-  this._prevScrollMinRowInd = null;
-  this._prevScrollMaxRowInd = null;
+  this._prevViewport = null;
 };
 
 /**
@@ -9654,14 +9157,15 @@ DvtGanttDataLayoutManager.prototype._getTime = function(date)
  * @param {number} e1 interval 2 end
  * @param {number} s2 interval 1 start
  * @param {number} e3 interval 2 end
+ * @param {boolean=} isClosedComparison True if closed interval comparison, else open. Default True (closed comparison).
  * @return {boolean} Whether the two intervals overlap
  * @private
  */
-DvtGanttDataLayoutManager.prototype._isIntervalOverlap = function(s1, e1, s2, e2)
+DvtGanttDataLayoutManager.prototype._isIntervalOverlap = function(s1, e1, s2, e2, isClosedComparison)
 {
-  // Decision now is if interval 1 ends at the same time interval 2 starts, they are still not overlapping.
-  // If we decide that they should be considered overlapping, change the < to <=
-  return s1 < e2 && s2 < e1;
+  // eslint-disable-next-line no-param-reassign
+  isClosedComparison = isClosedComparison !== false; // default true
+  return isClosedComparison ? s1 <= e2 && s2 <= e1 : s1 < e2 && s2 < e1;
 };
 
 /**
@@ -9673,7 +9177,8 @@ DvtGanttDataLayoutManager.prototype._isIntervalOverlap = function(s1, e1, s2, e2
  */
 DvtGanttDataLayoutManager.prototype._isOverlap = function(taskObj1, taskObj2)
 {
-  return this._isIntervalOverlap(taskObj1['overallStartTime'], taskObj1['overallEndTime'], taskObj2['overallStartTime'], taskObj2['overallEndTime']);
+  // Open interval comparison: if interval 1 ends at the same time interval 2 starts, they are still NOT overlapping.
+  return this._isIntervalOverlap(taskObj1['overallStartTime'], taskObj1['overallEndTime'], taskObj2['overallStartTime'], taskObj2['overallEndTime'], false);
 };
 
 /**
@@ -10076,6 +9581,8 @@ DvtGanttDataLayoutManager.prototype._generateRowObjs = function(rows)
           'startTime': (task['start'] && task['start'] !== '') ? this._getTime(task['start']) : this._getTime(task['end']),
           'endTime': (task['end'] && task['end'] !== '') ? this._getTime(task['end']) : this._getTime(task['start']),
           'rowObj': rowObj,
+          'predecessorDepObjs': [],
+          'successorDepObjs': [],
           'renderState': 'add'
         };
 
@@ -10163,6 +9670,19 @@ DvtGanttDataLayoutManager.prototype._generateDependencyObjs = function(dependenc
         rowObjTop = rowObj2;
         rowObjBottom = rowObj1;
       }
+
+      // In mobile (and test), all aria-labels are computed upfront
+      // Task aria-label are computed on render and includes dependency info.
+      // Dependency lines are rendered after tasks are rendered,
+      // so dependency info needs to be available beforehand.
+      // For simplicity, we precompute all the dependency info upfront here.
+      var desc = dependency.shortDesc;
+      if (desc == null) {
+        var translations = this._gantt.getOptions().translations;
+        var key = translations[type + 'DependencyAriaDesc'];
+        desc = ResourceUtils.format(translations.accessibleDependencyInfo, [key, predecessorId, successorId]);
+      }
+
       var dependencyObj = {
         'id': dependency['id'],
         'data': dependency,
@@ -10171,8 +9691,11 @@ DvtGanttDataLayoutManager.prototype._generateDependencyObjs = function(dependenc
         'predecessorTaskObj': predecessorTaskObj,
         'successorTaskObj': successorTaskObj,
         'rowObjTop': rowObjTop,
-        'rowObjBottom': rowObjBottom
+        'rowObjBottom': rowObjBottom,
+        'ariaLabel': desc
       };
+      predecessorTaskObj.successorDepObjs.push(dependencyObj);
+      successorTaskObj.predecessorDepObjs.push(dependencyObj);
       dependencyObjs.push(dependencyObj);
     }
   }
@@ -10334,9 +9857,27 @@ DvtGanttDataLayoutManager.prototype._setIntersectionRenderState = function(oldId
 };
 
 /**
+ * Add to the set of animation final state row objects. Resets at the end of renderViewport().
+ * @param {Object} rowObj The row layout object.
+ * @param {Object=} taskObj task layout object associated with the row known to participate in animation.
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._addAnimationFinalStateRowObjs = function (rowObj, taskObj) {
+  // Keys: rowObjs, Values: Set( specific taskObjs participating in animation if known )
+  this._animationFinalStateRowObjs = this._animationFinalStateRowObjs || new Map();
+  if (!this._animationFinalStateRowObjs.has(rowObj)) {
+    this._animationFinalStateRowObjs.set(rowObj, new Set());
+  }
+  if (taskObj) {
+    this._animationFinalStateRowObjs.get(rowObj).add(taskObj);
+  }
+};
+
+/**
  * In the animation case, we need to be able to show progression of initial to final states.
  * All initial state elements need to be present in the DOM, and all final state elements need to be rendered.
- * Current rendering strategy is virtual row rendering only, so we'll only consider row layout objects:
+ * Due to complications of possible viewport shifts horizontally, entire old rows are rendered regardless of viewport.
+ * TODO: Revisit this when we need to fully support animating horizontal viewport/timeaxis change animations.
  * Relevant visible Initial --> Final state transitions involving rows:
  *     - OLD rows in OLD viewport --> NEW rows (visible or not)
  *     - OLD rows (visible or not) --> NEW rows in NEW viewport
@@ -10369,7 +9910,6 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
   // temporarily turn off animation
   animationManager.setAnimationMode('none');
 
-  this._animationFinalStateRowObjs = new Set();
   this._animationInitialStateRowObjsDelete = [];
 
   // Find out what the final viewport is
@@ -10383,7 +9923,7 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
   var yMax = viewportYBounds['yMax'];
   this._contentHeight = initialContentHeight;
 
-  var oldViewportRowIndRange = this._findRowIndRange(this._rowObjs, yMin, yMax);
+  var oldViewportRowIndRange = this.findRowIndRange(this._rowObjs, yMin, yMax);
   var oldMinRowInd = oldViewportRowIndRange['minRowInd'];
   var oldMaxRowInd = oldViewportRowIndRange['maxRowInd'];
   for (var i = oldMinRowInd; i <= oldMaxRowInd; i++)
@@ -10404,7 +9944,7 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
       if (entangledNewRowObj)
       {
         // NEW row corresponding to the OLD row in the OLD viewport (final state row layout object)
-        this._animationFinalStateRowObjs.add(entangledNewRowObj);
+        this._addAnimationFinalStateRowObjs(entangledNewRowObj);
       }
 
       var oldTaskObjs = oldRowObj['taskObjs'];
@@ -10425,16 +9965,15 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
               this.ensureInDOM(oldEntangledTaskNewRowObj, 'row');
             }
 
-            // Final state layout object: NEW row
-            this._animationFinalStateRowObjs.add(entangledTaskNewRowObj);
-
+            // Final state layout object: NEW row (which includes the task from OLD viewport)
+            this._addAnimationFinalStateRowObjs(entangledTaskNewRowObj, entangledNewTaskObj);
           }
         }
       }
     }
   }
 
-  var newViewportRowIndRange = this._findRowIndRange(newRowObjs, yMin, yMax);
+  var newViewportRowIndRange = this.findRowIndRange(newRowObjs, yMin, yMax);
   var newMinRowInd = newViewportRowIndRange['minRowInd'];
   var newMaxRowInd = newViewportRowIndRange['maxRowInd'];
   for (var i = newMinRowInd; i <= newMaxRowInd; i++)
@@ -10443,7 +9982,7 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
     if (newRowObj)
     {
       // NEW row in the NEW viewport (final state row layout object)
-      this._animationFinalStateRowObjs.add(newRowObj);
+      this._addAnimationFinalStateRowObjs(newRowObj);
 
       var entangledOldRowObj = oldRowIdObjsMap.get(newRowObj['id']);
       if (entangledOldRowObj)
@@ -10463,14 +10002,13 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
           if (!Obj.compareValues(this._ctx, entangledTaskOldRowObj['id'], newRowObj['id']))
           {
             // Task from OLD row (visible or not) --> NEW row in NEW viewport
-            // Initial state row layout object: OLD row
-            this.ensureInDOM(entangledTaskOldRowObj, 'row');
+            this.ensureInDOM(entangledOldTaskObj, 'task');
 
             // Final state row layout object: NEW version of the OLD row
             var newEntangledTaskOldRowObj = newRowIdObjsMap.get(entangledTaskOldRowObj['id']);
             if (newEntangledTaskOldRowObj)
             {
-              this._animationFinalStateRowObjs.add(newEntangledTaskOldRowObj);
+              this._addAnimationFinalStateRowObjs(newEntangledTaskOldRowObj, newTaskObj);
             }
           }
         }
@@ -10479,9 +10017,6 @@ DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, 
   }
   // reapply animation mode
   animationManager.setAnimationMode(animationMode);
-
-  // Set flag to not clear the DOM in renderViewport() because we need the old state present
-  this._keepOldViewport = true;
 };
 
 /**
@@ -10645,10 +10180,6 @@ DvtGanttDataLayoutManager.prototype._expandCollapseRowObject = function(options,
   var isAnimationOn = animationMode !== 'none';
   if (isAnimationOn)
   {
-    // Set flag to not clear the DOM in renderViewport() because we need the old state present
-    this._keepOldViewport = true;
-    this._animationFinalStateRowObjs = new Set();
-
     var oldViewportYBounds = this._gantt.getViewportYBounds(finalTranslateY);
     var oldYMin = oldViewportYBounds['yMin'];
     var oldYMax = oldViewportYBounds['yMax'];
@@ -10664,8 +10195,10 @@ DvtGanttDataLayoutManager.prototype._expandCollapseRowObject = function(options,
       for (var i = startInd; i < rowObjs.length; i++)
       {
         var rowObj = rowObjs[i];
+        // Entire row is rendered, but at the end of animation the viewport is refreshed
+        // with only viewport elements.
         self.ensureInDOM(rowObj, 'row');
-        self._animationFinalStateRowObjs.add(rowObj);
+        self._addAnimationFinalStateRowObjs(rowObj);
         runningHeight += rowObj['height'];
         if (runningHeight > viewportHeight)
         {
@@ -10762,13 +10295,13 @@ DvtGanttDataLayoutManager.prototype._expandCollapseRowObject = function(options,
     var finalViewportYBounds = this._gantt.getViewportYBounds(finalTranslateY);
     var finalYMin = finalViewportYBounds['yMin'];
     var finalYMax = finalViewportYBounds['yMax'];
-    var newViewportRowIndRange = this._findRowIndRange(this._rowObjs, finalYMin, finalYMax);
+    var newViewportRowIndRange = this.findRowIndRange(this._rowObjs, finalYMin, finalYMax);
     var newMinRowInd = newViewportRowIndRange['minRowInd'];
     var newMaxRowInd = newViewportRowIndRange['maxRowInd'];
 
     for (var k = newMinRowInd; k <= newMaxRowInd; k++)
     {
-      this._animationFinalStateRowObjs.add(this._rowObjs[k]);
+      this._addAnimationFinalStateRowObjs(this._rowObjs[k]);
     }
   }
 };
@@ -10894,58 +10427,74 @@ DvtGanttDataLayoutManager.prototype.getParentRowObj = function(rowObj)
 /**
  * Renders the row represented by the given row layout object
  * @param {Object} rowObj The row layout object
- * @return {boolean} True if render is not skipped. False otherwise (e.g. if row is already in the DOM, then render is not called on it).
+ * @param {Object=} operations An object that specifies partial render (see this._computeViewportRenderOperations). If not specified, the entire row is rerendered.
+ * @param {string=} mode The mode of operation (must be provided if operations provided). One of 'update'|'add'
  * @private
  */
-DvtGanttDataLayoutManager.prototype._renderRowObj = function(rowObj)
+DvtGanttDataLayoutManager.prototype._renderRowObj = function(rowObj, operations, mode)
 {
   var databody = this._gantt.getDatabody();
-  var rowNode = rowObj['node'];
-  if (!this._keepOldViewport && rowNode && rowNode.getParent())
-  {
-    return false;
+  var rowNode = rowObj.node;
+  if (mode === 'update') {
+    rowNode.render(null, operations);
+  } else {
+    // mode === 'add' or no operations (full row rerender)
+    if (!rowNode) {
+      rowNode = new DvtGanttRowNode(this._gantt);
+      rowNode.setLayoutObject(rowObj);
+      rowObj.node = rowNode;
+    }
+    if (this._gantt.isRowAxisEnabled()) {
+      var rowAxis = this._gantt.getRowAxis();
+      if (rowAxis) {
+        var rowLabelContents = rowAxis.getRowLabelContents();
+        var rowIndex = rowObj.index;
+        var rowLabelContent = rowLabelContents[rowIndex];
+        if (!rowLabelContent) {
+          rowLabelContent = new DvtGanttRowLabelContent(rowAxis, rowAxis.getLabelContentType());
+          rowLabelContent.setRowIndex(rowIndex);
+          rowLabelContents[rowIndex] = rowLabelContent;
+        }
+        rowLabelContent.render(rowObj);
+        rowNode.setRowLabelContent(rowLabelContent);
+      }
+    }
+    rowNode.render(databody, operations);
+  }
+};
+
+/**
+ * Renders the task represented by the given task layout object.
+ * @param {Object} taskObj The task layout object
+ * @param {boolean=} lazy Whether to render only if it doesn't exist in the DOM already. Default false.
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._renderTaskObj = function (taskObj, lazy) {
+  var rowObj = taskObj.rowObj;
+  var rowNode = rowObj.node;
+  var taskNode = taskObj.node;
+
+  if (lazy && taskNode && rowNode && taskNode.getParent() === rowNode) {
+    return;
   }
 
-  if (!rowNode)
-  {
-    rowNode = new DvtGanttRowNode(this._gantt);
-    rowNode.setLayoutObject(rowObj);
-    rowObj['node'] = rowNode;
-  }
-  if (this._gantt.isRowAxisEnabled())
-  {
-    var rowAxis = this._gantt.getRowAxis();
-    if (rowAxis)
-    {
-      var rowLabelContents = rowAxis.getRowLabelContents();
-      var rowIndex = rowObj['index'];
-      var rowLabelContent = rowLabelContents[rowIndex];
-      if (!rowLabelContent)
-      {
-        rowLabelContent = new DvtGanttRowLabelContent(rowAxis, rowAxis.getLabelContentType());
-        rowLabelContent.setRowIndex(rowIndex);
-        rowLabelContents[rowIndex] = rowLabelContent;
-      }
-      rowLabelContent.render(rowObj);
-      rowNode.setRowLabelContent(rowLabelContent);
-    }
-  }
-  rowNode.render(databody);
-  return true;
+  // Add the task to the row
+  this._renderRowObj(rowObj,
+    { rowObj: rowObj, tasksAdd: new Set([ taskObj ]), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: !lazy },
+    rowNode && rowNode.getParent() ? 'update' : 'add');
 };
 
 /**
  * Renders the dependency represented by the given dependency layout object
  * @param {Object} dependencyObj The dependency layout object
+ * @param {boolean} bLazyTaskRender False means pred/suc task rendering is updated. True means only update if task not already in DOM. Default False.
  * @return {boolean} True if render is not skipped. False otherwise (e.g. if dependency is already in the DOM, then render is not called on it).
  * @private
  */
-DvtGanttDataLayoutManager.prototype._renderDependencyObj = function(dependencyObj)
-{
+DvtGanttDataLayoutManager.prototype._renderDependencyObj = function(dependencyObj, bLazyTaskRender) {
   var dependenciesContainer = this._gantt.getDependenciesContainer();
   var dependencyNode = dependencyObj['node'];
-  if (dependencyNode && dependencyNode.getParent())
-  {
+  if (dependencyNode && dependencyNode.getParent()) {
     return false;
   }
 
@@ -10957,63 +10506,65 @@ DvtGanttDataLayoutManager.prototype._renderDependencyObj = function(dependencyOb
   var animationManager = this._gantt.getAnimationManager();
   var animationMode = animationManager.getAnimationMode();
   animationManager.setAnimationMode('none');
-  if (this._animationFinalStateRowObjs)
-  {
-    // Only render rows that was not already processed/rendered for animation
-    // because ensureInDOM --> _renderRowObj never skips rendering for animation case
-    if (!this._animationFinalStateRowObjs.has(dependencyObj['rowObjTop']))
-    {
-      this.ensureInDOM(dependencyObj['rowObjTop'], 'row');
+  var predecessorObj = dependencyObj.predecessorTaskObj;
+  var successorObj = dependencyObj.successorTaskObj;
+  if (this._animationFinalStateRowObjs) {
+    // Only render tasks that were not already processed/rendered for animation
+    // because ensureInDOM doesn't skip rendering for animation case
+    var predecessorRowObj = predecessorObj.rowObj;
+    var successorRowObj = successorObj.rowObj;
+    if (!this._animationFinalStateRowObjs.has(predecessorRowObj) || !this._animationFinalStateRowObjs.get(predecessorRowObj).has(predecessorObj)) {
+      this.ensureInDOM(predecessorObj, 'task', bLazyTaskRender);
     }
-    if (!this._animationFinalStateRowObjs.has(dependencyObj['rowObjBottom']))
-    {
-      this.ensureInDOM(dependencyObj['rowObjBottom'], 'row');
+    if (!this._animationFinalStateRowObjs.has(successorRowObj) || !this._animationFinalStateRowObjs.get(successorRowObj).has(successorObj)) {
+      this.ensureInDOM(successorObj, 'task', bLazyTaskRender);
     }
   }
-  else
-  {
-    this.ensureInDOM(dependencyObj['rowObjTop'], 'row');
-    this.ensureInDOM(dependencyObj['rowObjBottom'], 'row');
+  else {
+    this.ensureInDOM(predecessorObj, 'task', bLazyTaskRender);
+    this.ensureInDOM(successorObj, 'task', bLazyTaskRender);
   }
   animationManager.setAnimationMode(animationMode);
 
-  if (!dependencyNode)
-  {
+  if (!dependencyNode) {
     dependencyNode = new DvtGanttDependencyNode(this._gantt);
     dependencyNode.setLayoutObject(dependencyObj);
-    dependencyObj['node'] = dependencyNode;
+    dependencyObj.node = dependencyNode;
   }
   dependencyNode.render(dependenciesContainer);
   return true;
 };
 
 /**
- * Given a layout object, render it to the DOM if it doesn't exist already.
+ * Given a layout object, render it to the DOM.
+ * If 'lazy' is true (default false), then only render to DOM if it doesn't exist already.
+ * Right now, 'lazy' is only supported for 'type' === 'task'.
+ * Rows are always re-rendered, dependencies are only rerendered it it doesn't exist already.
  * @param {Object} obj Layout object
  * @param {string} type The type of the layout object
  */
-DvtGanttDataLayoutManager.prototype.ensureInDOM = function(obj, type)
+DvtGanttDataLayoutManager.prototype.ensureInDOM = function(obj, type, lazy)
 {
-  if (type === 'dependency')
-  {
-    this._renderDependencyObj(obj);
-    return;
-  }
-
-  var rowObj;
-  switch (type)
-  {
-    case 'task':
-      rowObj = obj['rowObj'];
-      break;
+  switch (type) {
     case 'row':
-      rowObj = obj;
-      break;
+      this._renderRowObj(obj);
+      return;
+    case 'task':
+      this._renderTaskObj(obj, lazy);
+      return;
+    case 'dependency':
+      // Always lazy render connected tasks, which is sufficient for today's use cases.
+      this._renderDependencyObj(obj, true);
+      return;
     case 'rowLabel':
-      rowObj = obj;
-      break;
+      // Render the row just enough to include the label
+      this._renderRowObj(
+        obj,
+        { rowObj: obj, tasksAdd: new Set(), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: false },
+        'add'
+      );
+      return;
   }
-  this._renderRowObj(rowObj);
 };
 
 /**
@@ -11064,9 +10615,8 @@ DvtGanttDataLayoutManager.prototype._binarySearchLeftMost = function(array, targ
  * @param {number} yMin The minimum y bound
  * @param {number} yMax The maximum y bound
  * @return {Object} An object with the 'minRowInd' and 'maxRowInd' properties
- * @private
  */
-DvtGanttDataLayoutManager.prototype._findRowIndRange = function(rowObjs, yMin, yMax)
+DvtGanttDataLayoutManager.prototype.findRowIndRange = function(rowObjs, yMin, yMax)
 {
   // O(lgN) binary search for first row (intersecting yMin)
   var minRowInd = this._binarySearchLeftMost(rowObjs, yMin, 'predecessor', 'y');
@@ -11089,13 +10639,99 @@ DvtGanttDataLayoutManager.prototype._findRowIndRange = function(rowObjs, yMin, y
 };
 
 /**
+ * Finds all taskObjs relevant to the given viewport bounds for given row.
+ * @param {Object} rowObj Row layout object
+ * @param {number} startTime The range start time
+ * @param {boolean} startInclusive Whether to include tasks intersecting the start bound
+ * @param {number} endTime The range end time
+ * @param {boolean} endInclusive Whether to include tasks intersecting the end bound
+ * @return {Array} An array of taskObjs
+ */
+DvtGanttDataLayoutManager.prototype.findTaskObjsRange = function(rowObj, startTime, startInclusive, endTime, endInclusive) {
+  var relevantTaskObjs = [];
+  var taskObjs = rowObj.taskObjs;
+
+  for (var i = 0; i < taskObjs.length; i++) {
+    var taskObj = taskObjs[i];
+    if (this._isIntervalOverlap(taskObj.overallStartTime, taskObj.overallEndTime, startTime, endTime)) {
+      if (startInclusive && endInclusive) {
+        relevantTaskObjs.push(taskObj);
+      } else if (!startInclusive && !endInclusive) {
+        if (taskObj.overallStartTime > startTime && taskObj.overallEndTime < endTime) {
+          relevantTaskObjs.push(taskObj);
+        }
+      } else if (!endInclusive) {
+        if (taskObj.overallEndTime < endTime) {
+          relevantTaskObjs.push(taskObj);
+        }
+      } else {
+        if (taskObj.overallStartTime > startTime) {
+          relevantTaskObjs.push(taskObj);
+        }
+      }
+    }
+  }
+  return relevantTaskObjs;
+};
+
+/**
+ * Finds all buffer taskObjs given viewport bounds for given row.
+ * @param {Object} rowObj Row layout object
+ * @param {number} startTime The range start time
+ * @param {number} endTime The range end time
+ * @return {Array} An array of taskObjs
+ */
+DvtGanttDataLayoutManager.prototype.findBufferTaskObjsRange = function(rowObj, startTime, endTime) {
+  // Buffer tasks ("|" delineates the viewport boundaries, [] are tasks in the viewport, [B] are buffer tasks):
+  // ... [ B ]   |   [  ]     [  ] ... [  ]   |    [ B ] ...
+  // ... [ B ] [ |  ]  [  ]  [  ] ... [  ]    |   [ B ] ...
+  // ... [ B ]   |  [  ]     [  ] ... [       |  ]    [ B ] ...
+  // They're tasks that's adjacent to the boundary tasks in the viewport, and should be rendered.
+  // Why are they needed? Consider the first task of the viewport, and you're panning right.
+  // The task is going to disappear off the left side of the viewport. Let's say the task has an "end" label to its right.
+  // If there's no concept of a buffer task, i.e. we remove any tasks that leaves the viewport, then the
+  // label would abruptly disappear once the task rectangle is out of view. Ideally the label should stay in the DOM and
+  // continue moving left as you pan right. To prevent this artifact, make the disappearing task a "buffer" task
+  // and don't remove it until you continue panning right and the next task takes its place as a buffer task.
+  // Buffer tasks also eliminates smart label positioning artifacts.
+  var bufferTaskObjs = [];
+  var taskObjs = rowObj.taskObjs;
+  for (var i = 0; i < taskObjs.length; i++) {
+    var taskObj = taskObjs[i];
+    var previousAdjacentTaskObj = taskObj.previousAdjacentTaskObj;
+    var nextAdjacentTaskObj = taskObj.nextAdjacentTaskObj;
+
+    // Only task in row level, and out of viewport
+    var isLoner = (!previousAdjacentTaskObj && !nextAdjacentTaskObj
+      && !this._isIntervalOverlap(taskObj.overallStartTime, taskObj.overallEndTime, startTime, endTime));
+
+    // Start buffer: task ends before viewport start
+    // AND (there's no next task
+    // OR if the next task ends after viewport start (even if next task is not in viewport))
+    var isStartBuffer = (taskObj.overallEndTime < startTime
+      && (!nextAdjacentTaskObj || (nextAdjacentTaskObj && nextAdjacentTaskObj.overallEndTime >= startTime)));
+
+    // End buffer: task starts after viewport end,
+    // AND (there's no previous task
+    // OR previous task starts before viewport end (even if previous task is not in viewport))
+    var isEndBuffer = (taskObj.overallStartTime > endTime
+      && (!previousAdjacentTaskObj || (previousAdjacentTaskObj && previousAdjacentTaskObj.overallStartTime <= endTime)));
+
+    if (isLoner || isStartBuffer || isEndBuffer) {
+      bufferTaskObjs.push(taskObj);
+    }
+  }
+  return bufferTaskObjs;
+};
+
+/**
  * Returns all layout objects within given bounding box.
  * @param {dvt.Rectangle} bbox The bounding box relative to data region (top left is 0,0)
  * @return {Object} An object with 'rowObjs' and 'taskObjs' arrays
  */
 DvtGanttDataLayoutManager.prototype.getLayoutObjectsInBBox = function(bbox)
 {
-  var rowIndRange = this._findRowIndRange(this._rowObjs, bbox.y, bbox.y + bbox.h);
+  var rowIndRange = this.findRowIndRange(this._rowObjs, bbox.y, bbox.y + bbox.h);
   var minRowInd = rowIndRange['minRowInd'];
   var maxRowInd = rowIndRange['maxRowInd'];
 
@@ -11119,7 +10755,6 @@ DvtGanttDataLayoutManager.prototype.getLayoutObjectsInBBox = function(bbox)
     var rowObj = this._rowObjs[i];
     relevantRowObjs.push(rowObj);
 
-    // TODO: Replace this with binary search, similar to _findRowIndRange
     var taskObjs = rowObj['taskObjs'];
     for (var j = 0; j < taskObjs.length; j++) {
       var taskObj = taskObjs[j];
@@ -11134,185 +10769,1248 @@ DvtGanttDataLayoutManager.prototype.getLayoutObjectsInBBox = function(bbox)
 };
 
 /**
- * Renders any visible items in the viewport as defined by the given min and max y bounds
- * @param {number} yMin The minimum y bound
- * @param {number} yMax The maximum y bound
- * @param {boolean=} bFromScrolling Whether the viewport refresh is to due scrolling/panning
- * @return {Object} Object of the shape {"minRowInd": index of first row in the viewport, "maxRowInd": index of last row in the viewport}. If there's no data, the values are -1.
+ * Renders viewport related dependency lines
+ * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
+ * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+ * @private
  */
-DvtGanttDataLayoutManager.prototype.renderViewport = function(yMin, yMax, bFromScrolling)
-{
-  var minRowInd = -1;
-  var maxRowInd = -1;
-  var databody = this._gantt.getDatabody();
-  if (databody)
-  {
-    // Clear previous viewport
-    // In the case of animation, we don't clear the viewport to keep old states around
-    // In the case of panning/scrolling, also don't clear the entire viewport straight up, as usually there's a lot that should be kept
-    //   - Also panning can be induced via DnD, and dragEnter/Leave events go haywire (especially on FF) if things keep disappearing and reappearing under the mouse
-    if (!this._keepOldViewport && !bFromScrolling)
-    {
-      databody.removeChildren();
-      this._gantt.getDatabodyBackground().removeChildren();
-    }
-    var rowAxis = this._gantt.getRowAxis();
-    if (this._gantt.isRowAxisEnabled() && rowAxis && !bFromScrolling)
-      rowAxis.removeChildren();
-    var dependenciesContainer = this._gantt.getDependenciesContainer();
-    if (dependenciesContainer)
-      dependenciesContainer.removeChildren();
-
-    var bRenderDependencies = this._dependencyObjs.length > 0;
-
-    var viewportRowIndRange = this._findRowIndRange(this._rowObjs, yMin, yMax);
-    minRowInd = viewportRowIndRange['minRowInd'];
-    maxRowInd = viewportRowIndRange['maxRowInd'];
-
-    // Panning/Scrolling case, viewport is not cleared.
-    // Remove just the rows that became out of view. New rows will be rendered in downstream logic.
-    // DO NOT do this for the case where the Gantt is panned during Drag and Drop on Mobile--for some
-    // mysterious reason, changing the DOM order underneath the touch point during Drag and Drop sometimes cause
-    // the dragOver event to stop firing, including the downstream drop/dragEnd events...but this is not an issue on Desktop browsers.
-    // The only side effect is a possible slight perf hit during drag on mobile, because the DOM may accumulate rows if
-    // someone tries to drag something for large distances, but subsequent interactions will cause a fresh viewport render
-    // that restores performance.
-    var eventManager = this._gantt.getEventManager();
-    if (!(TimeAxisUtils.supportsTouch() && eventManager && eventManager.isDnDDragging()))
-    {
-      if (bFromScrolling && this._prevScrollMinRowInd != null)
-      {
-        var rowNode;
-        if (this._prevScrollMinRowInd < minRowInd) // Scrolled down, remove now hidden rows from the top
-        {
-          for (var k = this._prevScrollMinRowInd; k < minRowInd; k++)
-          {
-            rowNode = this._rowObjs[k]['node'];
-            if (rowNode)
-            {
-              rowNode.remove();
-            }
-          }
-        }
-        else if (maxRowInd < this._prevScrollMaxRowInd) // Scrolled up, remove now hidden rows from the bottom
-        {
-          for (var k = maxRowInd + 1; k <= this._prevScrollMaxRowInd; k++)
-          {
-            rowNode = this._rowObjs[k]['node'];
-            if (rowNode)
-            {
-              rowNode.remove();
-            }
-          }
-        }
-      }
-    }
-
-    // Animation case, render the curated particpating rows (which may include more than what's in the viewport)
-    // Also, for old rows with row labels, restore them to DOM to show initial state (row axis DOM is cleared at this point)
-    if (this._keepOldViewport && this._animationFinalStateRowObjs)
-    {
-      this._animationFinalStateRowObjs.forEach(this._renderRowObj, this);
-      // Note that this._animationInitialStateRowObjsDelete is empty if there are no labels, so no need to null check rowAxis
-      for (var j = 0; j < this._animationInitialStateRowObjsDelete.length; j++)
-      {
-        var oldRowNodeWithLabel = this._animationInitialStateRowObjsDelete[j]['node'];
-        if (oldRowNodeWithLabel)
-        {
-          var oldLabelContent = oldRowNodeWithLabel.getRowLabelContent();
-          rowAxis.addChild(oldLabelContent.getDisplayable());
-          if (this._gantt.isHorizontalGridlinesVisible())
-          {
-            rowAxis.addChild(oldRowNodeWithLabel.getRowAxisHorizontalLine());
-          }
-        }
-      }
-    }
-    else // Render viewport related rows
-    {
-      for (var i = minRowInd; i <= maxRowInd; i++)
-      {
-        var rowObj = this._rowObjs[i];
-        var isRenderNotSkipped = this._renderRowObj(rowObj);
-        // In the panning/scrolling case, most of the rows are kept in the viewport, and so tasks in those rows won't receive new render calls.
-        // However, normally dependencies are cleared from the task each new render, so we'll do that here before dependencies are rendered.
-        if (!isRenderNotSkipped && bFromScrolling && bRenderDependencies)
-        {
-          var taskObjs = rowObj['taskObjs'];
-          for (var _i = 0; _i < taskObjs.length; _i++)
-          {
-            taskObjs[_i]['node'].clearDependencies();
-          }
-        }
-      }
-    }
-
-    // Render viewport related dependencies
-    // O(N) search for dependencies overlapping the viewport (more precisely, O(lgN) search + O(2k) iterations),
-    // N being the total number of dependencies, and k being the number of dependencies from the top of the chart to the end of the viewport
-    // TODO: If need be in the future, implement (centered) interval tree data structure
-    // to perform O(lgN + K) search for the K dependencies overlapping the viewport
-    if (this._dependencyObjs.length > 0)
-    {
-      // Find first dependency from the top with bottom row below upper viewport bound
-      var referenceDependencyInd = this._binarySearchLeftMost(this._dependencyObjs, minRowInd, 'successor', 'rowObjBottom', 'index');
-      var referenceDependencyObj = this._dependencyObjs[referenceDependencyInd];
-      var referencePrevTopDependencyObj = referenceDependencyObj['prevTopDependencyObj'];
-
-      // All subsequent dependencies with top row below the reference dep's top row but above the lower viewport bound must be visible.
-      // Any dependencies with top row below the lower viewport bound are definitely not visible and so not considered.
-      while (referenceDependencyObj && referenceDependencyObj['rowObjTop']['index'] <= maxRowInd)
-      {
-        this._renderDependencyObj(referenceDependencyObj);
-        referenceDependencyObj = referenceDependencyObj['nextTopDependencyObj'];
-      }
-      // The only lines we may have missed so far are ones with bottom row >= reference bottom row, but have top row < reference top row.
-      // Iterate up from the reference dependency to find any lines we missed
-      while (referencePrevTopDependencyObj)
-      {
-        var rowBottomInd = referencePrevTopDependencyObj['rowObjBottom']['index'];
-        if (rowBottomInd >= minRowInd)
-        {
-          this._renderDependencyObj(referencePrevTopDependencyObj);
-        }
-        referencePrevTopDependencyObj = referencePrevTopDependencyObj['prevTopDependencyObj'];
-      }
-    }
-
-    if (bFromScrolling)
-    {
-      // If scrolling, save viewport for subsequent scrolling viewport comparisons
-      this._prevScrollMinRowInd = minRowInd;
-      this._prevScrollMaxRowInd = maxRowInd;
-    }
-    else
-    {
-      // If not scrolling, clear out the cached viewport to ensure full subsequent viewport rerenders
-      this._prevScrollMinRowInd = null;
-      this._prevScrollMaxRowInd = null;
-    }
-  }
-  else
-  {
-    this._prevScrollMinRowInd = null;
-    this._prevScrollMaxRowInd = null;
+ DvtGanttDataLayoutManager.prototype._renderViewportDependencyLines = function (viewport, action) {
+  var dependenciesContainer = this._gantt.getDependenciesContainer();
+  if (dependenciesContainer) {
+    dependenciesContainer.removeChildren();
   }
 
-  // Subsequent viewport renders don't induce animation
-  this._keepOldViewport = false;
-  this._animationFinalStateRowObjs = null;
-  this._animationInitialStateRowObjsDelete = [];
+  // Render viewport related dependencies
+  // O(N) search for dependencies overlapping the viewport (more precisely, O(lgN) search + O(2k) iterations),
+  // N being the total number of dependencies, and k being the number of dependencies from the top of the chart to the end of the viewport
+  // TODO: If need be in the future, implement (centered) interval tree data structure
+  // to perform O(lgN + K) search for the K dependencies overlapping the viewport
+  if (this._dependencyObjs.length > 0) {
+    var isOverlapHorizontalViewport = function (dependencyObj, viewport) {
+      var predecessorObj = dependencyObj.predecessorTaskObj;
+      var successorObj = dependencyObj.successorTaskObj;
+      var t1, t2;
+      switch (predecessorObj.type) {
+        case DvtGanttDependencyNode.START_FINISH:
+          t1 = predecessorObj.startTime;
+          t2 = successorObj.endTime;
+          break;
+        case DvtGanttDependencyNode.START_START:
+          t1 = predecessorObj.startTime;
+          t2 = successorObj.startTime;
+          break;
+        case DvtGanttDependencyNode.FINISH_FINISH:
+          t1 = predecessorObj.endTime;
+          t2 = successorObj.endTime;
+          break;
+        case DvtGanttDependencyNode.FINISH_START:
+        default:
+          t1 = predecessorObj.endTime;
+          t2 = successorObj.startTime;
+      }
 
-  return { "minRowInd": minRowInd, "maxRowInd": maxRowInd };
+      return this._isIntervalOverlap(
+        Math.min(t1, t2),
+        Math.max(t1, t2),
+        viewport.viewStartTime, viewport.viewEndTime
+      )
+    }.bind(this);
+
+    // Find first dependency from the top with bottom row below upper viewport bound
+    var referenceDependencyInd = this._binarySearchLeftMost(this._dependencyObjs, viewport.minRowInd, 'successor', 'rowObjBottom', 'index');
+    var referenceDependencyObj = this._dependencyObjs[referenceDependencyInd];
+    var referencePrevTopDependencyObj = referenceDependencyObj['prevTopDependencyObj'];
+
+    // Lazy render tasks for pan/scroll case.
+    // In refresh case, also lazy render,
+    // so that custom content is only regenerated if they're not there already.
+    // update render for all other actions.
+    var bLazyTaskRender = action === DvtGanttDataLayoutManager.VPC_TRANSLATE || action === DvtGanttDataLayoutManager.VPC_REFRESH;
+
+    // All subsequent dependencies with top row below the reference dep's top row but above the lower viewport bound must be visible.
+    // Any dependencies with top row below the lower viewport bound are definitely not visible and so not considered.
+    // Also skip rendering any lines that don't cross the viewport horizontally.
+    while (referenceDependencyObj && referenceDependencyObj['rowObjTop']['index'] <= viewport.maxRowInd) {
+      if (isOverlapHorizontalViewport(referenceDependencyObj, viewport)) {
+        this._renderDependencyObj(referenceDependencyObj, bLazyTaskRender);
+      }
+      referenceDependencyObj = referenceDependencyObj['nextTopDependencyObj'];
+    }
+    // The only lines we may have missed so far are ones with bottom row >= reference bottom row, but have top row < reference top row.
+    // Iterate up from the reference dependency to find any lines we missed
+    while (referencePrevTopDependencyObj) {
+      var rowBottomInd = referencePrevTopDependencyObj['rowObjBottom']['index'];
+      if (rowBottomInd >= viewport.minRowInd && isOverlapHorizontalViewport(referencePrevTopDependencyObj, viewport)) {
+        this._renderDependencyObj(referencePrevTopDependencyObj, bLazyTaskRender);
+      }
+      referencePrevTopDependencyObj = referencePrevTopDependencyObj['prevTopDependencyObj'];
+    }
+  }
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * Fully detaches the row node from DOM, by detaching the row itself and all tasks within it.
+ * @param {Object} rowObj Row layout object.
+ * @private
  */
+DvtGanttDataLayoutManager.prototype._detachRowObjNode = function (rowObj) {
+  var rowNode = rowObj.node;
+  if (rowNode) {
+    rowObj.taskObjs.forEach(function (taskObj) {
+      var taskNode = taskObj.node;
+      if (taskNode) {
+        taskNode.remove();
+      }
+    });
+    rowNode.remove();
+  }
+};
+
+/**
+ * Prepares viewport before rendering.
+ * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
+ * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._prepareViewport = function (viewport, action) {
+  var databody = this._gantt.getDatabody();
+  if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
+    // Clear previous viewport
+    // Note that we have to perform diffing for all other actions because:
+    // In the case of animation, we don't clear the viewport to keep old states around
+    // In the case of panning/scrolling/zooming, also don't clear the entire viewport straight up, as usually there's a lot that should be kept
+    //   - Also panning can be induced via DnD, and dragEnter/Leave events go haywire (especially on FF) if things keep disappearing and reappearing under the mouse
+
+    // Also need to clear tasks within each row.
+    this._rowObjs.forEach(this._detachRowObjNode, this);
+    databody.removeChildren();
+    this._gantt.getDatabodyBackground().removeChildren();
+  }
+  var rowAxis = this._gantt.getRowAxis();
+  if (this._gantt.isRowAxisEnabled() && rowAxis
+      && !(action === DvtGanttDataLayoutManager.VPC_TRANSLATE || action === DvtGanttDataLayoutManager.VPC_SCALE)) {
+    // Don't clear row axis when: Panning/scrolling/zooming cases; we rely on row diffing later.
+    // Clear row axis when: Refresh/Animation. In animation case, labels are added back later with care.
+    rowAxis.removeChildren();
+  }
+};
+
+/**
+ * Computes a set of rendering operations (from viewport diffing) to render the viewport.
+ * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
+ * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+ * @return {Object} A set of opertaions of shape { rowsDelete: [row objs], rowsAdd: [taskOps], rowsUpdate: [taskOps] }
+ *    where taskOps is of shape { rowObj: rowObj, tasksAdd: Set(task objs), tasksUpdate: Set(task objs), tasksDelete: Set(task objs), updateRender: boolean }
+ *    where updateRender signifies whether the tasks in tasksUpdate should be fully re-rendered or not.
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._computeViewportRenderOperations = function (viewport, action) {
+  var rowsDelete = [];
+  var rowsAdd = [];
+  var rowsUpdate = [];
+  if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
+    // Viewport is empty; just add the rows and tasks for the current viewport
+    for (var i = viewport.minRowInd; i <= viewport.maxRowInd; i++) {
+      var rowObj = this._rowObjs[i];
+      var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
+      var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
+      bufferTaskObjs.forEach(function (taskObj) {
+        viewportTaskObjs.push(taskObj);
+      });
+      rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+    }
+  } else if (action === DvtGanttDataLayoutManager.VPC_ANIMATE) {
+    // Don't delete anything from the old viewport; those elements are initial states
+    // Render the curated particpating rows (which may include more than what's in the viewport)
+    this._animationFinalStateRowObjs.forEach(function (taskObjsSet, rowObj) {
+      var tasksAdd = new Set();
+      var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
+      var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
+      viewportTaskObjs.forEach(function (taskObj) {
+        if (!taskObjsSet.has(taskObj)) {
+          tasksAdd.add(taskObj);
+        }
+      });
+      bufferTaskObjs.forEach(function (taskObj) {
+        if (!taskObjsSet.has(taskObj)) {
+          tasksAdd.add(taskObj);
+        }
+      });
+      taskObjsSet.forEach(function (taskObj) {
+        tasksAdd.add(taskObj);
+      });
+      // update this._animationFinalStateRowObjs tasks set for proper dependency rendering in _renderViewportDependencyLines -> _renderDependencyObj
+      this._animationFinalStateRowObjs.set(rowObj, tasksAdd);
+
+      rowsAdd.push({ rowObj: rowObj, tasksAdd: tasksAdd, tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+    }, this);
+    // Also, for old rows with row labels, restore them to DOM to show initial state (row axis DOM is cleared at this point)
+    // Note that this._animationInitialStateRowObjsDelete is empty if there are no labels, so no need to null check rowAxis
+    var rowAxis = this._gantt.getRowAxis();
+    for (var i = 0; i < this._animationInitialStateRowObjsDelete.length; i++) {
+      var oldRowNodeWithLabel = this._animationInitialStateRowObjsDelete[i].node;
+      if (oldRowNodeWithLabel) {
+        var oldLabelContent = oldRowNodeWithLabel.getRowLabelContent();
+        rowAxis.addChild(oldLabelContent.getDisplayable());
+        if (this._gantt.isHorizontalGridlinesVisible()) {
+          rowAxis.addChild(oldRowNodeWithLabel.getRowAxisHorizontalLine());
+        }
+      }
+    }
+  } else {
+    // For viewport changes such as panning/scrolling/zooming, we diff the previous and current viewports
+    // ...except when the Gantt is panned during Drag and Drop on Mobile, we DON'T remove any elements going out of view.
+    // For some mysterious reason, changing the DOM order underneath the touch point during Drag and Drop sometimes cause
+    // the dragOver event to stop firing, including the downstream drop/dragEnd events...but this is not an issue on Desktop browsers.
+    // The side effect is a possible perf hit during drag on mobile, because the DOM will accumulate elements not in view if
+    // someone tries to drag something for large distances. Subsequent zoom and vertical scrolling will reset the DOM,
+    // and as in the typical usecase when the drop triggers a data change rerender.
+    var eventManager = this._gantt.getEventManager();
+    var bMobileDnDDragging = TimeAxisUtils.supportsTouch() && eventManager && eventManager.isDnDDragging();
+
+    // Any previous rows above the current viewport should be removed
+    for (var i = this._prevViewport.minRowInd; i < Math.min(viewport.minRowInd, this._prevViewport.maxRowInd); i++) {
+      rowsDelete.push(this._rowObjs[i]);
+    }
+
+    // Any previous rows below the current viewport should be removed
+    for (var i = Math.max(viewport.maxRowInd + 1, this._prevViewport.minRowInd); i <= this._prevViewport.maxRowInd; i++) {
+      rowsDelete.push(this._rowObjs[i]);
+    }
+
+    // Any current rows above the previous viewport should be added
+    for (var i = viewport.minRowInd; i < Math.min(this._prevViewport.minRowInd, viewport.maxRowInd); i++) {
+      var rowObj = this._rowObjs[i];
+      var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
+      var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
+      bufferTaskObjs.forEach(function (taskObj) {
+        viewportTaskObjs.push(taskObj);
+      });
+      rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+    }
+
+    // Any current rows below the previous viewport should be added
+    for (var i = Math.max(this._prevViewport.maxRowInd + 1, viewport.minRowInd); i <= viewport.maxRowInd; i++) {
+      var rowObj = this._rowObjs[i];
+      var viewportTaskObjs = this.findTaskObjsRange(rowObj, viewport.viewStartTime, true, viewport.viewEndTime, true);
+      var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
+      bufferTaskObjs.forEach(function (taskObj) {
+        viewportTaskObjs.push(taskObj);
+      });
+      rowsAdd.push({ rowObj: rowObj, tasksAdd: new Set(viewportTaskObjs), tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
+    }
+
+    // Rows intersecting previous and current viewport should be updated
+    // Only update task rendering in the zoom case. No need for pan/scroll.
+    var updateRender = action === DvtGanttDataLayoutManager.VPC_SCALE;
+    if (this._prevViewport.maxRowInd >= viewport.minRowInd && this._prevViewport.minRowInd <= viewport.maxRowInd) {
+      var prevStart = this._prevViewport.viewStartTime;
+      var prevEnd = this._prevViewport.viewEndTime;
+      var currStart = viewport.viewStartTime;
+      var currEnd = viewport.viewEndTime;
+      for (var i = Math.max(viewport.minRowInd, this._prevViewport.minRowInd); i <= Math.min(viewport.maxRowInd, this._prevViewport.maxRowInd); i++) {
+        var rowObj = this._rowObjs[i];
+        var tasksDelete = new Set();
+        var tasksAdd = new Set();
+        var tasksUpdate = new Set();
+
+        // Any previous tasks outside the current viewport should be removed
+        if (prevStart < currStart) {
+          this.findTaskObjsRange(rowObj, prevStart, true, Math.min(currStart, prevEnd), prevEnd < currStart).forEach(function (taskObj) {
+            tasksDelete.add(taskObj);
+          });
+        }
+        if (prevEnd > currEnd) {
+          this.findTaskObjsRange(rowObj, Math.max(currEnd, prevStart), prevStart > currEnd, prevEnd, true).forEach(function (taskObj) {
+            tasksDelete.add(taskObj);
+          });
+        }
+
+        // Any current tasks outside the previous viewport should be added
+        if (currStart < prevStart) {
+          this.findTaskObjsRange(rowObj, currStart, true, Math.min(currEnd, prevStart), currEnd < prevStart).forEach(function (taskObj) {
+            tasksAdd.add(taskObj);
+          });
+        }
+        if (currEnd > prevEnd) {
+          this.findTaskObjsRange(rowObj, Math.max(prevEnd, currStart), currStart > prevEnd, currEnd, true).forEach(function (taskObj) {
+            tasksAdd.add(taskObj);
+          });
+        }
+
+        // Intersection should be updated
+        if (prevEnd >= currStart && prevStart <= currEnd) {
+          tasksUpdate = new Set(this.findTaskObjsRange(rowObj, Math.max(currStart, prevStart), true, Math.min(currEnd, prevEnd), true));
+        }
+
+        // Previous buffer tasks should be removed
+        var prevBufferTaskObjs = this.findBufferTaskObjsRange(rowObj, this._prevViewport.viewStartTime, this._prevViewport.viewEndTime);
+        prevBufferTaskObjs.forEach(function (taskObj) {
+          tasksDelete.add(taskObj);
+        });
+
+        // Current buffer tasks should be added
+        var bufferTaskObjs = this.findBufferTaskObjsRange(rowObj, viewport.viewStartTime, viewport.viewEndTime);
+        bufferTaskObjs.forEach(function (taskObj) {
+          tasksAdd.add(taskObj);
+        });
+
+        // Any tasks marked both for DELETE and ADD should just be UPDATE (e.g. buffer tasks)
+        // At the time of writing, I find conflicting information regarding the safety (and performance)
+        // of removing elements from a set while iterating it. It's safest to just store and delete after:
+        var deleteAndAdd = [];
+        tasksDelete.forEach(function (taskObj) {
+          if (tasksAdd.has(taskObj)) {
+            deleteAndAdd.push(taskObj);
+          }
+        });
+        deleteAndAdd.forEach(function (taskObj) {
+          tasksUpdate.add(taskObj);
+          tasksDelete.delete(taskObj);
+          tasksAdd.delete(taskObj);
+        });
+
+        // See comment above about not removing DOM when performing mobile dnd dragging
+        if (bMobileDnDDragging) {
+          tasksDelete = new Set();
+        }
+
+        rowsUpdate.push({ rowObj: rowObj, tasksAdd: tasksAdd, tasksUpdate: tasksUpdate, tasksDelete: tasksDelete, updateRender: updateRender });
+      }
+    }
+  }
+
+  // See comment above about not removing DOM when performing mobile dnd dragging
+  if (bMobileDnDDragging) {
+    rowsDelete = [];
+  }
+
+  return { rowsDelete: rowsDelete, rowsAdd: rowsAdd, rowsUpdate: rowsUpdate }
+};
+
+/**
+ * Executes the given rendering operations.
+ * @param {Object} renderOperations See return shape of _computeViewportRenderOperations()
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._executeViewportRenderOperations = function (renderOperations) {
+  renderOperations.rowsDelete.forEach(this._detachRowObjNode, this);
+  renderOperations.rowsAdd.forEach(function (op) {
+    this._renderRowObj(op.rowObj, op, 'add');
+  }, this);
+  renderOperations.rowsUpdate.forEach(function (op) {
+    this._renderRowObj(op.rowObj, op, 'update');
+  }, this);
+};
+
+/**
+ * Renders any visible items in the viewport as defined by the given min and max y bounds
+ * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
+ * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+ */
+DvtGanttDataLayoutManager.prototype.renderViewport = function (viewport, action)
+{
+  this._prepareViewport(viewport, action);
+  var renderOperations = this._computeViewportRenderOperations(viewport, action);
+  this._executeViewportRenderOperations(renderOperations);
+
+  this._renderViewportDependencyLines(viewport, action);
+
+  this._prevViewport = viewport;
+
+  // Clean up
+  this._animationFinalStateRowObjs = null;
+  this._animationInitialStateRowObjsDelete = [];
+};
+
+/**
+ * Animation manager for Gantt
+ * @param {Gantt} gantt the Gantt component
+ * @class
+ * @constructor
+ */
+var DvtGanttAnimationManager = function(gantt)
+{
+  this.Init(gantt);
+};
+
+Obj.createSubclass(DvtGanttAnimationManager, Obj);
+
+/**
+ * Initialize the animation manager
+ * @param {Gantt} gantt the Gantt component
+ * @protected
+ */
+DvtGanttAnimationManager.prototype.Init = function(gantt)
+{
+  this._gantt = gantt;
+};
+
+/**
+ * Initializes the necessary animators for animation.
+ */
+DvtGanttAnimationManager.prototype.prepareForAnimations = function()
+{
+  var context = this._gantt.getCtx();
+
+  // Ensure clean slate
+  this._gantt.StopAnimation();
+
+  this._animationMode = 'none';
+
+  this._animationDuration = DvtGanttStyleUtils.getAnimationDuration(this._gantt.getOptions());
+
+  // Figure out animation mode
+  if (this._gantt.isInitialRender()) // initial render/display
+  {
+    if (this._gantt.isIRAnimationEnabled)
+      this._animationMode = 'onDisplay';
+  }
+  else // data change
+  {
+    if (this._gantt.isDCAnimationEnabled)
+      this._animationMode = 'dataChange';
+  }
+
+  // Initialize appropriate animators depending on animation mode
+  if (this._animationMode === 'onDisplay')
+  {
+    // For animating fade in
+    this.fadeInElemsIR = [];
+    this.fadeInPlayableIR = new AnimFadeIn(context, this.fadeInElemsIR, this._animationDuration, 0);
+
+    // Playable for animating dimension changes
+    this.dimensionsPlayableIR = this._createCustomPlayable(Easing.linear);
+
+    // For animating translations
+    this.translationsPlayableIR = this._createCustomPlayable(Easing.cubicInOut);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    // For animating fade in and out
+    this.fadeInElemsDC = [];
+    this.fadeInPlayableDC = new AnimFadeIn(context, this.fadeInElemsDC, this._animationDuration, 0);
+    this.fadeOutElemsDC = [];
+    this.fadeOutPlayableDC = new AnimFadeOut(context, this.fadeOutElemsDC, this._animationDuration, 0);
+
+    // For animating dimension changes
+    this.dimensionsPlayableDC = this._createCustomPlayable(Easing.linear);
+
+    // For animating translations
+    this.translationsPlayableDC = this._createCustomPlayable(Easing.cubicInOut);
+  }
+
+  // Callbacks to be executed at the end of animation
+  this._onEnds = [];
+};
+
+/**
+ * Gets the current animation mode of the Gantt
+ * @return {string} the animation mode ('dataChange', 'onDisplay', or 'none')
+ */
+DvtGanttAnimationManager.prototype.getAnimationMode = function()
+{
+  return this._animationMode;
+};
+
+/**
+ * Sets the animation mode of the Gantt
+ * @param {string} animationMode The new animation mode
+ */
+DvtGanttAnimationManager.prototype.setAnimationMode = function(animationMode)
+{
+  this._animationMode = animationMode;
+};
+
+/**
+ * Generates a playable object with specified easing animation.
+ * @param {function} easing The easing function to use when animating.
+ * @return {dvt.CustomAnimation} The playable.
+ * @private
+ */
+DvtGanttAnimationManager.prototype._createCustomPlayable = function(easing)
+{
+  var playable;
+  playable = new CustomAnimation(this._gantt.getCtx(), this._gantt, this._animationDuration);
+  playable.setEasing(easing);
+  return playable;
+};
+
+/**
+ * Starts all animations.
+ */
+DvtGanttAnimationManager.prototype.triggerAnimations = function()
+{
+  var subPlayables, context, i;
+
+  // Stop any unfinished animations
+  this._gantt.StopAnimation();
+
+  context = this._gantt.getCtx();
+
+  // Plan the animation
+  if (this._animationMode === 'onDisplay')
+  {
+    // Parallel: Fade in all elements, animate any dimension changes
+    subPlayables = [this.fadeInPlayableIR, this.translationsPlayableIR, this.dimensionsPlayableIR];
+    this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    // Parallel: Fade in elements, translate elements, animate dimension changes, fade out elements
+    subPlayables = [this.fadeInPlayableDC, this.translationsPlayableDC, this.dimensionsPlayableDC, this.fadeOutPlayableDC];
+    this._gantt.Animation = new ParallelPlayable(context, subPlayables, this._animationDuration, 0);
+  }
+
+  // If an animation was created, play it
+  if (this._gantt.Animation)
+  {
+    // Instead of animating dep lines, hide them, animate other things, then show them again.
+    // TODO: remove this and refine dependency lines animation instead.
+    this._hideDepLines();
+    Playable.appendOnEnd(this._gantt.Animation, this._showDepLines, this);
+
+    // Disable event listeners temporarily
+    // Only do this if DnD is not enabled, because
+    // 1) If animation is triggered by DnD, and listeners are removed, the dragEnd event will never fire.
+    // 2) If we try to limit this to explicit dragging cases, there'll be a slew of side effects/conflicts with pan drag events and DnD events
+    // 3) DnD with animation is not expected to be a common usecase, and it's only an "issue" if someone tries to scroll/zoom etc. in the half second animation is happening. Even so, nothing will break; animation will just look more chaotic.
+    if (!this._gantt.isDndEnabled())
+    {
+      this._gantt.EventManager.removeListeners(this._gantt);
+      this._bListenersRemoved = true;
+    }
+
+    // Append callbacks to be executed at the end of animation
+    for (var i = 0; i < this._onEnds.length; i++)
+    {
+      Playable.appendOnEnd(this._gantt.Animation, this._onEnds[i], this);
+    }
+    Playable.appendOnEnd(this._gantt.Animation, this._onAnimationEnd, this);
+
+    // Play!
+    this._gantt.Animation.play();
+  }
+};
+
+/**
+ * Hides dependency lines (called before animation)
+ * @private
+ */
+DvtGanttAnimationManager.prototype._hideDepLines = function()
+{
+  var deplines = this._gantt.getDependenciesContainer();
+  if (deplines != null)
+    ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
+};
+
+/**
+ * Shows dependency lines (called after animation)
+ * @private
+ */
+DvtGanttAnimationManager.prototype._showDepLines = function()
+{
+  var deplines = this._gantt.getDependenciesContainer();
+  if (deplines != null)
+    ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
+};
+
+/**
+ * Hook for cleaning animation behavior at the end of the animation.
+ * @private
+ */
+DvtGanttAnimationManager.prototype._onAnimationEnd = function()
+{
+  // Fire ready event saying animation is finished.
+  if (!this._gantt.AnimationStopped)
+    this._gantt.RenderComplete();
+
+  // Restore event listeners if removed
+  if (this._bListenersRemoved)
+    this._gantt.EventManager.addListeners(this._gantt);
+
+  // Reset animation flags
+  this._gantt.Animation = null;
+  this._gantt.AnimationStopped = false;
+
+  this._animationMode = 'none';
+
+  // Refresh the viewport to absolutely ensure the final state looks right
+  // This also ensures a clean slate, and clears out any hidden things from the DOM that were there just for animation
+  this._gantt.renderViewport(DvtGanttDataLayoutManager.VPC_REFRESH, false);
+};
+
+/*
+----------------------------------------------------------------------
+Methods below configure/define animations for specific elements
+----------------------------------------------------------------------
+*/
+
+/**
+ * Prepares overall Gantt initial render animation.
+ * @param {Gantt} gantt
+ */
+DvtGanttAnimationManager.prototype.preAnimateGanttIR = function(gantt)
+{
+  if (this._animationMode === 'onDisplay')
+  {
+    // Fade in gantt on initial render
+    this.fadeInElemsIR.push(gantt._canvas);
+  }
+};
+
+/**
+ * Prepares task node animation.
+ * @param {DvtGanttTaskNode} taskNode
+ * @param {object} finalStates Object defining the final animation state
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskNode = function(taskNode, finalStates)
+{
+  var translationsAnimator,
+      renderState = taskNode.getRenderState();
+
+  if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render, then fade it in
+      taskNode.setTranslate(finalStates['x'], finalStates['y']);
+      this.fadeInElemsDC.push(taskNode);
+    }
+    else if (renderState === 'exist' || renderState === 'migrate')
+    {
+      // Translate, then finalize render at the end of animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateX, taskNode.setTranslateX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, taskNode, taskNode.getTranslateY, taskNode.setTranslateY, finalStates['y']);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    taskNode.setTranslate(finalStates['x'], finalStates['y']);
+  }
+};
+
+/**
+ * Prepares task node animation.
+ * @param {DvtGanttTaskNode} taskNode
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskNodeRemove = function(taskNode, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out, then finalize render at the end of animation
+    this.fadeOutElemsDC.push(taskNode);
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task baseline shape animation.
+ * @param {DvtGanttTask} task
+ * @param {DvtGanttTaskShape} baselineShape
+ * @param {object} finalStates Object defining the final animation state
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskBaseline = function(task, baselineShape, finalStates, onEnd)
+{
+  var dimensionsAnimator, translationsAnimator,
+      renderState = task.getRenderState('baseline');
+
+  if (this._animationMode === 'onDisplay')
+  {
+    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+    baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+    onEnd();
+
+    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
+    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+      baselineShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      onEnd();
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
+    }
+    else if (renderState === 'exist')
+    {
+      // Animate translation and dimensional changes, finalize render at the end of animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getX, baselineShape.setX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getY, baselineShape.setY, finalStates['y']);
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getWidth, baselineShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, baselineShape, baselineShape.getHeight, baselineShape.setHeight, finalStates['h']);
+
+      baselineShape.setBorderRadius(finalStates['r']);
+
+      this._onEnds.push(onEnd);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    baselineShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task baseline shape removal animation.
+ * @param {DvtGanttTaskShape} baselineShape
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskBaselineRemove = function(baselineShape, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out element, finalize render at the end of animation
+    this.fadeOutElemsDC.push(baselineShape);
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task main shape animation.
+ * @param {DvtGanttTask} task
+ * @param {object} finalStates Object defining the final animation state
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskMain = function(task, finalStates, onEnd)
+{
+  var dimensionsAnimator, translationsAnimator,
+      renderState = task.getRenderState('main');
+
+  if (this._animationMode === 'onDisplay')
+  {
+    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+    task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+    onEnd();
+
+    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
+    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+      task.setMainDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      onEnd();
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
+    }
+    else if (renderState === 'exist')
+    {
+      // Animate translation and dimensional changes, finalize render at the end of animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainX, task.setMainX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainY, task.setMainY, finalStates['y']);
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainWidth, task.setMainWidth, finalStates['w']);
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, task, task.getMainHeight, task.setMainHeight, finalStates['h']);
+
+      task.setMainBorderRadius(finalStates['r']);
+
+      this._onEnds.push(onEnd);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    task.setMainDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task main shape removal animation.
+ * @param {DvtGanttTaskShape} mainShape
+ * @param {DvtGanttTaskShape} selectShape
+ * @param {DvtGanttTaskShape} hoverShape
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskMainRemove = function(mainShape, selectShape, hoverShape, customContent, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out elements related to the main shape, finalize render at the end of animation
+    this.fadeOutElemsDC.push(mainShape);
+    if (selectShape)
+    {
+      this.fadeOutElemsDC.push(selectShape);
+    }
+    if (hoverShape)
+    {
+      this.fadeOutElemsDC.push(hoverShape);
+    }
+    if (customContent)
+    {
+      this.fadeOutElemsDC.push(customContent);
+    }
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task progress shape animation.
+ * @param {DvtGanttTask} task
+ * @param {DvtGanttTaskShape} progressShape
+ * @param {object} finalStates Object defining the final animation state
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskProgress = function(task, progressShape, finalStates, onEnd)
+{
+  var dimensionsAnimator, translationsAnimator,
+      renderState = task.getRenderState('progress');
+
+  if (this._animationMode === 'onDisplay')
+  {
+    // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+    progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+    onEnd();
+
+    dimensionsAnimator = this.dimensionsPlayableIR.getAnimator();
+    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render, start off the width to be 0, and grow the width dimension to its final width
+      progressShape.setDimensions(finalStates['x'], finalStates['y'], 0, finalStates['h'], finalStates['r']);
+      onEnd();
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
+    }
+    else if (renderState === 'exist')
+    {
+      // Animate translation and dimensional changes, finalize render at the end of animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getX, progressShape.setX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getY, progressShape.setY, finalStates['y']);
+
+      dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getWidth, progressShape.setWidth, finalStates['w']);
+      dimensionsAnimator.addProp(Animator.TYPE_NUMBER, progressShape, progressShape.getHeight, progressShape.setHeight, finalStates['h']);
+
+      progressShape.setBorderRadius(finalStates['r']);
+
+      this._onEnds.push(onEnd);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    progressShape.setDimensions(finalStates['x'], finalStates['y'], finalStates['w'], finalStates['h'], finalStates['r']);
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task progress shape removal animation.
+ * @param {DvtGanttTaskShape} progressShape
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskProgressRemove = function(progressShape, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out element, finalize render at the end of animation
+    this.fadeOutElemsDC.push(progressShape);
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task label animation.
+ * @param {DvtGanttTaskNode} taskNode
+ * @param {object} finalStates Object defining the final animation state
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskLabel = function(taskNode, finalStates, onEnd)
+{
+  var translationsAnimator,
+      task = taskNode.getTask(),
+      taskLabel = taskNode.getTaskLabel(),
+      labelOutputText = taskLabel.getLabelOutputText(),
+      renderState = taskLabel.getRenderState(),
+      taskMainRenderState = task.getRenderState('main');
+
+  if (this._animationMode === 'onDisplay')
+  {
+    // Finalize render, start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
+    onEnd();
+    labelOutputText.setY(finalStates['y']);
+    labelOutputText.setX(task.getShape('main').getX());
+    translationsAnimator = this.translationsPlayableIR.getAnimator();
+    translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
+    translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+  }
+  else if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render
+      labelOutputText.setX(finalStates['x']);
+      labelOutputText.setY(finalStates['y']);
+      onEnd();
+
+      if (taskMainRenderState === 'add')
+      {
+        // Start off the label x to match main task shape's x (should be at 0 width at this point), animate translation
+        labelOutputText.setX(task.getShape('main').getX());
+        translationsAnimator = this.translationsPlayableDC.getAnimator();
+        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
+        translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+      }
+      else if (taskMainRenderState === 'exist')
+      {
+        // Fade in
+        this.fadeInElemsDC.push(labelOutputText);
+      }
+    }
+    else if (renderState === 'exist')
+    {
+      // Translate animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getX, labelOutputText.setX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelOutputText, labelOutputText.getY, labelOutputText.setY, finalStates['y']);
+      this._onEnds.push(onEnd);
+    }
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    labelOutputText.setX(finalStates['x']);
+    labelOutputText.setY(finalStates['y']);
+    onEnd();
+  }
+};
+
+/**
+ * Prepares task label animation.
+ * @param {dvt.OutputText} labelOutputText
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateTaskLabelRemove = function(labelOutputText, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out, finalize render at the end of animation
+    this.fadeOutElemsDC.push(labelOutputText);
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares horizontal grid line animation.
+ * @param {dvt.Line} line The horizontal grid line
+ * @param {object} finalStates Object defining the final animation state
+ * @param {string} renderState The render state of the line
+ */
+DvtGanttAnimationManager.prototype.preAnimateHorizontalGridline = function(line, finalStates, renderState)
+{
+  var translationsAnimator;
+
+  if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      // Finalize render, then fade it in
+      line.setY1(finalStates['y1']);
+      line.setY2(finalStates['y2']);
+      line.setX1(finalStates['x1']);
+      line.setX2(finalStates['x2']);
+
+      this.fadeInElemsDC.push(line);
+    }
+    else if (renderState === 'exist')
+    {
+      // Translation animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX1, line.setX1, finalStates['x1']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getX2, line.setX2, finalStates['x2']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY1, line.setY1, finalStates['y1']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, line, line.getY2, line.setY2, finalStates['y2']);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    line.setY1(finalStates['y1']);
+    line.setY2(finalStates['y2']);
+    line.setX1(finalStates['x1']);
+    line.setX2(finalStates['x2']);
+  }
+};
+
+/**
+ * Prepares gantt background animation.
+ * @param {dvt.Rect} background
+ * @param {object} finalStates Object defining the final animation state
+ * @param {string} renderState The render state of the background
+ */
+DvtGanttAnimationManager.prototype.preAnimateRowBackground = function(background, finalStates, renderState)
+{
+  var dimensionsAnimator, translationsAnimator;
+
+  if (this._animationMode === 'dataChange')
+  {
+    if (renderState === 'add')
+    {
+      this.fadeInElemsDC.push(background);
+    }
+
+    // Animate dimension and translation changes
+    dimensionsAnimator = this.dimensionsPlayableDC.getAnimator();
+    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getHeight, background.setHeight, finalStates['h']);
+    dimensionsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getWidth, background.setWidth, finalStates['w']);
+
+    translationsAnimator = this.translationsPlayableDC.getAnimator();
+    translationsAnimator.addProp(Animator.TYPE_NUMBER, background, background.getY, background.setY, finalStates['y']);
+  }
+  else // No animation; finalize render immediately
+  {
+    background.setY(finalStates['y']);
+    background.setHeight(finalStates['h']);
+    background.setWidth(finalStates['w']);
+  }
+};
+
+/**
+ * Prepares row node removal animation.
+ * @param {DvtGanttRowNode} rowNode
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateRowNodeRemove = function(rowNode, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out, finalize rendering at the end
+    this.fadeOutElemsDC.push(rowNode);
+    this.fadeOutElemsDC.push(rowNode.getBackground());
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Prepares row label animation.
+ * @param {DvtGanttRowNode} rowNode
+ * @param {DvtGanttRowLabelContent} labelContent
+ * @param {object} finalStates Object defining the final animation state
+ */
+DvtGanttAnimationManager.prototype.preAnimateRowLabel = function(rowNode, labelContent, finalStates)
+{
+  var rowRenderState = rowNode.getRenderState(),
+      translationsAnimator;
+
+  if (this._animationMode === 'dataChange')
+  {
+    if (rowRenderState === 'add')
+    {
+      // Finalize render, then fade in
+      labelContent.setY(finalStates['y']);
+      labelContent.setX(finalStates['x']);
+
+      this.fadeInElemsDC.push(labelContent.getDisplayable());
+    }
+    else if (rowRenderState === 'exist')
+    {
+      // Translation animation
+      translationsAnimator = this.translationsPlayableDC.getAnimator();
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getX, labelContent.setX, finalStates['x']);
+      translationsAnimator.addProp(Animator.TYPE_NUMBER, labelContent, labelContent.getY, labelContent.setY, finalStates['y']);
+    }
+  }
+  else // No animation; finalize render immediately
+  {
+    labelContent.setY(finalStates['y']);
+    labelContent.setX(finalStates['x']);
+  }
+};
+
+/**
+ * Prepares row label removal animation.
+ * @param {DvtGanttRowLabelContent} labelContent
+ * @param {dvt.Line} horizontalLine
+ * @param {function} onEnd callback that finalizes rendering
+ */
+DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelContent, horizontalLine, onEnd)
+{
+  if (this._animationMode === 'dataChange')
+  {
+    // Fade out, then finalize render
+    this.fadeOutElemsDC.push(labelContent.getDisplayable());
+    this.fadeOutElemsDC.push(horizontalLine);
+    this._onEnds.push(onEnd);
+  }
+  else // No animation; just execute onEnd callback immediately to finalize render
+  {
+    onEnd();
+  }
+};
+
+/**
+ * Gantt automation service.
+ * @param {Gantt} gantt The owning Gantt.
+ * @class  DvtGanttAutomation
+ * @implements {dvt.Automation}
+ * @constructor
+ */
+var DvtGanttAutomation = function(gantt)
+{
+  this._gantt = gantt;
+};
+
+Obj.createSubclass(DvtGanttAutomation, Automation);
+
+/**
+ * Valid subIds inlcude:
+ * <ul>
+ * <li>taskbar[rowIndex][index]</li>
+ * <li>rowLabel[index]</li>
+ * </ul>
+ * @override
+ */
+DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
+{
+  var logicalObj = this._gantt.getEventManager().GetLogicalObject(displayable);
+  if (logicalObj && (logicalObj instanceof DvtGanttTaskNode))
+  {
+    var taskObj = logicalObj.getLayoutObject();
+    var rowObj = taskObj['rowObj'];
+    var rowIndex = rowObj['index'];
+    // Albeit not as efficient, simple one liner below should be sufficiently fast for most usecases.
+    var taskIndex = rowObj['taskObjs'].map(function(t) { return t['node']; }).indexOf(logicalObj);
+    return 'taskbar[' + rowIndex + '][' + taskIndex + ']';
+  }
+  else if (logicalObj && (logicalObj instanceof DvtGanttRowLabelContent))
+  {
+    var rowIndex = logicalObj.getRowIndex();
+    return 'rowLabel[' + rowIndex + ']';
+  }
+  else if (logicalObj && (logicalObj instanceof DvtGanttDependencyNode))
+  {
+    var dependencyObj = logicalObj.getLayoutObject();
+    var dependencyIndex = dependencyObj['index'];
+    return dependencyIndex;
+  }
+
+  return null;
+};
+
+/**
+ * Valid subIds inlcude:
+ * <ul>
+ * <li>taskbar[rowIndex][index]</li>
+ * <li>rowLabel[index]</li>
+ * </ul>
+ * @override
+ */
+DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
+{
+  // TOOLTIP
+  if (subId === Automation.TOOLTIP_SUBID)
+    return this.GetTooltipElement(this._gantt);
+
+  var openParen1 = subId.indexOf('[');
+  var closeParen1 = subId.indexOf(']');
+  var component = subId.substring(0, openParen1);
+
+  if (openParen1 > -1 && closeParen1 > -1)
+  {
+    if (component === 'taskbar')
+    {
+      var openParen2 = subId.indexOf('[', openParen1 + 1);
+      var closeParen2 = subId.indexOf(']', openParen2 + 1);
+      if (openParen2 > -1 && closeParen2 > -1)
+      {
+        var rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+        var taskIndex = parseInt(subId.substring(openParen2 + 1, closeParen2));
+        if (isNaN(rowIndex) || isNaN(taskIndex))
+          return null;
+
+        var rowObjs = this._gantt.getRowLayoutObjs();
+        if (rowObjs.length > rowIndex)
+        {
+          var taskObjs = rowObjs[rowIndex]['taskObjs'];
+          if (taskObjs.length > taskIndex)
+          {
+            var taskObj = taskObjs[taskIndex];
+            this._gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task', true);
+            var taskNode = taskObj['node'];
+            var repShape = taskNode.getTask().getShape('main');
+            if (repShape != null)
+              return repShape.getElem();
+          }
+        }
+      }
+    }
+    else if (component === 'rowLabel')
+    {
+      rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+      var rowObjs = this._gantt.getRowLayoutObjs();
+      if (rowObjs.length > rowIndex)
+      {
+        var rowObj = rowObjs[rowIndex];
+        this._gantt.getDataLayoutManager().ensureInDOM(rowObj, 'rowLabel');
+        var rowLabelContent = rowObj['node'].getRowLabelContent();
+        if (rowLabelContent != null)
+          return rowLabelContent.getDisplayable().getElem();
+      }
+    }
+    else if (component === 'dependency')
+    {
+      var dependencyIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+      var dependencyObjs = this._gantt.getDependencyLayoutObjs();
+      if (dependencyObjs.length > dependencyIndex)
+      {
+        for (var i = 0; i < dependencyObjs.length; i++)
+        {
+          var dependencyObj = dependencyObjs[i];
+          if (dependencyObj['index'] === dependencyIndex)
+          {
+            this._gantt.getDataLayoutManager().ensureInDOM(dependencyObj, 'dependency');
+            var dependencyNode = dependencyObj['node'];
+            if (dependencyNode != null)
+              return dependencyNode.getElem();
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
 
 /**
  * Default values and utility functions for component versioning.
@@ -11384,13 +12082,17 @@ DvtGanttDefaults.prototype.getNoCloneObject = function()
   // We want to specify that they are to remain Date objects so that
   // we can handle them in our code.
   return {
-    'start': true,
-    'end': true,
-    'viewportStart': true,
-    'viewportEnd': true,
-    'rows': true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
-    'dependencies': true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
-    'referenceObjects': {'value': true}
+    start: true,
+    end: true,
+    viewportStart: true,
+    viewportEnd: true,
+    rows: true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
+    dependencies: true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
+    referenceObjects: { value: true },
+    // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+    // If the instance is a class, class methods may not be cloned for some reason.
+    majorAxis: { scale: true, zoomOrder: true },
+    minorAxis: { scale: true, zoomOrder: true }
   };
 };
 
@@ -11401,14 +12103,6 @@ DvtGanttDefaults.prototype.getAnimationDuration = function(options)
 {
   return options['_resources'] ? options['_resources']['animationDuration'] : null;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Gantt JSON Parser
@@ -11486,8 +12180,8 @@ DvtGanttParser.prototype.parse = function(options)
       ret.yScrollbar = options['scrollbars']['vertical'];
   }
 
-  ret.isIRAnimationEnabled = options['animationOnDisplay'] == 'auto';
-  ret.isDCAnimationEnabled = options['animationOnDataChange'] == 'auto';
+  ret.isIRAnimationEnabled = options['animationOnDisplay'] === 'auto';
+  ret.isDCAnimationEnabled = options['animationOnDataChange'] === 'auto';
 
   if (options['rowAxis'] != null)
   {
@@ -11503,14 +12197,6 @@ DvtGanttParser.prototype.parse = function(options)
 
   return ret;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Class representing a Gantt row axis
@@ -11665,7 +12351,7 @@ DvtGanttRowAxis.prototype._getMaxTextContentWidth = function(context, textString
     var style = cssStyle[i];
     var textWidth = TextUtils.getTextStringWidth(context, textString, style);
     // Leaf with empty string labels--don't account for indent. It looks better.
-    var indentSize = (rowObjs[i]['expanded'] == null && textString.length == 0) ? 0 : this.getLabelContentIndentSize(rowObjs[i]);
+    var indentSize = (rowObjs[i]['expanded'] == null && textString.length === 0) ? 0 : this.getLabelContentIndentSize(rowObjs[i]);
     var contentWidth = indentSize + textWidth;
 
     if (contentWidth > maxContentWidth)
@@ -11815,14 +12501,6 @@ DvtGanttRowAxis.prototype.adjustPosition = function()
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Class representing a group of reference objects (of the same type).
  * A group of reference objects are rendered as 1 giant path element.
  * First reference object of the group is referenced for styling and shortDesc.
@@ -11949,14 +12627,6 @@ DvtGanttReferenceObjects.prototype.getDatatip = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for Gantt.
  * @class
  */
@@ -11993,7 +12663,7 @@ DvtGanttRenderer.renderGantt = function(gantt)
     if (gantt.isRowAxisEnabled())
       gantt.getRowAxis().adjustPosition();
 
-    DvtGanttRenderer._renderData(gantt, timeZoomCanvas);
+    DvtGanttRenderer._renderData(gantt, timeZoomCanvas, DvtGanttDataLayoutManager.VPC_REFRESH);
 
     DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas, 'line');
 
@@ -12161,7 +12831,7 @@ DvtGanttRenderer._renderScrollbars = function(gantt, container)
     var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(gantt, gantt._scrollbarsCanvas, new Rectangle(scrollbarXOffset, 0, availSpaceWidth - scrollbarXOffset, availSpaceHeight));
   }
 
-  if (gantt.timeDirScrollbar)
+  if (gantt.timeDirScrollbar && timeDirScrollbarDim)
   {
     var sbOptions = {};
     sbOptions['color'] = gantt.timeDirScrollbarStyles.getStyle(CSSStyle.COLOR);
@@ -12175,7 +12845,7 @@ DvtGanttRenderer._renderScrollbars = function(gantt, container)
     gantt.timeDirScrollbar.setViewportRange(gantt._viewStartTime, gantt._viewEndTime);
   }
 
-  if (gantt.contentDirScrollbar)
+  if (gantt.contentDirScrollbar && contentDirScrollbarDim)
   {
     sbOptions = {};
     sbOptions['color'] = gantt.contentDirScrollbarStyles.getStyle(CSSStyle.COLOR);
@@ -12188,7 +12858,7 @@ DvtGanttRenderer._renderScrollbars = function(gantt, container)
     gantt.contentDirScrollbar.render(sbOptions, contentDirScrollbarDim.w, contentDirScrollbarDim.h);
 
     var bottomOffset = 0;
-    if (gantt.getAxisPosition() == 'bottom')
+    if (gantt.getAxisPosition() === 'bottom')
       bottomOffset = gantt.getAxesHeight();
     gantt.contentDirScrollbar.setViewportRange(databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset), databody.getTranslateY());
   }
@@ -12414,27 +13084,29 @@ DvtGanttRenderer._renderScrollableCanvas = function(gantt)
  * Renders the time axis of a Gantt chart.
  * @param {Gantt} gantt The Gantt chart being rendered.
  * @param {dvt.Container} container The container to render into.
+ * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame.
+ *  Improves performance especially during high fire rate events such as scroll. Default false.
  * @private
  */
-DvtGanttRenderer._renderAxes = function(gantt, container)
+DvtGanttRenderer._renderAxes = function(gantt, container, throttle)
 {
   var majorAxis = gantt.getMajorAxis();
   var minorAxis = gantt.getMinorAxis();
   var axisPosition = gantt.getAxisPosition();
   var options = gantt.getOptions();
 
-  if (axisPosition == 'top')
+  if (axisPosition === 'top')
   {
     var axisStart = 0;
     if (majorAxis)
     {
-      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, axisStart, gantt.getAxisHeight(options, 'majorAxis'));
+      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, axisStart, gantt.getAxisHeight(options, 'majorAxis'), throttle);
       axisStart = axisStart + majorAxis.getSize();
     }
 
     if (minorAxis)
     {
-      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'));
+      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'), throttle);
       axisStart = axisStart + minorAxis.getSize();
     }
 
@@ -12447,7 +13119,7 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
     if (majorAxis)
     {
       // _renderAxis needs to be called before calling timeAxis.getSize:
-      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, null, gantt.getAxisHeight(options, 'majorAxis'));
+      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, null, gantt.getAxisHeight(options, 'majorAxis'), throttle);
       axisStart = axisStart - majorAxis.getSize();
       DvtGanttRenderer._positionAxis(majorAxis, axisStart);
     }
@@ -12455,7 +13127,7 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
     if (minorAxis)
     {
       // _renderAxis needs to be called before calling timeAxis.getSize:
-      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'));
+      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(options, 'minorAxis'), throttle);
       axisStart = axisStart - minorAxis.getSize();
       DvtGanttRenderer._positionAxis(minorAxis, axisStart);
     }
@@ -12471,14 +13143,20 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
  * @param {TimeAxis} timeAxis The time axis
  * @param {number} axisStart The start y position to render.
  * @param {number} axisSize The size of the axis.
+ * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame.
+ *  Improves performance especially during high fire rate events such as scroll. Default false.
  * @private
  */
-DvtGanttRenderer._renderAxis = function(gantt, container, timeAxis, axisStart, axisSize)
+DvtGanttRenderer._renderAxis = function(gantt, container, timeAxis, axisStart, axisSize, throttle)
 {
   if (timeAxis.getParent() !== container)
     container.addChild(timeAxis);
 
-  timeAxis.render(null, gantt.getContentLength(), axisSize);
+  timeAxis.render({
+    _viewStartTime: gantt._viewStartTime,
+    _viewEndTime: gantt._viewEndTime,
+    _throttle: throttle
+  }, gantt.getContentLength(), axisSize);
 
   if (axisStart != null)
     DvtGanttRenderer._positionAxis(timeAxis, axisStart);
@@ -12527,12 +13205,12 @@ DvtGanttRenderer._renderZoomControls = function(gantt)
   zoomControlProperties['zoomOutProps']['posX'] = transX;
 
   var yOffset = gantt._startY + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
-  if (gantt.getAxisPosition() == 'top')
+  if (gantt.getAxisPosition() === 'top')
     var transY = yOffset;
   else
     transY = gantt._backgroundHeight - yOffset;
 
-  if (gantt.getAxisPosition() == 'top')
+  if (gantt.getAxisPosition() === 'top')
   {
     var zoomInPosY = transY;
     var zoomOutPosY = transY + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
@@ -12578,8 +13256,14 @@ DvtGanttRenderer._renderEmptyText = function(gantt, noData)
     gantt.clearComponent();
   }
 
+  var axesHeight = gantt.getAxesHeight();
   var text = gantt.renderEmptyText(gantt._canvas, emptyTextStr,
-      new Rectangle(0, 0, gantt._backgroundWidth, gantt._backgroundHeight),
+      new Rectangle(
+        gantt.getStartXOffset(),
+        gantt.getStartYOffset() + (axesHeight * (gantt.getAxisPosition() === 'top')),
+        gantt.getCanvasLength(),
+        gantt.getCanvasSize() - axesHeight
+      ),
       gantt.EventManager, null);
   text.setClassName(gantt.GetStyleClass('nodata'));
 
@@ -12643,10 +13327,18 @@ DvtGanttRenderer._renderVerticalGridline = function(gantt, container)
     if (timeAxis == null || gantt.getOptions()['minorGridline'])
       timeAxis = gantt.getMinorAxis();
 
-    var lines = timeAxis.getElem().getElementsByTagName('line');
-    for (var i = 0; i < lines.length; i++)
+    var context = gantt.getCtx();
+    var isRTL = Agent.isRightToLeft(context);
+    var ganttMinTime = gantt.getStartTime();
+    var ganttMaxTime = gantt.getEndTime();
+    var ganttWidth = gantt.getContentLength();
+    var viewportDates = timeAxis.getViewportDates(timeAxis.getScale(), ganttMinTime, ganttMaxTime);
+    for (var i = 0; i < viewportDates.length; i++)
     {
-      var pos = ToolkitUtils.getAttrNullNS(lines[i], 'x1');
+      var pos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, viewportDates[i].getTime(), ganttWidth);
+      if (isRTL) {
+        pos = ganttWidth - pos;
+      }
 
       var gridLine = new Line(gantt.getCtx(), pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
       gridLine.setPixelHinting(true);
@@ -12719,9 +13411,10 @@ DvtGanttRenderer._renderReferenceObjects = function(gantt, container, type)
  * Render data (rows and dependencies)
  * @param {Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into
+ * @param {string=} action The action that triggered the render. One of the DvtGanttDataLayoutManager.VPC_X strings. Defaults to vpc_refresh.
  * @private
  */
-DvtGanttRenderer._renderData = function(gantt, container)
+DvtGanttRenderer._renderData = function(gantt, container, action)
 {
   var options = gantt.getOptions();
   var rowObjs = gantt.getRowLayoutObjs();
@@ -12744,6 +13437,8 @@ DvtGanttRenderer._renderData = function(gantt, container)
   // Ensure the row dependent content containers' translateY is within bounds
   // and render the viewport
   gantt.setDataRegionTranslateY(gantt.getBoundedContentTranslateY(gantt.getDatabody().getTranslateY()));
+  var isAnimating = !gantt.isInitialRender() && gantt.isLastRenderValid() && gantt.getAnimationManager().getAnimationMode() !== 'none';
+  gantt.renderViewport(isAnimating ? DvtGanttDataLayoutManager.VPC_ANIMATE : action, true);
 };
 
 /**
@@ -12851,14 +13546,6 @@ DvtGanttRenderer._createMarker = function(gantt, id, width, height, pathCmd)
   elem.appendChild(path);
   return elem;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
@@ -13083,9 +13770,9 @@ Gantt.prototype._bundleTimeAxisOptions = function(options, axis)
   }
 
   var labelStyle;
-  if (axis == 'majorAxis')
+  if (axis === 'majorAxis')
     labelStyle = DvtGanttStyleUtils.getMajorAxisLabelStyle(options);
-  else if (axis == 'minorAxis')
+  else if (axis === 'minorAxis')
     labelStyle = DvtGanttStyleUtils.getMinorAxisLabelStyle(options);
   retOptions['labelStyle'] = labelStyle;
 
@@ -13152,7 +13839,7 @@ Gantt.prototype.render = function(options, width, height)
     if (this._minorAxis == null)
     {
       this._minorAxis = new TimeAxis(this.getCtx(), null, null);
-      if (axisPosition == 'top')
+      if (axisPosition === 'top')
         this._minorAxis.setBorderVisibility(false, false, true, false);
       else
         this._minorAxis.setBorderVisibility(true, false, false, false);
@@ -13174,7 +13861,7 @@ Gantt.prototype.render = function(options, width, height)
       if (this._majorAxis == null)
       {
         this._majorAxis = new TimeAxis(this.getCtx(), null, null);
-        if (axisPosition == 'top')
+        if (axisPosition === 'top')
           this._majorAxis.setBorderVisibility(false, false, true, false);
         else
           this._majorAxis.setBorderVisibility(true, false, false, false);
@@ -13245,11 +13932,11 @@ Gantt.prototype.isRowsHierarchical = function()
   // For now, we would only receive hierarchical data if a tree data provider
   // is supplied through taskData for project gantt use case.
   // Also for our static tests, we can't easily pass in data providers and templates,
-  // so look for the _isHierarchical flag.
+  // so look for whether expanded is set with a JS Set in a test environment.
   var taskDP = this.getOptions()['taskData'];
   return (taskDP && taskDP['getChildDataProvider']) ||
         (Agent.isEnvironmentTest() &&
-        this.getOptions()['_isHierarchical']);
+        this.getOptions()['expanded'] instanceof Set);
 };
 
 /**
@@ -13275,15 +13962,34 @@ Gantt.prototype.getViewportYBounds = function(translateY)
 
 /**
  * Renders the current viewport.
- * @param {boolean=} bFromScrolling Whether this viewport refresh is to due scrolling/panning
- * @return {Object} Object of the shape {"mixRowInd": index of first row in the viewport, "maxRowInd": index of last row in the viewport}
+ * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+ * @param {boolean=} bScrollPositionChanged Whether to dispatch a scroll position change event
  */
-Gantt.prototype.renderViewport = function(bFromScrolling)
+Gantt.prototype.renderViewport = function(action, bScrollPositionChanged)
 {
+  if (this._databody == null) {
+    return;
+  }
+
   var viewportYBounds = this.getViewportYBounds();
-  var yMin = viewportYBounds['yMin'];
-  var yMax = viewportYBounds['yMax'];
-  return this._dataLayoutManager.renderViewport(yMin, yMax, bFromScrolling);
+  var viewportRowIndRange = this._dataLayoutManager.findRowIndRange(
+    this.getRowLayoutObjs(), viewportYBounds.yMin, viewportYBounds.yMax);
+  var viewport = {
+    minRowInd: viewportRowIndRange.minRowInd,
+    maxRowInd: viewportRowIndRange.maxRowInd,
+    viewStartTime: this._viewStartTime,
+    viewEndTime: this._viewEndTime
+  };
+  this._dataLayoutManager.renderViewport(viewport, action);
+
+  if (bScrollPositionChanged) {
+    // Fire scroll position change event
+    var y = this._translateYToScrollPositionY(this._databody.getTranslateY());
+    var rowObj = this.getRowLayoutObjs()[viewport.minRowInd];
+    var offsetY = y - rowObj.y;
+    var evt = EventFactory.newGanttScrollPositionChangeEvent(y, viewport.minRowInd, offsetY);
+    this.dispatchEvent(evt);
+  }
 };
 
 /**
@@ -13437,6 +14143,7 @@ Gantt.prototype.scroll = function(scrollPosition)
       this.contentDirScrollbar.setViewportRange(translateY - this.getDatabodyHeight(), translateY);
 
     this.setDataRegionTranslateY(translateY);
+    this.renderViewport(DvtGanttDataLayoutManager.VPC_TRANSLATE, true);
   }
 };
 
@@ -13492,9 +14199,8 @@ Gantt.prototype._translateYToScrollPositionY = function(translateY)
 /**
  * Sets the the y translate of data related containers
  * @param {number} translateY The y translate to set
- * @param {boolean=} bFromScrolling Whether this method is called due to scrolling/panning
  */
-Gantt.prototype.setDataRegionTranslateY = function(translateY, bFromScrolling)
+Gantt.prototype.setDataRegionTranslateY = function(translateY)
 {
   // Translate relevant data regions
   if (this._databody)
@@ -13509,20 +14215,6 @@ Gantt.prototype.setDataRegionTranslateY = function(translateY, bFromScrolling)
     this.getRowAxis().setTranslateY(translateY + this.getStartYOffset());
   if (this._dependenciesContainer)
     this._dependenciesContainer.setTranslateY(translateY);
-
-  // render viewport
-  var viewportRowIndBounds = this.renderViewport(bFromScrolling);
-
-  // Fire scroll position change event
-  var y = this._translateYToScrollPositionY(translateY);
-  var rowIndex = viewportRowIndBounds['minRowInd'];
-  if (rowIndex !== -1)
-  {
-    var rowObj = this.getRowLayoutObjs()[rowIndex];
-    var offsetY = y - rowObj['y'];
-    var evt = EventFactory.newGanttScrollPositionChangeEvent(y, rowIndex, offsetY);
-    this.dispatchEvent(evt);
-  }
 };
 
 /**
@@ -13533,11 +14225,17 @@ Gantt.prototype.setDataRegionTranslateY = function(translateY, bFromScrolling)
 Gantt.prototype.processScrollbarEvent = function(event, component)
 {
   Gantt.superclass.processScrollbarEvent.call(this, event, component);
-  if (component == this.contentDirScrollbar)
+  if (component === this.timeDirScrollbar)
+  {
+    // Update time axis due to horizontal viewport change
+    DvtGanttRenderer._renderAxes(this, this.getTimeZoomCanvas(), true);
+  }
+  if (component === this.contentDirScrollbar)
   {
     var newMax = event.newMax;
     this.setDataRegionTranslateY(newMax, true);
   }
+  this.renderViewport(DvtGanttDataLayoutManager.VPC_TRANSLATE, component === this.contentDirScrollbar);
 };
 
 /**
@@ -13587,7 +14285,7 @@ Gantt.prototype._handleResize = function(width, height)
     DvtGanttRenderer._renderDatabodyBackground(this);
     DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'area');
     DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
-    DvtGanttRenderer._renderData(this);
+    DvtGanttRenderer._renderData(this, null, DvtGanttDataLayoutManager.VPC_SCALE);
     DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'line');
 
     DvtGanttRenderer._renderZoomControls(this);
@@ -13773,11 +14471,11 @@ Gantt.prototype.handleZoomWheel = function(newLength, time, compLoc, triggerView
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
   var timeZoomCanvas = this.getTimeZoomCanvas();
-  DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
+  DvtGanttRenderer._renderAxes(this, timeZoomCanvas, true);
   DvtGanttRenderer._renderDatabodyBackground(this);
   DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'area');
   DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
-  DvtGanttRenderer._renderData(this);
+  DvtGanttRenderer._renderData(this, null, DvtGanttDataLayoutManager.VPC_SCALE);
   DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas, 'line');
 
   if (this.isMarqueeSelectEnabled()) {
@@ -14118,7 +14816,7 @@ Gantt.prototype.getHoverBehavior = function()
  */
 Gantt.prototype.isHorizontalGridlinesVisible = function()
 {
-  return (this._horizontalGridline == 'visible');
+  return (this._horizontalGridline === 'visible');
 };
 
 /**
@@ -14127,7 +14825,7 @@ Gantt.prototype.isHorizontalGridlinesVisible = function()
  */
 Gantt.prototype.isVerticalGridlinesVisible = function()
 {
-  return (this._verticalGridline == 'visible');
+  return (this._verticalGridline === 'visible');
 };
 
 /**
@@ -14145,18 +14843,14 @@ Gantt.prototype.getContentHeight = function()
  */
 Gantt.prototype.getAxesHeight = function()
 {
-  if (this._axesHeight == null)
-  {
-    var axesHeight = 0;
-    if (this._majorAxis)
-      axesHeight = axesHeight + this._majorAxis.getSize();
-    if (this._minorAxis)
-      axesHeight = axesHeight + this._minorAxis.getSize();
-
-    this._axesHeight = axesHeight;
+  var axesHeight = 0;
+  if (this._majorAxis) {
+    axesHeight = axesHeight + this._majorAxis.getSize();
   }
-
-  return this._axesHeight;
+  if (this._minorAxis) {
+    axesHeight = axesHeight + this._minorAxis.getSize();
+  }
+  return axesHeight;
 };
 
 /**
@@ -14165,7 +14859,7 @@ Gantt.prototype.getAxesHeight = function()
  */
 Gantt.prototype.isRowAxisEnabled = function()
 {
-  return this._rowAxisRendered == 'on';
+  return this._rowAxisRendered === 'on';
 };
 
 /**
@@ -14309,7 +15003,7 @@ Gantt.prototype.autoPanOnEdgeDrag = function(targetPos, edgeThreshold, excludeX,
       deltaY = edgeThreshold - distanceFromBottomEdge;
       if ((this.getContentHeight() + this._databodyStart) >= this._canvasSize)
       {
-        if (this.getAxisPosition() == 'bottom')
+        if (this.getAxisPosition() === 'bottom')
         {
           deltaY = Math.min(deltaY, this._databody.getTranslateY() + this.getContentHeight() - viewportRect.h);
         }
@@ -14337,16 +15031,22 @@ Gantt.prototype.autoPanOnEdgeDrag = function(targetPos, edgeThreshold, excludeX,
  */
 Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
 {
-  diagonal = typeof diagonal !== 'undefined' ? diagonal : this.getCtx().getThemeBehavior() !== 'alta';
+  if (deltaX === 0 && deltaY === 0) {
+    return;
+  }
 
-  // scroll horizontally and make sure it's scrolling in one direction only
-  if (deltaX != 0 && (diagonal || (Math.abs(deltaX) > Math.abs(deltaY))))
+  diagonal = typeof diagonal !== 'undefined' ? diagonal : this.getCtx().getThemeBehavior() !== 'alta';
+  var bHorizontal = deltaX !== 0 && (diagonal || (Math.abs(deltaX) > Math.abs(deltaY)));
+  var bVertical = this._databody && deltaY !== 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX)));
+
+  // pan horizontally
+  if (bHorizontal)
   {
     Gantt.superclass.panBy.call(this, deltaX, 0);
   }
 
-  // scroll vertically and make sure it's scrolling in one direction only
-  if (this._databody && deltaY != 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX))))
+  // pan vertically
+  if (bVertical)
   {
     var newTranslateY = this.getBoundedContentTranslateY(this._databody.getTranslateY() - deltaY);
 
@@ -14358,6 +15058,14 @@ Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
 
   if (this.isTimeDirScrollbarOn() && this.timeDirScrollbar)
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+
+  // Update viewport
+  this.renderViewport(DvtGanttDataLayoutManager.VPC_TRANSLATE, bVertical);
+
+  if (bHorizontal) {
+    // Update time axis due to horizontal viewport change
+    DvtGanttRenderer._renderAxes(this, this.getTimeZoomCanvas(), true);
+  }
 };
 
 /**
@@ -14397,7 +15105,7 @@ Gantt.prototype.beginDragPan = function(compX, compY)
 Gantt.prototype.endDragPan = function(compX, compY)
 {
   // check whether we should dispatch viewport change event
-  if (this._currentViewStartTime == this._viewStartTime && this._currentViewEndTime == this._viewEndTime)
+  if (this._currentViewStartTime === this._viewStartTime && this._currentViewEndTime === this._viewEndTime)
     this._triggerViewportChange = false;
 
   Gantt.superclass.endDragPan.call(this, compX, compY);
@@ -14482,9 +15190,9 @@ Gantt.prototype.isSelectionSupported = function()
  */
 Gantt.prototype.setSelectionMode = function(selectionMode)
 {
-  if (selectionMode == 'single')
+  if (selectionMode === 'single')
     this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_SINGLE);
-  else if (selectionMode == 'multiple')
+  else if (selectionMode === 'multiple')
     this._selectionHandler = new SelectionHandler(this.getCtx(), SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
@@ -14536,7 +15244,7 @@ Gantt.prototype._processInitialSelections = function()
           // TODO: See if we can avoid this for performance reasons, and set selection as we bring things into view.
           // In many use cases, only a small proportion of all tasks are selected, so performance shouldn't be an issue.
           this._dataLayoutManager.ensureInDOM(taskObj, 'task');
-          var taskNode = taskObjs[j]['node'];
+          var taskNode = taskObj['node'];
           targets.push(taskNode);
         }
       }
@@ -14590,7 +15298,7 @@ Gantt.prototype.getDefaultMarkerId = function()
  */
 Gantt.prototype.getNavigableDependencyLinesForTask = function(task, type)
 {
-  return type == 'successor' ? task.getSuccessorDependencies() : task.getPredecessorDependencies();
+  return type === 'successor' ? task.getSuccessorDependencies() : task.getPredecessorDependencies();
 };
 
 // should be in super

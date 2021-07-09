@@ -1,30 +1,17 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, ItemMetadata } from '../ojdataprovider';
-import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
+import { ojSelectBase, ojSelectBaseEventMap, ojSelectBaseSettableProperties } from '../ojselectbase';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
-export interface ojSelectSingle<V, D> extends editableValue<V, ojSelectSingleSettableProperties<V, D>> {
-    data: DataProvider<V, D>;
+export interface ojSelectSingle<V, D> extends ojSelectBase<V, D, ojSelectSingleSettableProperties<V, D>> {
     displayOptions: {
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages: 'display' | 'none';
     };
-    itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
-    labelledBy: string | null;
-    placeholder: string;
-    readOnly: boolean;
-    required: boolean;
     value: V | null;
     valueItem: CommonTypes.ItemContext<V, D>;
-    virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
         cancel?: string;
         labelAccClearValue?: string;
@@ -49,8 +36,6 @@ export interface ojSelectSingle<V, D> extends editableValue<V, ojSelectSingleSet
     setProperty<T extends keyof ojSelectSingleSettableProperties<V, D>>(property: T, value: ojSelectSingleSettableProperties<V, D>[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojSelectSingleSettableProperties<V, D>>): void;
     setProperties(properties: ojSelectSingleSettablePropertiesLenient<V, D>): void;
-    refresh(): void;
-    validate(): Promise<any>;
 }
 export namespace ojSelectSingle {
     interface ojAnimateEnd extends CustomEvent<{
@@ -74,25 +59,46 @@ export namespace ojSelectSingle {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
-    type dataChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
-    // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["displayOptions"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type itemTextChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type readOnlyChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["readOnly"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueItemChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["valueItem"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type virtualKeyboardChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["virtualKeyboard"]>;
+    type dataChanged<V, D> = ojSelectBase.dataChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged<V, D> = ojSelectBase.describedByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<V, D> = ojSelectBase.disabledChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged<V, D> = ojSelectBase.helpChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged<V, D> = ojSelectBase.helpHintsChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemTextChanged<V, D> = ojSelectBase.itemTextChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged<V, D> = ojSelectBase.labelEdgeChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged<V, D> = ojSelectBase.labelHintChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<V, D> = ojSelectBase.labelledByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged<V, D> = ojSelectBase.messagesCustomChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<V, D> = ojSelectBase.placeholderChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged<V, D> = ojSelectBase.readonlyChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<V, D> = ojSelectBase.requiredChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged<V, D> = ojSelectBase.userAssistanceDensityChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged<V, D> = ojSelectBase.validChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged<V, D> = ojSelectBase.virtualKeyboardChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type CollectionTemplateContext<V, D> = {
         currentRow: {
@@ -117,35 +123,37 @@ export namespace ojSelectSingle {
         searchText: string;
     };
 }
-export interface ojSelectSingleEventMap<V, D> extends editableValueEventMap<V, ojSelectSingleSettableProperties<V, D>> {
+export interface ojSelectSingleEventMap<V, D> extends ojSelectBaseEventMap<V, D, ojSelectSingleSettableProperties<V, D>> {
     'ojAnimateEnd': ojSelectSingle.ojAnimateEnd;
     'ojAnimateStart': ojSelectSingle.ojAnimateStart;
     'ojValueAction': ojSelectSingle.ojValueAction<V, D>;
-    'dataChanged': JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
     'displayOptionsChanged': JetElementCustomEvent<ojSelectSingle<V, D>["displayOptions"]>;
-    'itemTextChanged': JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;
-    'labelledByChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
-    'placeholderChanged': JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
-    'readOnlyChanged': JetElementCustomEvent<ojSelectSingle<V, D>["readOnly"]>;
-    'requiredChanged': JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
     'valueChanged': JetElementCustomEvent<ojSelectSingle<V, D>["value"]>;
     'valueItemChanged': JetElementCustomEvent<ojSelectSingle<V, D>["valueItem"]>;
+    'dataChanged': JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
+    'describedByChanged': JetElementCustomEvent<ojSelectSingle<V, D>["describedBy"]>;
+    'disabledChanged': JetElementCustomEvent<ojSelectSingle<V, D>["disabled"]>;
+    'helpChanged': JetElementCustomEvent<ojSelectSingle<V, D>["help"]>;
+    'helpHintsChanged': JetElementCustomEvent<ojSelectSingle<V, D>["helpHints"]>;
+    'itemTextChanged': JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;
+    'labelEdgeChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelEdge"]>;
+    'labelHintChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelHint"]>;
+    'labelledByChanged': JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
+    'messagesCustomChanged': JetElementCustomEvent<ojSelectSingle<V, D>["messagesCustom"]>;
+    'placeholderChanged': JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
+    'readonlyChanged': JetElementCustomEvent<ojSelectSingle<V, D>["readonly"]>;
+    'requiredChanged': JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<ojSelectSingle<V, D>["userAssistanceDensity"]>;
+    'validChanged': JetElementCustomEvent<ojSelectSingle<V, D>["valid"]>;
     'virtualKeyboardChanged': JetElementCustomEvent<ojSelectSingle<V, D>["virtualKeyboard"]>;
 }
-export interface ojSelectSingleSettableProperties<V, D> extends editableValueSettableProperties<V> {
-    data: DataProvider<V, D>;
+export interface ojSelectSingleSettableProperties<V, D> extends ojSelectBaseSettableProperties<V, D> {
     displayOptions: {
         helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
         messages: 'display' | 'none';
     };
-    itemText: keyof D | ((itemContext: CommonTypes.ItemContext<V, D>) => string);
-    labelledBy: string | null;
-    placeholder: string;
-    readOnly: boolean;
-    required: boolean;
     value: V | null;
     valueItem: CommonTypes.ItemContext<V, D>;
-    virtualKeyboard: 'email' | 'number' | 'search' | 'tel' | 'text' | 'url';
     translations: {
         cancel?: string;
         labelAccClearValue?: string;
@@ -189,25 +197,46 @@ export namespace SelectSingleElement {
     }> {
     }
     // tslint:disable-next-line interface-over-type-literal
-    type dataChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["data"]>;
-    // tslint:disable-next-line interface-over-type-literal
     type displayOptionsChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["displayOptions"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type itemTextChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["itemText"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type labelledByChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["labelledBy"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type placeholderChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["placeholder"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type readOnlyChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["readOnly"]>;
-    // tslint:disable-next-line interface-over-type-literal
-    type requiredChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["required"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueItemChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["valueItem"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type virtualKeyboardChanged<V, D> = JetElementCustomEvent<ojSelectSingle<V, D>["virtualKeyboard"]>;
+    type dataChanged<V, D> = ojSelectBase.dataChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged<V, D> = ojSelectBase.describedByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged<V, D> = ojSelectBase.disabledChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged<V, D> = ojSelectBase.helpChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged<V, D> = ojSelectBase.helpHintsChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemTextChanged<V, D> = ojSelectBase.itemTextChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged<V, D> = ojSelectBase.labelEdgeChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged<V, D> = ojSelectBase.labelHintChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelledByChanged<V, D> = ojSelectBase.labelledByChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged<V, D> = ojSelectBase.messagesCustomChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type placeholderChanged<V, D> = ojSelectBase.placeholderChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type readonlyChanged<V, D> = ojSelectBase.readonlyChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type requiredChanged<V, D> = ojSelectBase.requiredChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged<V, D> = ojSelectBase.userAssistanceDensityChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged<V, D> = ojSelectBase.validChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type virtualKeyboardChanged<V, D> = ojSelectBase.virtualKeyboardChanged<V, D, ojSelectSingleSettableProperties<V, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type CollectionTemplateContext<V, D> = {
         currentRow: {
@@ -219,4 +248,36 @@ export namespace SelectSingleElement {
         selected: KeySet<V>;
         selectedItem: CommonTypes.ItemContext<V, D>;
     };
+}
+export interface SelectSingleIntrinsicProps extends Partial<Readonly<ojSelectSingleSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojSelectSingleEventMap<any, any>['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojSelectSingleEventMap<any, any>['ojAnimateStart']) => void;
+    onojValueAction?: (value: ojSelectSingleEventMap<any, any>['ojValueAction']) => void;
+    ondisplayOptionsChanged?: (value: ojSelectSingleEventMap<any, any>['displayOptionsChanged']) => void;
+    onvalueChanged?: (value: ojSelectSingleEventMap<any, any>['valueChanged']) => void;
+    onvalueItemChanged?: (value: ojSelectSingleEventMap<any, any>['valueItemChanged']) => void;
+    ondataChanged?: (value: ojSelectSingleEventMap<any, any>['dataChanged']) => void;
+    ondescribedByChanged?: (value: ojSelectSingleEventMap<any, any>['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojSelectSingleEventMap<any, any>['disabledChanged']) => void;
+    onhelpChanged?: (value: ojSelectSingleEventMap<any, any>['helpChanged']) => void;
+    onhelpHintsChanged?: (value: ojSelectSingleEventMap<any, any>['helpHintsChanged']) => void;
+    onitemTextChanged?: (value: ojSelectSingleEventMap<any, any>['itemTextChanged']) => void;
+    onlabelEdgeChanged?: (value: ojSelectSingleEventMap<any, any>['labelEdgeChanged']) => void;
+    onlabelHintChanged?: (value: ojSelectSingleEventMap<any, any>['labelHintChanged']) => void;
+    onlabelledByChanged?: (value: ojSelectSingleEventMap<any, any>['labelledByChanged']) => void;
+    onmessagesCustomChanged?: (value: ojSelectSingleEventMap<any, any>['messagesCustomChanged']) => void;
+    onplaceholderChanged?: (value: ojSelectSingleEventMap<any, any>['placeholderChanged']) => void;
+    onreadonlyChanged?: (value: ojSelectSingleEventMap<any, any>['readonlyChanged']) => void;
+    onrequiredChanged?: (value: ojSelectSingleEventMap<any, any>['requiredChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojSelectSingleEventMap<any, any>['userAssistanceDensityChanged']) => void;
+    onvalidChanged?: (value: ojSelectSingleEventMap<any, any>['validChanged']) => void;
+    onvirtualKeyboardChanged?: (value: ojSelectSingleEventMap<any, any>['virtualKeyboardChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-select-single": SelectSingleIntrinsicProps;
+        }
+    }
 }

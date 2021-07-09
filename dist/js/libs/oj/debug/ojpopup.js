@@ -12,14 +12,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
   FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   (function () {
     /**
      * List of all pseudo marker selectors that defines rules for where a tail is aligned.
@@ -39,22 +31,22 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      * @const
      */
     var _TAIL_ALIGN_RULES =
-      {
-        'right-top': 'oj-right oj-top',
-        'right-middle': 'oj-right oj-middle',
-        'right-bottom': 'oj-right oj-bottom',
-        'left-top': 'oj-left oj-top',
-        'left-middle': 'oj-left oj-middle',
-        'left-bottom': 'oj-left oj-bottom',
-        'center-top': 'oj-center oj-top',
-        'center-middle': 'oj-left oj-middle',
-        'center-bottom': 'oj-center oj-bottom'
-      };
+    {
+      'right-top': 'oj-right oj-top',
+      'right-middle': 'oj-right oj-middle',
+      'right-bottom': 'oj-right oj-bottom',
+      'left-top': 'oj-left oj-top',
+      'left-middle': 'oj-left oj-middle',
+      'left-bottom': 'oj-left oj-bottom',
+      'center-top': 'oj-center oj-top',
+      'center-middle': 'oj-left oj-middle',
+      'center-bottom': 'oj-center oj-bottom'
+    };
 
     /**
      * @typedef {Object} oj.ojPopup.PositionAlign
      * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
-     * @property {"start"|"end"|"left"|"center"|"bottom"} [horizontal] Horizontal alignment. <p>
+     * @property {"start"|"end"|"left"|"center"|"right"} [horizontal] Horizontal alignment. <p>
      * <ul>
      *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
      *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
@@ -172,9 +164,9 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *
      * <br/><br/>
      *
-     * <h3 id="accessibility-section">
+     * <h3 id="a11y-section">
      *   Accessibility
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
      * </h3>
      *
      * <p>For WAI-ARIA compliance, JET automatically adds
@@ -273,7 +265,89 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
      *  <li>ojOpen(event) - Triggered after the popup has been made visible.</li>
      * </ul>
      */
-     // --------------------------------------------------- oj.ojPopup Styling Start -----------------------------------------------------------
+
+    //-----------------------------------------------------
+    //                   Slots
+    //-----------------------------------------------------
+
+    /**
+     * <p>The <code class="prettyprint">&lt;oj-popup></code> accepts
+     * any DOM elements in its Default slot but only tracks the validity
+     * state of any JET custom element descendents that contain the valid property.
+     * @ojchild Default
+     * @memberof oj.ojPopup
+     */
+
+    //-----------------------------------------------------
+    //                   Fragments
+    //-----------------------------------------------------
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Gesture</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Outside popup or launcher</td>
+     *       <td><kbd>Tap</kbd></td>
+     *       <td>Close the popup.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * <p>Disabled items do not allow any touch interaction.
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+     * @memberof oj.ojPopup
+     */
+
+    /**
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Target</th>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td rowspan = "3">Focus within Popup</td>
+     *       <td><kbd>Tab</kbd> or <kbd>Shift + Tab</kbd></td>
+     *       <td>Navigate the content of the popup. Close the open popup if there are no tab stops in
+     *           the popup.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>F6</kbd></td>
+     *       <td>Move focus to the launcher for a popup with modeless modality.  Close the open popup
+     *           if the modality is modal.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td>Close the open popup.</td>
+     *     </tr>
+     *     <tr>
+     *       <td rowspan = "1">Popup Launcher</td>
+     *       <td><kbd>F6</kbd></td>
+     *       <td>Move focus to the first tab stop within the open popup.  If there is not a tab stop
+     *           within the content, focus is established on the popup.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojPopup
+     */
+
+    //-----------------------------------------------------
+    //                   Styles
+    //-----------------------------------------------------
+
     // ---------------- oj-focus-highlight --------------
     /**
     * Under normal circumstances this class is applied automatically.
@@ -293,7 +367,18 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
     *   &lt;!-- Content -->
     * &lt;/oj-popup>
     */
-  // --------------------------------------------------- oj.ojPopup Styling end -----------------------------------------------------------
+   /**
+   * @ojstylevariableset oj-popup-css-set1
+   * @ojstylevariable oj-popup-bg-color {description: "Popup background color", formats: ["color"],help: "#css-variables"}
+   * @ojstylevariable oj-popup-border-color {description: "Popup border color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-popup-border-radius {description: "Popup border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @ojstylevariable oj-popup-box-shadow {description: "Popup box shadow", help: "#css-variables"}
+   * @ojstylevariable oj-popup-padding {description: "Popup padding", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-popup-tail-height {description: "Popup tail height", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-popup-tail-width {description: "Popup tail width", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojPopup
+   */
+    // --------------------------------------------------- oj.ojPopup Styling end -----------------------------------------------------------
 
     oj.__registerWidget('oj.ojPopup', $.oj.baseComponent,
       {
@@ -449,7 +534,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
              * @expose
              * @memberof! oj.ojPopup
              * @instance
-             * @alias position.my
              * @name position.my
              * @type {{horizontal:string, vertical:string}}
              */
@@ -459,7 +543,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.my.horizontal
                * @name position.my.horizontal
                * @type {string}
                * @default 'start'
@@ -475,7 +558,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.my.vertical
                * @name position.my.vertical
                * @type {string}
                * @default 'top'
@@ -490,7 +572,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
              * @expose
              * @memberof! oj.ojPopup
              * @instance
-             * @alias position.offset
              * @name position.offset
              * @type {{x:number, y:number}}
              */
@@ -500,7 +581,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.offset.x
                * @name position.offset.x
                * @type {number}
                * @default 0
@@ -511,7 +591,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.offset.y
                * @name position.offset.y
                * @type {number}
                * @default 0
@@ -525,7 +604,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
              * @expose
              * @memberof! oj.ojPopup
              * @instance
-             * @alias position.at
              * @name position.at
              * @type {{horizontal:string, vertical:string}}
              */
@@ -535,7 +613,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.at.horizontal
                * @name position.at.horizontal
                * @type {string}
                * @default 'start'
@@ -551,7 +628,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
                * @expose
                * @memberof! oj.ojPopup
                * @instance
-               * @alias position.at.vertical
                * @name position.at.vertical
                * @type {string}
                * @default 'bottom'
@@ -580,7 +656,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
              * @expose
              * @memberof! oj.ojPopup
              * @instance
-             * @alias position.of
              * @name position.of
              * @ojshortdesc Which element to position the popup against. See the Help documentation for more information.
              * @type {string|{x: number, y: number}}
@@ -592,7 +667,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
              * @expose
              * @memberof! oj.ojPopup
              * @instance
-             * @alias position.collision
              * @name position.collision
              * @type {string}
              * @default 'flip'
@@ -644,8 +718,7 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
            * Determines if the popup should block user input of the page behind with a blocking
            * overlay pane.
            *
-           * <p>The default modality varies by theme.  Each theme can set its default by setting
-           * <code class="prettyprint">$popupModalityOptionDefault</code>.
+           * <p>The default modality varies by theme.
            *
            * @expose
            * @memberof oj.ojPopup
@@ -669,8 +742,6 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
            * // setter
            * myPopup.modality = "modal";
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $popupModalityOptionDefault: modal !default;
            */
           modality: 'modeless',
           /**
@@ -1021,6 +1092,10 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
           element.show();
           element.position(position);
 
+          // note the initial popup width/height
+          this.initialWidth = element.width();
+          this.initialHeight = element.height();
+
           // TODO might want to add fadeIn for the modal overlay in the future.
           var animationOptions = this.options.animation;
           if (animationOptions && animationOptions.open) {
@@ -1045,6 +1120,16 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         _afterOpenHandler: function (psOptions) {
           var element = psOptions[oj.PopupService.OPTION.POPUP];
           var launcher = psOptions[oj.PopupService.OPTION.LAUNCHER];
+
+          if (this.initialWidth !== element.width() || this.initialHeight !== element.height()) {
+            // if the popup width/height changed during opening, re-apply position constraints
+            this._reposition();
+          }
+          delete this.initialWidth;
+          delete this.initialHeight;
+
+          // set up a listener for future size changes
+          this._registerResizeListener(element[0]);
 
           this._initVoiceOverAssist();
 
@@ -1146,6 +1231,8 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
          */
         _beforeCloseHandler: function (psOptions) {
           var element = psOptions[oj.PopupService.OPTION.POPUP];
+
+          this._unregisterResizeListener(element[0]);
 
           // TODO might want to add fadeOut for the modal overlay in the future.
           var animationOptions = this.options.animation;
@@ -1700,8 +1787,54 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
             position.of = jqOf;
           }
 
+          if (this.element.width() > window.innerWidth
+              || this.element.height() > window.innerHeight) {
+            return false;
+          }
+
           element.position(position);
           return true;
+        },
+
+        /**
+         * Unregister event listeners for resize the popup element.
+         * @param {Element} element  DOM element
+         * @private
+         */
+        _unregisterResizeListener: function (element) {
+          if (element && this._resizeHandler) {
+            // remove existing listener
+            DomUtils.removeResizeListener(element, this._resizeHandler);
+            this._resizeHandler = null;
+          }
+        },
+
+        /**
+         * Register event listeners for resize the popup element.
+         * @param {Element} element  DOM element
+         * @private
+         */
+        _registerResizeListener: function (element) {
+          if (element) {
+            if (this._resizeHandler == null) {
+              this._resizeHandler = this._handleResize.bind(this);
+            }
+            DomUtils.addResizeListener(element, this._resizeHandler, 30, true);
+          }
+        },
+
+        /**
+         * Resize handler to adjust popup position when the size changes after
+         * initial render.
+         *
+         * @memberof oj.ojPopup
+         * @instance
+         * @private
+         */
+        _handleResize: function () {
+          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+            this._reposition();
+          }
         },
         /**
          * @memberof oj.ojPopup
@@ -2013,8 +2146,9 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
 
           // if event target is not under the laucher or popup root dom subtrees, dismiss
           if (!DomUtils.isAncestorOrSelf(launcher[0], target) &&
-            !DomUtils.isAncestorOrSelf(layer[0], target)) {
-            if (FocusUtils.isFocusable(target)) {
+              !DomUtils.isAncestorOrSelf(layer[0], target)) {
+            var tabindexAttr = target.getAttribute('tabindex');
+            if (FocusUtils.isFocusable(target) && tabindexAttr !== '-1') {
               // If the dismissal event target can take focus and the
               // event type is a mousedown or touchstart, wait for the focus event
               // to trigger dismissal.  This allows the blur to happen
@@ -2293,103 +2427,34 @@ define(['ojs/ojpopupcore', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/oj
         }
       });
 
+    const animationVars = {
+      open: '--oj-private-popup-global-open-animation-default',
+      close: '--oj-private-popup-global-close-animation-default'
+    };
     // sets the default modality option from the current theme
     Components.setDefaultOptions(
       {
         ojPopup:
-        {
-          modality: Components.createDynamicPropertyGetter(
-                function () {
-                  return (ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
-                    || {}).modality;
-                }),
-          animation: Components.createDynamicPropertyGetter(
-                function () {
-                  return (ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
-                    || {}).animation;
-                })
-        }
+          {
+            modality: Components.createDynamicPropertyGetter(
+                      function () {
+                        return ThemeUtils.getCachedCSSVarValues(['--oj-private-popup-global-modality-default'])[0];
+                      }),
+                      animation: Components.createDynamicPropertyGetter(
+                        function () {
+                          const animationDefaultOptions = {};
+                          const keys = Object.keys(animationVars);
+                          const vars = keys.map(key => animationVars[key]);
+                          const values = ThemeUtils.getCachedCSSVarValues(vars);
+                          keys.forEach((key, i) => {
+                            animationDefaultOptions[key] = JSON.parse(values[i]);
+                          });
+                          return animationDefaultOptions;
+                        })
+          }
       });
   }());
 
-  // Fragments:
-    /**
-     * <p>The <code class="prettyprint">&lt;oj-popup></code> accepts
-     * any DOM elements in its Default slot but only tracks the validity
-     * state of any JET custom element descendents that contain the valid property.
-     * @ojchild Default
-     * @memberof oj.ojPopup
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Outside popup or launcher</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Close the popup.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * <p>Disabled items do not allow any touch interaction.
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojPopup
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td rowspan = "3">Focus within Popup</td>
-     *       <td><kbd>Tab</kbd> or <kbd>Shift + Tab</kbd></td>
-     *       <td>Navigate the content of the popup. Close the open popup if there are no tab stops in
-     *           the popup.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>F6</kbd></td>
-     *       <td>Move focus to the launcher for a popup with modeless modality.  Close the open popup
-     *           if the modality is modal.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td>Close the open popup.</td>
-     *     </tr>
-     *     <tr>
-     *       <td rowspan = "1">Popup Launcher</td>
-     *       <td><kbd>F6</kbd></td>
-     *       <td>Move focus to the first tab stop within the open popup.  If there is not a tab stop
-     *           within the content, focus is established on the popup.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojPopup
-     */
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () {
 var __oj_popup_metadata = 
 {

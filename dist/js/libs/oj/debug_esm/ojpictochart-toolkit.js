@@ -8,14 +8,6 @@
 import { Obj, ImageMarker, CustomAnimation, Animator, AnimFadeOut, AnimFadeIn, SimpleMarker, Stroke, Agent, KeyboardHandler, KeyboardEvent, EventManager, Container, Point, SelectionEffectUtils, HtmlTooltipManager, ResourceUtils, Displayable, MouseEvent, Automation, BaseComponentDefaults, CSSStyle, EventFactory, Rect, Map2D, ClipPath, ArrayUtils, BaseComponent, Dimension, ToolkitUtils, Rectangle, DataAnimationHandler, SelectionHandler, CategoryRolloverHandler, BlackBoxAnimationHandler, AnimPopIn, ParallelPlayable, JsonUtils } from 'ojs/ojdvt-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @param {PictoChart} picto
  * @param {number} cx  The x position of the center of the marker.
  * @param {number} cy  The y position of the center of the marker.
@@ -94,14 +86,6 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
   this.setWidth(params[2]);
   this.setHeight(params[3]);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  *  @param {DvtPictoChart} picto
@@ -217,14 +201,6 @@ DvtPictoChartShapeMarker.prototype._setAnimationParams = function(params) {
   };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Utility functions for PictoChart.
  * @class
  */
@@ -259,14 +235,6 @@ const DvtPictoChartUtils = {
     return Agent.isRightToLeft(picto.getCtx()) ? !isEnd : isEnd;
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @param {DvtPictoChartEventManager} eventManager The owning event manager.
@@ -362,14 +330,6 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
   else
     return DvtPictoChartKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * PictoChartItem
@@ -731,7 +691,19 @@ DvtPictoChartItem.prototype.getAriaLabel = function() {
   else
     shortDesc = ResourceUtils.format(translations.labelAndValue, [name, this._getCountString()]);
 
-  return Displayable.generateAriaLabel(shortDesc, states);
+  return Displayable.generateAriaLabel(shortDesc, states, () => DvtPictoChartItem.getShortDescContext(this));
+};
+/**
+ * Returns the shortDesc Context of the item.
+ * @param {DvtPictoChartItem} item
+ * @return {object} The shortDesc Context object
+ */
+DvtPictoChartItem.getShortDescContext = function(item) {
+  return {
+    'id': item.getId(),
+    'name': item.getName(),
+    'count': item.getCount()
+  };
 };
 
 /**
@@ -834,14 +806,6 @@ DvtPictoChartItem.prototype.getKeyboardTooltipLocation = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Provides automation services for PictoChart.
  * @class  DvtPictoChartAutomation
  * @param {PictoChart} picto
@@ -933,14 +897,6 @@ DvtPictoChartAutomation.prototype.getItemCount = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -990,14 +946,6 @@ DvtPictoChartDefaults.prototype.getAnimationDuration = function(options)
 {
   return options['animationDuration'];
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for pictoChart component.
@@ -1107,14 +1055,6 @@ DvtPictoChartEventManager.prototype.processDrillEvent = function(obj) {
   if (obj instanceof DvtPictoChartItem && obj.isDrillable())
     this.FireEvent(EventFactory.newDrillEvent(obj.getId()));
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for PictoChart.
@@ -1476,14 +1416,6 @@ DvtPictoChartRenderer.renderEmptyText = function(picto, container, availSpace) {
       picto.getEventManager(), options['_statusMessageStyle']);
   picto.registerEmptyText(emptyText);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * PictoChart component.  The component should never be instantiated directly.  Use the newInstance function instead

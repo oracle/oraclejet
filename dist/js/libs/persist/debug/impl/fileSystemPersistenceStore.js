@@ -53,10 +53,10 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
               });
               return foundFiles.length > 0;
             };
-            var filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
+            var filename = Math.floor(Math.random() * 100000000) + '.pds'; // @RandomNumberOK - Only used to internally generate file names
             while(checkFilename(filename))
             {
-              filename = Math.floor(Math.random() * 100000000) + '.pds'; // @randomNumberOk - Only used to internally generate file names
+              filename = Math.floor(Math.random() * 100000000) + '.pds'; // @RandomNumberOK - Only used to internally generate file names
             }
             _writeFile(self, filename, key, metadata, value).then(function() {
               resolve();
@@ -82,7 +82,7 @@ define(['./keyValuePersistenceStore', '../persistenceStoreManager', './logger'],
             if (metadata.data_type == 'JSON') {
               data = JSON.stringify(data);
             }
-            fileWriter.write(data);
+            fileWriter.write(data); // @HTMLUpdateOK
           });
         });
       });

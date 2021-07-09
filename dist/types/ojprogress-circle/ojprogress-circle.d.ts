@@ -1,31 +1,20 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props {
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { ExtendGlobalProps } from 'ojs/ojvcomponent';
+import { Component, ComponentChild } from 'preact';
+declare type Props = {
     max?: number;
     value?: number;
     size?: 'sm' | 'md' | 'lg';
-    'aria-valuemin'?: string;
-    'aria-valuemax'?: string;
-    'aria-valuetext'?: string;
-    'aria-valuenow'?: string;
-    'role'?: string;
-}
-export declare class ProgressCircle extends ElementVComponent<Props> {
-    protected render(): any;
+};
+export declare class ProgressCircle extends Component<ExtendGlobalProps<Props>> {
+    static defaultProps: Partial<Props>;
+    render(props: ExtendGlobalProps<Props>): ComponentChild;
     private _renderIndeterminateCircle;
     private _renderDeterminateCircle;
     private _getClipPath;
     private _calculateTangent;
-    protected _vprops?: VProps;
 }
 // Custom Element interfaces
 export interface ProgressCircleElement extends JetElement<ProgressCircleElementSettableProperties>, ProgressCircleElementSettableProperties {
@@ -39,16 +28,16 @@ export interface ProgressCircleElement extends JetElement<ProgressCircleElementS
 }
 export namespace ProgressCircleElement {
   // tslint:disable-next-line interface-over-type-literal
-  type maxChanged = JetElementCustomEvent<ProgressCircleElement["max"]>;
+  type maxChanged = JetElementCustomEventStrict<ProgressCircleElement["max"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type sizeChanged = JetElementCustomEvent<ProgressCircleElement["size"]>;
+  type sizeChanged = JetElementCustomEventStrict<ProgressCircleElement["size"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type valueChanged = JetElementCustomEvent<ProgressCircleElement["value"]>;
+  type valueChanged = JetElementCustomEventStrict<ProgressCircleElement["value"]>;
 }
 export interface ProgressCircleElementEventMap extends HTMLElementEventMap {
-  'maxChanged': JetElementCustomEvent<ProgressCircleElement["max"]>;
-  'sizeChanged': JetElementCustomEvent<ProgressCircleElement["size"]>;
-  'valueChanged': JetElementCustomEvent<ProgressCircleElement["value"]>;
+  'maxChanged': JetElementCustomEventStrict<ProgressCircleElement["max"]>;
+  'sizeChanged': JetElementCustomEventStrict<ProgressCircleElement["size"]>;
+  'valueChanged': JetElementCustomEventStrict<ProgressCircleElement["value"]>;
 }
 export interface ProgressCircleElementSettableProperties extends JetSettableProperties {
   /**
@@ -67,14 +56,15 @@ export interface ProgressCircleElementSettableProperties extends JetSettableProp
 export interface ProgressCircleElementSettablePropertiesLenient extends Partial<ProgressCircleElementSettableProperties> {
   [key: string]: any;
 }
-export interface ProgressCircleProperties extends Partial<ProgressCircleElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface ProgressCircleIntrinsicProps extends Partial<Readonly<ProgressCircleElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  onmaxChanged?: (value: ProgressCircleElementEventMap['maxChanged']) => void;
+  onsizeChanged?: (value: ProgressCircleElementEventMap['sizeChanged']) => void;
+  onvalueChanged?: (value: ProgressCircleElementEventMap['valueChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-progress-circle": ProgressCircleProperties;
+      "oj-progress-circle": ProgressCircleIntrinsicProps;
     }
   }
 }

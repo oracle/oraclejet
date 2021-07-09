@@ -14,13 +14,6 @@ import $ from 'jquery';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { getReadingDirection, unwrap } from 'ojs/ojdomutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
   var bindingMeta = {
     properties: {
@@ -389,14 +382,6 @@ var __oj_range_slider_metadata =
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
   /*!
    * JET Slider @VERSION
@@ -496,9 +481,9 @@ var __oj_range_slider_metadata =
    *
    * {@ojinclude "name":"keyboardDoc"}
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
    * The range-slider component is accessible - it sets and maintains the appropriate aria- attributes,
@@ -506,15 +491,9 @@ var __oj_range_slider_metadata =
    * <code class="prettyprint">aria-valuemax</code>,
    * <code class="prettyprint">aria-valuemin</code>
    * and <code class="prettyprint">aria-orientation</code>.
-   * <h3 id="label-section">
-   *   Label and Range Slider
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
    * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate the oj-label to the oj-range-slider element.
-   * For accessibility, you should associate a oj-label element with the oj-range-slider element
-   * by putting an <code class="prettyprint">id</code> on the oj-range-slider element, and then setting the
-   * <code class="prettyprint">for</code> attribute on the oj-label to be the range-slider element's id.
+   * {@ojinclude "name":"accessibilitySetLabelEditableValue"}
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    * </p>
    * In addition, the range-slider thumb element can be accessed programmatically.
@@ -538,7 +517,6 @@ var __oj_range_slider_metadata =
    *     var thumb0 = myComponent.querySelectorAll('.oj-range-slider-thumb')[0];
    *     thumb0.setAttribute(aria-controls, "idOfRemoteElement");
    * </code></pre>
-   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    *
    * @example <caption>Declare the oj-slider component with no attributes specified:</caption>
    * &lt;oj-range-slider>&lt;/oj-range-slider>
@@ -550,6 +528,120 @@ var __oj_range_slider_metadata =
    * &lt;oj-range-slider value="{{currentValue}}">&lt;/oj-range-slider>
    */
 
+  //-----------------------------------------------------
+  //                   Fragments RangeSlider
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Range Slider Bar</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Reposition the thumb.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider Thumb</td>
+   *       <td><kbd>Swipe</kbd></td>
+   *       <td>Reposition the thumb.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc,
+   * and standalone gesture doc
+   * @memberof oj.ojRangeSlider
+   */
+  /**
+   * The JET slider supports keyboard actions for thumb movement:
+   *
+   * <p>
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *        <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Use</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td> Places focus on the range slider component.
+   *        If hints, title or messages exist in a notewindow, pop up the notewindow.
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Scrolls left on a horizontal range slider, scrolls down on a vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Scrolls left on a horizontal range slider,
+   *        scrolls down on a vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>PageUp</kbd></td>
+   *       <td>Scrolls one page right on a horizontal range slider,
+   *        scrolls one page up on a vertical range slider. <br>
+   *       A page is defined as 20% of the range of the range slider.
+   *     </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>PageDown</kbd></td>
+   *       <td>Scrolls one page left on a horizontal range slider,
+   *       scrolls one page down on a vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Scrolls to the right end on a horizontal range slider, scrolls to the bottom on a
+   * vertical range slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Range Slider</td>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Scrolls to the left end on a horizontal range slider, scrolls to the top on a
+   * vertical range slider.
+   *       </td>
+   *     </tr>
+   * </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
+   * gesture doc
+   * @memberof oj.ojRangeSlider
+   */
+
+  //-----------------------------------------------------
+  //                   Slider
+  //-----------------------------------------------------
   /**
    * @ojcomponent oj.ojSlider
    * @ojdisplayname Slider
@@ -639,9 +731,9 @@ var __oj_range_slider_metadata =
    *
    * {@ojinclude "name":"keyboardDoc"}
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
    * The slider component is accessible - it sets and maintains the appropriate aria- attributes,
@@ -649,16 +741,6 @@ var __oj_range_slider_metadata =
    * <code class="prettyprint">aria-valuemax</code>,
    * <code class="prettyprint">aria-valuemin</code>
    * and <code class="prettyprint">aria-orientation</code>.
-   * <h3 id="label-section">
-   *   Label and Slider
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-   * </h3>
-   * <p>
-   * If not using the <code class="prettyprint">label-hint</code> attribute, it is up to the application developer to associate the oj-label to the oj-slider element.
-   * For accessibility, you should associate a oj-label element with the oj-slider element
-   * by putting an <code class="prettyprint">id</code> on the oj-slider element, and then setting the
-   * <code class="prettyprint">for</code> attribute on the oj-label to be the slider element's id.
-   * </p>
    * </p>
    * In addition, the slider thumb element can be accessed programmatically.
    * This approach may be necessary to ensure accessibility conformance.
@@ -693,9 +775,159 @@ var __oj_range_slider_metadata =
    * @example <caption>Initialize a component attribute via component binding:</caption>
    * &lt;oj-slider value="{{currentValue}}">&lt;/oj-slider>
    */
-  // --------------------------------------------------- oj.ojSlider Styling Start -----------------------------------------------------------
-  // ---------------- oj-focus-highlight --------------
+
+  //-----------------------------------------------------
+  //                   Fragments Slider
+  //-----------------------------------------------------
   /**
+   * The JET slider supports keyboard actions for thumb movement:
+   *
+   * <p>
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *        <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Use</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>Tab</kbd></td>
+   *       <td> Places focus on the slider component.
+   *        If hints, title or messages exist in a notewindow, pop up the notewindow.
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Scrolls right on a horizontal slider, scrolls up on a vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Scrolls left on a horizontal slider, scrolls down on a vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Scrolls right on a horizontal slider, scrolls up on a vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Scrolls left on a horizontal slider,
+   *        scrolls down on a vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>PageUp</kbd></td>
+   *       <td>Scrolls one page right on a horizontal slider,
+   *        scrolls one page up on a vertical slider. <br>
+   *       A page is defined as 20% of the range of the slider.
+   *     </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>PageDown</kbd></td>
+   *       <td>Scrolls one page left on a horizontal slider,
+   *       scrolls one page down on a vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>End</kbd></td>
+   *       <td>Scrolls to the right end on a horizontal slider, scrolls to the bottom on a
+   * vertical slider.
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider</td>
+   *       <td><kbd>Home</kbd></td>
+   *       <td>Scrolls to the left end on a horizontal slider, scrolls to the top on a
+   * vertical slider.
+   *       </td>
+   *     </tr>
+   * </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
+   * gesture doc
+   * @memberof oj.ojSlider
+   */
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Slider Bar</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Reposition the thumb.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Slider Thumb</td>
+   *       <td><kbd>Swipe</kbd></td>
+   *       <td>Reposition the thumb.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc,
+   * and standalone gesture doc
+   * @memberof oj.ojSlider
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids Slider
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the slider thumb. Use this id to access the thumb of the  slider. </p>
+   *
+   * @ojsubid oj-slider-thumb-0
+   * @memberof oj.ojSlider
+   *
+   * @example <caption>Get the node for the slider thumb:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-thumb-0'});
+   */
+
+  /**
+   * <p>Sub-ID for the slider bar. </p>
+   *
+   * @ojsubid oj-slider-bar
+   * @memberof oj.ojSlider
+   *
+   * @example <caption>Get the node for the slider bar:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar'});
+   *
+   */
+
+  /**
+   * <p>Sub-ID for the slider bar value. </p>
+   *
+   * @ojsubid oj-slider-bar-value
+   * @memberof oj.ojSlider
+   *
+   * @example <caption>Get the node for the slider bar value:</caption>
+   * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar-value'});
+   *
+   */
+
+ //-----------------------------------------------------
+ //                   Styling
+ //-----------------------------------------------------
+ // ---------------- oj-focus-highlight --------------
+ /**
   * Under normal circumstances this class is applied automatically.
   * It is documented here for the rare cases that an app developer needs per-instance control.<br/><br/>
   * The oj-focus-highlight class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.<br/><br/>
@@ -713,8 +945,8 @@ var __oj_range_slider_metadata =
   *   &lt;!-- Content -->
   * &lt;/oj-slider>
   */
-   // ---------------- oj-form-control-full-width --------------
-  /**
+ // ---------------- oj-form-control-full-width --------------
+ /**
   * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
   * @ojstyleclass oj-form-control-full-width
   * @ojdisplayname Full Width
@@ -725,7 +957,7 @@ var __oj_range_slider_metadata =
   */
 
  // ---------------- oj-form-control max-width --------------
-  /**
+ /**
   * In the Redwood theme the default max width of a text field is 100%.
   * These max width convenience classes are available to create a medium or small field.<br>
   * The class is applied to the root element.
@@ -738,21 +970,21 @@ var __oj_range_slider_metadata =
   * @ojtsexample
   * &lt;oj-slider class="oj-form-control-max-width-md">&lt;/oj-slider>
   */
-  /**
+ /**
   * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
   * @ojshortdesc Sets the max width for a small field
   * @ojdisplayname Small
   * @memberof! oj.ojSlider
-   */
-  /**
+  */
+ /**
   * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
   * @ojshortdesc Sets the max width for a medium field
   * @ojdisplayname Medium
   * @memberof! oj.ojSlider
-   */
+  */
 
-  // ---------------- oj-form-control width --------------
-  /**
+ // ---------------- oj-form-control width --------------
+ /**
   * In the Redwood theme the default width of a text field is 100%.
   * These width convenience classes are available to create a medium or small field.<br>
   * The class is applied to the root element.
@@ -765,21 +997,66 @@ var __oj_range_slider_metadata =
   * @ojtsexample
   * &lt;oj-slider class="oj-form-control-width-md">&lt;/oj-slider>
   */
-  /**
+ /**
   * @ojstyleclass form-control-width.oj-form-control-width-sm
   * @ojshortdesc Sets the width for a small field
   * @ojdisplayname Small
   * @memberof! oj.ojSlider
-   */
-  /**
+  */
+ /**
   * @ojstyleclass form-control-width.oj-form-control-width-md
   * @ojshortdesc Sets the width for a medium field
   * @ojdisplayname Medium
   * @memberof! oj.ojSlider
-   */
-
- // --------------------------------------------------- oj.ojSlider Styling end -----------------------------------------------------------
-
+  */
+  /**
+   * @ojstylevariableset oj-slider-css-set1
+   * @ojstylevariable oj-slider-thumb-width {description: "Slider thumb width", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-slider-thumb-height {description: "Slider thumb height", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-slider-thumb-border-radius {description: "Slider thumb border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @ojstylevariable oj-slider-thumb-border-width {description: "Slider thumb border width", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-slider-track-thickness {description: "Slider track thickness", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojSlider
+  */
+  /**
+  * CSS variables used by oj-slider when enabled
+  * @ojstylevariableset oj-slider-css-set2
+  * @ojdisplayname Enabled
+  * @ojstylevariable oj-slider-thumb-bg-color {description: "Slider thumb background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+  * @ojstylevariable oj-slider-thumb-border-color {description: "Slider thumb border color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+  * @ojstylevariable oj-slider-thumb-box-shadow {description: "Slider thumb box shadow when enabled", help: "#oj-slider-css-set2"}
+  * @ojstylevariable oj-slider-track-bg-color {description: "Slider track background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+  * @ojstylevariable oj-slider-value-bg-color {description: "Slider value background color when enabled", formats: ["color"], help: "#oj-slider-css-set2"}
+  * @memberof oj.ojSlider
+  */
+ /**
+  * CSS variables used by oj-slider when hovered
+  * @ojstylevariableset oj-slider-css-set3
+  * @ojdisplayname Hovered
+  * @ojstylevariable oj-slider-thumb-bg-color-hover {description: "Slider thumb background color when hovered", formats: ["color"], help: "#oj-slider-css-set3"}
+  * @ojstylevariable oj-slider-thumb-box-shadow-hover {description: "Slider thumb box shadow when hovered", help: "#oj-slider-css-set3"}
+  * @memberof oj.ojSlider
+  */
+ /**
+  * CSS variables used by oj-slider when active
+  * @ojstylevariableset oj-slider-css-set4
+  * @ojdisplayname Active
+  * @ojstylevariable oj-slider-thumb-bg-color-active {description: "Slider thumb background color when active", formats: ["color"], help: "#oj-slider-css-set4"}
+  * @ojstylevariable oj-slider-thumb-border-color-active {description: "Slider thumb border color when active", formats: ["color"], help: "#oj-slider-css-set4"}
+  * @ojstylevariable oj-slider-thumb-box-shadow-active {description: "Slider thumb box shadow when active", help: "#oj-slider-css-set4"}
+  * @ojstylevariable oj-slider-thumb-scale-active {description: "Slider thumb scale when active", formats: ["number"], help: "#oj-slider-css-set4"}
+  * @memberof oj.ojSlider
+  */
+ /**
+  * CSS variables used by oj-slider when disabled
+  * @ojstylevariableset oj-slider-css-set5
+  * @ojdisplayname Disabled
+  * @ojstylevariable oj-slider-thumb-bg-color-disabled {description: "Slider thumb background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+  * @ojstylevariable oj-slider-thumb-border-color-disabled {description: "Slider thumb border color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+  * @ojstylevariable oj-slider-track-bg-color-disabled {description: "Slider track background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+  * @ojstylevariable oj-slider-value-bg-color-disabled {description: "Slider value background color when disabled", formats: ["color"], help: "#oj-slider-css-set5"}
+  * @memberof oj.ojSlider
+  */
   oj.__registerWidget('oj.ojSlider', $.oj.editableValue, {
     defaultElement: '<input>',
     version: '1.0.1',
@@ -3647,257 +3924,5 @@ var __oj_range_slider_metadata =
     // ///////////////////////////////////////////////////////////////////////////////////////
     // Draggable - end
     // ///////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Slider Bar</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Reposition the thumb.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider Thumb</td>
-     *       <td><kbd>Swipe</kbd></td>
-     *       <td>Reposition the thumb.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc,
-     * and standalone gesture doc
-     * @memberof oj.ojSlider
-     */
-
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Range Slider Bar</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Reposition the thumb.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider Thumb</td>
-     *       <td><kbd>Swipe</kbd></td>
-     *       <td>Reposition the thumb.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc,
-     * and standalone gesture doc
-     * @memberof oj.ojRangeSlider
-     */
-
-    /**
-     * The JET slider supports keyboard actions for thumb movement:
-     *
-     * <p>
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *        <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Use</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>Tab</kbd></td>
-     *       <td> Places focus on the slider component.
-     *        If hints, title or messages exist in a notewindow, pop up the notewindow.
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>RightArrow</kbd></td>
-     *       <td>Scrolls right on a horizontal slider, scrolls up on a vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>LeftArrow</kbd></td>
-     *       <td>Scrolls left on a horizontal slider, scrolls down on a vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>UpArrow</kbd></td>
-     *       <td>Scrolls right on a horizontal slider, scrolls up on a vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>DownArrow</kbd></td>
-     *       <td>Scrolls left on a horizontal slider,
-     *        scrolls down on a vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>PageUp</kbd></td>
-     *       <td>Scrolls one page right on a horizontal slider,
-     *        scrolls one page up on a vertical slider. <br>
-     *       A page is defined as 20% of the range of the slider.
-     *     </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>PageDown</kbd></td>
-     *       <td>Scrolls one page left on a horizontal slider,
-     *       scrolls one page down on a vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>End</kbd></td>
-     *       <td>Scrolls to the right end on a horizontal slider, scrolls to the bottom on a
-     * vertical slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Slider</td>
-     *       <td><kbd>Home</kbd></td>
-     *       <td>Scrolls to the left end on a horizontal slider, scrolls to the top on a
-     * vertical slider.
-     *       </td>
-     *     </tr>
-     * </tbody>
-     * </table>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
-     * gesture doc
-     * @memberof oj.ojSlider
-     */
-
-    /**
-     * The JET slider supports keyboard actions for thumb movement:
-     *
-     * <p>
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *        <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Use</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>Tab</kbd></td>
-     *       <td> Places focus on the range slider component.
-     *        If hints, title or messages exist in a notewindow, pop up the notewindow.
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>RightArrow</kbd></td>
-     *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>LeftArrow</kbd></td>
-     *       <td>Scrolls left on a horizontal range slider, scrolls down on a vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>UpArrow</kbd></td>
-     *       <td>Scrolls right on a horizontal range slider, scrolls up on a vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>DownArrow</kbd></td>
-     *       <td>Scrolls left on a horizontal range slider,
-     *        scrolls down on a vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>PageUp</kbd></td>
-     *       <td>Scrolls one page right on a horizontal range slider,
-     *        scrolls one page up on a vertical range slider. <br>
-     *       A page is defined as 20% of the range of the range slider.
-     *     </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>PageDown</kbd></td>
-     *       <td>Scrolls one page left on a horizontal range slider,
-     *       scrolls one page down on a vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>End</kbd></td>
-     *       <td>Scrolls to the right end on a horizontal range slider, scrolls to the bottom on a
-     * vertical range slider.
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>Range Slider</td>
-     *       <td><kbd>Home</kbd></td>
-     *       <td>Scrolls to the left end on a horizontal range slider, scrolls to the top on a
-     * vertical range slider.
-     *       </td>
-     *     </tr>
-     * </tbody>
-     * </table>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
-     * gesture doc
-     * @memberof oj.ojRangeSlider
-     */
-
-    // / ///////////////     SUB-IDS     //////////////////
-
-    /**
-     * <p>Sub-ID for the slider thumb. Use this id to access the thumb of the  slider. </p>
-     *
-     * @ojsubid oj-slider-thumb-0
-     * @memberof oj.ojSlider
-     *
-     * @example <caption>Get the node for the slider thumb:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-thumb-0'});
-     */
-
-    /**
-     * <p>Sub-ID for the slider bar. </p>
-     *
-     * @ojsubid oj-slider-bar
-     * @memberof oj.ojSlider
-     *
-     * @example <caption>Get the node for the slider bar:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar'});
-     *
-     */
-
-    /**
-     * <p>Sub-ID for the slider bar value. </p>
-     *
-     * @ojsubid oj-slider-bar-value
-     * @memberof oj.ojSlider
-     *
-     * @example <caption>Get the node for the slider bar value:</caption>
-     * var node = myComponent.getNodeBySubId({'subId': 'oj-slider-bar-value'});
-     *
-     */
   });
 }());

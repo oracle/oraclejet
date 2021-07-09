@@ -1,79 +1,16 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
 import { DataProvider, Item } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K, D>> {
     accessibility: {
-        rowHeader: string;
+        rowHeader: string | string[];
     };
     as: string;
-    columns: Array<{
-        className?: string | null;
-        field?: string | null;
-        footerClassName?: string | null;
-        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        footerStyle?: string | null;
-        footerTemplate?: string | null;
-        headerClassName?: string | null;
-        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        headerStyle?: string | null;
-        headerTemplate?: string | null;
-        headerText?: string | null;
-        id?: string | null;
-        maxWidth?: string | number | null;
-        minWidth?: 'auto';
-        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        resizable?: 'enabled' | 'disabled';
-        sortProperty?: string | null;
-        sortable?: 'auto' | 'enabled' | 'disabled';
-        style?: string | null;
-        template?: string | null;
-        weight?: number | null;
-        width?: string | number | null;
-    }> | null;
-    columnsDefault: {
-        className?: string | null;
-        field?: string | null;
-        footerClassName?: string | null;
-        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        footerStyle?: string | null;
-        footerTemplate?: string | null;
-        headerClassName?: string | null;
-        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        headerStyle?: string | null;
-        headerTemplate?: string | null;
-        headerText?: string | null;
-        maxWidth?: string | number | null;
-        minWidth?: 'auto';
-        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        resizable?: 'enabled' | 'disabled';
-        sortProperty?: string | null;
-        sortable?: 'auto' | 'enabled' | 'disabled';
-        style?: string | null;
-        template?: string | null;
-        weight?: number | null;
-        width?: string | number | null;
-    };
+    columns: Array<ojTable.Column<K, D>> | null;
+    columnsDefault: ojTable.ColumnDefault<K, D> | null;
     currentRow: ojTable.CurrentRow<K> | null;
     data: DataProvider<K, D> | null;
     display: 'list' | 'grid';
@@ -116,6 +53,11 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     scrollPolicyOptions: {
         fetchSize: number;
         maxCount: number;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scrollerOffsetBottom?: number | null;
+        scrollerOffsetEnd?: number | null;
+        scrollerOffsetStart?: number | null;
+        scrollerOffsetTop?: number | null;
     };
     scrollPosition: {
         columnIndex?: number;
@@ -249,7 +191,7 @@ export namespace ojTable {
     }
     interface ojSort extends CustomEvent<{
         direction: 'ascending' | 'descending';
-        header: Element;
+        header: string;
         [propName: string]: any;
     }> {
     }
@@ -311,6 +253,68 @@ export namespace ojTable {
         key: any;
         mode: 'edit' | 'navigation';
         row: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Column<K, D> = {
+        className?: string | null;
+        field?: string | null;
+        footerClassName?: string | null;
+        footerRenderer?: ((context: FooterRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        footerStyle?: string | null;
+        footerTemplate?: string | null;
+        frozenEdge?: 'start' | 'end' | null;
+        headerClassName?: string | null;
+        headerRenderer?: ((context: HeaderRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        headerStyle?: string | null;
+        headerTemplate?: string | null;
+        headerText?: string | null;
+        id?: string | null;
+        maxWidth?: string | number | null;
+        minWidth?: 'auto' | string | number | null;
+        renderer?: ((context: ColumnsRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        resizable?: 'enabled' | 'disabled';
+        sortProperty?: string | null;
+        sortable?: 'auto' | 'enabled' | 'disabled';
+        style?: string | null;
+        template?: string | null;
+        weight?: number | null;
+        width?: string | number | null;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnDefault<K, D> = {
+        className?: string | null;
+        field?: string | null;
+        footerClassName?: string | null;
+        footerRenderer?: ((context: FooterRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        footerStyle?: string | null;
+        footerTemplate?: string | null;
+        headerClassName?: string | null;
+        headerRenderer?: ((context: HeaderRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        headerStyle?: string | null;
+        headerTemplate?: string | null;
+        headerText?: string | null;
+        maxWidth?: string | number | null;
+        minWidth?: 'auto' | string | number | null;
+        renderer?: ((context: ColumnsRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        resizable?: 'enabled' | 'disabled';
+        sortProperty?: string | null;
+        sortable?: 'auto' | 'enabled' | 'disabled';
+        style?: string | null;
+        template?: string | null;
+        weight?: number | null;
+        width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ColumnSelectionEnd<K> = {
@@ -519,68 +523,11 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
 }
 export interface ojTableSettableProperties<K, D> extends baseComponentSettableProperties {
     accessibility: {
-        rowHeader: string;
+        rowHeader: string | string[];
     };
     as: string;
-    columns: Array<{
-        className?: string | null;
-        field?: string | null;
-        footerClassName?: string | null;
-        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        footerStyle?: string | null;
-        footerTemplate?: string | null;
-        headerClassName?: string | null;
-        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        headerStyle?: string | null;
-        headerTemplate?: string | null;
-        headerText?: string | null;
-        id?: string | null;
-        maxWidth?: string | number | null;
-        minWidth?: 'auto';
-        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        resizable?: 'enabled' | 'disabled';
-        sortProperty?: string | null;
-        sortable?: 'auto' | 'enabled' | 'disabled';
-        style?: string | null;
-        template?: string | null;
-        weight?: number | null;
-        width?: string | number | null;
-    }> | null;
-    columnsDefault: {
-        className?: string | null;
-        field?: string | null;
-        footerClassName?: string | null;
-        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        footerStyle?: string | null;
-        footerTemplate?: string | null;
-        headerClassName?: string | null;
-        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        headerStyle?: string | null;
-        headerTemplate?: string | null;
-        headerText?: string | null;
-        maxWidth?: string | number | null;
-        minWidth?: 'auto';
-        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
-            insert: HTMLElement | string;
-        } | void) | null;
-        resizable?: 'enabled' | 'disabled';
-        sortProperty?: string | null;
-        sortable?: 'auto' | 'enabled' | 'disabled';
-        style?: string | null;
-        template?: string | null;
-        weight?: number | null;
-        width?: string | number | null;
-    };
+    columns: Array<ojTable.Column<K, D>> | null;
+    columnsDefault: ojTable.ColumnDefault<K, D> | null;
     currentRow: ojTable.CurrentRow<K> | null;
     data: DataProvider<K, D> | null;
     display: 'list' | 'grid';
@@ -623,6 +570,11 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     scrollPolicyOptions: {
         fetchSize: number;
         maxCount: number;
+        scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
+        scrollerOffsetBottom?: number | null;
+        scrollerOffsetEnd?: number | null;
+        scrollerOffsetStart?: number | null;
+        scrollerOffsetTop?: number | null;
     };
     scrollPosition: {
         columnIndex?: number;
@@ -737,7 +689,7 @@ export namespace TableElement {
     }
     interface ojSort extends CustomEvent<{
         direction: 'ascending' | 'descending';
-        header: Element;
+        header: string;
         [propName: string]: any;
     }> {
     }
@@ -799,6 +751,36 @@ export namespace TableElement {
         key: any;
         mode: 'edit' | 'navigation';
         row: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ColumnDefault<K, D> = {
+        className?: string | null;
+        field?: string | null;
+        footerClassName?: string | null;
+        footerRenderer?: ((context: ojTable.FooterRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        footerStyle?: string | null;
+        footerTemplate?: string | null;
+        headerClassName?: string | null;
+        headerRenderer?: ((context: ojTable.HeaderRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        headerStyle?: string | null;
+        headerTemplate?: string | null;
+        headerText?: string | null;
+        maxWidth?: string | number | null;
+        minWidth?: 'auto' | string | number | null;
+        renderer?: ((context: ojTable.ColumnsRendererContext<K, D>) => {
+            insert: HTMLElement | string;
+        } | void) | null;
+        resizable?: 'enabled' | 'disabled';
+        sortProperty?: string | null;
+        sortable?: 'auto' | 'enabled' | 'disabled';
+        style?: string | null;
+        template?: string | null;
+        weight?: number | null;
+        width?: string | number | null;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ColumnSelectionStart<K> = {
@@ -882,4 +864,44 @@ export namespace TableElement {
             row: K;
         };
     };
+}
+export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojTableEventMap<any, any>['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojTableEventMap<any, any>['ojAnimateStart']) => void;
+    onojBeforeCurrentRow?: (value: ojTableEventMap<any, any>['ojBeforeCurrentRow']) => void;
+    onojBeforeRowEdit?: (value: ojTableEventMap<any, any>['ojBeforeRowEdit']) => void;
+    onojBeforeRowEditEnd?: (value: ojTableEventMap<any, any>['ojBeforeRowEditEnd']) => void;
+    onojRowAction?: (value: ojTableEventMap<any, any>['ojRowAction']) => void;
+    onojSort?: (value: ojTableEventMap<any, any>['ojSort']) => void;
+    onaccessibilityChanged?: (value: ojTableEventMap<any, any>['accessibilityChanged']) => void;
+    onasChanged?: (value: ojTableEventMap<any, any>['asChanged']) => void;
+    oncolumnsChanged?: (value: ojTableEventMap<any, any>['columnsChanged']) => void;
+    oncolumnsDefaultChanged?: (value: ojTableEventMap<any, any>['columnsDefaultChanged']) => void;
+    oncurrentRowChanged?: (value: ojTableEventMap<any, any>['currentRowChanged']) => void;
+    ondataChanged?: (value: ojTableEventMap<any, any>['dataChanged']) => void;
+    ondisplayChanged?: (value: ojTableEventMap<any, any>['displayChanged']) => void;
+    ondndChanged?: (value: ojTableEventMap<any, any>['dndChanged']) => void;
+    oneditModeChanged?: (value: ojTableEventMap<any, any>['editModeChanged']) => void;
+    oneditRowChanged?: (value: ojTableEventMap<any, any>['editRowChanged']) => void;
+    onfirstSelectedRowChanged?: (value: ojTableEventMap<any, any>['firstSelectedRowChanged']) => void;
+    onhorizontalGridVisibleChanged?: (value: ojTableEventMap<any, any>['horizontalGridVisibleChanged']) => void;
+    onlayoutChanged?: (value: ojTableEventMap<any, any>['layoutChanged']) => void;
+    onrowRendererChanged?: (value: ojTableEventMap<any, any>['rowRendererChanged']) => void;
+    onscrollPolicyChanged?: (value: ojTableEventMap<any, any>['scrollPolicyChanged']) => void;
+    onscrollPolicyOptionsChanged?: (value: ojTableEventMap<any, any>['scrollPolicyOptionsChanged']) => void;
+    onscrollPositionChanged?: (value: ojTableEventMap<any, any>['scrollPositionChanged']) => void;
+    onscrollToKeyChanged?: (value: ojTableEventMap<any, any>['scrollToKeyChanged']) => void;
+    onselectedChanged?: (value: ojTableEventMap<any, any>['selectedChanged']) => void;
+    onselectionChanged?: (value: ojTableEventMap<any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojTableEventMap<any, any>['selectionModeChanged']) => void;
+    onselectionRequiredChanged?: (value: ojTableEventMap<any, any>['selectionRequiredChanged']) => void;
+    onverticalGridVisibleChanged?: (value: ojTableEventMap<any, any>['verticalGridVisibleChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-table": TableIntrinsicProps;
+        }
+    }
 }

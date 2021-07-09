@@ -8,14 +8,6 @@
 import oj from 'ojs/ojcore';
 import Message from 'ojs/ojmessaging';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 // ValidatorError
 
 /**
@@ -94,14 +86,6 @@ ValidatorError.prototype.Init = function (message) {
 ValidatorError.prototype.getMessage = function () {
   return this._message;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 // ConverterError
 

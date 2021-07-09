@@ -10,16 +10,16 @@ export declare const CANCELABLE_ACTION: string;
 export declare const PROPERTY_CHANGED: string;
 export declare const DEFAULT_SLOT_PROP: string;
 export declare type DecoratorAliases = {
-    ElementVComponent?: string;
-    VComponent?: string;
+    Component?: string;
+    PureComponent?: string;
     customElement?: string;
-    dynamicDefault?: string;
     method?: string;
-    rootProperty?: string;
-    readOnly?: string;
-    event?: string;
-    provideBinding?: string;
-    consumeBinding?: string;
+    ElementReadOnly?: string;
+    ExtendGlobalProps?: string;
+    GlobalProps?: string;
+    ObservedGlobalProps?: string;
+    providedBindings?: string;
+    consumedBindings?: string;
 };
 export declare type RuntimeMetadata = {
     properties?: Record<string, Metadata.ComponentMetadataProperties>;
@@ -27,11 +27,10 @@ export declare type RuntimeMetadata = {
     methods?: Record<string, Metadata.ComponentMetadataMethods>;
     slots?: Record<string, object>;
     extension?: {
-        _DEFAULTS?: string;
         _DYNAMIC_SLOT?: Record<string, string | number>;
-        _ROOT_PROPS_MAP?: Record<string, number>;
         _WRITEBACK_PROPS?: string[];
         _READ_ONLY_PROPS?: string[];
+        _OBSERVED_GLOBAL_PROPS?: string[];
     };
 };
 export declare type EventDetailsMetadata = {
@@ -59,12 +58,37 @@ export declare type ALL_TYPES = {
     enumValues?: string[];
     isArrayOfObject?: boolean;
 };
+export declare enum MetadataScope {
+    RT_EXTENDED = -1,
+    RT = 0,
+    DT = 1
+}
+export declare type CircularRefInfo = {
+    circularType: string;
+};
 export declare type GenericsTypes = {
     genericsDeclaration: string;
     genericsTypeParams: string;
     genericsTypeParamsAny?: string;
 };
 export declare type HasTypeParameters = ts.ClassLikeDeclarationBase | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
+export declare type PropsInfo = {
+    propsName: string;
+    propsType: ts.Type;
+    propsExtendGlobalPropsRef: ts.TypeReferenceType | null;
+    propsTypeParams?: string;
+    propsGenericsDeclaration?: ts.Declaration;
+    propsObservedGlobalProps?: Array<string>;
+};
+export declare type IntersectionTypeNodeInfo = {
+    observedProps?: Array<string>;
+    substituteTypeNode?: ts.TypeNode;
+    propsName?: string;
+};
+export declare type VCompClassInfo = {
+    className: string;
+    propsInfo?: PropsInfo;
+};
 export declare type MetaUtilObj = {
     componentClassName: string;
     typeChecker: ts.TypeChecker;
@@ -73,4 +97,7 @@ export declare type MetaUtilObj = {
     namedExportToAlias: Record<string, string>;
     aliasToNamedExport: Record<string, string>;
     dynamicSlotsInUse: number;
+    reservedGlobalProps?: Array<string>;
+    classConsumedBindingsDecorator?: ts.Decorator;
+    classProvidedBindingsDecorator?: ts.Decorator;
 };

@@ -10,14 +10,6 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   ojldimport = ojldimport && Object.prototype.hasOwnProperty.call(ojldimport, 'default') ? ojldimport['default'] : ojldimport;
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   var ojld = ojldimport;
 
   /**
@@ -129,6 +121,9 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
    * @export
    * @method isMonthPriorToYear
    * @memberof oj.LocaleData
+   * @ojdeprecated [{since: "11.0.0", description: "This is used internally by the oj-date-picker component,
+   *  and should not be called by application code. If the functionality is needed, use Intl.DateTimeFormat.formatToParts
+   *  instead which returns the formatted pieces in order."}]
    */
   LocaleData.isMonthPriorToYear = function () {
     var longDateFormat = LocaleData._getCalendarData().dateFormats.long.toUpperCase();
@@ -235,8 +230,10 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
   const isMonthPriorToYear = LocaleData.isMonthPriorToYear;
   const setBundle = LocaleData.setBundle;
   const __getBundle = LocaleData.__getBundle;
+  const _getCalendarData = LocaleData._getCalendarData;
 
   exports.__getBundle = __getBundle;
+  exports._getCalendarData = _getCalendarData;
   exports.getDayNames = getDayNames;
   exports.getFirstDayOfWeek = getFirstDayOfWeek;
   exports.getMonthNames = getMonthNames;

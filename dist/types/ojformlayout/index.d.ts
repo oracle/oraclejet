@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojFormLayout extends JetElement<ojFormLayoutSettableProperties> {
     colspanWrap: 'nowrap' | 'wrap';
@@ -91,4 +85,23 @@ export namespace FormLayoutElement {
     type readonlyChanged = JetElementCustomEvent<ojFormLayout["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
     type userAssistanceDensityChanged = JetElementCustomEvent<ojFormLayout["userAssistanceDensity"]>;
+}
+export interface FormLayoutIntrinsicProps extends Partial<Readonly<ojFormLayoutSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncolspanWrapChanged?: (value: ojFormLayoutEventMap['colspanWrapChanged']) => void;
+    oncolumnsChanged?: (value: ojFormLayoutEventMap['columnsChanged']) => void;
+    ondirectionChanged?: (value: ojFormLayoutEventMap['directionChanged']) => void;
+    onlabelEdgeChanged?: (value: ojFormLayoutEventMap['labelEdgeChanged']) => void;
+    onlabelWidthChanged?: (value: ojFormLayoutEventMap['labelWidthChanged']) => void;
+    onlabelWrappingChanged?: (value: ojFormLayoutEventMap['labelWrappingChanged']) => void;
+    onmaxColumnsChanged?: (value: ojFormLayoutEventMap['maxColumnsChanged']) => void;
+    onreadonlyChanged?: (value: ojFormLayoutEventMap['readonlyChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojFormLayoutEventMap['userAssistanceDensityChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-form-layout": FormLayoutIntrinsicProps;
+        }
+    }
 }

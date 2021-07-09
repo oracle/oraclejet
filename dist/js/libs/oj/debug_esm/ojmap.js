@@ -8,13 +8,6 @@
 import KeySetImpl from 'ojs/ojkeysetimpl';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Implementation of the ES6 Map API:
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
  * that can deal with how equalities are handled when Object is used as key
@@ -56,6 +49,18 @@ _proto.delete = function (key) {
 
 _proto.forEach = function (callback) {
   this._map.forEach(callback);
+};
+
+_proto.entries = function () {
+  return this._map.entries();
+};
+
+_proto.keys = function () {
+  return this._map.keys();
+};
+
+_proto.values = function () {
+  return this._map.values();
 };
 
 _proto.get = function (key) {

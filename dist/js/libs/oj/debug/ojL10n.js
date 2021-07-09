@@ -1,15 +1,12 @@
 /**
  * @license
  * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
+ *
  * This is a fork of the i18n Require.js plugin.
  * It makes minor chnages to the way the default locale is determined and to the way bundles are merged
- */
-/**
+ *
  * @license RequireJS i18n 2.0.2 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/requirejs/i18n for details

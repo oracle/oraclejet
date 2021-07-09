@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'oj
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_collapsible_metadata = 
 {
   "properties": {
@@ -66,14 +58,6 @@ var __oj_collapsible_metadata =
     __oj_collapsible_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
     oj.CustomElementBridge.register('oj-collapsible', { metadata: __oj_collapsible_metadata });
   }());
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ojcomponent oj.ojCollapsible
@@ -130,12 +114,96 @@ var __oj_collapsible_metadata =
    * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the collapsible must be <code class="prettyprint">refresh()</code>ed.
    *
    */
+  //-----------------------------------------------------
+  //                   Slots
+  //-----------------------------------------------------
 
-  // --------------------------------------------------- oj.ojCollapsible Styling Start ------------------------------------------------------------
   /**
-   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * <p>The default slot is the collapsible's content.
+   *
+   * @ojchild Default
+   * @memberof oj.ojCollapsible
+   *
+   * @example <caption>Initialize the Collapsible with child content specified:</caption>
+   * &lt;oj-collapsible>
+   *   &lt;h3 slot='header'>Header 1&lt;/h3>
+   *   &lt;p>Content 1&lt;/p>
+   * &lt;/oj-collapsible>
    */
-  // ---------------- oj-clickthrough-disabled --------------
+
+  /**
+   * <p>The <code class="prettyprint">header</code> slot is the collapsible's header. If not specified, the header contains only an open/close icon. Note that the header text is required for JET collapsible for accessibility purposes.</p>
+   *
+   * @ojslot header
+   * @memberof oj.ojCollapsible
+   *
+   * @example <caption>Initialize the Collapsible with the header slot specified:</caption>
+   * &lt;oj-collapsible>
+   *   &lt;h3 slot='header'>Header 1&lt;/h3>
+   *   &lt;p>Content 1&lt;/p>
+   * &lt;/oj-collapsible>
+   */
+
+  /**
+   * <p>Sub-ID for the disclosure icon of a Collapsible.</p>
+   *
+   * @ojsubid oj-collapsible-disclosure
+   * @memberof oj.ojCollapsible
+   * @example <caption>Get the Collapsible disclosure icon:</caption>
+   * var node = myCollapsible.getNodeBySubId({"subId": "oj-collapsible-disclosure"});
+   */
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Header</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Toggle disclosure state</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojCollapsible
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Header</td>
+   *       <td><kbd>Space or Enter</kbd></td>
+   *       <td>Toggle disclosure state.</tr>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojCollapsible
+   */
+
+  //------------------------------------------------------
+  //                  Styling Start
+  //------------------------------------------------------
   /**
   * Use on any element inside the header where you do not want Collapsible to process the click event.
   * @ojstyleclass oj-clickthrough-disabled
@@ -151,11 +219,19 @@ var __oj_collapsible_metadata =
   *   &lt;!-- Content -->
   * &lt;/oj-collapsible>
   */
-  // --------------------------------------------------- oj.ojCollapsible Styling End ------------------------------------------------------------
+
+
   (function () {
     var uid = 0;
     var OPEN_ICON = 'oj-collapsible-open-icon';
     var CLOSE_ICON = 'oj-collapsible-close-icon';
+
+    const OJC_HEADER = 'oj-collapsible-header';
+    const OJC_TRANSITION = 'oj-collapsible-transition';
+    const OJC_DISCLOSURE = 'oj-collapsible-disclosure';
+
+    const OJ_ARIA_EXPANDED = 'aria-expanded';
+    const OJ_ARIA_HIDDEN = 'aria-hidden';
 
     oj.__registerWidget('oj.ojCollapsible', $.oj.baseComponent,
       {
@@ -381,7 +457,7 @@ var __oj_collapsible_metadata =
           var iconTag = this._isDisabled() ? $('<span>') : $('<a tabindex="0">');
 
           iconTag.addClass('oj-component-icon oj-clickable-icon-nocontext oj-collapsible-header-icon ' + icon)
-          .attr('aria-describedby', this.header.attr('id'))
+          .attr('aria-labelledby', this.header.attr('id'))
           .prependTo(this.header); // @HTMLUpdateOK
         },
 
@@ -415,18 +491,14 @@ var __oj_collapsible_metadata =
           }
 
           this.header
-          .removeClass('oj-collapsible-header')
-          .each(function () {
-            if (/^oj-collapsible/.test(this.id)) {
-              this.removeAttribute('id');
-            }
-          });
+          .removeClass(OJC_HEADER)
+          .each(this._removeIdAttr(this.id));
 
         // aria
           var focusable = this._findFirstFocusableInHeader();
           focusable.removeAttr('role')
           .removeAttr('aria-controls')
-          .removeAttr('aria-expanded')
+          .removeAttr(OJ_ARIA_EXPANDED)
           .removeAttr('aria-disabled');
 
           this._destroyIcons();
@@ -434,14 +506,10 @@ var __oj_collapsible_metadata =
         // clean up content panels
           this.content
           .css('display', '')
-          .removeAttr('aria-hidden')
+          .removeAttr(OJ_ARIA_HIDDEN)
           .removeAttr('tabIndex')
           .removeClass('oj-component-content oj-collapsible-content')
-          .each(function () {
-            if (/^oj-collapsible/.test(this.id)) {
-              this.removeAttribute('id');
-            }
-          });
+          .each(this._removeIdAttr(this.id));
         },
 
       /**
@@ -649,7 +717,7 @@ var __oj_collapsible_metadata =
           //  - Stop using ui-helper-reset in the layout widgets.
             this.header = this.element.children(':first-child');
           }
-          this.header.addClass('oj-collapsible-header');
+          this.header.addClass(OJC_HEADER);
 
         // process content
           if (this._IsCustomElement()) {
@@ -712,7 +780,8 @@ var __oj_collapsible_metadata =
           var focusable = this._findFirstFocusableInHeader();
           focusable.attr('role', 'button')
           .attr('aria-controls', contentId)
-          .attr('aria-expanded', options.expanded);
+          .attr(OJ_ARIA_EXPANDED, options.expanded); // @HTMLUpdateOK
+          // .attr('aria-expanded', options.expanded);
 
           if (this._isDisabled()) {
             focusable.attr('aria-disabled', 'true');
@@ -720,14 +789,15 @@ var __oj_collapsible_metadata =
 
         //  - when collapsible is refreshed, it's content displays & disclosure icon collapsed
           if (options.expanded) {
-            content.removeAttr('aria-hidden');
+            content.removeAttr(OJ_ARIA_HIDDEN);
           } else {
             this.wrapper.css({
               'max-height': 0,
               'overflow-y': 'hidden',
               display: 'none'
             });
-            content.attr('aria-hidden', 'true');
+            // content.attr('aria-hidden', 'true');
+            content.attr(OJ_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
           }
 
           this._setupEvents();
@@ -939,7 +1009,7 @@ var __oj_collapsible_metadata =
                 // if closed, add inner height to content height
                   wrapper.contentHeight += content.outerHeight();
 
-                  wrapper.addClass('oj-collapsible-transition')
+                  wrapper.addClass(OJC_TRANSITION)
                   .css({
                     'max-height': wrapper.contentHeight
                   });
@@ -948,7 +1018,7 @@ var __oj_collapsible_metadata =
               } else {
                 // collapsing
                 // disable transitions & set max-height to content height
-                wrapper.removeClass('oj-collapsible-transition');
+                wrapper.removeClass(OJC_TRANSITION);
                 wrapper.css({
                   'max-height': wrapper.contentHeight,
                   'overflow-y': 'hidden'
@@ -960,7 +1030,7 @@ var __oj_collapsible_metadata =
                 } else {
                   setTimeout(function () {
                   // enable & start transition
-                    wrapper.addClass('oj-collapsible-transition')
+                    wrapper.addClass(OJC_TRANSITION)
                     .css({
                       'max-height': 0 //! important
                     });
@@ -1116,6 +1186,10 @@ var __oj_collapsible_metadata =
             this._transitionEnded = true;
           }
 
+          if (!this.wrapper) {
+            return;
+          }
+
         // just completed a collapse transition
           if (this.options.expanded) {
             this.wrapper.css({
@@ -1128,7 +1202,7 @@ var __oj_collapsible_metadata =
             this.wrapper.hide();
           }
 
-          this.wrapper.removeClass('oj-collapsible-transition');
+          this.wrapper.removeClass(OJC_TRANSITION);
           this._afterExpandCollapse(this.options.expanded, event);
         },
 
@@ -1168,12 +1242,12 @@ var __oj_collapsible_metadata =
 
         // aria
           if (isExpanded) {
-            this.content.removeAttr('aria-hidden');
+            this.content.removeAttr(OJ_ARIA_HIDDEN);
           } else {
-            this.content.attr('aria-hidden', 'true');
+            this.content.attr(OJ_ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
           }
 
-          this._findFirstFocusableInHeader().attr('aria-expanded', isExpanded);
+          this._findFirstFocusableInHeader().attr(OJ_ARIA_EXPANDED, isExpanded); // @HTMLUpdateOK
 
           this._resolveBusyContext();
 
@@ -1205,7 +1279,7 @@ var __oj_collapsible_metadata =
               internalSet: true } });
         },
 
-      //* * @inheritdoc */
+
         getNodeBySubId: function (locator) {
           if (locator == null) {
             return this.element ? this.element[0] : null;
@@ -1217,10 +1291,10 @@ var __oj_collapsible_metadata =
             case 'oj-collapsible-content':
               return this.content[0];
 
-            case 'oj-collapsible-header':
+            case OJC_HEADER:
               return this.header[0];
 
-            case 'oj-collapsible-disclosure':
+            case OJC_DISCLOSURE:
             case 'oj-collapsible-header-icon':
               return this._getCollapsibleIcon()[0];
             default:
@@ -1230,106 +1304,34 @@ var __oj_collapsible_metadata =
           return null;
         },
 
-      //* * @inheritdoc */
+
         getSubIdByNode: function (node) {
-          var headerIcon = this.getNodeBySubId({ subId: 'oj-collapsible-disclosure' });
+          var headerIcon = this.getNodeBySubId({ subId: OJC_DISCLOSURE });
           var currentNode = node;
           while (currentNode) {
             if (currentNode === this.content[0]) {
               return { subId: 'oj-collapsible-content' };
             } else if (currentNode === this.header[0]) {
-              return { subId: 'oj-collapsible-header' };
+              return { subId: OJC_HEADER };
             } else if (currentNode === headerIcon) {
-              return { subId: 'oj-collapsible-disclosure' };
+              return { subId: OJC_DISCLOSURE };
             }
 
             currentNode = currentNode.parentElement;
           }
           return null;
+        },
+
+      /**
+       * @param {string} id
+       * @memberof oj.ojCollapsible
+       * @private
+       */
+        _removeIdAttr: function (id) {
+          if (/^oj-collapsible/.test(id)) {
+            this.removeAttribute('id');
+          }
         }
-
-      // Fragments:
-
-      /**
-       * <p>The default slot is the collapsible's content.
-       *
-       * @ojchild Default
-       * @memberof oj.ojCollapsible
-       *
-       * @example <caption>Initialize the Collapsible with child content specified:</caption>
-       * &lt;oj-collapsible>
-       *   &lt;h3 slot='header'>Header 1&lt;/h3>
-       *   &lt;p>Content 1&lt;/p>
-       * &lt;/oj-collapsible>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">header</code> slot is the collapsible's header. If not specified, the header contains only an open/close icon. Note that the header text is required for JET collapsible for accessibility purposes.</p>
-       *
-       * @ojslot header
-       * @memberof oj.ojCollapsible
-       *
-       * @example <caption>Initialize the Collapsible with the header slot specified:</caption>
-       * &lt;oj-collapsible>
-       *   &lt;h3 slot='header'>Header 1&lt;/h3>
-       *   &lt;p>Content 1&lt;/p>
-       * &lt;/oj-collapsible>
-       */
-
-      /**
-       * <p>Sub-ID for the disclosure icon of a Collapsible.</p>
-       *
-       * @ojsubid oj-collapsible-disclosure
-       * @memberof oj.ojCollapsible
-       * @example <caption>Get the Collapsible disclosure icon:</caption>
-       * var node = myCollapsible.getNodeBySubId({"subId": "oj-collapsible-disclosure"});
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Header</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Toggle disclosure state</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojCollapsible
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Header</td>
-       *       <td><kbd>Space or Enter</kbd></td>
-       *       <td>Toggle disclosure state.</tr>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>Disabled items can receive keyboard focus, but do not allow any other interaction.
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojCollapsible
-       */
       });
   }());
 

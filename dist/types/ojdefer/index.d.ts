@@ -1,11 +1,3 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojDefer extends JetElement<ojDeferSettableProperties> {
     addEventListener<T extends keyof ojDeferEventMap>(type: T, listener: (this: HTMLElement, ev: ojDeferEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;

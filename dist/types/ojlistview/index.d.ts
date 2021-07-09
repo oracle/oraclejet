@@ -1,14 +1,8 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import CommonTypes = require('../ojcommontypes');
 import { KeySet } from '../ojkeyset';
-import { DataProvider, ItemMetadata } from '../ojdataprovider';
+import { DataProvider, ItemMetadata, Item } from '../ojdataprovider';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojListView<K, D> extends baseComponent<ojListViewSettableProperties<K, D>> {
     as: string;
@@ -252,11 +246,12 @@ export namespace ojListView {
         reorder: boolean;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: any;
         depth: number;
         index: number;
+        item: Item<K, D>;
         key: any;
         leaf: boolean;
         parentkey: any;
@@ -511,4 +506,45 @@ export namespace ListViewElement {
         position: 'before' | 'after' | 'inside';
         reorder: boolean;
     };
+}
+export interface ListViewIntrinsicProps extends Partial<Readonly<ojListViewSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojListViewEventMap<any, any>['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojListViewEventMap<any, any>['ojAnimateStart']) => void;
+    onojBeforeCollapse?: (value: ojListViewEventMap<any, any>['ojBeforeCollapse']) => void;
+    onojBeforeCurrentItem?: (value: ojListViewEventMap<any, any>['ojBeforeCurrentItem']) => void;
+    onojBeforeExpand?: (value: ojListViewEventMap<any, any>['ojBeforeExpand']) => void;
+    onojCollapse?: (value: ojListViewEventMap<any, any>['ojCollapse']) => void;
+    onojCopy?: (value: ojListViewEventMap<any, any>['ojCopy']) => void;
+    onojCut?: (value: ojListViewEventMap<any, any>['ojCut']) => void;
+    onojExpand?: (value: ojListViewEventMap<any, any>['ojExpand']) => void;
+    onojItemAction?: (value: ojListViewEventMap<any, any>['ojItemAction']) => void;
+    onojPaste?: (value: ojListViewEventMap<any, any>['ojPaste']) => void;
+    onojReorder?: (value: ojListViewEventMap<any, any>['ojReorder']) => void;
+    onasChanged?: (value: ojListViewEventMap<any, any>['asChanged']) => void;
+    oncurrentItemChanged?: (value: ojListViewEventMap<any, any>['currentItemChanged']) => void;
+    ondataChanged?: (value: ojListViewEventMap<any, any>['dataChanged']) => void;
+    ondisplayChanged?: (value: ojListViewEventMap<any, any>['displayChanged']) => void;
+    ondndChanged?: (value: ojListViewEventMap<any, any>['dndChanged']) => void;
+    ondrillModeChanged?: (value: ojListViewEventMap<any, any>['drillModeChanged']) => void;
+    onexpandedChanged?: (value: ojListViewEventMap<any, any>['expandedChanged']) => void;
+    onfirstSelectedItemChanged?: (value: ojListViewEventMap<any, any>['firstSelectedItemChanged']) => void;
+    ongridlinesChanged?: (value: ojListViewEventMap<any, any>['gridlinesChanged']) => void;
+    ongroupHeaderPositionChanged?: (value: ojListViewEventMap<any, any>['groupHeaderPositionChanged']) => void;
+    onitemChanged?: (value: ojListViewEventMap<any, any>['itemChanged']) => void;
+    onscrollPolicyChanged?: (value: ojListViewEventMap<any, any>['scrollPolicyChanged']) => void;
+    onscrollPolicyOptionsChanged?: (value: ojListViewEventMap<any, any>['scrollPolicyOptionsChanged']) => void;
+    onscrollPositionChanged?: (value: ojListViewEventMap<any, any>['scrollPositionChanged']) => void;
+    onscrollToKeyChanged?: (value: ojListViewEventMap<any, any>['scrollToKeyChanged']) => void;
+    onselectedChanged?: (value: ojListViewEventMap<any, any>['selectedChanged']) => void;
+    onselectionChanged?: (value: ojListViewEventMap<any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojListViewEventMap<any, any>['selectionModeChanged']) => void;
+    onselectionRequiredChanged?: (value: ojListViewEventMap<any, any>['selectionRequiredChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-list-view": ListViewIntrinsicProps;
+        }
+    }
 }

@@ -10,14 +10,6 @@ import { PanZoomComponent, PanZoomCanvasEventManager, PanZoomCanvasKeyboardHandl
 import { Overview } from 'ojs/ojdvt-overview';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Dvt Diagram Link Utils
  */
 var DvtDiagramLinkUtils = {
@@ -218,14 +210,6 @@ DvtDiagramLinkUtils.GetLinkBounds = function(linkObj) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Defines an (x,y) coordinate.
  * @class DvtDiagramPoint
  * @constructor
@@ -249,14 +233,6 @@ DvtDiagramPoint.prototype.Init = function(x, y) {
   this['x'] = ((x === null || isNaN(x)) ? 0 : x);
   this['y'] = ((y === null || isNaN(y)) ? 0 : y);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Style related utility functions for Diagram.
@@ -334,14 +310,6 @@ DvtDiagramDataUtils.compareValues = function(ctx, obj1, obj2) {
   }
   return Obj.compareValues(ctx, obj1, obj2);
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @protected
@@ -817,14 +785,6 @@ DvtDiagramLayoutContext.prototype.getDirtyContext = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Defines the geometry of a rectangle. Top-left (x,y), and width and height.
  * @class DvtDiagramRectangle
  * @constructor
@@ -855,14 +815,6 @@ DvtDiagramRectangle.prototype.Init = function(x, y, w, h) {
   this['w'] = ((w === null || isNaN(w)) ? 0 : w);
   this['h'] = ((h === null || isNaN(h)) ? 0 : h);
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @protected
@@ -1464,14 +1416,6 @@ DvtDiagramLayoutContextNode.prototype.copyFrom = function(node) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Dvt Diagram layout utils
  */
 var DvtDiagramLayoutUtils = {};
@@ -1529,14 +1473,6 @@ DvtDiagramLayoutUtils.convertDiagramPointToPoint = function(diagramPoint) {
     return new Point(diagramPoint['x'], diagramPoint['y']);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @protected
@@ -1960,14 +1896,6 @@ DvtDiagramLayoutContextLink.prototype.copyFrom = function(link) {
     this.setCoordinateSpace(link.getCoordinateSpace());
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @param {dvt.Context} context The rendering context.
@@ -2908,14 +2836,6 @@ DvtBaseDiagram.prototype.getCustomObjKeyboardBoundingBox = function(obj) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -3028,14 +2948,6 @@ DvtDiagramDefaults.prototype.getNoCloneObject = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Category rollover handler for Diagram
  * @param {function} callback A function that responds to component events.
  * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -3080,14 +2992,6 @@ DvtDiagramCategoryRolloverHandler.prototype.GetRolloutCallback = function(event,
   };
   return Obj.createCallback(this, callback);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @constructor
@@ -3543,27 +3447,11 @@ DvtBaseDiagramNode.prototype.getGroupId = function() {
   return null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtDiagramDataAnimationPhase = {
   DELETE: 0,
   UPDATE: 1,
   INSERT: 2
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @constructor
@@ -4254,6 +4142,20 @@ DvtDiagramNode.prototype.getDataContext = function() {
 
   return this.getCtx().fixRendererContext(dataContext);
 };
+/**
+ * Returns the shortDesc Context of the node.
+ * @param {DvtDiagramNode} node
+ * @return {object} The shortDesc Context object
+ */
+ DvtDiagramNode.getShortDescContext = function(node) {
+  var data = node.getData();
+  return {
+    'id': node.getId(),
+    'label': data['label'],
+    'data': node.GetDiagram().isDataProviderMode()  ? (data['_noTemplate'] ? data['_itemData'] : data) : data['_itemData'],
+    'itemData': node.GetDiagram().isDataProviderMode() ? data['_itemData'] : null
+  };
+};
 
 /**
  * @override
@@ -4267,7 +4169,7 @@ DvtDiagramNode.prototype.getAriaLabel = function() {
   if (this.isContainer()) {
     states.push(translations[this.isDisclosed() ? 'stateExpanded' : 'stateCollapsed']);
   }
-  return Displayable.generateAriaLabel(this.getShortDesc(), states);
+  return Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramNode.getShortDescContext(this));
 };
 
 /**
@@ -5338,14 +5240,6 @@ DvtDiagramNode.prototype._checkAndMoveContents = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Dvt Diagram Link Connector utils
  */
 var DvtDiagramLinkConnectorUtils = {};
@@ -5802,14 +5696,6 @@ DvtDiagramLinkConnectorUtils.getStandardConnectorOffset = function(connectorType
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @constructor
  * @class The class for the link underlay
  * @param {dvt.Context} context the rendering context
@@ -6015,14 +5901,6 @@ DvtDiagramLinkUnderlay.prototype.showUnderlayEnd = function() {
   if (this._underlayEnd)
     this.addChild(this._underlayEnd);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @constructor
@@ -6711,14 +6589,6 @@ DvtBaseDiagramLink.prototype.getGroupId = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @constructor
  * @param {dvt.Context} context the rendering context
  * @param {Diagram} diagram the parent diagram component
@@ -7394,7 +7264,33 @@ DvtDiagramLink.prototype.getDataContext = function() {
 
   return this.getCtx().fixRendererContext(dataContext);
 };
-
+/**
+ * Returns the shortDesc Context of the link.
+ * @param {DvtDiagramLink} link
+ * @return {object} The shortDesc Context object
+ */
+ DvtDiagramLink.getShortDescContext = function(link) {
+  var itemData, data;
+  if (link.GetDiagram().isDataProviderMode()) {
+    // return both type of data - template processed and originals
+    if (link.isPromoted()) {
+      itemData = link.getData()['_links'].map(function(item){return item['_itemData']});
+      data = link.getData()['_links'][0]['_noTemplate'] ? itemData :  link.getData()['_links'];
+    }
+    else {
+      data =  link.getData();
+      itemData = link.getData()['_itemData'];
+    }
+  } else {
+    data = link.isPromoted() ? link.getData()['_links'] : link.getData()['_itemData'];
+  }
+  return {
+    'id': link.getId(),
+    'label': link.getData()['label'],
+    'data' : data,
+    'itemData' : itemData
+  };
+};
 /**
  * @override
  */
@@ -7407,7 +7303,7 @@ DvtDiagramLink.prototype.getAriaLabel = function() {
   if (this.isPromoted()) {
     states.push(translations.promotedLinkAriaDesc);
   }
-  return Displayable.generateAriaLabel(this.getShortDesc(), states);
+  return Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramLink.getShortDescContext(this));
 };
 
 /**
@@ -8060,14 +7956,6 @@ DvtDiagramLink.prototype._checkAndMoveContents = function() {
   return true;
 };
 
-/**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramStyleUtils.js /st_jdevadf_jet.trunk/4 2017/09/08 16:48:23  Exp $
 //
@@ -8236,14 +8124,6 @@ DvtDiagramStyleUtils.getAnimationOnDisplay = function(diagram) {
 DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
   return diagram.getOptions()['animationOnDataChange'];
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for Diagram.
@@ -8779,14 +8659,6 @@ DvtDiagramEventManager.prototype._getPortElement = function(elem, selector) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @constructor
  *  @class DvtBaseDiagramKeyboardHandler base class for keyboard handler for diagram component
  *  @param {DvtBaseDiagram} component The owning diagram component
@@ -9071,14 +8943,6 @@ DvtBaseDiagramKeyboardHandler._anglesAreEqualWithinTolerance = function(a1, a2) 
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  @constructor
  *  @class DvtDiagramKeyboardHandler base class for keyboard handler for diagram component
  *  @param {Diagram} component The owning diagram component
@@ -9143,14 +9007,6 @@ DvtDiagramKeyboardHandler.prototype.processKeyDown = function(event) {
 DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
   return this.GetDiagram().getNodeById(nodeId);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Utility functions for Diagram overview window
@@ -9759,14 +9615,6 @@ DvtDiagramOverviewUtils._updateOverviewNodes = function(diagram, overview) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Overview window for diagram.
  * @param {Diagram} diagram The parent diagram who owns the overview.
  * @class
@@ -10118,14 +9966,6 @@ DvtDiagramOverview.prototype.CreateAnimationClone = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  Provides automation services for a DVT diagram component.
  *  @class  DvtDiagramAutomation
  *  @param {Diagram} dvtComponent
@@ -10379,14 +10219,6 @@ DvtDiagramAutomation.prototype._getLink = function(linkIndex) {
   var linkIds = this._diagram.GetAllLinks();
   return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._diagram.getLinkById(linkIds[linkIndex]) : null;
 };
-
-/**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramDataAnimationState.js /st_jdevadf_jet.trunk/1 2017/06/19 15:30:24  Exp $
@@ -10676,14 +10508,6 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Animation handler for Diagram
  * @param {dvt.Context} context the platform specific context object
  * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
@@ -10853,14 +10677,6 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(context, linkAr
   }
   return list;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @param {dvt.Context} context The rendering context.

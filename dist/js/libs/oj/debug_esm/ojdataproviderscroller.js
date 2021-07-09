@@ -11,7 +11,7 @@ import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { fadeOut, fadeIn } from 'ojs/ojanimation';
 import { log, error, info } from 'ojs/ojlogger';
-import { getDefaultScrollBarWidth } from 'ojs/ojdatacollection-common';
+import { calculateOffsetTop, getDefaultScrollBarWidth, isElementInScrollerBounds } from 'ojs/ojdatacollection-common';
 import DomScroller from 'ojs/ojdomscroller';
 import KeySet from 'ojs/ojset';
 import KeyMap from 'ojs/ojmap';
@@ -107,15 +107,6 @@ DataProviderContentHandler.prototype.IsReady = function () {
 };
 
 /**
- * Determines whether the content handler is in a state that is ready to handle mutation event.
- * @return {boolean} true if there's no outstanding fetch, false otherwise.
- * @protected
- */
-DataProviderContentHandler.prototype.IsReadyForMutation = function () {
-  return this.IsReady();
-};
-
-/**
  * Sets any aria attributes on the root element
  * @protected
  */
@@ -157,10 +148,10 @@ DataProviderContentHandler.prototype.FindElementByKey = function (key) {
   for (var i = 0; i < children.length; i++) {
     var elem = children[i];
     // use == for the string number compare case
-    // make sure item is not marked for deletion
+    // make sure item is not marked for deletion or a clone created by dnd
     // eslint-disable-next-line eqeqeq
     if ((key == this.GetKey(elem) || oj.Object.compareValues(key, this.GetKey(elem))) &&
-      !elem.classList.contains('oj-listview-item-remove')) {
+      !elem.classList.contains('oj-listview-item-remove') && !elem.classList.contains('oj-drop')) {
       return elem;
     }
   }
@@ -434,7 +425,7 @@ DataProviderContentHandler.prototype.GetBindingContext = function (context) {
   current.index = context.index;
   current.key = context.key;
   current.componentElement = context.componentElement;
-
+  current.item = { data: context.data, metadata: context.metadata };
   return current;
 };
 
@@ -703,7 +694,8 @@ DataProviderContentHandler.prototype.afterRenderItemForInsertEvent =
     // add card style class to wrapper/transforming div
     if (isCardLayout) {
       // eslint-disable-next-line no-param-reassign
-      item.className = item.className + ' ' + this.m_widget.getItemStyleClass();
+      item.className = item.className + ' oj-listview-card-animated ' +
+        this.m_widget.getItemStyleClass();
     }
     if (!this.shouldUseGridRole()) {
       elem.children().wrapAll('<div></div>'); // @HTMLUpdateOK
@@ -745,12 +737,13 @@ DataProviderContentHandler.prototype.afterRenderItemForInsertEvent =
         self.signalTaskStart('kick off animation for insert item'); // signal add animation start. Ends in _handleAddTransitionEnd().
 
         var currentClassName = item.className;
+        // now we can reset opacity, this is to avoid AnimationUtils setting opacity to 0 when it restores element styles
+        // eslint-disable-next-line no-param-reassign
+        item.style.opacity = '';
         var promise = self.m_widget.StartAnimation(item, action);
 
         // now show it
         promise.then(function () {
-          // eslint-disable-next-line no-param-reassign
-          item.style.opacity = '';
           item.removeAttribute('data-oj-context');
           self._handleAddTransitionEnd(context, item, currentClassName);
           resolve(true);
@@ -835,8 +828,15 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
 
   this.signalTaskStart('handling model remove event'); // signal method task start
 
+  var keysToAdd = event.detail.add != null ? event.detail.add.keys : new Set();
+  var keysToRemove = [];
+
   var promises = [];
   keys.forEach(function (key) {
+    if (!keysToAdd.has(key)) {
+      keysToRemove.push(key);
+    }
+
     var elem = self.FindElementByKey(key);
     if (elem != null) {
       self.signalTaskStart('handling model remove event for item: ' + key); // signal removeItem start
@@ -846,7 +846,7 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
       if (elem.parentNode.classList.contains('oj-listview-temp-item')) {
         elem = elem.parentNode;
       }
-      promises.push(self._removeItem(elem));
+      promises.push(self.removeItem(elem));
       self.signalTaskEnd(); // signal removeItem end
     } else {
       log('handleModelRemoveEvent: cannot find item with key ' + key);
@@ -855,18 +855,26 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
 
   // checks whether the removed item is selected, and adjust the value as needed
   if (this.isSelectionEnabled()) {
-    var selected = this.m_widget.options.selected;
-    var newSelected = selected.delete(keys);
+    // do not remove key if there is a pending insert
+    if (keysToRemove.length > 0) {
+      var selected = this.m_widget.options.selected;
+      var newSelected = selected.delete(keysToRemove);
 
-    // update selection option if it did changed
-    if (selected !== newSelected) {
-      var selectedItems = [];
-      if (newSelected.values) {
-        newSelected.values().forEach(function (key) {
-          selectedItems.push(self.FindElementByKey(key));
-        });
+      // update selection option if it did changed
+      if (selected !== newSelected) {
+        var selectedItems = [];
+        if (newSelected.values) {
+          newSelected.values().forEach(function (key) {
+            selectedItems.push(self.FindElementByKey(key));
+          });
+        }
+        this.m_widget._setSelectionOption(newSelected, null, selectedItems);
       }
-      this.m_widget._setSelectionOption(newSelected, null, selectedItems);
+    }
+
+    if (keysToAdd.size > 0) {
+      // reset flag so that selection will be validated after insert
+      this.m_widget.resetInitialSelectionStateValidated();
     }
   }
 
@@ -891,9 +899,9 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
 /**
  * Remove a single item element
  * @param {jQuery|Element} elem the element to remove
- * @private
+ * @protected
  */
-DataProviderContentHandler.prototype._removeItem = function (elem) {
+DataProviderContentHandler.prototype.removeItem = function (elem) {
   var self = this;
   var action = 'remove';
 
@@ -970,7 +978,7 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
 
     // if it's the last item, show empty text
     if (parent.get(0).childElementCount === 0) {
-      this.m_widget.renderComplete();
+      this.m_widget.renderComplete(true);
     }
 
     // ensure something is selected if the removed item is the last selected item
@@ -1009,16 +1017,13 @@ DataProviderContentHandler.prototype.handleModelChangeEvent = function (event) {
 
   // indexes could be undefined if not supported by DataProvider
   var indexes = changeEvent.indexes;
-  var firstSelectedFound = false;
   for (var i = 0; i < keys.length; i++) {
+    this.m_widget.updateSelectedKeyData(keys[i], data[i]);
+
     var elem = this.FindElementByKey(keys[i]);
     if (elem != null) {
       if (restoreFocusElem === undefined && elem.contains(document.activeElement)) {
         restoreFocusElem = elem;
-      }
-      if (!firstSelectedFound && this.m_widget.isFirstSelectedItem(keys[i])) {
-        this.m_widget.setFirstSelectedItem(keys[i], data[i]);
-        firstSelectedFound = true;
       }
       this.signalTaskStart('handling model update event for item: ' + keys[i]); // signal replace item start
       var index = (indexes == null) ? -1 : indexes[i];
@@ -1267,6 +1272,7 @@ DataProviderContentHandler.prototype.animateShowContent =
                   }
               });
             }
+
             // issue, if I just start the fadeIn animation here, the animation will end immediately.
             // To workaround it, we start the fadeIn animation on a slight delay.  However, because of the
             // delay, we ended up have to set opacity to 0 to avoid the actual content from briefly showing up.
@@ -1299,13 +1305,6 @@ DataProviderContentHandler.prototype.animateShowContent =
     }.bind(this));
   };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Handler for IteratingDataProvider generated content
  * @constructor
@@ -1340,17 +1339,6 @@ IteratingDataProviderContentHandler.prototype.IsHierarchical = function () {
  */
 IteratingDataProviderContentHandler.prototype.IsReady = function () {
   return !this.m_fetching && this.m_idleCallback == null;
-};
-
-/**
- * Determines whether the content handler is in a state that is ready to handle mutation event.
- * This is true when there is no outstanding fetches and there is all out of range items have been rendered
- * (items are in the DOM, but not neccessarily the content inside the items)
- * @return {boolean} true if the above conditions are met, false otherwise.
- * @protected
- */
-IteratingDataProviderContentHandler.prototype.IsReadyForMutation = function () {
-  return this.IsReady() && !this._hasPendingInsertKeys();
 };
 
 /**
@@ -1552,7 +1540,7 @@ IteratingDataProviderContentHandler.prototype._getScrollerOffsetTop = function (
     if (scroller === this.m_widget.GetRootElement()[0]) {
       this._scrollerOffsetTop = 0;
     } else {
-      this._scrollerOffsetTop = DomScroller.calculateOffsetTop(scroller, this.m_root);
+      this._scrollerOffsetTop = calculateOffsetTop(scroller, this.m_root);
     }
   }
   return this._scrollerOffsetTop;
@@ -1719,7 +1707,7 @@ IteratingDataProviderContentHandler.prototype.renderInitialSkeletons = function 
   var skeletonDimension = this.getDefaultSkeletonDimension();
   if (skeletonDimension.width > 0 && skeletonDimension.height > 0) {
     if (this.isCardLayout()) {
-      var margin = this._getMargin();
+      var margin = this.getMargin();
       var width = this._getRootElementWidth();
       var colCount = Math.max(1, Math.floor(width / (skeletonDimension.width + margin)));
       var rowCount = Math.max(1, Math.floor(height / (skeletonDimension.height + margin)));
@@ -1756,7 +1744,7 @@ IteratingDataProviderContentHandler.prototype._adjustLoadMoreSkeletons = functio
   }
 
   if (!force) {
-    var margin = this._getMargin();
+    var margin = this.getMargin();
     var newColCount = Math.floor(width / (cardDim.width + margin));
     var container = this.m_loadingIndicator.get(0).firstElementChild;
     var currentColCount = container.childElementCount;
@@ -1784,7 +1772,7 @@ IteratingDataProviderContentHandler.prototype._adjustLoadMoreSkeletons = functio
  * Calculate what the margin is between cards
  * @private
  */
-IteratingDataProviderContentHandler.prototype._getMargin = function () {
+IteratingDataProviderContentHandler.prototype.getMargin = function () {
   if (this.m_margin === undefined) {
     var elem = document.createElement('li');
     elem.className = this.m_widget.getItemStyleClass();
@@ -1822,6 +1810,7 @@ IteratingDataProviderContentHandler.prototype._getCardDimension = function () {
 IteratingDataProviderContentHandler.prototype._renderSkeletons = function (count) {
   var container = this.createLoadingIndicator();
   container.setAttribute('role', 'presentation');
+  container.classList.add('oj-listview-skeleton-container');
   var group = document.createElement('ul');
   group.setAttribute('role', 'presentation');
   group.className = this.isCardLayout() ? 'oj-listview-skeleton-card-group' : 'oj-listview-group';
@@ -1846,7 +1835,7 @@ IteratingDataProviderContentHandler.prototype._fillEmptySpaceWithSkeletons = fun
 
   // first check how many do we need
   var lastItem = this.m_root.lastElementChild;
-  var cardWidthWithMargin = cardDim.width + this._getMargin();
+  var cardWidthWithMargin = cardDim.width + this.getMargin();
   var width = this._getRootElementWidth(true);
   var count = Math.floor((width - lastItem.offsetLeft - cardWidthWithMargin)
     / cardWidthWithMargin);
@@ -1869,7 +1858,7 @@ IteratingDataProviderContentHandler.prototype._createLoadMoreSkeletons = functio
     var cardDimension = this._getCardDimension();
     var cardWidth = cardDimension === undefined ? this.getDefaultSkeletonDimension().width :
       cardDimension.width;
-    count = cardWidth === 0 ? 0 : Math.floor(width / (cardWidth + this._getMargin()));
+    count = cardWidth === 0 ? 0 : Math.floor(width / (cardWidth + this.getMargin()));
   } else {
     count = IteratingDataProviderContentHandler.LOAD_MORE_SKELETONS_ROW_COUNT;
   }
@@ -1966,6 +1955,10 @@ IteratingDataProviderContentHandler.prototype._removeLoadingIndicator = function
  */
 IteratingDataProviderContentHandler.prototype.hasMoreToFetch = function () {
   return (this.m_loadingIndicator != null);
+};
+
+IteratingDataProviderContentHandler.prototype.getLoadingIndicator = function () {
+  return this.m_loadingIndicator != null ? this.m_loadingIndicator.get(0) : null;
 };
 
 /**
@@ -2120,6 +2113,7 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
         (self.fetchSize !== -1 || typeof self.getDataProvider().getPageCount === 'function'))) {
         return values;
       }
+
       var nextPromise = self.m_dataProviderAsyncIterator.next();
       var fetchMoreData = nextPromise.then(function (value) {
         // eslint-disable-next-line no-param-reassign
@@ -2142,11 +2136,10 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
     }, function (reason) {
       self._handleFetchError(reason);
       self.signalTaskEnd(); // signal fetch stopped. Started above.
+      return Promise.reject(reason);
     }).then(function (values) {
-      // if not fetching, stop b/c fetch error happened earlier
-      // Previous _handleFetchError will pass the reason value into
-      // values for this then call, so ignore if m_fetching is false.
-      if (self.m_fetching) {
+      // values should never be null
+      if (values) {
         // check if content handler has been destroyed already
         if (self.m_widget == null) {
           return;
@@ -2179,10 +2172,7 @@ IteratingDataProviderContentHandler.prototype.fetchRows = function (forceFetch) 
         // append loading indicator at the end as needed
         self._handleFetchedData(value, templateEngine, (offset === 0));
       }
-    }, function (reason) {
-      self._handleFetchError(reason);
-      self.signalTaskEnd(); // signal fetch stopped. Started above.
-    });
+    }, function () {});
     this.signalTaskEnd(); // signal method task end
     return;
   }
@@ -2203,11 +2193,16 @@ IteratingDataProviderContentHandler.prototype._handleFetchError = function (msg)
     return;
   }
 
+  var skeletons = this.m_root.querySelector('.oj-listview-initial-skeletons');
+  if (skeletons != null) {
+    skeletons.parentNode.removeChild(skeletons);
+  }
+
   if (this._isLoadMoreOnScroll()) {
     this._removeLoadingIndicator();
   }
 
-  this.m_widget.renderComplete();
+  this.m_widget.renderComplete(true);
 };
 
 /**
@@ -2223,7 +2218,7 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
         // idle callback might have been cancelled
         if (self.m_idleCallback) {
           self._appendLoadingIndicator();
-          self.afterItemsInserted();
+          self.afterItemsInserted(false, true);
           self.signalTaskEnd(); // started in initial renderItemsWhenIdle call
         }
         self.m_idleCallback = null;
@@ -2243,10 +2238,8 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
       });
     }
 
-    // IE/Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
-    // also Chrome has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
-    if (isMouseWheel || !window.requestIdleCallback || !window.cancelIdleCallback) {
+    // IE/legacy Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
+    if (!window.requestIdleCallback || !window.cancelIdleCallback) {
       this.m_idleCallback = window.requestAnimationFrame(function () {
         var fragment = document.createDocumentFragment();
         var oneData = data.shift();
@@ -2260,12 +2253,18 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
         addFragmentOnRequestAnimationFrame(fragment);
       });
     } else {
+      // Chromium has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
+      var options;
+      if (isMouseWheel && oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.BLINK) {
+        options = { timeout: 100 };
+      }
       this.m_idleCallback = window.requestIdleCallback(function (idleDeadline) {
         // no need to check for whether listview has been destroyed yet since we cancel the callback on destroy
         var timeRemaining = idleDeadline.timeRemaining();
         var lastTimeTaken = 0;
         var fragment = document.createDocumentFragment();
-        while (timeRemaining > lastTimeTaken) {
+        while (timeRemaining > lastTimeTaken || idleDeadline.didTimeout) {
           if (data.length === 0 || keys.length === 0) {
             break;
           }
@@ -2283,7 +2282,7 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
         }
 
         addFragmentOnRequestAnimationFrame(fragment);
-      });
+      }, options);
     }
   };
 
@@ -2331,14 +2330,14 @@ IteratingDataProviderContentHandler.prototype._isOverflowCheckForCustomScroller 
   }
   // for the case where the root element is not the scroller, the DOMScroller isOverflow check
   // might not work, check whether the last element is in the viewport instead
-  return this._isLastItemInViewport();
+  return this._isLastItemNotInViewport();
 };
 
 /**
- * Checks whether the last item is in the current viewport
+ * Checks whether the last item is outside of the current viewport
  * @private
  */
-IteratingDataProviderContentHandler.prototype._isLastItemInViewport = function () {
+IteratingDataProviderContentHandler.prototype._isLastItemNotInViewport = function () {
   var items = this.m_root.children;
   var styleClass = this.m_widget.getItemElementStyleClass();
   var lastItem;
@@ -2350,14 +2349,10 @@ IteratingDataProviderContentHandler.prototype._isLastItemInViewport = function (
   }
 
   if (lastItem) {
-    var lastItemBounds = lastItem.getBoundingClientRect();
-    if (!(lastItemBounds.top >= 0 &&
-      lastItemBounds.bottom <= document.documentElement.clientHeight)) {
-      return true;
-    }
+    return !isElementInScrollerBounds(lastItem, this._getScroller());
   }
 
-  // no items or last item is not inbound
+  // no items
   return false;
 };
 
@@ -2416,7 +2411,7 @@ IteratingDataProviderContentHandler.prototype._handleFetchSuccess =
     this._removeDuplicateItems(keys);
 
     var index = this.m_root.querySelectorAll('.' + this.m_widget.getItemElementStyleClass()).length;
-    if (index > 0 && !doneOrMaxLimitReached && this._isOverflow() &&
+    if (index > 0 && !doneOrMaxLimitReached && this._isLastItemNotInViewport() &&
       this.m_widget.m_scrollPosition == null) {
       // clone the data since we are going to manipulate the array
       // just in case the DataProvider returns something that references internal structure
@@ -2498,7 +2493,6 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
   var options = {
     fetchSize: this._getFetchSize(),
     fetchTrigger: this._getFetchTrigger(),
-    offsetTop: this._getScrollerOffsetTop(),
     maxCount: this._getMaxCount(),
     asyncIterator: this.m_dataProviderAsyncIterator,
     initialRowCount: this.m_root.childElementCount,
@@ -2510,7 +2504,7 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
         self.signalTaskEnd();
         if (self.m_root != null) {
           // this is called as part of fetchEnd, see 
-          self.m_widget.renderComplete();
+          self.m_widget.renderComplete(true);
         }
       }
     },
@@ -2543,7 +2537,7 @@ IteratingDataProviderContentHandler.prototype._registerDomScroller = function ()
   if (scroller !== this.m_widget.getListContainer()[0]) {
     options.contentElement = this.m_root;
     if (scroller === document.documentElement) {
-      options.isOverflow = this._isLastItemInViewport.bind(this);
+      options.isOverflow = this._isLastItemNotInViewport.bind(this);
     }
   }
   this.m_domScroller = new DomScroller(scroller, this.getDataProvider(), options);
@@ -2604,11 +2598,30 @@ IteratingDataProviderContentHandler.prototype.GetReferenceNode = function (paren
 };
 
 /**
+ * @private
+ */
+IteratingDataProviderContentHandler.prototype._isIterateAfterDoneNotAllowed = function () {
+  var dataProvider = this.getDataProvider();
+  if (dataProvider && dataProvider.getCapability) {
+    var capability = dataProvider.getCapability('fetchFirst');
+    if (capability && capability.iterateAfterDone === 'notAllowed') {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
  * Gets the maximum index for insert event
  * @private
  */
 IteratingDataProviderContentHandler.prototype._getMaxIndexForInsert = function () {
   var max = Number.MAX_VALUE;
+  // temporary solution for SDP
+  if (this._isIterateAfterDoneNotAllowed() && !this.hasMoreToFetch()) {
+    return max;
+  }
+
   // only care about child count if there's more to fetch
   if (this._isLoadMoreOnScroll()) {
     max = $(this.m_root).children('li.' + this.m_widget.getItemElementStyleClass()).length;
@@ -2653,7 +2666,9 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
           index = isBeforeKeys ? index : index + 1;
         } else if (this._isLoadMoreOnScroll()) {
           // if append to the end
-          index = max;
+          if (!this._isIterateAfterDoneNotAllowed() || this.hasMoreToFetch()) {
+            index = max;
+          }
         }
       }
       // we skip any insert/append outside of range if there's still more to fetch
@@ -2695,7 +2710,7 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
       // every item to be insert are out of range, but we still need to checkViewport
       this.m_currentEvents.pop();
       if (this.m_currentEvents.length === 0) {
-        this.afterItemsInserted(true);
+        this.afterItemsInserted(true, true);
       }
     } else {
       var self = this;
@@ -2703,7 +2718,7 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
         if (self.m_widget) {
           self.m_currentEvents.pop();
           if (self.m_currentEvents.length === 0) {
-            self.afterItemsInserted(true);
+            self.afterItemsInserted(true, true);
           }
         }
       });
@@ -2864,10 +2879,12 @@ IteratingDataProviderContentHandler.prototype._handleFetchedData =
             this._handleScrollerMaxRowCount();
           }
 
-          this.fetchEnd(skipPostProcessing, (!nothingInserted || !dataObj.done));
+          this.fetchEnd(skipPostProcessing, (!nothingInserted || !dataObj.done), isInitialFetch);
 
           // disable tabbable elements once the fetched items are rendered
-          this.disableAllTabbableElements();
+          if (!nothingInserted) {
+            this.disableAllTabbableElements();
+          }
         }.bind(this));
     }
   };
@@ -2894,10 +2911,11 @@ IteratingDataProviderContentHandler.prototype.disableAllTabbableElements = funct
  * Do any logic after items are inserted into the DOM
  * @private
  */
-IteratingDataProviderContentHandler.prototype.afterItemsInserted = function (checkViewport) {
+IteratingDataProviderContentHandler.prototype.afterItemsInserted =
+  function (checkViewport, skipSyncScrollPosition) {
   if (this.m_widget) {
     var self = this;
-    var _animationPromise = this.m_widget.renderComplete();
+    var _animationPromise = this.m_widget.renderComplete(skipSyncScrollPosition);
     if (_animationPromise) {
       _animationPromise.then(function () {
         self.m_animationPromise = null;
@@ -2919,7 +2937,7 @@ IteratingDataProviderContentHandler.prototype.afterItemsInserted = function (che
         var busyContext = Context.getContext(self.m_root).getBusyContext();
         var viewportCheckPromise = busyContext.whenReady();
         viewportCheckPromise.then(function () {
-          if (self.m_widget) {
+          if (self.m_widget != null) {
             // card dimension could be not available until now where the card is fully rendered
             // adjust loadmore skeletons that were previously rendered
             if (self.isCardLayout() && self.m_cardDim === undefined &&
@@ -2952,12 +2970,12 @@ IteratingDataProviderContentHandler.prototype.afterItemsInserted = function (che
  * @private
  */
 IteratingDataProviderContentHandler.prototype.fetchEnd =
-  function (skipPostProcessing, checkViewport) {
+  function (skipPostProcessing, checkViewport, isInitialFetch) {
     // fetch is done
     this._setFetching(false);
 
     if (!skipPostProcessing) {
-      this.afterItemsInserted(checkViewport);
+      this.afterItemsInserted(checkViewport, !isInitialFetch);
     }
 
     // signal fetch end. Started in either fetchRows() or started as a dummy task whenever this
@@ -2988,6 +3006,7 @@ IteratingDataProviderContentHandler.prototype._checkHorizontalViewport = functio
       if (scroller === document.documentElement) {
         var rect = lastItem.getBoundingClientRect();
         if ((rect.top <= scrollerHeight) && ((rect.top + rect.height) >= 0)) {
+          this.handleBeforeFetch();
           return this.m_domScroller._fetchMoreRows();
         }
       } else {
@@ -2995,6 +3014,7 @@ IteratingDataProviderContentHandler.prototype._checkHorizontalViewport = functio
         var offsetTop = lastItem.offsetTop;
         var scrollerOffsetTop = (scroller === this.m_root) ? 0 : this._getScrollerOffsetTop();
         if (offsetTop > scrollTop && offsetTop < (scrollTop + scrollerHeight) - scrollerOffsetTop) {
+          this.handleBeforeFetch();
           return this.m_domScroller._fetchMoreRows();
         }
       }

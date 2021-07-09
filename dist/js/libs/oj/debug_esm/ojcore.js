@@ -15,13 +15,6 @@ import * as TimerUtils from 'ojs/ojtimerutils';
 import * as Translations from 'ojs/ojtranslation';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @ojoverviewdoc ModuleLoadingOverview - [5]JET Module Loading
  * @classdesc
  * {@ojinclude "name":"moduleLoadingOverviewDoc"}
@@ -93,14 +86,6 @@ import * as Translations from 'ojs/ojtranslation';
  *
  * @ojfragment moduleLoadingOverviewDoc
  * @memberof ModuleLoadingOverview
- */
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
  */
 
 oj._registerLegacyNamespaceProp('Logger', Logger);

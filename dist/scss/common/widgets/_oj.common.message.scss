@@ -24,9 +24,7 @@
       display: inline-flex;
       justify-content: space-between;
       align-items: center;
-
-        height: $messageHeaderHeight;  
-
+      min-height: $messageHeaderHeight; 
     }
     
     .oj-message-leading-header {

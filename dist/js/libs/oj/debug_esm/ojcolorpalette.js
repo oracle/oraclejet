@@ -18,13 +18,6 @@ import { error, warn } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 import LabeledByUtils from 'ojs/ojlabelledbyutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_color_palette_metadata = 
 {
@@ -195,14 +188,6 @@ var __oj_color_palette_metadata =
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*---------------------------------------------------------
    ojColorPalette    Jet Color Palette element
    Depends:   jquery.ui.core.js
@@ -210,15 +195,6 @@ var __oj_color_palette_metadata =
 ----------------------------------------------------------*/
 
 (function () {
-/*
-  function debugObj(o)  {
-    var s ;
-    try { s = JSON.stringify(o) ; }
-    catch (e) { s = "ERROR";}
-    return s ;
-  };
-*/
-
   //  ojColorPalette class names
   var OJCP_LIST_ITEM_ELEMENT = 'oj-listview-item-element';
   var OJCP_SELECTED = 'oj-selected';
@@ -293,8 +269,129 @@ var __oj_color_palette_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
    * </h3>
    *
-   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the color palette must be <code class="prettyprint">refresh()</code>ed.
+   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the color palette must be
+   * <code class="prettyprint">refresh()</code>ed.
    *
+   */
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+
+  /**
+   * Sets a property or a single subproperty for complex properties and notifies the component
+   * of the change, triggering a [property]Changed event.
+   *
+   * @function setProperty
+   * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+   * @param {any} value - The new value to set the property to.
+   *
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
+   * @instance
+   *
+   * @example <caption>Set a single subproperty of a complex property:</caption>
+   * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
+   */
+  /**
+   * Retrieves a value for a property or a single subproperty for complex properties.
+   * @function getProperty
+   * @param {string} property - The property name to set. Supports dot notation for subproperty access.
+   * @return {any}
+   *
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @instance
+   *
+   * @example <caption>Get a single subproperty of a complex property:</caption>
+   * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
+   */
+  /**
+   * Performs a batch set of properties.
+   * @function setProperties
+   * @param {Object} properties - An object containing the property and value pairs to set.
+   *
+   * @expose
+   * @memberof oj.ojColorPalette
+   * @instance
+   *
+   * @example <caption>Set a batch of properties:</caption>
+   * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
+   */
+
+  /**
+   * <p>Sub-ID for a palette swatch item at a specific index.</p>
+   *
+   * @ojsubid oj-palette-entry
+   * @memberof oj.ojColorPalette
+   *
+   * @example <caption>Get the palette's internal JET ListView entry for the third palette swatch:</caption>
+   * var node = myColorPalette.getNodeBySubId({'subId': 'oj-palette-entry', 'index': 2});
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>Space or Enter</kbd></td>
+   *       <td>Select a color swatch.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>PgDn</kbd></td>
+   *       <td>Navigates down the swatch display to the next page.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>PgUp</kbd></td>
+   *       <td>Navigates up the swatch display to the previous page.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Navigate to the next swatch if in list layout, or to the swatch in the same position in the next row if in grid layout.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Navigate to the previous swatch if in list layout, or to the swatch in the same position in the previous row if in grid layout.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>RightArrow</kbd></td>
+   *       <td>Navigate to the next swatch.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Swatch</td>
+   *       <td><kbd>LeftArrow</kbd></td>
+   *       <td>Navigate to the previous swatch.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojColorPalette
+   */
+   //-----------------------------------------------------
+   //                   Styling
+   //-----------------------------------------------------
+   /**
+   * @ojstylevariableset oj-color-palette-css-set1
+   * @ojstylevariable oj-color-palette-swatch-inner-border-color {description: "Color palette swatch inner border color", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-color-palette-swatch-outer-border-color-selected {description: "Color palette swatch outer border color selected",
+   * formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable oj-color-palette-border-radius {description: "Color palette border radius", formats: ["length","percentage"], help: "#css-variables"}
+   * @ojstylevariable oj-color-palette-swatch-margin {description: "Color palette swatch margin", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-color-palette-grid-font-size {description: "Color palette grid font size", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojColorPalette
    */
   oj$1.__registerWidget('oj.ojColorPalette', $.oj.editableValue,
     {
@@ -395,7 +492,8 @@ var __oj_color_palette_metadata =
          * @type {string}
          * @default "off"
          * @ojshortdesc Specifies whether a text label accompanies the color swatch.
-         * @ojvalue {string} "auto" labels are displayed if the <em>layout</em> property is <em>'list'</em> and swatch-size is <em>'sm'</em> or if the <em>layout</em> is <em>'grid'</em> and <em>swatch-size</em> is <em>'lg'</em>
+         * @ojvalue {string} "auto" labels are displayed if the <em>layout</em> property is <em>'list'</em> and
+         * swatch-size is <em>'sm'</em> or if the <em>layout</em> is <em>'grid'</em> and <em>swatch-size</em> is <em>'lg'</em>
          * @ojvalue {string} "off" labels are not displayed
          *
          * @example <caption>Initialize the color palette with the <code class="prettyprint">label-display</code> attribute specified:</caption>
@@ -461,7 +559,6 @@ var __oj_color_palette_metadata =
       }, // end options
 
 
-      //* * @inheritdoc */
       getNodeBySubId: function (locator) {
         if (locator == null) {
           return this.element ? this.element[0] : null;
@@ -489,7 +586,7 @@ var __oj_color_palette_metadata =
         return ret;
       },
 
-      //* * @inheritdoc */
+
       getSubIdByNode: function (elem) {
         var $node = $(elem);
         var subId = null;
@@ -532,7 +629,8 @@ var __oj_color_palette_metadata =
        * @return {void}
        * @memberof oj.ojColorPalette
        * @expose
-       * @ojdeprecated {since:"4.0.0", description: "This is deprecated for API consistency with the remove function. The same functionality can be achieved by mutating the observable array that is set as the palette."}
+       * @ojdeprecated {since:"4.0.0", description:
+       * "This is deprecated for API consistency with the remove function. The same functionality can be achieved by mutating the observable array that is set as the palette."}
        * @ignore
        * @instance
        */
@@ -575,7 +673,8 @@ var __oj_color_palette_metadata =
        * @return {void}
        * @memberof oj.ojColorPalette
        * @expose
-       * @ojdeprecated {since:"4.0.0", description: "This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array that is set as the palette."}
+       * @ojdeprecated {since:"4.0.0", description:
+       * "This is deprecated due to a name collision with HTMLElement. The same functionality can be achieved by mutating the observable array that is set as the palette."}
        * @ignore
        * @instance
        */
@@ -627,15 +726,14 @@ var __oj_color_palette_metadata =
        */
       whenReady: function () {
         var self = this;
-        var promise = new Promise(function (resolve) {
+        return new Promise(function (resolve) {
           self._$LV.ojListView('whenReady')
             .then(function () {
               resolve(true);
             });
         });
-        return promise;
       },
-    /**
+      /**
        * Override to setup resources needed by this component.
        * @memberof oj.ojColorPalette
        * @override
@@ -1282,7 +1380,7 @@ var __oj_color_palette_metadata =
           $swatches = $('.oj-colorpalette-container .oj-colorpalette-swatch');
           t = this;
 
-          // Enable/diable the appearance of the swatches
+          // Enable/disable the appearance of the swatches
           if (disabled) {
             //  ListView doesn't show any difference to the disabled items, so do it here
             this._disabledBG = [];
@@ -1834,114 +1932,5 @@ var __oj_color_palette_metadata =
       _GetDefaultStyleClass: function () {
         return 'oj-colorpalette';
       }
-
-
-      // Fragments:
-
-      /**
-       * Sets a property or a single subproperty for complex properties and notifies the component
-       * of the change, triggering a [property]Changed event.
-       *
-       * @function setProperty
-       * @param {string} property - The property name to set. Supports dot notation for subproperty access.
-       * @param {any} value - The new value to set the property to.
-       *
-       * @expose
-       * @memberof oj.ojColorPalette
-       * @ojshortdesc Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.
-       * @instance
-       *
-       * @example <caption>Set a single subproperty of a complex property:</caption>
-       * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
-       */
-      /**
-       * Retrieves a value for a property or a single subproperty for complex properties.
-       * @function getProperty
-       * @param {string} property - The property name to set. Supports dot notation for subproperty access.
-       * @return {any}
-       *
-       * @expose
-       * @memberof oj.ojColorPalette
-       * @instance
-       *
-       * @example <caption>Get a single subproperty of a complex property:</caption>
-       * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
-       */
-      /**
-       * Performs a batch set of properties.
-       * @function setProperties
-       * @param {Object} properties - An object containing the property and value pairs to set.
-       *
-       * @expose
-       * @memberof oj.ojColorPalette
-       * @instance
-       *
-       * @example <caption>Set a batch of properties:</caption>
-       * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
-       */
-
-      /**
-       * <p>Sub-ID for a palette swatch item at a specific index.</p>
-       *
-       * @ojsubid oj-palette-entry
-       * @memberof oj.ojColorPalette
-       *
-       * @example <caption>Get the palette's internal JET ListView entry for the third palette swatch:</caption>
-       * var node = myColorPalette.getNodeBySubId({'subId': 'oj-palette-entry', 'index': 2});
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>Space or Enter</kbd></td>
-       *       <td>Select a color swatch.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>PgDn</kbd></td>
-       *       <td>Navigates down the swatch display to the next page.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>PgUp</kbd></td>
-       *       <td>Navigates up the swatch display to the previous page.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>DownArrow</kbd></td>
-       *       <td>Navigate to the next swatch if in list layout, or to the swatch in the same position in the next row if in grid layout.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>UpArrow</kbd></td>
-       *       <td>Navigate to the previous swatch if in list layout, or to the swatch in the same position in the previous row if in grid layout.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>RightArrow</kbd></td>
-       *       <td>Navigate to the next swatch.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Swatch</td>
-       *       <td><kbd>LeftArrow</kbd></td>
-       *       <td>Navigate to the previous swatch.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojColorPalette
-       */
-
-
     }); // end    $.widget("oj.ojColorPalette", ...
 }());

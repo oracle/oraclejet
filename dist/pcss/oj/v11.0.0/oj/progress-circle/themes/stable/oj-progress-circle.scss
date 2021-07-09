@@ -1,0 +1,9 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "_oj-progress-circle.servervars.scss";
+@import "_oj-progress-circle.cssvars.scss";
+@import "../base/_oj-progress-circle.scss";
+
+  @include module-include-once("stable.progress-circle") {
+  }

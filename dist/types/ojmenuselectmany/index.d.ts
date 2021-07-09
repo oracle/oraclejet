@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { DataProvider } from '../ojdataprovider';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojMenuSelectMany extends JetElement<ojMenuSelectManySettableProperties> {
@@ -63,4 +57,17 @@ export namespace MenuSelectManyElement {
         label: string;
         value: any;
     };
+}
+export interface MenuSelectManyIntrinsicProps extends Partial<Readonly<ojMenuSelectManySettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondisabledChanged?: (value: ojMenuSelectManyEventMap['disabledChanged']) => void;
+    onoptionsChanged?: (value: ojMenuSelectManyEventMap['optionsChanged']) => void;
+    onvalueChanged?: (value: ojMenuSelectManyEventMap['valueChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-menu-select-many": MenuSelectManyIntrinsicProps;
+        }
+    }
 }

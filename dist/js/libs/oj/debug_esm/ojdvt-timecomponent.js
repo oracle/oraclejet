@@ -9,14 +9,6 @@ import { Obj, CSSStyle, BaseComponent, Agent, JsonUtils, Container, ClipPath, To
 import { TimeAxisUtils } from 'ojs/ojtimeaxis-toolkit';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Style related utility functions for TimeComponent.
  * @class
  */
@@ -71,14 +63,6 @@ DvtTimeComponentStyleUtils.getScrollbarPadding = function()
 {
   return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * This is the base class for all time based components (Gantt, Timeline).  It handles the following:
@@ -1263,14 +1247,6 @@ TimeComponent.prototype.panBy = function(deltaX, deltaY)
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Base event manager for Timeline and Gantt.
  * @param {TimeComponent} comp The owning dvt.Timeline or dvt.Gantt.
  * @extends {dvt.EventManager}
@@ -1743,6 +1719,9 @@ TimeComponentEventManager.prototype._onTouchDragEnd = function(event)
  * @private
  */
 TimeComponentEventManager.prototype._getDragHandler = function(relPos) {
+  if (relPos && !this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
+    return null;
+  }
   if (this._comp.isMarqueeSelectEnabled()) {
     return this._marqueeSelectHandler;
   }
@@ -1826,14 +1805,6 @@ TimeComponentEventManager.prototype.GetTouchResponse = function()
 {
   return EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * TimeComponent keyboard handler.

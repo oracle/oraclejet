@@ -8,14 +8,6 @@
 define(['exports'], function (exports) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace
    * @name oj.Logger
    * @hideconstructor

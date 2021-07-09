@@ -12,14 +12,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
   TemplateEngine = TemplateEngine && Object.prototype.hasOwnProperty.call(TemplateEngine, 'default') ? TemplateEngine['default'] : TemplateEngine;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ignore
    */
   const CompositeTemplateRenderer = {};
@@ -159,14 +151,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
   CompositeTemplateRenderer._BINDING_CONTEXT = null;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @protected
    * @ignore
    */
@@ -175,50 +159,45 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
       var newNodes;
       var binding;
       var attrs = ['name', 'slot'];
-      var bPreprocess = false;
       if (!isTemplate) {
-        bPreprocess = true;
         attrs.push('index');
         binding = 'ko _ojBindSlot_:{';
       } else {
-        bPreprocess = true;
         attrs.push('data');
         attrs.push('as');
         binding = 'ko _ojBindTemplateSlot_:{';
       }
 
-      if (bPreprocess) {
-        var valueExpressions = [];
-        for (var i = 0; i < attrs.length; i++) {
-          var attr = attrs[i];
-          var expr = _getExpression(node.getAttribute(attr));
-          if (expr) {
-            valueExpressions.push(attr + ':' + expr);
-          }
+      var valueExpressions = [];
+      for (var i = 0; i < attrs.length; i++) {
+        var attr = attrs[i];
+        var expr = _getExpression(node.getAttribute(attr));
+        if (expr) {
+          valueExpressions.push(attr + ':' + expr);
         }
-        binding += valueExpressions.join(',');
-        binding += '}';
-
-        var openComment = document.createComment(binding);
-
-        var closeComment = document.createComment('/ko');
-
-        newNodes = [openComment];
-
-        var parent = node.parentNode;
-        parent.insertBefore(openComment, node); // @HTMLUpdateOK
-
-        // Copy the 'fallback content' children into the comment node
-        while (node.childNodes.length > 0) {
-          var child = node.childNodes[0];
-          parent.insertBefore(child, node); // @HTMLUpdateOK
-          newNodes.push(child);
-        }
-
-        newNodes.push(closeComment);
-
-        parent.replaceChild(closeComment, node);
       }
+      binding += valueExpressions.join(',');
+      binding += '}';
+
+      var openComment = document.createComment(binding);
+
+      var closeComment = document.createComment('/ko');
+
+      newNodes = [openComment];
+
+      var parent = node.parentNode;
+      parent.insertBefore(openComment, node); // @HTMLUpdateOK
+
+      // Copy the 'fallback content' children into the comment node
+      while (node.childNodes.length > 0) {
+        var child = node.childNodes[0];
+        parent.insertBefore(child, node); // @HTMLUpdateOK
+        newNodes.push(child);
+      }
+
+      newNodes.push(closeComment);
+
+      parent.replaceChild(closeComment, node);
       return newNodes;
     }
 
@@ -247,28 +226,12 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
     }
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   ko.bindingHandlers._ojNodeStorage_ =
   {
     init: function () {
       return { controlsDescendantBindings: true };
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utilities shared between oj-bind-slot and oj-bind-template slot elements.
@@ -308,14 +271,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
     }
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   ko.bindingHandlers._ojBindSlot_ =
   {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
@@ -341,7 +296,12 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
           // assigned nodes for downstream slotting
           node.__oj_slots = slotAttr;
         }
-        ko.virtualElements.setDomNodeChildren(element, assignedNodes);
+        ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+        try {
+          ko.virtualElements.setDomNodeChildren(element, assignedNodes);
+        } finally {
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
+        }
 
         // Notifies JET components in node that they have been shown
         // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
@@ -375,14 +335,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojcustomelement', 'ojs/ojcustomeleme
 
   // Allow _ojBindSlot_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
   ko.virtualElements.allowedBindings._ojBindSlot_ = true;
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   ko.bindingHandlers._ojBindTemplateSlot_ = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {

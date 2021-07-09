@@ -9,14 +9,6 @@ import { Obj, Point, Rectangle, OutputText, GradientParser, LinearGradientFill, 
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 /**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * NBox Constants
  * @class
  */
@@ -360,14 +352,6 @@ NBoxConstants.HEIGHT = 'height';
 NBoxConstants.WIDTH = 'width';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Utility functions for NBox.
  * @class
  */
@@ -513,14 +497,6 @@ var DvtNBoxUtils = {
     return index == null ? null : displayables[index];
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Data related utility functions for NBox.
@@ -1252,9 +1228,10 @@ DvtNBoxDataUtils.isDrawerSelected = function(nbox, categoryNode) {
  * @param {DvtNBoxNode|DvtNBoxCategoryNode|DvtNBoxDrawer} object an object that need a description
  * @param {string} datatip a datatip to use as part of description
  * @param {boolean} selected true if the object is selected
+ * @param {function} context shortDesc Context object
  * @return {string} aria-label description for the object
  */
-DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected) {
+ DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected, context) {
   var translations = nbox.getOptions().translations;
   var baseDesc = (object.nboxType === 'categoryNode' || object.nboxType === 'drawer') ?
       ResourceUtils.format(translations.labelAndValue, [translations.labelGroup, datatip]) :
@@ -1278,7 +1255,7 @@ DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected) {
     states.push(ResourceUtils.format(translations.labelAndValue, [translations.labelSize, nodeCount]));
   }
 
-  return Displayable.generateAriaLabel(baseDesc, states);
+  return Displayable.generateAriaLabel(baseDesc, states, context);
 };
 
 /**
@@ -1454,14 +1431,6 @@ DvtNBoxDataUtils.compareCategoryNodeSize = function(a, b) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Keyboard handler for the NBox component
  * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @param {NBox} nbox The owning NBox component
@@ -1601,14 +1570,6 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
   }
   return next;
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Style related utility functions for NBox.
@@ -2353,14 +2314,6 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Animation handler for NBox
  * @param {dvt.Context} context the platform specific context object
  * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
@@ -2423,14 +2376,6 @@ DvtNBoxDataAnimationHandler.prototype.getNewNBox = function() {
 DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
   return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for DvtNBoxNode.
@@ -3540,14 +3485,6 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * An NBox node.
  * @param {NBox} nbox the parent nbox
  * @param {object} data the data for this node
@@ -3846,6 +3783,29 @@ DvtNBoxNode.prototype.getAriaLabel = function() {
 };
 
 /**
+ * @override
+ */
+ DvtNBoxNode.prototype.getAriaLabel = function() {
+  return DvtNBoxDataUtils.buildAriaDesc(this._nbox, this, this.getShortDesc(), this.isSelected(), () => DvtNBoxNode.getShortDescContext(this));
+};
+
+/**
+ * Returns the shortDesc Context of the node.
+ * @param {DvtNBoxNode} node
+ * @return {object} The shortDesc Context object
+ */
+ DvtNBoxNode.getShortDescContext = function(node) {
+  var data = node.getData();
+  return {
+    'id': data['id'],
+    'label': data['label'],
+    'secondaryLabel': data['secondaryLabel'],
+    'row': data['row'],
+    'column': data['column']
+  };
+};
+
+/**
  * Gets the highlight/filter categories for this node.
  * @return {array} categories
  */
@@ -4039,14 +3999,6 @@ DvtNBoxNode.prototype.getChildContainer = function(create) {
 DvtNBoxNode.prototype.setChildContainer = function(container) {
   this._childContainer = container;
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for DvtNBoxCell.
@@ -4866,14 +4818,6 @@ DvtNBoxCellRenderer._createShadow = function(shadowStyle) {
   return null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 var DvtNBoxCell = function() {};
 
 Obj.createSubclass(DvtNBoxCell, Container);
@@ -5343,14 +5287,6 @@ DvtNBoxCell.prototype.getKeyboardFocusDisplayable = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Renderer for DvtNBoxCategoryNode.
  * @class
  */
@@ -5691,14 +5627,6 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
       object.setAriaProperty(NBoxConstants.LABEL, desc);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for DvtNBoxDrawer.
@@ -6123,14 +6051,6 @@ DvtNBoxDrawerRenderer._addAccessibilityAttributes = function(nbox, data, drawerC
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 var DvtNBoxDrawer = function() {};
 
 Obj.createSubclass(DvtNBoxDrawer, Container);
@@ -6395,14 +6315,6 @@ DvtNBoxDrawer.prototype.getKeyboardFocusDisplayable = function() {
   return null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 var DvtNBoxNodeOverflow = function() {};
 
 Obj.createSubclass(DvtNBoxNodeOverflow, Container);
@@ -6641,14 +6553,6 @@ DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
   var newPrevNode = DvtNBoxUtils.getDisplayable(this._nbox, newPrevNodeData);
   return newPrevNode.nextNavigable;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  *  Provides automation services for a DVT nBox component.
@@ -7449,14 +7353,6 @@ DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
 };
 
 /**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
@@ -7582,14 +7478,6 @@ DvtNBoxDefaults.SKIN_ALTA = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Category rollover handler for NBox
  * @param {function} callback A function that responds to component events.
  * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -7633,14 +7521,6 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
   };
   return callback.bind(this);
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Event Manager for NBox.
@@ -7775,14 +7655,6 @@ DvtNBoxEventManager.prototype.GetTouchResponse = function() {
     return EventManager.TOUCH_RESPONSE_TOUCH_START;
   return EventManager.TOUCH_RESPONSE_AUTO;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 var DvtNBoxCategoryNode = function() {};
 
@@ -8262,14 +8134,6 @@ DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
 };
 
 /**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Vector math utilities.
  * @class DvtVectorUtils
  */
@@ -8329,14 +8193,6 @@ var DvtVectorUtils = {
     return Math.sqrt(v.x * v.x + v.y * v.y);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Renderer for NBox.
@@ -9392,14 +9248,6 @@ DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
       new Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
       nbox.getEventManager(), options['_statusMessageStyle']);
 };
-
-/**
- * @license
- * Copyright (c) 2013 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * NBox component.  This nbox should never be instantiated directly.  Use the

@@ -9,21 +9,13 @@ import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import { Swipe, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_UP, DIRECTION_DOWN, Pan, DIRECTION_HORIZONTAL, TouchInput } from 'hammerjs';
 import Context from 'ojs/ojcontext';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { subtreeShown, subtreeHidden } from 'ojs/ojcomponentcore';
 import { warn } from 'ojs/ojlogger';
 import { getReadingDirection, makeFocusable, isChromeEvent, isLogicalAncestorOrSelf, isTouchSupported } from 'ojs/ojdomutils';
 import FocusUtils from 'ojs/ojfocusutils';
 import 'ojs/ojjquery-hammer';
 import 'ojs/ojpopupcore';
-
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @namespace
@@ -56,22 +48,22 @@ import 'ojs/ojpopupcore';
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td>beforeClose</td>
+ *       <td>ojbeforeclose</td>
  *       <td>Triggered immediately before the offcanvas is closed. It can be canceled to prevent the content from closing by returning a false in the event listener.</td>
 *       <td>$(".selector").on("ojbeforeclose", function(event, offcanvas) {});</td>
  *     </tr>
  *     <tr>
- *       <td>beforeOpen<br>
+ *       <td>ojbeforeopen<br>
  *       <td>Triggered immediately before the offcanvas is open. It can be canceled to prevent the content from opening by returning a false in the event listener.</td>
 *       <td>$(".selector").on("ojbeforeopen", function(event, offcanvas) {});</td>
  *     </tr>
  *     <tr>
- *       <td>close<br>
+ *       <td>ojclose<br>
  *       <td>Triggered after the offcanvas has been closed.</td>
 *       <td>$(".selector").on("ojclose", function(event, offcanvas) {});</td>
  *     </tr>
  *     <tr>
- *       <td>open<br>
+ *       <td>ojopen<br>
  *       <td>Triggered after the offcanvas has been open (after animation completes).</td>
 *       <td>$(".selector").on("ojopen", function(event, offcanvas) {});</td>
  *     </tr>
@@ -325,7 +317,7 @@ OffcanvasUtils._getDisplayMode = function (offcanvas) {
       displayMode !== OffcanvasUtils.DISPLAY_MODE_PUSH &&
       displayMode !== OffcanvasUtils.DISPLAY_MODE_REFLOW) {
     // default displayMode in iOS is push and in android and windows are overlay
-    displayMode = (parseJSONFromFontFamily('oj-offcanvas-option-defaults') || {}).displayMode;
+    displayMode = getCachedCSSVarValues(['--oj-private-off-canvas-global-display-mode-default'])[0];
   }
 
   return displayMode;
@@ -364,8 +356,6 @@ OffcanvasUtils._getOuterWrapper = function (drawer) {
   return drawer.closest('.' + OffcanvasUtils.OUTER_WRAPPER_SELECTOR);
 };
 
-// selector
-// displayMode
 /**
  * @memberof OffcanvasUtils
  * @private
@@ -512,10 +502,6 @@ OffcanvasUtils._getEdge = function (drawer) {
 };
 
 
-//
-// selector
-// edge
-// displayMode
 /**
  * This method is called right before open and after close animation
  * @memberof OffcanvasUtils
@@ -641,7 +627,7 @@ OffcanvasUtils._onTransitionEnd = function (target, handler) {
     function () {
       if (transitionTimer) {
         clearTimeout(transitionTimer);
-        transitionTimer = undefined;
+        transitionTimer = null;
       }
       // remove handler
       target.off(endEvents, listener);
@@ -1348,7 +1334,7 @@ OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, disp
   var size;
   if (edge === OffcanvasUtils.EDGE_START || edge === OffcanvasUtils.EDGE_END) {
     // if size is missing, outerWidth is used
-    size = (size === undefined) ? (drawer.outerWidth(true) + 'px') : size;
+    size = drawer.outerWidth(true) + 'px';
 
     // don't set transform for OffcanvasUtils.DISPLAY_MODE_OVERLAY
     if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
@@ -1356,7 +1342,7 @@ OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, disp
     }
   } else {
     // if size is missing, outerHeight is used
-    size = (size === undefined) ? (drawer.outerHeight(true) + 'px') : size;
+    size = drawer.outerHeight(true) + 'px';
 
     // don't set transform for OffcanvasUtils.DISPLAY_MODE_OVERLAY
     if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
@@ -1573,7 +1559,7 @@ OffcanvasUtils.open = function (offcanvas) {
          offcanvas[OffcanvasUtils.SELECTOR_KEY] + "' doing the open animation." });
 
       if (isReflow) {
-//        OffcanvasUtils._openReflow(myOffcanvas, resolve, reject, edge);
+        // OffcanvasUtils._openReflow(myOffcanvas, resolve, reject, edge);
       } else if (displayMode === OffcanvasUtils.DISPLAY_MODE_PUSH) {
         OffcanvasUtils._openPush(myOffcanvas, resolve, reject, edge);
       } else {

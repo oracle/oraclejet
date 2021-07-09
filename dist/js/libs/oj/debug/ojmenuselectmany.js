@@ -8,13 +8,6 @@
 define(['ojs/ojcomponentcore', 'ojs/ojoption', 'ojs/ojdataprovider', 'ojs/ojcomposite'], function (ojcomponentcore, ojoption, ojdataprovider, Composite) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-   /**
      * @ojcomponent oj.ojMenuSelectMany
      * @since 6.0.0
      * @ojdisplayname Menu Multi Select

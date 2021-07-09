@@ -1,11 +1,3 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 // tslint:disable-next-line no-unnecessary-class
 export interface AttributeExprFilter<D> extends AttributeExprFilterDef<D>, BaseDataFilter<D> {
 }
@@ -174,7 +166,7 @@ export interface FetchAttribute {
     attributes?: Array<string | FetchAttribute>;
     name: string;
 }
-export interface FetchByKeysCapability<D> {
+export interface FetchByKeysCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     implementation: 'iteration' | 'lookup' | 'batchLookup';
@@ -196,7 +188,7 @@ export interface FetchByKeysResults<K, D> {
     fetchParameters: FetchByKeysParameters<K>;
     results: Map<K, Item<K, D>>;
 }
-export interface FetchByOffsetCapability<D> {
+export interface FetchByOffsetCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     implementation: 'iteration' | 'randomAccess';
@@ -219,7 +211,7 @@ export interface FetchCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
 }
-export interface FetchFirstCapability<D> {
+export interface FetchFirstCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     iterationSpeed: 'immediate' | 'delayed';
@@ -274,7 +266,7 @@ export interface ItemWithOptionalData<K, D> {
     data?: D;
     metadata: ItemMetadata<K>;
 }
-export interface SortCapability<D> {
+export interface SortCapability {
     attributes: 'none' | 'single' | 'multiple';
 }
 export interface SortCriterion<D> {

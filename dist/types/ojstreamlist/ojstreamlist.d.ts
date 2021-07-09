@@ -1,23 +1,18 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
+import { ComponentChildren } from "preact"
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { h, Component } from 'preact';
+import { ExtendGlobalProps, PropertyChanged, TemplateSlot } from 'ojs/ojvcomponent';
 import { KeySet, KeySetImpl } from 'ojs/ojkeyset';
 import { DataProvider } from 'ojs/ojdataprovider';
 import 'ojs/ojtreedataprovider';
 declare class Props<Key, Data> {
     data?: DataProvider<Key, Data> | null;
     expanded?: KeySet<Key>;
-    onExpandedChanged?: ElementVComponent.PropertyChanged<KeySet<Key> | null>;
-    groupTemplate?: ElementVComponent.TemplateSlot<ItemTemplateContext<Key, Data>>;
-    itemTemplate?: ElementVComponent.TemplateSlot<ItemTemplateContext<Key, Data>>;
+    onExpandedChanged?: PropertyChanged<KeySet<Key> | null>;
+    groupTemplate?: TemplateSlot<ItemTemplateContext<Key, Data>>;
+    itemTemplate?: TemplateSlot<ItemTemplateContext<Key, Data>>;
     scrollPolicy?: 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions?: {
         fetchSize?: number;
@@ -25,7 +20,7 @@ declare class Props<Key, Data> {
         scroller?: Element | QuerySelector | null;
     };
     scrollPosition?: ScrollPositionType<Key>;
-    onScrollPositionChanged?: ElementVComponent.PropertyChanged<{
+    onScrollPositionChanged?: PropertyChanged<{
         y?: number;
         key?: Key;
         offsetY?: number;
@@ -42,6 +37,7 @@ declare type State<K> = {
     expandedSkeletonKeys: KeySetImpl<K>;
     expandingKeys: KeySetImpl<K>;
     toCollapse: Array<K>;
+    lastExpanded: KeySet<K>;
 };
 declare type ScrollPositionType<Key> = {
     y?: number;
@@ -56,7 +52,7 @@ interface ItemTemplateContext<Key, Data> {
     parentKey?: Key;
     depth?: number;
 }
-export declare class StreamList<K extends string | number, D> extends ElementVComponent<Props<K, D>, State<K>> {
+export declare class StreamList<K extends string | number, D> extends Component<ExtendGlobalProps<Props<K, D>>, State<K>> {
     private root;
     private contentHandler;
     private _ticking;
@@ -73,14 +69,15 @@ export declare class StreamList<K extends string | number, D> extends ElementVCo
     private focusInHandler;
     private focusOutHandler;
     constructor(props: Readonly<Props<K, D>>);
-    private _handleFocusIn;
-    private _handleFocusOut;
+    static defaultProps: Partial<Props<any, any>>;
+    private readonly _handleFocusIn;
+    private readonly _handleFocusOut;
     _clearFocusoutTimeout(): void;
-    private _handleClick;
+    private readonly _handleClick;
     private _handleToggleExpanded;
-    private _handleKeyDown;
+    private readonly _handleKeyDown;
     private _touchStartHandler;
-    protected render(): any;
+    render(): h.JSX.Element;
     private _doBlur;
     private _isFocusBlurTriggeredByDescendent;
     private _renderInitialSkeletons;
@@ -91,24 +88,22 @@ export declare class StreamList<K extends string | number, D> extends ElementVCo
     private instanceOfTreeDataProvider;
     private _postRender;
     private _getScrollPolicyOptions;
-    protected mounted(): void;
+    componentDidMount(): void;
     private getSkeletonHeight;
     private outerHeight;
-    protected unmounted(): void;
+    componentWillUnmount(): void;
     private _delayShowSkeletons;
     private _getOptionDefaults;
     private _getShowSkeletonsDelay;
     private getRootElement;
-    protected updated(oldProps: Readonly<Props<K, D>>, oldState: Readonly<State<K>>): void;
-    protected static initStateFromProps<K, D>(props: Readonly<Props<K, D>>, state: Readonly<State<K>>): Partial<State<K>> | null;
-    protected static updateStateFromProps<K, D>(props: Readonly<Props<K, D>>, state: Readonly<State<K>>, oldProps: Readonly<Props<K, D>>): Partial<State<K>> | null;
-    private static collapse;
-    private static _getLocalDescendentCount;
+    componentDidUpdate(oldProps: Readonly<Props<K, D>>, oldState: Readonly<State<K>>): void;
+    static getDerivedStateFromProps<K, D>(props: Readonly<Props<K, D>>, state: Readonly<State<K>>): Partial<State<K>> | null;
+    private static readonly collapse;
     private static _findIndex;
-    private setRootElement;
+    private readonly setRootElement;
     private _unregisterScrollHandler;
     private _registerScrollHandler;
-    private scrollListener;
+    private readonly scrollListener;
     private _updateScrollPosition;
     private _syncScrollTopWithProps;
     private _getParentKey;
@@ -138,6 +133,7 @@ export declare class StreamList<K extends string | number, D> extends ElementVCo
     private getGroupRenderer;
     private getGroupStyleClass;
     addBusyState(description: string): Function;
+    handleItemRemoved(key: K): void;
     private _handleTouchOrClickEvent;
     private _isFocusable;
     private _isInputElement;
@@ -151,7 +147,6 @@ export declare class StreamList<K extends string | number, D> extends ElementVCo
     private _disableAllTabbableElements;
     private _enterActionableMode;
     private _exitActionableMode;
-    protected _vprops?: VProps<K, D>;
 }
 // Custom Element interfaces
 export interface StreamListElement<K extends string | number,D> extends JetElement<StreamListElementSettableProperties<K, D>>, StreamListElementSettableProperties<K, D> {
@@ -165,22 +160,22 @@ export interface StreamListElement<K extends string | number,D> extends JetEleme
 }
 export namespace StreamListElement {
   // tslint:disable-next-line interface-over-type-literal
-  type dataChanged<K extends string | number,D> = JetElementCustomEvent<StreamListElement<K,D>["data"]>;
+  type dataChanged<K extends string | number,D> = JetElementCustomEventStrict<StreamListElement<K,D>["data"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type expandedChanged<K extends string | number,D> = JetElementCustomEvent<StreamListElement<K,D>["expanded"]>;
+  type expandedChanged<K extends string | number,D> = JetElementCustomEventStrict<StreamListElement<K,D>["expanded"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPolicyChanged<K extends string | number,D> = JetElementCustomEvent<StreamListElement<K,D>["scrollPolicy"]>;
+  type scrollPolicyChanged<K extends string | number,D> = JetElementCustomEventStrict<StreamListElement<K,D>["scrollPolicy"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPolicyOptionsChanged<K extends string | number,D> = JetElementCustomEvent<StreamListElement<K,D>["scrollPolicyOptions"]>;
+  type scrollPolicyOptionsChanged<K extends string | number,D> = JetElementCustomEventStrict<StreamListElement<K,D>["scrollPolicyOptions"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type scrollPositionChanged<K extends string | number,D> = JetElementCustomEvent<StreamListElement<K,D>["scrollPosition"]>;
+  type scrollPositionChanged<K extends string | number,D> = JetElementCustomEventStrict<StreamListElement<K,D>["scrollPosition"]>;
 }
 export interface StreamListElementEventMap<K extends string | number,D> extends HTMLElementEventMap {
-  'dataChanged': JetElementCustomEvent<StreamListElement<K,D>["data"]>;
-  'expandedChanged': JetElementCustomEvent<StreamListElement<K,D>["expanded"]>;
-  'scrollPolicyChanged': JetElementCustomEvent<StreamListElement<K,D>["scrollPolicy"]>;
-  'scrollPolicyOptionsChanged': JetElementCustomEvent<StreamListElement<K,D>["scrollPolicyOptions"]>;
-  'scrollPositionChanged': JetElementCustomEvent<StreamListElement<K,D>["scrollPosition"]>;
+  'dataChanged': JetElementCustomEventStrict<StreamListElement<K,D>["data"]>;
+  'expandedChanged': JetElementCustomEventStrict<StreamListElement<K,D>["expanded"]>;
+  'scrollPolicyChanged': JetElementCustomEventStrict<StreamListElement<K,D>["scrollPolicy"]>;
+  'scrollPolicyOptionsChanged': JetElementCustomEventStrict<StreamListElement<K,D>["scrollPolicyOptions"]>;
+  'scrollPositionChanged': JetElementCustomEventStrict<StreamListElement<K,D>["scrollPosition"]>;
 }
 export interface StreamListElementSettableProperties<Key,Data> extends JetSettableProperties {
   /**
@@ -198,23 +193,27 @@ export interface StreamListElementSettableProperties<Key,Data> extends JetSettab
   /**
   * Specifies fetch options for scrolling behaviors that trigger data fetches. See the Help documentation for more information.
   */
-  scrollPolicyOptions: Props<Key,Data>['scrollPolicyOptions'];
+  scrollPolicyOptions?: Props<Key,Data>['scrollPolicyOptions'];
   /**
   * Specifies the current scroll position of the StreamList. See the Help documentation for more information.
   */
-  scrollPosition: Props<Key,Data>['scrollPosition'];
+  scrollPosition?: Props<Key,Data>['scrollPosition'];
 }
 export interface StreamListElementSettablePropertiesLenient<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>> {
   [key: string]: any;
 }
-export interface StreamListProperties<Key,Data> extends Partial<StreamListElementSettableProperties<Key,Data>>, GlobalAttributes {
-}
-export interface VProps<Key,Data> extends Props<Key,Data>, GlobalAttributes {
+export interface StreamListIntrinsicProps extends Partial<Readonly<StreamListElementSettableProperties<any,any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  children?: ComponentChildren;
+  ondataChanged?: (value: StreamListElementEventMap<any,any>['dataChanged']) => void;
+  onexpandedChanged?: (value: StreamListElementEventMap<any,any>['expandedChanged']) => void;
+  onscrollPolicyChanged?: (value: StreamListElementEventMap<any,any>['scrollPolicyChanged']) => void;
+  onscrollPolicyOptionsChanged?: (value: StreamListElementEventMap<any,any>['scrollPolicyOptionsChanged']) => void;
+  onscrollPositionChanged?: (value: StreamListElementEventMap<any,any>['scrollPositionChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-stream-list": StreamListProperties<any,any>;
+      "oj-stream-list": StreamListIntrinsicProps;
     }
   }
 }

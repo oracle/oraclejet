@@ -5,7 +5,8 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { ElementVComponent, h, listener, customElement } from 'ojs/ojvcomponent-element';
+import { Root, customElement } from 'ojs/ojvcomponent';
+import { Component, createRef, h } from 'preact';
 import { recentPointer } from 'ojs/ojdomutils';
 import { isEventClickthroughDisabled } from 'ojs/ojdatacollection-common';
 
@@ -15,144 +16,89 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-class Props {
-}
-let ActionCard = class ActionCard extends ElementVComponent {
+let ActionCard = class ActionCard extends Component {
     constructor(props) {
         super(props);
+        this._rootRef = createRef();
+        this._handleOjAction = (event) => {
+            if (this._isFromActiveSource(event)) {
+                event.stopPropagation();
+            }
+        };
+        this._handleStart = (event) => {
+            if (!this._isFromActiveSource(event)) {
+                this.setState({ active: true });
+            }
+        };
+        this._handleUpEnd = (event) => {
+            var _a, _b;
+            if (!this._isFromActiveSource(event) && this.state.active) {
+                this.setState({ active: false });
+                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
+            }
+        };
+        this._handleTouchcancel = (event) => {
+            if (!this._isFromActiveSource(event)) {
+                this.setState({ active: false });
+            }
+        };
+        this._handleMove = (event) => {
+            if (this.state.active && !this._isFromActiveSource(event)) {
+                this.setState({ active: false });
+            }
+        };
+        this._handleKeydown = (event) => {
+            if (!this._isFromActiveSource(event) &&
+                !event.repeat &&
+                (event.key === 'Enter' || event.key === ' ')) {
+                this.setState({ active: true });
+            }
+        };
+        this._handleKeyup = (event) => {
+            var _a, _b;
+            if (!this._isFromActiveSource(event) && (event.key === 'Enter' || event.key === ' ')) {
+                this.setState({ active: false });
+                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
+            }
+        };
+        this._handleFocusin = (event) => {
+            this.setState({ focus: true });
+        };
+        this._handleFocusout = (event) => {
+            this.setState({ focus: false });
+        };
         this.state = {
             active: false,
             focus: false
         };
-        this._rootElemRef = (element) => {
-            this._rootElem = element;
-        };
     }
-    render() {
+    render(props, state) {
         var _a;
-        const classNameObj = {
-            'oj-actioncard': true,
-            'oj-active': this.state.active,
-            'oj-focus-highlight': this.state.focus && !recentPointer()
-        };
-        const tabIndex = (_a = this.props.tabIndex) !== null && _a !== void 0 ? _a : 0;
-        return (h("oj-action-card", { tabIndex: tabIndex, class: classNameObj, role: 'button', onKeyup: this._handleKeyup, onMouseup: this._handleMouseup, onKeydown: this._handleKeydown, onMousedown: this._handleMousedown, onMousemove: this._handleMousemove, onTouchstart: this._handleTouchstart, onTouchend: this._handleTouchend, onTouchcancel: this._handleTouchcancel, onTouchmove: this._handleTouchmove, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onOjAction: this._handleOjAction, ref: this._rootElemRef }, this.props.children));
+        let classString = 'oj-actioncard';
+        if (state.active) {
+            classString += ' oj-active';
+        }
+        if (state.focus && !recentPointer()) {
+            classString += ' oj-focus-highlight';
+        }
+        const tabIndex = (_a = props.tabIndex) !== null && _a !== void 0 ? _a : 0;
+        return (h(Root, Object.assign({ tabIndex: tabIndex, class: classString, role: 'button', onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onMouseMove: this._handleMove, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
+            onojAction: this._handleOjAction
+        }, { ref: this._rootRef }), this.props.children));
+    }
+    componentDidMount() {
+        this._rootRef.current.addEventListener('touchstart', this._handleStart, { passive: true });
+        this._rootRef.current.addEventListener('touchend', this._handleUpEnd, { passive: false });
+        this._rootRef.current.addEventListener('touchcancel', this._handleTouchcancel, {
+            passive: true
+        });
+        this._rootRef.current.addEventListener('touchmove', this._handleMove, { passive: true });
     }
     _isFromActiveSource(event) {
-        return isEventClickthroughDisabled(event, this._rootElem);
-    }
-    _handleOjAction(event) {
-        if (this._isFromActiveSource(event)) {
-            event.stopPropagation();
-        }
-    }
-    _handleTouchstart(event) {
-        if (!this._isFromActiveSource(event)) {
-            this.updateState({ active: true });
-        }
-    }
-    _handleTouchend(event) {
-        var _a, _b;
-        if (!this._isFromActiveSource(event)) {
-            if (this.state.active) {
-                this.updateState({ active: false });
-                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
-            }
-        }
-    }
-    _handleTouchcancel(event) {
-        if (!this._isFromActiveSource(event)) {
-            this.updateState({ active: false });
-        }
-    }
-    _handleTouchmove(event) {
-        if (this.state.active) {
-            if (!this._isFromActiveSource(event)) {
-                this.updateState({ active: false });
-            }
-        }
-    }
-    _handleKeydown(event) {
-        if (!this._isFromActiveSource(event)) {
-            if (!event.repeat && (event.key === 'Enter' || event.key === ' ')) {
-                this.updateState({ active: true });
-            }
-        }
-    }
-    _handleKeyup(event) {
-        var _a, _b;
-        if (!this._isFromActiveSource(event)) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                this.updateState({ active: false });
-                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
-            }
-        }
-    }
-    _handleMousedown(event) {
-        if (!this._isFromActiveSource(event)) {
-            this.updateState({ active: true });
-        }
-    }
-    _handleMouseup(event) {
-        var _a, _b;
-        if (!this._isFromActiveSource(event)) {
-            if (this.state.active) {
-                this.updateState({ active: false });
-                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
-            }
-        }
-    }
-    _handleMousemove(event) {
-        if (this.state.active) {
-            if (!this._isFromActiveSource(event)) {
-                this.updateState({ active: false });
-            }
-        }
-    }
-    _handleFocusin(event) {
-        this.updateState({ focus: true });
-    }
-    _handleFocusout(event) {
-        this.updateState({ focus: false });
+        return isEventClickthroughDisabled(event, this._rootRef.current);
     }
 };
-ActionCard.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "tabIndex": 1, "role": 1 } }, "slots": { "": {} }, "events": { "ojAction": { "bubbles": true } } };
-__decorate([
-    listener({ passive: false })
-], ActionCard.prototype, "_handleOjAction", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleTouchstart", null);
-__decorate([
-    listener({ passive: false })
-], ActionCard.prototype, "_handleTouchend", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleTouchcancel", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleTouchmove", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleKeydown", null);
-__decorate([
-    listener({ passive: false })
-], ActionCard.prototype, "_handleKeyup", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleMousedown", null);
-__decorate([
-    listener({ passive: false })
-], ActionCard.prototype, "_handleMouseup", null);
-__decorate([
-    listener({ passive: true })
-], ActionCard.prototype, "_handleMousemove", null);
-__decorate([
-    listener()
-], ActionCard.prototype, "_handleFocusin", null);
-__decorate([
-    listener()
-], ActionCard.prototype, "_handleFocusout", null);
+ActionCard.metadata = { "slots": { "": {} }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["tabIndex", "role"] } };
 ActionCard = __decorate([
     customElement('oj-action-card')
 ], ActionCard);

@@ -305,15 +305,11 @@
       display: none;
     }
 
-    /* Styling on collection selection */
-    .oj-listbox-searchselect .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
-    .oj-listbox-searchselect .oj-listview-item.oj-selected {
-      // show hover color instead of selection color
+    /* Styling on collection current item */
+    .oj-listbox-selectsingle .oj-listview-current-item:not(.oj-selected) {
       background-color: $collectionCellBgColorHover;
     }
-    .oj-listbox-searchselect .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
-    .oj-listbox-searchselect .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected {
-      // show hover color instead of selection color
+    .oj-listbox-selectsingle .oj-table-body-current-row:not(.oj-selected) .oj-table-data-cell {
       background-image: linear-gradient($collectionCellBgColorHover, $collectionCellBgColorHover);
     }
 
@@ -348,18 +344,6 @@
       display: none;
       width : 0;
       height: 0;
-    }
-
-    /* clears the 'X' from Chrome */
-    .oj-searchselect input[type="search"]::-webkit-search-decoration,
-    .oj-searchselect input[type="search"]::-webkit-search-cancel-button,
-    .oj-searchselect input[type="search"]::-webkit-search-results-button,
-    .oj-searchselect input[type="search"]::-webkit-search-results-decoration,
-    .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-decoration,
-    .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-cancel-button,
-    .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-button,
-    .oj-listbox-searchselect .oj-searchselect-filter input[type="search"]::-webkit-search-results-decoration {
-      display: none;
     }
 
     /* Default options*/

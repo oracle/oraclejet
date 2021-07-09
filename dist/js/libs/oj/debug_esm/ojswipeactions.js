@@ -16,14 +16,6 @@ import { close, open } from 'ojs/ojoffcanvas';
 import { tearDownSwipeActions, setupSwipeActions } from 'ojs/ojswipetoreveal';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
 var __oj_swipe_actions_metadata = 
 {
@@ -62,15 +54,6 @@ var __oj_swipe_actions_metadata =
     metadata: __oj_swipe_actions_metadata
   });
 }());
-
-/**
- * @license
- * Copyright (c) 2018 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 
 (function () {
 /*!
@@ -133,9 +116,9 @@ var __oj_swipe_actions_metadata =
  * <code class="prettyprint">startIcon</code> slot of the <code class="prettyprint">oj-option</code>
  * should be specified. See the <code class="prettyprint">oj-option</code> doc for details about accepted children and slots.</p>
  *
- * <h3 id="accessibility-section">
+ * <h3 id="a11y-section">
  *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
  * <p>SwipeActions will display skip links that allow users to access swipe actions when the element has focus.  This implies that
@@ -238,11 +221,9 @@ var __oj_swipe_actions_metadata =
             enterPressed = false;
           },
           click: function (event) {
-            // if the target is not part of content, then it must be part of the action bar
-            // we stop event from bubbling so that its host (ListView) will not try to process
-            // the click event (and select the item for example)
-            if (this.m_content && !this.m_content.contains(event.target)) {
-              self._handleAction(event);
+            // if clicked on an action from the action bar, we would stop the event from bubbling so that its
+            // host (ListView) will not try to process the click event (and select the item for example)
+            if (self._handleAction(event)) {
               event.stopPropagation();
             }
           },
@@ -303,7 +284,7 @@ var __oj_swipe_actions_metadata =
       _close: function (offcanvasInfo) {
         var busyContext = Context.getContext(this.element[0]).getBusyContext();
         var busyStateResolve = busyContext.addBusyState({ description: 'closing offcanvas' });
-        close(offcanvasInfo).then(function () {
+        return close(offcanvasInfo).then(function () {
           busyStateResolve();
         });
       },
@@ -315,9 +296,13 @@ var __oj_swipe_actions_metadata =
       _handleAction: function (event) {
         var ojOption = $(event.target).parents('oj-option');
         if (ojOption.length > 0) {
-          this._fireActionEvent(ojOption[0], event);
-          this._close({ selector: ojOption[0].parentNode });
+          var theOption = ojOption[0];
+          this._close({ selector: theOption.parentNode }).then(function () {
+            this._fireActionEvent(theOption, event);
+          }.bind(this));
+          return true;
         }
+        return false;
       },
 
       /**
@@ -442,13 +427,6 @@ var __oj_swipe_actions_metadata =
 
         var slotMap = CustomElementUtils.getSlotMap(this.element[0]);
 
-        // default slot is content
-        var content = slotMap[''];
-        if (content && content.length > 0) {
-          this.m_content = content[0];
-          this.m_content.classList.add('oj-swipeactions-content');
-        }
-
         // create the offcanvas for the start/end slots
         this._createOffcanvas(slotMap, 'start');
         this._createOffcanvas(slotMap, 'end');
@@ -530,14 +508,6 @@ var __oj_swipe_actions_metadata =
       },
 
       /**
-       * @private
-       */
-      _isIE11: function () {
-        var agent = oj.AgentUtils.getAgentInfo();
-        return agent.browser === 'ie' && agent.browserVersion === 11;
-      },
-
-      /**
        * Renders a hidden link that provides an accessible way to show the swipe actions
        * @private
        */
@@ -591,14 +561,6 @@ var __oj_swipe_actions_metadata =
             // need this timeout to hide otherwise VoiceOver will not be able to shift focus
             setTimeout(function () {
               if (!isAndroid) {
-                self._hideAccessibleLinks();
-              }
-            }, 0);
-          } else if (event.relatedTarget == null && self._isIE11()) {
-            // IE11 does not support relatedTarget field, so we'll use setTimeout to check if focus switched to something
-            // that is not an accessible link
-            setTimeout(function () {
-              if (!document.activeElement.classList.contains('oj-swipeactions-accessible-link')) {
                 self._hideAccessibleLinks();
               }
             }, 0);

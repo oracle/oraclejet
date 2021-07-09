@@ -8,14 +8,6 @@
 define(['knockout', 'ojs/ojlogger'], function (ko, Logger) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * A Knockout adapter, to be used in conjunction with {@link CoreRouter}, to allow
    * components to two-way bind their values to the router's current state.
    * <p>
@@ -47,8 +39,8 @@ define(['knockout', 'ojs/ojlogger'], function (ko, Logger) { 'use strict';
    *
    * <p>
    * <h5>Binding to router state fields</h5>
-   * CoreRouterState exposes the {@link CoreRouterState.detail} and
-   * {@link CoreRouterState.params} objects (if defined), and these can also be
+   * CoreRouterState exposes the {@link CoreRouterState#detail} and
+   * {@link CoreRouterState#params} objects (if defined), and these can also be
    * used in view bindings to provide additional information. Here, a label is
    * set in the route's detail object.
    * <pre class="prettyprint">
@@ -158,7 +150,7 @@ define(['knockout', 'ojs/ojlogger'], function (ko, Logger) { 'use strict';
      * router, if defined. Note that this CoreRouterState's <code class="prettyprint">path</code>
      * is the original string value from the class, and can only be used read-only.
      * In order to navigate the router from a component value using two-way binding,
-     * use the observable {@link path} instead.
+     * use the observable {@link KnockoutRouterAdapter#path} instead.
      * This observable is read-only, and may not be written to.
      * @name state
      * @memberof KnockoutRouterAdapter
@@ -172,10 +164,10 @@ define(['knockout', 'ojs/ojlogger'], function (ko, Logger) { 'use strict';
     }
 
     /**
-     * An observable containing the current value of {@link CoreRouterState.path}.
+     * An observable containing the current value of {@link CoreRouterState#path}.
      * This observable can be used in two-way bindings to read the value of the
      * current state, as well as navigate the router to a new path. When this
-     * observable's value changes, the underlying {@link CoreRouter.go} method
+     * observable's value changes, the underlying {@link CoreRouter#go} method
      * is called with the new value as the path.
      * @name path
      * @memberof KnockoutRouterAdapter

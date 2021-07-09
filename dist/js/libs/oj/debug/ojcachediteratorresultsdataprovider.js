@@ -5,14 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojdataprovider'], function (oj, ojeventtarget, ojcomponentcore, ojdataprovider) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore'], function (oj, ojeventtarget, ojcomponentcore) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
     /**
      * @license
      * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
+     * Licensed under The Universal Permissive License (UPL), Version 1.0
      * @ignore
      */
     /**
@@ -167,11 +167,10 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                     this._iteratedOffset = 0;
                 }
                 ['next']() {
-                    let self = this;
-                    let params = this._parent._lastFetchParams;
-                    let size = params.size ? params.size : -1;
+                    const params = this._parent._lastFetchParams;
+                    const size = params.size ? params.size : -1;
                     let result;
-                    if (size == -1) {
+                    if (size === -1) {
                         if (this.cache.isDone()) {
                             result = this.cache.getDataList(params, this._cachedOffset);
                             this._cachedOffset = this._cachedOffset + result.data.length;
@@ -188,12 +187,12 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                             return Promise.resolve(new this._parent.CacheAsyncIteratorReturnResult(result));
                         }
                         else if (this._cachedOffset > 0) {
-                            return new Promise(function (resolve, reject) {
-                                if (self._iteratedOffset < self._cachedOffset) {
-                                    let fetchUntilOffset = function () {
-                                        return self.asyncIterator.next().then((result) => {
-                                            self._iteratedOffset = self._iteratedOffset + result.value.data.length;
-                                            if (self._iteratedOffset >= self._cachedOffset || result.done) {
+                            return new Promise((resolve, reject) => {
+                                if (this._iteratedOffset < this._cachedOffset) {
+                                    const fetchUntilOffset = () => {
+                                        return this.asyncIterator.next().then((result) => {
+                                            this._iteratedOffset = this._iteratedOffset + result.value.data.length;
+                                            if (this._iteratedOffset >= this._cachedOffset || result.done) {
                                                 resolve();
                                             }
                                             else {
@@ -208,33 +207,33 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                                 }
                             }).then(() => {
                                 return this.asyncIterator.next().then((result) => {
-                                    self._iteratedOffset = self._iteratedOffset + result.value.data.length;
-                                    self._cachedOffset = self._iteratedOffset;
-                                    self.cache.addListResult(result);
+                                    this._iteratedOffset = this._iteratedOffset + result.value.data.length;
+                                    this._cachedOffset = this._iteratedOffset;
+                                    this.cache.addListResult(result);
                                     if (result.done) {
-                                        return new self._parent.CacheAsyncIteratorReturnResult(result.value);
+                                        return new this._parent.CacheAsyncIteratorReturnResult(result.value);
                                     }
                                     else {
-                                        return new self._parent.CacheAsyncIteratorYieldResult(result.value);
+                                        return new this._parent.CacheAsyncIteratorYieldResult(result.value);
                                     }
                                 });
                             });
                         }
                     }
                     return this.asyncIterator.next().then((result) => {
-                        self._iteratedOffset = self._iteratedOffset + result.value.data.length;
-                        self._cachedOffset = self._iteratedOffset;
-                        self.cache.addListResult(result);
-                        if (size == -1 && !this.cache.isDone()) {
+                        this._iteratedOffset = this._iteratedOffset + result.value.data.length;
+                        this._cachedOffset = this._iteratedOffset;
+                        this.cache.addListResult(result);
+                        if (size === -1 && !this.cache.isDone()) {
                             this.asyncIterator.next().then((result) => {
-                                self.cache.addListResult(result);
+                                this.cache.addListResult(result);
                             });
                         }
                         if (result.done) {
-                            return new self._parent.CacheAsyncIteratorReturnResult(result.value);
+                            return new this._parent.CacheAsyncIteratorReturnResult(result.value);
                         }
                         else {
-                            return new self._parent.CacheAsyncIteratorYieldResult(result.value);
+                            return new this._parent.CacheAsyncIteratorYieldResult(result.value);
                         }
                     });
                 }
@@ -253,7 +252,6 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                     this[CachedIteratorResultsDataProvider._DONE] = true;
                 }
             };
-            let self = this;
             this.cache = new oj.DataCache();
             this._lastFetchParams = null;
             if (dataProvider.createOptimizedKeyMap) {
@@ -267,20 +265,20 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                 };
             }
             dataProvider.addEventListener(CachedIteratorResultsDataProvider._MUTATE, (event) => {
-                self.cache.processMutations(event.detail);
-                self.dispatchEvent(event);
+                this.cache.processMutations(event.detail);
+                this.dispatchEvent(event);
             });
             dataProvider.addEventListener(CachedIteratorResultsDataProvider._REFRESH, (event) => {
-                self.cache.reset();
-                self.dispatchEvent(event);
+                this.cache.reset();
+                this.dispatchEvent(event);
             });
         }
         containsKeys(params) {
-            let finalResults = new Set();
-            let neededKeys = new Set();
-            let cacheResults = this.cache.getDataByKeys(params);
+            const finalResults = new Set();
+            const neededKeys = new Set();
+            const cacheResults = this.cache.getDataByKeys(params);
             params.keys.forEach((key) => {
-                let item = cacheResults.results.get(key);
+                const item = cacheResults.results.get(key);
                 if (item) {
                     finalResults.add(key);
                 }
@@ -288,11 +286,11 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                     neededKeys.add(key);
                 }
             });
-            if (neededKeys.size == 0) {
+            if (neededKeys.size === 0) {
                 return Promise.resolve({ containsParameters: params, results: finalResults });
             }
             else {
-                let newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
+                const newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
                 return this.dataProvider.containsKeys(newParams).then((containsKeysResults) => {
                     containsKeysResults.results.forEach((key) => {
                         finalResults.add(key);
@@ -302,11 +300,11 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
             }
         }
         fetchByKeys(params) {
-            let finalResults = new Map();
-            let neededKeys = new Set();
-            let cacheResults = this.cache.getDataByKeys(params);
+            const finalResults = new Map();
+            const neededKeys = new Set();
+            const cacheResults = this.cache.getDataByKeys(params);
             params.keys.forEach((key) => {
-                let item = cacheResults.results.get(key);
+                const item = cacheResults.results.get(key);
                 if (item) {
                     finalResults.set(key, item);
                 }
@@ -314,11 +312,11 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
                     neededKeys.add(key);
                 }
             });
-            if (neededKeys.size == 0) {
+            if (neededKeys.size === 0) {
                 return Promise.resolve({ fetchParameters: params, results: finalResults });
             }
             else {
-                let newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
+                const newParams = { attributes: params.attributes, keys: neededKeys, scope: params.scope };
                 return this.dataProvider.fetchByKeys(newParams).then((fetchByKeysResults) => {
                     fetchByKeysResults.results.forEach((item, key) => {
                         finalResults.set(key, item);
@@ -328,11 +326,11 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
             }
         }
         fetchByOffset(params) {
-            let size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
+            const size = params.size ? params.size : CachedIteratorResultsDataProvider._DEFAULT_SIZE;
             if (this._compareLastFetchParameters(params) && params.offset + size <= this.cache.getSize()) {
-                let updatedParams = JSON.parse(JSON.stringify(params));
+                const updatedParams = JSON.parse(JSON.stringify(params));
                 updatedParams.size = size;
-                let results = this.cache.getDataByOffset(updatedParams);
+                const results = this.cache.getDataByOffset(updatedParams);
                 if (results) {
                     return Promise.resolve(results);
                 }
@@ -348,20 +346,20 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
             return new this.CacheAsyncIterable(this, asyncIterable[Symbol.asyncIterator](), this.cache);
         }
         getCapability(capabilityName) {
-            let capability = this.dataProvider.getCapability(capabilityName);
+            const capability = this.dataProvider.getCapability(capabilityName);
             if (capabilityName === 'fetchCapability') {
                 return { attributeFilter: capability === null || capability === void 0 ? void 0 : capability.attributeFilter, caching: 'visitedByCurrentIterator' };
             }
             return capability;
         }
         getTotalSize() {
-            if (!this._lastFetchParams.filterDef && this.cache.isDone()) {
+            if (this._lastFetchParams != null && !this._lastFetchParams.filterDef && this.cache.isDone()) {
                 return Promise.resolve(this.cache.getSize());
             }
             return this.dataProvider.getTotalSize();
         }
         isEmpty() {
-            if (!this._lastFetchParams.filterDef && this.cache.isDone()) {
+            if (this._lastFetchParams != null && !this._lastFetchParams.filterDef && this.cache.isDone()) {
                 return this.cache.getSize() === 0 ? 'yes' : 'no';
             }
             return this.dataProvider.isEmpty();
@@ -389,9 +387,9 @@ define(['ojs/ojcore-base', 'ojs/ojeventtarget', 'ojs/ojcomponentcore', 'ojs/ojda
             if (!filter) {
                 return null;
             }
-            let filterDef = {};
-            Object.keys(filter).forEach(function (property) {
-                if (property != 'filter') {
+            const filterDef = {};
+            Object.keys(filter).forEach((property) => {
+                if (property !== 'filter') {
                     filterDef[property] = filter[property];
                 }
             });

@@ -1,28 +1,17 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props {
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { ExtendGlobalProps } from 'ojs/ojvcomponent';
+import { Component, ComponentChild } from 'preact';
+declare type Props = {
     max?: number;
     value?: number;
-    'aria-valuemin'?: string;
-    'aria-valuemax'?: string;
-    'aria-valuetext'?: string;
-    'aria-valuenow'?: string;
-    'role'?: string;
-}
-export declare class ProgressBar extends ElementVComponent<Props> {
-    protected render(): any;
+};
+export declare class ProgressBar extends Component<ExtendGlobalProps<Props>> {
+    static defaultProps: Partial<Props>;
+    render(props: ExtendGlobalProps<Props>): ComponentChild;
     private _renderDeterminateBar;
     private _renderIndeterminateBar;
-    protected _vprops?: VProps;
 }
 // Custom Element interfaces
 export interface ProgressBarElement extends JetElement<ProgressBarElementSettableProperties>, ProgressBarElementSettableProperties {
@@ -36,13 +25,13 @@ export interface ProgressBarElement extends JetElement<ProgressBarElementSettabl
 }
 export namespace ProgressBarElement {
   // tslint:disable-next-line interface-over-type-literal
-  type maxChanged = JetElementCustomEvent<ProgressBarElement["max"]>;
+  type maxChanged = JetElementCustomEventStrict<ProgressBarElement["max"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type valueChanged = JetElementCustomEvent<ProgressBarElement["value"]>;
+  type valueChanged = JetElementCustomEventStrict<ProgressBarElement["value"]>;
 }
 export interface ProgressBarElementEventMap extends HTMLElementEventMap {
-  'maxChanged': JetElementCustomEvent<ProgressBarElement["max"]>;
-  'valueChanged': JetElementCustomEvent<ProgressBarElement["value"]>;
+  'maxChanged': JetElementCustomEventStrict<ProgressBarElement["max"]>;
+  'valueChanged': JetElementCustomEventStrict<ProgressBarElement["value"]>;
 }
 export interface ProgressBarElementSettableProperties extends JetSettableProperties {
   /**
@@ -57,14 +46,14 @@ export interface ProgressBarElementSettableProperties extends JetSettablePropert
 export interface ProgressBarElementSettablePropertiesLenient extends Partial<ProgressBarElementSettableProperties> {
   [key: string]: any;
 }
-export interface ProgressBarProperties extends Partial<ProgressBarElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface ProgressBarIntrinsicProps extends Partial<Readonly<ProgressBarElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  onmaxChanged?: (value: ProgressBarElementEventMap['maxChanged']) => void;
+  onvalueChanged?: (value: ProgressBarElementEventMap['valueChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-progress-bar": ProgressBarProperties;
+      "oj-progress-bar": ProgressBarIntrinsicProps;
     }
   }
 }

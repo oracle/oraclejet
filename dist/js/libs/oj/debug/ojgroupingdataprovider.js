@@ -5,21 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 'ojs/ojarraydataprovider', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojtreedataprovider', 'ojs/ojmap'], function (oj, $, ko, ArrayTreeDataProvider, ArrayDataProvider, ojdataprovider, ojeventtarget, ojtreedataprovider, KeyMap) { 'use strict';
+define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 'ojs/ojarraydataprovider', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap'], function (oj, $, ko, ArrayTreeDataProvider, ArrayDataProvider, ojdataprovider, ojeventtarget, KeyMap) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
     ArrayTreeDataProvider = ArrayTreeDataProvider && Object.prototype.hasOwnProperty.call(ArrayTreeDataProvider, 'default') ? ArrayTreeDataProvider['default'] : ArrayTreeDataProvider;
     ArrayDataProvider = ArrayDataProvider && Object.prototype.hasOwnProperty.call(ArrayDataProvider, 'default') ? ArrayDataProvider['default'] : ArrayDataProvider;
     KeyMap = KeyMap && Object.prototype.hasOwnProperty.call(KeyMap, 'default') ? KeyMap['default'] : KeyMap;
-
-    /**
-     * @license
-     * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-     * The Universal Permissive License (UPL), Version 1.0
-     * as shown at https://oss.oracle.com/licenses/upl/
-     * @ignore
-     */
 
     /* jslint browser: true,devel:true*/
     /**
@@ -287,13 +279,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             this.sortComparator = sortComparator;
             this.sectionRenderer = sectionRenderer;
             this.options = options;
-            this._getKeyAttribute = function () {
-                var keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
-                if (!keyAttributes) {
-                    keyAttributes = 'id';
-                }
-                return keyAttributes;
-            };
             this.GroupAsyncIterator = class {
                 constructor(_parent, _baseIterable, _dataprovider, _params) {
                     this._parent = _parent;
@@ -302,35 +287,35 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     this._params = _params;
                 }
                 ['next']() {
-                    let self = this;
                     let currentFetchedRootOffset = 0;
-                    if (self._parent._currentRootSection) {
-                        currentFetchedRootOffset = Object.keys(self._parent._sections).indexOf(self._parent._currentRootSection);
+                    if (this._parent._currentRootSection) {
+                        currentFetchedRootOffset = Object.keys(this._parent._sections).indexOf(this._parent._currentRootSection);
                     }
-                    let skipFetch = self._parent._currentBaseOffset < currentFetchedRootOffset;
-                    let doneOrSkip = skipFetch || self._parent._dataFetchComplete;
-                    return this._parent
-                        ._getDataFromDataProvider(this._params, 'root', doneOrSkip)
-                        .then(function () {
-                        self._parent._updateSectionIndex();
-                        let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, self._parent._currentBaseOffset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
-                        return self._dataprovider.fetchByOffset(updatedParams).then(function (res) {
-                            let result = res['results'];
-                            let data = result.map(function (value) {
+                    const skipFetch = this._parent._currentBaseOffset < currentFetchedRootOffset;
+                    const doneOrSkip = skipFetch || this._parent._dataFetchComplete;
+                    return this._parent._getDataFromDataProvider(this._params, 'root', doneOrSkip).then((res) => {
+                        if (res === 'error') {
+                            return Promise.reject("Fetch interrupted due to refresh event");
+                        }
+                        this._parent._updateSectionIndex();
+                        const updatedParams = new this._parent.FetchByOffsetParameters(this._parent, this._parent._currentBaseOffset, this._params.size, this._params.sortCriteria, this._params.filterCriterion);
+                        return this._dataprovider.fetchByOffset(updatedParams).then((res) => {
+                            const result = res['results'];
+                            const data = result.map((value) => {
                                 return value['data'];
                             });
-                            let metadata = result.map(function (value) {
+                            const metadata = result.map((value) => {
                                 return value['metadata'];
                             });
                             for (let i = 0; i < metadata.length; i++) {
-                                metadata[i] = self._parent._getNodeMetadata(result[i].data);
-                                data[i] = self._parent.sectionRenderer(metadata[i].key);
+                                metadata[i] = this._parent._getNodeMetadata(result[i].data);
+                                data[i] = this._parent.sectionRenderer(metadata[i].key);
                             }
-                            self._parent._currentBaseOffset = self._parent._currentBaseOffset + data.length;
-                            if (res.done && self._parent._dataFetchComplete && data.length == 0) {
-                                return Promise.resolve((new self._parent.AsyncIteratorReturnResult(self._parent, (new self._parent.FetchListResult(self._parent, self._params, data, metadata)))));
+                            this._parent._currentBaseOffset = this._parent._currentBaseOffset + data.length;
+                            if (res.done && this._parent._dataFetchComplete && data.length === 0) {
+                                return Promise.resolve(new this._parent.AsyncIteratorReturnResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                             }
-                            return Promise.resolve((new self._parent.AsyncIteratorYieldResult(self._parent, (new self._parent.FetchListResult(self._parent, self._params, data, metadata)))));
+                            return Promise.resolve(new this._parent.AsyncIteratorYieldResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                         });
                     });
                 }
@@ -345,43 +330,45 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     this._parent._registerIteratorOffset(this, this._parentKey, 0);
                 }
                 ['next']() {
-                    let self = this;
-                    let internalOffset = self._parent._getIteratorOffset(self);
-                    let updatedParams = new self._parent.FetchByOffsetParameters(self._parent, internalOffset.offset, self._params.size, self._params.sortCriteria, self._params.filterCriterion);
-                    let totalSectionSize = self._parent._sections[self._parentKey].children().length;
-                    let skipFetch = (totalSectionSize - internalOffset.offset > 0);
-                    let doneOrSkip = skipFetch || self._parent._dataFetchComplete;
+                    const internalOffset = this._parent._getIteratorOffset(this);
+                    const updatedParams = new this._parent.FetchByOffsetParameters(this._parent, internalOffset.offset, this._params.size, this._params.sortCriteria, this._params.filterCriterion);
+                    const totalSectionSize = this._parent._sections[this._parentKey].children().length;
+                    const skipFetch = totalSectionSize - internalOffset.offset > 0;
+                    const doneOrSkip = skipFetch || this._parent._dataFetchComplete;
                     return this._parent
                         ._getDataFromDataProvider(this._params, this._parentKey, doneOrSkip)
-                        .then(function (value) {
-                        if (value === undefined) {
-                            self._parent._updateSectionIndex();
+                        .then((value) => {
+                        if (value === 'error') {
+                            return Promise.reject("Fetch interrupted due to refresh event");
                         }
-                        return self._dataprovider.fetchByOffset(updatedParams).then(function (res) {
-                            let result = res['results'];
+                        else if (value === undefined) {
+                            this._parent._updateSectionIndex();
+                        }
+                        return this._dataprovider.fetchByOffset(updatedParams).then((res) => {
+                            const result = res['results'];
                             let doneValue = res.done;
-                            let data = result.map(function (value) {
+                            const data = result.map((value) => {
                                 return value['data'];
                             });
-                            let metadata = result.map(function (value) {
-                                return self._parent._getNodeMetadata(value['data']);
+                            const metadata = result.map((value) => {
+                                return this._parent._getNodeMetadata(value['data']);
                             });
-                            if (self._isParentSection) {
+                            if (this._isParentSection) {
                                 for (let i = 0; i < metadata.length; i++) {
-                                    data[i] = self._parent.sectionRenderer(metadata[i].key);
+                                    data[i] = this._parent.sectionRenderer(metadata[i].key);
                                 }
                             }
-                            self._parent._updateIteratorOffset(self, internalOffset.offset + data.length);
+                            this._parent._updateIteratorOffset(this, internalOffset.offset + data.length);
                             if (skipFetch && doneValue) {
-                                let nextSectionId = self._parent._sections[self._parentKey].next;
+                                const nextSectionId = this._parent._sections[this._parentKey].next;
                                 if (!nextSectionId) {
                                     doneValue = false;
                                 }
                             }
-                            if (doneValue && data.length == 0) {
-                                return Promise.resolve((new self._parent.AsyncIteratorReturnResult(self._parent, (new self._parent.FetchListResult(self._parent, self._params, data, metadata)))));
+                            if (doneValue && data.length === 0) {
+                                return Promise.resolve(new this._parent.AsyncIteratorReturnResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                             }
-                            return Promise.resolve((new self._parent.AsyncIteratorYieldResult(self._parent, (new self._parent.FetchListResult(self._parent, self._params, data, metadata)))));
+                            return Promise.resolve(new this._parent.AsyncIteratorYieldResult(this._parent, new this._parent.FetchListResult(this._parent, this._params, data, metadata)));
                         });
                     });
                 }
@@ -390,7 +377,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 constructor(_parent, _asyncIterator) {
                     this._parent = _parent;
                     this._asyncIterator = _asyncIterator;
-                    this[Symbol.asyncIterator] = function () {
+                    this[Symbol.asyncIterator] = () => {
                         return this._asyncIterator;
                     };
                 }
@@ -451,15 +438,14 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             this._initialize();
         }
         containsKeys(params) {
-            let self = this;
-            return this.fetchByKeys(params).then(function (fetchByKeysResult) {
-                let results = new Set();
-                params['keys'].forEach(function (key) {
+            return this.fetchByKeys(params).then((fetchByKeysResult) => {
+                const results = new Set();
+                params['keys'].forEach((key) => {
                     if (fetchByKeysResult['results'].get(key) != null) {
                         results.add(key);
                     }
                 });
-                return Promise.resolve({ containsParameters: params, results: results });
+                return Promise.resolve({ containsParameters: params, results });
             });
         }
         getCapability(capabilityName) {
@@ -475,66 +461,71 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return this._baseDataProvider.isEmpty();
         }
         getChildDataProvider(parentKey) {
-            let self = this;
-            let children = this._getChildren(parentKey);
-            let isParentSection = this._isParentSection(parentKey);
-            function SectionTreeDataProvider(sections, params) {
-                this._parentKey = params.parentKey;
-                this._isParentSection = params.isParentSection;
-                if (this._isParentSection) {
-                    this._baseDataProvider = new ArrayDataProvider(sections.childData, {});
-                    this._baseTreeDataProvider = new ArrayTreeDataProvider(sections.childData, {
-                        keyAttributes: params.keyAttributes
-                    });
-                }
-                else {
-                    this._baseDataProvider = new ArrayDataProvider(sections.children, {
-                        keyAttributes: params.keyAttributes
-                    });
-                    this._baseTreeDataProvider = new ArrayTreeDataProvider(sections.children, {
-                        keyAttributes: params.keyAttributes
-                    });
+            const children = this._getChildren(parentKey);
+            const isParentSection = this._isParentSection(parentKey);
+            class SectionTreeDataProvider {
+                constructor(parent, sections, params) {
+                    this.parent = parent;
+                    this.sections = sections;
+                    this.params = params;
+                    this.containsKeys = function (params) {
+                        return this._baseTreeDataProvider.containsKeys(params);
+                    };
+                    this.getCapability = function (capabilityName) {
+                        return this._baseTreeDataProvider.getCapability(capabilityName);
+                    };
+                    this.getTotalSize = function () {
+                        return this._baseTreeDataProvider.getTotalSize();
+                    };
+                    this.isEmpty = function () {
+                        return this._baseTreeDataProvider.isEmpty();
+                    };
+                    this.fetchByOffset = function (params) {
+                        return this._baseTreeDataProvider.fetchByOffset(params);
+                    };
+                    this.fetchByKeys = function (params) {
+                        return this._baseTreeDataProvider.fetchByKeys(params);
+                    };
+                    this.getChildDataProvider = function (parentKey, options) {
+                        return this._parent.getChildDataProvider(parentKey);
+                    };
+                    this.fetchFirst = function (params) {
+                        if (params && params.filterCriterion) {
+                            params = $.extend({}, params);
+                            params.filterCriterion = null;
+                        }
+                        const baseDataProvider = this._baseDataProvider;
+                        const _isParentSection = this._isParentSection;
+                        const parentKey = this._parentKey;
+                        return this._parent._getTreeIterator(_isParentSection, parentKey, baseDataProvider, params);
+                    };
+                    this._getId = function (key) {
+                        return this._parent._getId(key);
+                    };
+                    this._parent = parent;
+                    this._parentKey = params.parentKey;
+                    this._isParentSection = params.isParentSection;
+                    if (this._isParentSection) {
+                        this._baseDataProvider = new ArrayDataProvider(sections.childData, {});
+                        this._baseTreeDataProvider = new ArrayTreeDataProvider(sections.childData, {
+                            keyAttributes: params.keyAttributes
+                        });
+                    }
+                    else {
+                        this._baseDataProvider = new ArrayDataProvider(sections.children, {
+                            keyAttributes: params.keyAttributes
+                        });
+                        this._baseTreeDataProvider = new ArrayTreeDataProvider(sections.children, {
+                            keyAttributes: params.keyAttributes
+                        });
+                    }
                 }
             }
-            SectionTreeDataProvider.prototype.containsKeys = function (params) {
-                return this._baseTreeDataProvider.containsKeys(params);
-            };
-            SectionTreeDataProvider.prototype.getCapability = function (capabilityName) {
-                return this._baseTreeDataProvider.getCapability(capabilityName);
-            };
-            SectionTreeDataProvider.prototype.getTotalSize = function () {
-                return this._baseTreeDataProvider.getTotalSize();
-            };
-            SectionTreeDataProvider.prototype.isEmpty = function () {
-                return this._baseTreeDataProvider.isEmpty();
-            };
-            SectionTreeDataProvider.prototype.fetchByOffset = function (params) {
-                return this._baseTreeDataProvider.fetchByOffset(params);
-            };
-            SectionTreeDataProvider.prototype.fetchByKeys = function (params) {
-                return this._baseTreeDataProvider.fetchByKeys(params);
-            };
-            SectionTreeDataProvider.prototype.getChildDataProvider = function (parentKey) {
-                return self.getChildDataProvider(parentKey);
-            };
-            SectionTreeDataProvider.prototype.fetchFirst = function (params) {
-                if (params && params.filterCriterion) {
-                    params = $.extend({}, params);
-                    params.filterCriterion = null;
-                }
-                let baseDataProvider = this._baseDataProvider;
-                let _isParentSection = this._isParentSection;
-                let parentKey = this._parentKey;
-                return new self.TreeAsyncIterable(self, new self.TreeAsyncIterator(self, _isParentSection, parentKey, baseDataProvider, params));
-            };
-            SectionTreeDataProvider.prototype._getId = function (key) {
-                return self._getId(key);
-            };
             if (children) {
-                return new SectionTreeDataProvider(this._sections[parentKey], {
+                return new SectionTreeDataProvider(this, this._sections[parentKey], {
                     keyAttributes: this._getKeyAttribute(),
-                    parentKey: parentKey,
-                    isParentSection: isParentSection
+                    parentKey,
+                    isParentSection
                 });
             }
             return null;
@@ -544,22 +535,19 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 params = $.extend({}, params);
                 params.filterCriterion = null;
             }
-            let self = this;
-            let baseIterable = self._baseDataProvider.fetchFirst(params);
+            const baseIterable = this._baseDataProvider.fetchFirst(params);
             this._initializeTreeCache();
-            return new self.TreeAsyncIterable(this, new self.GroupAsyncIterator(this, baseIterable, self._baseDataProvider, params));
+            return this._getGroupIterator(baseIterable, this._baseDataProvider, params);
         }
         fetchByOffset(params) {
-            let basePromise = this._baseDataProvider.fetchByOffset(params);
-            let self = this;
-            return basePromise.then(function (result) {
-                let results = result.results;
-                let newResults = [];
+            const basePromise = this._baseDataProvider.fetchByOffset(params);
+            return basePromise.then((result) => {
+                const results = result.results;
+                const newResults = [];
                 for (let i = 0; i < results.length; i++) {
-                    let metadata = results[i]['metadata'];
-                    let data = results[i]['data'];
-                    metadata = self._getNodeMetadata(data);
-                    newResults.push({ data: data, metadata: metadata });
+                    const data = results[i]['data'];
+                    const metadata = this._getNodeMetadata(data);
+                    newResults.push({ data, metadata });
                 }
                 return {
                     done: result['done'],
@@ -569,10 +557,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             });
         }
         fetchByKeys(params) {
-            let self = this;
-            let results = new Map();
-            params['keys'].forEach(function (key) {
-                let node = self._getNodeForKey(key);
+            const results = new Map();
+            params['keys'].forEach((key) => {
+                const node = this._getNodeForKey(key);
                 if (node) {
                     results.set(key, {
                         metadata: { key: key },
@@ -582,8 +569,14 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             });
             return Promise.resolve({
                 fetchParameters: params,
-                results: results
+                results
             });
+        }
+        _getTreeIterator(isParentSection, parentKey, baseDataProvider, params) {
+            return new this.TreeAsyncIterable(this, new this.TreeAsyncIterator(this, isParentSection, parentKey, baseDataProvider, params));
+        }
+        _getGroupIterator(baseIterable, baseDataProvider, params) {
+            return new this.TreeAsyncIterable(this, new this.GroupAsyncIterator(this, baseIterable, baseDataProvider, params));
         }
         _getChildren(sectionKey) {
             if (this._sections[sectionKey]) {
@@ -593,11 +586,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
         }
         _isParentSection(sectionKey) {
             if (sectionKey in this._sections) {
-                let parentSection = this._sections[sectionKey];
-                if (parentSection && parentSection.children().length > 0) {
-                    if (this._sections[parentSection.children()[0]]) {
-                        return true;
-                    }
+                const parentSection = this._sections[sectionKey];
+                if (parentSection &&
+                    parentSection.children().length > 0 &&
+                    this._sections[parentSection.children()[0]]) {
+                    return true;
                 }
             }
             return false;
@@ -605,7 +598,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
         _initialize() {
             this._mapKeyToNode = new Map();
             this._mapNodeToKey = new KeyMap();
-            this._mapArrayToSequenceNum = new Map();
             this._sections = {};
             this._sectionRoots = ko.observableArray();
             this._sectionRootData = ko.observableArray();
@@ -635,13 +627,13 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             this._internalIterator = null;
         }
         _registerIteratorOffset(dataprovider, parentKey, initialOffset) {
-            this._iteratorOffsets.set(dataprovider, { parentKey: parentKey, offset: initialOffset });
+            this._iteratorOffsets.set(dataprovider, { parentKey, offset: initialOffset });
         }
         _getIteratorOffset(dataprovider) {
             return this._iteratorOffsets.get(dataprovider);
         }
         _updateIteratorOffset(dataprovider, newOffset) {
-            let originalValue = this._iteratorOffsets.get(dataprovider);
+            const originalValue = this._iteratorOffsets.get(dataprovider);
             originalValue.offset = newOffset;
             this._iteratorOffsets.set(dataprovider, originalValue);
         }
@@ -649,111 +641,93 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return this;
         }
         _getDataFromDataProvider(params, source, skipFetch) {
-            let self = this;
             if (!this._inCurrentFetchingSection(source) || skipFetch) {
-                return Promise.resolve(true);
+                return Promise.resolve('skip');
             }
-            if (!self._internalIterator) {
-                self._internalIterator = this._dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
-                self._previousTotalSize = 0;
-                self._internalIteratorCacheLength = 0;
+            let iterator = this._internalIterator;
+            if (!this._internalIterator) {
+                iterator = this._dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
+                this._internalIterator = iterator;
+                this._previousTotalSize = 0;
+                this._internalIteratorCacheLength = 0;
             }
-            if (self._previousTotalSize != self._treeData.length) {
-                self._internalIteratorCacheLength = 0;
+            if (this._previousTotalSize !== this._treeData.length) {
+                this._internalIteratorCacheLength = 0;
             }
-            let helperFunction = (storedDataLength) => {
-                return self._internalIterator.next().then((result) => {
-                    self._treeData = self._treeData.concat(result['value']['data']);
-                    self._treeMetadata = self._treeMetadata.concat(result['value']['metadata']);
-                    result['value']['metadata'].forEach(function (val) {
-                        self._treeKeyMap.push(val.key);
+            return new Promise((resolve) => {
+                this._internalIteratorResolve = resolve;
+                const helperFunction = (storedDataLength, iterator) => {
+                    return this._internalIterator.next().then((result) => {
+                        if (this._internalIterator != null && this._internalIterator === iterator) {
+                            this._treeData = this._treeData.concat(result['value']['data']);
+                            this._treeMetadata = this._treeMetadata.concat(result['value']['metadata']);
+                            result['value']['metadata'].forEach((val) => {
+                                this._treeKeyMap.push(val.key);
+                            });
+                            storedDataLength += result['value']['data'].length;
+                            if (result['done']) {
+                                this._dataFetchComplete = true;
+                            }
+                            else {
+                                this._dataFetchComplete = false;
+                            }
+                            if (result['done'] || storedDataLength >= result['value']['fetchParameters']['size']) {
+                                const remainder = storedDataLength - result['value']['fetchParameters']['size'];
+                                this._internalIteratorCacheLength = Math.max(0, remainder);
+                                this._previousTotalSize = this._treeData.length;
+                                this._internalIteratorResolve(undefined);
+                                this._internalIteratorResolve = null;
+                            }
+                            else {
+                                return helperFunction(storedDataLength, iterator);
+                            }
+                        }
                     });
-                    storedDataLength += result['value']['data'].length;
-                    if (result['done']) {
-                        self._dataFetchComplete = true;
-                    }
-                    else {
-                        self._dataFetchComplete = false;
-                    }
-                    if (result['done'] || storedDataLength >= result['value']['fetchParameters']['size']) {
-                        let remainder = storedDataLength - result['value']['fetchParameters']['size'];
-                        self._internalIteratorCacheLength = Math.max(0, remainder);
-                        self._previousTotalSize = self._treeData.length;
-                        return;
-                    }
-                    return helperFunction(storedDataLength);
-                });
-            };
-            return helperFunction(self._internalIteratorCacheLength);
+                };
+                return helperFunction(this._internalIteratorCacheLength, iterator);
+            });
         }
+        ;
         _inCurrentFetchingSection(source) {
             if (source === 'root') {
                 return true;
             }
-            if (this._currentSectionKey == source) {
+            if (this._currentSectionKey === source) {
                 return true;
             }
             return false;
         }
         _processSectionsArray(parentKeyPath) {
-            let self = this;
-            this.treeData().forEach(function (node, i) {
-                self._processNode(node, parentKeyPath);
-            });
             if (!this._baseDataProvider) {
                 this._baseDataProvider = new oj['ArrayDataProvider'](this.treeData, null);
             }
         }
-        _processTreeArray(treeData, parentKeyPath) {
-            let self = this;
-            let dataArray;
-            if (treeData instanceof Array) {
-                dataArray = treeData;
-            }
-            else {
-                dataArray = treeData();
-            }
-            dataArray.forEach(function (node, i) {
-                self._processNode(node, parentKeyPath);
-            });
-        }
         _processNode(node, parentKeyPath, nodeKey) {
-            let self = this;
-            let keyObj = { key: null, keyPath: null };
-            if (nodeKey != null) {
-                keyObj.key = nodeKey;
-                keyObj.keyPath = parentKeyPath;
-                keyObj.keyPath.push(nodeKey);
-            }
-            else {
-                keyObj = self._createKeyObj(node, parentKeyPath, self._treeData);
-            }
-            self._setMapEntry(keyObj.key, node);
-            let children = self._getChildren(node);
-            if (children) {
-                self._processTreeArray(children, keyObj.keyPath);
-            }
+            const keyObj = { key: null, keyPath: null };
+            keyObj.key = nodeKey;
+            keyObj.keyPath = parentKeyPath;
+            keyObj.keyPath.push(nodeKey);
+            this._setMapEntry(keyObj.key, node);
             return keyObj;
         }
         _createSections() {
-            let self = this;
             if (!this.options || !this.options.groupByStrategy) {
-                let cutoffs = [];
-                let now = new Date(Date.now());
+                const cutoffs = [];
+                const now = new Date(Date.now());
                 cutoffs.push(now);
                 let nowTemp = new Date(Date.now());
-                let previous1 = nowTemp.setDate(now.getDate() - 1);
-                let previous2 = nowTemp.setDate(now.getDate() - 7);
+                const previous1 = nowTemp.setDate(now.getDate() - 1);
+                const previous2 = nowTemp.setDate(now.getDate() - 7);
                 cutoffs.push(previous1);
                 cutoffs.push(previous2);
                 nowTemp = new Date(Date.now());
-                let previous3 = nowTemp.setMonth(now.getMonth() - 1);
+                const previous3 = nowTemp.setMonth(now.getMonth() - 1);
                 cutoffs.push(previous3);
                 nowTemp = new Date(Date.now());
-                let previous4 = nowTemp.setFullYear(now.getFullYear() - 1);
+                const previous4 = nowTemp.setFullYear(now.getFullYear() - 1);
                 cutoffs.push(previous4);
-                this._groupingFunction = function (item) {
-                    let labels = [
+                this._groupingFunction = (item) => {
+                    const labels = [
                         'In the past day',
                         'In the past week',
                         'In the past month',
@@ -761,9 +735,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         'Earlier'
                     ];
                     if (item && item['date']) {
-                        let date = new Date(item['date']);
+                        const date = new Date(item['date']);
                         let counter = 1;
-                        while (date < cutoffs[counter] && counter != 5) {
+                        while (date < cutoffs[counter] && counter !== 5) {
                             counter++;
                         }
                         return [labels[counter - 1]];
@@ -771,12 +745,12 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     return ['Section 1'];
                 };
             }
-            else if (typeof this.options.groupByStrategy == 'function') {
+            else if (typeof this.options.groupByStrategy === 'function') {
                 this._groupingFunction = this.options.groupByStrategy;
             }
-            else if (typeof this.options.groupByStrategy == 'string') {
-                this._groupingFunction = function (item) {
-                    return self._getVal(item, self.options.groupByStrategy);
+            else if (typeof this.options.groupByStrategy === 'string') {
+                this._groupingFunction = (item) => {
+                    return this._getVal(item, this.options.groupByStrategy);
                 };
             }
             if (this.treeData) {
@@ -788,24 +762,53 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 if (Array.isArray(label) && label.length > 0) {
                     return label[label.length - 1];
                 }
-                else if (typeof label == 'string') {
+                else if (typeof label === 'string') {
                     return label;
                 }
             }
             return null;
         }
+        _insertSection(keyParams, leafParams, depth) {
+            const newSection = {
+                parent: keyParams.parentKey,
+                key: keyParams.newKey,
+                children: ko.observableArray([]),
+                childData: ko.observableArray([]),
+                previous: keyParams.previousKey,
+                next: keyParams.nextKey,
+                previousLeaf: leafParams.previousLeaf,
+                nextLeaf: leafParams.nextLeaf,
+                depth: depth,
+                active: true
+            };
+            this._sections[keyParams.newKey] = newSection;
+            this._sections[keyParams.newKey].index = function () {
+                const parent = newSection.parent;
+                const key = newSection.key;
+                if (parent != null) {
+                    return this._sections[parent].children.indexOf(key);
+                }
+                else {
+                    return this._sectionRoots.indexOf(key);
+                }
+            }.bind(this);
+            this._sections[keyParams.newKey].cutoffIndex = function () {
+                const key = newSection.key;
+                return (this._getCutoffIndex(this._sections[key].previousLeaf) +
+                    this._sections[key].children().length);
+            }.bind(this);
+        }
         _createNewSection(newSectionKey, needsMutationEvent, sectionMapping, previousKey, nextKey) {
-            let self = this;
-            let depth = sectionMapping.indexOf(newSectionKey);
+            const depth = sectionMapping.indexOf(newSectionKey);
             let parentKey = null;
-            if (depth != 0) {
+            if (depth !== 0) {
                 parentKey = sectionMapping[depth - 1];
             }
             let parentSectionChildrenArray;
             let parentSectionChildDataArray;
             let previousLeaf = null;
             let nextLeaf = null;
-            let leafNode = depth == this._getDepth(sectionMapping);
+            const leafNode = depth === this._getDepth(sectionMapping);
             let rootNode = false;
             if (leafNode) {
                 previousLeaf = previousKey;
@@ -836,23 +839,23 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         }
                     }
                     parentSectionChildrenArray.push(newSectionKey);
-                    parentSectionChildDataArray.push(self.sectionRenderer(newSectionKey));
+                    parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                 }
                 else {
                     previousNode = this._sections[previousKey];
                     while (previousNode.depth > depth) {
                         previousNode = this._sections[this._sections[previousKey].parent];
                     }
-                    if (previousNode.depth == depth) {
+                    if (previousNode.depth === depth) {
                         previousKey = previousNode.key;
-                        let newIndex = parentSectionChildrenArray.indexOf(previousKey);
+                        const newIndex = parentSectionChildrenArray.indexOf(previousKey);
                         if (newIndex >= 0) {
                             parentSectionChildrenArray.splice(newIndex + 1, 0, newSectionKey);
-                            parentSectionChildDataArray.splice(newIndex + 1, 0, self.sectionRenderer(newSectionKey));
+                            parentSectionChildDataArray.splice(newIndex + 1, 0, this.sectionRenderer(newSectionKey));
                         }
                         else {
                             parentSectionChildrenArray.push(newSectionKey);
-                            parentSectionChildDataArray.push(self.sectionRenderer(newSectionKey));
+                            parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                         }
                         nextKey = previousNode.next;
                     }
@@ -860,7 +863,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         previousKey = null;
                         nextKey = null;
                         parentSectionChildrenArray.push(newSectionKey);
-                        parentSectionChildDataArray.push(self.sectionRenderer(newSectionKey));
+                        parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                     }
                 }
             }
@@ -869,16 +872,16 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 while (nextNode.depth > depth) {
                     nextNode = this._sections[this._sections[nextKey].parent];
                 }
-                if (nextNode.depth == depth) {
+                if (nextNode.depth === depth) {
                     nextKey = nextNode.key;
-                    let newIndex = parentSectionChildrenArray.indexOf(nextKey);
+                    const newIndex = parentSectionChildrenArray.indexOf(nextKey);
                     if (newIndex >= 0) {
                         parentSectionChildrenArray.splice(newIndex, 0, newSectionKey);
-                        parentSectionChildDataArray.splice(newIndex, 0, self.sectionRenderer(newSectionKey));
+                        parentSectionChildDataArray.splice(newIndex, 0, this.sectionRenderer(newSectionKey));
                     }
                     else {
                         parentSectionChildrenArray.push(newSectionKey);
-                        parentSectionChildDataArray.push(self.sectionRenderer(newSectionKey));
+                        parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                     }
                     previousKey = nextNode.previous;
                 }
@@ -886,34 +889,11 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     previousKey = null;
                     nextKey = null;
                     parentSectionChildrenArray.push(newSectionKey);
-                    parentSectionChildDataArray.push(self.sectionRenderer(newSectionKey));
+                    parentSectionChildDataArray.push(this.sectionRenderer(newSectionKey));
                 }
             }
             if (!(newSectionKey in this._sections)) {
-                this._sections[newSectionKey] = {
-                    parent: parentKey,
-                    key: newSectionKey,
-                    children: ko.observableArray([]),
-                    childData: ko.observableArray([]),
-                    previous: previousKey,
-                    next: nextKey,
-                    previousLeaf: previousLeaf,
-                    nextLeaf: nextLeaf,
-                    depth: depth,
-                    active: true,
-                    index: function () {
-                        if (this.parent != null) {
-                            return self._sections[this.parent].children.indexOf(this.key);
-                        }
-                        else {
-                            return self._sectionRoots.indexOf(this.key);
-                        }
-                    },
-                    cutoffIndex: function () {
-                        return (self._getCutoffIndex(self._sections[this.key].previousLeaf) +
-                            self._sections[this.key].children().length);
-                    }
-                };
+                this._insertSection({ newKey: newSectionKey, parentKey, previousKey, nextKey }, { previousLeaf, nextLeaf }, depth);
             }
             else {
                 this._sections[newSectionKey].active = true;
@@ -929,7 +909,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             if (nextKey != null) {
                 this._sections[nextKey].previous = newSectionKey;
             }
-            if (depth == this._getDepth(sectionMapping)) {
+            if (depth === this._getDepth(sectionMapping)) {
                 if (previousLeaf != null) {
                     this._sections[previousLeaf].nextLeaf = newSectionKey;
                 }
@@ -937,7 +917,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                     this._sections[nextLeaf].previousLeaf = newSectionKey;
                 }
             }
-            if (depth == this._getDepth(sectionMapping) &&
+            if (depth === this._getDepth(sectionMapping) &&
                 (nextKey == this._currentFirstSection || this._currentFirstSection == null)) {
                 this._currentFirstSection = newSectionKey;
             }
@@ -945,69 +925,68 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             if (nextKey != null) {
                 addBeforeKeys = [nextKey];
             }
-            let data = self.sectionRenderer(newSectionKey);
+            const data = this.sectionRenderer(newSectionKey);
             this._processNode(data, [], newSectionKey);
-            if (needsMutationEvent) {
-                if (this._storedAddSectionKeys.indexOf(this._sections[newSectionKey].parent) == -1) {
-                    let keys = newSectionKey;
-                    let metadata = {
-                        key: newSectionKey
-                    };
-                    let index = this._sections[newSectionKey].index();
-                    let addEvent = {
-                        data: [data],
-                        indexes: [index],
-                        keys: new Set([keys]),
-                        metadata: [metadata],
-                        addBeforeKeys: addBeforeKeys,
-                        parentKeys: [parentKey]
-                    };
-                    let mutationEvent = new ojdataprovider.DataProviderMutationEvent({
-                        add: addEvent,
-                        remove: null,
-                        update: null
-                    });
-                    this._storedAddSection.push(mutationEvent);
-                    this._storedAddSectionKeys.push(newSectionKey);
-                    if (!this._dataFetchComplete && rootNode && this._currentBaseOffset > index) {
-                        this._currentBaseOffset++;
-                    }
-                    if (!this._dataFetchComplete) {
-                        for (let [key, value] of this._iteratorOffsets) {
-                            if (value.parentKey === parentKey && value.offset > index) {
-                                value.offset++;
-                            }
-                            this._updateIteratorOffset(key, value.offset);
+            if (needsMutationEvent &&
+                this._storedAddSectionKeys.indexOf(this._sections[newSectionKey].parent) === -1) {
+                const keys = newSectionKey;
+                const metadata = {
+                    key: newSectionKey
+                };
+                const index = this._sections[newSectionKey].index();
+                const addEvent = {
+                    data: [data],
+                    indexes: [index],
+                    keys: new Set([keys]),
+                    metadata: [metadata],
+                    addBeforeKeys,
+                    parentKeys: [parentKey]
+                };
+                const mutationEvent = new ojdataprovider.DataProviderMutationEvent({
+                    add: addEvent,
+                    remove: null,
+                    update: null
+                });
+                this._storedAddSection.push(mutationEvent);
+                this._storedAddSectionKeys.push(newSectionKey);
+                if (!this._dataFetchComplete && rootNode && this._currentBaseOffset > index) {
+                    this._currentBaseOffset++;
+                }
+                if (!this._dataFetchComplete) {
+                    for (const [key, value] of this._iteratorOffsets) {
+                        if (value.parentKey === parentKey && value.offset > index) {
+                            value.offset++;
                         }
+                        this._updateIteratorOffset(key, value.offset);
                     }
                 }
             }
             this.treeData.valueHasMutated();
         }
         _removeSection(sectionKey) {
-            let sectionData = this._sections[sectionKey];
-            let parent = sectionData.parent;
-            let previous = sectionData.previous;
-            let next = sectionData.next;
-            let previousLeaf = sectionData.previousLeaf;
-            let nextLeaf = sectionData.nextLeaf;
+            const sectionData = this._sections[sectionKey];
+            const parent = sectionData.parent;
+            const previous = sectionData.previous;
+            const next = sectionData.next;
+            const previousLeaf = sectionData.previousLeaf;
+            const nextLeaf = sectionData.nextLeaf;
             let needsMutationEvent = true;
-            if (this._sections[next] && this._sections[next].previous == sectionKey) {
+            if (this._sections[next] && this._sections[next].previous === sectionKey) {
                 this._sections[next].previous = sectionData.previous;
             }
-            if (this._sections[previous] && this._sections[previous].next == sectionKey) {
+            if (this._sections[previous] && this._sections[previous].next === sectionKey) {
                 this._sections[previous].next = sectionData.next;
             }
-            if (this._sections[nextLeaf] && this._sections[nextLeaf].previousLeaf == sectionKey) {
+            if (this._sections[nextLeaf] && this._sections[nextLeaf].previousLeaf === sectionKey) {
                 this._sections[nextLeaf].previousLeaf = sectionData.previousLeaf;
             }
-            if (this._sections[previousLeaf] && this._sections[previousLeaf].nextLeaf == sectionKey) {
+            if (this._sections[previousLeaf] && this._sections[previousLeaf].nextLeaf === sectionKey) {
                 this._sections[previousLeaf].nextLeaf = sectionData.nextLeaf;
             }
-            if (this._sections[parent] && this._sections[parent].children.indexOf(sectionKey) != -1) {
-                let childIndex = this._sections[parent].children.indexOf(sectionKey);
+            if (this._sections[parent] && this._sections[parent].children.indexOf(sectionKey) !== -1) {
+                const childIndex = this._sections[parent].children.indexOf(sectionKey);
                 if (!this._dataFetchComplete) {
-                    for (let [key, value] of this._iteratorOffsets) {
+                    for (const [key, value] of this._iteratorOffsets) {
                         if (value.parentKey === parent && value.offset > childIndex) {
                             value.offset--;
                         }
@@ -1027,29 +1006,29 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             this._sections[sectionKey].children([]);
             this._sections[sectionKey].childData([]);
             if (this._sections[sectionKey].parent == null) {
-                let rootIndex = this._sectionRoots.indexOf(sectionKey);
+                const rootIndex = this._sectionRoots.indexOf(sectionKey);
                 this._sectionRoots.splice(rootIndex, 1);
                 this._sectionRootData.splice(rootIndex, 1);
                 if (!this._dataFetchComplete && this._currentBaseOffset > rootIndex) {
                     this._currentBaseOffset--;
                 }
             }
-            if (sectionKey == this._currentFirstSection) {
+            if (sectionKey === this._currentFirstSection) {
                 this._currentFirstSection = next;
             }
             if (needsMutationEvent) {
-                let data = this.sectionRenderer(sectionKey);
-                let keys = sectionKey;
-                let metadata = {
+                const data = this.sectionRenderer(sectionKey);
+                const keys = sectionKey;
+                const metadata = {
                     key: sectionKey
                 };
-                let removeEvent = {
+                const removeEvent = {
                     data: [data],
                     indexes: null,
                     keys: new Set([keys]),
                     metadata: [metadata]
                 };
-                let mutationEvent = new ojdataprovider.DataProviderMutationEvent({
+                const mutationEvent = new ojdataprovider.DataProviderMutationEvent({
                     add: null,
                     remove: removeEvent,
                     update: null
@@ -1059,16 +1038,15 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             this.treeData.valueHasMutated();
         }
         _updateSectionIndex() {
-            let self = this;
             for (let i = this._currentOffset; i < this._treeData.length; i++) {
-                let data = this._treeData[i];
-                let key = this._treeKeyMap[i];
-                self._processNode(data, [], key);
-                let newSectionLabel = self._groupingFunction(data);
-                let itemSectionKey = self._getSectionKeyFromArray(newSectionLabel);
+                const data = this._treeData[i];
+                const key = this._treeKeyMap[i];
+                this._processNode(data, [], key);
+                const newSectionLabel = this._groupingFunction(data);
+                const itemSectionKey = this._getSectionKeyFromArray(newSectionLabel);
                 if (this._currentSectionKey == null) {
                     if (!(itemSectionKey in this._sections)) {
-                        self._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
+                        this._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
                     }
                     this._currentSectionKey = itemSectionKey;
                     this._currentRootSection = this._getSectionArray(newSectionLabel)[0];
@@ -1078,7 +1056,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 }
                 else {
                     if (!(itemSectionKey in this._sections && this._sections[itemSectionKey].active)) {
-                        self._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
+                        this._createNewSection(itemSectionKey, false, newSectionLabel, this._currentSectionKey, null);
                     }
                     this._sections[this._currentSectionKey].children(this._currentSectionData);
                     this._sections[this._currentSectionKey].childData(this._getChildDataFromChildren(this._currentSectionKey));
@@ -1092,8 +1070,8 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 this._sections[this._currentSectionKey].children(this._currentSectionData);
                 this._sections[this._currentSectionKey].childData(this._getChildDataFromChildren(this._currentSectionKey));
             }
-            let rootSections = [];
-            for (let sectionKey in this._sections) {
+            const rootSections = [];
+            for (const sectionKey in this._sections) {
                 if (this._sections[sectionKey].parent == null) {
                     rootSections.push(this.sectionRenderer(sectionKey));
                 }
@@ -1110,27 +1088,18 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             }
         }
         _getChildDataFromChildren(sectionKey) {
-            let self = this;
-            let childData = [];
-            this._sections[sectionKey].children().forEach(function (child) {
-                childData.push(self.sectionRenderer(child));
+            const childData = [];
+            this._sections[sectionKey].children().forEach((child) => {
+                childData.push(this.sectionRenderer(child));
             });
             return childData;
         }
-        _createKeyObj(node, parentKeyPath, treeData) {
-            let key = this._getId(node);
-            let keyPath = parentKeyPath ? parentKeyPath.slice() : [];
-            if (key == null) {
-                keyPath.push(this._incrementSequenceNum(treeData));
-                key = keyPath;
+        _getKeyAttribute() {
+            let keyAttributes = this.options != null ? this.options['keyAttributes'] : null;
+            if (!keyAttributes) {
+                keyAttributes = 'id';
             }
-            else {
-                keyPath.push(key);
-                if (this.options && this.options['keyAttributesScope'] == 'siblings') {
-                    key = keyPath;
-                }
-            }
-            return { key: key, keyPath: keyPath };
+            return keyAttributes;
         }
         _getId(row) {
             let id;
@@ -1146,7 +1115,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         id[i] = this._getVal(row, keyAttributes[i]);
                     }
                 }
-                else if (keyAttributes == '@value') {
+                else if (keyAttributes === '@value') {
                     id = this._getAllVals(row);
                 }
                 else {
@@ -1166,27 +1135,26 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                 return 0;
             }
         }
-        _getVal(val, attr, keepFunc) {
-            if (typeof attr == 'string') {
-                let dotIndex = attr.indexOf('.');
+        _getVal(val, attr, keepFunc = false) {
+            if (typeof attr === 'string') {
+                const dotIndex = attr.indexOf('.');
                 if (dotIndex > 0) {
-                    let startAttr = attr.substring(0, dotIndex);
-                    let endAttr = attr.substring(dotIndex + 1);
-                    let subObj = val[startAttr];
+                    const startAttr = attr.substring(0, dotIndex);
+                    const endAttr = attr.substring(dotIndex + 1);
+                    const subObj = val[startAttr];
                     if (subObj) {
                         return this._getVal(subObj, endAttr);
                     }
                 }
             }
-            if (keepFunc !== true && typeof val[attr] == 'function') {
+            if (keepFunc !== true && typeof val[attr] === 'function') {
                 return val[attr]();
             }
             return val[attr];
         }
         _getAllVals(val) {
-            let self = this;
-            return Object.keys(val).map(function (key) {
-                return self._getVal(val, key);
+            return Object.keys(val).map((key) => {
+                return this._getVal(val, key);
             });
         }
         _getNodeMetadata(node) {
@@ -1194,93 +1162,57 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             if (key == null) {
                 key = this._getId(node);
             }
-            return { key: key };
+            return { key };
         }
         _getNodeForKey(key) {
-            let rootDataProvider = this._getRootDataProvider();
+            const rootDataProvider = this._getRootDataProvider();
             return rootDataProvider._mapKeyToNode.get(JSON.stringify(key));
         }
         _getKeyForNode(node) {
-            let rootDataProvider = this._getRootDataProvider();
+            const rootDataProvider = this._getRootDataProvider();
             return rootDataProvider._mapNodeToKey.get(node);
         }
         _setMapEntry(key, node) {
-            let rootDataProvider = this._getRootDataProvider();
+            const rootDataProvider = this._getRootDataProvider();
             rootDataProvider._mapKeyToNode.set(JSON.stringify(key), node);
             rootDataProvider._mapNodeToKey.set(node, key);
         }
-        _incrementSequenceNum(treeData) {
-            let rootDataProvider = this._getRootDataProvider();
-            let seqNum = rootDataProvider._mapArrayToSequenceNum.get(treeData) || 0;
-            rootDataProvider._mapArrayToSequenceNum.set(treeData, seqNum + 1);
-            return seqNum;
-        }
         _addData(event) {
-            let self = this;
-            let data = event.data;
-            let metadata = event.metadata;
+            const data = event.data;
+            const metadata = event.metadata;
             let addBeforeKeys = event.addBeforeKeys;
-            let indexes = event.indexes;
-            let keys = [];
-            event.keys.forEach(function (key) {
+            const indexes = event.indexes;
+            const keys = [];
+            event.keys.forEach((key) => {
                 keys.push(key);
             });
             if (indexes != null && indexes.length > 0) {
-                let sortedIndexes = indexes.slice(0).sort();
-                for (let i = 0; i < sortedIndexes.length; i++) {
-                    let currentIndex = sortedIndexes[i];
-                    let originalIndex = indexes.indexOf(currentIndex);
-                    self._treeData.splice(currentIndex, 0, data[originalIndex]);
-                    self._treeMetadata.splice(currentIndex, 0, metadata[originalIndex]);
-                    self._treeKeyMap.splice(currentIndex, 0, keys[originalIndex]);
+                const sortedIndexes = indexes.slice(0).sort();
+                for (const sortedIndex of sortedIndexes) {
+                    const originalIndex = indexes.indexOf(sortedIndex);
+                    this._treeData.splice(sortedIndex, 0, data[originalIndex]);
+                    this._treeMetadata.splice(sortedIndex, 0, metadata[originalIndex]);
+                    this._treeKeyMap.splice(sortedIndex, 0, keys[originalIndex]);
                 }
-                if (addBeforeKeys == null || addBeforeKeys.length == 0) {
+                if (addBeforeKeys == null || addBeforeKeys.length === 0) {
                     addBeforeKeys = [];
-                    for (let i = 0; i < indexes.length; i++) {
-                        let beforeKey = indexes[i] + 1 < self._treeKeyMap.length ? self._treeKeyMap[indexes[i] + 1] : null;
+                    for (const index of indexes) {
+                        const beforeKey = index + 1 < this._treeKeyMap.length ? this._treeKeyMap[index + 1] : null;
                         addBeforeKeys.push(beforeKey);
                     }
                 }
             }
-            else if (addBeforeKeys != null && addBeforeKeys.length > 0) {
-                let currentKeys = keys.slice(0);
-                let currentMetadatas = metadata.slice(0);
-                let currentDatas = data.slice(0);
-                let currentBeforeKeys = addBeforeKeys.slice(0);
-                while (currentBeforeKeys.length > 0) {
-                    let currentBeforeKey = currentBeforeKeys[0];
-                    let currentKey = currentKeys[0];
-                    let currentMetadata = currentMetadatas[0];
-                    let currentData = currentDatas[0];
-                    let previousIndex = self._treeKeyMap.indexOf(currentBeforeKey);
-                    if (previousIndex != -1) {
-                        self._treeData.splice(previousIndex, 0, currentData);
-                        self._treeMetadata.splice(previousIndex, 0, currentMetadata);
-                        self._treeKeyMap.splice(previousIndex, 0, currentKey);
-                    }
-                    else {
-                        currentKeys.push(currentKey);
-                        currentMetadatas.push(currentMetadata);
-                        currentDatas.push(currentData);
-                        currentBeforeKeys.push(currentBeforeKey);
-                    }
-                    currentKeys.splice(0, 1);
-                    currentBeforeKeys.splice(0, 1);
-                    currentMetadatas.splice(0, 1);
-                    currentDatas.splice(0, 1);
-                }
-            }
             else {
-                let orderedData = [];
-                let orderedMetaData = [];
-                let orderedKeys = [];
+                const orderedData = [];
+                const orderedMetaData = [];
+                const orderedKeys = [];
                 let counter = 0;
                 let added = false;
-                data.forEach(function (value, ind) {
+                data.forEach((value, ind) => {
                     added = false;
-                    if (orderedData.length != 0) {
+                    if (orderedData.length !== 0) {
                         while (counter < orderedData.length && !added) {
-                            if (self.sortComparator(value, orderedData[counter])) {
+                            if (this.sortComparator(value, orderedData[counter])) {
                                 orderedData.splice(counter, 0, value);
                                 orderedMetaData.splice(counter, 0, metadata[ind]);
                                 orderedKeys.splice(counter, 0, keys[ind]);
@@ -1297,26 +1229,26 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         orderedKeys.push(keys[ind]);
                     }
                 });
-                counter = self._treeData.length - 1;
-                let addBeforeKeysMap = {};
-                orderedData.forEach(function (value, ind) {
-                    let newData = value;
-                    let newMetadata = orderedMetaData[ind];
-                    let newKey = orderedKeys[ind];
+                counter = this._treeData.length - 1;
+                const addBeforeKeysMap = {};
+                orderedData.forEach((value, ind) => {
+                    const newData = value;
+                    const newMetadata = orderedMetaData[ind];
+                    const newKey = orderedKeys[ind];
                     added = false;
                     while (counter >= 0 && !added) {
-                        if (self.sortComparator(newData, self._treeData[counter])) {
-                            if (counter + 1 != self._treeData.length) {
-                                self._treeData.splice(counter + 1, 0, newData);
-                                self._treeMetadata.splice(counter + 1, 0, newMetadata);
-                                addBeforeKeysMap[self._getId(newData)] = self._treeKeyMap[counter + 1];
-                                self._treeKeyMap.splice(counter + 1, 0, newKey);
+                        if (this.sortComparator(newData, this._treeData[counter])) {
+                            if (counter + 1 !== this._treeData.length) {
+                                this._treeData.splice(counter + 1, 0, newData);
+                                this._treeMetadata.splice(counter + 1, 0, newMetadata);
+                                addBeforeKeysMap[this._getId(newData)] = this._treeKeyMap[counter + 1];
+                                this._treeKeyMap.splice(counter + 1, 0, newKey);
                             }
                             else {
-                                self._treeData.push(newData);
-                                self._treeMetadata.push(newMetadata);
-                                addBeforeKeysMap[self._getId(newData)] = null;
-                                self._treeKeyMap.push(newKey);
+                                this._treeData.push(newData);
+                                this._treeMetadata.push(newMetadata);
+                                addBeforeKeysMap[this._getId(newData)] = null;
+                                this._treeKeyMap.push(newKey);
                             }
                             added = true;
                         }
@@ -1325,78 +1257,77 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
                         }
                     }
                     if (!added) {
-                        self._treeData.splice(0, 0, newData);
-                        self._treeMetadata.splice(0, 0, newMetadata);
-                        addBeforeKeysMap[self._getId(newData)] = self._treeKeyMap[0];
-                        self._treeKeyMap.splice(0, 0, newKey);
+                        this._treeData.splice(0, 0, newData);
+                        this._treeMetadata.splice(0, 0, newMetadata);
+                        addBeforeKeysMap[this._getId(newData)] = this._treeKeyMap[0];
+                        this._treeKeyMap.splice(0, 0, newKey);
                         counter = 0;
                     }
                 });
                 addBeforeKeys = [];
-                data.forEach(function (value) {
-                    addBeforeKeys.push(addBeforeKeysMap[self._getId(value)]);
+                data.forEach((value) => {
+                    addBeforeKeys.push(addBeforeKeysMap[this._getId(value)]);
                 });
             }
             return addBeforeKeys;
         }
         _handleAdd(event) {
-            let self = this;
-            let newData = [];
-            let addBeforeKeys = self._addData(event);
-            if (!event.addBeforeKeys || event.addBeforeKeys.length == 0) {
+            const newData = [];
+            const addBeforeKeys = this._addData(event);
+            if (!event.addBeforeKeys || event.addBeforeKeys.length === 0) {
                 event.addBeforeKeys = addBeforeKeys;
             }
-            event.keys.forEach(function (key) {
-                let i = newData.length;
-                let itemData = event.data[i];
-                let addBeforeKey = addBeforeKeys[i];
-                newData.push({ addBeforeKey: addBeforeKey, key: key, data: itemData });
+            event.keys.forEach((key) => {
+                const i = newData.length;
+                const itemData = event.data[i];
+                const addBeforeKey = addBeforeKeys[i];
+                newData.push({ addBeforeKey, key, data: itemData });
             });
-            let parentKeys = [];
-            let newAddedSections = [];
-            let keepInd = [];
-            let indexMap = this._getIndexFromKeys(event.keys);
-            if (!event.indexes || event.indexes.length == 0) {
+            const parentKeys = [];
+            const newAddedSections = [];
+            const keepInd = [];
+            const indexMap = this._getIndexFromKeys(event.keys);
+            if (!event.indexes || event.indexes.length === 0) {
                 event.indexes = [];
             }
-            event.data.forEach(function (value, ind) {
-                self._processNode(value, [], newData[ind].key);
-                let sectionLabel = self._groupingFunction(value);
-                let sectionId = self._getSectionKeyFromArray(sectionLabel);
+            event.data.forEach((value, ind) => {
+                this._processNode(value, [], newData[ind].key);
+                const sectionLabel = this._groupingFunction(value);
+                let sectionId = this._getSectionKeyFromArray(sectionLabel);
                 let previousSectionId;
                 let nextSectionId;
-                if (!(sectionId in self._sections && self._sections[sectionId].active)) {
-                    if (indexMap[ind] != 0) {
-                        previousSectionId = self._getSectionKeyFromArray(self._groupingFunction(self._treeData[indexMap[ind] - 1]));
-                        nextSectionId = self._sections[previousSectionId].nextLeaf;
+                if (!(sectionId in this._sections && this._sections[sectionId].active)) {
+                    if (indexMap[ind] !== 0) {
+                        previousSectionId = this._getSectionKeyFromArray(this._groupingFunction(this._treeData[indexMap[ind] - 1]));
+                        nextSectionId = this._sections[previousSectionId].nextLeaf;
                     }
                     else {
                         previousSectionId = null;
                     }
-                    if (indexMap[ind] + 1 < self._treeData.length && previousSectionId == null) {
-                        nextSectionId = self._currentFirstSection;
+                    if (indexMap[ind] + 1 < this._treeData.length && previousSectionId == null) {
+                        nextSectionId = this._currentFirstSection;
                     }
-                    self._createNewSection(sectionId, true, sectionLabel, previousSectionId, nextSectionId);
-                    sectionId = self._getSectionKeyFromArray(sectionLabel);
+                    this._createNewSection(sectionId, true, sectionLabel, previousSectionId, nextSectionId);
+                    sectionId = this._getSectionKeyFromArray(sectionLabel);
                     newAddedSections.push(sectionId);
                 }
                 else if (newAddedSections.indexOf(sectionId) === -1) {
                     keepInd.push(ind);
                 }
-                let childrenArray = self._sections[sectionId].children;
-                let childDataArray = self._sections[sectionId].childData;
-                previousSectionId = self._sections[sectionId].previousLeaf;
+                const childrenArray = this._sections[sectionId].children;
+                const childDataArray = this._sections[sectionId].childData;
+                previousSectionId = this._sections[sectionId].previousLeaf;
                 let previousCutoffIndex = 0;
                 if (previousSectionId != null) {
-                    previousCutoffIndex = self._sections[previousSectionId].cutoffIndex();
+                    previousCutoffIndex = this._sections[previousSectionId].cutoffIndex();
                 }
                 childrenArray.splice(indexMap[ind] - previousCutoffIndex, 0, value);
-                childDataArray.splice(indexMap[ind] - previousCutoffIndex, 0, self.sectionRenderer(value));
+                childDataArray.splice(indexMap[ind] - previousCutoffIndex, 0, this.sectionRenderer(value));
                 parentKeys.push(sectionId);
                 event.indexes[ind] = indexMap[ind] - previousCutoffIndex;
-                if (event.addBeforeKeys[ind] != null && ind == event.data.length - 1) {
-                    let addBeforeDataSection = self._getSectionKeyFromArray(self._groupingFunction(self._treeData[self._treeKeyMap.indexOf(event.addBeforeKeys[ind])]));
-                    if (addBeforeDataSection != sectionId) {
+                if (event.addBeforeKeys[ind] != null && ind === event.data.length - 1) {
+                    const addBeforeDataSection = this._getSectionKeyFromArray(this._groupingFunction(this._treeData[this._treeKeyMap.indexOf(event.addBeforeKeys[ind])]));
+                    if (addBeforeDataSection !== sectionId) {
                         event.addBeforeKeys[ind] = null;
                     }
                 }
@@ -1404,14 +1335,14 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             event.parentKeys = parentKeys;
             if (newAddedSections.length > 0) {
                 let counter = 0;
-                let newData = [];
-                let newKeys = [];
-                let newMetadata = [];
-                let newParentKeys = [];
-                let newIndexes = [];
-                let newAddBeforeKeys = [];
-                event.keys.forEach(function (value) {
-                    if (keepInd.indexOf(counter) != -1) {
+                const newData = [];
+                const newKeys = [];
+                const newMetadata = [];
+                const newParentKeys = [];
+                const newIndexes = [];
+                const newAddBeforeKeys = [];
+                event.keys.forEach((value) => {
+                    if (keepInd.indexOf(counter) !== -1) {
                         newKeys.push(value);
                         newData.push(event.data[counter]);
                         newMetadata.push(event.metadata[counter]);
@@ -1438,63 +1369,60 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return event;
         }
         _handleRemove(event) {
-            let self = this;
-            let indexMap = this._getIndexFromKeys(event.keys);
+            const indexMap = this._getIndexFromKeys(event.keys);
             this._removeKeys(event.keys);
-            let removeDataIndex = [];
-            let removeIndex = [];
-            for (var ind = 0; ind < indexMap.length; ind++) {
-                let updateInd = indexMap[ind];
-                let item = self._treeData[updateInd];
-                let oldKey = self._treeKeyMap[updateInd];
-                let oldNode = self._mapKeyToNode.get(JSON.stringify(oldKey));
-                self._mapKeyToNode.delete(JSON.stringify(oldKey));
-                self._mapNodeToKey.delete(oldNode);
-                let sectionId = self._getSectionKeyFromArray(self._groupingFunction(item));
-                let previousSectionId = self._sections[sectionId].previousLeaf;
+            const removeDataIndex = [];
+            const removeIndex = [];
+            for (const updateInd of indexMap) {
+                const item = this._treeData[updateInd];
+                const oldKey = this._treeKeyMap[updateInd];
+                const oldNode = this._mapKeyToNode.get(JSON.stringify(oldKey));
+                this._mapKeyToNode.delete(JSON.stringify(oldKey));
+                this._mapNodeToKey.delete(oldNode);
+                const sectionId = this._getSectionKeyFromArray(this._groupingFunction(item));
+                const previousSectionId = this._sections[sectionId].previousLeaf;
                 let previousCutoffIndex = 0;
                 if (previousSectionId != null) {
-                    previousCutoffIndex = self._sections[previousSectionId].cutoffIndex();
+                    previousCutoffIndex = this._sections[previousSectionId].cutoffIndex();
                 }
-                removeDataIndex.push({ ind: updateInd - previousCutoffIndex, sectionId: sectionId });
+                removeDataIndex.push({ ind: updateInd - previousCutoffIndex, sectionId });
                 removeIndex.push(updateInd);
             }
-            removeDataIndex.sort(function (a, b) {
+            removeDataIndex.sort((a, b) => {
                 return b.ind - a.ind;
             });
-            removeIndex.sort(function (a, b) {
+            removeIndex.sort((a, b) => {
                 return b - a;
             });
             for (let i = 0; i < removeDataIndex.length; i++) {
-                let sectionId = removeDataIndex[i].sectionId;
-                let dataArray = self._sections[sectionId].children;
+                const sectionId = removeDataIndex[i].sectionId;
+                const dataArray = this._sections[sectionId].children;
                 dataArray.splice(removeDataIndex[i].ind, 1);
                 if (dataArray().length === 0) {
                     this._removeSection(sectionId);
                 }
-                self._treeData.splice(removeIndex[i], 1);
-                self._treeMetadata.splice(removeIndex[i], 1);
+                this._treeData.splice(removeIndex[i], 1);
+                this._treeMetadata.splice(removeIndex[i], 1);
             }
         }
         _handleUpdate(event) {
-            let self = this;
-            let indexMap = this._getIndexFromKeys(event.keys);
-            event.data.forEach(function (value, ind) {
-                let updateInd = indexMap[ind];
-                let item = self._treeData[updateInd];
-                let oldKey = self._treeKeyMap[updateInd];
-                let oldNode = self._mapKeyToNode.get(JSON.stringify(oldKey));
-                self._mapNodeToKey.delete(oldNode);
-                self._setMapEntry(oldKey, item);
-                let sectionId = self._getSectionKeyFromArray(self._groupingFunction(item));
-                let dataArray = self._sections[sectionId].children;
-                let previousSectionId = self._sections[sectionId].previousLeaf;
+            const indexMap = this._getIndexFromKeys(event.keys);
+            event.data.forEach((value, ind) => {
+                const updateInd = indexMap[ind];
+                const item = this._treeData[updateInd];
+                const oldKey = this._treeKeyMap[updateInd];
+                const oldNode = this._mapKeyToNode.get(JSON.stringify(oldKey));
+                this._mapNodeToKey.delete(oldNode);
+                this._setMapEntry(oldKey, item);
+                const sectionId = this._getSectionKeyFromArray(this._groupingFunction(item));
+                const dataArray = this._sections[sectionId].children;
+                const previousSectionId = this._sections[sectionId].previousLeaf;
                 let previousCutoffIndex = 0;
                 if (previousSectionId != null) {
-                    previousCutoffIndex = self._sections[previousSectionId].cutoffIndex();
+                    previousCutoffIndex = this._sections[previousSectionId].cutoffIndex();
                 }
                 dataArray.splice(updateInd - previousCutoffIndex, 1, value);
-                self._treeData[updateInd] = value;
+                this._treeData[updateInd] = value;
             });
         }
         _getCutoffIndex(sectionKey) {
@@ -1504,30 +1432,28 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return 0;
         }
         _getIndexFromKeys(keys) {
-            let self = this;
-            let indexMap = [];
-            keys.forEach(function (key) {
-                indexMap.push(self._treeKeyMap.indexOf(key));
+            const indexMap = [];
+            keys.forEach((key) => {
+                indexMap.push(this._treeKeyMap.indexOf(key));
             });
             return indexMap;
         }
         _removeKeys(keys) {
-            let self = this;
-            keys.forEach(function (key) {
-                self._treeKeyMap.splice(self._treeKeyMap.indexOf(key), 1);
+            keys.forEach((key) => {
+                this._treeKeyMap.splice(this._treeKeyMap.indexOf(key), 1);
             });
         }
         _cleanEvent(event) {
-            let indexMap = this._getIndexFromKeys(event.keys);
+            const indexMap = this._getIndexFromKeys(event.keys);
             let keyIndex = 0;
-            event.keys.forEach(function (val) {
-                if (indexMap[keyIndex] == -1) {
+            event.keys.forEach((val) => {
+                if (indexMap[keyIndex] === -1) {
                     event.keys.delete(val);
                 }
                 keyIndex++;
             });
-            for (var ind = indexMap.length - 1; ind >= 0; ind--) {
-                if (indexMap[ind] == -1) {
+            for (let ind = indexMap.length - 1; ind >= 0; ind--) {
+                if (indexMap[ind] === -1) {
                     if (event.data) {
                         event.data.splice(ind, 1);
                     }
@@ -1542,48 +1468,53 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return event;
         }
         _cleanAddEvent(event) {
-            let self = this;
-            let addBeforeKeys = event.addBeforeKeys;
-            let indexes = event.indexes;
-            let keys = [];
-            let cleanItems = [];
-            event.keys.forEach(function (key) {
+            const addBeforeKeys = event.addBeforeKeys;
+            const indexes = event.indexes;
+            const keys = [];
+            const cleanItems = [];
+            event.keys.forEach((key) => {
                 keys.push(key);
             });
             if (indexes != null) {
-                let sortedIndexes = indexes.slice(0).sort();
+                const sortedIndexes = indexes.slice(0).sort();
                 for (let i = 0; i < sortedIndexes.length; i++) {
-                    let currentIndex = sortedIndexes[i];
-                    let originalIndex = indexes.indexOf(currentIndex);
-                    if (self._treeData.length + i - cleanItems.length < currentIndex) {
+                    const currentIndex = sortedIndexes[i];
+                    const originalIndex = indexes.indexOf(currentIndex);
+                    if (this._treeData.length + i - cleanItems.length < currentIndex) {
                         cleanItems.push(originalIndex);
                     }
                 }
             }
             else if (addBeforeKeys != null) {
-                let sortedKeys = addBeforeKeys.slice(0).sort();
-                for (let i = 0; i < sortedKeys.length; i++) {
-                    let currentKey = sortedKeys[i];
-                    let originalKeyIndex = addBeforeKeys.indexOf(currentKey);
-                    if (self._treeKeyMap.indexOf(currentKey) == -1 && keys.indexOf(currentKey) == -1) {
-                        cleanItems.push(originalKeyIndex);
+                const sortedKeys = addBeforeKeys.slice(0).sort();
+                for (const currentKey of sortedKeys) {
+                    const originalKeyIndex = addBeforeKeys.indexOf(currentKey);
+                    if (currentKey != null) {
+                        if (this._treeKeyMap.indexOf(currentKey) === -1 && keys.indexOf(currentKey) === -1) {
+                            cleanItems.push(originalKeyIndex);
+                        }
+                        else if (this._treeKeyMap.indexOf(currentKey) === -1 &&
+                            keys.indexOf(currentKey) !== -1 &&
+                            cleanItems.indexOf(keys.indexOf(currentKey)) === -1) {
+                            cleanItems.push(originalKeyIndex);
+                        }
                     }
-                    else if (self._treeKeyMap.indexOf(currentKey) == -1 &&
-                        keys.indexOf(currentKey) != -1 &&
-                        cleanItems.indexOf(keys.indexOf(currentKey)) == -1) {
-                        cleanItems.push(originalKeyIndex);
+                    else {
+                        if (!this._dataFetchComplete) {
+                            cleanItems.push(originalKeyIndex);
+                        }
                     }
                 }
             }
             let keyIndex = 0;
-            event.keys.forEach(function (val) {
-                if (cleanItems.indexOf(keyIndex) != -1) {
+            event.keys.forEach((val) => {
+                if (cleanItems.indexOf(keyIndex) !== -1) {
                     event.keys.delete(val);
                 }
                 keyIndex++;
             });
-            let sortedCleanItems = cleanItems.splice(0).sort();
-            for (var ind = sortedCleanItems.length - 1; ind >= 0; ind--) {
+            const sortedCleanItems = cleanItems.splice(0).sort();
+            for (let ind = sortedCleanItems.length - 1; ind >= 0; ind--) {
                 if (event.data) {
                     event.data.splice(sortedCleanItems[ind], 1);
                 }
@@ -1603,46 +1534,54 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojarraytreedataprovider', 
             return event;
         }
         _addEventListeners(dataprovider) {
-            let self = this;
-            dataprovider.addEventListener('refresh', function (event) {
-                self._initialize();
-                self.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+            dataprovider.addEventListener('refresh', (event) => {
+                this._initialize();
+                if (this._internalIteratorResolve != null) {
+                    this._internalIteratorResolve('error');
+                    this._internalIteratorResolve = null;
+                    window.requestAnimationFrame(() => {
+                        this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                    });
+                }
+                else {
+                    this.dispatchEvent(new ojdataprovider.DataProviderRefreshEvent());
+                }
             });
-            dataprovider.addEventListener('mutate', function (event) {
+            dataprovider.addEventListener('mutate', (event) => {
                 if (event.detail.add) {
-                    event.detail.add = self._cleanAddEvent(event.detail.add);
-                    if (event.detail.add.keys.size != 0) {
-                        event.detail.add = self._handleAdd(event.detail.add);
-                        self._storedAddSection.forEach(function (addEvent) {
-                            self.dispatchEvent(addEvent);
+                    event.detail.add = this._cleanAddEvent(event.detail.add);
+                    if (event.detail.add.keys.size !== 0) {
+                        event.detail.add = this._handleAdd(event.detail.add);
+                        this._storedAddSection.forEach((addEvent) => {
+                            this.dispatchEvent(addEvent);
                         });
                         if (event.detail.add) {
-                            self.dispatchEvent(event);
+                            this.dispatchEvent(event);
                         }
-                        self._storedAddSection = [];
-                        self._storedAddSectionKeys = [];
+                        this._storedAddSection = [];
+                        this._storedAddSectionKeys = [];
                     }
                 }
                 if (event.detail.remove || event.detail.update) {
                     if (event.detail.remove) {
-                        event.detail.remove = self._cleanEvent(event.detail.remove);
-                        if (event.detail.remove.keys.size != 0) {
-                            self._handleRemove(event.detail.remove);
-                            self.dispatchEvent(event);
+                        event.detail.remove = this._cleanEvent(event.detail.remove);
+                        if (event.detail.remove.keys.size !== 0) {
+                            this._handleRemove(event.detail.remove);
+                            this.dispatchEvent(event);
                         }
                     }
                     if (event.detail.update) {
-                        event.detail.update = self._cleanEvent(event.detail.update);
-                        if (event.detail.update.keys.size != 0) {
-                            self._handleUpdate(event.detail.update);
-                            self.dispatchEvent(event);
+                        event.detail.update = this._cleanEvent(event.detail.update);
+                        if (event.detail.update.keys.size !== 0) {
+                            this._handleUpdate(event.detail.update);
+                            this.dispatchEvent(event);
                         }
                     }
                 }
-                self._storedRemoveSection.forEach(function (removeEvent) {
-                    self.dispatchEvent(removeEvent);
+                this._storedRemoveSection.forEach((removeEvent) => {
+                    this.dispatchEvent(removeEvent);
                 });
-                self._storedRemoveSection = [];
+                this._storedRemoveSection = [];
             });
         }
     }

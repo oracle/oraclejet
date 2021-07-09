@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojconfig', 'ojs/ojcustomelement-utils'], function (exports, Config, ojcustomelementUtils) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2018 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @namespace
    * @name ExpressionUtils
    * @ojtsmodule

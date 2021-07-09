@@ -8,14 +8,6 @@
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Base object for HTML toolkit derivative objects.
  * @class The base object for HTML toolkit derivative objects.
  * @constructor
@@ -81,14 +73,6 @@ Obj.compareValues = function (ctx, obj1, obj2) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Defines an (x,y) coordinate.
  * @class Point
  * @constructor
@@ -112,13 +96,6 @@ Point.prototype.equals = function (p) {
   return false;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @constructor
  */
@@ -360,13 +337,6 @@ Agent.getFocusColor = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *  A static class for DnD support.
  *  @class DragAndDropUtils
  */
@@ -423,13 +393,6 @@ DragAndDropUtils.getDragFeedbackBounds = function (displayables, targetCoordinat
   return bounds;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Drag source event handler.
  * @param {dvt.Context} context
@@ -618,14 +581,6 @@ DragSource.prototype.getTouchManager = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Defines a (w,h) dimension.
  * @class dvt.Dimension
  * @constructor
@@ -637,13 +592,6 @@ const Dimension = function (w, h) {
   this.h = h === null || isNaN(h) ? 0 : h;
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  Creates an immutable matrix object. Note that methods that mutate the matrix after
  *  construction, e.g. translate, skew, rotate, etc will return a new instance of a Matrix
@@ -999,13 +947,6 @@ Matrix.prototype.isIdentity = function () {
   );
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @class
  */
@@ -1619,14 +1560,6 @@ ToolkitUtils.getUseCaptureFromOptions = function (options) {
   return options['capture'] || false;
 };
 
-/**
- * @license
- * Copyright (c) 2020 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtAnimationFrameUtils = {
   /**
    * Polyfill for requestAnimationFrame.
@@ -1653,13 +1586,6 @@ const DvtAnimationFrameUtils = {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  @class ClipPath
  *  Defines a clipping region composed of the union of one or more outlines.
@@ -1770,13 +1696,6 @@ ClipPath.prototype.addPath = function (d) {
   this._regions.push(obj);
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Utilities for Arrays.
  * @class ArrayUtils
@@ -1922,13 +1841,6 @@ ArrayUtils.createBooleanMap = function (array) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Creates an immutable gradient specification (shareable by other shapes).
  *   @extends {Obj}
  *   @class
@@ -2025,13 +1937,6 @@ GradientFill.prototype.equals = function (fill) {
   );
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgGradientUtils    A static class for SVG gradient property manip- */
 /*                           ulation.                                        */
@@ -2164,13 +2069,6 @@ DvtSvgGradientUtils.createElem = function (grad, id) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Creates an immutable pattern specification (shareable by other shapes).
  *   @extends {Obj}
  *   @class
@@ -2293,13 +2191,6 @@ PatternFill._convertPatternValue = function (patternStr) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * LRU cache implementation for use in improving performance.  Alternate cache implementation options may be added in
  * the future as needed.
  * @param {number} targetSize The target size of the cache. Once populated, this is the minimum size of the cache.
@@ -2404,13 +2295,6 @@ Cache.prototype.toString = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Defines miscellaneous math constants and utilities.
  * @class Math
  */
@@ -2511,13 +2395,6 @@ DvtMath.calculateAngleBetweenTwoVectors = function (vector1X, vector1Y, vector2X
   return angle < 0 ? angle + DvtMath.TWO_PI : angle;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*-------------------------------------------------------------------------*/
 /*   ColorUtils       A static class for css color manipulation         */
 /*-------------------------------------------------------------------------*/
@@ -3382,13 +3259,6 @@ ColorUtils.fixColorForPlatform = function (color, alpha) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Utility functions for SVG paths taken from 3rd party sources.
  * @class
  */
@@ -3647,13 +3517,6 @@ Dvt3rdPartyPathUtils._rotatePoints = function (points) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *  Defines the geometry of a rectangle. Top-left (x,y), and width and height.
  *  @class Rectangle
  *  @extends {dvt.Obj}
@@ -3823,13 +3686,6 @@ Rectangle.prototype.toString = function () {
   return this.x + ', ' + this.y + ', ' + this.w + ', ' + this.h;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*---------------------------------------------------------------------*/
 /*  PathUtils()       Utility functions for SVG paths               */
 /*---------------------------------------------------------------------*/
@@ -4803,13 +4659,6 @@ PathUtils._convertArc = function(x0, y0, rx, ry, xAngle, largeArcFlag, sweepFlag
   return( [cx, cy, rx, ry, angleStart, angleExtent, xAngle] );
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgPatternFillUtils    A static class for SVG pattern fill property */
 /*                              manipulation.                                */
@@ -5092,13 +4941,6 @@ DvtSvgPatternFillUtils.CreatePatternElems = function (patternFill, parentElem) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Static Shape Utility Functions
  *   @class SvgShapeUtils
  *   @constructor
@@ -5291,14 +5133,6 @@ SvgShapeUtils.convertPointsArray = function (arPoints) {
 };
 
 /**
- * @license
- * Copyright (c) 2020 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
- /**
  * Utility functions for aria labels.
  * @class
  */
@@ -5338,13 +5172,6 @@ const AriaUtils = {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @constructor
  */
 const DvtSvgFilterContext = function () {
@@ -5370,13 +5197,6 @@ DvtSvgFilterContext.prototype.createResultId = function (id) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @class Shadow
  * Represents an immutable drop shadow.
  *
@@ -5401,13 +5221,6 @@ Obj.createSubclass(Shadow, Obj);
 
 Shadow._uniqueId = 1;
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*---------------------------------------------------------------------------*/
 /*   DvtSvgShadowUtils    A static class for SVG drop shadow property manip- */
 /*                        ulation.                                           */
@@ -5556,13 +5369,6 @@ DvtSvgShadowUtils.createFilterPrimitives = function (filt, shadow, svgDisplayabl
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Static SVG filter routines.
  *   @class DvtSvgFilterUtils
  *   @constructor
@@ -5667,13 +5473,6 @@ DvtSvgFilterUtils.CreateFilterId = function () {
   return 'filt' + DvtSvgFilterUtils._counter++;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // File containing all draw effect (filter) related functions defined on Displayable.
 
 const _DRAW_EFFECT = {
@@ -5727,13 +5526,6 @@ const _DRAW_EFFECT = {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Abstract class for wrapper classes for native DOM events.
  * Internal events that do not wrap native DOM events should not extend this class.
@@ -5809,13 +5601,6 @@ BaseEvent.FindDisplayable = function (target) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @constructor
  * Wrapper class providing access to a Touch.
  * @extends {dvt.Obj}
@@ -5854,13 +5639,6 @@ Touch.prototype.Init = function (touch) {
   this.identifier = touch.identifier == null || isNaN(touch.identifier) ? 1 : touch.identifier;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Wrapper class for Touch Events.
  * @param {TouchEvent} event The DOM TouchEvent
@@ -5954,13 +5732,6 @@ TouchEvent.prototype.setTouchManager = function (touchManager) {
   this._touchManager = touchManager;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Platform independent class for Keyboard Events.
  * @constructor
@@ -6138,13 +5909,6 @@ KeyboardEvent.isUnderscore = function (event) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @constructor
  * Platform independent class for Focus Events. This class roughly follows the DOM Level 3 API.
  * @param {FocusEvent} event The native FocusEvent
@@ -6187,13 +5951,6 @@ DvtFocusEvent.prototype.Init = function (event) {
     this.relatedTarget = BaseEvent.FindDisplayable(event.relatedTarget);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @constructor
  * Wrapper class for Mouse Events.  This class roughly follows the DOM Level 2 API.
@@ -6278,13 +6035,6 @@ MouseEvent.prototype.modifyEventForIE = function (newType, newTargetElement) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Event factory for DOM events.
  * @class
  */
@@ -6337,13 +6087,6 @@ DomEventFactory.newEvent = function (nativeEvent, context) {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Utility class for providing keyboard listeners to add to HTML divs
  * @class HtmlKeyboardListenerUtils
@@ -6425,13 +6168,6 @@ HtmlKeyboardListenerUtils._commonListener = function (event, useCapture) {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // File containing all event listener related functions defined on Displayable.
 
 const _EVENT = {
@@ -6745,13 +6481,6 @@ const _EVENT = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @constructor
  * CSSGradient
  */
@@ -6817,13 +6546,6 @@ CSSGradient.prototype.setRatios = function (arRatios) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @constructor
  * DvtLinearGradient
  */
@@ -6876,14 +6598,6 @@ DvtLinearGradient.prototype.setAngle = function (angle) {
   this._angle = angle;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 const DvtColorParser = {
   /**
    * @param {String} sval a string that is presumed to start with a color
@@ -6934,13 +6648,6 @@ const DvtColorParser = {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * parse gradient string into gradient object
  * @class GradientParser
@@ -7185,13 +6892,6 @@ GradientParser._startsWith = function (str, value) {
   return str.indexOf(value) == 0;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @constructor
  * Represents a set of CSS styles.
@@ -8281,13 +7981,6 @@ CSSStyle.applyCssObjectToElement = function (style, element) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * An immutable shape fill class rendering a solid fill color.
  * @constructor
  * @param {String} fc  A css color specification for the fill color.
@@ -8339,13 +8032,6 @@ SolidFill.prototype.equals = function (fill) {
   );
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * An immutable class representing the stroke properties for a solid line.
  * @param {String} color  A css color specification for the stroke color.
@@ -8431,13 +8117,6 @@ Stroke.getDefaultDashProps = function (type, width) {
   return null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // File containing all paint (fill and stroke) related functions defined on Displayable.
 
 const _PAINT = {
@@ -8677,13 +8356,6 @@ const _PAINT = {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Static Utility Functions for dvt.Displayable
  *   @class DisplayableUtils
  *   @constructor
@@ -8766,14 +8438,6 @@ DisplayableUtils.hasAttributes = function (elem, attrNames) {
   }
   return false;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 const _TRANSFORM = {
   /**
@@ -9031,13 +8695,6 @@ const _TRANSFORM = {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  Abstract base class for displayable objects.
  *  @extends {dvt.Obj}
@@ -9737,16 +9394,21 @@ Displayable.prototype.SvgPropertyChanged = function (name) {
 /**
  * Prepares an aria-label for a data object.
  * The aria-label is composed of an application provided description and the data object's current states.
- * @param {String} shortDesc  The short description for a data object
+ * @param {String|function} shortDesc  The short description for a data object
  * @param {Array} states An array of states to populate in the aria label
+ * @param {function} context shortDesc Function that returns the context object
  * @return {String}
  */
-Displayable.generateAriaLabel = function (shortDesc, states) {
+ Displayable.generateAriaLabel = function (shortDesc, states, context) {
   var desc = [];
   var hasStates = states && states.length > 0;
 
   if (shortDesc) {
-    desc.push(shortDesc);
+    if (typeof shortDesc === "function") {
+      desc.push(shortDesc(context()));
+    } else {
+      desc.push(shortDesc);
+    }
   }
   if (hasStates) {
     desc.push(states.join(AriaUtils.ARIA_LABEL_STATE_DELIMITER));
@@ -9760,13 +9422,6 @@ Object.assign(Displayable.prototype, _EVENT);
 Object.assign(Displayable.prototype, _PAINT);
 Object.assign(Displayable.prototype, _TRANSFORM);
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Container for displayable objects.
  * @extends {Displayable}
@@ -10266,13 +9921,6 @@ Container.prototype.includeChildSubtree = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Top level container for all displayables contained within the SVG document.  This class should not be extended.
  * @extends {dvt.Container}
  * @param {dvt.Context} context
@@ -10323,13 +9971,6 @@ DvtStage.prototype.disableSelection = function (target) {
   };
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing a scheduling service.
  * @extends {Obj}
@@ -10428,13 +10069,6 @@ DvtScheduler.prototype.play = function () {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @param {dvt.Context} context
  * @param {string} domElementId
@@ -10564,8 +10198,8 @@ HtmlTooltipManager.prototype._showTextAtPosition = function (
     // only add content if the elem has not already been populated
     if (Array.isArray(tooltipDOM)) {
       tooltipDOM.forEach(function (node) {
-        outerElem.appendChild(node);
-      }); //@HTMLUpdateOK
+        outerElem.appendChild(node); //@HTMLUpdateOK
+      });
     } else {
       outerElem.appendChild(tooltipDOM); //@HTMLUpdateOK
     }
@@ -10638,7 +10272,7 @@ HtmlTooltipManager.prototype.hideTooltip = function () {
  */
 HtmlTooltipManager.prototype.releaseTooltipResources = function () {
   var tooltip = document.getElementById(this._domElementId);
-  if (tooltip) document.body.removeChild(tooltip);
+  if (tooltip) this._getTooltipContainer().removeChild(tooltip);
 };
 
 /**
@@ -10654,6 +10288,29 @@ HtmlTooltipManager.prototype.getTooltipElem = function () {
   return tooltip;
 };
 
+let tooltipContainer;
+
+/**
+ * Retrieves the outer DOM element of the tooltip.
+ * @return {object}
+ * @protected
+ */
+HtmlTooltipManager.prototype._getTooltipContainer = function () {
+  if (tooltipContainer) {
+    return tooltipContainer;
+  }
+  else {
+    tooltipContainer = document.getElementById('_dvtTooltip_shared_container');
+    if (!tooltipContainer) {
+      var tooltipContainerDiv = document.createElement('div');
+      tooltipContainerDiv.id = '_dvtTooltip_shared_container';
+      document.body.appendChild(tooltipContainerDiv);
+      tooltipContainer = tooltipContainerDiv;
+    }
+    return tooltipContainer;
+  }
+};
+
 /**
  * Initializes the outer DOM element of the tooltip.
  * @return {object} The outer DOM element.
@@ -10663,7 +10320,8 @@ HtmlTooltipManager.prototype.InitializeTooltipElem = function () {
   var tooltip = document.createElement('div');
   tooltip.id = this._domElementId;
   tooltip.style.visibility = 'hidden';
-  document.body.appendChild(tooltip); //@HTMLUpdateOK
+  // adding tooltip to a div container shared across dvts
+  this._getTooltipContainer().appendChild(tooltip);
   this.InitContent(tooltip);
   return tooltip;
 };
@@ -10701,10 +10359,10 @@ HtmlTooltipManager.prototype.showTooltip = function (x, y, text, shape, bTrackMo
   } else {
     // Tooltips fade-in and remove themselves after a delay.
     this._timerIsRunning = true;
-    this._showTimerId = window.setTimeout(
+    this._showTimerId = window.setTimeout( //@HTMLUpdateOK
       this._handleShowTimer.bind(this),
       HtmlTooltipManager._SHOW_DELAY
-    ); //@HTMLUpdateOK
+    );
   }
 };
 
@@ -10922,13 +10580,6 @@ HtmlTooltipManager.createElement = function (tag, style, content, classList) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *   Selection effect utilities.
  *   @class SelectionEffectUtils
  *   @constructor
@@ -10968,13 +10619,6 @@ SelectionEffectUtils.getSelectingCursor = function () {
   return 'pointer';
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  Abstract base class for shape displayables.
  *  @extends {Container}
@@ -11456,13 +11100,6 @@ Shape.prototype.copyShape = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Utility functions for text.
  * @class
  */
@@ -11480,6 +11117,8 @@ TextUtils._canvasCtx = null;
 TextUtils._wordSpacing;
 /** @private */
 TextUtils._letterSpacing;
+/** @private */
+TextUtils._fontVariantNumeric;
 /** @const */
 TextUtils.EMPTY_TEXT_BUFFER = 2;
 /** @const */
@@ -11577,22 +11216,38 @@ TextUtils.getTextStringWidth = function (context, textString, cssStyle) {
   if (textString == null || textString.length == 0) return 0;
   var letterSpacing = context.letterSpacing || 'normal';
   var wordSpacing = context.wordSpacing || 'normal';
+  var fontVariantNumeric = context.fontVariantNumeric || 'normal';
   var cacheKey = TextUtils._createCacheKey(context, cssStyle, textString);
   var cachedDims = TextUtils._cachedTextWidth[cacheKey];
 
   if (cachedDims != null) return cachedDims;
   else {
     var width;
-    if (TextUtils._isNormalSpacing(letterSpacing) && TextUtils._isNormalSpacing(wordSpacing)) {
-      var spacingChanged = TextUtils._wordSpacing || TextUtils._letterSpacing;
+    var isLetterSpacingNormal = TextUtils._isNormalSpacing(letterSpacing);
+    var isWordSpacingNormal = TextUtils._isNormalSpacing(wordSpacing);
+    var isFontVariantNumericNormal = fontVariantNumeric === 'normal';
+    if (isLetterSpacingNormal && isWordSpacingNormal && isFontVariantNumericNormal) {
+      var spacingChanged = TextUtils._wordSpacing || TextUtils._letterSpacing || TextUtils._fontVariantNumeric;
       TextUtils._storeCanvasContext(spacingChanged);
-      TextUtils._setSpacing(null, null);
+      TextUtils._setSpacing(null, null, null);
       width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
     } else {
+      // Properties that are supported in <canvas> elements by browser
+      // Chrome supports letterSpacing, wordSpacing, and fontVariantNumeric
+      // Safari supports only supports fontVariantNumeric
+      // Firefox supports none
       if (Agent.browser === 'chrome') {
-        if (TextUtils._letterSpacing != letterSpacing || (TextUtils._wordSpacing != wordSpacing)) {
+        if (TextUtils._letterSpacing != letterSpacing || (TextUtils._wordSpacing != wordSpacing) || (TextUtils._fontVariantNumeric != fontVariantNumeric)) {
           TextUtils._clearCanvasContext();
-          TextUtils._setSpacing(wordSpacing, letterSpacing);
+          TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
+        }
+        TextUtils._storeCanvasContext();
+        TextUtils._attachCanvas(context);
+        width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
+      } else if (Agent.browser === 'safari' && isLetterSpacingNormal && isWordSpacingNormal) {
+        if (TextUtils._fontVariantNumeric != fontVariantNumeric) {
+          TextUtils._clearCanvasContext();
+          TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
         }
         TextUtils._storeCanvasContext();
         TextUtils._attachCanvas(context);
@@ -11622,14 +11277,16 @@ TextUtils._isNormalSpacing = function (value) {
 };
 
 /**
- * Set the word and letter spacing
+ * Set the word and letter spacing and font variant numeric
  * @param {string} wordSpacing
  * @param {string} letterSpacing
+ * @param {string} fontVariantNumeric
  * @private
  */
-TextUtils._setSpacing = function (wordSpacing, letterSpacing) {
+TextUtils._setSpacing = function (wordSpacing, letterSpacing, fontVariantNumeric) {
   TextUtils._wordSpacing = wordSpacing;
   TextUtils._letterSpacing = letterSpacing;
+  TextUtils._fontVariantNumeric = fontVariantNumeric;
 };
 
 /**
@@ -11686,7 +11343,7 @@ TextUtils._attachCanvas = function (context) {
 TextUtils._createCacheKey = function (context, cssStyle, textString) {
   var cssStyleKey = cssStyle != null ? cssStyle.hashCodeForTextMeasurement() : '';
   var text = textString ? textString : '';
-  return text + cssStyleKey + context.letterSpacing + context.wordSpacing;
+  return text + cssStyleKey + context.letterSpacing + context.wordSpacing + context.fontVariantNumeric;
 };
 
 /**
@@ -11997,13 +11654,6 @@ TextUtils.getOptimalFontSize = function (context, textString, cssStyle, bounds) 
   return '50px';
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Creates an instance of OutputText.
  * @extends {Shape}
@@ -12748,13 +12398,6 @@ OutputText.prototype.hasBackground = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Rectangle displayable.
  * @param {dvt.Context} context
  * @param {number} x
@@ -13042,13 +12685,6 @@ Rect.prototype.getDimensionsSelf = function (targetCoordinateSpace) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class representing a timer.
  * @extends {Obj}
  * @class Timer
@@ -13186,13 +12822,6 @@ Timer.prototype.StopTimer = function () {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*--------------------------------------------------------------------*/
 /*   DvtCustomTooltip              Action tooltip Component           */
 /*--------------------------------------------------------------------*/
@@ -13440,13 +13069,6 @@ DvtCustomTooltipItem.prototype._handleMenuTimer = function () {
   this._listener.call(this._listenerObj, this._menuItemTimer.evt);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // Used for rendering SVG content in to an HTML div wrapper
 /**
  * @param {Context} context
@@ -13522,13 +13144,6 @@ DvtHtmlRichTooltipManager.prototype.hideTooltip = function () {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @constructor
  * A higher-level class that represents a single touch event.
@@ -13629,13 +13244,6 @@ ComponentTouchEvent.prototype.getNativeEvent = function () {
   return this._nativeEvent;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Document APIs.
  * @class SvgDocumentUtils
@@ -13812,13 +13420,6 @@ SvgDocumentUtils.disableMouseEvents = function (elem) {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * @constructor
  * Keeps track of the current state of touches and fires higher-level logical events
@@ -14899,13 +14500,6 @@ TouchManager.prototype.reset = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Factory class for component events to be fired to framework layers. Any changes to existing event payloads requires
  * search and update in the shared JS and all framework layers.
  */
@@ -15507,13 +15101,6 @@ EventFactory.newTimelineOverviewEvent = function (subtype, itemId, isMultiSelect
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * 2D map implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
  * @class Map2D
@@ -15572,13 +15159,6 @@ Map2D.prototype._getInnerMap = function (keyA) {
   return innerMap;
 };
 
-/**
- * @license
- * Copyright (c) 2016 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // DvtBaseComponentCache.js
 //
 //
@@ -15714,13 +15294,6 @@ BaseComponentCache.prototype.putToCachedMap2D = function (mapKey, itemKeyA, item
   map.put(itemKeyA, itemKeyB, value);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 const ResourceUtils = {
   /**
    * Substitutes the replacement objects into the specified pattern.
@@ -15737,13 +15310,6 @@ const ResourceUtils = {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2012 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * JSON utilities.
  * @class
@@ -15910,13 +15476,6 @@ JsonUtils._isClonableObject = function (obj) {
   return false;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Read-only text object that supports wrapping.
  * @extends {Container}
@@ -16722,13 +16281,6 @@ MultilineText.prototype.hasBackground = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Simple logical object for tooltip support.
  * @param {string} tooltip The tooltip to display.
  * @param {string|function} datatip The datatip to display.
@@ -16791,14 +16343,6 @@ SimpleObjPeer.prototype.getDatatipColor = function (target) {
   if (typeof this._datatipColor === 'function') return this._datatipColor();
   return this._datatipColor;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Base class for JSON components.
@@ -17173,13 +16717,6 @@ BaseComponent.prototype.renderEmptyText =
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Interactivity manager for selection.
  * @class SelectionHandler
  * @constructor
@@ -17427,13 +16964,6 @@ SelectionHandler.prototype.clearSelection = function (isInitial) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Interactivity handle for category rollover effects support.
  * Objects must implement DvtLogicalObject and DvtCategoricalObject to be supported by this handler.
  * @param {function} callback A function that responds to component events.
@@ -17542,10 +17072,10 @@ CategoryRolloverHandler.prototype.processEvent = function (
   if (type == 'over') {
     // Highlight after the appropriate delay, based on whether we're already in highlight mode.
     var hoverDelay = this._bHighlightMode ? this._hoverDelay : initialHoverDelay;
-    this._hoverDelayCallback = setTimeout(
+    this._hoverDelayCallback = setTimeout( //@HTMLUpdateOK
       this.GetRolloverCallback(event, objs, bAnyMatched, customAlpha),
       hoverDelay
-    ); //@HTMLUpdateOK
+    );
 
     // If the highlight mode timeout has been started, cancel it.
     if (this._highlightModeTimeout) {
@@ -17557,10 +17087,10 @@ CategoryRolloverHandler.prototype.processEvent = function (
     var rolloutDelay = this._bHighlightMode
       ? this._hoverDelay
       : CategoryRolloverHandler._ROLLOUT_TIMEOUT;
-    this._hoverDelayCallback = setTimeout(
+    this._hoverDelayCallback = setTimeout( //@HTMLUpdateOK
       this.GetRolloutCallback(event, objs, bAnyMatched, customAlpha),
       rolloutDelay
-    ); //@HTMLUpdateOK
+    );
   }
 };
 
@@ -17583,8 +17113,7 @@ CategoryRolloverHandler.prototype.GetRolloverCallback = function (
     this._bHighlightMode = true;
     CategoryRolloverHandler.highlight(event['categories'], objs, bAnyMatched, customAlpha);
 
-    // Fire the event to the component's callback if specified.
-    if (this._callback) this._callback.call(this._callbackObj, event, this._source);
+    this.FireCallback(event);
   };
   return Obj.createCallback(this, callback);
 };
@@ -17608,12 +17137,19 @@ CategoryRolloverHandler.prototype.GetRolloutCallback = function (
     CategoryRolloverHandler.highlight(event['categories'], objs, bAnyMatched, customAlpha);
     this.SetHighlightModeTimeout();
 
-    // Fire the event to the component's callback if specified.
-    if (this._callback) this._callback.call(this._callbackObj, event, this._source);
+    this.FireCallback(event);
   };
   return Obj.createCallback(this, callback);
 };
-
+/**
+ * Fires the callback function
+ * @param {object} event The event that was triggered.
+ * @protected
+ */
+CategoryRolloverHandler.prototype.FireCallback = function (event) {
+  // Fire the event to the component's callback if specified.
+  if (this._callback) this._callback.call(this._callbackObj, event, this._source);
+};
 /**
  * Highlights the objects corresponding to the specified objects.  If no categories are specified, all highlight will
  * be removed.
@@ -17727,13 +17263,6 @@ CategoryRolloverHandler.prototype.setHoverDelay = function (hoverDelay) {
   this._hoverDelay = hoverDelay;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Event manager that processes low level events and sends them to the appropriate handlers.
  * @param {dvt.Context} context The platform specific context object.
@@ -17933,6 +17462,13 @@ EventManager.prototype.addListeners = function (displayable) {
     displayable.addEvtListener(KeyboardEvent.KEYUP, this.OnKeyUp, false, this);
     displayable.addEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
     displayable.addEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
+
+    // Safari does not dispatch wheel events to svg when there is no svg content under the pointer.
+    // attaching the dummy event listener to parent element to trigger wheel event
+    // https://github.com/d3/d3/issues/3035
+    if (Agent.browser === 'safari') {
+      this.getCtx()._parentDiv.addEventListener('wheel', () => { });
+    }
   }
 
   if (this.isDndSupported()) {
@@ -19659,7 +19195,7 @@ EventManager.prototype.isTouchResponseTouchStart = function () {
   else {
     // start with the parent of the container div
     var root = this.getCtx().getSvgDocument().parentElement.parentElement;
-    while (root && root.nodeName !== 'HTML') {
+    while (root) {
       var style = window.getComputedStyle(root);
       if (
         (style.overflow !== 'hidden' &&
@@ -19671,6 +19207,9 @@ EventManager.prototype.isTouchResponseTouchStart = function () {
       ) {
         // touchResponse should be auto when in an iFrame 
         return false;
+      }
+      if (root.nodeName === 'HTML') {
+        break;
       }
       root = root.parentElement;
     }
@@ -20253,13 +19792,6 @@ EventManager.prototype.DispatchElementEvent = function (eventType, eventDetail) 
     .dispatchEvent(new CustomEvent(eventType, { detail: eventDetail }));
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 // Custom tooltip event handler
 /**
  * @constructor
@@ -20301,13 +19833,6 @@ DvtCustomTooltipEventHandler.prototype._handleMenuClick = function (targetObj) {
   }
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Interactivity manager for custom tooltips and menus.  The two can be visually combined.
  * @class DvtCustomTooltipManager
@@ -20488,13 +20013,6 @@ DvtCustomTooltipManager._formatTextString = function (tooltip) {
 };
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  *  Defines a mask.
  *  @param {dvt.GradientFill} gradient The gradient to use for this mask
  *  @param {dvt.Rectangle} bounds The bounds of this mask
@@ -20537,13 +20055,6 @@ Mask.prototype.getBounds = function () {
   return this._bounds;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Use element displayable.
  * @param {dvt.Context} context
@@ -20606,14 +20117,6 @@ Use.prototype.destroy = function () {
   this.getCtx().decreaseGlobalDefReference(this._targetId);
   Use.superclass.destroy.call(this);
 };
-
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Context object corresponding to an SVG document. The constructor creates a SVG document inside the specified
@@ -21508,13 +21011,6 @@ Context.prototype.createContext = function (container, id, referenceDiv) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class defining easing functions for animations.
  * @extends {Obj}
  * @class Easing
@@ -21744,13 +21240,6 @@ Easing.PolyInOut = function (progress, exp) {
  */
 Easing.prototype.Init = function () {};
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class defining interpolation functions for animations.
  * @extends {Obj}
@@ -22414,14 +21903,6 @@ DvtInterpolator._map[DvtInterpolator.TYPE_FILL] = DvtInterpolator.InterpolateFil
 DvtInterpolator._map[DvtInterpolator.TYPE_STROKE] = DvtInterpolator.InterpolateStroke;
 DvtInterpolator._map[DvtInterpolator.TYPE_POLYLINE] = DvtInterpolator.InterpolatePolyline;
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 // State constants (private)
 var _STATE_INITIALIZE = 0;
 var _STATE_BEGIN = 1;
@@ -22797,13 +22278,6 @@ Animator.prototype._processStep = function (progress) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Abstract base class representing something that can be played, like an animation.
  * @extends {Obj}
  * @class Playable
@@ -22957,13 +22431,6 @@ Playable.prototype.stop = function (bJumpToEnd) {
   //subclasses must override
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing a set of DvtPlayables that are played at the same time.
  * The playables should be passed into the constructor as either:
@@ -23119,13 +22586,6 @@ ParallelPlayable.prototype.DoEnd = function () {
   this._animationRequestId = null;
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing a set of DvtPlayables that are played one after another.
  * The playables should be passed into the constructor as either:
@@ -23296,13 +22756,6 @@ SequentialPlayable.prototype.DoEnd = function () {
   this._animationRequestId = null;
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Abstract base class representing an animation.
  * @extends {Playable}
@@ -23782,13 +23235,6 @@ BaseAnimation.prototype.RestoreOriginalMatrices = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class representing an animation to fade in an object.
  * @extends {BaseAnimation}
  * @class AnimFadeIn
@@ -23829,13 +23275,6 @@ AnimFadeIn.prototype.InitEndState = function (obj) {
   this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 1);
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing an animation to move an object by a given amount.
  * @extends {BaseAnimation}
@@ -23902,13 +23341,6 @@ AnimMoveBy.prototype.InitEndState = function (obj) {
   this._currIndex++;
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing an animation to move and fade in an object.  The object
  * is moved in from the edges of a provided rectangle as it fades.
@@ -23988,13 +23420,6 @@ AnimScaleFadeIn.prototype.InitEndState = function (obj) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class representing an animation to fade out an object.
  * @extends {dvt.BaseAnimation}
  * @class AnimFadeOut
@@ -24027,13 +23452,6 @@ AnimFadeOut.prototype.InitEndState = function (obj) {
   this._animator.addProp(Animator.TYPE_NUMBER, obj, obj.getAlpha, obj.setAlpha, 0);
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class used to animate replacing one set of display objects with another set by
  * fading out the old and fading in the new.
@@ -24068,13 +23486,6 @@ DvtCombinedAnimFade.prototype.Init = function (context, outObjs, inObjs, duratio
   DvtCombinedAnimFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class used to animate replacing one set of display objects with another set by
  * moving out the old and moving in the new.
@@ -24126,13 +23537,6 @@ CombinedAnimMoveBy.prototype.Init = function (
   CombinedAnimMoveBy.superclass.Init.call(this, context, [moveOut, moveIn]);
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class used to animate replacing one set of display objects with another set by
  * moving and fading out the old and moving and fading in the new.  The objects
@@ -24228,13 +23632,6 @@ DvtCombinedAnimScaleFade.prototype.Init = function (
   DvtCombinedAnimScaleFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Animation handler for black box animations.
  * @class BlackBoxAnimationHandler
@@ -24358,13 +23755,6 @@ BlackBoxAnimationHandler._offsetObjects = function (objs, offsetX, offsetY) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class providing the ability to create a custom animation using a dvt.Animator.
  * @param {dvt.Context} context The platform specific context object.
  * @param {obj} obj The object to animate.
@@ -24388,13 +23778,6 @@ CustomAnimation.prototype.getAnimator = function () {
   return this._animator;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Animation handler for data objects.
  * @param {dvt.Context} context The platform specific context object.
@@ -24489,6 +23872,7 @@ DataAnimationHandler.prototype.constructAnimation = function (oldList, newList) 
       newList[i].animateInsert(this);
   }
 };
+
 /**
  * Returns the container where deleted elements go.
  * @return {dvt.Container} The container where deleted elements go.
@@ -24558,13 +23942,6 @@ DataAnimationHandler.prototype.getNumPlayables = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class representing an animation to move an object to a given point.
  * @extends {BaseAnimation}
  * @class AnimMoveTo
@@ -24631,13 +24008,6 @@ AnimMoveTo.prototype.InitEndState = function (obj) {
 };
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Class representing an animation to scale an object to a given value.
  * @extends {BaseAnimation}
  * @class AnimScaleTo
@@ -24691,13 +24061,6 @@ AnimScaleTo.prototype.InitEndState = function (obj) {
   this._currIndex++;
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class representing an animation to pop an object in.
  * @extends {dvt.BaseAnimation}
@@ -24861,13 +24224,6 @@ AnimPopIn.prototype.RemoveTempContainers = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
   *   Creates an immutable linear gradient fill.
   *   @extends {dvt.GradientFill}
   *   @class
@@ -24934,13 +24290,6 @@ LinearGradientFill.prototype.equals = function (fill) {
   else return false;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /*---------------------------------------------------------------------*/
 /*    KeyboardFocusEffect     Manages keyboard focus effect         */
 /*---------------------------------------------------------------------*/
@@ -25041,13 +24390,6 @@ KeyboardFocusEffect.prototype.hide = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * 2D array implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
  * @class Array2D
@@ -25106,13 +24448,6 @@ Array2D.prototype._getInner = function (keyA) {
   return innerMap;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  A static class for chart layout.
  *  @class LayoutUtils
@@ -25225,13 +24560,6 @@ LayoutUtils.getBubbleSize = function (z, minZ, maxZ, minSize, maxSize) {
   return Math.sqrt(area);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * A specialized map used for tracking whether a set of pixel coords has been drawn to.
  * @param {number=} scale The scale factor determining how many pixels in each direction the map coords correspond to.
@@ -25391,13 +24719,6 @@ PixelMap.prototype._adjustForScale = function (coord) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * ImageLoader
  */
 const ImageLoader = { _cache: {} };
@@ -25519,13 +24840,6 @@ ImageLoader._addListenerToQueue = function (queue, listener) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Utility functions for polygons.
  * @class
  */
@@ -25616,13 +24930,6 @@ PolygonUtils.translate = function (points, tx, ty) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Circle displayable.
  * @param {dvt.Context} context
  * @param {number} cx The x coordinate of the center of the circle.
@@ -25681,13 +24988,6 @@ Circle.prototype.getDimensionsSelf = function (targetCoordinateSpace) {
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Image displayable.
  * @param {dvt.Context} context
@@ -25838,13 +25138,6 @@ Image.prototype.setAriaProperty = function (property, value) {
   if (property != 'hidden') Image.superclass.setAriaProperty.call(this, 'hidden', null);
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Line displayable.
  * @param {dvt.Context} context
@@ -26019,13 +25312,6 @@ Line.prototype.setClassName = function (className, bSkipAdjustDimensions) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Path displayable.
  * @param {dvt.Context} context
  * @param {object} cmds The string of SVG path commands or an array of SVG path commands, whose entries contain the
@@ -26124,13 +25410,6 @@ Path.prototype.GetAriaElem = function () {
   return Path.superclass.GetAriaElem.call(this);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  @param {dvt.Context} context
  *  @param {String} shape Marker shape
@@ -26885,13 +26164,6 @@ SimpleMarker.prototype.getMaintainAspectRatio = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @param {dvt.Context} context
  * @param {number} cx  The x position of the center of the marker.
  * @param {number} cy  The y position of the center of the marker.
@@ -27384,13 +26656,6 @@ ImageMarker.prototype.getDimensionsSelf = function (targetCoordinateSpace) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Abstract base class for polygon displayable that is defined by an array of points.
  * @extends {Shape}
  * @class
@@ -27448,13 +26713,6 @@ DvtPolygonalShape.prototype.getDimensionsSelf = function (targetCoordinateSpace)
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Polygon displayable.
  * @param {dvt.Context} context
  * @param {array} arPoints The array of coordinates for this polygon, in the form [x1,y1,x2,y2...].
@@ -27495,13 +26753,6 @@ Polygon.prototype.GetAriaElem = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Polyline displayable.
  * @param {dvt.Context} context
  * @param {array} arPoints The array of coordinates for this polyline, in the form [x1,y1,x2,y2...].
@@ -27541,13 +26792,6 @@ Polyline.prototype.requiresStrokeAdjustmentForShadow = function () {
   return true;
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Creates an instance of BackgroundOutputText.
  * @extends {Container}
@@ -28044,13 +27288,6 @@ BackgroundOutputText.prototype.hasBackground = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Read-only text object that supports wrapping.
  * @extends {dvt.Container}
  * @class BackgroundMultilineText
@@ -28207,13 +27444,6 @@ BackgroundMultilineText.prototype.isMultiline = function () {
   return true;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Base class for JSON component defaults.
  * @class
@@ -28387,13 +27617,6 @@ BaseComponentDefaults.prototype.getAnimationDuration = function (options) {
   return options['styleDefaults'] ? options['styleDefaults']['animationDuration'] : null;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * A minimalist scrollbar.
  * @class
@@ -28671,13 +27894,6 @@ SimpleScrollbar.prototype._setViewportRange = function (min, max, eventSubtype) 
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * A minimalist scrollable container that can scroll either vertically or horizontally, but not both.
  * Use DvtScrollableContainer if scrolling in both directions is required.
  * @class
@@ -28686,9 +27902,10 @@ SimpleScrollbar.prototype._setViewportRange = function (min, max, eventSubtype) 
  * @param {dvt.Context} context
  * @param {number} width The width of the scrollable container
  * @param {number} height The height of the scrollable container
+ * @param {string} visibleScrolling String to define whether scrolling is enabled. Set to 'always' in redwood. Valid values are 'asNeeded', 'off' and 'always'
  * @param {boolean} isHorizontalScrolling True if this container scrolls horizontally
  */
-const SimpleScrollableContainer = function (context, width, height, isHorizontalScrolling) {
+const SimpleScrollableContainer = function (context, width, height, visibleScrolling, isHorizontalScrolling) {
   SimpleScrollableContainer.superclass.Init.call(this, context);
   this._contentSize = isHorizontalScrolling ? width : height;
   this._width = width;
@@ -28703,6 +27920,8 @@ const SimpleScrollableContainer = function (context, width, height, isHorizontal
 
   this._isHorizontalScrolling = isHorizontalScrolling;
   this._isScrollbarVisible = false;
+  // sets scrolling to be 'asNeeded'|'always'
+  this.scrolling = visibleScrolling;
 
   if (!Agent.isTouchDevice()) {
     this.addEvtListener(MouseEvent.MOUSEWHEEL, this._onMouseWheel, false, this);
@@ -28823,6 +28042,9 @@ SimpleScrollableContainer.prototype.prepareContentPane = function () {
     // make scrollbars visible for tests
     if (!Agent.isEnvironmentTest()) this._scrollbar.setAlpha(0);
     this.addChild(this._scrollbar);
+    if (this.scrolling === 'always') {
+      this._showScrollbar();
+    }
   } else {
     this.addChild(this._container);
     this.removeChild(this._maskContainer);
@@ -28858,7 +28080,7 @@ SimpleScrollableContainer.prototype._getAvailSize = function () {
  * @private
  */
 SimpleScrollableContainer.prototype._hideScrollbar = function (event) {
-  if (this._isScrollbarVisible) {
+  if (this._isScrollbarVisible && this.scrolling !== 'always') {
     this._isScrollbarVisible = false;
     this._scrollbarTimer.reset();
     this._fadeOutAnim = new AnimFadeOut(this.getCtx(), this._scrollbar, 0.2);
@@ -28909,7 +28131,6 @@ SimpleScrollableContainer.prototype._updateFade = function (translate) {
  */
 SimpleScrollableContainer.prototype._onMouseWheel = function (event) {
   if (!this.hasScrollingContent()) return;
-
   this._showScrollbar();
 
   var delta = event.wheelDelta != null ? event.wheelDelta : 0;
@@ -29014,13 +28235,6 @@ SimpleScrollableContainer.prototype.hasScrollingContent = function () {
   return this._contentSize > this._getAvailSize();
 };
 
-/**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Button
  * @param {dvt.Context} context
@@ -29507,13 +28721,6 @@ Button.prototype.handleKeyboardEvent = function (event) {
 };
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * IconButton
  * @param {dvt.Context} context
  * @param {'outlined'|'borderless'} chroming
@@ -29816,13 +29023,6 @@ IconButton.prototype._updateClasses = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * TransientButton. This adds listeners that hide and show this button based
  * on focus, blur, mouse over, and mouse out events on the current stage.
  * @param {dvt.Context} context The rendering context.
@@ -29971,13 +29171,6 @@ TransientButton.prototype.OnMouseUp = function (event) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Simple logical object for custom datatip support.
  * @param {dvt.HtmlTooltipManager} tooltipManager
  * @param {function} tooltipFunc The callback function used to render the datatip content
@@ -30021,13 +29214,6 @@ CustomDatatipPeer.prototype.getDatatipColor = function (target) {
   return this._datatipColor;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  *  Provides automation services for a DVT component.
  *  @param {Object} dvtComponent
@@ -30123,13 +29309,6 @@ Automation.prototype.IsTooltipElement = function (domElement) {
   return false;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Interactivity manager for keyboard events.
  * @param {EventManager} manager The owning EventManager
@@ -30601,13 +29780,6 @@ KeyboardHandler._areEqualWithinTolerance = function (a, b) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * Handler used for marquee operations.
  * @class
  * @constructor
@@ -30917,13 +30089,6 @@ MarqueeHandler.prototype.getGlassPane = function () {
   return this._glassPane;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Handler used for pan and zoom operations.
  * @constructor

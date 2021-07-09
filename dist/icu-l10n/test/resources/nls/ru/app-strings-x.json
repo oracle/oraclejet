@@ -1,0 +1,4 @@
+{
+  "contentArea": "{name} область содержимого",
+  "plural": "{total_rows, plural, offset:0 =0 {нет строк} =1 {# row} other {несколько рядов}}"
+}

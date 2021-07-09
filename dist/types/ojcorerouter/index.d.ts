@@ -1,11 +1,3 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 import 'knockout';
 declare class CoreRouter<D extends {
     [key: string]: any;
@@ -38,6 +30,7 @@ declare class CoreRouter<D extends {
     }>(routes: Array<CoreRouter.DetailedRouteConfig<ChildD> | CoreRouter.RedirectedRouteConfig>, options?: CoreRouter.CreateOptions<ChildP>): CoreRouter<ChildD, ChildP>;
     destroy(): any;
     go(...route: CoreRouter.Route<P>[]): Promise<CoreRouter.CoreRouterState<D, P>>;
+    reconfigure(routes: Array<(CoreRouter.DetailedRouteConfig | CoreRouter.RedirectedRouteConfig)>, route: CoreRouter.Route<P>): Promise<CoreRouter.CoreRouterState<D, P>>;
     sync(): Promise<CoreRouter.CoreRouterState<D, P>>;
 }
 declare namespace CoreRouter {
@@ -78,13 +71,6 @@ declare namespace CoreRouter {
         redirect?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type UrlAdapter<P = {
-        [key: string]: any;
-    }> = {
-        getRoutesForUrl: (() => Route<P>[]);
-        getUrlForRoutes: ((routes: Route<P>[]) => string);
-    };
-    // tslint:disable-next-line interface-over-type-literal
     type VetoableState<D = {
         [key: string]: any;
     }, P = {
@@ -113,6 +99,19 @@ declare namespace CoreRouter {
         readonly detail: D;
         readonly params: P;
         readonly path: string;
+        readonly pathParams: string[];
+        readonly redirect?: string;
+    }
+    interface UrlAdapter<P extends {
+        [key: string]: any;
+    } = {
+        [key: string]: any;
+    }> {
+        getRoutesForUrl(routePathParams?: {
+            offset: number;
+            pathParams: string[];
+        }, url?: string): Array<Route<P>>;
+        getUrlForRoutes(states: Array<Route<P>>): string;
     }
 }
 export = CoreRouter;

@@ -30,13 +30,6 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   ojt = ojt && Object.prototype.hasOwnProperty.call(ojt, 'default') ? ojt['default'] : ojt;
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * @namespace oj.Config
    * @hideconstructor
    * @classdesc Services for setting and retrieving configuration options
@@ -143,7 +136,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
         var localeBundle = prefix + locale + '/localeElements';
         const localePromise = new Promise(function (resolve, reject) { require([localeBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(localeElements => {
           if (localeElements) {
-            oj.LocaleData.__updateBundle(localeElements);
+            oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
           }
         });
         promises.push(localePromise);
@@ -151,7 +144,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
           var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
             .map(bundleName => new Promise(function (resolve, reject) { require([`${prefix}${locale}${bundleName}`], function (m) { resolve(_interopNamespace(m)); }, reject) }));
           promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-            oj.TimezoneData.__mergeIntoLocaleElements(timezoneBundles);
+            timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
           }));
         }
       }

@@ -16,13 +16,6 @@ import oj from 'ojs/ojcore-base';
 import { warn } from 'ojs/ojlogger';
 import LabeledByUtils from 'ojs/ojlabelledbyutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_radioset_metadata = 
 {
@@ -207,165 +200,253 @@ var __oj_radioset_metadata =
   });
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
-/*!
- * JET Radioset @VERSION
- */
+  /*!
+   * JET Radioset @VERSION
+   */
 
-// -----------------------------------------------------------------------------
-// "private static members" shared by all radiosets
-// -----------------------------------------------------------------------------
-/**
- * do not do a value change check in _SetValue
- */
+  // -----------------------------------------------------------------------------
+  // "private static members" shared by all radiosets
+  // -----------------------------------------------------------------------------
+
+  //  do not do a value change check in _SetValue
+
   var _sValueChangeCheckFalse = { doValueChangeCheck: false };
 
-/**
- * @ojcomponent oj.ojRadioset
- * @augments oj.editableValue
- * @ojimportmembers oj.ojDisplayOptions
- * @ojsignature [{
- *                target: "Type",
- *                value: "class ojRadioset<K, D, V=any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>>",
- *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
- *                , {"name": "V", "description": "Type of value of the component"}]
- *               },
- *               {
- *                target: "Type",
- *                value: "ojRadiosetSettableProperties<K, D, V> extends editableValueSettableProperties<V>",
- *                for: "SettableProperties"
- *               }
- *              ]
- * @since 0.6.0
- * @ojshortdesc A radio set allows the user to select one option from a set of mutually exclusive options.
- * @ojrole radio
- * @ojrole radiogroup
- * @ojrole option
- * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
- *
- * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled"]}
- * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
- * @ojvbdefaultcolumns 6
- * @ojvbmincolumns 2
- *
- * @ojuxspecs ['radioset']
- *
- * @classdesc
- * <h3 id="radiosetOverview-section">
- *   JET Radioset
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#radiosetOverview-section"></a>
- * </h3>
- * <p>
- * The JET oj-radioset component manages a set of
- * <code class="prettyprint">oj-option</code> child elements and creates the necessary dom elements for
- * the actual radio buttons.
- * </p>
- * <p>To use an oj-radioset, add one or more oj-option child elements for each radio button desired.
- * Note, if you add or remove an oj-option after the oj-radioset is rendered, you should call
- * refresh() on the oj-radioset.
- * Note, oj-optgroup is not a supported child element of oj-radioset.
- * </p>
- * <p>The child content can be configured via inline HTML content or a DataProvider.
- * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
- * </p>
- * <p>A JET Radio Set can be created with the following markup.</p>
- * <pre class="prettyprint">
- * <code>
- * &lt;oj-radioset>
- *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
- *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
- *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
- *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
- * &lt;/oj-radioset>
- * </code></pre>
- * <p>A JET Radio Set can be created with a DataProvider.</p>
- * <pre class="prettyprint">
- * <code>
- * &lt;oj-radioset options="[[dataprovider]]">
- * &lt;/oj-radioset>
- * </code></pre>
- * <p>
- *  You can enable and disable an oj-radioset,
- *  which will enable and disable all contained radios.
- * </p>
- * <p>
- *  You can set an oj-radioset to readonly,
- *  which will make the options readonly and only selected option's label will be displayed.
- * </p>
- *
- * {@ojinclude "name":"validationAndMessagingDoc"}
- *
- * <h3 id="touch-section">
- *   Touch End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"touchDoc"}
- *
- *
- * <h3 id="keyboard-section">
- *   Keyboard End User Information
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
- * </h3>
- *
- * {@ojinclude "name":"keyboardDoc"}
- *
- * <h3 id="a11y-section">
- *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
- * </h3>
- *
- * <p>JET oj-radioset takes care of setting
- * <code class="prettyprint">role="radiogroup"</code> on the oj-radioset element.
- *
- * <p>If not using the <code class="prettyprint">label-hint</code> attribute,
- * the application is responsible for setting the
- * <code class="prettyprint">labelled-by</code>
- * to point to the radioset's <code class="prettyprint">oj-label</code> element for the oj-radioset.
- * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
- * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
- * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
- * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
- * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
- * required of enabled content, it cannot be used to convey meaningful information.<p>
- *
- * <h3 id="label-section">
- *   Label and Radioset
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
- * <p>
- * For accessibility, if not using the <code class="prettyprint">label-hint</code> attribute,
- * you should associate an <code class="prettyprint">oj-label</code> element with the
- * radioset by putting an <code class="prettyprint">id</code> on the oj-label, and then setting the
- * <code class="prettyprint">labelled-by</code> attribute on the oj-radioset to be the oj-label's
- * <code class="prettyprint">id</code>.
- * </p>
- *
- * @example <caption>Initialize the radioset with no options specified:</caption>
- * &lt;oj-radioset id="colorRadio" value="{{currentColor}}">
- *   &lt;oj-option value="blue">Blue&lt;/oj-option>
- *   &lt;oj-option value="green">Green&lt;/oj-option>
- * &lt;/oj-radioset>
- *
- * @example <caption>Initialize component and an associated oj-label component</caption>
- * &lt;oj-label id="grouplabel">Greetings&lt;/oj-label>
- * &lt;oj-radioset id="radioset" labelle-dby="grouplabel" value="{{currentGreeting}}">
- *   &lt;oj-option id="helloid" value="hello">Hello&lt;/oj-option>
- *   &lt;oj-option id="bonjourid" value="bonjour"/>Bonjour&lt;/oj-option>
- *   &lt;oj-option id="ciaoid" value="ciao"/>Ciao&lt;/oj-option>
- * &lt;oj-radioset>
- * <br/>
- * // set the value to "ciao". (The 'ciao' radio will be selected)
- * myComp.value = "ciao";
- */
-// --------------------------------------------------- oj.ojRadioset Styling Start -----------------------------------------------------------
+  /**
+   * @ojcomponent oj.ojRadioset
+   * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojRadioset<K, D, V=any> extends editableValue<V, ojRadiosetSettableProperties<K, D, V>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
+   *                {"name": "V", "description": "Type of value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojRadiosetSettableProperties<K, D, V> extends editableValueSettableProperties<V>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @since 0.6.0
+   * @ojshortdesc A radio set allows the user to select one option from a set of mutually exclusive options.
+   * @ojrole radio
+   * @ojrole radiogroup
+   * @ojrole option
+   * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @ojuxspecs ['radioset']
+   *
+   * @classdesc
+   * <h3 id="radiosetOverview-section">
+   *   JET Radioset
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#radiosetOverview-section"></a>
+   * </h3>
+   * <p>
+   * The JET oj-radioset component manages a set of
+   * <code class="prettyprint">oj-option</code> child elements and creates the necessary dom elements for
+   * the actual radio buttons.
+   * </p>
+   * <p>To use an oj-radioset, add one or more oj-option child elements for each radio button desired.
+   * Note, if you add or remove an oj-option after the oj-radioset is rendered, you should call
+   * refresh() on the oj-radioset.
+   * Note, oj-optgroup is not a supported child element of oj-radioset.
+   * </p>
+   * <p>The child content can be configured via inline HTML content or a DataProvider.
+   * It is recommended that inline HTML content should only be used for static data and the DataProvider should always be used for mutable data.
+   * </p>
+   * <p>A JET Radio Set can be created with the following markup.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-radioset>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-radioset>
+   * </code></pre>
+   * <p>A JET Radio Set can be created with a DataProvider.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-radioset options="[[dataprovider]]">
+   * &lt;/oj-radioset>
+   * </code></pre>
+   * <p>
+   *  You can enable and disable an oj-radioset,
+   *  which will enable and disable all contained radios.
+   * </p>
+   * <p>
+   *  You can set an oj-radioset to readonly,
+   *  which will make the options readonly and only selected option's label will be displayed.
+   * </p>
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   *
+   * <p>JET oj-radioset takes care of setting
+   * <code class="prettyprint">role="radiogroup"</code> on the oj-radioset element.
+   *
+   * <p>
+   * {@ojinclude "name":"accessibilitySetLabelEditableValue"}
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
+   * </p>
+   *
+   *
+   * @example <caption>Initialize the radioset with no options specified:</caption>
+   * &lt;oj-radioset id="colorRadio" value="{{currentColor}}">
+   *   &lt;oj-option value="blue">Blue&lt;/oj-option>
+   *   &lt;oj-option value="green">Green&lt;/oj-option>
+   * &lt;/oj-radioset>
+   *
+   * @example <caption>Initialize component and an associated oj-label component</caption>
+   * &lt;oj-label id="grouplabel">Greetings&lt;/oj-label>
+   * &lt;oj-radioset id="radioset" labelle-dby="grouplabel" value="{{currentGreeting}}">
+   *   &lt;oj-option id="helloid" value="hello">Hello&lt;/oj-option>
+   *   &lt;oj-option id="bonjourid" value="bonjour"/>Bonjour&lt;/oj-option>
+   *   &lt;oj-option id="ciaoid" value="ciao"/>Ciao&lt;/oj-option>
+   * &lt;oj-radioset>
+   * <br/>
+   * // set the value to "ciao". (The 'ciao' radio will be selected)
+   * myComp.value = "ciao";
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the radioset's radios.</p>
+   *
+   * @ojsubid oj-radioset-inputs
+   * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
+   * @ignore
+   * @memberof oj.ojRadioset
+   *
+   * @example <caption>Get the nodes for the radios:</caption>
+   * var nodes = $( ".selector" ).ojRadioset( "getNodeBySubId", {'subId': 'oj-radioset-inputs'} );
+   */
+
+  //-----------------------------------------------------
+  //                   Slots
+  //-----------------------------------------------------
+
+  /**
+   * <p>The &lt;oj-radioset> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+   * accepted children and slots.</p>
+   *
+   * @ojchild Default
+   * @memberof oj.ojRadioset
+   * @ojshortdesc The oj-radioset element accepts oj-option elements as children.
+   * @ojpreferredcontent ["OptionElement"]
+   *
+   * @example <caption>Initialize the Radioset with child content specified:</caption>
+   * &lt;oj-radioset>
+   *   &lt;oj-option value="radio1">Radio 1&lt;/oj-option>
+   *   &lt;oj-option value="radio2">Radio 2&lt;/oj-option>
+   *   &lt;oj-option value="radio3">Radio 3&lt;/oj-option>
+   * &lt;/oj-radioset>
+   */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Input</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Select the input. In some themes, the input is not visible,
+   *       so you will tap on the label.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Input's label</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Select the corresponding input.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Input or Label</td>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>If hints, help.instruction or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *    </tr>
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRadioset
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan="2">Input</td>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Select the previous input in the group.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Select the next input in the group.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Radioset</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the checked radio input. If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRadioset
+   */
+
+  //-----------------------------------------------------
+  //                   Styles
+  //-----------------------------------------------------
+
   // ---------------- oj-choice-direction-column --------------
   /**
   * This is the default. It lays out the radios in a column.
@@ -490,13 +571,11 @@ var __oj_radioset_metadata =
          * myComponent.readonly = false;
          *
          * @default false
-         *
-         * @name readOnly
          * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          * @access public
          * @expose
          * @type {?boolean}
-         * @alias readonly
+         * @name readonly
          * @instance
          * @memberof oj.ojRadioset
         */
@@ -1844,7 +1923,7 @@ var __oj_radioset_metadata =
         }
       },
 
-      //* * @inheritdoc */
+
       getNodeBySubId: function (locator) {
         var node = this._super(locator);
         var radios;
@@ -1905,7 +1984,7 @@ var __oj_radioset_metadata =
         return node || null;
       },
 
-      //* * @inheritdoc */
+
       getSubIdByNode: function (node) {
         var topElem = this._GetContentElement()[0].parentElement.parentElement.parentElement;
         var currentNode = node;
@@ -1963,105 +2042,4 @@ var __oj_radioset_metadata =
        * $( ".selector" ).ojRadioset( "destroy" );
        */
     });
-
-// ////////////////     SUB-IDS     //////////////////
-
-
-/**
- * <p>Sub-ID for the radioset's radios.</p>
- *
- * @ojsubid oj-radioset-inputs
- * @deprecated 3.0.0 Since the application supplies the input elements, it can supply a unique ID by which the input elements can be accessed.
- * @ignore
- * @memberof oj.ojRadioset
- *
- * @example <caption>Get the nodes for the radios:</caption>
- * var nodes = $( ".selector" ).ojRadioset( "getNodeBySubId", {'subId': 'oj-radioset-inputs'} );
- */
-
-  // Fragments:
-
-  /**
-   * <p>The &lt;oj-radioset> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-   * accepted children and slots.</p>
-   *
-   * @ojchild Default
-   * @memberof oj.ojRadioset
-   * @ojshortdesc The oj-radioset element accepts oj-option elements as children.
-   * @ojpreferredcontent ["OptionElement"]
-   *
-   * @example <caption>Initialize the Radioset with child content specified:</caption>
-   * &lt;oj-radioset>
-   *   &lt;oj-option value="radio1">Radio 1&lt;/oj-option>
-   *   &lt;oj-option value="radio2">Radio 2&lt;/oj-option>
-   *   &lt;oj-option value="radio3">Radio 3&lt;/oj-option>
-   * &lt;/oj-radioset>
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>Input</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Select the input. In some themes, the input is not visible,
-   *       so you will tap on the label.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Input's label</td>
-   *       <td><kbd>Tap</kbd></td>
-   *       <td>Select the corresponding input.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Input or Label</td>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>If hints, help.instruction or messages exist in a notewindow,
-   *        pop up the notewindow.</td>
-   *    </tr>
-   *   </tbody>
-   * </table>
-   *
-   *
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojRadioset
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Target</th>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td rowspan="2">Input</td>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Select the previous input in the group.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Select the next input in the group.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>Radioset</td>
-   *       <td><kbd>Tab In</kbd></td>
-   *       <td>Set focus to the checked radio input. If hints, title or messages exist in a notewindow,
-   *        pop up the notewindow.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojRadioset
-   */
 }());

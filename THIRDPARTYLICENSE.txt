@@ -11,35 +11,32 @@ unspecified.
 THIRD-PARTY COMPONENT FILE                                               LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
-js/libs/chai/chai-4.2.0.js                                  MIT
-js/libs/es6-promise/es6-promise.js                                           MIT
-js/libs/hammer/hammer-2.0.8.js                          MIT
-js/libs/js-signals/signals.js                                           MIT
-js/libs/jquery/jquery-3.5.1.js                            MIT
-js/libs/jquery/jquery-ui-1.12.1.custom.js                MIT
-js/libs/jquery/jqueryui-amd-1.12.1/core.js               MIT
-js/libs/jquery/jqueryui-amd-1.12.1/draggable.js          MIT
-js/libs/jquery/jqueryui-amd-1.12.1/mouse.js              MIT
-js/libs/jquery/jqueryui-amd-1.12.1/position.js           MIT
-js/libs/jquery/jqueryui-amd-1.12.1/sortable.js           MIT
-js/libs/jquery/jqueryui-amd-1.12.1/widget.js             MIT
-js/libs/knockout/knockout-3.5.1.js                      MIT
-js/libs/knockout/knockout-mapping-latest.js                             MIT
-js/libs/oj/v10.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v10.1.0/min/ojexpparser.js (expparser.js)              MIT
-js/libs/oj/v10.1.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
-js/libs/oj/v10.1.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
-js/libs/oj/v10.1.0/min/ojtree.js (jsTree.js)                      MIT
-js/libs/oj/v10.1.0/ojL10n.js (requireJS i18n)                     MIT
-js/libs/proj4js/dist/proj4.js                                                   Proj4js
+js/libs/chai/chai-4.2.0.js                                                    MIT
+js/libs/hammer/hammer-2.0.8.js                                                MIT
+js/libs/js-signals/signals.js                                                 MIT
+js/libs/jquery/jquery-3.6.0.js                                                MIT
+js/libs/jquery/jquery-ui-1.12.1.custom.js                                     MIT
+js/libs/jquery/jqueryui-amd-1.12.1/core.js                                    MIT
+js/libs/jquery/jqueryui-amd-1.12.1/draggable.js                               MIT
+js/libs/jquery/jqueryui-amd-1.12.1/mouse.js                                   MIT
+js/libs/jquery/jqueryui-amd-1.12.1/position.js                                MIT
+js/libs/jquery/jqueryui-amd-1.12.1/sortable.js                                MIT
+js/libs/jquery/jqueryui-amd-1.12.1/widget.js                                  MIT
+js/libs/knockout/knockout-3.5.1.js                                            MIT
+js/libs/knockout/knockout-mapping-latest.js                                   MIT
+js/libs/oj/v11.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v11.0.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v11.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v11.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v11.0.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v11.0.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/proj4js/dist/proj4.js                                                 Proj4js
 js/libs/require/require.js                                                    MIT
-js/libs/require/text.js                                                    MIT
-js/libs/require-css/css.min.js (require-css)                                MIT
-js/libs/webcomponents/custom-elements.min.js                            custom-elements
-scss/oj/v10.1.0/3rdparty/normalize/normalize.scss                 MIT
-js/libs/touchr/touchr.js                                                  MIT
-js/libs/oj/v10.1.0/min/ojvcomponent.js (petit-dom.js)             MIT
-
+js/libs/require/text.js                                                       MIT
+js/libs/require-css/css.min.js (require-css)                                  MIT
+scss/oj/v11.0.0/3rdparty/normalize/normalize.scss                       MIT
+js/libs/touchr/touchr.js                                                      MIT
+js/libs/preact/dist/preact.umd.js                                             MIT
 
 
 Chai - v4.2.0
@@ -136,49 +133,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-
-petit-dom - v0.2.2
-https://github.com/yelouafi/petit-dom
-Copyright (c) 2017 Yassine Elouafi
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
-
-webcomponents/custom-elements - v1.1.2
-Copyright (c) 2015 The Polymer Authors. All rights reserved.
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- 
-Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer 
-in the documentation and/or other materials provided with the distribution.
-Neither the name of Google Inc. nor the names of its contributors may be used to endorse or promote products derived from this software 
-without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
-SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
-ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
 
 
@@ -305,29 +259,6 @@ the specific language governing permissions and limitations under the Apache Lic
 
 
 
-ES6-Promise
-https://github.com/stefanpenner/es6-promise
-Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
 jQuery UI - v1.12.1 - 2015-03-18
 http://jqueryui.com
 Includes: core.js, widget.js, mouse.js, position.js, draggable.js, sortable.js
@@ -352,7 +283,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-jQuery JavaScript Library v3.5.1
+jQuery JavaScript Library v3.6.0
 http://jquery.com/
 Copyright OpenJS Foundation and other contributors, https://openjsf.org/
 
@@ -471,9 +402,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+Preact - v10.5.13
 
+The MIT License (MIT)
+Copyright (c) 2015-present Jason Miller
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 
 ========================= Apache-2.0 =========================
@@ -738,5 +688,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
-
-

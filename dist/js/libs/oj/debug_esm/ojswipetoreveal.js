@@ -12,13 +12,6 @@ import { setupPanToReveal, _getOuterWrapper, tearDownPanToReveal } from 'ojs/ojo
 import 'touchr';
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @namespace SwipeToRevealUtils
  * @ojtsmodule
  * @since 1.2.0
@@ -39,9 +32,9 @@ import 'touchr';
  *
  * {@ojinclude "name":"touchDoc"}
  *
- * <h3 id="accessibility-section">
+ * <h3 id="a11y-section">
  *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
  * <p>Application must ensure that the context menu is available and setup with the

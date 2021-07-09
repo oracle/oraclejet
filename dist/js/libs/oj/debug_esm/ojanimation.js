@@ -11,13 +11,8 @@ import { getReadingDirection } from 'ojs/ojdomutils';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { warn, error } from 'ojs/ojlogger';
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+const _TRANSLATE = 'translate(';
+const _TRANSLATE2 = ') translateZ(0)';
 
 /**
  * @ojshortdesc Utility methods for animating elements.
@@ -657,7 +652,7 @@ AnimationUtils.startAnimation = function (element, action, effects, component) {
   // eslint-disable-next-line no-param-reassign
   element = $(element)[0];
 
-  var promise = new Promise(
+  return new Promise(
     // eslint-disable-next-line no-unused-vars
     function (resolve, reject) {
       var jelem = $(element);
@@ -765,8 +760,6 @@ AnimationUtils.startAnimation = function (element, action, effects, component) {
       }, 1000);
     }
   );
-
-  return promise;
 };
 
 AnimationUtils._mergeOptions = function (effect, options) {
@@ -1036,7 +1029,7 @@ AnimationUtils._unwrapRowContent = function (row) {
 
 // Expand or collapse a table row
 AnimationUtils._expandCollapseRow = function (element, options, isExpand) {
-  var promise;
+  var promise = Promise.resolve();
   var rowHeight = element.offsetHeight + 'px';
   var wrappers = AnimationUtils._wrapRowContent(element, rowHeight);
   var wrapperOptions = $.extend({}, options);
@@ -1071,8 +1064,6 @@ AnimationUtils._expandCollapseRow = function (element, options, isExpand) {
         AnimationUtils._expandCollapse(wrappers[i], wrapperOptions, isExpand);
       }
     }
-  } else {
-    promise = Promise.resolve();
   }
 
   return promise.then(function () {
@@ -1238,8 +1229,8 @@ AnimationUtils._zoom = function (element, _options, isIn) {
   var transformPropName = 'transform';
   var transformOriginPropName = 'transformOrigin';
 
-  fromCSS[transformPropName] = scale + '(' + (isIn ? 0 : 1) + ') translateZ(0)';
-  toStateCSS[transformPropName] = scale + '(' + (isIn ? 1 : 0) + ') translateZ(0)';
+  fromCSS[transformPropName] = scale + '(' + (isIn ? 0 : 1) + _TRANSLATE2;
+  toStateCSS[transformPropName] = scale + '(' + (isIn ? 1 : 0) + _TRANSLATE2;
 
   fromCSS[transformOriginPropName] = options.transformOrigin || 'center';
 
@@ -1354,11 +1345,11 @@ AnimationUtils._slide = function (element, _options, isIn) {
 
   var transformPropName = 'transform';
   if (isIn) {
-    fromCSS[transformPropName] = 'translate(' + offsetX + ',' + offsetY + ') translateZ(0)';
+    fromCSS[transformPropName] = _TRANSLATE + offsetX + ',' + offsetY + _TRANSLATE2;
     toStateCSS[transformPropName] = 'translate(0,0) translateZ(0)';
   } else {
     fromCSS[transformPropName] = 'translate(0,0) translateZ(0)';
-    toStateCSS[transformPropName] = 'translate(' + offsetX + ',' + offsetY + ') translateZ(0)';
+    toStateCSS[transformPropName] = _TRANSLATE + offsetX + ',' + offsetY + _TRANSLATE2;
   }
 
   return AnimationUtils._animate(element, fromState, toState, options, [transformPropName]);
@@ -1535,10 +1526,18 @@ AnimationUtils._calcBackfaceAngle = function (angle) {
   var unit = matchArray[2];
 
   switch (unit) {
-    case 'deg': backfaceAngle = (amount - 180) + unit; break;
-    case 'grad': backfaceAngle = (amount - 200) + unit; break;
-    case 'rad': backfaceAngle = (amount - 3.1416) + unit; break;
-    case 'turn': backfaceAngle = (amount - 0.5) + unit; break;
+    case 'deg':
+      backfaceAngle = (amount - 180) + unit;
+      break;
+    case 'grad':
+      backfaceAngle = (amount - 200) + unit;
+      break;
+    case 'rad':
+      backfaceAngle = (amount - 3.1416) + unit;
+      break;
+    case 'turn':
+      backfaceAngle = (amount - 0.5) + unit;
+      break;
     default: error('Unknown angle unit in flip animation: ' + unit); break;
   }
 
@@ -1793,7 +1792,7 @@ AnimationUtils._defaultHeroAnimateClonedElement = function (context) {
       heroStyle.transitionProperty = 'transform';
 
       // Put translate before scale because otherwise the scale factor will affect the translate value
-      var transform = 'translate(' + context.translateX + 'px,' + context.translateY + 'px)';
+      var transform = _TRANSLATE + context.translateX + 'px,' + context.translateY + 'px)';
       transform += ' scale(' + context.scaleX.toFixed(2) + ',' + context.scaleY.toFixed(2) + ')';
       heroStyle.transform = transform;
 

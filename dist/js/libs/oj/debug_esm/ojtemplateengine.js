@@ -5,36 +5,195 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { applyBindingsToDescendants, pureComputed, cleanNode, observable, utils, contextFor } from 'knockout';
-import oj from 'ojs/ojcore';
+import { pureComputed, applyBindingsToDescendants, cleanNode, observable, utils, contextFor } from 'knockout';
+import oj$1 from 'ojs/ojcore';
 import BindingProviderImpl from 'ojs/ojkoshared';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
-import { mount, patch, getMountedNode, unmount } from 'ojs/ojvdom';
 import { info } from 'ojs/ojlogger';
-import { AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { CACHED_BINDING_PROVIDER, AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { render } from 'preact';
+import oj from 'ojs/ojcore-base';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+const ROW = Symbol('row');
+class PreactTemplate {
+    static executeVDomTemplate(templateElement, context) {
+        const computedVNode = pureComputed({
+            read: () => {
+                return templateElement.render(context.$current);
+            }
+        })
+            .extend({ rateLimit: 0 });
+        const vNode = computedVNode();
+        PreactTemplate._extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
+            templateElement._cachedRows.forEach((rowItem) => {
+                let newVNode = renderer(rowItem.currentContext);
+                PreactTemplate._renderNodes(newVNode, rowItem);
+            });
+        });
+        const parentStub = document.createElement('div');
+        const cachedRow = {
+            currentContext: context.$current,
+            template: templateElement,
+            parentStub,
+            computedVNode,
+            vnode: undefined,
+            nodes: undefined
+        };
+        PreactTemplate._renderNodes(vNode, cachedRow);
+        templateElement._cachedRows.push(cachedRow);
+        computedVNode.subscribe((newVNode) => {
+            const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
+            PreactTemplate._renderNodes(newVNode, currRow);
+        });
+        return cachedRow.nodes;
+    }
+    static _renderNodes(vnode, row) {
+        const parentStub = row.parentStub;
+        let reparentNodes;
+        if (row.nodes) {
+            const oldNodes = row.nodes;
+            reparentNodes = PreactTemplate._getInsertNodesFunction(oldNodes);
+            oldNodes.forEach((node) => {
+                parentStub.appendChild(node);
+            });
+        }
+        render(vnode, parentStub);
+        const nodes = Array.from(parentStub.childNodes);
+        nodes.forEach((node) => {
+            var _a;
+            (_a = node.classList) === null || _a === void 0 ? void 0 : _a.add('oj-vdom-template-root');
+            node[ROW] = row;
+            node[CACHED_BINDING_PROVIDER] = 'preact';
+        });
+        row.vnode = vnode;
+        row.nodes = nodes;
+        reparentNodes === null || reparentNodes === void 0 ? void 0 : reparentNodes(nodes);
+    }
+    static clean(node) {
+        const row = node[ROW];
+        if (!row.cleaned) {
+            row.cleaned = true;
+            const reconnectNodes = PreactTemplate._getInsertNodesFunction(row.nodes);
+            render(null, row.parentStub);
+            reconnectNodes(row.nodes);
+            row.computedVNode.dispose();
+            const template = row.template;
+            const index = template._cachedRows.indexOf(row);
+            template._cachedRows.splice(index, 1);
+        }
+    }
+    static _getInsertNodesFunction(oldNodes) {
+        const lastNode = oldNodes[oldNodes.length - 1];
+        const parentNode = lastNode.parentNode;
+        const nextSibling = lastNode.nextSibling;
+        return (nodes) => {
+            nodes.forEach((node) => parentNode.insertBefore(node, nextSibling));
+        };
+    }
+    static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
+        const [cache, deleteEntry] = PreactTemplate._extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
+            for (const observable of cache) {
+                observable.recalculateValue(recalc);
+            }
+        });
+        const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, propertySet, data, propertyValidator);
+        const item = new ObservableProperty(calcValue, renderer, defaultValues, deleteEntry);
+        cache.add(item);
+        return item;
+    }
+    static _computeProps(renderer, elementTagName, propertySet, data, propertyValidator) {
+        const result = renderer(data);
+        const vnodes = Array.isArray(result) ? result : [result];
+        const targetNode = vnodes.find((n) => n.type === elementTagName);
+        if (!targetNode) {
+            throw new Error(`Item template must contain an element named {elementTagName}`);
+        }
+        const props = {};
+        const vprops = targetNode.props;
+        Object.keys(vprops).forEach((prop) => {
+            if (propertySet.has(prop)) {
+                props[prop] = targetNode.props[prop];
+            }
+        });
+        return props;
+    }
+    static _extendTemplate(node, initialCacheFactory, onRenderChanged) {
+        if (!node._cachedRows) {
+            let fn = node.render;
+            Object.defineProperties(node, {
+                _cachedRows: { writable: true, value: initialCacheFactory() },
+                render: {
+                    enumerable: true,
+                    get() {
+                        return fn;
+                    },
+                    set(renderCallback) {
+                        fn = renderCallback;
+                        if (renderCallback) {
+                            onRenderChanged(renderCallback);
+                        }
+                    }
+                }
+            });
+        }
+        return node._cachedRows;
+    }
+}
+PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY = () => {
+    const cache = new Set();
+    return [cache, cache.delete.bind(cache)];
+};
+PreactTemplate._ROW_CACHE_FACTORY = () => [];
+class ObservableProperty {
+    constructor(calculate, renderer, defaultProps, disposeCallback) {
+        this._calculate = calculate;
+        this._defaultProps = defaultProps;
+        this._disposeCallback = disposeCallback;
+        this._value = calculate(renderer);
+        this._merged = this._getMergedValue(this._value);
+    }
+    peek() {
+        return this._merged;
+    }
+    subscribe(sub) {
+        if (this._sub) {
+            throw new Error('Resolved property observable does not support multiple subscribers');
+        }
+        this._sub = sub;
+    }
+    dispose() {
+        this._disposeCallback(this);
+    }
+    recalculateValue(renderer) {
+        const val = this._calculate(renderer);
+        const old = this._value;
+        this._value = val;
+        if (this._sub && !oj.Object.compareValues(val, old)) {
+            this._merged = this._getMergedValue(val);
+            this._sub(this._merged);
+        }
+    }
+    _getMergedValue(val) {
+        return Object.assign({}, this._defaultProps, val);
+    }
+}
+
 /**
  * Default JET Template engine iumplementation
  * @ignore
  */
 const JetTemplateEngine = function () {
   /**
-   * Executes the template by deep-cloning the template nodes and then applying data binndings
+   * Executes the template by deep-cloning the template nodes and then applying data bindings
    * @param {Element} componentElement component element
    * @param {Element} templateElement the <template> element
    * @param {Oject} properties data to be applied to the template
    * @param {string} alias an alias for referencing the data within a template
+   * @param {Element} reportBusy - optional element for bubblng busy states outside of the template
    * @return {Array.<Node>} HTML nodes representing the result of the execution
    * @ignore
    */
-  this.execute = function (componentElement, templateElement, properties, alias) {
+  this.execute = function (componentElement, templateElement, properties, alias, reportBusy) {
     // Check to see if data-oj-as was defined on the template element as an additional
     // alias to provide to the template children
     var templateAlias = templateElement.getAttribute('data-oj-as');
@@ -43,90 +202,19 @@ const JetTemplateEngine = function () {
     // The 'render' property on a template means that the template is a part of a VComponent.
     // The template will be processed with VDom methods.
     if (templateElement.render) {
-      return this._executeVDomTemplate(templateElement, context);
+      return PreactTemplate.executeVDomTemplate(templateElement, context);
     }
-    var tmpContainer = _createAndPopulateContainer(templateElement);
+    var tmpContainer = _createAndPopulateContainer(templateElement, reportBusy);
+    let stampedNodes = tmpContainer.childNodes;
+    for (let i = 0; i < stampedNodes.length; i++) {
+      const stampedNode = stampedNodes[i];
+      // Set the binding provider on the stamped nodes in case the parent
+      // component is a different binding provider
+      stampedNode[CACHED_BINDING_PROVIDER] = 'knockout';
+    }
     applyBindingsToDescendants(context, tmpContainer);
 
-    return Array.prototype.slice.call(tmpContainer.childNodes, 0);
-  };
-
-  /**
-   * When a custom element is a part of a VComponent, we expect that its template
-   * has 'render' property. The property contains a function callback that returns a body of the template.
-   * In this case we want to process template using VDom methods in order to process template
-   * expressions correctly.
-   * Template nodes will be cached in order to be updated when 'render' proprety value is updated,
-   * in this case we don't need to refresh parent custom element completely.
-   * @param {Element} templateElement the <template> element
-   * @param {Object} context the binding context for the template  element
-   * @ignore
-   */
-  this._executeVDomTemplate = function (templateElement, context) {
-    var computedVNode = pureComputed({
-      read: () => {
-        // Run render() callback to produce VNode element - root node for template content.
-        // Then cache tempate the content.
-        return templateElement.render(context.$current);
-      }
-    }).extend({ rateLimit: 0 });
-
-    var vNode = computedVNode();
-    this._extendTemplateForVComponent(templateElement);
-    templateElement._cachedRows.push({
-      currentContext: context.$current,
-      vnode: vNode,
-      computedVNode: computedVNode
-    });
-
-    // Mount template content and add a class to recognize the content during clean().
-    var domNode = mount(vNode, false);
-    domNode.classList.add('oj-vdom-template-root');
-    domNode._vnodeTemplate = templateElement;
-
-    computedVNode.subscribe((newVNode) => {
-      var currRow = templateElement._cachedRows.find(row => row.computedVNode === computedVNode);
-      patch(newVNode, currRow.vnode, getMountedNode(currRow.vnode).parentNode, false);
-      currRow.vnode = newVNode;
-    });
-
-    return [domNode];
-  };
-
-  /**
-   * The method is handles templates used inside VComponents by the regular custom elements.
-   * The '_cachedRows' property is added to the template to store all the processed nodes and
-   * the setter/getter methods are added for 'render' property in order to update nodes
-   * created with this template.
-   * @param {Element} node the <template> element
-   * @ignore
-   */
-  this._extendTemplateForVComponent = function (node) {
-    if (!node._cachedRows) {
-      var fn = node.render;
-      Object.defineProperties(node, {
-        _cachedRows: { writable: true, value: [] },
-        render: {
-          enumerable: true,
-          get() {
-            return fn;
-          },
-          set(renderCallback) {
-            fn = renderCallback;
-            if (renderCallback) {
-              this._cachedRows.forEach(rowItem => {
-                var newVNode = renderCallback(rowItem.currentContext);
-                patch(newVNode, rowItem.vnode,
-                  getMountedNode(rowItem.vnode).parentNode,
-                  false);
-                // eslint-disable-next-line no-param-reassign
-                rowItem.vnode = newVNode;
-              });
-            }
-          }
-        }
-      });
-    }
+    return Array.prototype.slice.call(stampedNodes, 0);
   };
 
   /**
@@ -136,24 +224,18 @@ const JetTemplateEngine = function () {
    * @ignore
    */
   this.clean = function (node) {
-    // Search for nodes created with VDom methods.
-    // Remove the corresponding VDom nodes from _cachedRows stored on the template.
-    // Unmount the corresponding VDom nodes.
-    var vdomTemplateRoots = node && node.getElementsByClassName ?
-      node.getElementsByClassName('oj-vdom-template-root') : [];
-    Array.from(vdomTemplateRoots).forEach(root => {
-      var vnodeTemplate = root._vnodeTemplate;
-      var rowsToStay = vnodeTemplate._cachedRows.filter(row => {
-        if (getMountedNode(row.vnode) === root) {
-          unmount(row.vnode);
-          row.computedVNode.dispose();
-          return false;
-        }
-        return true;
-      });
-      vnodeTemplate._cachedRows = rowsToStay;
+    // Search for nodes created with VDom methods and let PreactTemplate clean them.
+    let vdomTemplateRoots =
+      node && node.getElementsByClassName
+        ? Array.from(node.getElementsByClassName('oj-vdom-template-root'))
+        : [];
+    // Add the node itself to the array if it has the oj-vdom-template-root class
+    if (node && node.matches && node.matches('.oj-vdom-template-root')) {
+      vdomTemplateRoots.push(node);
+    }
+    vdomTemplateRoots.forEach((root) => {
+      PreactTemplate.clean(root);
     });
-
     return vdomTemplateRoots.length === 0 ? cleanNode(node) : null;
   };
 
@@ -176,14 +258,36 @@ const JetTemplateEngine = function () {
    * the subscription callback receiving the new value as a parameter, and dispose() removes the subscription.
    * @ignore
    */
-  this.resolveProperties = function (componentElement, node, elementTagName, propertySet,
-    data, alias, propertyValidator, alternateParent) {
+  this.resolveProperties = function (
+    componentElement,
+    node,
+    elementTagName,
+    propertySet,
+    data,
+    alias,
+    propertyValidator,
+    alternateParent
+  ) {
+    // The 'render' property on a template means that the template is a part of a VComponent.
+    // The template will be processed with VDom methods
+    const renderFunc = node.render;
+    if (renderFunc) {
+      const defaultProps = this._getResolvedDefaultProps(elementTagName, propertySet);
+      return PreactTemplate.resolveVDomTemplateProps(node, renderFunc, elementTagName, propertySet,
+          data, defaultProps, propertyValidator);
+    }
+
     var templateAlias = node.getAttribute('data-oj-as');
 
     var context = _getContext(componentElement, node, data, alias, templateAlias);
 
-    var contribs = _getPropertyContributorsViaCache(node, context, elementTagName,
-      propertySet, alternateParent || componentElement);
+    var contribs = _getPropertyContributorsViaCache(
+      node,
+      context,
+      elementTagName,
+      propertySet,
+      alternateParent || componentElement
+    );
 
     return _createComputed(contribs, context, propertyValidator);
   };
@@ -205,7 +309,9 @@ const JetTemplateEngine = function () {
   function _createPropertyBackedByObservable(target, name, value, changeListener) {
     var obs = observable(value);
     Object.defineProperty(target, name, {
-      get: function () { return obs(); },
+      get: function () {
+        return obs();
+      },
       set: function (val) {
         obs(val);
         if (changeListener) {
@@ -228,7 +334,7 @@ const JetTemplateEngine = function () {
         }
         boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
       });
-      var extend = oj.CollectionUtils.copyInto;
+      var extend = oj$1.CollectionUtils.copyInto;
       var valueMap = extend({}, contribs.staticMap, null, true);
       valueMap = extend(valueMap, boundValues, null, true);
 
@@ -274,8 +380,10 @@ const JetTemplateEngine = function () {
         var info = AttributeUtils.getExpressionInfo(attr.value);
         var expr = info.expr;
         if (expr) {
-          evalMap.set(propTokens,
-            BindingProviderImpl.createBindingExpressionEvaluator(expr, context));
+          evalMap.set(
+            propTokens,
+            BindingProviderImpl.createBindingExpressionEvaluator(expr, context)
+          );
         }
       }
     }
@@ -320,8 +428,11 @@ const JetTemplateEngine = function () {
     return complexVal;
   }
 
-  function _createAndPopulateContainer(node) {
+  function _createAndPopulateContainer(node, reportBusy) {
     var div = document.createElement('div');
+    if (reportBusy) {
+      div._ojReportBusy = reportBusy;
+    }
     var nodes = getTemplateContent(node);
     for (var i = 0; i < nodes.length; i++) {
       div.appendChild(nodes[i]);
@@ -332,17 +443,36 @@ const JetTemplateEngine = function () {
   function _getContext(componentElement, node, properties, alias, templateAlias) {
     // Always use the binding context for the template  element
     // Note: the context for oj_bind_for_each template is stored on __ojBindingContext property.
-    var bindingContext = node.__ojBindingContext ?
-      node.__ojBindingContext : contextFor(node);
+    var bindingContext = node.__ojBindingContext ? node.__ojBindingContext : contextFor(node);
     // In the rare case it's not defined, check the componentElement and log a message
     if (!bindingContext) {
-      info('Binding context not found when processing template for element with id: ' +
-        componentElement.id + '. Using binding context for element instead.');
+      info(
+        'Binding context not found when processing template for element with id: ' +
+          componentElement.id +
+          '. Using binding context for element instead.'
+      );
       bindingContext = contextFor(componentElement);
     }
-    return BindingProviderImpl.extendBindingContext(bindingContext, properties,
-      alias, templateAlias, componentElement);
+    return BindingProviderImpl.extendBindingContext(
+      bindingContext,
+      properties,
+      alias,
+      templateAlias,
+      componentElement
+    );
   }
+
+  this._getResolvedDefaultProps = function (elementTagName, propertySet) {
+    let props = this._defaultProps.get(elementTagName);
+    if (!props) {
+      const elem = document.createElement(elementTagName); // @HTMLUpdateOK element tag name will always be one of JET elements
+      props = _getStaticPropertyMap(elem, propertySet, document.body);
+      this._defaultProps.set(elementTagName, props);
+    }
+    return props;
+  };
+
+  this._defaultProps = new Map();
 };
 
 var index = new JetTemplateEngine();

@@ -5,17 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
+import oj from 'ojs/ojcore-base';
 import 'ojs/ojdatasource-common';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
- /**
  * @class ArrayCellSet
  * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
  * of the fetchCells method on DataGridDataSource.  This implementation of CellSet is used by the
@@ -40,7 +33,7 @@ const ArrayCellSet = function (startRow, endRow, startColumn, endColumn, callbac
   this.m_callback = callback;
 };
 
-oj$1._registerLegacyNamespaceProp('ArrayCellSet', ArrayCellSet);
+oj._registerLegacyNamespaceProp('ArrayCellSet', ArrayCellSet);
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available
@@ -200,13 +193,6 @@ ArrayCellSet.prototype.getStartColumn = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
- /**
  * @class ArrayDataGridDataSource
  * @classdesc An array based implementation of the DataGridDataSource.
  * @param {Array|Object} data the data in the form of array or observable array.
@@ -249,9 +235,9 @@ const ArrayDataGridDataSource = function (data, options) {
   ArrayDataGridDataSource.superclass.constructor.call(this, data);
 };
 
-oj$1._registerLegacyNamespaceProp('ArrayDataGridDataSource', ArrayDataGridDataSource);
+oj._registerLegacyNamespaceProp('ArrayDataGridDataSource', ArrayDataGridDataSource);
 // Subclass from oj.DataGridDataSource
-oj$1.Object.createSubclass(ArrayDataGridDataSource, oj$1.DataGridDataSource, 'oj.ArrayDataGridDataSource');
+oj.Object.createSubclass(ArrayDataGridDataSource, oj.DataGridDataSource, 'oj.ArrayDataGridDataSource');
 
 /**
  * Initial the array based data source.
@@ -495,7 +481,7 @@ ArrayDataGridDataSource.prototype.fetchHeaders = function (
       end = Math.min(data.length, start + count);
     }
   }
-  var headerSet = new oj$1.ArrayHeaderSet(start, end, axis, this);
+  var headerSet = new oj.ArrayHeaderSet(start, end, axis, this);
 
   if (callbacks != null && callbacks.success != null) {
     // make sure callbackObjects is not null
@@ -597,7 +583,7 @@ ArrayDataGridDataSource.prototype.fetchCells = function (
     return;
   }
 
-  var cellSet = new oj$1.ArrayCellSet(rowStart, rowEnd, colStart, colEnd, this);
+  var cellSet = new oj.ArrayCellSet(rowStart, rowEnd, colStart, colEnd, this);
 
   if (callbacks != null && callbacks.success != null) {
     // make sure callbackObjects is not null
@@ -1207,13 +1193,6 @@ ArrayDataGridDataSource.prototype._populateColumns = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @class ArrayHeaderSet
  * @classdesc A HeaderSet represents a collection of headers.  The HeaderSet is an object returned by the success callback
  * of the fetchHeaders method on DataGridDataSource.  This implementation of HeaderSet is used by the
@@ -1235,7 +1214,7 @@ const ArrayHeaderSet = function (start, end, axis, callback) {
   this.m_axis = axis;
   this.m_callback = callback;
 };
-oj$1._registerLegacyNamespaceProp('ArrayHeaderSet', ArrayHeaderSet);
+oj._registerLegacyNamespaceProp('ArrayHeaderSet', ArrayHeaderSet);
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
@@ -1255,8 +1234,8 @@ ArrayHeaderSet.prototype.getData = function (index, level) {
   }
 
   // make sure index/level are valid
-  oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-  oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
 
   return this.m_callback._getHeaderData(this.m_axis, index);
 };
@@ -1282,8 +1261,8 @@ ArrayHeaderSet.prototype.getMetadata = function (index, level) {
   }
 
   // make sure index/level are valid
-  oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-  oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
 
   return this.m_callback._getHeaderMetadata(this.m_axis, index);
 };
@@ -1328,8 +1307,8 @@ ArrayHeaderSet.prototype.getLevelCount = function () {
  * @memberof ArrayHeaderSet
  */
 ArrayHeaderSet.prototype.getExtent = function (index, level) {
-  oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-  oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
   return { extent: 1, more: { before: false, after: false } };
 };
 
@@ -1346,8 +1325,8 @@ ArrayHeaderSet.prototype.getExtent = function (index, level) {
  * @memberof ArrayHeaderSet
  */
 ArrayHeaderSet.prototype.getDepth = function (index, level) {
-  oj$1.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-  oj$1.Assert.assert(level == null || level === 0, 'level out of bounds');
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
   return 1;
 };
 
@@ -1396,19 +1375,4 @@ ArrayHeaderSet.prototype.getStart = function () {
   return this.m_start;
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
-
-var ArrayDataGridDataSource$1 = {};
-ArrayDataGridDataSource$1.ArrayDataGridDataSource = oj.ArrayDataGridDataSource;
-ArrayDataGridDataSource$1.ArrayHeaderSet = oj.ArrayHeaderSet;
-ArrayDataGridDataSource$1.ArrayCellSet = oj.ArrayCellSet;
-
-export default ArrayDataGridDataSource$1;
 export { ArrayCellSet, ArrayDataGridDataSource, ArrayHeaderSet };

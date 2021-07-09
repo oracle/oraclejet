@@ -12,14 +12,6 @@ define(['ojs/ojoption', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojth
   ChildMutationObserver = ChildMutationObserver && Object.prototype.hasOwnProperty.call(ChildMutationObserver, 'default') ? ChildMutationObserver['default'] : ChildMutationObserver;
   LabelledByUtils = LabelledByUtils && Object.prototype.hasOwnProperty.call(LabelledByUtils, 'default') ? LabelledByUtils['default'] : LabelledByUtils;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_menu_button_metadata = 
 {
   "properties": {
@@ -44,6 +36,9 @@ var __oj_menu_button_metadata =
         "icons"
       ],
       "value": "all"
+    },
+    "label": {
+      "type": "string"
     },
     "translations": {
       "type": "object",
@@ -282,14 +277,6 @@ var __oj_buttonset_many_metadata =
     }());
   }
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   (function () { // Button / Buttonset wrapper function, to keep "private static members" private
     // -----------------------------------------------------------------------------
     // "private static members" shared by all buttons and buttonsets
@@ -414,6 +401,250 @@ var __oj_buttonset_many_metadata =
    *
    * {@ojinclude "name":"stateCommon"}
    */
+      // API doc for inherited methods with no JS in this file:
+
+      /**
+       * <p>The default slot is the button's text label, if no label attribute is specified. The <code class="prettyprint">&lt;oj-button></code> element accepts plain text or DOM nodes as children for the default slot.
+       * A default slot label is required for all buttons for accessibility purposes, if no label attribute is specified. The label can be hidden using the display attribute.</p>
+       *
+       * <p>If a text node is provided it will be wrapped in a span.</p>
+       *
+       * Note that if both a default slot and a label attribute are provided, the attribute takes precedence over the default slot.
+       *
+       * @ojchild Default
+       * @memberof oj.ojButton
+       * @ojshortdesc The default slot is the button's text label. The oj-button element accepts plain text or DOM nodes as children for the default slot.
+       *
+       * @example <caption>Initialize the Button with child content specified:</caption>
+       * &lt;oj-button>
+       *   &lt;span>myValue&lt;/span>
+       * &lt;/oj-button>
+       *
+       * @example <caption>Initialize the Button with data-bound child content specified in a span:</caption>
+       * &lt;oj-button>
+       *   &lt;span>
+       *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+       *   &lt;/span>
+       * &lt;/oj-button>
+       *
+       * @example <caption>Initialize the Button with data-bound child content specified without a container element:</caption>
+       * &lt;oj-button>
+       *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+       * &lt;/oj-button>
+       */
+
+      /**
+       * <p>The default slot is the menu button's text label. The <code class="prettyprint">&lt;oj-menu-button></code> element accepts plain text or DOM nodes as children for the default slot.
+       * A default slot label is required for all menu buttons for accessibility purposes. The label can be hidden using the display attribute.</p>
+       *
+       * <p>If a text node is provided it will be wrapped in a span.</p>
+       *
+       * @ojchild Default
+       * @memberof oj.ojMenuButton
+       * @ojshortdesc The default slot is the button's text label. The oj-menu-button element accepts plain text or DOM nodes as children for the default slot.
+       *
+       * @example <caption>Initialize the Menu Button with child content specified:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;span>myValue&lt;/span>
+       * &lt;/oj-menu-button>
+       *
+       * @example <caption>Initialize the Menu Button with data-bound child content specified in a span:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;span>
+       *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+       *   &lt;/span>
+       * &lt;/oj-menu-button>
+       *
+       * @example <caption>Initialize the Menu Button with data-bound child content specified without a container element:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
+       * &lt;/oj-menu-button>
+       */
+
+      /**
+       * <p>The <code class="prettyprint">startIcon</code> slot is the button's start icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
+       *
+       * @ojslot startIcon
+       * @memberof oj.ojButton
+       * @ojshortdesc The startIcon slot is the button's start icon. The oj-button element accepts DOM nodes as children with the startIcon slot.
+       *
+       * @ojtsexample
+       * &lt;oj-button>
+       *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
+       *   &lt;span>myValue&lt;/span>
+       * &lt;/oj-button>
+       */
+
+      /**
+       * <p>The <code class="prettyprint">startIcon</code> slot is the menu button's start icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
+       *
+       * @ojslot startIcon
+       * @memberof oj.ojMenuButton
+       * @ojshortdesc The startIcon slot is the button's start icon. The oj-menu-button element accepts DOM nodes as children with the startIcon slot.
+       *
+       * @example <caption>Initialize the Menu Button with child content specified for the startIcon:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
+       *   &lt;span>myValue&lt;/span>
+       * &lt;/oj-menu-button>
+       */
+
+      /**
+       * <p>The <code class="prettyprint">endIcon</code> slot is the button's end icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the endIcon slot.</p>
+       *
+       * @ojslot endIcon
+       * @memberof oj.ojButton
+       * @ojshortdesc The endIcon slot is the button's end icon. The oj-button element accepts DOM nodes as children with the endIcon slot.
+       *
+       * @ojtsexample
+       * &lt;oj-button>
+       *   &lt;span>myValue&lt;/span>
+       *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
+       * &lt;/oj-button>
+       */
+
+      /**
+       * <p>The <code class="prettyprint">endIcon</code> slot is the menu button's end icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the endIcon slot. If no end icon is provided, a default end icon is used.</p>
+       *
+       * @ojslot endIcon
+       * @memberof oj.ojMenuButton
+       * @ojshortdesc The endIcon slot is the button's end icon. The oj-menu button element accepts DOM nodes as children with the endIcon slot.
+       *
+       * @example <caption>Initialize the Menu Button with child content specified for the endIcon:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;span>myValue&lt;/span>
+       *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
+       * &lt;/oj-menu-button>
+       */
+
+      /**
+       * <p>The <code class="prettyprint">menu</code> menu associated with the menu button. The <code class="prettyprint">oj-menu-button</code> element accepts a single <code class="prettyprint">oj-menu</code> element as a child with the menu slot. See the [JET Menu]{@link oj.ojMenu} for more information on setting up a menu.</p>
+       *
+       * @ojslot menu
+       * @ojmaxitems 1
+       * @memberof oj.ojMenuButton
+       * @ojshortdesc The menu associated with the menu button. The oj-menu-button element accepts a single oj-menu element as a child with the menu slot.
+       * @ojpreferredcontent ["MenuElement"]
+       *
+       * @example <caption>Initialize the Menu Button with child content specified for the menu:</caption>
+       * &lt;oj-menu-button>
+       *   &lt;span>myValue&lt;/span>
+       *   &lt;oj-menu slot="menu" style="display:none" aria-label="This menu button's menu">
+       *   ...
+       *   &lt;/oj-menu>
+       * &lt;/oj-menu-button>
+       */
+
+      // Fragments:
+
+      /**
+       * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
+       *
+       * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
+       * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
+       * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
+       * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
+       * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
+       * required of enabled content, it cannot be used to convey meaningful information.<p>
+       *
+       * @ojfragment accessibilityCommon
+       * @memberof oj.ojButton
+       * @instance
+       */
+
+      /**
+       * <p>Built-in KO bindings, like KO's <code class="prettyprint">disable</code> binding, should not be used for state with a JS API, since that is tatamount to
+       * updating the DOM directly.  The component attribute should be bound instead.
+       *
+       * <p>State with no JS API should be set by manipulating the DOM directly in an allowable way, and then calling <code class="prettyprint">refresh()</code>
+       * on the affected component(s).  E.g. the reading direction (LTR / RTL) is changed by by setting the <code class="prettyprint">"dir"</code> attribute on the
+       * <code class="prettyprint">&lt;html></code> node and calling <code class="prettyprint">refresh()</code>.
+       *
+       * <p>When using a built-in Knockout binding, keep in mind that those bindings do not
+       * execute the necessary <code class="prettyprint">refresh()</code> call after updating the DOM.  Updates that flow from the component to the observable,
+       * as a result of user interaction, are not problematic.  But updates in the other direction, that programmatically update the DOM because the observable changed,
+       * will not be picked up until the next <code class="prettyprint">refresh()</code>.
+       *
+       * @ojfragment stateCommon
+       * @memberof oj.ojButton
+       * @instance
+       */
+
+      /**
+       * <table class="keyboard-table">
+       *   <thead>
+       *     <tr>
+       *       <th>Target</th>
+       *       <th>Gesture</th>
+       *       <th>Action</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td>Push Button</td>
+       *       <td><kbd>Tap</kbd></td>
+       *       <td>Push the button.</td>
+       *     </tr>
+       *     <tr>
+       *       <td>Toggle Button</td>
+       *       <td><kbd>Tap</kbd></td>
+       *       <td>Toggle the button.</td>
+       *     </tr>
+       *     <tr>
+       *       <td>Menu Button</td>
+       *       <td><kbd>Tap</kbd></td>
+       *       <td>Open the menu.</td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       *
+       * <p>See also the [Menu]{@link oj.ojMenu} touch gesture doc.
+       *
+       * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+       * @memberof oj.ojButton
+       * @instance
+       */
+
+      /**
+       * <table class="keyboard-table">
+       *   <thead>
+       *     <tr>
+       *       <th>Target</th>
+       *       <th>Key</th>
+       *       <th>Action</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td>Push Button</td>
+       *       <td><kbd>Enter</kbd> or <kbd>Space</kbd>*</td>
+       *       <td>Push the button.</td>
+       *     </tr>
+       *     <tr>
+       *       <td>Toggle Button</td>
+       *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+       *       <td>Toggle the button.</td>
+       *     </tr>
+       *     <tr>
+       *       <td rowspan="2">Menu Button</td>
+       *       <td><kbd>Enter</kbd>, <kbd>Space</kbd>*, or <kbd>DownArrow</kbd></td>
+       *       <td>Open the menu.</td>
+       *     </tr>
+       *     <tr>
+       *       <td><kbd>Esc</kbd></td>
+       *       <td>Close the menu.</td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       *
+       * <p>* Some types of Push and Menu Buttons support <kbd>Enter</kbd>, not <kbd>Space</kbd>.
+       *
+       * <p>See the [Menu]{@link oj.ojMenu} keyboard doc for keystrokes that apply when focus is on the menu.
+       *
+       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+       * @memberof oj.ojButton
+       * @instance
+       */
     oj.__registerWidget('oj.ojButton', $.oj.baseComponent,
       {
         defaultElement: '<button>', // added to externs.js, since this is an override of a superclass member.  (That's the rule for public methods, what about protected fields?)  Would @override do the job and be better than externing?
@@ -447,8 +678,8 @@ var __oj_buttonset_many_metadata =
            * // setter
            * myButton.chroming = 'borderless';
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $buttonChromingOptionDefault: borderless !default;
+           * @example <caption>Set the default in the theme (CSS) :</caption>
+           * --oj-private-buttonset-global-chroming-default: borderless !default;
            */
 
           /**
@@ -477,8 +708,8 @@ var __oj_buttonset_many_metadata =
            * // setter
            * myButton.chroming = 'borderless';
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $buttonChromingOptionDefault: borderless !default;
+           * @example <caption>Set the default in the theme (CSS) :</caption>
+           * --oj-private-button-global-chroming-default: borderless;
            */
 
           /**
@@ -487,8 +718,7 @@ var __oj_buttonset_many_metadata =
            * <p>The default chroming varies by theme and containership as follows:
            * <ul>
            *   <li>If the button is in a buttonset or toolbar, then the default chroming is the current <code class="prettyprint">chroming</code> value of the nearest such container.</li>
-           *   <li>Else, if <code class="prettyprint">$buttonChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
-           *   <li>Else, the default chroming is <code class="prettyprint">"solid"</code>.</li>
+           *   <li>Else, the default chroming value is controlled by the theme.
            * </ul>
            *
            * <p>Once a value has been set on this button attribute, that value applies regardless of theme and containership.
@@ -618,20 +848,10 @@ var __oj_buttonset_many_metadata =
           display: 'all',
 
           /**
-           * <p>Text to show in the button. The default is from the label in the DOM.
-           *
-           * <p>When not specified at create time, the element's HTML content is used, or its
-           * <code class="prettyprint">value</code> attribute if the element is an input element of type button, submit, or reset, or
-           * the HTML content of the associated label element if the element is an input of type radio or checkbox.
-           *
-           * <p>After create time, the label should be set via this API, not by modifying the underlying DOM.
-           *
-           * <p>The 2-way <code class="prettyprint">label</code> binding offered by the <code class="prettyprint">ojComponent</code>
-           * binding should be used instead of Knockout's built-in <code class="prettyprint">text</code> binding, as the former
-           * sets the API, while the latter sets the underlying DOM attribute.
+           * <p>Text to show in the button.  The label attribute takes precedence over the default DOM slot.
            *
            * <p>Values set on this option, at create time or later, are treated as plain text, not HTML.  If the label is specified via
-           * DOM at create time as described above, that HTML content is kept.
+           * DOM at create time, that HTML content is kept.
            *
            * <p>For accessibility, a JET Button must always have a label, even if it is <a href="#display">icon-only</a>.
            *
@@ -639,16 +859,6 @@ var __oj_buttonset_many_metadata =
            * @memberof oj.ojButton
            * @instance
            * @type {?string}
-           * @ignore
-           * @example <caption>Initialize the button with the <code class="prettyprint">label</code> option specified:</caption>
-           * $( ".selector" ).ojButton( { "label": "custom label" } );
-           *
-           * @example <caption>Get or set the <code class="prettyprint">label</code> option, after initialization:</caption>
-           * // getter
-           * var label = $( ".selector" ).ojButton( "option", "label" );
-           *
-           * // setter
-           * $( ".selector" ).ojButton( "option", "label", "custom label" );
            */
           label: null,
 
@@ -827,7 +1037,6 @@ var __oj_buttonset_many_metadata =
 
           var self = this;
           var toggleButton = this._isToggle;
-          var activeClass = !toggleButton ? 'oj-active' : '';
 
           _addClasses(this.rootElement, BASE_CLASSES);
           _setChromingClass(this.rootElement, this.options.chroming);
@@ -837,9 +1046,7 @@ var __oj_buttonset_many_metadata =
           // document runs the risk that we won't hear it because someone eats it.  Could use capture listener to dodge
           // that risk, but just listening on both seems to work great.
           var endHandler = function () {
-            if (activeClass) {
-              self.rootElement.classList.remove(activeClass);
-            }
+            self.rootElement.classList.remove('oj-active');
             self.rootElement.classList.remove('oj-hover');
             self._toggleDefaultClasses();
           };
@@ -849,9 +1056,7 @@ var __oj_buttonset_many_metadata =
               return;
             }
 
-            if (activeClass) {
-              self.rootElement.classList.add(activeClass);
-            }
+            self.rootElement.classList.add('oj-active');
             self._toggleDefaultClasses();
 
               // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
@@ -872,16 +1077,16 @@ var __oj_buttonset_many_metadata =
                 if (self._IsEffectivelyDisabled()) {
                   return;
                 }
-
-                  // do this for real mouse enters, but not 300ms after a tap
-                if (!DomUtils.recentTouchEnd()) {
-                  if (this === _lastActive) {
-                    self.rootElement.classList.add('oj-active');
-                  }
-
+                if (!self._isSelectedInButtonsetOne()) {
                   self.rootElement.classList.add('oj-hover');
-                  self.rootElement.classList.remove('oj-default');
-                  self.rootElement.classList.remove('oj-focus-only');
+                  // do this for real mouse enters, but not 300ms after a tap
+                  if (!DomUtils.recentTouchEnd()) {
+                    if (this === _lastActive) {
+                      self.rootElement.classList.add('oj-active');
+                  }
+                }
+                self.rootElement.classList.remove('oj-default');
+                self.rootElement.classList.remove('oj-focus-only');
                 }
               })
               .bind('mouseleave' + this.eventNamespace, function () {
@@ -890,9 +1095,7 @@ var __oj_buttonset_many_metadata =
                 if (self._IsEffectivelyDisabled()) {
                   return;
                 }
-                if (activeClass) {
-                  self.rootElement.classList.remove(activeClass);
-                }
+                self.rootElement.classList.remove('oj-active');
                 self._toggleDefaultClasses();
               });
 
@@ -948,14 +1151,19 @@ var __oj_buttonset_many_metadata =
                   return;
                 }
                 _lastToggleActive = this;
+                if (!self._isSelectedInButtonsetOne()) {
+                  self.rootElement.classList.add('oj-active');
+                }
                 self.document.one('mouseup', function () {
                   _lastToggleActive = null;
+                  self.rootElement.classList.remove('oj-active');
                 });
               })
               .bind('mouseup' + this.eventNamespace, function () {
                 if (self._IsEffectivelyDisabled()) {
                   return;
                 }
+                self.rootElement.classList.remove('oj-active');
                 if (this === _lastToggleActive) {
                   self.element.focus();
                 }
@@ -1033,7 +1241,9 @@ var __oj_buttonset_many_metadata =
                 // don't show active/pressed-down state unless left mouse button, since only that button will click the button after mouseup
                 // do this for real mousedowns, but not 300ms after a tap
                 if (event.which === 1 && !DomUtils.recentTouchEnd()) {
-                  self.rootElement.classList.add('oj-active');
+                  if (!self._isSelectedInButtonsetOne()) {
+                    self.rootElement.classList.add('oj-active');
+                  }
                   self.rootElement.classList.remove('oj-default');
                   self.rootElement.classList.remove('oj-focus-only');
                   _lastActive = this;
@@ -1076,7 +1286,9 @@ var __oj_buttonset_many_metadata =
                   event.preventDefault(); // prevent scrolling down one page when clicking anchor button via Spacebar.  Only prevent for anchor!
                 }
                 if ((isSpace && !isAnchor) || event.keyCode === $.ui.keyCode.ENTER) {
-                  self.rootElement.classList.add('oj-active');
+                  if (!self._isSelectedInButtonsetOne()) {
+                    self.rootElement.classList.add('oj-active');
+                  }
                   self.rootElement.classList.remove('oj-default');
                   self.rootElement.classList.remove('oj-focus-only');
                 }
@@ -1953,7 +2165,8 @@ var __oj_buttonset_many_metadata =
 
         _selectorMap: {
           buttonset: '.oj-buttonset',
-          toolbar: '.oj-toolbar'
+          toolbar: '.oj-toolbar',
+          buttonsetone: 'oj-buttonset-one'
         },
 
         _constructorMap: {
@@ -1961,7 +2174,13 @@ var __oj_buttonset_many_metadata =
           toolbar: 'ojToolbar'
         },
 
-        // component param is "buttonset" or "toolbar".
+        // Utility routine to see if component inside a buttonset-one and currently selected
+        _isSelectedInButtonsetOne: function () {
+          var inButtosetOne = this._getEnclosingContainerElement('buttonsetone').length === 1;
+          return inButtosetOne && this.rootElement.classList.contains('oj-selected');
+        },
+
+        // component param is "buttonset" or "toolbar" or "buttonsetone"
         // Returns non-null JQ object that's length 1 iff this button is contained in a container of the specified type
         _getEnclosingContainerElement: function (component) {
           return $(this.rootElement).closest(this._selectorMap[component]);
@@ -2259,250 +2478,6 @@ var __oj_buttonset_many_metadata =
             this.rootElement.classList.remove('oj-focus-only');
           }
         }
-
-      // API doc for inherited methods with no JS in this file:
-
-      /**
-       * <p>The default slot is the button's text label. The <code class="prettyprint">&lt;oj-button></code> element accepts plain text or DOM nodes as children for the default slot.
-       * A default slot label is required for all buttons for accessibility purposes. The label can be hidden using the display attribute.</p>
-       *
-       * <p>If a text node is provided it will be wrapped in a span.</p>
-       *
-       * @ojchild Default
-       * @memberof oj.ojButton
-       * @ojshortdesc The default slot is the button's text label. The oj-button element accepts plain text or DOM nodes as children for the default slot.
-       *
-       * @example <caption>Initialize the Button with child content specified:</caption>
-       * &lt;oj-button>
-       *   &lt;span>myValue&lt;/span>
-       * &lt;/oj-button>
-       *
-       * @example <caption>Initialize the Button with data-bound child content specified in a span:</caption>
-       * &lt;oj-button>
-       *   &lt;span>
-       *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
-       *   &lt;/span>
-       * &lt;/oj-button>
-       *
-       * @example <caption>Initialize the Button with data-bound child content specified without a container element:</caption>
-       * &lt;oj-button>
-       *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
-       * &lt;/oj-button>
-       */
-
-      /**
-       * <p>The default slot is the menu button's text label. The <code class="prettyprint">&lt;oj-menu-button></code> element accepts plain text or DOM nodes as children for the default slot.
-       * A default slot label is required for all menu buttons for accessibility purposes. The label can be hidden using the display attribute.</p>
-       *
-       * <p>If a text node is provided it will be wrapped in a span.</p>
-       *
-       * @ojchild Default
-       * @memberof oj.ojMenuButton
-       * @ojshortdesc The default slot is the button's text label. The oj-menu-button element accepts plain text or DOM nodes as children for the default slot.
-       *
-       * @example <caption>Initialize the Menu Button with child content specified:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;span>myValue&lt;/span>
-       * &lt;/oj-menu-button>
-       *
-       * @example <caption>Initialize the Menu Button with data-bound child content specified in a span:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;span>
-       *     &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
-       *   &lt;/span>
-       * &lt;/oj-menu-button>
-       *
-       * @example <caption>Initialize the Menu Button with data-bound child content specified without a container element:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;oj-bind-text value='[[myText]]'>&lt;/oj-bind-text>
-       * &lt;/oj-menu-button>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">startIcon</code> slot is the button's start icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
-       *
-       * @ojslot startIcon
-       * @memberof oj.ojButton
-       * @ojshortdesc The startIcon slot is the button's start icon. The oj-button element accepts DOM nodes as children with the startIcon slot.
-       *
-       * @ojtsexample
-       * &lt;oj-button>
-       *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
-       *   &lt;span>myValue&lt;/span>
-       * &lt;/oj-button>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">startIcon</code> slot is the menu button's start icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the startIcon slot.</p>
-       *
-       * @ojslot startIcon
-       * @memberof oj.ojMenuButton
-       * @ojshortdesc The startIcon slot is the button's start icon. The oj-menu-button element accepts DOM nodes as children with the startIcon slot.
-       *
-       * @example <caption>Initialize the Menu Button with child content specified for the startIcon:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;span slot='startIcon' class='myIconClass'>&lt;/span>
-       *   &lt;span>myValue&lt;/span>
-       * &lt;/oj-menu-button>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">endIcon</code> slot is the button's end icon. The  <code class="prettyprint">&lt;oj-button></code> element accepts DOM nodes as children with the endIcon slot.</p>
-       *
-       * @ojslot endIcon
-       * @memberof oj.ojButton
-       * @ojshortdesc The endIcon slot is the button's end icon. The oj-button element accepts DOM nodes as children with the endIcon slot.
-       *
-       * @ojtsexample
-       * &lt;oj-button>
-       *   &lt;span>myValue&lt;/span>
-       *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
-       * &lt;/oj-button>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">endIcon</code> slot is the menu button's end icon. The  <code class="prettyprint">&lt;oj-menu-button></code> element accepts DOM nodes as children with the endIcon slot. If no end icon is provided, a default end icon is used.</p>
-       *
-       * @ojslot endIcon
-       * @memberof oj.ojMenuButton
-       * @ojshortdesc The endIcon slot is the button's end icon. The oj-menu button element accepts DOM nodes as children with the endIcon slot.
-       *
-       * @example <caption>Initialize the Menu Button with child content specified for the endIcon:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;span>myValue&lt;/span>
-       *   &lt;span slot='endIcon' class='myIconClass'>&lt;/span>
-       * &lt;/oj-menu-button>
-       */
-
-      /**
-       * <p>The <code class="prettyprint">menu</code> menu associated with the menu button. The <code class="prettyprint">oj-menu-button</code> element accepts a single <code class="prettyprint">oj-menu</code> element as a child with the menu slot. See the [JET Menu]{@link oj.ojMenu} for more information on setting up a menu.</p>
-       *
-       * @ojslot menu
-       * @ojmaxitems 1
-       * @memberof oj.ojMenuButton
-       * @ojshortdesc The menu associated with the menu button. The oj-menu-button element accepts a single oj-menu element as a child with the menu slot.
-       * @ojpreferredcontent ["MenuElement"]
-       *
-       * @example <caption>Initialize the Menu Button with child content specified for the menu:</caption>
-       * &lt;oj-menu-button>
-       *   &lt;span>myValue&lt;/span>
-       *   &lt;oj-menu slot="menu" style="display:none" aria-label="This menu button's menu">
-       *   ...
-       *   &lt;/oj-menu>
-       * &lt;/oj-menu-button>
-       */
-
-      // Fragments:
-
-      /**
-       * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
-       *
-       * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
-       * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
-       * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
-       * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
-       * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
-       * required of enabled content, it cannot be used to convey meaningful information.<p>
-       *
-       * @ojfragment accessibilityCommon
-       * @memberof oj.ojButton
-       * @instance
-       */
-
-      /**
-       * <p>Built-in KO bindings, like KO's <code class="prettyprint">disable</code> binding, should not be used for state with a JS API, since that is tatamount to
-       * updating the DOM directly.  The component attribute should be bound instead.
-       *
-       * <p>State with no JS API should be set by manipulating the DOM directly in an allowable way, and then calling <code class="prettyprint">refresh()</code>
-       * on the affected component(s).  E.g. the reading direction (LTR / RTL) is changed by by setting the <code class="prettyprint">"dir"</code> attribute on the
-       * <code class="prettyprint">&lt;html></code> node and calling <code class="prettyprint">refresh()</code>.
-       *
-       * <p>When using a built-in Knockout binding, keep in mind that those bindings do not
-       * execute the necessary <code class="prettyprint">refresh()</code> call after updating the DOM.  Updates that flow from the component to the observable,
-       * as a result of user interaction, are not problematic.  But updates in the other direction, that programmatically update the DOM because the observable changed,
-       * will not be picked up until the next <code class="prettyprint">refresh()</code>.
-       *
-       * @ojfragment stateCommon
-       * @memberof oj.ojButton
-       * @instance
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Push Button</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Push the button.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Toggle Button</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Toggle the button.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Menu Button</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Open the menu.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>See also the [Menu]{@link oj.ojMenu} touch gesture doc.
-       *
-       * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojButton
-       * @instance
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Push Button</td>
-       *       <td><kbd>Enter</kbd> or <kbd>Space</kbd>*</td>
-       *       <td>Push the button.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Toggle Button</td>
-       *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
-       *       <td>Toggle the button.</td>
-       *     </tr>
-       *     <tr>
-       *       <td rowspan="2">Menu Button</td>
-       *       <td><kbd>Enter</kbd>, <kbd>Space</kbd>*, or <kbd>DownArrow</kbd></td>
-       *       <td>Open the menu.</td>
-       *     </tr>
-       *     <tr>
-       *       <td><kbd>Esc</kbd></td>
-       *       <td>Close the menu.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>* Some types of Push and Menu Buttons support <kbd>Enter</kbd>, not <kbd>Space</kbd>.
-       *
-       * <p>See the [Menu]{@link oj.ojMenu} keyboard doc for keystrokes that apply when focus is on the menu.
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojButton
-       * @instance
-       */
-
       });
 
   /**
@@ -2909,30 +2884,30 @@ var __oj_buttonset_many_metadata =
      */
     // ---------------- oj-button size --------------
     /**
-    * Makes the button small, large, or extra large.<br>
-    * The class is applied to the Button's root element.
-    * @ojstyleset button-size
-    * @ojdisplayname Button Size
-    * @ojstylesetitems ["button-size.oj-button-sm", "button-size.oj-button-lg", "button-size.oj-button-xl"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojButton
-    * @ojtsexample
-    * &lt;oj-button class="oj-button-sm">
-    *    &lt;!--  content -->
-    * &lt;/oj-button>
-    */
-    /**
-    * @ojstyleclass button-size.oj-button-sm
-    * @ojshortdesc Makes the button small.
-    * @ojdisplayname Small
-    * @memberof! oj.ojButton
+     * Makes the button small, large, or extra large.<br>
+     * The class is applied to the Button's root element.
+     * @ojstyleset button-size
+     * @ojdisplayname Button Size
+     * @ojstylesetitems ["button-size.oj-button-sm", "button-size.oj-button-lg", "button-size.oj-button-xl"]
+     * @ojstylerelation exclusive
+     * @memberof oj.ojButton
+     * @ojtsexample
+     * &lt;oj-button class="oj-button-sm">
+     *    &lt;!--  content -->
+     * &lt;/oj-button>
      */
     /**
-    * @ojstyleclass button-size.oj-button-lg
-    * @ojshortdesc Makes the button large.
-    * @ojdisplayname Large
-    * @memberof! oj.ojButton
-    */
+     * @ojstyleclass button-size.oj-button-sm
+     * @ojshortdesc Makes the button small.
+     * @ojdisplayname Small
+     * @memberof! oj.ojButton
+     */
+    /**
+     * @ojstyleclass button-size.oj-button-lg
+     * @ojshortdesc Makes the button large.
+     * @ojdisplayname Large
+     * @memberof! oj.ojButton
+     */
     /**
     * @ojstyleclass button-size.oj-button-xl
     * @ojshortdesc Makes the button extra large.
@@ -3000,8 +2975,218 @@ var __oj_buttonset_many_metadata =
     *    &lt;!--  content -->
     * &lt;/oj-button>
     */
+    //-----------------------------------------------------
+    //                   Styling
+    //-----------------------------------------------------
+    // ---------------- default button ---------------------
+    /**
+    * @ojstylevariableset oj-button-css-set1
+    * @ojdisplayname Default buttons
+    * @ojstylevariable oj-button-height                {description: "Button height",                formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-border-radius         {description: "Button border radius",         formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-font-size             {description: "Button font size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-font-weight           {description: "Button font weight",           formats: ["font_weight"]}
+    * @ojstylevariable oj-button-icon-size             {description: "Button icon size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-text-to-edge-padding  {description: "Button text to edge padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-icon-to-text-padding  {description: "Button icon to text padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-icon-to-edge-padding  {description: "Button icon to edge padding",  formats: ["length", "percentage"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- small button -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set2
+    * @ojdisplayname Small buttons
+    * @ojstylevariable oj-button-sm-height                {description: "Small button height",                formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-sm-font-size             {description: "Small button font size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-sm-icon-size             {description: "Small button icon size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-sm-text-to-edge-padding  {description: "Small button text to edge padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-sm-icon-to-text-padding  {description: "Small button icon to text padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-sm-icon-to-edge-padding  {description: "Small button icon to edge padding",  formats: ["length", "percentage"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- large button -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set3
+    * @ojdisplayname Large buttons
+    * @ojstylevariable oj-button-lg-height                {description: "Large button height",                formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-lg-font-size             {description: "Large button font size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-lg-icon-size             {description: "Large button icon size",             formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-lg-text-to-edge-padding  {description: "Large button text to edge padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-lg-icon-to-text-padding  {description: "Large button icon to text padding",  formats: ["length", "percentage"]}
+    * @ojstylevariable oj-button-lg-icon-to-edge-padding  {description: "Large button icon to edge padding",  formats: ["length", "percentage"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- borderless buttons -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set4
+    * @ojdisplayname Borderless buttons
+    * @ojstylevariable oj-button-borderless-chrome-text-color                     {description: "Borderless chrome button text color",                         formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-bg-color-hover                 {description: "Borderless chrome button hover background color",             formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-border-color-hover             {description: "Borderless chrome button hover border color",                 formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-hover               {description: "Borderless chrome button hover text color",                   formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-bg-color-active                {description: "Borderless chrome button active background color",            formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-border-color-active            {description: "Borderless chrome button active border color",                formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-active              {description: "Borderless chrome button active text color",                  formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-bg-color-selected              {description: "Borderless chrome button selected background color",          formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-border-color-selected          {description: "Borderless chrome button selected border color",              formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-selected            {description: "Borderless chrome button selected text color",                formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-bg-color-selected-hover        {description: "Borderless chrome button selected hover background color",    formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-border-color-selected-hover    {description: "Borderless chrome button selected hover border color",        formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-selected-hover      {description: "Borderless chrome button selected hover text color",          formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-disabled            {description: "Borderless chrome button disabled text color",                formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-bg-color-selected-disabled     {description: "Borderless chrome button disabled selected background color", formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-border-color-selected-disabled {description: "Borderless chrome button disabled selected border color",     formats:  ["color"]}
+    * @ojstylevariable oj-button-borderless-chrome-text-color-selected-disabled   {description: "Borderless chrome button disabled selected text color",       formats:  ["color"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- outlined buttons -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set5
+    * @ojdisplayname Outlined buttons
+    * @ojstylevariable oj-button-outlined-chrome-bg-color                         {description: "Outlined chrome button background color",                     formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color                     {description: "Outlined chrome button border color",                         formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color                       {description: "Outlined chrome button text color",                           formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-hover                   {description: "Outlined chrome button hover background color",               formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-hover               {description: "Outlined chrome button hover border color",                   formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-hover                 {description: "Outlined chrome button hover text color",                     formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-active                  {description: "Outlined chrome button active background color",              formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-active              {description: "Outlined chrome button active border color",                  formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-active                {description: "Outlined chrome button active text color",                    formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-selected                {description: "Outlined chrome button selected background color",            formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-selected            {description: "Outlined chrome button selected border color",                formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-selected              {description: "Outlined chrome button selected text color",                  formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-selected-hover          {description: "Outlined chrome button selected hover background color",      formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-selected-hover      {description: "Outlined chrome button selected hover border color",          formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-selected-hover        {description: "Outlined chrome button selected hover text color",            formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-disabled                {description: "Outlined chrome button disabled background color",            formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-disabled            {description: "Outlined chrome button disabled border color",                formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-disabled              {description: "Outlined chrome button disabled text color",                  formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-bg-color-selected-disabled       {description: "Outlined chrome button selected disabled background color",   formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-border-color-selected-disabled   {description: "Outlined chrome button selected disabled border color",       formats:  ["color"]}
+    * @ojstylevariable oj-button-outlined-chrome-text-color-selected-disabled     {description: "Outlined chrome button selected disabled text color",         formats:  ["color"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- solid buttons -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set6
+    * @ojdisplayname Solid buttons
+    * @ojstylevariable oj-button-solid-chrome-bg-color              {description: "Solid chrome button background color",           formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color          {description: "Solid chrome button border color",               formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color            {description: "Solid chrome button text color",                 formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-hover        {description: "Solid chrome button hover background color",     formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-hover    {description: "Solid chrome button hover border color",         formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-hover      {description: "Solid chrome button hover text color",           formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-active       {description: "Solid chrome button active background color",    formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-active   {description: "Solid chrome button active border color",        formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-active     {description: "Solid chrome button active text color",          formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-selected     {description: "Solid chrome button selected background color",  formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-selected {description: "Solid chrome button selected border color",      formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-selected   {description: "Solid chrome button selected text color",        formats: ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-selected-hover         {description: "Solid chrome button selected hover background color",     formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-selected-hover     {description: "Solid chrome button selected hover border color",         formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-selected-hover       {description: "Solid chrome button selected hover text color",           formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-disabled               {description: "Solid chrome button disabled background color",           formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-disabled           {description: "Solid chrome button disabled border color",               formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-disabled             {description: "Solid chrome button disabled text color",                 formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-bg-color-selected-disabled      {description: "Solid chrome button disabled selected background color",  formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-border-color-selected-disabled  {description: "Solid chrome button disabled selected border color",      formats:  ["color"]}
+    * @ojstylevariable oj-button-solid-chrome-text-color-selected-disabled    {description: "Solid chrome button disabled selected text color",        formats:  ["color"]}
+    * @memberof oj.ojButton
+    */
+    // ---------------- call to action buttons -----------------------
+    /**
+    * @ojstylevariableset oj-button-css-set7
+    * @ojdisplayname Call to action buttons
+    * @ojstylevariable oj-button-call-to-action-chrome-bg-color             {description: "Call to action chrome button background color",         formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-border-color         {description: "Call to action chrome button border color",             formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-text-color           {description: "Call to action chrome button text color",               formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-bg-color-hover       {description: "Call to action chrome button hover background color",   formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-border-color-hover   {description: "Call to action chrome button hover border color",       formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-text-color-hover     {description: "Call to action chrome button hover text color",         formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-bg-color-active      {description: "Call to action chrome button active background color",  formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-border-color-active  {description: "Call to action chrome button active border color",      formats:  ["color"]}
+    * @ojstylevariable oj-button-call-to-action-chrome-text-color-active    {description: "Call to action chrome button active text color",        formats:  ["color"]}
+    * @memberof oj.ojButton
+    */
     // ---------------------------------- Styling oj-button end------------------------------------
 
+
+    // ---------------------------------- oj-buttonset virtual doclets ------------------------------------
+    // API doc for inherited methods with no JS in this file:
+
+    // Fragments:
+
+        /**
+         * <p>The &lt;oj-buttonset-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+         * accepted children and slots.</p>
+         *
+         * @ojchild Default
+         * @memberof oj.ojButtonsetOne
+         * @ojshortdesc The oj-buttonset-one element accepts oj-option elements as children.
+         * @ojpreferredcontent ["OptionElement"]
+         *
+         * @example <caption>Initialize the Buttonset with child content specified:</caption>
+         * &lt;oj-buttonset-one>
+         *   &lt;oj-option value="btn1">Button 1&lt;/oj-option>
+         *   &lt;oj-option value="btn2">Button 2&lt;/oj-option>
+         *   &lt;oj-option value="btn3">Button 3&lt;/oj-option>
+         * &lt;/oj-buttonset-one>
+         */
+
+        /**
+         * <p>The &lt;oj-buttonset-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+         * accepted children and slots.</p>
+         *
+         * @ojchild Default
+         * @memberof oj.ojButtonsetMany
+         * @ojshortdesc The oj-buttonset-many element accepts oj-option elements as children.
+         * @ojpreferredcontent ["OptionElement"]
+         *
+         * @example <caption>Initialize the Buttonset with child content specified:</caption>
+         * &lt;oj-buttonset-many>
+         *   &lt;oj-option value="btn1">Button 1&lt;/oj-option>
+         *   &lt;oj-option value="btn2">Button 2&lt;/oj-option>
+         *   &lt;oj-option value="btn3">Button 3&lt;/oj-option>
+         * &lt;/oj-buttonset-many>
+         */
+
+        /**
+         * <p>All Buttonset touch interaction is with the individual buttons.  See the [JET Button]{@link oj.ojButton} touch gesture doc.
+         *
+         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+         * @memberof oj.ojButtonset
+         * @instance
+         */
+
+        /**
+         * <p>JET Buttonset is a single tabstop, with arrow-key navigation within the buttonset, as follows:
+         *
+         * <table class="keyboard-table">
+         *   <thead>
+         *     <tr>
+         *       <th>Key</th>
+         *       <th>Action</th>
+         *     </tr>
+         *   </thead>
+         *   <tbody>
+         *     <tr>
+         *       <td><kbd>LeftArrow</kbd></td>
+         *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
+         *     </tr>
+         *     <tr>
+         *       <td><kbd>RightArrow</kbd></td>
+         *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
+         *     </tr>
+         *   </tbody>
+         * </table>
+         *
+         * <p>See also the [JET Button]{@link oj.ojButton} keyboard doc, for details on interacting with
+         * the individual buttons.
+         *
+         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+         * @memberof oj.ojButtonset
+         * @instance
+         */
     oj.__registerWidget('oj.ojButtonset', $.oj.baseComponent,
       {
       // private.  Was an undocumented JQUI option, which we removed, so I moved from options to here and added underscore.  Leave unquoted so gets renamed by GCC as desired.
@@ -3092,8 +3277,6 @@ var __oj_buttonset_many_metadata =
            * The attribute <code class="prettyprint">value</code> binding and/or
            * the <code class="prettyprint">valueChange</code> event should be used instead.
            *
-           * @alias value
-           * @expose
            * @memberof oj.ojButtonset
            * @instance
            * @ojfragment buttonsetCommonValue
@@ -3127,8 +3310,8 @@ var __oj_buttonset_many_metadata =
            * // setter
            * myButtonset.chroming = 'borderless';
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $buttonsetChromingOptionDefault: borderless !default;
+           * @example <caption>Set the default in the theme (CSS) :</caption>
+           * --oj-private-buttonset-global-chroming-default: borderless !default;
            */
           /**
            * {@ojinclude "name":"buttonsetCommonChroming"}
@@ -3157,8 +3340,8 @@ var __oj_buttonset_many_metadata =
            * // setter
            * myButtonset.chroming = 'borderless';
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $buttonsetChromingOptionDefault: borderless !default;
+           * @example <caption>Set the default in the theme (CSS) :</caption>
+           * --oj-private-buttonset-global-chroming-default: borderless !default;
            */
 
           /**
@@ -3170,8 +3353,7 @@ var __oj_buttonset_many_metadata =
            * <p>The default chroming varies by theme and containership as follows:
            * <ul>
            *   <li>If the buttonset is in a toolbar, then the default chroming is the current value of the toolbar's [chroming]{@link oj.ojToolbar#chroming} attribute.</li>
-           *   <li>Else, if <code class="prettyprint">$buttonsetChromingOptionDefault</code> is set in the current theme as seen in the example below, then that value is the chroming default.</li>
-           *   <li>Else, the default chroming is <code class="prettyprint">"solid"</code>.</li>
+           *   <li>Else, the default chroming value is controlled by the theme.
            * </ul>
            *
            * <p>Once a value has been set on this buttonset attribute, that value applies regardless of theme and containership.
@@ -4330,84 +4512,6 @@ var __oj_buttonset_many_metadata =
               //   Button stuff we removed, etc.
               .ojButton('destroy');
         }
-
-        // API doc for inherited methods with no JS in this file:
-
-        // Fragments:
-
-        /**
-         * <p>The &lt;oj-buttonset-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-         * accepted children and slots.</p>
-         *
-         * @ojchild Default
-         * @memberof oj.ojButtonsetOne
-         * @ojshortdesc The oj-buttonset-one element accepts oj-option elements as children.
-         * @ojpreferredcontent ["OptionElement"]
-         *
-         * @example <caption>Initialize the Buttonset with child content specified:</caption>
-         * &lt;oj-buttonset-one>
-         *   &lt;oj-option value="btn1">Button 1&lt;/oj-option>
-         *   &lt;oj-option value="btn2">Button 2&lt;/oj-option>
-         *   &lt;oj-option value="btn3">Button 3&lt;/oj-option>
-         * &lt;/oj-buttonset-one>
-         */
-
-        /**
-         * <p>The &lt;oj-buttonset-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-         * accepted children and slots.</p>
-         *
-         * @ojchild Default
-         * @memberof oj.ojButtonsetMany
-         * @ojshortdesc The oj-buttonset-many element accepts oj-option elements as children.
-         * @ojpreferredcontent ["OptionElement"]
-         *
-         * @example <caption>Initialize the Buttonset with child content specified:</caption>
-         * &lt;oj-buttonset-many>
-         *   &lt;oj-option value="btn1">Button 1&lt;/oj-option>
-         *   &lt;oj-option value="btn2">Button 2&lt;/oj-option>
-         *   &lt;oj-option value="btn3">Button 3&lt;/oj-option>
-         * &lt;/oj-buttonset-many>
-         */
-
-        /**
-         * <p>All Buttonset touch interaction is with the individual buttons.  See the [JET Button]{@link oj.ojButton} touch gesture doc.
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojButtonset
-         * @instance
-         */
-
-        /**
-         * <p>JET Buttonset is a single tabstop, with arrow-key navigation within the buttonset, as follows:
-         *
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td><kbd>LeftArrow</kbd></td>
-         *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
-         *     </tr>
-         *     <tr>
-         *       <td><kbd>RightArrow</kbd></td>
-         *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * <p>See also the [JET Button]{@link oj.ojButton} keyboard doc, for details on interacting with
-         * the individual buttons.
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojButtonset
-         * @instance
-         */
-
-
       });
 
     // SECURITY NOTE: To avoid injection attacks, do NOT compute the class via string concatenation, i.e. don't do "oj-button-" + chroming + "-chrome"
@@ -4495,8 +4599,7 @@ var __oj_buttonset_many_metadata =
       }
       // Else, if $___ChromingOptionDefault is set in the current theme, then this expr returns that value for use as the chroming default.
       // Else, returns undefined, so that the prototype default is used.
-      return (ThemeUtils.parseJSONFromFontFamily('oj-' + componentName + '-option-defaults') || {})
-        .chroming;
+      return ThemeUtils.getCachedCSSVarValues(['--oj-private-' + componentName + '-global-chroming-default'])[0];
     }
 
     function _addClasses(elem, classes) {

@@ -18,16 +18,10 @@ import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
 import { ColorAttributeGroupHandler, AttributeGroupHandler, ShapeAttributeGroupHandler } from 'ojs/ojattributegrouphandler';
 import { error } from 'ojs/ojlogger';
 import 'ojs/ojcustomelement';
-import { AttributeUtils, CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { AttributeUtils, CustomElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
+import { checkEnumValues } from 'ojs/ojmetadatautils';
 import 'ojdnd';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * <p>The SVG DOM that this component generates should be treated as a black box, as it is subject to change.</p>
  *
@@ -109,13 +103,6 @@ import 'ojdnd';
  *               {target: "Type", value: "<T>", for: "genericTypeParameters"}]
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Class to help set css properties on the component root options object
  * @param {Object} object The root options object from which this path should be resolved
@@ -200,15 +187,6 @@ DvtJsonPath.prototype.setValue = function (value, bOverride) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * Class to help retrieve css properties to be used by the style bridge
  * @param {dvt.Context} context
  * @protected
@@ -222,6 +200,7 @@ const DvtStyleProcessor = function (context) {
   this._context = context;
   this._letterSpacing = null;
   this._wordSpacing = null;
+  this._fontVariantNumeric = null;
 };
 
 DvtStyleProcessor.styleTypes = {
@@ -392,12 +371,14 @@ DvtStyleProcessor.prototype.processStyles =
     }
   }
 
-  if (!this._letterSpacing || !this._wordSpacing) {
+  if (!this._letterSpacing || !this._wordSpacing || !this._fontVariantNumeric) {
     var computedStyles = window.getComputedStyle(element[0]);
     this._context.letterSpacing = computedStyles.letterSpacing;
     this._context.wordSpacing = computedStyles.wordSpacing;
+    this._context.fontVariantNumeric = computedStyles.fontVariantNumeric;
     this._letterSpacing = computedStyles.letterSpacing;
     this._wordSpacing = computedStyles.wordSpacing;
+    this._fontVariantNumeric = computedStyles.fontVariantNumeric;
   }
 
   for (i = 0; i < styleClassKeys.length; i++) {
@@ -576,14 +557,6 @@ DvtStyleProcessor.populateOptions = function (options, childClasses) {
 };
 
 /**
- * @license
- * Copyright (c) 2018 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
- /**
  * Handler for DataProvider generated content for chart
  * @constructor
  * @ignore
@@ -1108,15 +1081,6 @@ DataProviderHandler.prototype._fireEvent = function (type, detail) {
 };
 
 /**
- * @license
- * Copyright (c) 2018 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
- /**
  * Handler for DataProvider generated content for chart
  * @constructor
  * @ignore
@@ -1262,9 +1226,12 @@ TemplateHandler.prototype._getPropertyValidator = function (element, elementName
       }
       metadataCache[property] = metadata;
     }
-
-    oj.BaseCustomElementBridge.checkEnumValues(templateElement, property,
-      value, metadata);
+    try {
+      checkEnumValues(templateElement, property,
+        value, metadata);
+    } catch (error) {
+      throw new JetElementError(element, error.message);
+    }
 
     // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
     // about component support for undefined/null
@@ -1578,15 +1545,6 @@ TemplateHandler.prototype._fireEvent = function (type, detail) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * @ojcomponent oj.dvtBaseComponent
  * @augments oj.baseComponent
  * @since 0.7.0
@@ -1625,7 +1583,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     trackResize: 'on'
   },
 
-  //* * @inheritdoc */
+
   _ComponentCreate: function () {
     this._super();
     this._renderCount = 0;
@@ -1713,7 +1671,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this.options._widgetConstructor = __GetWidgetConstructor(this.element);
   },
 
-  //* * @inheritdoc */
+
   _AfterCreate: function () {
     // Allow superclass to process root attributes and context menus
     this._super();
@@ -1776,7 +1734,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     }
   },
 
-  //* * @inheritdoc */
+
   refresh: function () {
     this._super();
 
@@ -1790,7 +1748,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._Render();
   },
 
-  //* * @inheritdoc */
+
   getNodeBySubId: function (locator) {
     var automation = (this._component && this._component.getAutomation) ?
         this._component.getAutomation() : null;
@@ -1802,7 +1760,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     return null;
   },
 
-  //* * @inheritdoc */
+
   getSubIdByNode: function (node) {
     var automation = (this._component && this._component.getAutomation) ?
         this._component.getAutomation() : null;
@@ -1894,7 +1852,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     return [];
   },
 
-  //* * @inheritdoc */
+
   _VerifyConnectedForSetup: function () {
     return true;
   },
@@ -1923,7 +1881,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._dataValuePromise = {};
   },
 
-  //* * @inheritdoc */
+
   _destroy: function () {
     var parentElement = this.element[0].parentElement;
     if (parentElement && parentElement._dvtcontext) {
@@ -1952,7 +1910,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._context = null;
   },
 
-  //* * @inheritdoc */
+
   // eslint-disable-next-line no-unused-vars
   _setOptions: function (options, flags) {
     // Call the super to update the property values
@@ -2189,25 +2147,25 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     return !!this.options.dnd;
   },
 
-  //* * @inheritdoc */
+
   _NotifyShown: function () {
     this._super();
     this._notifyShownAttached();
   },
 
-  //* * @inheritdoc */
+
   _NotifyAttached: function () {
     this._super();
     this._notifyShownAttached();
   },
 
-  //* * @inheritdoc */
+
   _NotifyDetached: function () {
     this._super();
     this._notifyHiddenDetached();
   },
 
-  //* * @inheritdoc */
+
   _NotifyHidden: function () {
     this._super();
     this._notifyHiddenDetached();
@@ -2260,7 +2218,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._bUserDrivenChange = false;
   },
 
-  //* * @inheritdoc */
+
   _NotifyContextMenuGesture: function (menu, event, eventType) {
     // DVTs support context menus on touch hold release which is detected by the
     // toolkit and handled in _HandleEvent after receiving touch hold release event.
@@ -3177,7 +3135,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._templateMap[templateName].push(cleanupCallback);
   },
 
-  //* * @inheritdoc */
+
   _CompareOptionValues: function (option, value1, value2) {
     switch (option) {
       case 'hiddenCategories':
@@ -3190,25 +3148,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   }
 }, true);
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
- oj._registerLegacyNamespaceProp('AttributeGroupHandler', AttributeGroupHandler);
+oj._registerLegacyNamespaceProp('AttributeGroupHandler', AttributeGroupHandler);
  oj._registerLegacyNamespaceProp('ColorAttributeGroupHandler', ColorAttributeGroupHandler);
  oj._registerLegacyNamespaceProp('ShapeAttributeGroupHandler', ShapeAttributeGroupHandler);
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Utility class with functions for parsing common DVT attributes.
  * Currently the following DVT components are using it: ojchart, ojdiagram, ojgauge, ojnbox, ojthematicmap.

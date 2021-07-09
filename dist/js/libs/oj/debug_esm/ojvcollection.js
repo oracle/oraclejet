@@ -19,7 +19,11 @@ class DataProviderContentHandler {
         this.validKeyTypes = ['string', 'number'];
         this.fetching = 0;
         this.getKey = function (element) {
-            return element.key;
+            return element.key
+                ? element.key
+                : element.dataset.ojKeyType === 'number'
+                    ? Number(element.dataset.ojKey)
+                    : element.dataset.ojKey;
         };
         if (dataProvider) {
             this.modelEventHandler = this._handleModelEvent.bind(this);
@@ -47,11 +51,8 @@ class DataProviderContentHandler {
             this.dataProvider.removeEventListener('refresh', this.modelEventHandler);
         }
     }
-    render() {
-        if (this.callback.getData() == null) {
-            this.fetchRows();
-        }
-        return this.renderFetchedData();
+    render(data) {
+        return this.renderFetchedData(data);
     }
     postRender() {
     }
@@ -79,12 +80,20 @@ class DataProviderContentHandler {
             this.handleModelRefresh();
         }
         else if (event.type === 'mutate') {
+            if (this.callback.getData() == null) {
+                return;
+            }
             const detail = event['detail'];
             if (detail.add) {
                 this.handleItemsAdded(detail.add);
             }
             if (detail.remove) {
                 this.handleItemsRemoved(detail.remove);
+                detail.remove.keys.forEach((key) => {
+                    var _a;
+                    if (!((_a = detail.add) === null || _a === void 0 ? void 0 : _a.keys.has(key)))
+                        this.callback.handleItemRemoved(key);
+                });
             }
             if (detail.update) {
                 this.handleItemsUpdated(detail.update);
@@ -163,7 +172,7 @@ class VirtualizeDomScroller {
         if (this.currentRenderedPoint.done || this.currentRenderedPoint.maxCountLimit) {
             return true;
         }
-        let flag = this._isRangeValid(0, this.currentRenderedPoint.end);
+        const flag = this._isRangeValid(0, this.currentRenderedPoint.end);
         if (!flag) {
             this.checkViewportCount += 1;
             if (this.checkViewportCount === CHECKVIEWPORT_THRESHOLD) {
@@ -176,6 +185,9 @@ class VirtualizeDomScroller {
         }
         return flag;
     }
+    setAsyncIterator(iterator) {
+        this.asyncIterator = iterator;
+    }
     _isRenderingViewportOnly(callback) {
         return (this.options.strategy === VirtualizationStrategy.VIEWPORT_ONLY &&
             callback.getIndexForRange !== undefined);
@@ -184,14 +196,7 @@ class VirtualizeDomScroller {
         if (this.currentRenderedPoint.start == null || this.currentRenderedPoint.end == null) {
             this.currentRenderedPoint.start = start;
             this.currentRenderedPoint.end = end;
-            this._log('got pixel range: ' +
-                start +
-                ' to ' +
-                end +
-                ' for renderedPoint: ' +
-                this.currentRenderedPoint.startIndex +
-                ' ' +
-                this.currentRenderedPoint.endIndex);
+            this._log(`got pixel range: ${start} to ${end} for renderedPoint: ${this.currentRenderedPoint.startIndex} ${this.currentRenderedPoint.endIndex}`);
         }
         if (this._checkRenderedPoints()) {
             this.fetchPromise = null;
@@ -211,7 +216,7 @@ class VirtualizeDomScroller {
         return this.element;
     }
     _getScrollTop(element) {
-        let scrollTop = 0;
+        const scrollTop = 0;
         if (element === document.documentElement) {
             if (this.useBodyScrollTop === undefined) {
                 this.useBodyScrollTop = this.initialScrollTop === element.scrollTop;
@@ -223,22 +228,15 @@ class VirtualizeDomScroller {
         return scrollTop + element.scrollTop;
     }
     _setRangeLocal(startIndex, endIndex, start, end, maxCountLimit, done) {
-        this._log('rendering row: ' +
-            startIndex +
-            ' to ' +
-            endIndex +
-            ' covering range: ' +
-            (start == null ? 'unknown' : start) +
-            ' to ' +
-            (end == null ? 'unknown' : end));
+        this._log(`rendering row: ${startIndex} to ${endIndex} covering range: ${start == null ? 'unknown' : start} to ${end == null ? 'unknown' : end}`);
         this.callback.beforeFetchByOffset(startIndex, endIndex);
         this.currentRenderedPoint = {
-            startIndex: startIndex,
-            endIndex: endIndex,
-            start: start,
-            end: end,
-            maxCountLimit: maxCountLimit,
-            done: done,
+            startIndex,
+            endIndex,
+            start,
+            end,
+            maxCountLimit,
+            done,
             keys: []
         };
         const options = { offset: startIndex, size: endIndex - startIndex };
@@ -248,20 +246,16 @@ class VirtualizeDomScroller {
                 proceed = this._isRangeValid(start, end);
             }
             if (proceed) {
-                this._log('fetchByOffset ' +
-                    startIndex +
-                    ' to ' +
-                    endIndex +
-                    ' returned and result is still applicable');
-                let data = [];
-                let metadata = [];
-                let keys = this.currentRenderedPoint.keys;
+                this._log(`fetchByOffset ${startIndex} to ${endIndex} returned and result is still applicable`);
+                const data = [];
+                const metadata = [];
+                const keys = this.currentRenderedPoint.keys;
                 fetchResults.results.forEach((result) => {
                     data.push(result.data);
                     metadata.push(result.metadata);
                     keys.push(result.metadata.key);
                 });
-                let ret = {};
+                const ret = {};
                 ret.startIndex = startIndex;
                 ret.maxCountLimit = maxCountLimit;
                 ret.done = done;
@@ -272,11 +266,7 @@ class VirtualizeDomScroller {
                 this.fetchByOffsetPromise = null;
             }
             else {
-                this._log('fetchByOffset ' +
-                    startIndex +
-                    ' to ' +
-                    endIndex +
-                    ' returned but result is NO LONGER applicable');
+                this._log(`fetchByOffset ${startIndex} to ${endIndex} returned but result is NO LONGER applicable`);
                 this.fetchByOffsetPromise = null;
                 this.callback.fetchError('notValid');
                 this._checkRenderedPoints();
@@ -309,7 +299,7 @@ class VirtualizeDomScroller {
     }
     _isRangeValid(start, end) {
         const scrollTop = this.currentScrollTop;
-        this.viewportPixelSize = this.element.offsetHeight;
+        this.viewportPixelSize = this.element.clientHeight;
         if (scrollTop >= start && scrollTop + this.viewportPixelSize <= end) {
             return true;
         }
@@ -341,7 +331,7 @@ class VirtualizeDomScroller {
     }
     _doFetch() {
         this._log('fetching next set of rows from asyncIterator');
-        let beforeFetchCallback = this.callback.beforeFetchNext();
+        const beforeFetchCallback = this.callback.beforeFetchNext();
         if (beforeFetchCallback) {
             if (this.viewportSize === -1) {
                 this.viewportSize =
@@ -350,8 +340,8 @@ class VirtualizeDomScroller {
             this.fetchPromise = this._fetchMoreRows().then((result) => {
                 if (result.maxCountLimit) {
                     this._log('reached max count');
-                    let start = result.size > 0 ? null : this.currentRenderedPoint.start;
-                    let end = result.size > 0 ? null : this.currentRenderedPoint.end;
+                    const start = result.size > 0 ? null : this.currentRenderedPoint.start;
+                    const end = result.size > 0 ? null : this.currentRenderedPoint.end;
                     this._setRangeLocal(this.currentRenderedPoint.startIndex, this.maxCount, start, end, true, false);
                     this.fetchPromise = null;
                     this.asyncIterator = null;
@@ -367,6 +357,11 @@ class VirtualizeDomScroller {
                         this.lastIndex = renderedEndIndex;
                     }
                     this._setRangeLocal(renderedStartIndex, renderedEndIndex, null, null, false, result.done);
+                }
+                else {
+                    this.fetchPromise = null;
+                    this.asyncIterator = null;
+                    this.callback.fetchSuccess(null);
                 }
             }, (reason) => {
                 this.callback.fetchError(reason);
@@ -408,7 +403,7 @@ class VirtualizeDomScroller {
                     return this.fetchPromise;
                 }
             }
-            return Promise.resolve({ maxCount: this.maxCount, maxCountLimit: true });
+            return Promise.resolve({ maxCount: this.maxCount });
         }
         return this.fetchPromise;
     }
@@ -432,6 +427,10 @@ class VirtualizeDomScroller {
                 this.currentRenderedPoint.done = false;
             }
         });
+        if (indexes.length > 0) {
+            this.currentRenderedPoint.start = null;
+            this.currentRenderedPoint.end = null;
+        }
         return indexes;
     }
     _handleModelDelete(keys) {
@@ -449,6 +448,10 @@ class VirtualizeDomScroller {
         keysToRemove.forEach((key) => {
             currentKeys.splice(currentKeys.indexOf(key), 1);
         });
+        if (indexes.length > 0) {
+            this.currentRenderedPoint.start = null;
+            this.currentRenderedPoint.end = null;
+        }
         return indexes;
     }
     _updateRenderedPoint(index, renderedPoint, op) {
@@ -482,48 +485,50 @@ class VirtualizeDomScroller {
 }
 
 class IteratingDataProviderContentHandler extends DataProviderContentHandler {
-    constructor(root, dataProvider, callback, scrollPolicyOptions) {
+    constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
         super(root, dataProvider, callback);
         this.root = root;
         this.dataProvider = dataProvider;
         this.callback = callback;
+        this.scrollPolicy = scrollPolicy;
         this.scrollPolicyOptions = scrollPolicyOptions;
         this.fetchRows = () => {
             if (this.isReady()) {
                 this.setFetching(true);
-                let options = { clientId: this._clientId };
+                const options = { clientId: this._clientId };
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
                 this.dataProviderAsyncIterator = this.getDataProvider()
                     .fetchFirst(options)[Symbol.asyncIterator]();
-                let busyStateResolveFunc = this.addBusyState('call next on iterator');
-                let promise = this.dataProviderAsyncIterator.next();
-                let fetchSize = options.size;
-                let helperFunction = (value) => {
+                const busyStateResolveFunc = this.addBusyState('call next on iterator');
+                const promise = this.dataProviderAsyncIterator.next();
+                const fetchSize = options.size;
+                const helperFunction = (value) => {
                     if (value.done ||
                         fetchSize !== -1 ||
                         typeof this.getDataProvider().getPageCount === 'function') {
                         return value;
                     }
-                    let nextPromise = this.dataProviderAsyncIterator.next();
-                    let fetchMoreData = nextPromise.then(function (nextValue) {
+                    const nextPromise = this.dataProviderAsyncIterator.next();
+                    return nextPromise.then(function (nextValue) {
                         value.done = nextValue.done;
                         value.value.data = value.value.data.concat(nextValue.value.data);
-                        value.value.metadata = value.value.metadata.concat(value.value.metadata);
+                        value.value.metadata = value.value.metadata.concat(nextValue.value.metadata);
                         return helperFunction(value);
                     }, function (reason) {
                         this.fetchError(reason);
                     });
-                    return fetchMoreData;
                 };
                 promise
                     .then((value) => {
                     return helperFunction(value);
                 }, (reason) => {
                     busyStateResolveFunc();
+                    this.setFetching(false);
                     this.fetchError(reason);
+                    return Promise.reject(reason);
                 })
                     .then((value) => {
-                    if (this.isFetching()) {
+                    if (value) {
                         busyStateResolveFunc();
                         if (this.callback == null) {
                             return;
@@ -532,8 +537,14 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                         this.callback.setData(value);
                     }
                 }, (reason) => {
-                    busyStateResolveFunc();
-                    this.fetchError(reason);
+                    if (this.callback != null) {
+                        const errorValue = {
+                            error: reason,
+                            done: true,
+                            value: { data: [], metadata: [] }
+                        };
+                        this.callback.setData(errorValue);
+                    }
                 });
             }
         };
@@ -549,6 +560,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
             this.domScroller = new VirtualizeDomScroller(this._getScroller(), this.getDataProvider(), this.dataProviderAsyncIterator, this, options);
         };
         this._clientId = Symbol();
+        this.fetchRows();
     }
     getDataProvider() {
         if (this.wrappedDataProvider == null) {
@@ -579,7 +591,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         return false;
     }
     _isLoadMoreOnScroll() {
-        return true;
+        return this.scrollPolicy === 'loadMoreOnScroll';
     }
     _getScroller() {
         const scroller = this.scrollPolicyOptions.scroller;
@@ -600,12 +612,11 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
         }
     }
     renderSkeletonsForLoadMore() { }
-    renderFetchedData() {
+    renderFetchedData(dataObj) {
         if (this.callback == null) {
             return;
         }
-        let result = [];
-        const dataObj = this.callback.getData();
+        const result = [];
         if (dataObj == null || dataObj.value == null) {
             return result;
         }
@@ -653,13 +664,15 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     fetchSuccess(result) {
         this.domScrollerFetchResolve();
         this.domScrollerFetchResolve = null;
-        if (result != null) {
+        if (result != null && this.callback != null) {
             this.callback.setData(result);
         }
     }
     fetchError(reason) {
-        this.domScrollerFetchResolve();
-        this.domScrollerFetchResolve = null;
+        if (this.domScrollerFetchResolve) {
+            this.domScrollerFetchResolve();
+            this.domScrollerFetchResolve = null;
+        }
         if (reason !== 'notValid') {
             error('an error occurred during data fetch, reason: ' + reason);
         }
@@ -681,7 +694,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                 children = [];
                 break;
             }
-            let child = this.addItem(metadata[i].key, i + startIndex, data[i], true);
+            const child = this.addItem(metadata[i].key, i + startIndex, data[i], true);
             if (child) {
                 children.push(child);
             }
@@ -690,7 +703,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     }
     _handleItemsMutated(detail, keyField, withinRangeDataCallback) {
         this.callback.updateData(function (currentData) {
-            let newData = {
+            const newData = {
                 startIndex: currentData.startIndex,
                 done: currentData.done,
                 value: {
@@ -744,7 +757,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                     metadata: currentData.value.metadata.slice(0)
                 }
             };
-            let indexes = detail.indexes;
+            const indexes = detail.indexes;
             const addBeforeKeys = detail.addBeforeKeys;
             const keys = detail.keys;
             if (indexes == null && addBeforeKeys == null) {
@@ -771,6 +784,12 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
                     }
                     else if (newData.done && !newData.maxCountLimit) {
                         newData.done = false;
+                        if (this.domScroller == null) {
+                            this._registerDomScroller([]);
+                        }
+                        else {
+                            this.domScroller.setAsyncIterator(this.dataProviderAsyncIterator);
+                        }
                     }
                     i++;
                 }.bind(this));
@@ -781,7 +800,7 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
     }
     handleItemsRemoved(detail) {
         this._handleItemsMutated(detail, 'keys', (newData, key) => {
-            let index = this._findIndex(newData.value.metadata, key);
+            const index = this._findIndex(newData.value.metadata, key);
             if (index > -1) {
                 newData.value.data.splice(index, 1);
                 newData.value.metadata.splice(index, 1);
@@ -801,19 +820,20 @@ class IteratingDataProviderContentHandler extends DataProviderContentHandler {
 }
 
 class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler {
-    constructor(root, dataProvider, callback, scrollPolicyOptions) {
+    constructor(root, dataProvider, callback, scrollPolicy, scrollPolicyOptions) {
         super(root, dataProvider, callback);
         this.root = root;
         this.dataProvider = dataProvider;
         this.callback = callback;
+        this.scrollPolicy = scrollPolicy;
         this.scrollPolicyOptions = scrollPolicyOptions;
         this.fetchRows = () => {
             if (this.isReady()) {
-                let options = { clientId: this._clientId };
+                const options = { clientId: this._clientId };
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
-                let iterator = this.getDataProvider().fetchFirst(options)[Symbol.asyncIterator]();
-                this._cachedIteratorsAndResults['root'] = { iterator: iterator, cache: null };
-                let finalResults = { value: { data: [], metadata: [] } };
+                const iterator = this.getDataProvider().fetchFirst(options)[Symbol.asyncIterator]();
+                this._cachedIteratorsAndResults['root'] = { iterator, cache: null };
+                const finalResults = { value: { data: [], metadata: [] } };
                 this._fetchNextFromIterator(iterator, null, options, finalResults).then((result) => {
                     this._setNewData(result);
                 }, () => {
@@ -826,17 +846,15 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 return Promise.resolve();
             }
             this.setFetching(true);
-            let busyStateResolveFunc = this.addBusyState('call next on iterator');
-            let promise = iterator.next();
-            let fetchSize = options.size;
-            let helperFunction = (value) => {
-                if (value.done ||
-                    fetchSize !== -1 ||
-                    typeof this.getDataProvider().getPageCount === 'function') {
+            const busyStateResolveFunc = this.addBusyState('call next on iterator');
+            const promise = iterator.next();
+            const fetchSize = options.size;
+            const helperFunction = (value) => {
+                if (value.done || fetchSize !== -1) {
                     return value;
                 }
                 let nextPromise = iterator.next();
-                let fetchMoreData = nextPromise.then(function (nextValue) {
+                return nextPromise.then(function (nextValue) {
                     value.done = nextValue.done;
                     value.value.data = value.value.data.concat(nextValue.value.data);
                     value.value.metadata = value.value.metadata.concat(value.value.metadata);
@@ -844,7 +862,6 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }, function (reason) {
                     return Promise.reject(reason);
                 });
-                return fetchMoreData;
             };
             return promise
                 .then((value) => {
@@ -893,7 +910,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 if (data == null) {
                     final = {
                         value: { data: dataToSet, metadata: metadataToSet },
-                        done: done
+                        done
                     };
                 }
                 else {
@@ -902,15 +919,15 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             data: data.value.data.concat(dataToSet),
                             metadata: data.value.metadata.concat(metadataToSet)
                         },
-                        done: done
+                        done
                     };
                 }
                 return { renderedData: final };
             }.bind(this));
         };
         this._checkIteratorAndCache = () => {
-            let cache = this._cachedIteratorsAndResults;
-            let values = Object.keys(cache).map(function (e) {
+            const cache = this._cachedIteratorsAndResults;
+            const values = Object.keys(cache).map(function (e) {
                 return cache[e];
             });
             let done = true;
@@ -923,21 +940,21 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         };
         this.fetchMoreRows = () => {
             if (this.isReady()) {
-                let lastEntryMetadata = this._getLastEntryMetadata();
+                const lastEntryMetadata = this._getLastEntryMetadata();
                 let key = lastEntryMetadata.key;
                 if (lastEntryMetadata.isLeaf || !this._isExpanded(key)) {
                     key = lastEntryMetadata.parentKey;
                 }
-                let options = {};
+                const options = {};
                 options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
-                let cacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
+                const cacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
                 let result = null;
                 let iterator = null;
                 if (cacheInfo != null) {
                     result = cacheInfo.cache;
                     iterator = cacheInfo.iterator;
                 }
-                let finalResults = { value: { data: [], metadata: [] } };
+                const finalResults = { value: { data: [], metadata: [] } };
                 return this.handleNextItemInResults(options, key, result, finalResults).then(() => {
                     let newCacheInfo = this._cachedIteratorsAndResults[key === null ? 'root' : key];
                     let newIterator;
@@ -952,19 +969,19 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return Promise.resolve();
         };
         this._fetchFromAncestors = (options, key, iterator, finalResults) => {
-            let self = this;
+            const self = this;
             if (self._checkFinalResults(options, finalResults)) {
                 finalResults.done = this._checkIteratorAndCache();
                 return Promise.resolve(finalResults);
             }
-            let handleFetchFromAncestors = function (lastParentKey, finalResults) {
+            const handleFetchFromAncestors = function (lastParentKey, finalResults) {
                 if (self._checkFinalResults(options, finalResults) || lastParentKey === null) {
                     finalResults.done = this._checkIteratorAndCache();
                     return Promise.resolve(finalResults);
                 }
-                let lastEntry = self._getItemByKey(lastParentKey, finalResults);
-                let lastEntryParentKey = lastEntry.metadata.parentKey;
-                let cacheInfo = this._cachedIteratorsAndResults[lastEntryParentKey === null ? 'root' : lastEntryParentKey];
+                const lastEntry = self._getItemByKey(lastParentKey, finalResults);
+                const lastEntryParentKey = lastEntry.metadata.parentKey;
+                const cacheInfo = this._cachedIteratorsAndResults[lastEntryParentKey === null ? 'root' : lastEntryParentKey];
                 let result = null;
                 let parentIterator = null;
                 if (cacheInfo != null) {
@@ -978,15 +995,15 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             });
         };
         this._getLastEntryMetadata = () => {
-            let result = this.callback.getData();
+            const result = this.callback.getData();
             if (result && result.value.metadata.length) {
-                let metadata = result.value.metadata;
+                const metadata = result.value.metadata;
                 return metadata[metadata.length - 1];
             }
             return null;
         };
         this._isExpanded = (key) => {
-            let expanded = this.callback.getExpanded();
+            const expanded = this.callback.getExpanded();
             return expanded.has(key);
         };
         this.getChildDataProvider = (parentKey) => {
@@ -1014,19 +1031,19 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }
                 return this._fetchNextFromIterator(this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].iterator, parentKey, options, finalResults);
             }
-            let data = results.value.data.shift();
-            let metadata = results.value.metadata.shift();
-            let updatedMetadata = this._updateMetadata(metadata, parentKey, finalResults);
+            const data = results.value.data.shift();
+            const metadata = results.value.metadata.shift();
+            const updatedMetadata = this._updateMetadata(metadata, parentKey, finalResults);
             finalResults.value.data.push(data);
             finalResults.value.metadata.push(updatedMetadata);
             if (this._isExpanded(updatedMetadata.key)) {
-                let childDataProvider = this.getChildDataProvider(updatedMetadata.key);
+                const childDataProvider = this.getChildDataProvider(updatedMetadata.key);
                 if (childDataProvider != null) {
-                    let options = { clientId: this._clientId };
+                    const options = { clientId: this._clientId };
                     options.size = this._isLoadMoreOnScroll() ? this.getFetchSize() : -1;
-                    let iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
-                    this._cachedIteratorsAndResults[updatedMetadata.key === null ? 'root' : updatedMetadata.key] = { iterator: iterator, cache: null };
-                    let childrenPromise = this._fetchNextFromIterator(iterator, updatedMetadata.key, options, finalResults);
+                    const iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
+                    this._cachedIteratorsAndResults[updatedMetadata.key === null ? 'root' : updatedMetadata.key] = { iterator, cache: null };
+                    const childrenPromise = this._fetchNextFromIterator(iterator, updatedMetadata.key, options, finalResults);
                     return childrenPromise.then(this.handleNextItemInResults.bind(this, options, parentKey, results, finalResults));
                 }
             }
@@ -1040,25 +1057,25 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         };
         this._updateMetadata = (metadata, parentKey, finalResults) => {
             let treeDepth = 0;
-            let lastEntry = this._getLastItemByParentKey(parentKey, finalResults);
-            let indexFromParent = lastEntry == null ? 0 : lastEntry.metadata.indexFromParent + 1;
-            let isLeaf = this.getChildDataProvider(metadata.key) === null;
+            const lastEntry = this._getLastItemByParentKey(parentKey, finalResults);
+            const indexFromParent = lastEntry == null ? 0 : lastEntry.metadata.indexFromParent + 1;
+            const isLeaf = this.getChildDataProvider(metadata.key) === null;
             if (parentKey != null) {
-                let parentItem = this._getItemByKey(parentKey, finalResults);
+                const parentItem = this._getItemByKey(parentKey, finalResults);
                 treeDepth = parentItem.metadata.treeDepth + 1;
             }
-            let expanded = this._isExpanded(metadata.key);
+            const expanded = this._isExpanded(metadata.key);
             return {
                 key: metadata.key,
-                isLeaf: isLeaf,
-                parentKey: parentKey,
-                indexFromParent: indexFromParent,
-                treeDepth: treeDepth,
-                expanded: expanded
+                isLeaf,
+                parentKey,
+                indexFromParent,
+                treeDepth,
+                expanded
             };
         };
         this._getIndexByKey = (key, cache) => {
-            var index = -1;
+            let index = -1;
             cache.some(function (item, i) {
                 if (item.key === key) {
                     index = i;
@@ -1068,28 +1085,28 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return index;
         };
         this._getLastItemByParentKey = (parentKey, finalResults) => {
-            var returnItem = null;
+            let returnItem = null;
             if (finalResults) {
                 finalResults.value.metadata
                     .slice()
                     .reverse()
                     .some(function (metadata, index) {
                     if (metadata.parentKey === parentKey) {
-                        returnItem = { data: finalResults.value.data[index], metadata: metadata };
+                        returnItem = { data: finalResults.value.data[index], metadata };
                         return true;
                     }
                 });
             }
             if (returnItem)
                 return returnItem;
-            let cache = this.callback.getData();
+            const cache = this.callback.getData();
             if (cache) {
                 cache.value.metadata
                     .slice()
                     .reverse()
                     .some(function (metadata, index) {
                     if (metadata.parentKey === parentKey) {
-                        returnItem = { data: cache.value.data[index], metadata: metadata };
+                        returnItem = { data: cache.value.data[index], metadata };
                         return true;
                     }
                 });
@@ -1097,22 +1114,22 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return returnItem;
         };
         this._getItemByKey = (key, finalResults) => {
-            var returnItem = null;
+            let returnItem = null;
             if (finalResults) {
                 finalResults.value.metadata.some(function (metadata, index) {
                     if (metadata.key === key) {
-                        returnItem = { data: finalResults.value.data[index], metadata: metadata };
+                        returnItem = { data: finalResults.value.data[index], metadata };
                         return true;
                     }
                 });
             }
             if (returnItem)
                 return returnItem;
-            let cache = this.callback.getData();
+            const cache = this.callback.getData();
             if (cache) {
                 cache.value.metadata.some(function (metadata, index) {
                     if (metadata.key === key) {
-                        returnItem = { data: cache.value.data[index], metadata: metadata };
+                        returnItem = { data: cache.value.data[index], metadata };
                         return true;
                     }
                 });
@@ -1120,16 +1137,17 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return returnItem;
         };
         this.expand = (key) => {
-            let childDataProvider = this.getChildDataProvider(key);
+            const childDataProvider = this.getChildDataProvider(key);
             if (childDataProvider === null) {
                 return;
             }
-            let showSkeletonTimeout = setTimeout(function () {
-                if (this.callback.getExpandingKeys().has(key)) {
+            const showSkeletonTimeout = setTimeout(function () {
+                var _a;
+                if ((_a = this.callback) === null || _a === void 0 ? void 0 : _a.getExpandingKeys().has(key)) {
                     this.callback.updateSkeletonKeys(key);
                 }
             }.bind(this), 250);
-            let fetchSize = this.getFetchSize();
+            const fetchSize = this.getFetchSize();
             let options = { clientId: this._clientId, size: fetchSize };
             let iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
             this._cachedIteratorsAndResults[key] = { iterator: iterator, cache: null };
@@ -1165,7 +1183,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         let metadata = result.value.metadata;
                         let insertIndex = this._getIndexByKey(key, metadata);
                         if (insertIndex !== -1) {
-                            let fetchedCount = newData.length;
+                            const fetchedCount = newData.length;
                             let dataToSet = data.slice(0, insertIndex + 1).concat(newData);
                             let metadataToSet = metadata.slice(0, insertIndex + 1).concat(newMetadata);
                             let done = result.done;
@@ -1188,7 +1206,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                                     data: dataToSet,
                                     metadata: metadataToSet
                                 },
-                                done: done
+                                done
                             };
                         }
                     }
@@ -1201,7 +1219,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                     expandingKeys = expandingKeys.delete([key]);
                     return {
                         expandedSkeletonKeys: skeletonKeys,
-                        expandingKeys: expandingKeys,
+                        expandingKeys,
                         renderedData: updatedData
                     };
                 }.bind(this));
@@ -1209,10 +1227,10 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         };
         this._recacheData = (data, metadata) => {
             for (let i = data.length - 1; i >= 0; i--) {
-                let itemData = data[i];
-                let itemMetadata = metadata[i];
-                let parentKey = itemMetadata.parentKey;
-                let currentParentKeyCache = this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache;
+                const itemData = data[i];
+                const itemMetadata = metadata[i];
+                const parentKey = itemMetadata.parentKey;
+                const currentParentKeyCache = this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache;
                 if (currentParentKeyCache == null) {
                     this._cachedIteratorsAndResults[parentKey === null ? 'root' : parentKey].cache = {
                         done: false,
@@ -1225,24 +1243,8 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }
             }
         };
-        this._getLocalDescendentCount = (metadata, index) => {
-            let count = 0;
-            let depth = metadata[index].treeDepth;
-            let lastIndex = metadata.length;
-            for (let j = index + 1; j < lastIndex; j++) {
-                let newMetadata = metadata[j];
-                let newDepth = newMetadata.treeDepth;
-                if (newDepth > depth) {
-                    count += 1;
-                }
-                else {
-                    return count;
-                }
-            }
-            return count;
-        };
         this._registerDomScroller = () => {
-            let options = {
+            const options = {
                 asyncIterator: { next: this.fetchMoreRows.bind(this) },
                 fetchSize: this.getFetchSize(),
                 fetchTrigger: this.callback.getSkeletonHeight() * this.getLoadMoreCount(),
@@ -1267,18 +1269,18 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return 0;
         };
         this._getOverflowFunc = () => {
-            var scroller = this._getScroller();
+            const scroller = this._getScroller();
             if (scroller !== this.root) {
                 return this._isLastItemInViewport.bind(this);
             }
             return null;
         };
         this._isLastItemInViewport = () => {
-            var styleClass = '.' + this.callback.getItemStyleClass() + ', .' + this.callback.getGroupStyleClass();
-            var items = this.root.querySelectorAll(styleClass);
-            var lastItem = items[items.length - 1];
+            const styleClass = '.' + this.callback.getItemStyleClass() + ', .' + this.callback.getGroupStyleClass();
+            const items = this.root.querySelectorAll(styleClass);
+            const lastItem = items[items.length - 1];
             if (lastItem) {
-                var lastItemBounds = lastItem.getBoundingClientRect();
+                const lastItemBounds = lastItem.getBoundingClientRect();
                 if (lastItemBounds.top >= 0 &&
                     lastItemBounds.bottom <= document.documentElement.clientHeight) {
                     return false;
@@ -1288,6 +1290,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         };
         this._cachedIteratorsAndResults = {};
         this._clientId = Symbol();
+        this.fetchRows();
     }
     postRender() {
         this.initialFetch = false;
@@ -1299,7 +1302,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         }
     }
     _isLoadMoreOnScroll() {
-        return true;
+        return this.scrollPolicy === 'loadMoreOnScroll';
     }
     _getScroller() {
         const scroller = this.scrollPolicyOptions.scroller;
@@ -1316,12 +1319,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     }
     renderSkeletonsForLoadMore() { }
     renderSkeletonsForExpand(key) { }
-    renderFetchedData() {
+    renderFetchedData(dataObj) {
         if (this.callback == null) {
             return;
         }
-        let result = this._renderOutOfRangeData();
-        const dataObj = this.callback.getData();
+        const result = this._renderOutOfRangeData();
         if (dataObj == null || dataObj.value == null) {
             return result;
         }
@@ -1369,7 +1371,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return null;
         }
         let children = [];
-        let skeletonKeys = this.callback.getSkeletonKeys();
+        const skeletonKeys = this.callback.getSkeletonKeys();
         for (let i = 0; i < data.length; i++) {
             if (data[i] == null || metadata[i] == null) {
                 continue;
@@ -1380,7 +1382,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 children = [];
                 break;
             }
-            let child = this.addItem(metadata[i], i, data[i], true);
+            const child = this.addItem(metadata[i], i, data[i], true);
             if (child) {
                 children.push(child);
                 if (skeletonKeys.has(metadata[i].key)) {
@@ -1391,8 +1393,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         return children;
     }
     _renderOutOfRangeData() {
-        let children = [];
-        return children;
+        return [];
     }
     _handleItemsMutated(detail, keyField, callback, withinRangeDataCallback) {
         if (this.callback == null) {
@@ -1400,7 +1401,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         }
         this.callback.updateData(function (currentData, expandingKeys) {
             let newExpandingKeys = expandingKeys;
-            let newData = {
+            const newData = {
                 startIndex: currentData.startIndex,
                 done: currentData.done,
                 value: {
@@ -1409,7 +1410,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 }
             };
             const keys = Array.from(detail[keyField]);
-            let indexes = keys.map((key) => {
+            const indexes = keys.map((key) => {
                 return this._findIndex(currentData.value.metadata, key);
             });
             if (this.domScroller) {
@@ -1423,7 +1424,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 const data = detail.data != null ? detail.data[i] : null;
                 const metadata = detail.metadata != null ? detail.metadata[i] : null;
                 if (index >= startIndex && index <= endIndex) {
-                    let returnVal = withinRangeDataCallback(newData, key, index, data, metadata, newExpandingKeys);
+                    const returnVal = withinRangeDataCallback(newData, key, index, data, metadata, newExpandingKeys);
                     if (returnVal != null) {
                         newExpandingKeys = returnVal;
                     }
@@ -1459,7 +1460,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             return;
         }
         this.callback.updateData(function (currentData, expandingKeys) {
-            let newData = {
+            const newData = {
                 startIndex: currentData.startIndex,
                 done: currentData.done,
                 maxCountLimit: currentData.maxCountLimit,
@@ -1471,7 +1472,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
             let indexes = detail.indexes;
             const addBeforeKeys = detail.addBeforeKeys;
             const parentKeys = detail.parentKeys;
-            let keysToExpand = [];
+            const keysToExpand = [];
             let newMetadata;
             if (indexes == null && addBeforeKeys == null && parentKeys == null) {
                 if (newData.done && !newData.maxCountLimit) {
@@ -1492,11 +1493,11 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         (this._isExpanded(parentKey) && this._getItemByKey(parentKey))) {
                         if (addBeforeKeys != null) {
                             if (addBeforeKeys[i] != null) {
-                                let beforeIndex = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
+                                const beforeIndex = this._findIndex(newData.value.metadata, addBeforeKeys[i]);
                                 index = beforeIndex;
                             }
                             else {
-                                let lastItem = this._getLastItemByParentKey(parentKey, newData);
+                                const lastItem = this._getLastItemByParentKey(parentKey, newData);
                                 if (lastItem) {
                                     index = this._findIndex(newData.value.metadata, lastItem.metadata.key);
                                     if (index > -1) {
@@ -1509,7 +1510,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                             }
                         }
                         else if (indexes != null) {
-                            let parentIndex = this._findIndex(newData.value.metadata, parentKey);
+                            const parentIndex = this._findIndex(newData.value.metadata, parentKey);
                             index = parentIndex === -1 ? indexes[i] + 1 : parentIndex + indexes[i] + 1;
                         }
                         else {
@@ -1529,7 +1530,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                         }
                     }
                     else {
-                        if (newData.done && !newData.maxCountLimit) {
+                        if (this._isExpanded(parentKey) && newData.done && !newData.maxCountLimit) {
                             newData.value.data.push(data);
                             newData.value.metadata.push(metadata);
                         }
@@ -1552,9 +1553,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 this.domScroller.handleItemsRemoved(indexes);
             }
         }, (newData, key) => {
-            let index = this._findIndex(newData.value.metadata, key);
+            const index = this._findIndex(newData.value.metadata, key);
             if (index > -1) {
-                let count = this._getLocalDescendentCount(newData.value.metadata, index) + 1;
+                const count = IteratingTreeDataProviderContentHandler.getLocalDescendentCount(newData.value.metadata, index) + 1;
                 newData.value.data.splice(index, count);
                 newData.value.metadata.splice(index, count);
             }
@@ -1568,9 +1569,9 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
                 this.domScroller.handleItemsUpdated(indexes);
             }
         }, (newData, key, index, data, metadata, expandingKeys) => {
-            let oldMetadata = newData.value.metadata[index];
-            let wasLeaf = oldMetadata.isLeaf;
-            let newMetadata = this._updateMetadata(metadata, oldMetadata.parentKey, {
+            const oldMetadata = newData.value.metadata[index];
+            const wasLeaf = oldMetadata.isLeaf;
+            const newMetadata = this._updateMetadata(metadata, oldMetadata.parentKey, {
                 value: { data: [data], metadata: [metadata] }
             });
             if (wasLeaf && !newMetadata.isLeaf) {
@@ -1585,7 +1586,7 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
     }
     checkViewport() {
         if (this.domScroller && this.isReady()) {
-            let fetchPromise = this.domScroller.checkViewport();
+            const fetchPromise = this.domScroller.checkViewport();
             if (fetchPromise != null && this.fetchPromise !== fetchPromise) {
                 this.fetchPromise = fetchPromise;
                 fetchPromise.then(function (result) {
@@ -1606,6 +1607,22 @@ class IteratingTreeDataProviderContentHandler extends DataProviderContentHandler
         }.bind(this));
     }
 }
+IteratingTreeDataProviderContentHandler.getLocalDescendentCount = (metadata, index) => {
+    let count = 0;
+    const depth = metadata[index].treeDepth;
+    const lastIndex = metadata.length;
+    for (let j = index + 1; j < lastIndex; j++) {
+        const newMetadata = metadata[j];
+        const newDepth = newMetadata.treeDepth;
+        if (newDepth > depth) {
+            count += 1;
+        }
+        else {
+            return count;
+        }
+    }
+    return count;
+};
 
 class KeyedElement extends HTMLElement {
 }

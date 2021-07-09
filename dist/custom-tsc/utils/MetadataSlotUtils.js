@@ -24,26 +24,25 @@ const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
-function generateSlotsMetadata(memberKey, propDeclaration, typeName, isCustomElement, metaUtilObj) {
+const TransformerError_1 = require("./TransformerError");
+function generateSlotsMetadata(memberKey, propDeclaration, typeName, metaUtilObj) {
     if (!typeName)
         return false;
-    if (isCustomElement) {
-        checkDefaultSlotType(memberKey, typeName, metaUtilObj);
-    }
+    checkDefaultSlotType(memberKey, typeName, metaUtilObj);
     switch (typeName) {
-        case `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.CHILDREN_TYPE}`:
+        case `${metaUtilObj.namedExportToAlias.ComponentChildren}`:
             updateRtSlotMetadata("", propDeclaration, false, false, metaUtilObj);
             return true;
-        case `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.TEMPLATE_SLOT_TYPE}`:
+        case `${metaUtilObj.namedExportToAlias.TemplateSlot}`:
             updateRtSlotMetadata(memberKey, propDeclaration, true, false, metaUtilObj);
             return true;
-        case `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.SLOT_TYPE}`:
+        case `${metaUtilObj.namedExportToAlias.Slot}`:
             updateRtSlotMetadata(memberKey, propDeclaration, false, false, metaUtilObj);
             return true;
-        case `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.DYNAMIC_TEMPLATE_SLOT_TYPE}`:
+        case `${metaUtilObj.namedExportToAlias.DynamicTemplateSlots}`:
             metaUtilObj.dynamicSlotsInUse = metaUtilObj.dynamicSlotsInUse | 0b0010;
             if (metaUtilObj.dynamicSlotsInUse === 3) {
-                throw new Error(`Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
             }
             MetaUtils.updateRtExtensionMetadata("_DYNAMIC_SLOT", {
                 prop: memberKey,
@@ -51,10 +50,10 @@ function generateSlotsMetadata(memberKey, propDeclaration, typeName, isCustomEle
             }, metaUtilObj);
             updateRtSlotMetadata(memberKey, propDeclaration, true, true, metaUtilObj);
             return true;
-        case `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.DYNAMIC_SLOT_TYPE}`:
+        case `${metaUtilObj.namedExportToAlias.DynamicSlots}`:
             metaUtilObj.dynamicSlotsInUse = metaUtilObj.dynamicSlotsInUse | 0b0001;
             if (metaUtilObj.dynamicSlotsInUse === 3) {
-                throw new Error(`Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
             }
             MetaUtils.updateRtExtensionMetadata("_DYNAMIC_SLOT", {
                 prop: memberKey,
@@ -84,7 +83,7 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
             const typeRefNode = propDeclaration.type;
             if (typeRefNode.typeArguments && typeRefNode.typeArguments.length) {
                 const detailNode = typeRefNode.typeArguments[0];
-                if (detailNode.kind === ts.SyntaxKind.UnionType) {
+                if (ts.isUnionTypeNode(detailNode)) {
                     const typeParamsArr = detailNode.types;
                     let k = 0;
                     typeParamsArr.forEach((detailData) => {
@@ -95,7 +94,7 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
                         }
                         let key;
                         if (ts.isTypeReferenceNode(detailData)) {
-                            key = detailData.typeName.getText();
+                            key = TypeUtils.getTypeNameFromTypeReference(detailData);
                         }
                         else {
                             key = `dynamicTmplSlotKey${k++}`;
@@ -104,7 +103,9 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
                     });
                 }
                 else {
-                    const key = detailNode.getText();
+                    const key = ts.isTypeReferenceNode(detailNode)
+                        ? TypeUtils.getTypeNameFromTypeReference(detailNode)
+                        : detailNode.getText();
                     metaUtilObj.fullMetadata.dynamicSlots[key] = getDtMetadataForSlot(propDeclaration, metaUtilObj);
                 }
             }
@@ -125,19 +126,55 @@ function getDtMetadataForSlot(propDeclaration, metaUtilObj) {
     return dt;
 }
 function getSlotData(detailNode, metaUtilObj) {
-    let slotData = {};
-    const dataSymbol = metaUtilObj.typeChecker
-        .getTypeAtLocation(detailNode)
-        .getSymbol();
-    slotData = processSlotDataMembers(dataSymbol, metaUtilObj);
-    return slotData;
+    let data = {};
+    const checker = metaUtilObj.typeChecker;
+    let detailName;
+    if (ts.isTypeReferenceNode(detailNode)) {
+        detailName = TypeUtils.getTypeNameFromTypeReference(detailNode);
+    }
+    MetaUtils.walkTypeNodeMembers(detailNode, checker, (value, key) => {
+        const propSignature = value.valueDeclaration;
+        if (!propSignature) {
+            return;
+        }
+        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(value, propSignature);
+        if (ts.isPropertySignature(propSignature) ||
+            ts.isPropertyDeclaration(propSignature)) {
+            const property = key.toString();
+            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj);
+            data = data || {};
+            data[property] = slotDataMetadata;
+            if (TypeUtils.possibleComplexProperty(symbolType, slotDataMetadata.type, MetaTypes.MetadataScope.DT)) {
+                let stack = [];
+                if (slotDataMetadata.type === "Array<object>") {
+                    stack.push(key);
+                }
+                const subprops = TypeUtils.getComplexPropertyMetadata(value, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
+                if (subprops) {
+                    if (subprops.circRefDetected) {
+                        data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
+                    }
+                    else if (slotDataMetadata.type === "Array<object>") {
+                        data[property].extension = {};
+                        data[property].extension.vbdt = {};
+                        data[property].extension.vbdt.itemProperties = subprops;
+                    }
+                    else {
+                        data[property].type = "object";
+                        data[property].properties = subprops;
+                    }
+                }
+            }
+            MetaUtils.pruneMetadata(data[property]);
+        }
+    });
+    return data;
 }
 exports.getSlotData = getSlotData;
 function checkDefaultSlotType(propName, typeName, metaUtilObj) {
     if (propName === MetaTypes.DEFAULT_SLOT_PROP &&
-        typeName !==
-            `${metaUtilObj.namedExportToAlias.ElementVComponent}.${MetaTypes.CHILDREN_TYPE}`) {
-        throw new Error(`Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`);
+        typeName !== `${metaUtilObj.namedExportToAlias.ComponentChildren}`) {
+        throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`);
     }
 }
 exports.checkDefaultSlotType = checkDefaultSlotType;
@@ -163,50 +200,11 @@ function validateDynamicSlots(metaUtilObj) {
             }
         }
         if (!found) {
-            throw new Error('Dynamic Slots were defined for this component but no "dynamicSlotDef" metadata was found.');
+            throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, 'Dynamic Slots were defined for this component but no "dynamicSlotDef" metadata was found.');
         }
         if (!matchingKey) {
-            throw new Error('Dynamic Slots were defined for this component but "dynamicSlotDef" metadata value does not match a key in "dynamicSlots" metadata.');
+            throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, 'Dynamic Slots were defined for this component but "dynamicSlotDef" metadata value does not match a key in "dynamicSlots" metadata.');
         }
     }
 }
 exports.validateDynamicSlots = validateDynamicSlots;
-function processSlotDataMembers(detailType, metaUtilObj) {
-    var _a;
-    let data;
-    const members = detailType["members"] || ((_a = detailType["symbol"]) === null || _a === void 0 ? void 0 : _a.members);
-    members.forEach((value, key) => {
-        const propSignature = value.valueDeclaration;
-        if (!propSignature) {
-            return;
-        }
-        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(value, propSignature);
-        if (ts.isPropertySignature(propSignature) ||
-            ts.isPropertyDeclaration(propSignature)) {
-            const property = key.toString();
-            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, true, metaUtilObj);
-            data = data || {};
-            data[property] = slotDataMetadata;
-            if (TypeUtils.possibleComplexProperty(symbolType, slotDataMetadata.type, true)) {
-                let stack = [];
-                if (slotDataMetadata.type === "Array<object>") {
-                    stack.push(key);
-                }
-                const subprops = TypeUtils.getComplexPropertyMetadata(value, slotDataMetadata.type, true, stack, metaUtilObj);
-                if (subprops) {
-                    if (slotDataMetadata.type === "Array<object>") {
-                        data[property].extension = {};
-                        data[property].extension.vbdt = {};
-                        data[property].extension.vbdt.itemProperties = subprops;
-                    }
-                    else {
-                        data[property].type = "object";
-                        data[property].properties = subprops;
-                    }
-                }
-            }
-            MetaUtils.pruneMetadata(data[property]);
-        }
-    });
-    return data;
-}

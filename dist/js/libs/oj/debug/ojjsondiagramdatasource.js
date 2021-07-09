@@ -12,6 +12,7 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
 
 
 
+
 // /////////// JsonDiagramDataSource //////////////////
 
 /**
@@ -23,8 +24,8 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
  * @param {Object} data JSON data object with following properties:
  * <table>
  * <tbody>
- * <tr><td><b>nodes</b></td><td>An optional array of nodes. See {@link oj.DiagramDataSource.NodeObject} section.</td></tr>
- * <tr><td><b>links</b></td><td>An optional array of links. See {@link oj.DiagramDataSource.LinkObject} section.</td></tr>
+ * <tr><td><b>nodes</b></td><td>An optional array of nodes. See {@link DiagramDataSource.NodeObject} section.</td></tr>
+ * <tr><td><b>links</b></td><td>An optional array of links. See {@link DiagramDataSource.LinkObject} section.</td></tr>
  * </tbody>
  * </table>
  * @param {Object=} options the options set on this data source
@@ -33,9 +34,9 @@ define(['ojs/ojcore', 'ojs/ojdatasource-common'], function(oj)
  * <table>
  * <tbody>
  * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent.
- *                              See {@link oj.DiagramDataSource.NodeObject} section.</td></tr>
+ *                              See {@link DiagramDataSource.NodeObject} section.</td></tr>
  * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent.
- *                              See {@link oj.DiagramDataSource.LinkObject} section.</td></tr>
+ *                              See {@link DiagramDataSource.LinkObject} section.</td></tr>
  * </tbody>
  * </table>
  * @constructor
@@ -62,15 +63,15 @@ oj.Object.createSubclass(oj.JsonDiagramDataSource, oj.DiagramDataSource, 'oj.Jso
  * nearest common ancestor of the link's endpoints.
  *
  * @param {Object|null} parentData An object that contains data for the parent node.
- *                     See {@link oj.DiagramDataSource.NodeObject} section.
+ *                     See {@link DiagramDataSource.NodeObject} section.
  *                     If parentData is null, the method retrieves data for top level nodes.
  * @return {Promise} Promise resolves to a component object with the following structure:<p>
  * <table>
  * <tbody>
  * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent.
- *                              See {@link oj.DiagramDataSource.NodeObject} section.</td></tr>
+ *                              See {@link DiagramDataSource.NodeObject} section.</td></tr>
  * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent.
- *                              See {@link oj.DiagramDataSource.LinkObject} section.</td></tr>
+ *                              See {@link DiagramDataSource.LinkObject} section.</td></tr>
  * </tbody>
  * </table>
  * @export
@@ -163,7 +164,7 @@ oj.JsonDiagramDataSource.prototype._updateLocalData = function (parentData, chil
 /**
  * Retrieves number of child nodes
  * @param {Object} nodeData A data object for the node in question.
- *                          See {@link oj.DiagramDataSource.NodeObject} section.
+ *                          See {@link DiagramDataSource.NodeObject} section.
  * @return {number} Number of child nodes if child count is available.
  *                  The method returns 0 for leaf nodes.
  *                  The method returns -1 if the child count is unknown
@@ -195,7 +196,7 @@ oj.JsonDiagramDataSource.prototype.getChildCount = function (nodeData) {
  * that should be discovered in order to display promoted links.
  *
  * @param {Object} nodeData A data object for the container node in question.
- *                          See {@link oj.DiagramDataSource.NodeObject} section.
+ *                          See {@link DiagramDataSource.NodeObject} section.
  * @return {string} the valid values are "connected", "disjoint", "unknown"
  * @export
  * @method

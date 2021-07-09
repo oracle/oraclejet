@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { KeySet } from '../ojkeyset';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
@@ -150,106 +144,106 @@ export interface DvtDiagramLayoutContextNode<K1, D1 extends ojDiagram.Node<K1> |
     }): void;
 }
 export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>> {
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    as: string;
-    dnd: {
-        drag: {
-            nodes: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: {
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    as?: string;
+    dnd?: {
+        drag?: {
+            nodes?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
+                dragStart?: ((event: Event, context: {
                     nodes: ojDiagram.DndNodeContext<K1, D1>[];
                 }) => void);
             };
-            ports: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: {
+            ports?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
+                dragStart?: ((event: Event, context: {
                     ports: {
                         portElement: Element;
                         dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     };
                 }) => void);
-                linkStyle: ((context: {
+                linkStyle?: ((context: {
                     portElement: Element;
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => ({
                     svgStyle?: CSSStyleDeclaration;
                     svgClassName?: string;
                 } | null));
-                selector: string;
+                selector?: string;
             };
         };
-        drop: {
-            background: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+        drop?: {
+            background?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
             };
-            links: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            links?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
             };
-            nodes: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            nodes?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -257,9 +251,9 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
             };
-            ports: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            ports?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -267,7 +261,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -275,7 +269,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -283,7 +277,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -295,129 +289,129 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
             };
         };
     };
-    expanded: KeySet<K1>;
-    focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    expanded?: KeySet<K1>;
+    focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
-    linkContent: {
-        focusRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+    layout?: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
+    linkContent?: {
+        focusRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
-        hoverRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+        hoverRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
         renderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => ({
             insert: SVGElement;
         }));
-        selectionRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+        selectionRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
     };
-    linkData: DataProvider<K2, D2> | null;
-    linkHighlightMode: 'linkAndNodes' | 'link';
-    maxZoom: number;
-    minZoom: number;
-    nodeContent: {
-        focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    linkData?: DataProvider<K2, D2> | null;
+    linkHighlightMode?: 'linkAndNodes' | 'link';
+    maxZoom?: number;
+    minZoom?: number;
+    nodeContent?: {
+        focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
-        hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
         renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
             insert: SVGElement;
         }));
-        selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
-        zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
     };
     nodeData: DataProvider<K1, D1> | null;
-    nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
-    overview: {
-        fitArea: 'content' | 'canvas';
-        halign: 'start' | 'end' | 'center';
-        height: number;
-        preserveAspectRatio: 'none' | 'meet';
-        rendered: 'on' | 'off';
-        valign: 'top' | 'bottom' | 'middle';
-        width: number;
+    nodeHighlightMode?: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
+    overview?: {
+        fitArea?: 'content' | 'canvas';
+        halign?: 'start' | 'end' | 'center';
+        height?: number;
+        preserveAspectRatio?: 'none' | 'meet';
+        rendered?: 'on' | 'off';
+        valign?: 'top' | 'bottom' | 'middle';
+        width?: number;
     };
-    panDirection: 'x' | 'y' | 'auto';
-    panning: 'fixed' | 'centerContent' | 'none' | 'auto';
-    promotedLinkBehavior: 'none' | 'full' | 'lazy';
-    renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
+    panDirection?: 'x' | 'y' | 'auto';
+    panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
+    promotedLinkBehavior?: 'none' | 'full' | 'lazy';
+    renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;
     }));
-    selection: Array<K1 | K2>;
-    selectionMode: 'none' | 'single' | 'multiple';
-    selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    selection?: Array<K1 | K2>;
+    selectionMode?: 'none' | 'single' | 'multiple';
+    selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    styleDefaults: {
-        animationDuration: number;
-        hoverBehaviorDelay: number;
-        linkDefaults: {
-            color: string;
-            endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle: CSSStyleDeclaration;
-            startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            width: number;
+    styleDefaults?: {
+        animationDuration?: number;
+        hoverBehaviorDelay?: number;
+        linkDefaults?: {
+            color?: string;
+            endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            labelStyle?: CSSStyleDeclaration;
+            startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
         };
-        nodeDefaults: {
-            icon: {
-                borderColor: string;
-                borderRadius: string;
-                borderWidth: number;
-                color: string;
-                height: number;
-                pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
-                   'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
+        nodeDefaults?: {
+            icon?: {
+                borderColor?: string;
+                borderRadius?: string;
+                borderWidth?: number;
+                color?: string;
+                height?: number;
+                pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
+                   'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
                 shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-                source: string;
-                sourceHover: string;
-                sourceHoverSelected: string;
-                sourceSelected: string;
-                svgClassName: string;
-                svgStyle: CSSStyleDeclaration;
-                width: number;
+                source?: string;
+                sourceHover?: string;
+                sourceHoverSelected?: string;
+                sourceSelected?: string;
+                svgClassName?: string;
+                svgStyle?: CSSStyleDeclaration;
+                width?: number;
             };
-            labelStyle: CSSStyleDeclaration;
-            showDisclosure: 'off' | 'on';
+            labelStyle?: CSSStyleDeclaration;
+            showDisclosure?: 'off' | 'on';
         };
-        promotedLink: {
-            color: string;
-            endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            width: number;
+        promotedLink?: {
+            color?: string;
+            endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
         };
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojDiagram.TooltipContext<K1, K2, D1, D2>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
-    zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    touchResponse?: 'touchStart' | 'auto';
+    zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    zooming: 'auto' | 'none';
+    zooming?: 'auto' | 'none';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -537,6 +531,11 @@ export namespace ojDiagram {
     type zoomRendererChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
     // tslint:disable-next-line interface-over-type-literal
     type zoomingChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K1, K2, D1 extends Node<K1> | any, D2 extends Link<K2, K1> | any> = dvtBaseComponent.trackResizeChanged<ojDiagramSettableProperties<K1, K2, D1, D2>>;
     // tslint:disable-next-line interface-over-type-literal
     type DndNodeContext<K1, D1> = {
         componentElement: Element;
@@ -551,8 +550,8 @@ export namespace ojDiagram {
         type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Link<K2, K1> = {
-        categories: string[];
+    type Link<K1, K2, D2 = any> = {
+        categories?: string[];
         color?: string;
         endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
         endNode: K2;
@@ -560,7 +559,7 @@ export namespace ojDiagram {
         label?: string;
         labelStyle?: CSSStyleDeclaration | null;
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: LinkShortDescContext<K1, K2, D2>) => string));
         startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
         startNode: K2;
         svgClassName?: string;
@@ -598,6 +597,13 @@ export namespace ojDiagram {
         type: 'link' | 'promotedLink';
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkShortDescContext<K1, K2, D2> = {
+        data: Link<K2, K1> | Link<K2, K1>[];
+        id: K2;
+        itemData: D2 | D2[];
+        label: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
         componentElement: Element;
         data: object;
@@ -605,7 +611,7 @@ export namespace ojDiagram {
         key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Node<K1> = {
+    type Node<K1, D1 = any> = {
         categories?: string[];
         descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
         icon?: {
@@ -637,7 +643,7 @@ export namespace ojDiagram {
             };
         };
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: NodeShortDescContext<K1, D1>) => string));
         showDisclosure?: 'on' | 'off';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -653,6 +659,13 @@ export namespace ojDiagram {
         itemData: D1;
         label: string;
         type: 'node';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeShortDescContext<K1, D1> = {
+        data: Node<K1>;
+        id: K1;
+        itemData: D1;
+        label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -752,108 +765,109 @@ export interface ojDiagramEventMap<K1, K2, D1 extends ojDiagram.Node<K1> | any, 
     'touchResponseChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["touchResponse"]>;
     'zoomRendererChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
     'zoomingChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["trackResize"]>;
 }
 export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends dvtBaseComponentSettableProperties {
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    as: string;
-    dnd: {
-        drag: {
-            nodes: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: {
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    as?: string;
+    dnd?: {
+        drag?: {
+            nodes?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
+                dragStart?: ((event: Event, context: {
                     nodes: ojDiagram.DndNodeContext<K1, D1>[];
                 }) => void);
             };
-            ports: {
-                dataTypes: string | string[];
-                drag: ((param0: Event) => void);
-                dragEnd: ((param0: Event) => void);
-                dragStart: ((event: Event, context: {
+            ports?: {
+                dataTypes?: string | string[];
+                drag?: ((param0: Event) => void);
+                dragEnd?: ((param0: Event) => void);
+                dragStart?: ((event: Event, context: {
                     ports: {
                         portElement: Element;
                         dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     };
                 }) => void);
-                linkStyle: ((context: {
+                linkStyle?: ((context: {
                     portElement: Element;
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => ({
                     svgStyle?: CSSStyleDeclaration;
                     svgClassName?: string;
                 } | null));
-                selector: string;
+                selector?: string;
             };
         };
-        drop: {
-            background: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+        drop?: {
+            background?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                 }) => void);
             };
-            links: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            links?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     linkContext: ojDiagram.LinkItemContext<K1, K2, D2> | ojDiagram.PromotedLinkItemContext<K1, K2, D2>;
                 }) => void);
             };
-            nodes: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            nodes?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
                     nodeY: number;
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -861,9 +875,9 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                     nodeContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => void);
             };
-            ports: {
-                dataTypes: string | string[];
-                dragEnter: ((event: Event, context: {
+            ports?: {
+                dataTypes?: string | string[];
+                dragEnter?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -871,7 +885,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                dragLeave: ((event: Event, context: {
+                dragLeave?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -879,7 +893,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                dragOver: ((event: Event, context: {
+                dragOver?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -887,7 +901,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                     portElement: Element;
                 }) => void);
-                drop: ((event: Event, context: {
+                drop?: ((event: Event, context: {
                     x: number;
                     y: number;
                     nodeX: number;
@@ -899,129 +913,129 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
             };
         };
     };
-    expanded: KeySet<K1>;
-    focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    expanded?: KeySet<K1>;
+    focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    layout: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
-    linkContent: {
-        focusRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+    layout?: ((context: DvtDiagramLayoutContext<K1, K2, D1, D2>) => void);
+    linkContent?: {
+        focusRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
-        hoverRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+        hoverRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
         renderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => ({
             insert: SVGElement;
         }));
-        selectionRenderer: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
+        selectionRenderer?: ((context: ojDiagram.LinkRendererContext<K1, K2, D2>) => {
             insert: SVGElement;
         } | void) | null;
     };
-    linkData: DataProvider<K2, D2> | null;
-    linkHighlightMode: 'linkAndNodes' | 'link';
-    maxZoom: number;
-    minZoom: number;
-    nodeContent: {
-        focusRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    linkData?: DataProvider<K2, D2> | null;
+    linkHighlightMode?: 'linkAndNodes' | 'link';
+    maxZoom?: number;
+    minZoom?: number;
+    nodeContent?: {
+        focusRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
-        hoverRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        hoverRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
         renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
             insert: SVGElement;
         }));
-        selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
-        zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+        zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
             insert: SVGElement;
         } | void) | null;
     };
     nodeData: DataProvider<K1, D1> | null;
-    nodeHighlightMode: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
-    overview: {
-        fitArea: 'content' | 'canvas';
-        halign: 'start' | 'end' | 'center';
-        height: number;
-        preserveAspectRatio: 'none' | 'meet';
-        rendered: 'on' | 'off';
-        valign: 'top' | 'bottom' | 'middle';
-        width: number;
+    nodeHighlightMode?: 'nodeAndIncomingLinks' | 'nodeAndOutgoingLinks' | 'nodeAndLinks' | 'node';
+    overview?: {
+        fitArea?: 'content' | 'canvas';
+        halign?: 'start' | 'end' | 'center';
+        height?: number;
+        preserveAspectRatio?: 'none' | 'meet';
+        rendered?: 'on' | 'off';
+        valign?: 'top' | 'bottom' | 'middle';
+        width?: number;
     };
-    panDirection: 'x' | 'y' | 'auto';
-    panning: 'fixed' | 'centerContent' | 'none' | 'auto';
-    promotedLinkBehavior: 'none' | 'full' | 'lazy';
-    renderer: ((context: ojDiagram.RendererContext<K1, D1>) => ({
+    panDirection?: 'x' | 'y' | 'auto';
+    panning?: 'fixed' | 'centerContent' | 'none' | 'auto';
+    promotedLinkBehavior?: 'none' | 'full' | 'lazy';
+    renderer?: ((context: ojDiagram.RendererContext<K1, D1>) => ({
         insert: SVGElement;
     }));
-    selection: Array<K1 | K2>;
-    selectionMode: 'none' | 'single' | 'multiple';
-    selectionRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    selection?: Array<K1 | K2>;
+    selectionMode?: 'none' | 'single' | 'multiple';
+    selectionRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    styleDefaults: {
-        animationDuration: number;
-        hoverBehaviorDelay: number;
-        linkDefaults: {
-            color: string;
-            endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle: CSSStyleDeclaration;
-            startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            width: number;
+    styleDefaults?: {
+        animationDuration?: number;
+        hoverBehaviorDelay?: number;
+        linkDefaults?: {
+            color?: string;
+            endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            labelStyle?: CSSStyleDeclaration;
+            startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
         };
-        nodeDefaults: {
-            icon: {
-                borderColor: string;
-                borderRadius: string;
-                borderWidth: number;
-                color: string;
-                height: number;
-                pattern: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
-                   'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
+        nodeDefaults?: {
+            icon?: {
+                borderColor?: string;
+                borderRadius?: string;
+                borderWidth?: number;
+                color?: string;
+                height?: number;
+                pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' |
+                   'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
                 shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-                source: string;
-                sourceHover: string;
-                sourceHoverSelected: string;
-                sourceSelected: string;
-                svgClassName: string;
-                svgStyle: CSSStyleDeclaration;
-                width: number;
+                source?: string;
+                sourceHover?: string;
+                sourceHoverSelected?: string;
+                sourceSelected?: string;
+                svgClassName?: string;
+                svgStyle?: CSSStyleDeclaration;
+                width?: number;
             };
-            labelStyle: CSSStyleDeclaration;
-            showDisclosure: 'off' | 'on';
+            labelStyle?: CSSStyleDeclaration;
+            showDisclosure?: 'off' | 'on';
         };
-        promotedLink: {
-            color: string;
-            endConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            startConnectorType: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            svgClassName: string;
-            svgStyle: CSSStyleDeclaration;
-            width: number;
+        promotedLink?: {
+            color?: string;
+            endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
         };
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojDiagram.TooltipContext<K1, K2, D1, D2>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
-    zoomRenderer: ((context: ojDiagram.RendererContext<K1, D1>) => {
+    touchResponse?: 'touchStart' | 'auto';
+    zoomRenderer?: ((context: ojDiagram.RendererContext<K1, D1>) => {
         insert: SVGElement;
     } | void) | null;
-    zooming: 'auto' | 'none';
+    zooming?: 'auto' | 'none';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -1048,90 +1062,91 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
 export interface ojDiagramSettablePropertiesLenient<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends Partial<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     [key: string]: any;
 }
-export interface ojDiagramLink extends JetElement<ojDiagramLinkSettableProperties> {
-    categories: string[];
+export interface ojDiagramLink<K1 = any, K2 = any, D2 = any> extends dvtBaseComponent<ojDiagramLinkSettableProperties<K1, K2, D2>> {
+    categories?: string[];
     color?: string;
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
     labelStyle?: CSSStyleDeclaration | null;
     selectable?: 'auto' | 'off';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojDiagram.LinkShortDescContext<K1, K2, D2>) => string));
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     width?: number;
-    addEventListener<T extends keyof ojDiagramLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener<T extends keyof ojDiagramLinkEventMap<K1, K2, D2>>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap<K1, K2, D2>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T): ojDiagramLink[T];
+    getProperty<T extends keyof ojDiagramLinkSettableProperties<K1, K2, D2>>(property: T): ojDiagramLink<K1, K2, D2>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojDiagramLinkSettableProperties>(property: T, value: ojDiagramLinkSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramLinkSettableProperties>): void;
-    setProperties(properties: ojDiagramLinkSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojDiagramLinkSettableProperties<K1, K2, D2>>(property: T, value: ojDiagramLinkSettableProperties<K1, K2, D2>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramLinkSettableProperties<K1, K2, D2>>): void;
+    setProperties(properties: ojDiagramLinkSettablePropertiesLenient<K1, K2, D2>): void;
 }
 export namespace ojDiagramLink {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojDiagramLink["categories"]>;
+    type categoriesChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojDiagramLink["color"]>;
+    type colorChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["endConnectorType"]>;
+    type endConnectorTypeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endConnectorType"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endNodeChanged = JetElementCustomEvent<ojDiagramLink["endNode"]>;
+    type endNodeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endNode"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojDiagramLink["label"]>;
+    type labelChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojDiagramLink["labelStyle"]>;
+    type labelStyleChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojDiagramLink["selectable"]>;
+    type selectableChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojDiagramLink["shortDesc"]>;
+    type shortDescChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["startConnectorType"]>;
+    type startConnectorTypeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startConnectorType"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startNodeChanged = JetElementCustomEvent<ojDiagramLink["startNode"]>;
+    type startNodeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startNode"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojDiagramLink["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojDiagramLink["svgStyle"]>;
+    type svgStyleChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojDiagramLink["width"]>;
+    type widthChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["width"]>;
 }
-export interface ojDiagramLinkEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojDiagramLink["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojDiagramLink["color"]>;
-    'endConnectorTypeChanged': JetElementCustomEvent<ojDiagramLink["endConnectorType"]>;
-    'endNodeChanged': JetElementCustomEvent<ojDiagramLink["endNode"]>;
-    'labelChanged': JetElementCustomEvent<ojDiagramLink["label"]>;
-    'labelStyleChanged': JetElementCustomEvent<ojDiagramLink["labelStyle"]>;
-    'selectableChanged': JetElementCustomEvent<ojDiagramLink["selectable"]>;
-    'shortDescChanged': JetElementCustomEvent<ojDiagramLink["shortDesc"]>;
-    'startConnectorTypeChanged': JetElementCustomEvent<ojDiagramLink["startConnectorType"]>;
-    'startNodeChanged': JetElementCustomEvent<ojDiagramLink["startNode"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojDiagramLink["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojDiagramLink["svgStyle"]>;
-    'widthChanged': JetElementCustomEvent<ojDiagramLink["width"]>;
+export interface ojDiagramLinkEventMap<K1 = any, K2 = any, D2 = any> extends dvtBaseComponentEventMap<ojDiagramLinkSettableProperties<K1, K2, D2>> {
+    'categoriesChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["color"]>;
+    'endConnectorTypeChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endConnectorType"]>;
+    'endNodeChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endNode"]>;
+    'labelChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["label"]>;
+    'labelStyleChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["labelStyle"]>;
+    'selectableChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["selectable"]>;
+    'shortDescChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["shortDesc"]>;
+    'startConnectorTypeChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startConnectorType"]>;
+    'startNodeChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startNode"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgStyle"]>;
+    'widthChanged': JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["width"]>;
 }
-export interface ojDiagramLinkSettableProperties extends JetSettableProperties {
-    categories: string[];
+export interface ojDiagramLinkSettableProperties<K1 = any, K2 = any, D2 = any> extends dvtBaseComponentSettableProperties {
+    categories?: string[];
     color?: string;
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
     labelStyle?: CSSStyleDeclaration | null;
     selectable?: 'auto' | 'off';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojDiagram.LinkShortDescContext<K1, K2, D2>) => string));
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     width?: number;
 }
-export interface ojDiagramLinkSettablePropertiesLenient extends Partial<ojDiagramLinkSettableProperties> {
+export interface ojDiagramLinkSettablePropertiesLenient<K1 = any, K2 = any, D2 = any> extends Partial<ojDiagramLinkSettableProperties<K1, K2, D2>> {
     [key: string]: any;
 }
-export interface ojDiagramNode extends JetElement<ojDiagramNodeSettableProperties> {
+export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDiagramNodeSettableProperties<K1, D1>> {
     categories?: string[];
     descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     icon?: {
@@ -1162,48 +1177,49 @@ export interface ojDiagramNode extends JetElement<ojDiagramNodeSettablePropertie
         };
     };
     selectable?: 'auto' | 'off';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojDiagram.NodeShortDescContext<K1, D1>) => string));
     showDisclosure?: 'on' | 'off';
-    addEventListener<T extends keyof ojDiagramNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramNodeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener<T extends keyof ojDiagramNodeEventMap<K1, D1>>(type: T, listener: (this: HTMLElement, ev: ojDiagramNodeEventMap<K1, D1>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T): ojDiagramNode[T];
+    getProperty<T extends keyof ojDiagramNodeSettableProperties<K1, D1>>(property: T): ojDiagramNode<K1, D1>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojDiagramNodeSettableProperties>(property: T, value: ojDiagramNodeSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramNodeSettableProperties>): void;
-    setProperties(properties: ojDiagramNodeSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojDiagramNodeSettableProperties<K1, D1>>(property: T, value: ojDiagramNodeSettableProperties<K1, D1>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramNodeSettableProperties<K1, D1>>): void;
+    setProperties(properties: ojDiagramNodeSettablePropertiesLenient<K1, D1>): void;
 }
 export namespace ojDiagramNode {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojDiagramNode["categories"]>;
+    type categoriesChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type descendantsConnectivityChanged = JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>;
+    type descendantsConnectivityChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["descendantsConnectivity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type iconChanged = JetElementCustomEvent<ojDiagramNode["icon"]>;
+    type iconChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["icon"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojDiagramNode["label"]>;
+    type labelChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojDiagramNode["labelStyle"]>;
+    type labelStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type overviewChanged = JetElementCustomEvent<ojDiagramNode["overview"]>;
+    type overviewChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["overview"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojDiagramNode["selectable"]>;
+    type selectableChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojDiagramNode["shortDesc"]>;
+    type shortDescChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type showDisclosureChanged = JetElementCustomEvent<ojDiagramNode["showDisclosure"]>;
+    type showDisclosureChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["showDisclosure"]>;
 }
-export interface ojDiagramNodeEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojDiagramNode["categories"]>;
-    'descendantsConnectivityChanged': JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>;
-    'iconChanged': JetElementCustomEvent<ojDiagramNode["icon"]>;
-    'labelChanged': JetElementCustomEvent<ojDiagramNode["label"]>;
-    'labelStyleChanged': JetElementCustomEvent<ojDiagramNode["labelStyle"]>;
-    'overviewChanged': JetElementCustomEvent<ojDiagramNode["overview"]>;
-    'selectableChanged': JetElementCustomEvent<ojDiagramNode["selectable"]>;
-    'shortDescChanged': JetElementCustomEvent<ojDiagramNode["shortDesc"]>;
-    'showDisclosureChanged': JetElementCustomEvent<ojDiagramNode["showDisclosure"]>;
+export interface ojDiagramNodeEventMap<K1 = any, D1 = any> extends dvtBaseComponentEventMap<ojDiagramNodeSettableProperties<K1, D1>> {
+    'categoriesChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["categories"]>;
+    'descendantsConnectivityChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["descendantsConnectivity"]>;
+    'iconChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["icon"]>;
+    'labelChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["label"]>;
+    'labelStyleChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["labelStyle"]>;
+    'overviewChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["overview"]>;
+    'selectableChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["selectable"]>;
+    'shortDescChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["shortDesc"]>;
+    'showDisclosureChanged': JetElementCustomEvent<ojDiagramNode<K1, D1>["showDisclosure"]>;
 }
-export interface ojDiagramNodeSettableProperties extends JetSettableProperties {
+export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvtBaseComponentSettableProperties {
     categories?: string[];
     descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
     icon?: {
@@ -1234,15 +1250,15 @@ export interface ojDiagramNodeSettableProperties extends JetSettableProperties {
         };
     };
     selectable?: 'auto' | 'off';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojDiagram.NodeShortDescContext<K1, D1>) => string));
     showDisclosure?: 'on' | 'off';
 }
-export interface ojDiagramNodeSettablePropertiesLenient extends Partial<ojDiagramNodeSettableProperties> {
+export interface ojDiagramNodeSettablePropertiesLenient<K1 = any, D1 = any> extends Partial<ojDiagramNodeSettableProperties<K1, D1>> {
     [key: string]: any;
 }
 export type DiagramElement<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = ojDiagram<K1, K2, D1, D2>;
-export type DiagramLinkElement = ojDiagramLink;
-export type DiagramNodeElement = ojDiagramNode;
+export type DiagramLinkElement<K1 = any, K2 = any, D2 = any> = ojDiagramLink<K1, K2, D2>;
+export type DiagramNodeElement<K1 = any, D1 = any> = ojDiagramNode<K1, D1>;
 export namespace DiagramElement {
     interface ojBeforeCollapse<K1> extends CustomEvent<{
         nodeId: K1;
@@ -1330,6 +1346,11 @@ export namespace DiagramElement {
     type zoomRendererChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zoomRenderer"]>;
     // tslint:disable-next-line interface-over-type-literal
     type zoomingChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = JetElementCustomEvent<ojDiagram<K1, K2, D1, D2>["zooming"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = dvtBaseComponent.trackResizeChanged<ojDiagramSettableProperties<K1, K2, D1, D2>>;
     // tslint:disable-next-line interface-over-type-literal
     type DndNodeContext<K1, D1> = {
         componentElement: Element;
@@ -1353,16 +1374,56 @@ export namespace DiagramElement {
         type: 'link';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type LinkTemplateContext = {
-        componentElement: Element;
-        data: object;
-        index: number;
-        key: any;
+    type LinkShortDescContext<K1, K2, D2> = {
+        data: ojDiagram.Link<K2, K1> | ojDiagram.Link<K2, K1>[];
+        id: K2;
+        itemData: D2 | D2[];
+        label: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeContext = {
-        index: number;
-        subId: 'oj-diagram-link' | 'oj-diagram-node';
+    type Node<K1, D1 = any> = {
+        categories?: string[];
+        descendantsConnectivity?: 'connected' | 'disjoint' | 'unknown';
+        icon?: {
+            borderColor?: string;
+            borderRadius?: string;
+            borderWidth?: number;
+            color?: string;
+            height?: number;
+            opacity?: number;
+            pattern?: 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'mallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' |
+               'smallDiamond' | 'smallTriangle' | string;
+            shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+            source?: string;
+            sourceHover?: string;
+            sourceHoverSelected?: string;
+            sourceSelected?: string;
+            svgClassName?: string;
+            svgStyle?: CSSStyleDeclaration;
+            width?: number;
+        };
+        id?: K1;
+        label?: string;
+        labelStyle?: CSSStyleDeclaration | null;
+        overview?: {
+            icon?: {
+                shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
+                svgClassName?: string;
+                svgStyle?: CSSStyleDeclaration;
+            };
+        };
+        selectable?: 'auto' | 'off';
+        shortDesc?: (string | ((context: ojDiagram.NodeShortDescContext<K1, D1>) => string));
+        showDisclosure?: 'on' | 'off';
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeItemContext<K1, D1> = {
+        componentElement: Element;
+        data: ojDiagram.Node<K1>;
+        id: K1;
+        itemData: D1;
+        label: string;
+        type: 'node';
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -1407,49 +1468,127 @@ export namespace DiagramElement {
 }
 export namespace DiagramLinkElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojDiagramLink["categories"]>;
+    type categoriesChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojDiagramLink["color"]>;
+    type colorChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["endConnectorType"]>;
+    type endConnectorTypeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endConnectorType"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endNodeChanged = JetElementCustomEvent<ojDiagramLink["endNode"]>;
+    type endNodeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["endNode"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojDiagramLink["label"]>;
+    type labelChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojDiagramLink["labelStyle"]>;
+    type labelStyleChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojDiagramLink["selectable"]>;
+    type selectableChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojDiagramLink["shortDesc"]>;
+    type shortDescChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startConnectorTypeChanged = JetElementCustomEvent<ojDiagramLink["startConnectorType"]>;
+    type startConnectorTypeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startConnectorType"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startNodeChanged = JetElementCustomEvent<ojDiagramLink["startNode"]>;
+    type startNodeChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["startNode"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojDiagramLink["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojDiagramLink["svgStyle"]>;
+    type svgStyleChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojDiagramLink["width"]>;
+    type widthChanged<K1 = any, K2 = any, D2 = any> = JetElementCustomEvent<ojDiagramLink<K1, K2, D2>["width"]>;
 }
 export namespace DiagramNodeElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojDiagramNode["categories"]>;
+    type categoriesChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type descendantsConnectivityChanged = JetElementCustomEvent<ojDiagramNode["descendantsConnectivity"]>;
+    type descendantsConnectivityChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["descendantsConnectivity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type iconChanged = JetElementCustomEvent<ojDiagramNode["icon"]>;
+    type iconChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["icon"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojDiagramNode["label"]>;
+    type labelChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojDiagramNode["labelStyle"]>;
+    type labelStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type overviewChanged = JetElementCustomEvent<ojDiagramNode["overview"]>;
+    type overviewChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["overview"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojDiagramNode["selectable"]>;
+    type selectableChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojDiagramNode["shortDesc"]>;
+    type shortDescChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type showDisclosureChanged = JetElementCustomEvent<ojDiagramNode["showDisclosure"]>;
+    type showDisclosureChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojDiagramNode<K1, D1>["showDisclosure"]>;
+}
+export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettableProperties<any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojBeforeCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeCollapse']) => void;
+    onojBeforeExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojBeforeExpand']) => void;
+    onojCollapse?: (value: ojDiagramEventMap<any, any, any, any>['ojCollapse']) => void;
+    onojExpand?: (value: ojDiagramEventMap<any, any, any, any>['ojExpand']) => void;
+    onanimationOnDataChangeChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDataChangeChanged']) => void;
+    onanimationOnDisplayChanged?: (value: ojDiagramEventMap<any, any, any, any>['animationOnDisplayChanged']) => void;
+    onasChanged?: (value: ojDiagramEventMap<any, any, any, any>['asChanged']) => void;
+    ondndChanged?: (value: ojDiagramEventMap<any, any, any, any>['dndChanged']) => void;
+    onexpandedChanged?: (value: ojDiagramEventMap<any, any, any, any>['expandedChanged']) => void;
+    onfocusRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['focusRendererChanged']) => void;
+    onhiddenCategoriesChanged?: (value: ojDiagramEventMap<any, any, any, any>['hiddenCategoriesChanged']) => void;
+    onhighlightMatchChanged?: (value: ojDiagramEventMap<any, any, any, any>['highlightMatchChanged']) => void;
+    onhighlightedCategoriesChanged?: (value: ojDiagramEventMap<any, any, any, any>['highlightedCategoriesChanged']) => void;
+    onhoverBehaviorChanged?: (value: ojDiagramEventMap<any, any, any, any>['hoverBehaviorChanged']) => void;
+    onhoverRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['hoverRendererChanged']) => void;
+    onlayoutChanged?: (value: ojDiagramEventMap<any, any, any, any>['layoutChanged']) => void;
+    onlinkContentChanged?: (value: ojDiagramEventMap<any, any, any, any>['linkContentChanged']) => void;
+    onlinkDataChanged?: (value: ojDiagramEventMap<any, any, any, any>['linkDataChanged']) => void;
+    onlinkHighlightModeChanged?: (value: ojDiagramEventMap<any, any, any, any>['linkHighlightModeChanged']) => void;
+    onmaxZoomChanged?: (value: ojDiagramEventMap<any, any, any, any>['maxZoomChanged']) => void;
+    onminZoomChanged?: (value: ojDiagramEventMap<any, any, any, any>['minZoomChanged']) => void;
+    onnodeContentChanged?: (value: ojDiagramEventMap<any, any, any, any>['nodeContentChanged']) => void;
+    onnodeDataChanged?: (value: ojDiagramEventMap<any, any, any, any>['nodeDataChanged']) => void;
+    onnodeHighlightModeChanged?: (value: ojDiagramEventMap<any, any, any, any>['nodeHighlightModeChanged']) => void;
+    onoverviewChanged?: (value: ojDiagramEventMap<any, any, any, any>['overviewChanged']) => void;
+    onpanDirectionChanged?: (value: ojDiagramEventMap<any, any, any, any>['panDirectionChanged']) => void;
+    onpanningChanged?: (value: ojDiagramEventMap<any, any, any, any>['panningChanged']) => void;
+    onpromotedLinkBehaviorChanged?: (value: ojDiagramEventMap<any, any, any, any>['promotedLinkBehaviorChanged']) => void;
+    onrendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['rendererChanged']) => void;
+    onselectionChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionModeChanged']) => void;
+    onselectionRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['selectionRendererChanged']) => void;
+    onstyleDefaultsChanged?: (value: ojDiagramEventMap<any, any, any, any>['styleDefaultsChanged']) => void;
+    ontooltipChanged?: (value: ojDiagramEventMap<any, any, any, any>['tooltipChanged']) => void;
+    ontouchResponseChanged?: (value: ojDiagramEventMap<any, any, any, any>['touchResponseChanged']) => void;
+    onzoomRendererChanged?: (value: ojDiagramEventMap<any, any, any, any>['zoomRendererChanged']) => void;
+    onzoomingChanged?: (value: ojDiagramEventMap<any, any, any, any>['zoomingChanged']) => void;
+    ontrackResizeChanged?: (value: ojDiagramEventMap<any, any, any, any>['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface DiagramLinkIntrinsicProps extends Partial<Readonly<ojDiagramLinkSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojDiagramLinkEventMap<any, any, any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojDiagramLinkEventMap<any, any, any>['colorChanged']) => void;
+    onendConnectorTypeChanged?: (value: ojDiagramLinkEventMap<any, any, any>['endConnectorTypeChanged']) => void;
+    onendNodeChanged?: (value: ojDiagramLinkEventMap<any, any, any>['endNodeChanged']) => void;
+    onlabelChanged?: (value: ojDiagramLinkEventMap<any, any, any>['labelChanged']) => void;
+    onlabelStyleChanged?: (value: ojDiagramLinkEventMap<any, any, any>['labelStyleChanged']) => void;
+    onselectableChanged?: (value: ojDiagramLinkEventMap<any, any, any>['selectableChanged']) => void;
+    onshortDescChanged?: (value: ojDiagramLinkEventMap<any, any, any>['shortDescChanged']) => void;
+    onstartConnectorTypeChanged?: (value: ojDiagramLinkEventMap<any, any, any>['startConnectorTypeChanged']) => void;
+    onstartNodeChanged?: (value: ojDiagramLinkEventMap<any, any, any>['startNodeChanged']) => void;
+    onsvgClassNameChanged?: (value: ojDiagramLinkEventMap<any, any, any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojDiagramLinkEventMap<any, any, any>['svgStyleChanged']) => void;
+    onwidthChanged?: (value: ojDiagramLinkEventMap<any, any, any>['widthChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface DiagramNodeIntrinsicProps extends Partial<Readonly<ojDiagramNodeSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojDiagramNodeEventMap<any, any>['categoriesChanged']) => void;
+    ondescendantsConnectivityChanged?: (value: ojDiagramNodeEventMap<any, any>['descendantsConnectivityChanged']) => void;
+    oniconChanged?: (value: ojDiagramNodeEventMap<any, any>['iconChanged']) => void;
+    onlabelChanged?: (value: ojDiagramNodeEventMap<any, any>['labelChanged']) => void;
+    onlabelStyleChanged?: (value: ojDiagramNodeEventMap<any, any>['labelStyleChanged']) => void;
+    onoverviewChanged?: (value: ojDiagramNodeEventMap<any, any>['overviewChanged']) => void;
+    onselectableChanged?: (value: ojDiagramNodeEventMap<any, any>['selectableChanged']) => void;
+    onshortDescChanged?: (value: ojDiagramNodeEventMap<any, any>['shortDescChanged']) => void;
+    onshowDisclosureChanged?: (value: ojDiagramNodeEventMap<any, any>['showDisclosureChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-diagram": DiagramIntrinsicProps;
+            "oj-diagram-link": DiagramLinkIntrinsicProps;
+            "oj-diagram-node": DiagramNodeIntrinsicProps;
+        }
+    }
 }

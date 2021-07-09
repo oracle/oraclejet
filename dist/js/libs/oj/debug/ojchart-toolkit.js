@@ -7,14 +7,6 @@
  */
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit', 'ojs/ojdvt-overview'], function (exports, dvt, ojdvtAxis, ojlegendToolkit, ojdvtOverview) { 'use strict';
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtChartDataItemUtils = {
     /**
      * Returns the default data item id based on series name and group name.
@@ -39,14 +31,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       return dvt.Obj.compareValues(context, a, b);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     * Creates an object representing the ID of a chart data item.
@@ -104,14 +88,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartDataItem.prototype.valueOf = function() {
     return this.toString();
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for Chart.
@@ -446,14 +422,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return DvtChartTypeUtils.getTimeAxisType(chart) == 'mixedFrequency';
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtChartCoordUtils = {
     /**
      * Converts polar coord to cartesian coord.
@@ -487,14 +455,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         return new dvt.Point(coord.x, coord.y);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   const DvtChartFormatUtils$1 = {
     /**
@@ -553,7 +513,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       majorIncrement = (majorIncrement != null) ? majorIncrement : 0;
 
       // Create the formatter
-      var formatter = new ojdvtAxis.LinearScaleAxisValueFormatter(chart.getCtx(), min, max, majorIncrement, scaling, autoPrecision, chart.getOptions().translations);
+      var formatter = new ojdvtAxis.LinearScaleAxisValueFormatter(min, max, majorIncrement, scaling, autoPrecision, chart.getOptions().translations);
       if (converter &&  converter['format'])
         return formatter.format(value, converter);
       else
@@ -575,14 +535,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       return null;
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Data related utility functions for Chart.
@@ -839,6 +791,12 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     if (typeof (dataItem) === 'number') {
       return dataItem;
     }
+
+    // for missing data in group or series
+    if (!dataItem) {
+      return null;
+    }
+
     var clonedData = Object.assign({}, dataItem);
     clonedData['itemData'] = dataItem['_itemData'];
     delete clonedData['_itemData'];
@@ -2308,14 +2266,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -2482,14 +2432,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
     return {series: {items: {_itemData: true}}, data: true};
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for pie chart.
@@ -2711,14 +2653,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for Chart.
@@ -4126,6 +4060,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
         'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
         'open': dataItem['open'],
+        'q1': dataItem['q1'],
+        'q2': dataItem['q2'],
+        'q3': dataItem['q3'],
         'close': dataItem['close'],
         'volume': dataItem['volume'],
         'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex),
@@ -4166,6 +4103,56 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
+   * Returns an object containing information about the data item used by tooltip and dataLabel callbacks.
+   * @param {Chart} chart
+   * @param {number} seriesIndex The series index.
+   * @param {number} groupIndex The group index.
+   * @param {number} itemIndex The nested item index.
+   * @return {object} An object containing information about the data item.
+   */
+   DvtChartStyleUtils.getShortDescContext = function(chart, seriesIndex, groupIndex, itemIndex) {
+    // Only data items have tooltips
+    if (seriesIndex < 0 || groupIndex < 0)
+      return null;
+
+    var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+    var rawOptions = chart.getRawOptions();
+    var chartOptions = chart.getOptions();
+
+    var rawData = rawOptions['series'][seriesIndex]['items'][groupIndex];
+    if (rawData._noTemplate) {
+      rawData = rawData._itemData;
+    }
+    else  if (rawData && typeof(rawData) === 'object' ) {
+      rawData = Object.assign({}, rawData);
+      delete rawData['_itemData'];
+    }
+    return {
+      'id': DvtChartDataUtils.getDataItemId(chart, seriesIndex, groupIndex),
+      'data' : rawData,
+      'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+      'targetValue': DvtChartDataUtils.getTargetValue(chart, seriesIndex, groupIndex),
+      'label': DvtChartDataUtils.getDefaultDataLabel(chart, seriesIndex, groupIndex, itemIndex),
+      'x': DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex),
+      'y': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+      'z': DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex),
+      'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
+      'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
+      'q1': dataItem['q1'],
+      'q2': dataItem['q2'],
+      'q3': dataItem['q3'],
+      'volume': dataItem['volume'],
+      'open': dataItem['open'],
+      'close': dataItem['close'],
+      'itemData': chartOptions['series'][seriesIndex]['items'][groupIndex]["_itemData"],
+      'group': DvtChartDataUtils.getGroup(chart, groupIndex),
+      'groupData': DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex],
+      'series': DvtChartDataUtils.getSeries(chart, seriesIndex),
+      'seriesData': DvtChartDataUtils.getSeriesDataForContext(chart, seriesIndex)
+    };
+  };
+
+  /**
    * Returns the data label for the specified data point.
    * @param {Chart} chart
    * @param {number} seriesIndex The series index.
@@ -4190,8 +4177,47 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         funcLabel = DvtChartFormatUtils.formatValue(chart, valueFormat, funcLabel);
       }
     }
+    if (chart.Options.stackLabelProvider && isStackLabel) {
+      var stackLabelContext  = DvtChartStyleUtils.getStackLabelContext(chart, groupIndex);
+      funcLabel = chart.Options.stackLabelProvider(stackLabelContext);
+    }
 
     return funcLabel ? funcLabel : defaultLabel;
+  };
+
+
+  /**
+   * Returns an object containing information about the stack item used by stack label callbacks.
+   * @param {Chart} chart
+   * @return {object} An object containing information about the data item.
+   */
+  DvtChartStyleUtils.getStackLabelContext = function(chart, groupIndex) {
+    var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+    var chartOptions = chart.getOptions();
+    var rawData = [];
+    var itemData = [];
+    var value = 0;
+    var groups = DvtChartDataUtils.getGroup(chart, groupIndex);
+    for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+      var item = chartOptions['series'][seriesIndex]['items'][groupIndex];
+      rawData.push(item);
+      if (item) {
+        itemData.push(item["_itemData"]);
+      }
+      value += DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex);
+    }
+    var groupData = DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex] || [];
+    var stackLabelContext;
+    //these all have to be arrays that get extended with each call
+    stackLabelContext = {
+      'groups': groups,
+      'data' : rawData,
+      'groupData': groupData,
+      'value': value,
+      'itemData': itemData
+    };
+
+    return stackLabelContext;
   };
 
   /**
@@ -4237,14 +4263,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return false;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Data cursor component.
@@ -4301,25 +4319,32 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     this._cursorOuterLine = new dvt.Line(this.getCtx(), 0, 0, 0, 0, 'dcLine');
     this._cursorOuterLine.setClassName('oj-chart-data-cursor-outer-line');
     this.addChild(this._cursorOuterLine);
+    // default marker
+    this.addMarker(dvt.SimpleMarker.CIRCLE, options.markerSize);
+  };
 
-    //****************************************** Data Cursor Marker *****************************************************/
-    if (options['markerDisplayed'] != 'off') {
+  DvtChartDataCursor.prototype.addMarker = function (markerShape, markerSize) {
+    if (this._options.markerDisplayed !== 'off') {
+      if (this._marker) {
+        this.removeChild(this._marker);
+      }
       this._marker = new dvt.Container(this._context);
       this._marker.setMouseEnabled(false);
       this.addChild(this._marker);
 
-      var markerSize = options['markerSize'];
-      var outerCircle = new dvt.SimpleMarker(this._context, dvt.SimpleMarker.CIRCLE, 0, 0, markerSize + 4 * lineWidth, markerSize + 4 * lineWidth);
-      outerCircle.setSolidFill(lineColor);
-      this._marker.addChild(outerCircle);
+      var lineColor = this._options.lineColor;
+      var lineWidth = this._options.lineWidth;
+      var outerShape = new dvt.SimpleMarker(this._context, markerShape, 0, 0, markerSize + 4 * lineWidth, markerSize + 4 * lineWidth);
+      outerShape.setSolidFill(lineColor);
+      this._marker.addChild(outerShape);
 
-      var middleCircle = new dvt.SimpleMarker(this._context, dvt.SimpleMarker.CIRCLE, 0, 0, markerSize + 2 * lineWidth, markerSize + 2 * lineWidth);
-      middleCircle.setSolidFill('white');
-      this._marker.addChild(middleCircle);
+      var middleShape = new dvt.SimpleMarker(this._context, markerShape, 0, 0, markerSize + 2 * lineWidth, markerSize + 2 * lineWidth);
+      middleShape.setSolidFill('white');
+      this._marker.addChild(middleShape);
 
       // Inner circle will be filled to correspond to the data item color
-      this._markerInnerCircle = new dvt.SimpleMarker(this._context, dvt.SimpleMarker.CIRCLE, 0, 0, markerSize, markerSize);
-      this._marker.addChild(this._markerInnerCircle);
+      this._markerInnerShape = new dvt.SimpleMarker(this._context, markerShape, 0, 0, markerSize, markerSize);
+      this._marker.addChild(this._markerInnerShape);
     }
   };
 
@@ -4413,7 +4438,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
       // Set the marker color
       var markerColor = this._options['markerColor'];
-      this._markerInnerCircle.setSolidFill(markerColor ? markerColor : dataColor);
+      this._markerInnerShape.setSolidFill(markerColor ? markerColor : dataColor);
 
       // : Workaround firefox issue
       dvt.Agent.workaroundFirefoxRepaint(this._marker);
@@ -4446,14 +4471,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartDataCursor.prototype.setBehavior = function(behavior) {
     this._behavior = behavior;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Reference object related utility functions for Chart.
@@ -4612,14 +4629,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartRefObjUtils.getXValue = function(chart, items, index) {
     return DvtChartDataUtils.getXValueFromItem(chart, items[index], index);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for Chart.
@@ -5035,14 +5044,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Logical object for chart data object displayables.
    * @param {Chart} chart The owning chart instance.
    * @param {array} displayables The array of associated DvtDisplayables.
@@ -5351,8 +5352,8 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     if (shortDesc == null && this._groupIndex < 0 && states.length > 0)
       shortDesc = DvtChartDataUtils.getSeriesLabel(this._chart, this._seriesIndex);
 
-    return dvt.Displayable.generateAriaLabel(shortDesc, states);
-  };
+      return dvt.Displayable.generateAriaLabel(shortDesc, states, () => DvtChartStyleUtils.getShortDescContext(this._chart, this._seriesIndex, this._groupIndex, this._itemIndex, false));
+    };
 
   /**
    * Updates the aria-label as needed. On desktop, we can defer the aria creation, and the aria-label will be updated
@@ -5657,14 +5658,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Logical object for reference object displayables.
    * @param {Chart} chart
    * @param {array} displayables The array of associated DvtDisplayables.
@@ -5753,14 +5746,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Axis Constants
    * @class
    */
@@ -5778,13 +5763,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
    */
   DvtAxisConstants.TITLE = 'title';
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Default values and utility functions for component versioning.
    * @class
@@ -5836,14 +5814,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     var scalingFactor = Math.min(dvt.TextUtils.getTextStringHeight(context, options['tickLabel']['style']) / 14, 1);
     return Math.ceil(defaultSize * scalingFactor);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Calculated axis information and drawable creation.  This class should
@@ -5900,7 +5870,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     DvtAxisInfo.superclass.Init.call(this, context, options, availSpace);
     this._title = null;
   };
-
 
   /**
    * Returns an array containing the tick labels for this axis.
@@ -6470,14 +6439,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Simple logical object for tooltip support.
    * @param {DvtAxis} axis The axis.
    * @param {dvt.OutputText} label The owning text instance.
@@ -6686,14 +6647,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Event Manager for DvtAxis.
    * @param {DvtAxis} axis
    * @class
@@ -6801,13 +6754,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return [];
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Renderer for DvtAxis.
    * @class
@@ -7777,14 +7723,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Calculated axis information and drawable creation for a group axis.
    * @param {dvt.Context} context
    * @param {object} options The object containing specifications and data for this component.
@@ -8130,7 +8068,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         var text = labels[i];
         if (text) {
           var coord = this._getLabelCoord(j, this.getLabelIndex(text));
-          text.setX(coord);
+          if (this._numLevels > 1) {
+            text.setTranslateX(coord);
+          } else {
+            text.setX(coord);
+          }
         }
       }
     }
@@ -8948,13 +8890,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    *  Provides automation services for a DVT component.
    *  @class DvtAxisAutomation
    *  @param {DvtAxis} dvtComponent
@@ -9059,14 +8994,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *  @param {dvt.EventManager} manager The owning dvt.EventManager
     *  @param {DvtAxis} axis
     *  @class DvtAxisKeyboardHandler
@@ -9122,14 +9049,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     return nextNavigable;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Axis component.  This class should never be instantiated directly.  Use the
@@ -9210,6 +9129,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     else if (!this.Options) // Create a default options object if none has been specified
       this.Options = this.GetDefaults();
+
+    // cache isRtl value
+    this.Options.isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   };
 
 
@@ -9407,14 +9329,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return new DvtAxisAutomation(this);
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtChartBehaviorUtils = {
     /**
      * Returns the hide and show behavior for the specified chart.
@@ -9541,13 +9455,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Text related utility functions.
    * @class
    */
@@ -9614,14 +9521,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
         chart.getEventManager(), options['_statusMessageStyle']);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Axis related utility functions for Chart.
@@ -10597,14 +10496,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return {'min': minIndex, 'max': maxIndex};
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtChartGroupUtils = {
 
     /**
@@ -10930,14 +10821,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Series effect utility functions for Chart.
    * @class
    */
@@ -11109,14 +10992,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     else // seriesEffect="color"
       return new dvt.SolidFill(color);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  Creates a funnel shape.
@@ -11595,14 +11470,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartFunnelSlice.prototype.copyShape = function() {
     return new DvtChartFunnelSlice(this._chart, this._seriesIndex, this._numDrawnSeries, this._funnelWidth, this._funnelHeight, this._startPercent, this._valuePercent, this._fillPercent, this._gap);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for Chart eventing and interactivity.
@@ -12218,14 +12085,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Renderer for funnel chart.
    * @class
    */
@@ -12360,14 +12219,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return true;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  Creates a pyramid shape.
@@ -12832,14 +12683,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Renderer for pyramid chart.
    * @class
    */
@@ -12940,14 +12783,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return true;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  Creates a selectable shape using SVG path commands.
@@ -13256,14 +13091,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     // noop: Selection effects fully managed by this class
   };
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*---------------------------------------------------------------------*/
   /* Class DvtChartPieLabelInfo       Slice label information               */
   /*---------------------------------------------------------------------*/
@@ -13527,14 +13354,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartPieLabelInfo.prototype.setY = function(y) {
     this._y = y;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @class DvtChartPieRenderUtils
@@ -13929,14 +13748,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return pointArray;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*---------------------------------------------------------------------*/
   /*   DvtChartPieLabelUtils                                                  */
   /*---------------------------------------------------------------------*/
@@ -14247,8 +14058,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       var newOverlay = context.createOverlayDiv();
       if (Array.isArray(customContent)) {
         customContent.forEach(function(node) {newOverlay.appendChild(node);}); // @HTMLUpdateOK
-      }
-      else {
+      } else if (typeof customContent === 'string') {
+        newOverlay.textContent = customContent;
+        newOverlay.style.position = 'absolute';
+        newOverlay.style.left = `${centerCoord.x}px`;
+        newOverlay.style.top = `${centerCoord.y}px`;
+        newOverlay.style.transform = 'translate(-50%, -50%)';
+        newOverlay.style.width = `${2 * innerRadius}px`;
+        newOverlay.style.height = `${2 * innerRadius}px`;
+        newOverlay.style.display = 'flex';
+        newOverlay.style.textAlign = 'center';
+        newOverlay.style.alignItems = 'center';
+      } else {
         newOverlay.appendChild(customContent); // @HTMLUpdateOK
       }
       pieChart.chart.pieCenterDiv = newOverlay;
@@ -15080,14 +14901,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartPieLabelUtils._skipSliceLabel = function(pie, slice) {
     return slice.getAngleExtent() < 3 && DvtChartDataUtils.getSeriesCount(pie.chart) > 120;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /*---------------------------------------------------------------------*/
   /*   DvtChartPieSlice                                                       */
@@ -16398,14 +16211,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Provides automation services for a DVT component.
    *  @class DvtChartAutomation
    *  @param {Chart} dvtComponent
@@ -16954,14 +16759,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       return true;
     return false;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Event Manager for Chart.
@@ -18037,14 +17834,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return dropObject;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*---------------------------------------------------------------------------------*/
   /*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
   /*---------------------------------------------------------------------------------*/
@@ -18183,14 +17972,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *  Abstract Data change handler for a chart object peer.
     *  @extends {dvt.Obj}
     *  @class DvtChartDataChangeAbstract  Data change Handler for a chart object peer.
@@ -18305,14 +18086,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     this._oldChart = chart;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*---------------------------------------------------------------------*/
   /*  DvtChartDataChangeUtils()                                                       */
   /*---------------------------------------------------------------------*/
@@ -18404,14 +18177,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     ret.setStyle({fill: fc});
     return ret;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    *  Data change Handler for 2D Bar Riser (implements DvtChartDataChangeAbstract).
@@ -18545,14 +18310,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Data change handler for box & whisker shape (implements DvtChartDataChangeAbstract).
    *  @extends {DvtChartDataChangeAbstract}
    *  @class DvtChartDataChangeBoxAndWhisker
@@ -18574,14 +18331,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     this._animId += '/boxAndWhisker';
   };
-
-  /**
-   * @license
-   * Copyright (c) 2013 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    *  Data change Handler for DvtChartFunnelSlice (implements DvtChartDataChangeAbstract).
@@ -18686,14 +18435,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     this._animId += '/funnel';
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  Data change Handler for Line or Area (implements DvtChartDataChangeAbstract).
@@ -18914,14 +18655,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *  Data change Handler for markers.
     *  @extends {DvtChartDataChangeAbstract}
     *  @class DvtChartDataChangeMarker  Data change Handler for markers.
@@ -19054,14 +18787,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Data change Handler for DvtChartPyramidSlice (implements DvtChartDataChangeAbstract).
    *  @extends {DvtChartDataChangeAbstract}
    *  @class DvtChartDataChangePyramidSlice  Data change Handler for Pyramid Slices.
@@ -19157,14 +18882,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Data change handler for range markers (implements DvtChartDataChangeAbstract).
    *  @extends {DvtChartDataChangeAbstract}
    *  @class DvtChartDataChangeRangeMarker  Data change Handler for range markers.
@@ -19229,14 +18946,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     handler.add(nodePlayable, 1);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * A selectable polygon displayable.
@@ -19489,14 +19198,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     var y2 = this._y2 - inset;
     return [x1, y1, x2, y1, x2, y2, x1, y2];
   };
-
-  /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  A selectable bar for charting.
@@ -19877,14 +19578,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     //       existing getDimensions calls.  For now, components must be aware of the presence of children to use this.
     return this.ConvertCoordSpaceRect(this.getBoundingBox(), targetCoordinateSpace);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Displayable for box and whisker shape (box plot).
@@ -20398,13 +20091,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Displayable for stock bars.
    * @extends {dvt.Container}
    * @param {dvt.Context} context
@@ -20628,14 +20314,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Property bag of line/area coordinate for DvtChartPolygonSet.
    * The coordinates are represented by x, y1, and y2. Usually, y1 == y2. If y1 != y2, it means that there's a jump in
    * the y value at that x position (from y1 to y2) due to a null in the data.
@@ -20676,14 +20354,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartCoord.prototype.clone = function() {
     return new DvtChartCoord(this.x, this.y1, this.y2, this.groupIndex, this.group, this.filtered);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * A collection of line/area shapes for a chart series.
@@ -21334,14 +21004,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *  A marker object for selectable invisible markers.
     *  @param {dvt.Context} context
     *  @param {number} type The marker type.
@@ -21433,14 +21095,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartLineMarker.prototype.UpdateSelectionEffect = function() {
     // noop: Selection effects fully managed by this class
   };
-
-  /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
     *  A selectable polar bar for charting.
@@ -21626,14 +21280,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartPolarBar.prototype.getOriginalBarSize = function() {
     return this._bbox.w;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * A marker for range area chart.
@@ -21826,14 +21472,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *   Animation on Datachange functionality.
     *   @class
     */
@@ -22001,14 +21639,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     else
       return false;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    *   Animation on Display funtionality.
@@ -22269,14 +21899,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Calculated axis information and drawable creation for a data axis.
    * @param {dvt.Context} context
    * @param {object} options The object containing specifications and data for this component.
@@ -22285,7 +21907,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
    * @constructor
    * @extends {DvtAxisInfo}
    */
-  var DvtDataAxisInfo = function(context, options, availSpace) {
+  var DvtDataAxisInfo = function (context, options, availSpace) {
     this.Init(context, options, availSpace);
   };
 
@@ -22293,9 +21915,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
   DvtAxisInfo.registerConstructor('data', DvtDataAxisInfo);
 
-  DvtDataAxisInfo.prototype.Init = function(context, options, availSpace) {
+  DvtDataAxisInfo.prototype.Init = function (context, options, availSpace) {
     DvtDataAxisInfo.superclass.Init.call(this, context, options, availSpace);
-    this.MixinInit.call(this, context, options, availSpace);
+    this.MixinInit.call(this, options);
   };
 
   /** @private @const */
@@ -22348,7 +21970,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     // when scaling is set then init formatter
     if (this.Options['tickLabel'] && this.Options['tickLabel']['scaling']) {
       var autoPrecision = this.Options['tickLabel']['autoPrecision'] ? this.Options['tickLabel']['autoPrecision'] : 'on';
-      this._axisValueFormatter = new ojdvtAxis.LinearScaleAxisValueFormatter(context, this.LinearMinValue, this.LinearMaxValue, this.MajorIncrement, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
+      this._axisValueFormatter = new ojdvtAxis.LinearScaleAxisValueFormatter(this.LinearMinValue, this.LinearMaxValue, this.MajorIncrement, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
     }
 
     // Iterate on an integer to reduce rounding error.  We use <= since the first
@@ -22370,7 +21992,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       if (this.IsLog) {
         // for log scale, format each label individually as the scaling don't need to match across labels
         value = this.linearToActual(value);
-        this._axisValueFormatter = new ojdvtAxis.LinearScaleAxisValueFormatter(context, value, value, value, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
+        this._axisValueFormatter = new ojdvtAxis.LinearScaleAxisValueFormatter(value, value, value, this.Options['tickLabel']['scaling'], autoPrecision, this.Options.translations);
         label = this._formatValue(value);
       }
       else
@@ -22570,14 +22192,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   ojdvtAxis.DataAxisInfoMixin.call(DvtDataAxisInfo.prototype);
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Calculated axis information and drawable creation for a time axis.
@@ -23995,14 +23609,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Renderer for the reference objects of a Chart.
    * @class
    */
@@ -24361,14 +23967,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Bubble chart utility functions for Chart.
    * @class
    */
@@ -24558,14 +24156,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     var y2 = Math.max(Math.round(markerY + halfSize), 0);
     pixelMap.obscure(x1, y1, x2, y2, alpha);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for the plot area of a Chart.
@@ -26622,14 +26212,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return 0;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*---------------------------------------------------------------------*/
   /*  DvtChartDataCursorHandler                 Data Cursor Event Handler                  */
   /*---------------------------------------------------------------------*/
@@ -26727,6 +26309,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     var itemColor = DvtChartTooltipUtils.getDatatipColor(this._chart, logicalObject.getSeriesIndex(), logicalObject.getGroupIndex(), logicalObject.getNestedDataItemIndex());
     var lineCoord = dataCursor.isHorizontal() ? dcY : dcX;
+    var shape = logicalObject.getDisplayables()[0];
+    // update the default maker shape and size
+    if (shape instanceof dvt.SimpleMarker) {
+      dataCursor.addMarker(shape.getType(), shape.getSize());
+    }
     dataCursor.render(plotRect, centerPoint.x, centerPoint.y, lineCoord, tooltipText, itemColor);
 
     this._dataCursorShown = true;
@@ -26878,14 +26465,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return DvtChartDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Axis component for use by Chart.  This class exposes additional functions needed for
@@ -27172,14 +26751,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartAxis.prototype.getMaxCoord = function() {
     return this.axisToPlotArea(Math.max(this.Info.getStartCoord(), this.Info.getEndCoord()));
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Performs layout and positioning for the chart axes.
@@ -27917,14 +27488,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Performs layout and positioning for the chart legend.
    * @class
    */
@@ -28329,14 +27892,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Overview window for chart.
    * @param {Chart} chart The parent chart who owns the overview.
    * @class
@@ -28527,14 +28082,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartOverview.prototype.HandleKeyUp = function(event) {
     return; // remove keyboard behavior
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /*---------------------------------------------------------------------*/
   /*   DvtChartPie                                                       */
@@ -29369,14 +28916,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   DvtChartPie.prototype.getCenterLabel = function() {
     return this._centerLabel;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for Chart.
@@ -30300,14 +29839,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     return dataCursor;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtChartDataObjectUtils = {
 
     /**
@@ -30713,14 +30244,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
 
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Chart component.
@@ -32170,14 +31693,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Provides automation services for a DVT component.
    *  @class DvtSparkChartAutomation
    *  @param {SparkChart} dvtComponent
@@ -32222,14 +31737,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     }
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Default values and utility functions for chart versioning.
@@ -32282,14 +31789,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Event Manager for SparkChart.
    * @param {SparkChart} sparkChart
    * @class
@@ -32327,14 +31826,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     DvtSparkChartEventManager.superclass.OnBlur.call(this, event);
     this.hideTooltip();
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Renderer for SparkChart.
@@ -32514,8 +32005,28 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     chartOptions['series'] = [{'items': chartItems, 'areaColor': options['areaColor'], 'svgClassName': (options['className'] || options['svgClassName']), 'svgStyle': (options['style'] || options['svgStyle']), 'areaSvgClassName': (options['areaClassName'] || options['areaSvgClassName']), 'areaStyle': (options['areaStyle'] || options['areaSvgStyle'])}];
 
     // Reference Objects
-    if (options['referenceObjects'] && options['referenceObjects'].length > 0)
+    if (options['referenceObjects'] && options['referenceObjects'].length > 0) {
       chartOptions['yAxis']['referenceObjects'] = options['referenceObjects'];
+      // pass in default reference object line width
+      chartOptions._defaultReferenceObjectLineWidth = 1;
+      var obj;
+      for (var ii = 0; ii < options.referenceObjects.length; ii++) {
+        obj = options.referenceObjects[ii];
+        if (obj.type === 'area') {
+          if (obj.high != null) {
+            highValue = Math.max(highValue, obj.high);
+            lowValue = Math.min(lowValue, obj.high);
+          }
+          if (obj.low != null) {
+            highValue = Math.max(highValue, obj.low);
+            lowValue = Math.min(lowValue, obj.low);
+          }
+        } else if (obj.value != null) {
+          highValue = Math.max(highValue, obj.value);
+          lowValue = Math.min(lowValue, obj.value);
+        }
+      }
+    }
 
     //**************************** Style Attributes ****************************/
     chartOptions['__spark'] = true;
@@ -32570,14 +32081,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
 
     return chartOptions;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Spark chart component.  This chart should never be instantiated directly.  Use the

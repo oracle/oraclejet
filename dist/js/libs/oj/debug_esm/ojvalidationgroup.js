@@ -12,14 +12,6 @@ import { info } from 'ojs/ojlogger';
 import { __GetWidgetConstructor } from 'ojs/ojcomponentcore';
 
 /**
- * @license
- * Copyright (c) 2017 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojValidationGroup
  * @since 4.2.0
  *
@@ -898,13 +890,6 @@ function ojValidationGroup(context) {
   }
 }
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_validation_group_metadata = 
 {

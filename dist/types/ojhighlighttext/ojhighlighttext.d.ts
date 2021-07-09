@@ -1,25 +1,18 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props {
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { Component, ComponentChild } from 'preact';
+import { ExtendGlobalProps } from 'ojs/ojvcomponent';
+declare type Props = {
     text?: string;
     matchText?: string;
-}
-export declare class HighlightText extends ElementVComponent<Props> {
+};
+export declare class HighlightText extends Component<ExtendGlobalProps<Props>> {
     private _HIGHLIGHT_TOKEN;
-    constructor(props: Readonly<Props>);
-    protected render(): any;
+    static defaultProps: Partial<Props>;
+    render(props: ExtendGlobalProps<Props>): ComponentChild;
     private _highlighter;
     private _escapeRegExp;
-    protected _vprops?: VProps;
 }
 // Custom Element interfaces
 export interface HighlightTextElement extends JetElement<HighlightTextElementSettableProperties>, HighlightTextElementSettableProperties {
@@ -33,13 +26,13 @@ export interface HighlightTextElement extends JetElement<HighlightTextElementSet
 }
 export namespace HighlightTextElement {
   // tslint:disable-next-line interface-over-type-literal
-  type matchTextChanged = JetElementCustomEvent<HighlightTextElement["matchText"]>;
+  type matchTextChanged = JetElementCustomEventStrict<HighlightTextElement["matchText"]>;
   // tslint:disable-next-line interface-over-type-literal
-  type textChanged = JetElementCustomEvent<HighlightTextElement["text"]>;
+  type textChanged = JetElementCustomEventStrict<HighlightTextElement["text"]>;
 }
 export interface HighlightTextElementEventMap extends HTMLElementEventMap {
-  'matchTextChanged': JetElementCustomEvent<HighlightTextElement["matchText"]>;
-  'textChanged': JetElementCustomEvent<HighlightTextElement["text"]>;
+  'matchTextChanged': JetElementCustomEventStrict<HighlightTextElement["matchText"]>;
+  'textChanged': JetElementCustomEventStrict<HighlightTextElement["text"]>;
 }
 export interface HighlightTextElementSettableProperties extends JetSettableProperties {
   /**
@@ -54,14 +47,14 @@ export interface HighlightTextElementSettableProperties extends JetSettablePrope
 export interface HighlightTextElementSettablePropertiesLenient extends Partial<HighlightTextElementSettableProperties> {
   [key: string]: any;
 }
-export interface HighlightTextProperties extends Partial<HighlightTextElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface HighlightTextIntrinsicProps extends Partial<Readonly<HighlightTextElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  onmatchTextChanged?: (value: HighlightTextElementEventMap['matchTextChanged']) => void;
+  ontextChanged?: (value: HighlightTextElementEventMap['textChanged']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-highlight-text": HighlightTextProperties;
+      "oj-highlight-text": HighlightTextIntrinsicProps;
     }
   }
 }

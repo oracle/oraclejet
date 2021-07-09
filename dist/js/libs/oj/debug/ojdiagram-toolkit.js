@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-overview'], function (exports, dvt, ojdvtPanzoomcanvas, ojdvtOverview) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Dvt Diagram Link Utils
    */
   var DvtDiagramLinkUtils = {
@@ -216,14 +208,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Defines an (x,y) coordinate.
    * @class DvtDiagramPoint
    * @constructor
@@ -247,14 +231,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     this['x'] = ((x === null || isNaN(x)) ? 0 : x);
     this['y'] = ((y === null || isNaN(y)) ? 0 : y);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for Diagram.
@@ -332,14 +308,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     }
     return dvt.Obj.compareValues(ctx, obj1, obj2);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @protected
@@ -815,14 +783,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Defines the geometry of a rectangle. Top-left (x,y), and width and height.
    * @class DvtDiagramRectangle
    * @constructor
@@ -853,14 +813,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     this['w'] = ((w === null || isNaN(w)) ? 0 : w);
     this['h'] = ((h === null || isNaN(h)) ? 0 : h);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @protected
@@ -1462,14 +1414,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Dvt Diagram layout utils
    */
   var DvtDiagramLayoutUtils = {};
@@ -1527,14 +1471,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
       return new dvt.Point(diagramPoint['x'], diagramPoint['y']);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @protected
@@ -1958,14 +1894,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
       this.setCoordinateSpace(link.getCoordinateSpace());
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @param {dvt.Context} context The rendering context.
@@ -2906,14 +2834,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for component versioning.
    * @class
    * @constructor
@@ -3026,14 +2946,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Category rollover handler for Diagram
    * @param {function} callback A function that responds to component events.
    * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -3078,14 +2990,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     };
     return dvt.Obj.createCallback(this, callback);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @constructor
@@ -3541,27 +3445,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     return null;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   const DvtDiagramDataAnimationPhase = {
     DELETE: 0,
     UPDATE: 1,
     INSERT: 2
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @constructor
@@ -4252,6 +4140,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
 
     return this.getCtx().fixRendererContext(dataContext);
   };
+  /**
+   * Returns the shortDesc Context of the node.
+   * @param {DvtDiagramNode} node
+   * @return {object} The shortDesc Context object
+   */
+   DvtDiagramNode.getShortDescContext = function(node) {
+    var data = node.getData();
+    return {
+      'id': node.getId(),
+      'label': data['label'],
+      'data': node.GetDiagram().isDataProviderMode()  ? (data['_noTemplate'] ? data['_itemData'] : data) : data['_itemData'],
+      'itemData': node.GetDiagram().isDataProviderMode() ? data['_itemData'] : null
+    };
+  };
 
   /**
    * @override
@@ -4265,7 +4167,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     if (this.isContainer()) {
       states.push(translations[this.isDisclosed() ? 'stateExpanded' : 'stateCollapsed']);
     }
-    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
+    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramNode.getShortDescContext(this));
   };
 
   /**
@@ -5336,14 +5238,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Dvt Diagram Link Connector utils
    */
   var DvtDiagramLinkConnectorUtils = {};
@@ -5800,14 +5694,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    * @class The class for the link underlay
    * @param {dvt.Context} context the rendering context
@@ -6013,14 +5899,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     if (this._underlayEnd)
       this.addChild(this._underlayEnd);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @constructor
@@ -6709,14 +6587,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    * @param {dvt.Context} context the rendering context
    * @param {Diagram} diagram the parent diagram component
@@ -7392,7 +7262,33 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
 
     return this.getCtx().fixRendererContext(dataContext);
   };
-
+  /**
+   * Returns the shortDesc Context of the link.
+   * @param {DvtDiagramLink} link
+   * @return {object} The shortDesc Context object
+   */
+   DvtDiagramLink.getShortDescContext = function(link) {
+    var itemData, data;
+    if (link.GetDiagram().isDataProviderMode()) {
+      // return both type of data - template processed and originals
+      if (link.isPromoted()) {
+        itemData = link.getData()['_links'].map(function(item){return item['_itemData']});
+        data = link.getData()['_links'][0]['_noTemplate'] ? itemData :  link.getData()['_links'];
+      }
+      else {
+        data =  link.getData();
+        itemData = link.getData()['_itemData'];
+      }
+    } else {
+      data = link.isPromoted() ? link.getData()['_links'] : link.getData()['_itemData'];
+    }
+    return {
+      'id': link.getId(),
+      'label': link.getData()['label'],
+      'data' : data,
+      'itemData' : itemData
+    };
+  };
   /**
    * @override
    */
@@ -7405,7 +7301,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     if (this.isPromoted()) {
       states.push(translations.promotedLinkAriaDesc);
     }
-    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states);
+    return dvt.Displayable.generateAriaLabel(this.getShortDesc(), states, () => DvtDiagramLink.getShortDescContext(this));
   };
 
   /**
@@ -8058,14 +7954,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     return true;
   };
 
-  /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   //
   // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramStyleUtils.js /st_jdevadf_jet.trunk/4 2017/09/08 16:48:23  Exp $
   //
@@ -8234,14 +8122,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
     return diagram.getOptions()['animationOnDataChange'];
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Event Manager for Diagram.
@@ -8777,14 +8657,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @constructor
    *  @class DvtBaseDiagramKeyboardHandler base class for keyboard handler for diagram component
    *  @param {DvtBaseDiagram} component The owning diagram component
@@ -9069,14 +8941,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  @constructor
    *  @class DvtDiagramKeyboardHandler base class for keyboard handler for diagram component
    *  @param {Diagram} component The owning diagram component
@@ -9141,14 +9005,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
     return this.GetDiagram().getNodeById(nodeId);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for Diagram overview window
@@ -9757,14 +9613,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Overview window for diagram.
    * @param {Diagram} diagram The parent diagram who owns the overview.
    * @class
@@ -10116,14 +9964,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    *  Provides automation services for a DVT diagram component.
    *  @class  DvtDiagramAutomation
    *  @param {Diagram} dvtComponent
@@ -10377,14 +10217,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     var linkIds = this._diagram.GetAllLinks();
     return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._diagram.getLinkById(linkIds[linkIndex]) : null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   //
   // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramDataAnimationState.js /st_jdevadf_jet.trunk/1 2017/06/19 15:30:24  Exp $
@@ -10674,14 +10506,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Animation handler for Diagram
    * @param {dvt.Context} context the platform specific context object
    * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
@@ -10851,14 +10675,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas', 'ojs/ojdvt-ov
     }
     return list;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @param {dvt.Context} context The rendering context.

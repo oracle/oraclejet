@@ -1,39 +1,33 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponent<ojTagCloudSettableProperties<K, D>> {
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    as: string;
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    as?: string;
     data: DataProvider<K, D> | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    layout: 'cloud' | 'rectangular';
-    selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
-    styleDefaults: {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    layout?: 'cloud' | 'rectangular';
+    selection?: K[];
+    selectionMode?: 'none' | 'single' | 'multiple';
+    styleDefaults?: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;
         svgStyle?: CSSStyleDeclaration;
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
+    touchResponse?: 'touchStart' | 'auto';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -91,13 +85,18 @@ export namespace ojTagCloud {
     type tooltipChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];
         color?: string;
         id?: K;
         label: string;
-        shortDesc?: string;
+        shortDesc?: (string | ((context: ItemShortDescContext<K>) => string));
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         url?: string;
@@ -109,6 +108,12 @@ export namespace ojTagCloud {
         label: string;
         selected: boolean;
         tooltip: string;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type ItemShortDescContext<K> = {
+        id: K;
+        label: string;
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -148,32 +153,33 @@ export interface ojTagCloudEventMap<K, D extends ojTagCloud.Item<K> | any> exten
     'styleDefaultsChanged': JetElementCustomEvent<ojTagCloud<K, D>["styleDefaults"]>;
     'tooltipChanged': JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     'touchResponseChanged': JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojTagCloud<K, D>["trackResize"]>;
 }
 export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | any> extends dvtBaseComponentSettableProperties {
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    as: string;
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    as?: string;
     data: DataProvider<K, D> | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    layout: 'cloud' | 'rectangular';
-    selection: K[];
-    selectionMode: 'none' | 'single' | 'multiple';
-    styleDefaults: {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    layout?: 'cloud' | 'rectangular';
+    selection?: K[];
+    selectionMode?: 'none' | 'single' | 'multiple';
+    styleDefaults?: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;
         svgStyle?: CSSStyleDeclaration;
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
+    touchResponse?: 'touchStart' | 'auto';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -197,66 +203,66 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
 export interface ojTagCloudSettablePropertiesLenient<K, D extends ojTagCloud.Item<K> | any> extends Partial<ojTagCloudSettableProperties<K, D>> {
     [key: string]: any;
 }
-export interface ojTagCloudItem extends JetElement<ojTagCloudItemSettableProperties> {
-    categories: string[];
+export interface ojTagCloudItem<K = any> extends dvtBaseComponent<ojTagCloudItemSettableProperties<K>> {
+    categories?: string[];
     color?: string;
-    label: string;
-    shortDesc: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    url: string;
-    value: number | null;
-    addEventListener<T extends keyof ojTagCloudItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojTagCloudItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    label?: string;
+    shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    url?: string;
+    value?: number | null;
+    addEventListener<T extends keyof ojTagCloudItemEventMap<K>>(type: T, listener: (this: HTMLElement, ev: ojTagCloudItemEventMap<K>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojTagCloudItemSettableProperties>(property: T): ojTagCloudItem[T];
+    getProperty<T extends keyof ojTagCloudItemSettableProperties<K>>(property: T): ojTagCloudItem<K>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojTagCloudItemSettableProperties>(property: T, value: ojTagCloudItemSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTagCloudItemSettableProperties>): void;
-    setProperties(properties: ojTagCloudItemSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojTagCloudItemSettableProperties<K>>(property: T, value: ojTagCloudItemSettableProperties<K>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTagCloudItemSettableProperties<K>>): void;
+    setProperties(properties: ojTagCloudItemSettablePropertiesLenient<K>): void;
 }
 export namespace ojTagCloudItem {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojTagCloudItem["categories"]>;
+    type categoriesChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojTagCloudItem["color"]>;
+    type colorChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojTagCloudItem["label"]>;
+    type labelChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojTagCloudItem["shortDesc"]>;
+    type shortDescChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojTagCloudItem["svgClassName"]>;
+    type svgClassNameChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojTagCloudItem["svgStyle"]>;
+    type svgStyleChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type urlChanged = JetElementCustomEvent<ojTagCloudItem["url"]>;
+    type urlChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["url"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojTagCloudItem["value"]>;
+    type valueChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["value"]>;
 }
-export interface ojTagCloudItemEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojTagCloudItem["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojTagCloudItem["color"]>;
-    'labelChanged': JetElementCustomEvent<ojTagCloudItem["label"]>;
-    'shortDescChanged': JetElementCustomEvent<ojTagCloudItem["shortDesc"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojTagCloudItem["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojTagCloudItem["svgStyle"]>;
-    'urlChanged': JetElementCustomEvent<ojTagCloudItem["url"]>;
-    'valueChanged': JetElementCustomEvent<ojTagCloudItem["value"]>;
+export interface ojTagCloudItemEventMap<K = any> extends dvtBaseComponentEventMap<ojTagCloudItemSettableProperties<K>> {
+    'categoriesChanged': JetElementCustomEvent<ojTagCloudItem<K>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojTagCloudItem<K>["color"]>;
+    'labelChanged': JetElementCustomEvent<ojTagCloudItem<K>["label"]>;
+    'shortDescChanged': JetElementCustomEvent<ojTagCloudItem<K>["shortDesc"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojTagCloudItem<K>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojTagCloudItem<K>["svgStyle"]>;
+    'urlChanged': JetElementCustomEvent<ojTagCloudItem<K>["url"]>;
+    'valueChanged': JetElementCustomEvent<ojTagCloudItem<K>["value"]>;
 }
-export interface ojTagCloudItemSettableProperties extends JetSettableProperties {
-    categories: string[];
+export interface ojTagCloudItemSettableProperties<K = any> extends dvtBaseComponentSettableProperties {
+    categories?: string[];
     color?: string;
-    label: string;
-    shortDesc: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    url: string;
-    value: number | null;
+    label?: string;
+    shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    url?: string;
+    value?: number | null;
 }
-export interface ojTagCloudItemSettablePropertiesLenient extends Partial<ojTagCloudItemSettableProperties> {
+export interface ojTagCloudItemSettablePropertiesLenient<K = any> extends Partial<ojTagCloudItemSettableProperties<K>> {
     [key: string]: any;
 }
 export type TagCloudElement<K, D extends ojTagCloud.Item<K> | any> = ojTagCloud<K, D>;
-export type TagCloudItemElement = ojTagCloudItem;
+export type TagCloudItemElement<K = any> = ojTagCloudItem<K>;
 export namespace TagCloudElement {
     // tslint:disable-next-line interface-over-type-literal
     type animationOnDataChangeChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["animationOnDataChange"]>;
@@ -286,50 +292,87 @@ export namespace TagCloudElement {
     type tooltipChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends ojTagCloud.Item<K> | any> = JetElementCustomEvent<ojTagCloud<K, D>["touchResponse"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends ojTagCloud.Item<K> | any> = dvtBaseComponent.trackResizeChanged<ojTagCloudSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type Item<K> = {
         categories?: string[];
         color?: string;
         id?: K;
         label: string;
-        shortDesc?: string;
+        shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
         url?: string;
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext<K> = {
-        componentElement: Element;
-        data: object;
-        index: number;
-        key: K;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type TooltipContext<K> = {
-        color: string;
-        componentElement: Element;
+    type ItemShortDescContext<K> = {
         id: K;
         label: string;
-        parentElement: Element;
         value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        index: number;
+        subId: string;
     };
 }
 export namespace TagCloudItemElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojTagCloudItem["categories"]>;
+    type categoriesChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojTagCloudItem["color"]>;
+    type colorChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojTagCloudItem["label"]>;
+    type labelChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojTagCloudItem["shortDesc"]>;
+    type shortDescChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojTagCloudItem["svgClassName"]>;
+    type svgClassNameChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojTagCloudItem["svgStyle"]>;
+    type svgStyleChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type urlChanged = JetElementCustomEvent<ojTagCloudItem["url"]>;
+    type urlChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["url"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojTagCloudItem["value"]>;
+    type valueChanged<K = any> = JetElementCustomEvent<ojTagCloudItem<K>["value"]>;
+}
+export interface TagCloudIntrinsicProps extends Partial<Readonly<ojTagCloudSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onanimationOnDataChangeChanged?: (value: ojTagCloudEventMap<any, any>['animationOnDataChangeChanged']) => void;
+    onanimationOnDisplayChanged?: (value: ojTagCloudEventMap<any, any>['animationOnDisplayChanged']) => void;
+    onasChanged?: (value: ojTagCloudEventMap<any, any>['asChanged']) => void;
+    ondataChanged?: (value: ojTagCloudEventMap<any, any>['dataChanged']) => void;
+    onhiddenCategoriesChanged?: (value: ojTagCloudEventMap<any, any>['hiddenCategoriesChanged']) => void;
+    onhighlightMatchChanged?: (value: ojTagCloudEventMap<any, any>['highlightMatchChanged']) => void;
+    onhighlightedCategoriesChanged?: (value: ojTagCloudEventMap<any, any>['highlightedCategoriesChanged']) => void;
+    onhoverBehaviorChanged?: (value: ojTagCloudEventMap<any, any>['hoverBehaviorChanged']) => void;
+    onlayoutChanged?: (value: ojTagCloudEventMap<any, any>['layoutChanged']) => void;
+    onselectionChanged?: (value: ojTagCloudEventMap<any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojTagCloudEventMap<any, any>['selectionModeChanged']) => void;
+    onstyleDefaultsChanged?: (value: ojTagCloudEventMap<any, any>['styleDefaultsChanged']) => void;
+    ontooltipChanged?: (value: ojTagCloudEventMap<any, any>['tooltipChanged']) => void;
+    ontouchResponseChanged?: (value: ojTagCloudEventMap<any, any>['touchResponseChanged']) => void;
+    ontrackResizeChanged?: (value: ojTagCloudEventMap<any, any>['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface TagCloudItemIntrinsicProps extends Partial<Readonly<ojTagCloudItemSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojTagCloudItemEventMap<any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojTagCloudItemEventMap<any>['colorChanged']) => void;
+    onlabelChanged?: (value: ojTagCloudItemEventMap<any>['labelChanged']) => void;
+    onshortDescChanged?: (value: ojTagCloudItemEventMap<any>['shortDescChanged']) => void;
+    onsvgClassNameChanged?: (value: ojTagCloudItemEventMap<any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojTagCloudItemEventMap<any>['svgStyleChanged']) => void;
+    onurlChanged?: (value: ojTagCloudItemEventMap<any>['urlChanged']) => void;
+    onvalueChanged?: (value: ojTagCloudItemEventMap<any>['valueChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-tag-cloud": TagCloudIntrinsicProps;
+            "oj-tag-cloud-item": TagCloudItemIntrinsicProps;
+        }
+    }
 }

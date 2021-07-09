@@ -43,6 +43,7 @@ export type ComponentMetadata = {
     };
     status?: Status[];
     styleClasses?: StyleClassItem[] | StyleGroup[];
+    styleVariables?: StyleVariable[];
     subcomponentType?: 'data' | 'patternImpl' | 'packPrivate';
     type?: 'composite' | 'core' | 'pack' | 'reference' | 'resource';
     version: string;
@@ -204,6 +205,7 @@ export type StyleClass = {
     help?: string;
     kind: 'class';
     name: string;
+    scope?: 'public' | 'protected';
     status?: Status[];
     styleSelector?: string;
 };
@@ -222,6 +224,7 @@ export type StyleSet = {
     help?: string;
     kind: 'set';
     name: string;
+    scope?: 'public' | 'protected';
     status?: Status[];
     styleItems: Array<(StyleClass | StyleSet | StyleTemplate)>;
     styleRelation: 'exclusive' | 'inclusive';
@@ -234,6 +237,7 @@ export type StyleTemplate = {
     help?: string;
     kind: 'template';
     name: string;
+    scope?: 'public' | 'protected';
     status?: Status[];
     styleSelector?: string;
     tokens: Array<(StyleTemplateToken)>;
@@ -250,6 +254,17 @@ export type StyleTemplateToken = {
 export type StyleTemplateTokenValue = {
     description?: string;
     displayName?: string;
+    name: string;
+    status?: Status[];
+};
+// tslint:disable-next-line interface-over-type-literal
+export type StyleVariable = {
+    description?: string;
+    displayName?: string;
+    extension?: object;
+    formats?: Array<('color' | 'length' | 'number' | 'percentage' | 'rgb_values' | 'time')>;
+    help?: string;
+    keywords?: string[];
     name: string;
     status?: Status[];
 };

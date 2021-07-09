@@ -1546,45 +1546,5 @@
         .oj-tabbar-hide-remove-icon .oj-tabbar-remove-icon {
           display: none;
         }
-
-        /* Override  default options*/
-        $tabBarDefaultOptions: ();
-        $tabBarAnimationDefaults: ();
-
-        @if ($tabBarHorizontalAddAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (addHorizontalItem: $tabBarHorizontalAddAnimation));
-        }
-
-        @if ($tabBarHorizontalRemoveAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (removeHorizontalItem: $tabBarHorizontalRemoveAnimation));
-        }
-
-        @if ($tabBarAddAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (add: $tabBarAddAnimation));
-        }
-
-        @if ($tabBarRemoveAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (remove: $tabBarRemoveAnimation));
-        }
-
-        @if ($tabBarUpdateAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (update: $tabBarUpdateAnimation));
-        }
-
-        @if ($tabBarPointerUpAnimation) {
-            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (pointerUp: $tabBarPointerUpAnimation));
-        }
-
-        @if ($tabBarAnimationDefaults) {
-            $tabBarDefaultOptions: map-merge($tabBarDefaultOptions, (animation: $tabBarAnimationDefaults));
-        }
-
-        @if ($loadingIndicatorDelayDuration) {
-            $tabBarDefaultOptions: map-merge($tabBarDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
-        }
-
-        .oj-tabbar-option-defaults {
-           font-family: oj-json-from-map($tabBarDefaultOptions);
-        }
     }
 }

@@ -15,5 +15,10 @@
   }
 }
 
+:root {
 
+  @each $key, $value in $oj-css-option-defaults-map {
+    #{$key}: $value;
+  }
+}
 

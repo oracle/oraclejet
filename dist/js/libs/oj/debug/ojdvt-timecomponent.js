@@ -8,14 +8,6 @@
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exports, dvt, ojtimeaxisToolkit) { 'use strict';
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Style related utility functions for TimeComponent.
    * @class
    */
@@ -70,14 +62,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
   {
     return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * This is the base class for all time based components (Gantt, Timeline).  It handles the following:
@@ -1262,14 +1246,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Base event manager for Timeline and Gantt.
    * @param {TimeComponent} comp The owning dvt.Timeline or dvt.Gantt.
    * @extends {dvt.EventManager}
@@ -1742,6 +1718,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
    * @private
    */
   TimeComponentEventManager.prototype._getDragHandler = function(relPos) {
+    if (relPos && !this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y)) {
+      return null;
+    }
     if (this._comp.isMarqueeSelectEnabled()) {
       return this._marqueeSelectHandler;
     }
@@ -1825,14 +1804,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojtimeaxis-toolkit'], function (exp
   {
     return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * TimeComponent keyboard handler.

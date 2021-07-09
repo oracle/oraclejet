@@ -7,15 +7,7 @@
  */
 import UrlPathAdapter from 'ojs/ojurlpathadapter';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-  // The old (8.0.0) paramter name
+// The old (8.0.0) paramter name
   var _OLD_PARAM_NAME = '_ojCoreRouter';
   // The new (9.0.0) paramter name
   var _NEW_PARAM_NAME = 'ojr';
@@ -91,8 +83,7 @@ import UrlPathAdapter from 'ojs/ojurlpathadapter';
    * @ignore
    */
   function encode(value) {
-    var encoded = encodeURIComponent(value);
-    return encoded;
+    return encodeURIComponent(value);
   }
   /**
    * Given an encoded path (%2Fpath1%2Fpath2%2Fpath3), decode the valu and
@@ -101,22 +92,67 @@ import UrlPathAdapter from 'ojs/ojurlpathadapter';
    * @ignore
    */
   function decode(value) {
-    var decoded = decodeURIComponent(value);
-    return decoded;
+    return decodeURIComponent(value);
   }
 
   /**
    * @class UrlParamAdapter
    * @implements CoreRouter.UrlAdapter
    * @since 8.0.0
-   * @ojsortdesc Class to synchronize CoreRouter state with the browser URL using
-   * path segments.
-   * @classdesc UrlParamAdapter class
+   * @classdesc Class to synchronize CoreRouter state with the browser URL using
+   * a query parameter.
    * <p>
-   * A URL adapter that uses a query parameter to synchronize router state
-   * (?_ojCoreRouter=...). All other query parameters are unaffected.
+   * This URL adapter uses a query parameter to synchronize router state
+   * (?ojr=...) with the URL. All other query parameters are unaffected.
    * </p>
-   * An alternative to UrlParamAdapter is {@link UrlPathAdapter}.
+   * <p>
+   * Since this adapter doesn't require that the server understand URL rewriting
+   * (see the documentation in {@link UrlPathAdapter}), it's often used during
+   * development time to easily deploy to simple servers. In order to re-use the
+   * same route configurations, it's often desirable to use this adapter as a
+   * decorator around another, such as with {@link UrlPathParamAdapter}.
+   * <pre class="prettyprint">
+   * <code>
+   * new CoreRouter(
+   *   [
+   *     { path: 'orders/{id}/{mode}' }
+   *   ],
+   *   {
+   *     urlAdapter: new UrlParamAdapter(
+   *       new UrlPathParamAdapter(baseUrl)
+   *     )
+   *   }
+   * )
+   * </code>
+   * </pre>
+   * This configuration allows UrlPathParamAdapter to use the path parameters
+   * defined for the route, but allows UrlParamAdapter to persist the router state
+   * using query parameters, removing the need for a server capable of URL rewriting
+   * during development time. The resulting URL will contain UrlParamAdapter's
+   * query paraneter "ojr", which holds the value of the original URL that the
+   * delegate created.
+   * </p>
+   *
+   * <p>
+   * When wrapping another adapter inside of UrlParamAdapter, the call to
+   * [UrlAdapter.getRoutesForUrl]{@link UrlAdapter#getRoutesForUrl} will be passed a second arg containing
+   * the normalized URL for the router state. Normally (when not wrapped),
+   * adapters will read directly from the URL to parse router states. However, when
+   * wrapped, the contents of the URL aren't known to the delegate, so it must rely
+   * on its decorator to pass it the normalized URL.
+   * </p>
+   *
+   * <p>
+   * Prior to deploying to production, UrlParamAdapter
+   * is removed from the configuration, leaving UrlPathParamAdapter to parse the
+   * parameters and persist them to the URL.
+   * </p>
+   * Alternatives to UrlParamAdapter are {@link UrlPathAdapter} and {@link UrlPathParamAdapter}.
+   * @param {CoreRouter.UrlAdapter=} pathAdapter An optional path adapter to which
+   * this adapter will delegate for translating routes to paths (getUrlForRoutes)
+   * and vice-versa (getRoutesForUrl). If not defined, {@link UrlPathAdapter} is
+   * used.
+   * @constructor
    * @export
    * @ojtsmodule
    * @ojtsimport {module: "ojcorerouter", type: "AMD", importName: "CoreRouter"}
@@ -125,10 +161,10 @@ import UrlPathAdapter from 'ojs/ojurlpathadapter';
    *               genericParameters: [{"name": "P", "description": "Parameters object for the router state"}]
    *              }
    */
-  function UrlParamAdapter() {
+  function UrlParamAdapter(pathAdapter) {
     // Use UrlPathAdapter with "" as the baseUrl to handle parsing states stored
     // in the query parameter
-    this._pathAdapter = new UrlPathAdapter('');
+    this._pathAdapter = pathAdapter || new UrlPathAdapter('');
     // If _OLD_PARAM_NAME isn't in querystring, then we can use _NEW_PARAM_NAME
     if (getRouterParamValue() === undefined) {
       _PARAM_NAME = _NEW_PARAM_NAME;
@@ -137,8 +173,11 @@ import UrlPathAdapter from 'ojs/ojurlpathadapter';
 
   /**
    * Build all routes for the current router query parameter.
-   * @return {Array.<CoreRouter.Route>} An array of routes starting from the path
-   * for the given router.
+   * @param {object=} routePathParams An optional object that may be passed by
+   * the route to parse the route path parameters for the active state.
+   * See {@link UrlAdapter#getRoutesForUrl} for details.
+   * @return {Array.<string[]>} An array of route path parameter names. See
+   * {@link UrlAdapter#getRoutesForUrl} for details.
    * @name getRoutesForUrl
    * @memberof UrlParamAdapter
    * @method
@@ -146,15 +185,15 @@ import UrlPathAdapter from 'ojs/ojurlpathadapter';
    * @export
    * @ojsignature {target: "Type", value: "Array.<CoreRouter.Route<P>>", for: "returns"}
    */
-  UrlParamAdapter.prototype.getRoutesForUrl = function () {
+  UrlParamAdapter.prototype.getRoutesForUrl = function (routePathParams) {
     // If no router state query param value exists, pass path adapter blank
     // for the URL so that it generates the default route.
-    var url = getRouterParamValue() || '';
-    var routes = this._pathAdapter.getRoutesForUrl(url);
-    return routes;
+    const urlParam = getRouterParamValue() || '';
+    return this._pathAdapter.getRoutesForUrl(routePathParams, urlParam);
   };
   /**
-   * Build the URL path for the given routes.
+   * Build the URL path for the given routes. See {@link UrlAdapter#getUrlForRoutes}
+   * for details.
    * @param {Array.<CoreRouter.Route>} routes The set of routes from which the
    * URL will be built.
    * @return {string} The full URL representative of the given routes

@@ -7,15 +7,7 @@
  */
 import oj from 'ojs/ojcore-base';
 
-/**
- * @license
- * Copyright (c) 2016 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-  var trimLeft = /^\s+/;
+var trimLeft = /^\s+/;
   var trimRight = /\s+$/;
   var mathRound = Math.round;
   var mathMin = Math.min;
@@ -219,7 +211,8 @@ import oj from 'ojs/ojcore-base';
   };
 
 
-  /** CSS3 color <code class="prettyprint">aliceblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aliceblue;"/></div>
+  /** CSS3 color <code class="prettyprint">aliceblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aliceblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -227,7 +220,9 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ALICEBLUE = null;
-  /** CSS3 color <code class="prettyprint">antiquewhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:antiquewhite;"/></div>
+  /** CSS3 color <code class="prettyprint">antiquewhite</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:antiquewhite;"/>
+   * </div>
    * @type {Color}
    * @expose
    * @public
@@ -235,7 +230,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ANTIQUEWHITE = null;
-  /** CSS3 color <code class="prettyprint">aqua</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aqua;"/></div>
+  /** CSS3 color <code class="prettyprint">aqua</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aqua;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -243,7 +239,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.AQUA = null;
-  /** CSS3 color <code class="prettyprint">aquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aquamarine;"></div>
+  /** CSS3 color <code class="prettyprint">aquamarine</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:aquamarine;"></div>
    * @type {Color}
    * @expose
    * @public
@@ -251,7 +248,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.AQUAMARINE = null;
-  /** CSS3 color <code class="prettyprint">azure</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:azure;"/></div>
+  /** CSS3 color <code class="prettyprint">azure</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:azure;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -259,7 +257,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.AZURE = null;
-  /** CSS3 color <code class="prettyprint">beige</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:beige;"/></div>
+  /** CSS3 color <code class="prettyprint">beige</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:beige;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -267,7 +266,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BEIGE = null;
-  /** CSS3 color <code class="prettyprint">bisque</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:bisque;"/></div>
+  /** CSS3 color <code class="prettyprint">bisque</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:bisque;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -275,7 +275,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BISQUE = null;
-  /** CSS3 color <code class="prettyprint">black</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:black;"/></div>
+  /** CSS3 color <code class="prettyprint">black</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:black;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -283,7 +284,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BLACK = null;
-  /** CSS3 color <code class="prettyprint">blanchedalmond</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blanchedalmond;"/></div>
+  /** CSS3 color <code class="prettyprint">blanchedalmond</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blanchedalmond;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -291,7 +293,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BLANCHEDALMOND = null;
-  /** CSS3 color <code class="prettyprint">blue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blue;"/></div>
+  /** CSS3 color <code class="prettyprint">blue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -299,7 +302,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BLUE = null;
-  /** CSS3 color <code class="prettyprint">blueviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blueviolet;"/></div>
+  /** CSS3 color <code class="prettyprint">blueviolet</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:blueviolet;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -307,7 +311,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BLUEVIOLET = null;
-  /** CSS3 color <code class="prettyprint">brown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:brown;"/></div>
+  /** CSS3 color <code class="prettyprint">brown</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:brown;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -315,7 +320,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BROWN = null;
-  /** CSS3 color <code class="prettyprint">burlywood</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:burlywood;"/></div>
+  /** CSS3 color <code class="prettyprint">burlywood</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:burlywood;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -323,7 +329,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.BURLYWOOD = null;
-  /** CSS3 color <code class="prettyprint">cadetblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cadetblue;"/></div>
+  /** CSS3 color <code class="prettyprint">cadetblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cadetblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -331,7 +338,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CADETBLUE = null;
-  /** CSS3 color <code class="prettyprint">chartreuse</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chartreuse;"/></div>
+  /** CSS3 color <code class="prettyprint">chartreuse</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chartreuse;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -339,7 +347,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CHARTREUSE = null;
-  /** CSS3 color <code class="prettyprint">chocolate</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chocolate;"/></div>
+  /** CSS3 color <code class="prettyprint">chocolate</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:chocolate;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -347,7 +356,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CHOCOLATE = null;
-  /** CSS3 color <code class="prettyprint">coral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:coral;"/></div>
+  /** CSS3 color <code class="prettyprint">coral</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:coral;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -355,7 +365,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CORAL = null;
-  /** CSS3 color <code class="prettyprint">cornflowerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornflowerblue;"/></div>
+  /** CSS3 color <code class="prettyprint">cornflowerblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornflowerblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -363,7 +374,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CORNFLOWERBLUE = null;
-  /** CSS3 color <code class="prettyprint">cornsilk</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornsilk;"/></div>
+  /** CSS3 color <code class="prettyprint">cornsilk</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cornsilk;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -371,7 +383,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CORNSILK = null;
-  /** CSS3 color <code class="prettyprint">crimson</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:crimson;"/></div>
+  /** CSS3 color <code class="prettyprint">crimson</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:crimson;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -379,7 +392,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CRIMSON = null;
-  /** CSS3 color <code class="prettyprint">cyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cyan;"/></div>
+  /** CSS3 color <code class="prettyprint">cyan</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:cyan;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -387,7 +401,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.CYAN = null;
-  /** CSS3 color <code class="prettyprint">darkblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkblue;"/></div>
+  /** CSS3 color <code class="prettyprint">darkblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -395,7 +410,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKBLUE = null;
-  /** CSS3 color <code class="prettyprint">darkcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkcyan;"/></div>
+  /** CSS3 color <code class="prettyprint">darkcyan</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkcyan;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -403,7 +419,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKCYAN = null;
-  /** CSS3 color <code class="prettyprint">darkgoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgoldenrod;"/></div>
+  /** CSS3 color <code class="prettyprint">darkgoldenrod</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgoldenrod;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -411,7 +428,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKGOLDENROD = null;
-  /** CSS3 color <code class="prettyprint">darkgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgray;"/></div>
+  /** CSS3 color <code class="prettyprint">darkgray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -419,7 +437,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKGRAY = null;
-  /** CSS3 color <code class="prettyprint">darkgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgrey;"/></div>
+  /** CSS3 color <code class="prettyprint">darkgrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -427,7 +446,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKGREY = null;
-  /** CSS3 color <code class="prettyprint">darkgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">darkgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkgreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -435,7 +455,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKGREEN = null;
-  /** CSS3 color <code class="prettyprint">darkkhaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkkhaki;"/></div>
+  /** CSS3 color <code class="prettyprint">darkkhaki</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkkhaki;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -443,7 +464,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKKHAKI = null;
-  /** CSS3 color <code class="prettyprint">darkmagenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkmagenta;"/></div>
+  /** CSS3 color <code class="prettyprint">darkmagenta</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkmagenta;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -451,7 +473,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKMAGENTA = null;
-  /** CSS3 color <code class="prettyprint">darkolivegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkolivegreen;"/></div>
+  /** CSS3 color <code class="prettyprint">darkolivegreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkolivegreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -459,7 +482,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKOLIVEGREEN = null;
-  /** CSS3 color <code class="prettyprint">darkorange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorange;"/></div>
+  /** CSS3 color <code class="prettyprint">darkorange</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorange;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -467,7 +491,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKORANGE = null;
-  /** CSS3 color <code class="prettyprint">darkorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorchid;"/></div>
+  /** CSS3 color <code class="prettyprint">darkorchid</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkorchid;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -475,7 +500,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKORCHID = null;
-  /** CSS3 color <code class="prettyprint">darkred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkred;"/></div>
+  /** CSS3 color <code class="prettyprint">darkred</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkred;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -483,7 +509,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKRED = null;
-  /** CSS3 color <code class="prettyprint">darksalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darksalmon;"/></div>
+  /** CSS3 color <code class="prettyprint">darksalmon</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darksalmon;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -491,7 +518,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKSALMON = null;
-  /** CSS3 color <code class="prettyprint">darkseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkseagreen;"/></div>
+  /** CSS3 color <code class="prettyprint">darkseagreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkseagreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -499,7 +527,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKSEAGREEN = null;
-  /** CSS3 color <code class="prettyprint">darkslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslateblue;"/></div>
+  /** CSS3 color <code class="prettyprint">darkslateblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslateblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -507,7 +536,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKSLATEBLUE = null;
-  /** CSS3 color <code class="prettyprint">darkslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategray;"/></div>
+  /** CSS3 color <code class="prettyprint">darkslategray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -515,7 +545,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKSLATEGRAY = null;
-  /** CSS3 color <code class="prettyprint">darkslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategrey;"/></div>
+  /** CSS3 color <code class="prettyprint">darkslategrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkslategrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -523,7 +554,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKSLATEGREY = null;
-  /** CSS3 color <code class="prettyprint">darkturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkturquoise;"/></div>
+  /** CSS3 color <code class="prettyprint">darkturquoise</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkturquoise;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -531,7 +563,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKTURQUOISE = null;
-  /** CSS3 color <code class="prettyprint">darkviolet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkviolet;"/></div>
+  /** CSS3 color <code class="prettyprint">darkviolet</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:darkviolet;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -539,7 +572,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DARKVIOLET = null;
-  /** CSS3 color <code class="prettyprint">deeppink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deeppink;"/></div>
+  /** CSS3 color <code class="prettyprint">deeppink</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deeppink;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -547,7 +581,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DEEPPINK = null;
-  /** CSS3 color <code class="prettyprint">deepskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deepskyblue;"/></div>
+  /** CSS3 color <code class="prettyprint">deepskyblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:deepskyblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -555,7 +590,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DEEPSKYBLUE = null;
-  /** CSS3 color <code class="prettyprint">dimgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgray;"/></div>
+  /** CSS3 color <code class="prettyprint">dimgray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -563,7 +599,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DIMGRAY = null;
-  /** CSS3 color <code class="prettyprint">dimgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgrey;"/></div>
+  /** CSS3 color <code class="prettyprint">dimgrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dimgrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -571,7 +608,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DIMGREY = null;
-  /** CSS3 color <code class="prettyprint">dodgerblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dodgerblue;"/></div>
+  /** CSS3 color <code class="prettyprint">dodgerblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:dodgerblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -579,7 +617,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.DODGERBLUE = null;
-  /** CSS3 color <code class="prettyprint">firebrick</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:firebrick;"/></div>
+  /** CSS3 color <code class="prettyprint">firebrick</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:firebrick;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -587,7 +626,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.FIREBRICK = null;
-  /** CSS3 color <code class="prettyprint">floralwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:floralwhite;"/></div>
+  /** CSS3 color <code class="prettyprint">floralwhite</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:floralwhite;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -595,7 +635,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.FLORALWHITE = null;
-  /** CSS3 color <code class="prettyprint">forestgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:forestgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">forestgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:forestgreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -603,7 +644,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.FORESTGREEN = null;
-  /** CSS3 color <code class="prettyprint">fuchsia</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:fuchsia;"/></div>
+  /** CSS3 color <code class="prettyprint">fuchsia</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:fuchsia;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -611,7 +653,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.FUCHSIA = null;
-  /** CSS3 color <code class="prettyprint">gainsboro</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gainsboro;"/></div>
+  /** CSS3 color <code class="prettyprint">gainsboro</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gainsboro;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -619,7 +662,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GAINSBORO = null;
-  /** CSS3 color <code class="prettyprint">ghostwhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ghostwhite;"/></div>
+  /** CSS3 color <code class="prettyprint">ghostwhite</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ghostwhite;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -627,7 +671,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GHOSTWHITE = null;
-  /** CSS3 color <code class="prettyprint">gold</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gold;"/></div>
+  /** CSS3 color <code class="prettyprint">gold</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gold;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -635,7 +680,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GOLD = null;
-  /** CSS3 color <code class="prettyprint">goldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:goldenrod;"/></div>
+  /** CSS3 color <code class="prettyprint">goldenrod</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:goldenrod;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -643,7 +689,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GOLDENROD = null;
-  /** CSS3 color <code class="prettyprint">gray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gray;"/></div>
+  /** CSS3 color <code class="prettyprint">gray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:gray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -651,7 +698,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GRAY = null;
-  /** CSS3 color <code class="prettyprint">green</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:green;"/></div>
+  /** CSS3 color <code class="prettyprint">green</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:green;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -659,7 +707,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GREEN = null;
-  /** CSS3 color <code class="prettyprint">greenyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:greenyellow;"/></div>
+  /** CSS3 color <code class="prettyprint">greenyellow</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:greenyellow;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -667,7 +716,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GREENYELLOW = null;
-  /** CSS3 color <code class="prettyprint">grey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:grey;"/></div>
+  /** CSS3 color <code class="prettyprint">grey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:grey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -675,7 +725,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.GREY = null;
-  /** CSS3 color <code class="prettyprint">honeydew</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:honeydew;"/></div>
+  /** CSS3 color <code class="prettyprint">honeydew</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:honeydew;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -683,7 +734,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.HONEYDEW = null;
-  /** CSS3 color <code class="prettyprint">hotpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:hotpink;"/></div>
+  /** CSS3 color <code class="prettyprint">hotpink</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:hotpink;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -691,7 +743,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.HOTPINK = null;
-  /** CSS3 color <code class="prettyprint">indianred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indianred;"/></div>
+  /** CSS3 color <code class="prettyprint">indianred</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indianred;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -699,7 +752,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.INDIANRED = null;
-  /** CSS3 color <code class="prettyprint">indigo</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indigo;"/></div>
+  /** CSS3 color <code class="prettyprint">indigo</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:indigo;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -707,7 +761,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.INDIGO = null;
-  /** CSS3 color <code class="prettyprint">ivory</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ivory;"/></div>
+  /** CSS3 color <code class="prettyprint">ivory</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:ivory;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -715,7 +770,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.IVORY = null;
-  /** CSS3 color <code class="prettyprint">khaki</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:khaki;"/></div>
+  /** CSS3 color <code class="prettyprint">khaki</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:khaki;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -723,7 +779,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.KHAKI = null;
-  /** CSS3 color <code class="prettyprint">lavender</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavender;"/></div>
+  /** CSS3 color <code class="prettyprint">lavender</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavender;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -731,7 +788,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LAVENDER = null;
-  /** CSS3 color <code class="prettyprint">lavenderblush</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavenderblush;"/></div>
+  /** CSS3 color <code class="prettyprint">lavenderblush</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lavenderblush;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -739,7 +797,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LAVENDERBLUSH = null;
-  /** CSS3 color <code class="prettyprint">lawngreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lawngreen;"/></div>
+  /** CSS3 color <code class="prettyprint">lawngreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lawngreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -747,7 +806,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LAWNGREEN = null;
-  /** CSS3 color <code class="prettyprint">lemonchiffon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lemonchiffon;"/></div>
+  /** CSS3 color <code class="prettyprint">lemonchiffon</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lemonchiffon;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -755,7 +815,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LEMONCHIFFON = null;
-  /** CSS3 color <code class="prettyprint">lightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightblue;"/></div>
+  /** CSS3 color <code class="prettyprint">lightblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -763,7 +824,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTBLUE = null;
-  /** CSS3 color <code class="prettyprint">lightcoral</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcoral;"/></div>
+  /** CSS3 color <code class="prettyprint">lightcoral</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcoral;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -771,7 +833,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTCORAL = null;
-  /** CSS3 color <code class="prettyprint">lightcyan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcyan;"/></div>
+  /** CSS3 color <code class="prettyprint">lightcyan</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightcyan;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -779,7 +842,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTCYAN = null;
-  /** CSS3 color <code class="prettyprint">lightgoldenrodyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgoldenrodyellow;"/></div>
+  /** CSS3 color <code class="prettyprint">lightgoldenrodyellow</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgoldenrodyellow;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -787,7 +851,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTGOLDENRODYELLOW = null;
-  /** CSS3 color <code class="prettyprint">lightgray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgray;"/></div>
+  /** CSS3 color <code class="prettyprint">lightgray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -795,7 +860,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTGRAY = null;
-  /** CSS3 color <code class="prettyprint">lightgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">lightgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -803,7 +869,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTGREEN = null;
-  /** CSS3 color <code class="prettyprint">lightgrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgrey;"/></div>
+  /** CSS3 color <code class="prettyprint">lightgrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightgrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -811,7 +878,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTGREY = null;
-  /** CSS3 color <code class="prettyprint">lightpink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightpink;"/></div>
+  /** CSS3 color <code class="prettyprint">lightpink</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightpink;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -819,7 +887,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTPINK = null;
-  /** CSS3 color <code class="prettyprint">lightsalmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsalmon;"/></div>
+  /** CSS3 color <code class="prettyprint">lightsalmon</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsalmon;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -827,7 +896,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSALMON = null;
-  /** CSS3 color <code class="prettyprint">lightseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightseagreen;"/></div>
+  /** CSS3 color <code class="prettyprint">lightseagreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightseagreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -835,7 +905,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSEAGREEN = null;
-  /** CSS3 color <code class="prettyprint">lightskyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightskyblue;"/></div>
+  /** CSS3 color <code class="prettyprint">lightskyblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightskyblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -843,7 +914,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSKYBLUE = null;
-  /** CSS3 color <code class="prettyprint">lightslategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategray;"/></div>
+  /** CSS3 color <code class="prettyprint">lightslategray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -851,7 +923,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSLATEGRAY = null;
-  /** CSS3 color <code class="prettyprint">lightslategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategrey;"/></div>
+  /** CSS3 color <code class="prettyprint">lightslategrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightslategrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -859,7 +932,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSLATEGREY = null;
-  /** CSS3 color <code class="prettyprint">lightsteelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsteelblue;"/></div>
+  /** CSS3 color <code class="prettyprint">lightsteelblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightsteelblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -867,7 +941,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTSTEELBLUE = null;
-  /** CSS3 color <code class="prettyprint">lightyellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightyellow;"/></div>
+  /** CSS3 color <code class="prettyprint">lightyellow</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lightyellow;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -875,7 +950,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIGHTYELLOW = null;
-  /** CSS3 color <code class="prettyprint">lime</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lime;"/></div>
+  /** CSS3 color <code class="prettyprint">lime</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:lime;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -883,7 +959,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIME = null;
-  /** CSS3 color <code class="prettyprint">limegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:limegreen;"/></div>
+  /** CSS3 color <code class="prettyprint">limegreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:limegreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -891,7 +968,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LIMEGREEN = null;
-  /** CSS3 color <code class="prettyprint">linen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:linen;"/></div>
+  /** CSS3 color <code class="prettyprint">linen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:linen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -899,7 +977,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.LINEN = null;
-  /** CSS3 color <code class="prettyprint">magenta</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:magenta;"/></div>
+  /** CSS3 color <code class="prettyprint">magenta</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:magenta;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -907,7 +986,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MAGENTA = null;
-  /** CSS3 color <code class="prettyprint">maroon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:maroon;"/></div>
+  /** CSS3 color <code class="prettyprint">maroon</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:maroon;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -915,7 +995,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MAROON = null;
-  /** CSS3 color <code class="prettyprint">mediumaquamarine</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumaquamarine;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumaquamarine</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumaquamarine;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -923,7 +1004,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMAQUAMARINE = null;
-  /** CSS3 color <code class="prettyprint">mediumblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumblue;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -931,7 +1013,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMBLUE = null;
-  /** CSS3 color <code class="prettyprint">mediumorchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumorchid;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumorchid</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumorchid;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -939,7 +1022,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMORCHID = null;
-  /** CSS3 color <code class="prettyprint">mediumpurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumpurple;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumpurple</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumpurple;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -947,7 +1031,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMPURPLE = null;
-  /** CSS3 color <code class="prettyprint">mediumseagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumseagreen;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumseagreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumseagreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -955,7 +1040,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMSEAGREEN = null;
-  /** CSS3 color <code class="prettyprint">mediumslateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumslateblue;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumslateblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumslateblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -963,7 +1049,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMSLATEBLUE = null;
-  /** CSS3 color <code class="prettyprint">mediumspringgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumspringgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumspringgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumspringgreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -971,7 +1058,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMSPRINGGREEN = null;
-  /** CSS3 color <code class="prettyprint">mediumturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumturquoise;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumturquoise</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumturquoise;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -979,7 +1067,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMTURQUOISE = null;
-  /** CSS3 color <code class="prettyprint">mediumvioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumvioletred;"/></div>
+  /** CSS3 color <code class="prettyprint">mediumvioletred</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mediumvioletred;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -987,7 +1076,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MEDIUMVIOLETRED = null;
-  /** CSS3 color <code class="prettyprint">midnightblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:midnightblue;"/></div>
+  /** CSS3 color <code class="prettyprint">midnightblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:midnightblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -995,7 +1085,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MIDNIGHTBLUE = null;
-  /** CSS3 color <code class="prettyprint">mintcream</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mintcream;"/></div>
+  /** CSS3 color <code class="prettyprint">mintcream</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mintcream;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1003,7 +1094,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MINTCREAM = null;
-  /** CSS3 color <code class="prettyprint">mistyrose</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mistyrose;"/></div>
+  /** CSS3 color <code class="prettyprint">mistyrose</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:mistyrose;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1011,7 +1103,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MISTYROSE = null;
-  /** CSS3 color <code class="prettyprint">moccasin</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:moccasin;"/></div>
+  /** CSS3 color <code class="prettyprint">moccasin</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:moccasin;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1019,7 +1112,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.MOCCASIN = null;
-  /** CSS3 color <code class="prettyprint">navajowhite</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navajowhite;"/></div>
+  /** CSS3 color <code class="prettyprint">navajowhite</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navajowhite;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1027,7 +1121,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.NAVAJOWHITE = null;
-  /** CSS3 color <code class="prettyprint">navy</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navy;"/></div>
+  /** CSS3 color <code class="prettyprint">navy</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:navy;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1035,7 +1130,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.NAVY = null;
-  /** CSS3 color <code class="prettyprint">oldlace</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:oldlace;"/></div>
+  /** CSS3 color <code class="prettyprint">oldlace</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:oldlace;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1043,7 +1139,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.OLDLACE = null;
-  /** CSS3 color <code class="prettyprint">olive</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olive;"/></div>
+  /** CSS3 color <code class="prettyprint">olive</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olive;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1051,7 +1148,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.OLIVE = null;
-  /** CSS3 color <code class="prettyprint">olivedrab</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olivedrab;"/></div>
+  /** CSS3 color <code class="prettyprint">olivedrab</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:olivedrab;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1059,7 +1157,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.OLIVEDRAB = null;
-  /** CSS3 color <code class="prettyprint">orange</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orange;"/></div>
+  /** CSS3 color <code class="prettyprint">orange</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orange;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1067,7 +1166,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ORANGE = null;
-  /** CSS3 color <code class="prettyprint">orangered</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orangered;"/></div>
+  /** CSS3 color <code class="prettyprint">orangered</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orangered;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1075,7 +1175,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ORANGERED = null;
-  /** CSS3 color <code class="prettyprint">orchid</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orchid;"/></div>
+  /** CSS3 color <code class="prettyprint">orchid</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:orchid;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1083,7 +1184,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ORCHID = null;
-  /** CSS3 color <code class="prettyprint">palegoldenrod</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegoldenrod;"/></div>
+  /** CSS3 color <code class="prettyprint">palegoldenrod</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegoldenrod;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1091,7 +1193,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PALEGOLDENROD = null;
-  /** CSS3 color <code class="prettyprint">palegreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegreen;"/></div>
+  /** CSS3 color <code class="prettyprint">palegreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palegreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1099,7 +1202,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PALEGREEN = null;
-  /** CSS3 color <code class="prettyprint">paleturquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:paleturquoise;"/></div>
+  /** CSS3 color <code class="prettyprint">paleturquoise</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:paleturquoise;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1107,7 +1211,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PALETURQUOISE = null;
-  /** CSS3 color <code class="prettyprint">palevioletred</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palevioletred;"/></div>
+  /** CSS3 color <code class="prettyprint">palevioletred</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:palevioletred;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1115,7 +1220,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PALEVIOLETRED = null;
-  /** CSS3 color <code class="prettyprint">papayawhip</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:papayawhip;"/></div>
+  /** CSS3 color <code class="prettyprint">papayawhip</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:papayawhip;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1123,7 +1229,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PAPAYAWHIP = null;
-  /** CSS3 color <code class="prettyprint">peachpuff</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peachpuff;"/></div>
+  /** CSS3 color <code class="prettyprint">peachpuff</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peachpuff;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1131,7 +1238,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PEACHPUFF = null;
-  /** CSS3 color <code class="prettyprint">peru</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peru;"/></div>
+  /** CSS3 color <code class="prettyprint">peru</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:peru;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1139,7 +1247,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PERU = null;
-  /** CSS3 color <code class="prettyprint">pink</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:pink;"/></div>
+  /** CSS3 color <code class="prettyprint">pink</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:pink;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1147,7 +1256,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PINK = null;
-  /** CSS3 color <code class="prettyprint">plum</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:plum;"/></div>
+  /** CSS3 color <code class="prettyprint">plum</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:plum;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1155,7 +1265,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PLUM = null;
-  /** CSS3 color <code class="prettyprint">powderblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:powderblue;"/></div>
+  /** CSS3 color <code class="prettyprint">powderblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:powderblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1163,7 +1274,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.POWDERBLUE = null;
-  /** CSS3 color <code class="prettyprint">purple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:purple;"/></div>
+  /** CSS3 color <code class="prettyprint">purple</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:purple;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1171,7 +1283,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.PURPLE = null;
-  /** CSS3 color <code class="prettyprint">rebeccapurple</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rebeccapurple;"/></div>
+  /** CSS3 color <code class="prettyprint">rebeccapurple</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rebeccapurple;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1179,7 +1292,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.REBECCAPURPLE = null;
-  /** CSS3 color <code class="prettyprint">red</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:red;"/></div>
+  /** CSS3 color <code class="prettyprint">red</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:red;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1187,7 +1301,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.RED = null;
-  /** CSS3 color <code class="prettyprint">rosybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rosybrown;"/></div>
+  /** CSS3 color <code class="prettyprint">rosybrown</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:rosybrown;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1195,7 +1310,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ROSYBROWN = null;
-  /** CSS3 color <code class="prettyprint">royalblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:royalblue;"/></div>
+  /** CSS3 color <code class="prettyprint">royalblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:royalblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1203,7 +1319,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.ROYALBLUE = null;
-  /** CSS3 color <code class="prettyprint">saddlebrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:saddlebrown;"/></div>
+  /** CSS3 color <code class="prettyprint">saddlebrown</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:saddlebrown;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1211,7 +1328,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SADDLEBROWN = null;
-  /** CSS3 color <code class="prettyprint">salmon</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:salmon;"/></div>
+  /** CSS3 color <code class="prettyprint">salmon</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:salmon;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1219,7 +1337,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SALMON = null;
-  /** CSS3 color <code class="prettyprint">sandybrown</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sandybrown;"/></div>
+  /** CSS3 color <code class="prettyprint">sandybrown</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sandybrown;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1227,7 +1346,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SANDYBROWN = null;
-  /** CSS3 color <code class="prettyprint">seagreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seagreen;"/></div>
+  /** CSS3 color <code class="prettyprint">seagreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seagreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1235,7 +1355,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SEAGREEN = null;
-  /** CSS3 color <code class="prettyprint">seashell</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seashell;"/></div>
+  /** CSS3 color <code class="prettyprint">seashell</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:seashell;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1243,7 +1364,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SEASHELL = null;
-  /** CSS3 color <code class="prettyprint">sienna</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sienna;"/></div>
+  /** CSS3 color <code class="prettyprint">sienna</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:sienna;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1251,7 +1373,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SIENNA = null;
-  /** CSS3 color <code class="prettyprint">silver</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:silver;"/></div>
+  /** CSS3 color <code class="prettyprint">silver</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:silver;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1259,7 +1382,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SILVER = null;
-  /** CSS3 color <code class="prettyprint">skyblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:skyblue;"/></div>
+  /** CSS3 color <code class="prettyprint">skyblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:skyblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1267,7 +1391,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SKYBLUE = null;
-  /** CSS3 color <code class="prettyprint">slateblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slateblue;"/></div>
+  /** CSS3 color <code class="prettyprint">slateblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slateblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1275,7 +1400,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SLATEBLUE = null;
-  /** CSS3 color <code class="prettyprint">slategray</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategray;"/></div>
+  /** CSS3 color <code class="prettyprint">slategray</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategray;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1283,7 +1409,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SLATEGRAY = null;
-  /** CSS3 color <code class="prettyprint">slategrey</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategrey;"/></div>
+  /** CSS3 color <code class="prettyprint">slategrey</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:slategrey;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1291,7 +1418,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SLATEGREY = null;
-  /** CSS3 color <code class="prettyprint">snow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:snow;"/></div>
+  /** CSS3 color <code class="prettyprint">snow</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:snow;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1299,7 +1427,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SNOW = null;
-  /** CSS3 color <code class="prettyprint">springgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:springgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">springgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:springgreen;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1307,7 +1436,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.SPRINGGREEN = null;
-  /** CSS3 color <code class="prettyprint">steelblue</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:steelblue;"/></div>
+  /** CSS3 color <code class="prettyprint">steelblue</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:steelblue;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1315,7 +1445,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.STEELBLUE = null;
-  /** CSS3 color <code class="prettyprint">tan</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tan;"/></div>
+  /** CSS3 color <code class="prettyprint">tan</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tan;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1323,7 +1454,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.TAN = null;
-  /** CSS3 color <code class="prettyprint">teal</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:teal;"/></div>
+  /** CSS3 color <code class="prettyprint">teal</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:teal;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1331,7 +1463,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.TEAL = null;
-  /** CSS3 color <code class="prettyprint">thistle</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:thistle;"/></div>
+  /** CSS3 color <code class="prettyprint">thistle</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:thistle;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1339,7 +1472,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.THISTLE = null;
-  /** CSS3 color <code class="prettyprint">tomato</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tomato;"/></div>
+  /** CSS3 color <code class="prettyprint">tomato</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:tomato;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1347,7 +1481,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.TOMATO = null;
-  /** CSS3 color <code class="prettyprint">turquoise</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:turquoise;"/></div>
+  /** CSS3 color <code class="prettyprint">turquoise</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:turquoise;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1355,7 +1490,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.TURQUOISE = null;
-  /** CSS3 color <code class="prettyprint">violet</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:violet;"/></div>
+  /** CSS3 color <code class="prettyprint">violet</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:violet;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1363,7 +1499,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.VIOLET = null;
-  /** CSS3 color <code class="prettyprint">wheat</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:wheat;"/></div>
+  /** CSS3 color <code class="prettyprint">wheat</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:wheat;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1371,7 +1508,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.WHEAT = null;
-  /** CSS3 color <code class="prettyprint">white</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:white;"/></div>
+  /** CSS3 color <code class="prettyprint">white</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:white;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1379,7 +1517,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.WHITE = null;
-  /** CSS3 color <code class="prettyprint">whitesmoke</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:whitesmoke;"/></div>
+  /** CSS3 color <code class="prettyprint">whitesmoke</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:whitesmoke;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1387,7 +1526,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.WHITESMOKE = null;
-  /** CSS3 color <code class="prettyprint">yellow</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellow;"/></div>
+  /** CSS3 color <code class="prettyprint">yellow</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellow;"/></div>
    * @type {Color}
    * @expose
    * @public
@@ -1395,7 +1535,8 @@ import oj from 'ojs/ojcore-base';
    * @memberof Color
    */
   Color.YELLOW = null;
-  /** CSS3 color <code class="prettyprint">yellowgreen</code><div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellowgreen;"/></div>
+  /** CSS3 color <code class="prettyprint">yellowgreen</code>
+   * <div style="display:inline;padding-left:40px;margin-left:50px;height:15px;width:40px;background:yellowgreen;"/></div>
    * @type {Color}
    * @expose
    * @public

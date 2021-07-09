@@ -10,6 +10,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
 {
   "use strict";
 
+
 /* jslint browser: true*/
 /* global ko, signals, Logger:false */
 
@@ -177,8 +178,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    * @return {!Array} an array of segment
    */
   function _getSegments(path) {
-    var array = path ? path.split('/') : [];
-    return array;
+    return path ? path.split('/') : [];
   }
 
   /**
@@ -662,9 +662,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     });
 
     // The order of execution is exit(undef) from leaf to root followed by enter from root to leaf
-    var resultStates = undef.concat(states);
-
-    return resultStates;
+    return undef.concat(states);
   }
 
   /**
@@ -1323,7 +1321,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
      * <code class="prettyprint">stateId('book')</code> transitions the router to
      * the state with id 'book'.<br>
      * It is convenient to use the stateId observable when working with component
-     * with 2-way binding like {@link oj.ojButtonset#checked|checked} for
+     * with 2-way binding like {@link oj.ojButtonsetOne#value|value} for
      * <code class="prettyprint">ojButtonset</code> or
      * {@link oj.ojNavigationList#selection|selection} for
      * <code class="prettyprint">ojNavigationList</code> because it does not
@@ -1703,15 +1701,14 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
     }
 
     function _getNameFromState(currentState) {
-      var name = 'oj-blank';// deal with empty state
+      var name;
       if (currentState) {
         name = currentState.value;
         if (!name || (typeof name !== 'string')) {
           name = currentState._id;
         }
-        return name;
       }
-      return undefined;
+      return name;
     }
 
     Object.defineProperties(this, {
@@ -1856,9 +1853,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    */
   oj.Router.prototype.getCurrentChildRouter = function () {
     var sId = _getShortId(this._stateId() || this._defaultStateId);
-    var child = _getChildRouter(this, sId);
-
-    return child;
+    return _getChildRouter(this, sId);
   };
 
   /**
@@ -1965,7 +1960,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *      object given a string state id.</li>
    * </ul>
    * This operation resets any previous configuration, and is chainable.<br>
-   * Configuring {@link oj.RouterState#parameteters router state parameters} should
+   * Configuring {@link oj.RouterState#parameters router state parameters} should
    * be done here.  See the example below.
    *
    * @param {!(Object.<string, {oj.RouterState.ConfigOptions}> |
@@ -1980,12 +1975,12 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *    </span>
    * </h4>
    * A function returning a {@link oj.RouterState|RouterState} given a string state id.<br>
-   * When using a callback, the {@link oj.Router.states|states} property will always be null since
+   * When using a callback, the {@link oj.Router#states|states} property will always be null since
    * states are defined on the fly.<br>See second example below.
    * <h6>A dictionary of states:</h6>
-   * It is a dictionary in which the keys are state {@link oj.Router#id|id}s and values are objects
+   * It is a dictionary in which the keys are state {@link oj.RouterState#id|id}s and values are objects
    * defining the state.  Note that the forward slash character '/' is not allowed
-   * in the state Id.  See {@link oj.RouterState~ConfigOptions|ConfigOptions}.<br>See first example below.
+   * in the state Id.  See {@link oj.RouterState.ConfigOptions|ConfigOptions}.<br>See first example below.
    * <h6>Key</h6>
    * <table class="params">
    *   <thead><tr>
@@ -2005,7 +2000,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
    *        <span class="param-type">oj.RouterState.ConfigOptions</span>
    *      </td>
    *      <td class="value">
-   *        <span class="param-type">See {@link oj.RouterState~ConfigOptions|ConfigOptions}
+   *        <span class="param-type">See {@link oj.RouterState.ConfigOptions|ConfigOptions}
    *        for the options available for configuring router states</span>
    *      </td>
    *   </tbody>
@@ -2967,7 +2962,9 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger'], function(oj, ko, s
 var Router = oj.Router;
 
 
-/* eslint-disable no-bitwise */ /* The purpose of this file is compression which by its nature is bit banging */
+/* eslint-disable no-bitwise */
+/* eslint-disable no-constant-condition */
+/* The purpose of this file is compression which by its nature is bit banging */
 
 /**
  * Utility to compress JSON to store on the URL.
@@ -3224,7 +3221,6 @@ var Router = oj.Router;
       }
       contextEnlargeIn -= 1;
       if (contextEnlargeIn === 0) {
-        contextEnlargeIn = Math.pow(2, contextNumBits);
         contextNumBits += 1;
       }
     }
@@ -3244,7 +3240,7 @@ var Router = oj.Router;
     }
 
     // Flush the last char
-    for (;;) {
+    while (true) {
       contextDataVal <<= 1;
       if (contextDataPosition === bitsPerChar - 1) {
         contextDataString += getCharFromInt(contextDataVal);
@@ -3338,7 +3334,7 @@ var Router = oj.Router;
     dictionary[3] = c;
     var w = c;
     result = c;
-    for (;;) {
+    while (true) {
       if (data.index > length) {
         return '';
       }
@@ -3358,7 +3354,8 @@ var Router = oj.Router;
         power <<= 1;
       }
 
-      switch (c = bits) {
+      c = bits;
+      switch (c) {
         case 0:
           bits = 0;
           maxpower = Math.pow(2, 8);
@@ -3414,7 +3411,7 @@ var Router = oj.Router;
       if (dictionary[c]) {
         entry = dictionary[c];
       } else if (c === dictSize) {
-        entry = w + w[0];
+        entry = w + (w.length ? w[0] : '');
       } else {
         return null;
       }
@@ -3459,7 +3456,7 @@ var Router = oj.Router;
 
     this._parameters = {};
 
-    this._paramOrder = new Array(path.length);
+    this._paramOrder = [];
 
     path.forEach(function (pathItem, i) {
       /*

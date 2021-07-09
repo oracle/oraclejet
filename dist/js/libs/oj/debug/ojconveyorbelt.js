@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
 var __oj_conveyor_belt_metadata = 
 {
   "properties": {
@@ -74,14 +66,6 @@ var __oj_conveyor_belt_metadata =
     oj.CustomElementBridge.register('oj-conveyor-belt', { metadata: __oj_conveyor_belt_metadata });
   }());
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   /*
   ** Important:
   ** - This file is designed to be shared verbatim among the ADFui products.
@@ -128,11 +112,11 @@ var __oj_conveyor_belt_metadata =
    * @ojtsignore
    */
   function ConveyorBeltCommon(
-    elem, orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo, agentInfo) {
+    elem, options, buttonInfo, callbackInfo, styleInfo) { //  orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo) {
     this._elem = elem;
-    this._orientation = orientation;
-    this._contentParent = contentParent;
-    this._bRtl = bRtl;
+    this._orientation = options.orientation;
+    this._contentParent = options.contentParent;
+    this._bRtl = options.bRtl;
     this._arrowVisibility = buttonInfo.arrowVisibility;
     this._prevButtonStyleClass = buttonInfo.prevButtonStyleClass;
     this._nextButtonStyleClass = buttonInfo.nextButtonStyleClass;
@@ -157,23 +141,8 @@ var __oj_conveyor_belt_metadata =
 
     this._bExternalScroll = true;
     this._firstVisibleItemIndex = 0;
-    this._agentVersion = agentInfo.browserVersion;
     this._atStart = true;
     this._atEnd = false;
-
-    // copied basic checks from AdfAgent
-    var navUserAgent = navigator.userAgent;
-    var agentName = navUserAgent.toLowerCase();
-    if (agentName.indexOf('gecko/') !== -1) {
-      this._bAgentGecko = true;
-    } else if (agentInfo && agentInfo.browser === 'safari') {
-      this._bAgentSafari = true;
-    } else if (agentInfo && agentInfo.browser === 'edge') {
-      this._bAgentEdge = true;
-    } else if (agentName.indexOf('applewebkit') !== -1 ||
-             agentName.indexOf('safari') !== -1) {
-      this._bAgentWebkit = true;
-    }
   }
 
   /**
@@ -217,7 +186,7 @@ var __oj_conveyor_belt_metadata =
       self._handleTouchStart(event);
     };
     cbcClass._addBubbleEventListener(this._overflowContainer, 'touchstart',
-                                     this._touchStartListener, true);
+                                    this._touchStartListener, true);
     this._touchMoveListener = function (event) {
       self._handleTouchMove(event);
     };
@@ -500,8 +469,7 @@ var __oj_conveyor_belt_metadata =
   ConveyorBeltCommon._getComputedStyle = function (elem) {
     var elemOwnerDoc = elem.ownerDocument;
     var defView = elemOwnerDoc.defaultView;
-    var computedStyle = defView.getComputedStyle(elem, null);
-    return computedStyle;
+    return defView.getComputedStyle(elem, null);
   };
 
   /**
@@ -593,12 +561,27 @@ var __oj_conveyor_belt_metadata =
    */
   ConveyorBeltCommon._getWheelDelta = function (event) {
     var wheelDelta = 0;
-    if (event.wheelDelta != null) {
-      wheelDelta = event.wheelDelta;
-    } else if (event.deltaY != null) {
-      wheelDelta = -event.deltaY;
+    if (event.deltaY != null || event.deltaX != null) {
+      var deltaX = Math.abs(event.deltaX);
+      var deltaY = Math.abs(event.deltaY);
+      if (deltaX > deltaY) {
+        wheelDelta = -event.deltaX;
+      } else {
+        wheelDelta = -event.deltaY;
+      }
+    } else if (event.wheelDelta != null) {
+      var wheelDeltaX = Math.abs(event.wheelDeltaX);
+      var wheelDeltaY = Math.abs(event.wheelDeltaY);
+      if (wheelDeltaX > wheelDeltaY) {
+        wheelDelta = event.wheelDeltaX;
+      } else {
+        wheelDelta = event.wheelDeltaY;
+      }
     } else {
       wheelDelta = -event.detail;
+    }
+    if (event.deltaMode === 1) {
+      wheelDelta *= 5;
     }
     return wheelDelta;
   };
@@ -905,7 +888,6 @@ var __oj_conveyor_belt_metadata =
    * @private
    */
   ConveyorBeltCommon.prototype._measureContents = function () {
-    // var contentParent = this._getContentParent();
     var arContentElements = this._getContentElements();
     var totalSize = { w: 0, h: 0 };
     var sizes = [];
@@ -1121,7 +1103,7 @@ var __oj_conveyor_belt_metadata =
   ConveyorBeltCommon.prototype._setOverflowScroll = function (scroll) {
     var container = this._overflowContainer;
     if (this._isHorizontal()) {
-      container.scrollLeft = this._convertScrollLogicalToBrowser(scroll);
+      DomUtils.setScrollLeft(container, scroll);
     } else {
       container.scrollTop = scroll;
     }
@@ -1200,9 +1182,11 @@ var __oj_conveyor_belt_metadata =
         // FIX : resolve busy state after animating a scroll
         self._resolveBusyState();
       };
-      // need to convert the logical scroll to the browser value for animating
+      // scrollFunc delegates to jQuery.animate() to animate scrollLeft.
+      // Most browsers use negative scroll value in RTL, except for old ie/edge that still use positive values
+      // DomUtils.calculateScrollLeft converts the logical scroll to the correct browser value.
       scrollFunc.call(null, this._overflowContainer,
-                      this._convertScrollLogicalToBrowser(scroll),
+                      DomUtils.calculateScrollLeft(scroll),
                       duration, onEndFunc);
     }
   };
@@ -1230,9 +1214,8 @@ var __oj_conveyor_belt_metadata =
    */
   ConveyorBeltCommon.prototype._getCurrScroll = function () {
     var container = this._overflowContainer;
-    return this._isHorizontal() ?
-           Math.round(this._convertScrollBrowserToLogical(container.scrollLeft)) :
-           Math.round(container.scrollTop);
+    return this._isHorizontal() ? Math.round(Math.abs(container.scrollLeft)) :
+    Math.round(container.scrollTop);
   };
 
   /**
@@ -1281,14 +1264,18 @@ var __oj_conveyor_belt_metadata =
     if (this._needsScroll() && !this._bScrolling) {
       var cbcClass = ConveyorBeltCommon;
       var wheelDelta = cbcClass._getWheelDelta(event);
+      var scroll;
       if (wheelDelta < 0 && !this._atEnd) {
-        bConsumeEvent = true;
-        this._scrollNext();
+        scroll = this._getCurrScroll() + Math.abs(wheelDelta);
       } else if (wheelDelta > 0 && !this._atStart) {
-        bConsumeEvent = true;
-        this._scrollPrev();
+        scroll = this._getCurrScroll() - wheelDelta;
       }
-    }
+      if (scroll != null) {
+        bConsumeEvent = true;
+        this._updateButtonVisibility(scroll);
+        this._setOverflowScroll(scroll);
+      }
+     }
     if (bConsumeEvent) {
       event.preventDefault();
       event.stopPropagation();
@@ -1308,16 +1295,21 @@ var __oj_conveyor_belt_metadata =
     if (this._needsScroll() && !this._bScrolling && eventTouches.length === 1) {
       this._bTouch = true;
       // save off some initial information at the start of a swipe
-      var firstTouch = eventTouches[0];
-      this._touchStartCoord = this._isHorizontal() ? firstTouch.pageX : firstTouch.pageY;
+      this._firstTouch = eventTouches[0];
+      this._touchLastCoord = this._isHorizontal() ? this._firstTouch.pageX : this._firstTouch.pageY;
+
       this._touchStartScroll = this._getCurrScroll();
       this._touchStartNextScroll = this._calcNextScroll();
       this._touchStartPrevScroll = this._calcPrevScroll();
       // FIX : save the initial at start or at end state
       this._touchInitialNotAtEnd = !this._atEnd;
       this._touchInitialNotAtStart = !this._atStart;
+      this._trackingPoints = [];
+      this._addTrackingPoint(this._touchLastCoord);
+      this._targetCoord = 0;
     }
   };
+
 
   /**
    * Handle a touchmove event.
@@ -1330,9 +1322,9 @@ var __oj_conveyor_belt_metadata =
   ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
     var bHoriz = this._isHorizontal();
     var eventTouches = event.touches;
-    var firstTouch = eventTouches[0];
-    var touchCoord = bHoriz ? firstTouch.pageX : firstTouch.pageY;
-    var diff = touchCoord - this._touchStartCoord;
+    var currentTouch = eventTouches[0];
+    this._touchCurrentCoord = bHoriz ? currentTouch.pageX : currentTouch.pageY;
+    var diff = this._touchCurrentCoord - this._touchLastCoord;
     // in non-RTL, if swiping left or up, scroll next; otherwise scroll prev
     // in RTL, if swiping right or up, scroll next; otherwise scroll prev
     var bNext = (bHoriz && this._bRtl) ? (diff > 0) : (diff < 0);
@@ -1341,42 +1333,26 @@ var __oj_conveyor_belt_metadata =
                                     (!bNext && this._touchInitialNotAtStart);
     // only need to do something if we also received the touchstart and if we can
     // scroll in the swipe direction
-    if (this._bTouch && canScrollInSwipeDirection) {
-      // only scroll next/prev if the swipe is longer than the threshold; if it's
-      // less, then just drag the items with the swipe
-      var cbcClass = ConveyorBeltCommon;
-      var container = this._overflowContainer;
-      var threshold = cbcClass._SWIPE_THRESHOLD *
-                      (bHoriz ? container.offsetWidth : container.offsetHeight);
-
-      // if swiping under the threshold, just move the conveyor with the swipe
-      if (Math.abs(diff) < threshold) {
-        this._setCurrScroll(this._touchStartScroll - diff, true);
-
-        // if we're under the threshold, but we've already scrolled to the end,
-        // then we don't need to continue trying to scroll and we don't need to
-        // reset the scroll position at the end of the touch
-        if ((this._touchInitialNotAtEnd && this._atEnd) ||
-            (this._touchInitialNotAtStart && this._atStart)) {
-          this._bTouch = false;
-        }
+    if (this._bTouch && this._firstTouch.id === currentTouch.id && canScrollInSwipeDirection) {
+      this._addTrackingPoint(this._touchLastCoord);
+      if (bHoriz && this._bRtl) {
+        this._setCurrScroll(this._getCurrScroll() + diff, true);
       } else {
-        // if swiping beyond the threshold, scroll to the next/prev set of items
-        this._setCurrScroll(bNext ? this._touchStartNextScroll : this._touchStartPrevScroll, false);
-        // don't scroll again for this same swipe
+        this._setCurrScroll(this._getCurrScroll() - diff, true);
+      }
+      this._touchLastCoord = this._touchCurrentCoord;
+      // if we're under the threshold, but we've already scrolled to the end,
+      // then we don't need to continue trying to scroll and we don't need to
+      // reset the scroll position at the end of the touch
+      if ((this._touchInitialNotAtEnd && this._atEnd) ||
+          (this._touchInitialNotAtStart && this._atStart)) {
         this._bTouch = false;
       }
-
       // FIX : set a flag indicating we've scrolled for this touch event
       this._scrolledForThisTouch = true;
     }
-
-    // FIX : if we've scrolled for this touch event, consume the event
-    // so that the page doesn't also scroll
-    if (this._scrolledForThisTouch) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   /**
@@ -1389,14 +1365,77 @@ var __oj_conveyor_belt_metadata =
    */
   // eslint-disable-next-line no-unused-vars
   ConveyorBeltCommon.prototype._handleTouchEnd = function (event) {
-    // if a full page swipe hasn't happened, scroll back to the original position
-    if (this._bTouch) {
-      this._setCurrScroll(this._touchStartScroll, false);
-    }
     this._bTouch = false;
     // FIX : reset the flag indicating if we've scrolled for this touch
     // event
     this._scrolledForThisTouch = false;
+    if (this._trackingPoints != null) {
+      this._addTrackingPoint(this._touchLastCoord);
+      this._startDecelAnim();
+    }
+  };
+
+  /**
+   * Records movement for the last 100ms
+   * @param {number} coord - x or y coordinate depending on the conveyorbelt orientation
+   */
+  ConveyorBeltCommon.prototype._addTrackingPoint = function (coord) {
+    if (this._trackingPoints == null) {
+      return;
+    }
+    var time = Date.now();
+    while (this._trackingPoints.length > 0) {
+        if (time - this._trackingPoints[0].time <= 100) {
+            break;
+        }
+        this._trackingPoints.shift();
+    }
+    this._trackingPoints.push({ coord, time });
+  };
+
+  /*
+  * Initialize animation of values coming to a stop
+  */
+  ConveyorBeltCommon.prototype._startDecelAnim = function () {
+    var firstPoint = this._trackingPoints[0];
+    var lastPoint = this._trackingPoints[this._trackingPoints.length - 1];
+
+    var offset = lastPoint.coord - firstPoint.coord;
+    var timeOffset = lastPoint.time - firstPoint.time;
+
+    var D = timeOffset / 15;
+
+    this._decVel = offset / D || 0; // prevent NaN
+
+    if (Math.abs(this._decVel) > 1) {
+        this._decelerating = true;
+        requestAnimationFrame(this._stepDecelAnim.bind(this));
+    }
+  };
+
+  /**
+   * Animates values slowing down
+   */
+  ConveyorBeltCommon.prototype._stepDecelAnim = function () {
+    if (!this._decelerating) {
+      return;
+    }
+    var friction = ConveyorBeltCommon._TOUCH_SCROLL_FRICTION;
+    var stopThreshold = ConveyorBeltCommon._TOUCH_SCROLL_STOP_THRESHOLD;
+    this._decVel *= friction;
+
+    this._targetCoord += this._decVel;
+
+    if (Math.abs(this._decVel) > stopThreshold) {
+      if (this._isHorizontal() && this._bRtl) {
+        this._setCurrScroll(this._getCurrScroll() + this._targetCoord, false);
+      } else {
+        this._setCurrScroll(this._getCurrScroll() - this._targetCoord, false);
+      }
+      requestAnimationFrame(this._stepDecelAnim.bind(this));
+    } else {
+      this._decelerating = false;
+    }
   };
 
   /**
@@ -1611,75 +1650,24 @@ var __oj_conveyor_belt_metadata =
   };
 
   /**
-   * Convert a logical scroll position to its corresponding browser value.
-   * @param {number} scroll logical scroll position
-   * @return {number} browser scroll position
-   * @memberof ConveyorBeltCommon
-   * @instance
-   * @private
-   */
-  ConveyorBeltCommon.prototype._convertScrollLogicalToBrowser = function (scroll) {
-    // (comment mostly copied from AdfConveyorBeltSupport)
-    // If this is LTR or RTL mode in IE, then we want the default positive new scroll value.
-    // If FF in RTL, then get the negative scroll value
-    // If Safari version 10+ in RTL, then get the negative scroll value
-    // If Webkit in RTL, to scroll to a position, we resolve this equation:
-    // contentContainerWidth - browserScroll = overflowContainerWidth + logicalScroll
-    // browserScroll = contentContainerWidth = overflowContainerWidth - logicalScroll
-    var newScroll = scroll;
-    if (this._bRtl && this._isHorizontal()) {
-      // Safari version 10+ has the correct scroll offset in RTL mode
-      // So don't resolve the scroll equation for Safari version 10+
-
-        if (this._bAgentGecko ||
-           (this._bAgentWebkit && this._agentVersion >= 85) ||
-           (this._bAgentSafari && this._agentVersion >= 10)) {
-          newScroll = -scroll;
-        } else if ((this._bAgentWebkit && this._agentVersion < 85) ||
-                   (this._bAgentSafari && this._agentVersion < 10)) {
-          newScroll = this._contentContainer.offsetWidth -
-                      this._overflowContainer.offsetWidth -
-                      scroll;
-        }
-    }
-    return newScroll;
-  };
-
-  /**
-   * Convert a browser scroll position to its corresponding logical value.
-   * @param {number} scroll browser scroll position
-   * @return {number} logical scroll position
-   * @memberof ConveyorBeltCommon
-   * @instance
-   * @private
-   */
-  ConveyorBeltCommon.prototype._convertScrollBrowserToLogical = function (scroll) {
-    // (comment mostly copied from AdfConveyorBeltSupport)
-    // If this is LTR or RTL mode in IE, then we want the default positive new scroll value.
-    // If FF in RTL, then get the negative scroll value
-    // If Webkit in RTL, to scroll to a position, we resolve this equation:
-    // contentContainerWidth - browserScroll = overflowContainerWidth + logicalScroll
-    // browserScroll = contentContainerWidth = overflowContainerWidth - logicalScroll
-
-    // because the equations are the same whether converting from browser -> logical or logical -> browser,
-    // simply call _convertScrollLogicalToBrowser from here
-    // (NOTE: want to leave _convertScrollBrowserToLogical as a separate function so that it's clear from the
-    // calling code which conversion direction is used, and in case the conversion impls ever need to be changed)
-    return this._convertScrollLogicalToBrowser(scroll);
-  };
-
-  /**
    * Scroll animation speed (px/ms).
    * @memberof ConveyorBeltCommon
    * @private
    */
   ConveyorBeltCommon._SCROLL_SPEED = 1.1;
   /**
-   * Touch swipe threshold (percentage of conveyor size).
+   * Touch scroll friction.
    * @memberof ConveyorBeltCommon
    * @private
    */
-  ConveyorBeltCommon._SWIPE_THRESHOLD = 0.33;
+  ConveyorBeltCommon._TOUCH_SCROLL_FRICTION = 0.7;
+  /**
+   * Touch scroll stop threshold.
+   * @memberof ConveyorBeltCommon
+   * @private
+   */
+  ConveyorBeltCommon._TOUCH_SCROLL_STOP_THRESHOLD = 0.1;
+
 
   ConveyorBeltCommon._KEYBOARD_KEYS = {
     _UP: 'ArrowUp',
@@ -1695,14 +1683,6 @@ var __oj_conveyor_belt_metadata =
     _RIGHT_IE: 'Right',
     _RIGHT_CODE: 39
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @ojcomponent oj.ojConveyorBelt
@@ -1798,9 +1778,9 @@ var __oj_conveyor_belt_metadata =
    * and responding to key events, like pressing the arrow keys.
    *
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
    * <p>ConveyorBelt provides opt-in keyboard accessibility. To be able to scroll using keyboard,
@@ -1861,6 +1841,118 @@ var __oj_conveyor_belt_metadata =
    *   &lt;/div>
    * &lt;/oj-conveyor-belt>
    */
+
+  //----------------------------------------------
+  //             SUB-IDS
+  //----------------------------------------------
+  /**
+   * <p>Sub-ID for the start overflow indicator of a horizontal ConveyorBelt.</p>
+   *
+   * @ojsubid oj-conveyorbelt-start-overflow-indicator
+   * @memberof oj.ojConveyorBelt
+   *
+   * @example <caption>Get the start overflow indicator:</caption>
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-start-overflow-indicator'} );
+   */
+
+  /**
+   * <p>Sub-ID for the end overflow indicator of a horizontal ConveyorBelt.</p>
+   *
+   * @ojsubid oj-conveyorbelt-end-overflow-indicator
+   * @memberof oj.ojConveyorBelt
+   *
+   * @example <caption>Get the end overflow indicator:</caption>
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-end-overflow-indicator'} );
+   */
+
+  /**
+   * <p>Sub-ID for the top overflow indicator of a vertical ConveyorBelt.</p>
+   *
+   * @ojsubid oj-conveyorbelt-top-overflow-indicator
+   * @memberof oj.ojConveyorBelt
+   *
+   * @example <caption>Get the top overflow indicator:</caption>
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-top-overflow-indicator'} );
+   */
+
+  /**
+   * <p>Sub-ID for the bottom overflow indicator of a vertical ConveyorBelt.</p>
+   *
+   * @ojsubid oj-conveyorbelt-bottom-overflow-indicator
+   * @memberof oj.ojConveyorBelt
+   *
+   * @example <caption>Get the bottom overflow indicator:</caption>
+   * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-bottom-overflow-indicator'} );
+   */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>ConveyorBelt</td>
+   *       <td><kbd>Swipe</kbd></td>
+   *       <td>Transition to an adjacent logical page of child items.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Navigation Arrow</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Transition to an adjacent logical page of child items.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojConveyorBelt
+   */
+
+  /**
+   * <p>If <code class="prettyprint">tabindex=0</code> ConveyorBelt supports the following keyboard interactions:
+   *
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>ConveyorBelt</td>
+   *       <td><kbd>RightArrow or DownArrow</kbd></td>
+   *       <td>Scrolls the content Right/Down.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>ConveyorBelt</td>
+   *       <td><kbd>LeftArrow or UpArrow</kbd></td>
+   *       <td>Scrolls the content Left/Up</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojConveyorBelt
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+   * @ojstylevariableset oj-conveyor-belt-css-set1
+   * @ojstylevariable oj-conveyor-belt-box-shadow-width {description: "Conveyor belt box-shadow width", formats: ["length"]}
+   * @memberof oj.ojConveyorBelt
+   */
+
   (function () {
     // start static members and functions //////////////////////////////////////////
 
@@ -1937,14 +2029,6 @@ var __oj_conveyor_belt_metadata =
            * <p>Indicates whether overflow content arrows are visible or hidden.
            *
            * <p>The default value of this property varies by theme. If the default value is 'auto', then the behavior varies by device.
-           *
-           * <ul>
-           *   <li>The default value comes from the <code class="prettyprint">$conveyorBeltArrowVisibilityOptionDefault</code> variable in the theme,  defaults to 'auto' in Redwood and 'visible' in Alta</li>
-           *   <li>If it is not set in the theme the default arrow visibility is <code class="prettyprint">"auto"</code>.</li>
-           * </ul>
-           *
-           * <p>Setting a value for this attribute overrides the theme default for this conveyor instance
-           *
            *
            * @expose
            * @memberof oj.ojConveyorBelt
@@ -2240,6 +2324,7 @@ var __oj_conveyor_belt_metadata =
             buttonInfo.nextButtonIcon = nextIcon;
             var styleInfo = {};
             styleInfo.overflowContainerStyleClass = 'oj-conveyorbelt-overflow-container';
+
             styleInfo.contentContainerStyleClass = 'oj-conveyorbelt-content-container';
             styleInfo.itemStyleClass = 'oj-conveyorbelt-item';
             styleInfo.hiddenStyleClass = 'oj-helper-hidden';
@@ -2271,16 +2356,16 @@ var __oj_conveyor_belt_metadata =
               // only use the first result returned from the contentParent selector
               contentParentElem = $(options.contentParent)[0];
             }
-            var agentInfo = oj.AgentUtils.getAgentInfo(navigator.userAgent);
             this._cbCommon = new ConveyorBeltCommon(
               elem[0],
-              orientation,
-              contentParentElem,
-              this._bRTL,
+              {
+                orientation: orientation,
+                contentParent: contentParentElem,
+                bRtl: this._bRTL
+              },
               buttonInfo,
               callbackInfo,
-              styleInfo,
-              agentInfo);
+              styleInfo);
           }
           var cbCommon = this._cbCommon;
           cbCommon.setup();
@@ -2704,115 +2789,14 @@ var __oj_conveyor_belt_metadata =
           } else { // scroll conveyor belt in case of a vertical conveyorbelt
            this._cbCommon._setCurrScroll(elementOffTop, true);
           }
-        },
-
-        // start API doc fragments /////////////////////////////////////////////////////
-
-        /**
-         * <p>Sub-ID for the start overflow indicator of a horizontal ConveyorBelt.</p>
-         *
-         * @ojsubid oj-conveyorbelt-start-overflow-indicator
-         * @memberof oj.ojConveyorBelt
-         *
-         * @example <caption>Get the start overflow indicator:</caption>
-         * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-start-overflow-indicator'} );
-         */
-
-        /**
-         * <p>Sub-ID for the end overflow indicator of a horizontal ConveyorBelt.</p>
-         *
-         * @ojsubid oj-conveyorbelt-end-overflow-indicator
-         * @memberof oj.ojConveyorBelt
-         *
-         * @example <caption>Get the end overflow indicator:</caption>
-         * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-end-overflow-indicator'} );
-         */
-
-        /**
-         * <p>Sub-ID for the top overflow indicator of a vertical ConveyorBelt.</p>
-         *
-         * @ojsubid oj-conveyorbelt-top-overflow-indicator
-         * @memberof oj.ojConveyorBelt
-         *
-         * @example <caption>Get the top overflow indicator:</caption>
-         * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-top-overflow-indicator'} );
-         */
-
-        /**
-         * <p>Sub-ID for the bottom overflow indicator of a vertical ConveyorBelt.</p>
-         *
-         * @ojsubid oj-conveyorbelt-bottom-overflow-indicator
-         * @memberof oj.ojConveyorBelt
-         *
-         * @example <caption>Get the bottom overflow indicator:</caption>
-         * var node = myConveyorBelt.getNodeBySubId({'subId': 'oj-conveyorbelt-bottom-overflow-indicator'} );
-         */
-
-        /**
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Gesture</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>ConveyorBelt</td>
-         *       <td><kbd>Swipe</kbd></td>
-         *       <td>Transition to an adjacent logical page of child items.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>Navigation Arrow</td>
-         *       <td><kbd>Tap</kbd></td>
-         *       <td>Transition to an adjacent logical page of child items.</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-         * @memberof oj.ojConveyorBelt
-         */
-
-        /**
-         * <p>If <code class="prettyprint">tabindex=0</code> ConveyorBelt supports the following keyboard interactions:
-         *
-         * <table class="keyboard-table">
-         *   <thead>
-         *     <tr>
-         *       <th>Target</th>
-         *       <th>Key</th>
-         *       <th>Action</th>
-         *     </tr>
-         *   </thead>
-         *   <tbody>
-         *     <tr>
-         *       <td>ConveyorBelt</td>
-         *       <td><kbd>RightArrow or DownArrow</kbd></td>
-         *       <td>Scrolls the content Right/Down.</td>
-         *     </tr>
-         *     <tr>
-         *       <td>ConveyorBelt</td>
-         *       <td><kbd>LeftArrow or UpArrow</kbd></td>
-         *       <td>Scrolls the content Left/Up</td>
-         *     </tr>
-         *   </tbody>
-         * </table>
-         *
-         * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-         * @memberof oj.ojConveyorBelt
-         */
-
-        // end API doc fragments ///////////////////////////////////////////////////////
-
+        }
       }); // end of oj.__registerWidget
 
     // Set theme-based defaults
     Components.setDefaultOptions({
       ojConveyorBelt: {
         arrowVisibility: Components.createDynamicPropertyGetter(function () {
-          return (ThemeUtils.parseJSONFromFontFamily('oj-conveyorbelt-option-defaults') || {}).arrowVisibility;
+          return ThemeUtils.getCachedCSSVarValues(['--oj-private-conveyor-belt-global-arrow-visibility-default'])[0];
         })
       }
     });

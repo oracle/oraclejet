@@ -11,9 +11,9 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
      * @export
      * @interface NormalizedQuery
      * @classdesc Interface for normalized query structure. Various REST endpoints support
-     *            different syntax for querying resources. Normalizing the query syntax 
-     *            enables Oracle Persistence Toolkit to perform certain functionalities 
-     *            including client side shredded data cleanup. 
+     *            different syntax for querying resources. Normalizing the query syntax
+     *            enables Oracle Persistence Toolkit to perform certain functionalities
+     *            including client side shredded data cleanup.
      * @hideconstructor
      */
 
@@ -50,7 +50,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
         * @name searchCriteria
         * @type {object}
         */
-        
+
     /**
      * @class queryHandlers
      * @classdesc Contains out of the box query handlers.
@@ -125,7 +125,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
               sortQueryValues.forEach(function(sortQueryValue) {
                 var sortValue = sortQueryValue.split(':');
                 var _sortQueryItem = {};
-                _sortQueryItem["value." + sortValue[0]] = sortValue[1];
+                _sortQueryItem["value." + sortValue[0]] = sortValue[1] ? sortValue[1] : 'asc' ;
                 sortQuery.push(_sortQueryItem);
               })
             }

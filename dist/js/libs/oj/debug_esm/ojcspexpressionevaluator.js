@@ -11,8 +11,13 @@ import 'ojs/ojkoshared';
 /**
  * @license
  * Copyright (c) 2019 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
+ *
+ * @license
+ * Based on the Expression Evaluator 2.0.0
+ * https://github.com/donmccurdy/expression-eval
+ * under MIT License
  * @ignore
  */
 
@@ -47,7 +52,7 @@ import 'ojs/ojkoshared';
  *  <li>Members, e.g. <code>[[router.stateId]]</code>.</li>
  *  <li>Literals, e.g. <code>[['abc']]</code>.</li>
  *  <li>Function callbacks, e.g. <code>[[getColor('customer', id)]]</code>.</li>
- *  <li>Unary operators are limited to '-', '+', '~', '!', e.g. <code>[[-100]]</code>.</li>
+ *  <li>Unary operators are limited to '-', '+', '~', '!' and '...', e.g. <code>[[-100]]</code>.</li>
  *  <li>Binary operators, e.g. <code>[[value + '.png']]</code>.</li>
  *  <li>Logical operators, e.g. <code>[[a && b]]</code> or <code>[[a || b]]</code>.</li>
  *  <li>Conditional or ternary operators, e.g. <code>[[test ? consequent : alternate]]</code>.</li>
@@ -118,6 +123,15 @@ const CspExpressionEvaluator = function (options) {
     } };
   };
 
+  /**
+   * @param {object} ast an AST node
+   * @param {object} context a context object to apply on expressions
+   * @ignore
+   */
+  this.evaluate = function (ast, context) {
+    return _evaluate(ast, [context]);
+  };
+
   // Note, for logical && and || operators the right hand expression
   // is always a callback. It is done to ensure that the right hand
   // expression is evaluated only if it is needed and only after
@@ -151,7 +165,14 @@ const CspExpressionEvaluator = function (options) {
     '+': function (a) { return a; },
     '~': function (a) { return ~a; },
     '!': function (a) { return !a; },
+    '...': function (a) { return new _Spread(a); },
   };
+
+  function _Spread(list) {
+    this.items = function () {
+      return list;
+    };
+  }
 
   // eslint-disable-next-line consistent-return
   function _evaluate(node, contexts) {
@@ -179,7 +200,7 @@ const CspExpressionEvaluator = function (options) {
           default:
             fn = _evaluate(node.callee, contexts);
         }
-        if (!fn) {
+        if (!fn && Array.isArray(assign)) {
           caller = assign[0];
           fn = assign[1];
         }
@@ -221,13 +242,21 @@ const CspExpressionEvaluator = function (options) {
         return _evaluateConstructorExpression(node, contexts);
 
       default:
-        _throwError('Unsupported expression type: ' + node.type);
+        throw new Error('Unsupported expression type: ' + node.type);
     }
   }
 
-
   function _evaluateArray(list, contexts) {
-    return list.map(function (v) { return _evaluate(v, contexts); });
+    return list.reduce(
+      (acc, v) => {
+        const elem = _evaluate(v, contexts);
+        if (elem instanceof _Spread) {
+          acc.push(...elem.items());
+        } else {
+          acc.push(elem);
+        }
+        return acc;
+      }, []);
   }
 
   function _evaluateMember(node, contexts) {
@@ -257,7 +286,7 @@ const CspExpressionEvaluator = function (options) {
     if (target) {
       return target[name];
     }
-    _throwError('Variable ' + name + ' is undefined');
+    throw new Error('Variable ' + name + ' is undefined');
   }
 
   // eslint-disable-next-line consistent-return
@@ -266,7 +295,7 @@ const CspExpressionEvaluator = function (options) {
     if (target) {
       return [target, target[name]];
     }
-    _throwError('Variable ' + name + ' is undefined');
+    throw new Error('Variable ' + name + ' is undefined');
   }
 
   function _evaluateAssignment(node, contexts, val) {

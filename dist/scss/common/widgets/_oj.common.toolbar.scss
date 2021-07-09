@@ -162,20 +162,5 @@
           @include oj-border-radius(0);
 
     }
-
-    // option defaults
-    //----------------------------------
-
-    // TODO
-    $toolbarDefaultOptions: ();
-
-    @if ($toolbarChromingOptionDefault != null) {
-        $toolbarDefaultOptions: map-merge($toolbarDefaultOptions, (chroming: $toolbarChromingOptionDefault));
-    }
-
-    .oj-toolbar-option-defaults {
-        font-family: oj-json-from-map($toolbarDefaultOptions);
-    }
-
   }
 }

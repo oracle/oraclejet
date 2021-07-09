@@ -318,13 +318,14 @@
      * Applied to the multi-select selected choice
      */
     .oj-combobox-selected-choice {
-      line-height: 1.8rem;
+      line-height: 1.9rem;
+      display: flex;
+      align-items: center;
       cursor: default;
 
-        @include oj-border-radius($buttonBorderRadius);
-        border: 1px solid $buttonOutlinedChromeBorderColor;
-        color: $buttonOutlinedChromeTextColor;        
-
+      @include oj-border-radius($buttonBorderRadius);
+      border: 1px solid $buttonOutlinedChromeBorderColor;
+      color: $buttonOutlinedChromeTextColor;        
 
       background-clip: padding-box;
       @include oj-ltr() {
@@ -360,6 +361,7 @@
     .oj-combobox-selected-choice-separator {
       display: inline-block;
       vertical-align: middle;
+      word-break: break-word;
     }
 
     /*
@@ -465,7 +467,22 @@
         @include oj-form-control-content-focus-padding($focusPaddingBottom: 5px);
       
     }
-        
+
+    /**
+     * Styling for loading state
+     */
+     .oj-combobox.oj-loading .oj-combobox-accessible-container {
+      background-image: $loadingBgImage;
+      animation: LoadingGradientAnimation 3s infinite; 
+      background-size: 200% 200%;
+      opacity: 1;
+    }
+    
+    .oj-combobox.oj-loading .oj-combobox-arrow,
+    .oj-combobox.oj-loading .oj-combobox-divider {
+      display: none;
+    }
+
     /* icon */
     /* -----------------------------*/
     
@@ -496,6 +513,16 @@
     /* clear entry icon for combobox */
     .oj-combobox-clear-entry-icon {
       @extend .oj-fwk-icon-cross;
+    }
+    
+    /* Override default options*/
+    $comboboxDefaultOptions: ();
+
+    @if ($loadingIndicatorDelayDuration) {
+      $comboboxDefaultOptions: map-merge($comboboxDefaultOptions, (loadingIndicatorDelay: $loadingIndicatorDelayDuration));
+    }
+    .oj-combobox-option-defaults {
+      font-family: oj-json-from-map($comboboxDefaultOptions);
     }
     
     // .oj-button adds margin-bottom, we need to remove it if it's used in the end slot

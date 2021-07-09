@@ -10,14 +10,6 @@ define(['exports', 'ojs/ojcore', 'ojs/ojmessaging'], function (exports, oj, Mess
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   Message = Message && Object.prototype.hasOwnProperty.call(Message, 'default') ? Message['default'] : Message;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   // ValidatorError
 
   /**
@@ -96,14 +88,6 @@ define(['exports', 'ojs/ojcore', 'ojs/ojmessaging'], function (exports, oj, Mess
   ValidatorError.prototype.getMessage = function () {
     return this._message;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   // ConverterError
 

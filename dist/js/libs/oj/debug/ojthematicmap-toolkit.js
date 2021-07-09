@@ -7,14 +7,6 @@
  */
 define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (exports, dvt, ojdvtPanzoomcanvas) { 'use strict';
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   // For MAF this != window and we want to use this
   // For JET this isn't available in use strict mode so we want to use window
   /**
@@ -446,14 +438,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Displayable representing a non data map area
    * @extends {dvt.Container}
    * @constructor
@@ -651,14 +635,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._shape.setStroke(zoomStroke);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Map label class
@@ -879,14 +855,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._leaderLine = null;
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Thematic Map map layer
@@ -1140,14 +1108,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     for (var layer in dataLayers)
       dataLayers[layer].destroy();
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Thematic Map area layer
@@ -1574,14 +1534,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
     *  Creates a custom data item that supports interaction and accessibility.
     *  @extends {dvt.Container}
     *  @constructor
@@ -1627,7 +1579,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     this._boundingRect = new dvt.Rect(context, 0, 0, this._width, this._height);
     this._boundingRect.setInvisibleFill();
     var his = new dvt.Stroke(styles['selectedInnerColor'], 1, 2);
-    var hos = new dvt.Stroke('rgb(235, 236, 237)', 1, 2);
+    var hos = new dvt.Stroke(styles['hoverColor'], 1, 2);
     var sis = new dvt.Stroke(styles['selectedInnerColor'], 1, 1);
     var sos = new dvt.Stroke(styles['selectedOuterColor'], 1, 2);
     var shis = new dvt.Stroke(styles['selectedInnerColor'], 1, 2);
@@ -1780,14 +1732,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Utility functions for ThematicMap.
    * @class
    */
@@ -1922,14 +1866,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Logical object for a map data object
    * @param {object} data The options for this data object
    * @param {DvtMapDataLayer} dataLayer The data layer this object belongs to
@@ -1937,10 +1873,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @param {dvt.OutputText} label The label for this data object
    * @param {dvt.Point} center The center of this data object
    * @param {string} locationName The location name for this data object
+   * @param {boolean} skipDataColor True if setDataColor should not be called on the passed-in displayable, e.g. because the color and hover/selection strokes have already been specified.
    * @constructor
    */
-  var DvtMapObjPeer = function(data, dataLayer, displayable, label, center, locationName) {
-    this.Init(data, dataLayer, displayable, label, center, locationName);
+  var DvtMapObjPeer = function(data, dataLayer, displayable, label, center, locationName, skipDataColor) {
+    this.Init(data, dataLayer, displayable, label, center, locationName, skipDataColor);
   };
 
   dvt.Obj.createSubclass(DvtMapObjPeer, dvt.Obj);
@@ -1965,9 +1902,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @param {dvt.OutputText} label The label for this data object
    * @param {dvt.Point} center The center of this data object
    * @param {string} locationName The location name for this data object
+   * @param {boolean} skipDataColor True if setDataColor should not be called on the passed-in displayable, e.g. because the color and hover/selection strokes have already been specified.
    * @protected
    */
-  DvtMapObjPeer.prototype.Init = function(data, dataLayer, displayable, label, center, locationName) {
+  DvtMapObjPeer.prototype.Init = function(data, dataLayer, displayable, label, center, locationName, skipDataColor) {
     this._data = data;
     this._itemData = this._data['_itemData'];
     this._dataLayer = dataLayer;
@@ -1977,7 +1915,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     this._isShowingKeyboardFocusEffect = false;
     this._hasContentBoundToTouchEvent = false;
     this._contentStoredInTouchEventContainer = null;
-    if (this.Displayable.setDataColor)
+    if (this.Displayable.setDataColor && !skipDataColor)
       this.Displayable.setDataColor(data['color']);
     this._label = label;
     this._center = center;
@@ -1992,7 +1930,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     }
 
     if (this._view.getDisplayTooltips() == 'auto' && locationName)
-      this._data['shortDesc'] = (data['shortDesc'] ? locationName + ': ' + data['shortDesc'] : locationName);
+      this._data['shortDesc'] = (data['shortDesc'] ? locationName + ': ' + this._resolveShortDesc(data['shortDesc']) : locationName);
 
     // WAI-ARIA
     if (this.Displayable) {
@@ -2004,6 +1942,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     this.UpdateAriaLabel();
 
     this.setSelectable(this.isSelectable());
+  };
+
+  /**
+   * Returns the resolved shortdesc string
+   * @param {string|function} shortDesc
+   * @return {string}
+   */
+   DvtMapObjPeer.prototype._resolveShortDesc = function(shortDesc) {
+    if(typeof shortDesc === 'function')
+      return shortDesc(this.getShortDescContext(this));
+    return shortDesc;
   };
 
   /**
@@ -2087,7 +2036,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @return {string}
    */
   DvtMapObjPeer.prototype.getShortDesc = function() {
-    return this._data['shortDesc'];
+    return this._resolveShortDesc(this._data['shortDesc']);
   };
 
   /**
@@ -2151,6 +2100,25 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       'tooltip': this.getShortDesc(),
       'x': this._data['x'],
       'y': this._data['y']
+    };
+  };
+
+  /**
+   * Returns the data context that will be passed to the tooltip function.
+   * @param {DvtMapObjPeer} peer
+   * @return {object}
+   */
+   DvtMapObjPeer.prototype.getShortDescContext = function(peer) {
+    var data = peer._data._noTemplate ? peer._itemData : peer._data;
+    return {
+      'data': data,
+      'id': peer.getId(),
+      'itemData': peer._itemData,
+      'label': peer._label ? peer._label.getTextString() : null,
+      'location': peer.getLocation(),
+      'locationName': peer.getLocationName(),
+      'x': peer._data['x'],
+      'y': peer._data['y']
     };
   };
 
@@ -2738,14 +2706,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Logical object for a map data area
    * @param {object} data The options for this data object
    * @param {DvtMapDataLayer} dataLayer The data layer this object belongs to
@@ -2854,14 +2814,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   DvtMapAreaPeer.prototype.__recenter = function() {
     // no-op
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Provides automation services for a DVT component.
@@ -3047,14 +2999,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Default values and utility functions for thematic map component versioning.
    * @class
    * @constructor
@@ -3193,14 +3137,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   {
     return options['animationDuration'];
   };
-
-  /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @param {dvt.Context} context The rendering context.
@@ -3483,14 +3419,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     if (!this._tmap.isPanning())
       DvtThematicMapEventManager.superclass.ShowFocusEffect.call(this, event, obj);
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   var DvtMapDataLayer = function(tmap, parentLayer, clientId, eventHandler, options) {
     this.Init(tmap, parentLayer, clientId, eventHandler, options);
@@ -4022,14 +3950,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Logical object for a map data area
    * @param {object} data The options for this data object
    * @param {DvtMapDataLayer} dataLayer The data layer this object belongs to
@@ -4203,14 +4123,21 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
     handler.add(anim, DvtMapObjPeer.ANIMATION_UPDATE_PRIORITY);
   };
-
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * Returns the data context that will be passed to the tooltip function.
+   * @param {DvtMapObjPeer} peer
+   * @return {object}
    */
+   DvtMapLinkPeer.prototype.getShortDescContext = function(peer) {
+    var data = peer._data._noTemplate ? peer._itemData : peer._data;
+    return {
+      'data': data,
+      'id': peer.getId(),
+      'itemData': peer._itemData,
+      'label': peer._label ? peer._label.getTextString() : null,
+
+    };
+  };
 
   /**
    * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.
@@ -4536,14 +4463,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Creates a selectable map area.
    * @param {dvt.Context} context The rendering context.
    * @param {boolean} bSupportsVectorEffects True if the rendering context supports vector effects
@@ -4584,14 +4503,20 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   DvtSelectablePath.prototype.setSelected = function(selected) {
     if (this.IsSelected == selected)
       return;
+    var isRedwood = this.getCtx().getThemeBehavior() === 'redwood';
     if (selected) {
+      //hoverselected == selected in redwood
+      var hoverSelectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.HOVER_STROKE_WIDTH;
+      var hoverSelectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
+      var selectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH;
+      var selectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
       if (this.isHoverEffectShown()) {
         this.CreateSelectedHoverStrokes();
-        this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(this.SelectedHoverInnerStroke, DvtSelectablePath.HOVER_STROKE_WIDTH);
-        this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(this.SelectedHoverOuterStroke, DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH);
+        this.SelectedHoverInnerStroke = this._adjustStrokeZoomWidth(this.SelectedHoverInnerStroke, hoverSelectedInnerStrokeWidth);
+        this.SelectedHoverOuterStroke = this._adjustStrokeZoomWidth(this.SelectedHoverOuterStroke, hoverSelectedOuterStrokeWidth);
       } else {
-        this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH);
-        this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH);
+        this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, selectedInnerStrokeWidth);
+        this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, selectedOuterStrokeWidth);
       }
     }
     DvtSelectablePath.superclass.setSelected.call(this, selected);
@@ -4617,13 +4542,17 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    * @override
    */
   DvtSelectablePath.prototype.CreateSelectedHoverStrokes = function() {
+    var isRedwood = this.getCtx().getThemeBehavior() === 'redwood';
     if (!this.SelectedHoverInnerStroke) {
-      this.SelectedHoverInnerStroke = new dvt.Stroke(this.HoverInnerStroke.getColor(), this.HoverInnerStroke.getAlpha(),
-        DvtSelectablePath.HOVER_STROKE_WIDTH, this._bSupportsVectorEffects);
+      var selectedHoverInnerStroke = isRedwood ? this.SelectedInnerStroke : this.HoverInnerStroke;
+      var selectedHoverInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.HOVER_STROKE_WIDTH;
+      this.SelectedHoverInnerStroke = new dvt.Stroke(selectedHoverInnerStroke.getColor(), selectedHoverInnerStroke.getAlpha(),
+      selectedHoverInnerStrokeWidth, this._bSupportsVectorEffects);
     }
     if (!this.SelectedHoverOuterStroke) {
+      var selectedHoverOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH;
       this.SelectedHoverOuterStroke = new dvt.Stroke(this.SelectedOuterStroke.getColor(), this.SelectedOuterStroke.getAlpha(),
-        DvtSelectablePath.SELECTED_HOVER_OUTER_STROKE_WIDTH, this._bSupportsVectorEffects);
+      selectedHoverOuterStrokeWidth, this._bSupportsVectorEffects);
     }
   };
 
@@ -4633,8 +4562,11 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    */
   DvtSelectablePath.prototype.hideHoverEffect = function() {
     if (this.isSelected()) {
-      this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH);
-      this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH);
+      var isRedwood = this.getCtx().getThemeBehavior() === 'redwood';
+      var selectedInnerStrokeWidth = isRedwood ? 1 : DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH;
+      var selectedOuterStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
+      this.SelectedInnerStroke = this._adjustStrokeZoomWidth(this.SelectedInnerStroke, selectedInnerStrokeWidth);
+      this.SelectedOuterStroke = this._adjustStrokeZoomWidth(this.SelectedOuterStroke, selectedOuterStrokeWidth);
     }
     DvtSelectablePath.superclass.hideHoverEffect.call(this);
   };
@@ -4691,14 +4623,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       this._updateStrokeZoomWidth(this, 1);
     }
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility class for built-in map projections
@@ -5342,14 +5266,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
   };
 
   /**
-   * @license
-   * Copyright (c) 2011 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Thematic Map JSON parser
    * @param {ThematicMap} tmap The thematic map to update
    * @constructor
@@ -5769,16 +5685,22 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       // create an empty dvt.Path for now and will set the cmd at render time
       layer.setAreaRendered(areaId, false);
       var context = this._tmap.getCtx();
+      var isRedwood = context.getThemeBehavior() === 'redwood';
+
       var path = new DvtSelectablePath(context, this._tmap.supportsVectorEffects());
 
       data = dvt.JsonUtils.merge(data, this._tmap.getStyleDefaults()['dataAreaDefaults']);
       if (!data['labelStyle'])
         data['labelStyle'] = this._tmap.getStyleDefaults()['labelStyle'];
 
-      var hs = new dvt.Stroke(data['hoverColor'], 1, DvtSelectablePath.HOVER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
+      var outerStrokeWidth = isRedwood ? 3 : DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH;
+      var hoverStrokeWidth = isRedwood ? 3 : DvtSelectablePath.HOVER_STROKE_WIDTH;
+      var hs = new dvt.Stroke(data['hoverColor'], 1, 1, this._tmap.supportsVectorEffects());
+      var hos = new dvt.Stroke(data['color'], 1, hoverStrokeWidth, this._tmap.supportsVectorEffects());
+
       var sis = new dvt.Stroke(data['selectedInnerColor'], 1, DvtSelectablePath.SELECTED_INNER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
-      var sos = new dvt.Stroke(data['selectedOuterColor'], 1, DvtSelectablePath.SELECTED_OUTER_STROKE_WIDTH, this._tmap.supportsVectorEffects());
-      path.setHoverStroke(hs, null).setSelectedStroke(sis, sos);
+      var sos = new dvt.Stroke(data['selectedOuterColor'], 1, outerStrokeWidth, this._tmap.supportsVectorEffects());
+      path.setHoverStroke(hs, hos).setSelectedStroke(sis, sos);
 
       // disable labels in area layer if data layer exists and has label
       layer.setLabelRendered(data['location'], false);
@@ -5868,9 +5790,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       layer.setLabelRendered(data['location'], false);
 
     this._styleDisplayable(data, marker);
+    var isRedwood = this._tmap.getCtx().getThemeBehavior() === 'redwood';
     var label = this._createLabel(layer, dataLayer, data, marker, isParentAreaDataLayer);
     var locationName = DvtThematicMapJsonParser._getLocationName(this._tmap.getMapName(), dataLayer, data);
-    return new DvtMapObjPeer(data, dataLayer, marker, label, center, locationName);
+    return new DvtMapObjPeer(data, dataLayer, marker, label, center, locationName, isRedwood);
   };
 
   /**
@@ -6017,7 +5940,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
       strokeWidth = linkDefaults['width'];
     var stroke = new dvt.Stroke(strokeColor, 1, strokeWidth, true);
     curve.setStroke(stroke);
-
+    var isRedwood = curve.getCtx().getThemeBehavior() === 'redwood';
     var hoverColor = linkDefaults['_hoverColor'];
     var selectedColor = linkDefaults['_selectedColor'];
 
@@ -6025,8 +5948,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     var hos = new dvt.Stroke(strokeColor, 1, strokeWidth + 2);
     var sis = new dvt.Stroke(strokeColor, 1, strokeWidth);
     var sos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);
-    var shis = new dvt.Stroke(hoverColor, 1, strokeWidth);
-    var shos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);
+    if (isRedwood) {
+      var shis = sis;
+      var shos = sos;
+    }
+    else {
+      var shis = new dvt.Stroke(hoverColor, 1, strokeWidth);
+      var shos = new dvt.Stroke(selectedColor, 1, strokeWidth + 2);  
+    }
     curve.setHoverStroke(his, hos).setSelectedStroke(sis, sos).setSelectedHoverStroke(shis, shos);
 
     return new DvtMapLinkPeer(data, dataLayer, curve, startPt, endPt, startMarker, endMarker);
@@ -6113,6 +6042,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
    */
   DvtThematicMapJsonParser.prototype._styleDisplayable = function(style, displayable) {
     var backgroundColor = style['color'];
+    var isRedwood = this._tmap.getCtx().getThemeBehavior() === 'redwood';
 
     // handle custom svg where color is set by user
     if (displayable instanceof dvt.SimpleMarker) {
@@ -6128,6 +6058,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         var stroke = new dvt.Stroke(style['borderColor'], 1, borderWidth,
           !this._tmap.isMarkerZoomBehaviorFixed(), dvt.Stroke.getDefaultDashProps(strokeType, borderWidth));
         displayable.setStroke(stroke);
+        if (isRedwood) {
+          var selectedHoverInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());        
+          var selectedHoverOuterStroke = new dvt.Stroke(style['_selectionColor'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());
+
+          var selectedInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());
+          var selectedOuterStroke  = new dvt.Stroke(style['_selectionColor'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());        
+
+          var hoverInnerStroke = new dvt.Stroke(style['_hoverColor'], 1, 1, this._tmap.isMarkerZoomBehaviorFixed());        
+          var hoverOuterStroke = new dvt.Stroke(style['color'], 1, 3, this._tmap.isMarkerZoomBehaviorFixed());
+          displayable.setHoverStroke(hoverInnerStroke, hoverOuterStroke).setSelectedStroke(selectedInnerStroke, selectedOuterStroke).setSelectedHoverStroke(selectedHoverInnerStroke, selectedHoverOuterStroke);  
+        }
+
       }
 
       var opacity = style['opacity'];
@@ -6261,14 +6203,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     }
     return null;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @param {ThematicMap} tmap The owning component
@@ -6423,14 +6357,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
 
     return isNavigable;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * DVT Toolkit based thematic map component

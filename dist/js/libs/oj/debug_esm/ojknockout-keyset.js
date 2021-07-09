@@ -8,13 +8,25 @@
 import { observable, utils } from 'knockout';
 import { ExpandedKeySet, KeySetImpl } from 'ojs/ojkeyset';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+class ObservableExpandedKeySet {
+    constructor(initialValue) {
+        this._proto = Object.create(observable.fn);
+        const _initialValue = initialValue || new ExpandedKeySet();
+        const _result = observable(_initialValue);
+        const self = this;
+        utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
+            self._proto[methodName] = function () {
+                const underlyingKeySet = this.peek();
+                const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                this(methodCallResult);
+                return this;
+            };
+        });
+        Object.setPrototypeOf(_result, this._proto);
+        return _result;
+    }
+}
+
 /**
  * Create an observable version of a KeySet.
  *
@@ -31,31 +43,6 @@ import { ExpandedKeySet, KeySetImpl } from 'ojs/ojkeyset';
  * @ojsignature [{target: "Type", value: "class ObservableExpandedKeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "ExpandedKeySet<K>|ExpandAllKeySet<K>", for:"initialValue"}]
  */
-const ObservableExpandedKeySet = function (initialValue) {
-  // by default if initialValue wasn't specified then we create an ExpandedKeySet
-  var _initialValue = initialValue || new ExpandedKeySet();
-
-  var result = observable(_initialValue);
-  Object.setPrototypeOf(result, ObservableExpandedKeySet.proto);
-  return result;
-};
-
-ObservableExpandedKeySet.proto = Object.create(observable.fn);
-
-// mutation functions
-utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
-  ObservableExpandedKeySet.proto[methodName] = function () {
-    // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
-    // (for consistency with mutating regular observables)
-    var underlyingKeySet = this.peek();
-    var methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
-    // this should call valueWillMutate, update latestValue, valueHasMutate
-    this(methodCallResult);
-
-    // the mutation methods always return a new KeySet so we should return the ObservableExpandedKeySet itself
-    return this;
-  };
-});
 
 /**
  * Updates the observable with a KeySet that includes the specified keys.
@@ -105,13 +92,25 @@ utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
  *               {target: "Type", value: "ObservableExpandedKeySet<K>", for: "returns"}]
  */
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+class ObservableKeySet {
+    constructor(initialValue) {
+        this._proto = Object.create(observable.fn);
+        const _initialValue = initialValue || new KeySetImpl();
+        const _result = observable(_initialValue);
+        const self = this;
+        utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
+            self._proto[methodName] = function () {
+                const underlyingKeySet = this.peek();
+                const methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
+                this(methodCallResult);
+                return this;
+            };
+        });
+        Object.setPrototypeOf(_result, this._proto);
+        return _result;
+    }
+}
+
 /**
  * Creates an observable whose value is a KeySet.
  *
@@ -129,33 +128,7 @@ utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
  * @ojsignature [{target: "Type", value: "class ObservableKeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "KeySetImpl<K>|AllKeySetImpl<K>", for:"initialValue"}]
  */
-const ObservableKeySet = function (initialValue) {
-  // by default if initialValue wasn't specified then we create a KeySetImpl
-  var _initialValue = initialValue || new KeySetImpl();
-
-  var result = observable(_initialValue);
-  Object.setPrototypeOf(result, ObservableKeySet.proto);
-  return result;
-};
-
-ObservableKeySet.proto = Object.create(observable.fn);
-
-// mutation functions
-utils.arrayForEach(['add', 'addAll', 'clear', 'delete'], function (methodName) {
-  ObservableKeySet.proto[methodName] = function () {
-    // Use "peek" to avoid creating a subscription in any computed that we're executing in the context of
-    // (for consistency with mutating regular observables)
-    var underlyingKeySet = this.peek();
-    var methodCallResult = underlyingKeySet[methodName].apply(underlyingKeySet, arguments);
-    // this should call valueWillMutate, update latestValue, valueHasMutate
-    this(methodCallResult);
-
-    // the mutation methods always return a new KeySet so we should return the ObservableKeySet itself
-    return this;
-  };
-});
-
-/**
+ /**
  * Equivalent to the <a href="KeySet.html#add">add</a> method on KeySet.  Calls add method on the underlying KeySet
  * and updates the observable with the returned KeySet.
  *

@@ -10,200 +10,262 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () { // Toolbar wrapper function, to keep "private static members" private
-  /**
-   * @ojcomponent oj.ojToolbar
-   * @ojdisplayname Toolbar
-   * @augments oj.baseComponent
-   * @ojrole toolbar
-   * @since 0.6.0
-   * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
-   *
-   * @ojpropertylayout {propertyGroup: "common", items: ["chroming"]}
-   * @ojvbdefaultcolumns 12
-   * @ojvbmincolumns 2
-   *
-   * @ojuxspecs ['toolbar']
-   *
-   * @classdesc
-   * <h3 id="toolbarOverview-section">
-   *   JET Toolbar
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#toolbarOverview-section"></a>
-   * </h3>
-   *
-   * <p>Description: Themeable, WAI-ARIA-compliant toolbar element.
-   *
-   * <pre class="prettyprint"><code>&lt;oj-toolbar id="myToolbar">
-   *     &lt;oj-button id="myButton">
-   *          &lt;span>My Button&lt;/span>
-   *     &lt;/oj-button>
-   * &lt;/oj-toolbar>
-   * </code></pre>
-   *
-   * <p>The JET Toolbar can contain [JET Buttons]{@link oj.ojButton}, [JET Menu Buttons]{@link oj.ojMenuButton}, [JET Buttonsets]{@link oj.ojButtonset}, and non-focusable content
-   * such as separator icons.  Toolbar provides WAI-ARIA-compliant focus management.
-   *
-   * <p>A toolbar that contains radios should contain all radios in the radio group.
-   *
-   * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a> and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
-   *
-   *
-   * <h3 id="touch-section">
-   *   Touch End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"touchDoc"}
-   *
-   *
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"keyboardDoc"}
-   *
-   *
-   * <h3 id="keyboard-appdev-section">
-   *   Keyboard Application Developer Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-appdev-section"></a>
-   * </h3>
-   *
-   * <p>Any buttonsets placed in the toolbar should have <code class="prettyprint">focusManagement</code> set to <code class="prettyprint">"none"</code>,
-   * so as not to compete with the toolbar's focus management.
-   *
-   * <p>The application should not do anything to interfere with the Toolbar's focus management, such as setting the <code class="prettyprint">tabindex</code>
-   * of the buttons.  Also, enabled buttons should remain user-visible, without which arrow-key navigation to the button would cause the focus to
-   * seemingly disappear.
-   *
-   *
-   * <h3 id="a11y-section">
-   *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-   * </h3>
-   *
-   * <p>JET Toolbar takes care of focus management, as noted above.
-   *
-   * <p>The application is responsible for applying <code class="prettyprint">aria-label</code> and/or
-   * <code class="prettyprint">aria-controls</code> attributes to the toolbar element, if applicable per the instructions that follow:
-   *
-   * <p>If this toolbar is (or might be) placed in context with other toolbars, then the application should apply an
-   * <code class="prettyprint">aria-label</code> to the toolbar element to distinguish it, e.g. an "Edit" toolbar.  The
-   * <code class="prettyprint">aria-label</code> is optional when there is only one toolbar.
-   *
-   * <p>If the toolbar is controlling something else on the page, e.g. bold / italic / underline buttons controlling a rich
-   * text editor, then the application should apply an <code class="prettyprint">aria-controls</code> attribute to the toolbar element,
-   * e.g. <code class="prettyprint">aria-controls="myTextEditor"</code>.
-   *
-   *
-   * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
-   * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
-   * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
-   * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
-   * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
-   * required of enabled content, it cannot be used to convey meaningful information.</p>
-   *
-   *
-   *
-   * <h3 id="rtl-section">
-   *   Reading direction
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-   * </h3>
-   *
-   * <p>The only supported way to set the reading direction (LTR or RTL) is to set the <code class="prettyprint">"dir"</code> attribute on the
-   * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET component, in the unusual case that the reading direction
-   * is changed post-create, the toolbar must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
-   *
-   *
-   * <h3 id="binding-section">
-   *   Declarative Binding
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
-   * </h3>
-   *
-   * <p>For elements like Toolbar and Menu that contain a number of like items, applications may wish to use <code class="prettyprint">oj-bind-for-each</code>
-   * to stamp out the contents as follows:
-   *
-   * <pre class="prettyprint">
-   * <code>&lt;oj-toolbar id="myToolbar">
-   *     &lt;oj-bind-for-each data="[[myButtons]]">
-   *         &lt;template>
-   *             &lt;oj-button :id="[[$current.data.id]]">
-   *                 &lt;span>
-   *                     &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
-   *                 &lt;/span>
-   *             &lt;/oj-button>
-   *         &lt;/template>
-   *     &lt;/oj-bind-for-each>
-   * &lt;/oj-toolbar>
-   * </code></pre>
-   *
-   *
-   * <!-- - - - - Above this point, the tags are for the class.
-   *              Below this point, the tags are for the constructor (initializer). - - - - - - -->
-   *
-   */
-  // --------------------------------------------------- oj.ojToolbar Styling Start -----------------------------------------------------------
-   // ---------------- oj-toolbar-separator --------------
-     /**
-     * Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that a separator is desirable. <br/>
-     * For accessibility, additionally apply role and aria-orientation as shown.
-     * @ojstyleclass oj-toolbar-separator
-     * @ojdisplayname Separator
-     * @ojstyleselector "oj-toolbar span"
-     * @memberof oj.ojToolbar
-     * @ojtsexample
-     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar">
-     *   &lt;oj-button ...>&lt;/oj-button>
-     *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
-     *   &lt;oj-button ...>&lt;/oj-button>
+    /**
+     * @ojcomponent oj.ojToolbar
+     * @ojdisplayname Toolbar
+     * @augments oj.baseComponent
+     * @ojrole toolbar
+     * @since 0.6.0
+     * @ojshortdesc A toolbar displays a strip of control elements such as buttons and menu buttons, often grouped by separators.
+     *
+     * @ojpropertylayout {propertyGroup: "common", items: ["chroming"]}
+     * @ojvbdefaultcolumns 12
+     * @ojvbmincolumns 2
+     *
+     * @ojuxspecs ['toolbar']
+     *
+     * @classdesc
+     * <h3 id="toolbarOverview-section">
+     *   JET Toolbar
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#toolbarOverview-section"></a>
+     * </h3>
+     *
+     * <p>Description: Themeable, WAI-ARIA-compliant toolbar element.
+     *
+     * <pre class="prettyprint"><code>&lt;oj-toolbar id="myToolbar">
+     *     &lt;oj-button id="myButton">
+     *          &lt;span>My Button&lt;/span>
+     *     &lt;/oj-button>
      * &lt;/oj-toolbar>
+     * </code></pre>
+     *
+     * <p>The JET Toolbar can contain [JET Buttons]{@link oj.ojButton}, [JET Menu Buttons]{@link oj.ojMenuButton}, [JET Buttonsets]{@link oj.ojButtonset}, and non-focusable content
+     * such as separator icons.  Toolbar provides WAI-ARIA-compliant focus management.
+     *
+     * <p>A toolbar that contains radios should contain all radios in the radio group.
+     *
+     * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a> and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
+     *
+     *
+     * <h3 id="touch-section">
+     *   Touch End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+     * </h3>
+     *
+     * {@ojinclude "name":"touchDoc"}
+     *
+     *
+     * <h3 id="keyboard-section">
+     *   Keyboard End User Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+     * </h3>
+     *
+     * {@ojinclude "name":"keyboardDoc"}
+     *
+     *
+     * <h3 id="keyboard-appdev-section">
+     *   Keyboard Application Developer Information
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-appdev-section"></a>
+     * </h3>
+     *
+     * <p>Any buttonsets placed in the toolbar should have <code class="prettyprint">focusManagement</code> set to <code class="prettyprint">"none"</code>,
+     * so as not to compete with the toolbar's focus management.
+     *
+     * <p>The application should not do anything to interfere with the Toolbar's focus management, such as setting the <code class="prettyprint">tabindex</code>
+     * of the buttons.  Also, enabled buttons should remain user-visible, without which arrow-key navigation to the button would cause the focus to
+     * seemingly disappear.
+     *
+     *
+     * <h3 id="a11y-section">
+     *   Accessibility
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+     * </h3>
+     *
+     * <p>JET Toolbar takes care of focus management, as noted above.
+     *
+     * <p>The application is responsible for applying <code class="prettyprint">aria-label</code> and/or
+     * <code class="prettyprint">aria-controls</code> attributes to the toolbar element, if applicable per the instructions that follow:
+     *
+     * <p>If this toolbar is (or might be) placed in context with other toolbars, then the application should apply an
+     * <code class="prettyprint">aria-label</code> to the toolbar element to distinguish it, e.g. an "Edit" toolbar.  The
+     * <code class="prettyprint">aria-label</code> is optional when there is only one toolbar.
+     *
+     * <p>If the toolbar is controlling something else on the page, e.g. bold / italic / underline buttons controlling a rich
+     * text editor, then the application should apply an <code class="prettyprint">aria-controls</code> attribute to the toolbar element,
+     * e.g. <code class="prettyprint">aria-controls="myTextEditor"</code>.
+     *
+     *
+     * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
+     * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
+     * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
+     * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
+     * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
+     * required of enabled content, it cannot be used to convey meaningful information.</p>
+     *
+     *
+     *
+     * <h3 id="rtl-section">
+     *   Reading direction
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+     * </h3>
+     *
+     * <p>The only supported way to set the reading direction (LTR or RTL) is to set the <code class="prettyprint">"dir"</code> attribute on the
+     * <code class="prettyprint">&lt;html></code> element of the page.  As with any JET component, in the unusual case that the reading direction
+     * is changed post-create, the toolbar must be <code class="prettyprint">refresh()</code>ed, or the page must be reloaded.
+     *
+     *
+     * <h3 id="binding-section">
+     *   Declarative Binding
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+     * </h3>
+     *
+     * <p>For elements like Toolbar and Menu that contain a number of like items, applications may wish to use <code class="prettyprint">oj-bind-for-each</code>
+     * to stamp out the contents as follows:
+     *
+     * <pre class="prettyprint">
+     * <code>&lt;oj-toolbar id="myToolbar">
+     *     &lt;oj-bind-for-each data="[[myButtons]]">
+     *         &lt;template>
+     *             &lt;oj-button :id="[[$current.data.id]]">
+     *                 &lt;span>
+     *                     &lt;oj-bind-text value="[[$current.data.label]]">&lt;/oj-bind-text>
+     *                 &lt;/span>
+     *             &lt;/oj-button>
+     *         &lt;/template>
+     *     &lt;/oj-bind-for-each>
+     * &lt;/oj-toolbar>
+     * </code></pre>
+     *
      */
+
+    // API doc for inherited methods with no JS in this file:
+    /**
+     * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Toolbar component.
+     *
+     * @method
+     * @name oj.ojToolbar#widget
+     * @memberof oj.ojToolbar
+     * @instance
+     * @ignore
+     * @return {jQuery} the root element of the component
+     */
+
+    /**
+     * Removes the toolbar functionality completely. This will return the element back to its pre-init state,
+     * and remove the toolbar's focus management from the contained buttons.
+     *
+     * @method
+     * @name oj.ojToolbar#destroy
+     * @memberof oj.ojToolbar
+     * @instance
+     * @ignore
+     */
+
+    //-----------------------------------------------------
+    //                   Fragments
+    //-----------------------------------------------------
+    /**
+     * <p>All Toolbar touch interaction is with the individual buttons.  See the [JET Button]{@link oj.ojButton} touch gesture doc.
+     *
+     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+     * @memberof oj.ojToolbar
+     */
+
+    /**
+     * <p>JET Toolbar is a single tabstop, with arrow-key navigation within the toolbar, as follows:
+     *
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Key</th>
+     *       <th>Action</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td><kbd>LeftArrow</kbd></td>
+     *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>RightArrow</kbd></td>
+     *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * <p>See also the [JET Button]{@link oj.ojButton} keyboard doc, for details on interacting with
+     * the individual buttons.
+     *
+     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojToolbar
+     */
+
+    //-----------------------------------------------------
+    //                   Styling
+    //-----------------------------------------------------
+
+    // ---------------- oj-toolbar-separator --------------
+    /**
+    * Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that a separator is desirable. <br/>
+    * For accessibility, additionally apply role and aria-orientation as shown.
+    * @ojstyleclass oj-toolbar-separator
+    * @ojdisplayname Separator
+    * @ojstyleselector "oj-toolbar span"
+    * @memberof oj.ojToolbar
+    * @ojtsexample
+    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar">
+    *   &lt;oj-button ...>&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button ...>&lt;/oj-button>
+    * &lt;/oj-toolbar>
+    */
     // ---------------- oj-toolbar-top-border --------------
-     /**
-     * Applies a top border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
-     * @ojstyleclass oj-toolbar-top-border
-     * @ojdisplayname Top Border
-     * @memberof oj.ojToolbar
-     * @ojtsexample
-     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-top-border">
-     *   &lt;oj-button ...>&lt;/oj-button>
-     *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
-     *   &lt;oj-button ...>&lt;/oj-button>
-     * &lt;/oj-toolbar>
-     */
-     // ---------------- oj-toolbar-bottom-border --------------
-     /**
-     * Applies a bottom border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
-     * @ojstyleclass oj-toolbar-bottom-border
-     * @ojdisplayname Bottom Border
-     * @memberof oj.ojToolbar
-     * @ojtsexample
-     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-bottom-border">
-     *   &lt;oj-button ...>&lt;/oj-button>
-     *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
-     *   &lt;oj-button ...>&lt;/oj-button>
-     * &lt;/oj-toolbar>
-     */
-     // ---------------- oj-toolbar-no-chrome --------------
-     /**
-     * Removes chrome (background and border) from the toolbar(s), in themes having this chrome by default.
-     * @ojstyleclass oj-toolbar-no-chrome
-     * @ojdisplayname No Chrome
-     * @memberof oj.ojToolbar
-     * @ojtsexample
-     * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-no-chrome">
-     *   &lt;oj-button ...>&lt;/oj-button>
-     *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
-     *   &lt;oj-button ...>&lt;/oj-button>
-     * &lt;/oj-toolbar>
-     */
+    /**
+    * Applies a top border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
+    * @ojstyleclass oj-toolbar-top-border
+    * @ojdisplayname Top Border
+    * @memberof oj.ojToolbar
+    * @ojtsexample
+    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-top-border">
+    *   &lt;oj-button ...>&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button ...>&lt;/oj-button>
+    * &lt;/oj-toolbar>
+    */
+    // ---------------- oj-toolbar-bottom-border --------------
+    /**
+    * Applies a bottom border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.
+    * @ojstyleclass oj-toolbar-bottom-border
+    * @ojdisplayname Bottom Border
+    * @memberof oj.ojToolbar
+    * @ojtsexample
+    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-bottom-border">
+    *   &lt;oj-button ...>&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button ...>&lt;/oj-button>
+    * &lt;/oj-toolbar>
+    */
+    // ---------------- oj-toolbar-no-chrome --------------
+    /**
+    * Removes chrome (background and border) from the toolbar(s), in themes having this chrome by default.
+    * @ojstyleclass oj-toolbar-no-chrome
+    * @ojdisplayname No Chrome
+    * @memberof oj.ojToolbar
+    * @ojtsexample
+    * &lt;oj-toolbar id="myToolbar" aria-label="Foo" aria-controls="bar" class="oj-toolbar-no-chrome">
+    *   &lt;oj-button ...>&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button ...>&lt;/oj-button>
+    * &lt;/oj-toolbar>
+    */
+    /**
+    * @ojstylevariableset oj-toolbar-css-set1
+    * @ojstylevariable oj-toolbar-button-margin {description: "Horizontal margin around a button in a toolbar", formats: ["length"], help: "#css-variables"}
+    * @ojstylevariable oj-toolbar-borderless-button-margin {description: "Horizontal margin around a borderless button in a toolbar", formats: ["length"], help: "#css-variables"}
+    * @ojstylevariable oj-toolbar-separator-margin {description: "Horizontal margin around a separator in a toolbar",formats: ["length"], help: "#css-variables"}
+    * @memberof oj.ojToolbar
+    */
     // --------------------------------------------------- oj.ojToolbar Styling End -----------------------------------------------------------
 
     oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
@@ -217,8 +279,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
            * <p>This option only affects buttons and buttonsets that have never had their own <code class="prettyprint">chroming</code> option set.  This allows
            * individual buttons and buttonsets to opt out of their toolbar's chroming if needed.
            *
-           * <p>The default chroming varies by theme.  Each theme can set its default by setting
-           * <code class="prettyprint">$toolbarChromingOptionDefault</code> as seen in the example below.
+           * <p>The default chroming varies by theme.
            *
            * <p>Once a value has been set on this option, that value applies regardless of theme.
            *
@@ -246,8 +307,8 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
            * // setter
            * myToolbar.chroming = 'borderless';
            *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $toolbarChromingOptionDefault: borderless !default;
+           * @example <caption>Set the default in the theme (CSS) :</caption>
+           * --oj-private-toolbar-global-chroming-default: borderless !default;
            */
         chroming: 'borderless'
 
@@ -347,7 +408,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
        * <ul>
        *   <li>After buttons or buttonsets are added to, removed from, or reordered within the toolbar.</li>
        *   <li>After a programmatic change to the <code class="prettyprint">checked</code> status of a radio button in the toolbar
-       *       (which should be done via Buttonset's [checked]{@link oj.ojButtonset#checked} option).  This applies only to radios,
+       *       (which should be done via Buttonset's [value]{@link oj.ojButtonsetOne#value} option).  This applies only to radios,
        *       not to checkboxes or push buttons.</li>
        *   <li>After the reading direction (LTR vs. RTL) changes.</li>
        * </ul>
@@ -840,70 +901,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
           }
         }
       }
-
-      // API doc for inherited methods with no JS in this file:
-
-      /**
-       * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Toolbar component.
-       *
-       * @method
-       * @name oj.ojToolbar#widget
-       * @memberof oj.ojToolbar
-       * @instance
-       * @ignore
-       * @return {jQuery} the root element of the component
-       */
-
-      /**
-       * Removes the toolbar functionality completely. This will return the element back to its pre-init state,
-       * and remove the toolbar's focus management from the contained buttons.
-       *
-       * @method
-       * @name oj.ojToolbar#destroy
-       * @memberof oj.ojToolbar
-       * @instance
-       * @ignore
-       */
-
-      // Fragments:
-
-      /**
-       * <p>All Toolbar touch interaction is with the individual buttons.  See the [JET Button]{@link oj.ojButton} touch gesture doc.
-       *
-       * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojToolbar
-       */
-
-      /**
-       * <p>JET Toolbar is a single tabstop, with arrow-key navigation within the toolbar, as follows:
-       *
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td><kbd>LeftArrow</kbd></td>
-       *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
-       *     </tr>
-       *     <tr>
-       *       <td><kbd>RightArrow</kbd></td>
-       *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>See also the [JET Button]{@link oj.ojButton} keyboard doc, for details on interacting with
-       * the individual buttons.
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojToolbar
-       */
-
-
     });
 
   // -----------------------------------------------------------------------------
@@ -954,18 +951,11 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 
       // same Q as for Button: does this correctly handle the case where the theme has no $var, in which case we want there to effectively be no dynamic getter so that the prototype default is used?
     ojToolbar: {
       chroming: Components.createDynamicPropertyGetter(function () {
-        return (ThemeUtils.parseJSONFromFontFamily('oj-toolbar-option-defaults') || {}).chroming;
+        return ThemeUtils.getCachedCSSVarValues(['--oj-private-toolbar-global-chroming-default'])[0];
       })
     }
   });
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   (function () {
 var __oj_toolbar_metadata = 
 {
@@ -1004,7 +994,7 @@ var __oj_toolbar_metadata =
               binding: {
                 provide: [{
                   name: 'containerChroming',
-                  default: (oj.ThemeUtils.parseJSONFromFontFamily('oj-toolbar-option-defaults') || {}).chroming
+                  default: oj.ThemeUtils.getCachedCSSVarValues(['--oj-private-toolbar-global-chroming-default'])[0]
                 }]
               }
             },

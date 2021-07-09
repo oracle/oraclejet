@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojtranslation'], function (exports, ojvcomponentElement, Translations) { 'use strict';
+define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation'], function (exports, ojvcomponent, preact, Translations) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -13,26 +13,18 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojtranslation'], function (e
         else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
-    class Props {
-        constructor() {
-            this.max = 100;
-            this.value = 0;
-            this.size = 'md';
+    exports.ProgressCircle = class ProgressCircle extends preact.Component {
+        render(props) {
+            return props.value === -1
+                ? this._renderIndeterminateCircle(props)
+                : this._renderDeterminateCircle(props);
         }
-    }
-    exports.ProgressCircle = class ProgressCircle extends ojvcomponentElement.ElementVComponent {
-        render() {
-            return this.props.value == -1
-                ? this._renderIndeterminateCircle()
-                : this._renderDeterminateCircle();
+        _renderIndeterminateCircle(props) {
+            return (preact.h(ojvcomponent.Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
+                preact.h("div", { class: 'oj-progress-circle-indeterminate' },
+                    preact.h("div", { class: 'oj-progress-circle-indeterminate-inner' }))));
         }
-        _renderIndeterminateCircle() {
-            return (ojvcomponentElement.h("oj-progress-circle", { class: 'oj-progress-circle oj-progress-circle-' + this.props.size, role: 'progressbar', "aria-valuetext": Translations.getTranslatedString('oj-ojProgressbar.ariaIndeterminateProgressText') },
-                ojvcomponentElement.h("div", { class: 'oj-progress-circle-indeterminate' },
-                    ojvcomponentElement.h("div", { class: 'oj-progress-circle-indeterminate-inner' }))));
-        }
-        _renderDeterminateCircle() {
-            const props = this.props;
+        _renderDeterminateCircle(props) {
             let max = props.max;
             let value = props.value;
             if (max < 0) {
@@ -41,11 +33,11 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojtranslation'], function (e
             if (value < 0 && value !== -1) {
                 value = 0;
             }
-            const percentage = max == 0 ? 0 : value > max ? 1 : value / max;
+            const percentage = max === 0 ? 0 : value > max ? 1 : value / max;
             const clipPath = this._getClipPath(percentage);
-            return (ojvcomponentElement.h("oj-progress-circle", { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": max, "aria-valuenow": value },
-                ojvcomponentElement.h("div", { class: 'oj-progress-circle-tracker' }),
-                ojvcomponentElement.h("div", { class: 'oj-progress-circle-value', style: { clipPath: clipPath } })));
+            return (preact.h(ojvcomponent.Root, { class: 'oj-progress-circle oj-progress-circle-' + props.size, role: 'progressbar', "aria-valuemin": '0', "aria-valuemax": max, "aria-valuenow": value },
+                preact.h("div", { class: 'oj-progress-circle-tracker' }),
+                preact.h("div", { class: 'oj-progress-circle-value', style: { clipPath } })));
         }
         _getClipPath(percentage) {
             let tangent;
@@ -87,9 +79,14 @@ define(['exports', 'ojs/ojvcomponent-element', 'ojs/ojtranslation'], function (e
             return 50 * Math.tan(percentage * 2 * Math.PI);
         }
     };
-    exports.ProgressCircle.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "aria-valuemin": 1, "aria-valuemax": 1, "aria-valuetext": 1, "aria-valuenow": 1, "role": 1 } }, "properties": { "max": { "type": "number", "value": 100 }, "value": { "type": "number", "value": 0 }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"], "value": "md" } } };
+    exports.ProgressCircle.defaultProps = {
+        max: 100,
+        value: 0,
+        size: 'md'
+    };
+    exports.ProgressCircle.metadata = { "properties": { "max": { "type": "number" }, "value": { "type": "number" }, "size": { "type": "string", "enumValues": ["sm", "md", "lg"] } } };
     exports.ProgressCircle = __decorate([
-        ojvcomponentElement.customElement('oj-progress-circle')
+        ojvcomponent.customElement('oj-progress-circle')
     ], exports.ProgressCircle);
 
     Object.defineProperty(exports, '__esModule', { value: true });

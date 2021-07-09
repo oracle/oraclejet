@@ -30,7 +30,7 @@ class IncompatibleDependency extends NullDependency
 IncompatibleDependency.Template = class IncompatibleDependencyTemplate
 {
   apply(dep, source, outputOptions, requestShortener) {
-    var error = dep.error === null ? "" : `throw new error('${dep.error}');`
+    var error = dep.error === null ? "" : `throw new Error('${dep.error}');`
     if (dep.function) {
       error = `function(){${error}};`;
     }

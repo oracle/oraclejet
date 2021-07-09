@@ -12,14 +12,6 @@ import Context from 'ojs/ojcontext';
 import { tearDownPullToRefresh, setupPullToRefresh } from 'ojs/ojpulltorefresh';
 import { error } from 'ojs/ojlogger';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 var __oj_refresher_metadata = 
 {
   "properties": {
@@ -75,14 +67,6 @@ var __oj_refresher_metadata =
                                   { metadata: __oj_refresher_metadata });
 }());
 
-/**
- * @license
- * Copyright (c) 2018 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /*!
  * jQuery UI Refresher @VERSION
  * http://jqueryui.com
@@ -100,36 +84,48 @@ var __oj_refresher_metadata =
  */
 
 (function () {
-/**
- * @ojcomponent oj.ojRefresher
- * @augments oj.baseComponent
- * @since 5.1.0
- *
- * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
- *
- * @ojpropertylayout {propertyGroup: "common", items: ["text", "threshold"]}
- * @ojvbdefaultcolumns 12
- * @ojvbmincolumns 12
- *
- * @classdesc
- * <h3 id="refresherOverview-section">
- *   JET Refresher
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#refresherOverview-section"></a>
- * </h3>
- *
- * <p>Description: A wrapper to provide pull-to-refresh functionality for a target DOM element
- *
- * <p>Warning: The pull to refresh gesture will not work with drag and drop enabled components. Drag and drop must be disabled in the component if
- * use of pull to refresh is needed.
- *
- * <pre class="prettyprint"><code>&lt;oj-refresher id='myrefresher' threshold='100' text='Checking for updates' refresh-content='[[refreshFunc]]'>
- *    &lt;oj-list-view id="listview">&lt;/oj-list-view>
- * &lt;/oj-refresher>
- *
- * </code></pre>
- *
- */
-// --------------------------------------------------- oj.ojRefresher Styling Start -----------------------------------------------------------
+  /**
+   * @ojcomponent oj.ojRefresher
+   * @augments oj.baseComponent
+   * @since 5.1.0
+   *
+   * @ojshortdesc A refresher is a wrapper for attaching pull to refresh functionality to a DOM element.
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["text", "threshold"]}
+   * @ojvbdefaultcolumns 12
+   * @ojvbmincolumns 12
+   *
+   * @classdesc
+   * <h3 id="refresherOverview-section">
+   *   JET Refresher
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#refresherOverview-section"></a>
+   * </h3>
+   *
+   * <p>Description: A wrapper to provide pull-to-refresh functionality for a target DOM element
+   *
+   * <p>Warning: The pull to refresh gesture will not work with drag and drop enabled components. Drag and drop must be disabled in the component if
+   * use of pull to refresh is needed.
+   *
+   * <pre class="prettyprint"><code>&lt;oj-refresher id='myrefresher' threshold='100' text='Checking for updates' refresh-content='[[refreshFunc]]'>
+   *    &lt;oj-list-view id="listview">&lt;/oj-list-view>
+   * &lt;/oj-refresher>
+   *
+   * </code></pre>
+   *
+   */
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+  // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for refresher
+  /**
+   * @ojslot contextMenu
+   * @memberof oj.ojRefresher
+   * @ignore
+   */
+  //-----------------------------------------------------
+  //                   Styles
+  //-----------------------------------------------------
+
   // ---------------- oj-scroller --------------
   /**
   * Designates the element to be the scroller element used in place of the target.
@@ -140,6 +136,11 @@ var __oj_refresher_metadata =
   * &lt;oj-refresher id='myrefresher' threshold='100' text='Checking for updates' refresh-content='[[refreshFunc]]'>
   *     &lt;oj-list-view id="refreshId">&lt;/oj-list-view>
   * &lt;/oj-refresher>
+  */
+ /**
+  * @ojstylevariableset oj-refresher-css-set1
+  * @ojstylevariable oj-refresher-bg-color {description: "Refresher background color", formats: ["color"], help: "#css-variables"}
+  * @memberof oj.ojRefresher
   */
   // --------------------------------------------------- oj.ojRefresher Styling End -----------------------------------------------------------
 
@@ -355,15 +356,5 @@ var __oj_refresher_metadata =
           }
         }
       }
-
-      // Slots
-      // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for refresher
-
-      /**
-       * @ojslot contextMenu
-       * @memberof oj.ojRefresher
-       * @ignore
-       */
-
     });
 }());

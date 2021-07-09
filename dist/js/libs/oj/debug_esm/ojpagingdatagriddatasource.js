@@ -5,17 +5,9 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import oj$1 from 'ojs/ojcore-base';
+import oj from 'ojs/ojcore-base';
 import Message from 'ojs/ojmessaging';
 import 'ojs/ojpagingtabledatasource';
-
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @class PagingCellSet
@@ -35,7 +27,7 @@ const PagingCellSet = function (cellSet, startIndex) {
   this.m_cellSet = cellSet;
   this.m_startIndex = startIndex;
 };
-oj$1._registerLegacyNamespaceProp('PagingCellSet', PagingCellSet);
+oj._registerLegacyNamespaceProp('PagingCellSet', PagingCellSet);
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available
  * 2) the index specified is out of bounds.
@@ -138,13 +130,6 @@ PagingCellSet.prototype.getExtent = function (indexes) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @export
  * @class PagingDataGridDataSource
  * @classdesc A paging based implementation of the DataGridDataSource.
@@ -161,7 +146,7 @@ PagingCellSet.prototype.getExtent = function (indexes) {
 // eslint-disable-next-line no-unused-vars
 const PagingDataGridDataSource = function (dataSource, options) {
   // Initialize
-  if (!(dataSource instanceof oj$1.DataGridDataSource)) {
+  if (!(dataSource instanceof oj.DataGridDataSource)) {
     // we only support Array, Collection, or ko.observableArray. To
     // check for observableArray, we can't do instanceof check because it's
     // a function. So we just check if it contains a subscribe function.
@@ -174,10 +159,10 @@ const PagingDataGridDataSource = function (dataSource, options) {
   this.Init();
 };
 
-oj$1._registerLegacyNamespaceProp('PagingDataGridDataSource', PagingDataGridDataSource);
+oj._registerLegacyNamespaceProp('PagingDataGridDataSource', PagingDataGridDataSource);
 // Subclass from oj.DataSource
-oj$1.Object.createSubclass(PagingDataGridDataSource,
-                         oj$1.DataGridDataSource,
+oj.Object.createSubclass(PagingDataGridDataSource,
+                         oj.DataGridDataSource,
                          'oj.PagingDataGridDataSource');
 
 /**
@@ -232,7 +217,7 @@ PagingDataGridDataSource.prototype.setPage = function (value, options) {
 
   try {
     PagingDataGridDataSource.superclass.handleEvent
-      .call(this, oj$1.PagingModel.EventType.BEFOREPAGE, { page: value, previousPage: this._page });
+      .call(this, oj.PagingModel.EventType.BEFOREPAGE, { page: value, previousPage: this._page });
   } catch (err) {
     return Promise.reject(err);
   }
@@ -343,17 +328,17 @@ PagingDataGridDataSource.prototype._handleChange = function (options) {
       this._page = 0;
       // pass the refresh event through to the data grid and the paging control
       this.handleEvent('change', { operation: 'sync', pageSize: this._pageSize });
-      this.handleEvent(oj$1.PagingTableDataSource.EventType.REFRESH, null);
+      this.handleEvent(oj.PagingTableDataSource.EventType.REFRESH, null);
       break;
     case 'reset':
       // the paging control will set a new startIndex and kick off a fetch here
-      this.handleEvent(oj$1.PagingTableDataSource.EventType.RESET, null);
+      this.handleEvent(oj.PagingTableDataSource.EventType.RESET, null);
       break;
     case 'insert':
-      this.handleEvent(oj$1.PagingTableDataSource.EventType.ADD, { index: options.indexes.row });
+      this.handleEvent(oj.PagingTableDataSource.EventType.ADD, { index: options.indexes.row });
       break;
     case 'delete':
-      this.handleEvent(oj$1.PagingTableDataSource.EventType.REMOVE, null);
+      this.handleEvent(oj.PagingTableDataSource.EventType.REMOVE, null);
       break;
     case 'update':
       // eslint-disable-next-line no-param-reassign
@@ -363,7 +348,7 @@ PagingDataGridDataSource.prototype._handleChange = function (options) {
       break;
     default:
       this.handleEvent('change', options);
-      this.handleEvent(oj$1.PagingTableDataSource.EventType.SYNC, null);
+      this.handleEvent(oj.PagingTableDataSource.EventType.SYNC, null);
   }
 };
 
@@ -477,10 +462,10 @@ PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function (
   // eslint-disable-next-line no-param-reassign
   headerRange.count += 1;
   if (headerSet != null) {
-    pagingHeaderSet = new oj$1.PagingHeaderSet(headerSet, this._startIndex);
+    pagingHeaderSet = new oj.PagingHeaderSet(headerSet, this._startIndex);
   }
   if (endHeaderSet != null) {
-    pagingEndHeaderSet = new oj$1.PagingHeaderSet(endHeaderSet, this._startIndex);
+    pagingEndHeaderSet = new oj.PagingHeaderSet(endHeaderSet, this._startIndex);
   }
 
   // clear callback before calling it because it may issue a refetch
@@ -602,7 +587,7 @@ PagingDataGridDataSource.prototype._handleCellsFetchSuccess = function (cellSet,
       cellRanges[i].count += 1;
     }
   }
-  var pagedCellSet = new oj$1.PagingCellSet(cellSet, this._startIndex);
+  var pagedCellSet = new oj.PagingCellSet(cellSet, this._startIndex);
 
   // clear callback before calling it because it may issue a refetch
   var callback = this._pendingCellCallback.callbacks.success;
@@ -642,7 +627,7 @@ PagingDataGridDataSource.prototype._handleCellsFetchError = function (error) {
  * @export
  * @method
  * @instance
- * @memberof ArrayDataGridDataSource
+ * @memberof PagingDataGridDataSource
  */
 PagingDataGridDataSource.prototype.keys = function (indexes) {
   var pagedIndexes = { column: indexes.column, row: indexes.row + this._startIndex };
@@ -800,14 +785,6 @@ PagingDataGridDataSource.prototype.move = function (
 /** ** end delegated functions ****/
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @class PagingHeaderSet
  * @classdesc A HeaderSet represents a collection of headers. The HeaderSet is an object returned by the success callback
  * of the fetchHeaders method on DataGridDataSource. This is a paging specific implementation of the HeaderSet.
@@ -824,7 +801,7 @@ const PagingHeaderSet = function (headerSet, startIndex) {
   this.m_headerSet = headerSet;
   this.m_startIndex = startIndex;
 };
-oj$1._registerLegacyNamespaceProp('PagingHeaderSet', PagingHeaderSet);
+oj._registerLegacyNamespaceProp('PagingHeaderSet', PagingHeaderSet);
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
@@ -965,19 +942,4 @@ PagingHeaderSet.prototype.getLabel = function (level) {
   return this.m_headerSet.getLabel(level);
 };
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
-
-var PagingDataGridDataSource$1 = {};
-PagingDataGridDataSource$1.PagingDataGridDataSource = oj.PagingDataGridDataSource;
-PagingDataGridDataSource$1.PagingHeaderSet = oj.PagingHeaderSet;
-PagingDataGridDataSource$1.PagingCellSet = oj.PagingCellSet;
-
-export default PagingDataGridDataSource$1;
 export { PagingCellSet, PagingDataGridDataSource, PagingHeaderSet };

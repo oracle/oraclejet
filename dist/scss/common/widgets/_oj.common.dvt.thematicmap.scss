@@ -66,6 +66,14 @@
 
     }
 
+    .oj-thematicmap-marker.oj-hover {
+      border-color: $dvtBorder2Color
+    }
+
+    .oj-thematicmap-marker.oj-selected {
+      border-color: $dvtBorderColor;
+    }
+
     .oj-thematicmap-link {
 
       color: $dvtMapLinkColor;

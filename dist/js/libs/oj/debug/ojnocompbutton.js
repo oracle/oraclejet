@@ -10,14 +10,6 @@ define(['exports', 'jquery', 'ojs/ojdomutils'], function (exports, $, DomUtils) 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @class NocompButtonUtils
    * @classdesc JET Nocomp Button Utils
    * @export

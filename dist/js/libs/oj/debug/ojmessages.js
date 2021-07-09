@@ -189,12 +189,12 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    *
    * The collection can be two types:
    * <li>an array of oj.ojMessage.Message objects.</li>
-   * <li>oj.ArrayDataProvider of oj.ojMessage.Message objects. Look at {@link oj.ArrayDataProvider} for more available options.</li>
+   * <li>oj.ArrayDataProvider of oj.ojMessage.Message objects. Look at {@link ArrayDataProvider} for more available options.</li>
    * @example <caption>Initialize component with <code class="prettyprint">messages</code> attribute:</caption>
    * //example with 'messages' attribute is  an array of oj.ojMessage.Message objects.
    * &lt;!-- emailNotifications is an array of messages, with each entry being of 'Message' type -->
    * &lt;oj-messages messages="[[emailNotifications]]">&lt;/oj-messages>
-   * //example with 'messages' attribute of type dataprovider. See the documentation for {@link oj.ArrayDataProvider} for more details on the available options.
+   * //example with 'messages' attribute of type dataprovider. See the documentation for {@link ArrayDataProvider} for more details on the available options.
    * &lt;oj-messages messages="[[dataProvider]]">&lt;/oj-messages>
    * &lt;!-- dataProvider is an oj.ArrayDataProvider, with each entry being of 'Message' type -->
    * @example <caption>Get or set the <code class="prettyprint">messages</code> property after initialization:</caption>
@@ -311,7 +311,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.my
    * @name position.my
    * @type {Object}
    */
@@ -321,7 +320,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.my.horizontal
    * @name position.my.horizontal
    * @type {string}
    * @ojvalue {string} "start" Evaluates to "left" in LTR mode and "right" in RTL mode.
@@ -336,7 +334,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.my.vertical
    * @name position.my.vertical
    * @type {string}
    * @ojvalue {string} "top"
@@ -349,7 +346,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.offset
    * @name position.offset
    * @type {Object}
    */
@@ -359,7 +355,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.offset.x
    * @name position.offset.x
    * @type {number}
    */
@@ -369,7 +364,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.offset.y
    * @name position.offset.y
    * @type {number}
    */
@@ -381,7 +375,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.at
    * @name position.at
    * @type {Object}
    */
@@ -391,7 +384,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.at.horizontal
    * @name position.at.horizontal
    * @type {string}
    * @ojvalue {string} "start" Evaluates to "left" in LTR mode and "right" in RTL mode.
@@ -406,7 +398,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.at.vertical
    * @name position.at.vertical
    * @type {string}
    * @ojvalue {string} "top"
@@ -431,7 +422,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.of
    * @name position.of
    * @ojshortdesc Specifies which element to position the messages overlay against. See the Help documentation for more information.
    * @type {string}
@@ -443,7 +433,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    * @expose
    * @memberof! oj.ojMessages
    * @instance
-   * @alias position.collision
    * @name position.collision
    * @type {string}
    * @ojvalue {string} "flip" The element to the opposite side of the target and the
@@ -749,7 +738,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   /**
    * @typedef {Object} oj.ojMessages.PositionAlign
    * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
-   * @property {"start"|"end"|"left"|"center"|"bottom"} [horizontal] Horizontal alignment. <p>
+   * @property {"start"|"end"|"left"|"center"|"right"} [horizontal] Horizontal alignment. <p>
    * <ul>
    *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
    *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
@@ -862,7 +851,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
   MessagesViewModel.prototype._bindingsApplied = function () {
     // detects F6 navigation to the body content
-    var messagesContainerDiv = document.getElementById(this._messagesContainerId);
+    var messagesContainerDiv = this._composite.querySelector(`#${this._messagesContainerId}`);
     messagesContainerDiv.addEventListener('ojFocus', this._navigationEventListener.bind(this), false);
 
     // If 'messages' property is specified, we will not have inlined oj-message children.
@@ -1131,7 +1120,6 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
 
     // eat the event bubbling up from a child oj-message component
     event.preventDefault();
-    // event.stopPropagation();
 
     // override animation
     this._animateMessageAction(event.detail.element, event.detail.action, event.detail.endCallback);
@@ -1185,8 +1173,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   };
 
   MessagesViewModel.prototype._computeDisplay = function () {
-    var display = this._properties.display;
-    return display;
+    return this._properties.display;
   };
 
   MessagesViewModel.prototype._isPresentationInline = function () {
@@ -1233,28 +1220,7 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
   };
 
   MessagesViewModel.prototype._getDefaultSlotMessageElements = function () {
-    function toSelector(node) {
-      var selector = '';
-      if (node) {
-        if (node.id && node.id.length > 0) {
-          selector = '#' + node.id;
-        } else {
-          selector = node.nodeName;
-          var clazz = node.getAttribute('class');
-          if (clazz) {
-            selector += '.' + clazz.split(' ').join('.');
-          }
-
-          if (node.parentNode) {
-            return toSelector(node.parentNode) + ' > ' + selector;
-          }
-        }
-      }
-
-      return selector;
-    }
-
-    var element = document.getElementById(this._messagesContainerId);
+    var element = this._composite.querySelector(`#${this._messagesContainerId}`);
 
     var slotMap = ojcustomelementUtils.CustomElementUtils.getSlotMap(element);
     var messageElements = [];
@@ -1266,9 +1232,8 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
       if (body[i].nodeName !== 'OJ-MESSAGE') {
         // we included oj-bind-if in our view def, so make an exception
         if (body[i].nodeName !== 'OJ-BIND-IF') {
-          Logger.error(["JET oj-messages id='", toSelector(this._composite),
-            "': can contain only oj-message children in its default slot. ",
-            "Found a child element id='", toSelector(body[i]), "'."].join(''));
+          Logger.error('JET oj-messages: can contain only oj-message children in its default slot. '
+            + `Found <${body[i].nodeName}> instead.`);
         }
       } else {
         messageElements.push(body[i]);

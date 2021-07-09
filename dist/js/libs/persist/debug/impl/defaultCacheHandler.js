@@ -289,7 +289,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
         if (varyValue) {
           if (varyValue === '*') {
             // * vary value means every request is absolutely unique.
-            key = (new Date()).getTime()*1000 + Math.floor(Math.random() * 1000);;
+            key = (new Date()).getTime()*1000 + Math.floor(Math.random() * 1000);;  // @RandomNumberOK
           } else {
             var requestHeaders = request.headers;
             var varyFields = varyValue.split(',');

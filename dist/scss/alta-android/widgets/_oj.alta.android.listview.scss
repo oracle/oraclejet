@@ -36,13 +36,8 @@
 
         /* Styling for the drill icon */
         .oj-listview-drill-icon {
-           display: none;
+          @extend .oj-fwk-icon-caret-end;
         }
 
-        /* Styling on focused list or group item */
-        .oj-listview-item.oj-focus,
-        .oj-listview-group-item.oj-focus {
-            outline-style: none;
-        }
   }
 }

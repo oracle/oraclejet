@@ -10,13 +10,6 @@ import 'ojs/ojdatasource-common';
 import { Collection, Model, Events } from 'ojs/ojmodel';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * A CollectionNodeSet represents a collection of nodes.  The CollectionNodeSet is an object returned by the success callback
  * of the fetchChildren method on CollectionTreeDataSource.
  * @implements NodeSet
@@ -221,14 +214,6 @@ CollectionNodeSet.prototype.getChildNodeSet = function (index) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @class CollectionTreeDataSource
  * @classdesc TreeDataSource implementation that represents hierachical data available from an {@link Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView},
  *            [NavigationList]{@link oj.ojNavigationList}, and [TreeView]{@link oj.ojTreeView}.<br><br>
@@ -276,7 +261,7 @@ oj.Object.createSubclass(CollectionTreeDataSource, oj.TreeDataSource, 'oj.Collec
 
 /**
  * Initializes the data source.
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  * @return {void}
  * @ojtsignore
  * @export
@@ -293,7 +278,7 @@ CollectionTreeDataSource.prototype.Init = function () {
  * @param {any} parent the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.getChildCount = function (parent) {
   var childColl = this.__getParentsChildCollectionFromCache(parent);
@@ -302,10 +287,6 @@ CollectionTreeDataSource.prototype.getChildCount = function (parent) {
       return childColl.length;
     }
   }
-/*  this.getChildCollection(parent, {'success': function(coll) {
-    return coll.length;
-  }});
-*/
   return -1;
 };
 
@@ -317,7 +298,7 @@ CollectionTreeDataSource.prototype.getChildCount = function (parent) {
  * @property {function({status: *})=} callbacks.error the callback to invoke when the fetch failed.
  * @return {void}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.getChildCollection = function (key, callbacks) {
   this.fetchChildren(key, null, { success: function (nodeSet) {
@@ -339,7 +320,7 @@ CollectionTreeDataSource.prototype.getChildCollection = function (key, callbacks
  * @param {Object=} options optional parameters for this operation.  Currently this is used for future expansion only.
  * @return {void}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 // eslint-disable-next-line no-unused-vars
 CollectionTreeDataSource.prototype.fetchChildren = function (parent, range, callbacks, options) {
@@ -434,13 +415,6 @@ CollectionTreeDataSource.prototype.CollectionRefreshed = function (collection, r
  * @private
  */
 CollectionTreeDataSource.prototype._putModelInNodeSet = function (parent, model) {
-/*    var rows = [];
-    rows.push(model.attributes);
-    var options = {};
-    options['idAttribute'] = model['idAttribute'];
-    var rowset = new oj.ArrayRowSet(rows, options);
-    rowset.fetch();
-    return rowset;*/
   var collection = new Collection();
   collection.add(model);
   return this._getNodeSet(collection, parent, 0, 1, [model]);
@@ -802,14 +776,13 @@ CollectionTreeDataSource.prototype._getModelsFromCollection = function (collecti
     return new Promise(function (allresolve, allreject) {
       var i;
       var doTask = function (index) {
-        var promise = new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           _collection.at(index).then(function (model) {
             // eslint-disable-next-line no-param-reassign
             models[index] = model;
             resolve(index + 1);
           }, reject);
         });
-        return promise;
       };
 
       var currentStep = Promise.resolve(0);
@@ -901,7 +874,7 @@ CollectionTreeDataSource.prototype._fetch = function (
  *        there is no maximum fetch count
  * @return {void}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 // eslint-disable-next-line no-unused-vars
 CollectionTreeDataSource.prototype.fetchDescendants = function (parent, callbacks, options) {
@@ -946,7 +919,7 @@ CollectionTreeDataSource.prototype.fetchDescendants = function (parent, callback
  * @property {function({status: *})=} callbacks.error the callback to invoke when sort failed.
  * @return {void}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.sort = function (criteria, callbacks) {
   var key = criteria.key;
@@ -998,7 +971,7 @@ CollectionTreeDataSource.prototype._applySortToCollection = function (collection
  *               value: "{key: any, direction: 'ascending'|'descending'|'none'}",
  *               for: "returns"}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.getSortCriteria = function () {
   return { key: this.sortkey, direction: this.sortdir };
@@ -1017,7 +990,7 @@ CollectionTreeDataSource.prototype.getSortCriteria = function () {
  * @param {function({status: *})=} callbacks.error the callback to invoke when move failed.
  * @return {void}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.move = function (
   // eslint-disable-next-line no-unused-vars
@@ -1039,7 +1012,7 @@ CollectionTreeDataSource.prototype.move = function (
  *               value: "'valid'|'invalid'",
  *               for: "returns"}
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 // eslint-disable-next-line no-unused-vars
 CollectionTreeDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
@@ -1056,7 +1029,7 @@ CollectionTreeDataSource.prototype.moveOK = function (rowToMove, referenceRow, p
  *         For "move", the valid return values are: "default", "none".
  *         For "batchFetch", the valid return values are: "enable", "disable".
  * @export
- * @memberof oj.CollectionTreeDataSource
+ * @memberof CollectionTreeDataSource
  */
 CollectionTreeDataSource.prototype.getCapability = function (feature) {
   if (feature === 'sort') {

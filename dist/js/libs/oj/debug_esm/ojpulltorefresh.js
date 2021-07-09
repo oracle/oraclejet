@@ -18,14 +18,6 @@ import 'touchr';
 import 'ojs/ojprogress-circle';
 
 /**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @namespace PullToRefreshUtils
  * @since 1.2.0
  * @export
@@ -176,6 +168,9 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
         }
 
         checkTolerance = true;
+
+        // apply pull-to-refresh-action class to block children events in the panel element
+        panel[0].classList.add('oj-pulltorefresh-action');
       }
     })
     .on(type + 'move.pulltorefresh', function (event) {
@@ -269,6 +264,8 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
     })
     .on(type + 'cancel.pulltorefresh', function () {
       PullToRefreshUtils._cleanup(content);
+      // remove pull-to-refresh-action class to block children events in the panel element
+      panel[0].classList.remove('oj-pulltorefresh-action');
     })
     .on(type + 'end.pulltorefresh', function (event) {
       // first checks whether if the pull had started
@@ -298,6 +295,9 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
       } else {
         PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
       }
+
+      // remove pull-to-refresh-action class to block children events in the panel element
+      panel[0].classList.remove('oj-pulltorefresh-action');
     });
 };
 
@@ -426,13 +426,16 @@ PullToRefreshUtils._handleRelease = function (event, element, content, refreshFu
  * @see #setupPullToRefresh
  */
 PullToRefreshUtils.tearDownPullToRefresh = function (element) {
-    // remove the content panel
+  // remove the content panel
   $(element).children('.oj-pulltorefresh-outer').remove();
 
-    // remove all listeners
+  // remove all listeners
   $(element).off('.pulltorefresh');
 
-    // free up busy state if it's not done already
+  // remove pointer-events: none class to prevent element from locking out pointer events
+  element.classList.remove('oj-pulltorefresh-action');
+
+  // free up busy state if it's not done already
   PullToRefreshUtils._resolveBusyState(element);
 };
 

@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @export
    * @class ArrayTableDataSource
    * @since 1.0
@@ -226,10 +218,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     options = options || {};
     this._checkDataLoaded();
     var silent = options.silent;
-    var rowArray = {};
-    rowArray.data = [];
-    rowArray.keys = [];
-    rowArray.indexes = [];
+    var rowArray = { data: [], keys: [], indexes: [] };
 
     if (!(m instanceof Array)) {
       // eslint-disable-next-line no-param-reassign
@@ -455,10 +444,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     // eslint-disable-next-line no-param-reassign
     options = options || {};
     var silent = options.silent;
-    var rowArray = {};
-    rowArray.data = [];
-    rowArray.keys = [];
-    rowArray.indexes = [];
+    var rowArray = { data: [], keys: [], indexes: [] };
 
     if (!(m instanceof Array)) {
       // eslint-disable-next-line no-param-reassign
@@ -675,10 +661,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
     // eslint-disable-next-line no-param-reassign
     options = options || {};
     var silent = options.silent;
-    var rowArray = {};
-    rowArray.data = [];
-    rowArray.keys = [];
-    rowArray.indexes = [];
+    var rowArray = { data: [], keys: [], indexes: [] };
 
     if (!(m instanceof Array)) {
       // eslint-disable-next-line no-param-reassign
@@ -808,9 +791,7 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojlogger', 'ojs/ojtranslation', 'ojs/o
   ArrayTableDataSource.prototype._getRowArray = function (values) {
     var endIndex = values.length - 1;
 
-    var rowArray = {};
-    rowArray.data = [];
-    rowArray.indexes = [];
+    var rowArray = { data: [], indexes: [] };
     this._attributes = null;
 
     for (var i = 0; i <= endIndex; i++) {

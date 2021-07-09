@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojset', 'ojs/ojtimerutils', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtranslation', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcomponentcore', 'ojs/ojthemeutils'], function (ojeditablevalue, ojoptgroup, ojoption, ojhighlighttext, oj$1, $, DomUtils, ojSet, TimerUtils, Context, ListDataProviderView, TreeDataProviderView, Translation, Logger, ojcustomelementUtils, Components, ThemeUtils) { 'use strict';
+define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighlighttext', 'ojs/ojprogress-circle', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojset', 'ojs/ojtimerutils', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtranslation', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojcomponentcore'], function (ojeditablevalue, ojoptgroup, ojoption, ojhighlighttext, ojprogressCircle, oj$1, $, DomUtils, ojSet, TimerUtils, ThemeUtils, Context, ListDataProviderView, TreeDataProviderView, Translation, Logger, ojcustomelementUtils, Components) { 'use strict';
 
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -14,13 +14,6 @@ define(['ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'ojs/ojhighligh
   ListDataProviderView = ListDataProviderView && Object.prototype.hasOwnProperty.call(ListDataProviderView, 'default') ? ListDataProviderView['default'] : ListDataProviderView;
   TreeDataProviderView = TreeDataProviderView && Object.prototype.hasOwnProperty.call(TreeDataProviderView, 'default') ? TreeDataProviderView['default'] : TreeDataProviderView;
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 var __oj_combobox_one_metadata = 
 {
   "properties": {
@@ -487,6 +480,9 @@ var __oj_combobox_many_metadata =
           "type": "string"
         },
         "noMatchesFound": {
+          "type": "string"
+        },
+        "noMoreResults": {
           "type": "string"
         },
         "oneMatchesFound": {
@@ -974,6 +970,9 @@ var __oj_select_many_metadata =
         "noMatchesFound": {
           "type": "string"
         },
+        "noMoreResults": {
+          "type": "string"
+        },
         "oneMatchesFound": {
           "type": "string"
         },
@@ -1055,19 +1054,16 @@ var __oj_select_many_metadata =
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   const _ComboUtils = {
     // native renderMode: marker class for generated options list
     GENERATED_OPTIONS_SELECTOR: 'oj-select-options-generated',
+
+    // Theme names
+    THEME: {
+      REDWOOD: 'redwood'
+    },
 
     KEY:
       {
@@ -1094,7 +1090,7 @@ var __oj_select_many_metadata =
         },
 
         isControl: function (e) {
-          var k = e.which;
+          const k = e.which || e.keyCode;
           switch (k) {
             case _ComboUtils.KEY.SHIFT:
             case _ComboUtils.KEY.CTRL:
@@ -1109,7 +1105,7 @@ var __oj_select_many_metadata =
         },
 
         isFunctionKey: function (k) {
-          var key = k.which ? k.which : k;
+          var key = k.which || k.keyCode || k;
           return key >= 112 && key <= 123;
         },
 
@@ -1152,6 +1148,12 @@ var __oj_select_many_metadata =
        */
     DEFAULT_QUERY_DELAY: 70,
 
+    /**
+     * The default delay in milliseconds after which the loading indicator should be shown
+     * if the component is still loading data.
+     */
+    DEFAULT_LOADING_INDICATOR_DELAY: 250,
+
     ValueChangeTriggerTypes:
       {
         ENTER_PRESSED: 'enter_pressed',
@@ -1172,6 +1174,14 @@ var __oj_select_many_metadata =
 
     // TODO:
     scrollBarDimensions: null,
+
+    /**
+     * Determine if the current theme is redwood or older theme
+     */
+    isLegacyTheme: function () {
+      const themeJSON = ThemeUtils.parseJSONFromFontFamily('oj-theme-json');
+      return themeJSON.behavior !== _ComboUtils.THEME.REDWOOD;
+    },
 
     // _ComboUtils
     /*
@@ -1237,7 +1247,7 @@ var __oj_select_many_metadata =
       });
 
       element.on('keyup', function (e) {
-        if (e.which === _ComboUtils.KEY.ENTER) {
+        if ((e.which || e.keyCode) === _ComboUtils.KEY.ENTER) {
           //  - select and combobox stop keyboard event propegation
           e.preventDefault();
           return;
@@ -1754,7 +1764,7 @@ var __oj_select_many_metadata =
 
     // merge value and valueOption, value wins if both are specified
     // return true if the value is specified and it's not contained in valueOptions
-    mergeValueAndValueOptions: function (ojContext) {
+    mergeValueAndValueOptions: function (ojContext, options) {
       var value = ojContext.options.value;
       var resolveLater = false;
 
@@ -1775,7 +1785,7 @@ var __oj_select_many_metadata =
           }
         } else if (valueOptions) {
           // value not specified
-          _ComboUtils.syncValueWithValueOptions(ojContext, valueOptions, value, null);
+          _ComboUtils.syncValueWithValueOptions(ojContext, valueOptions, value, null, options);
         }
       } else {
         // single
@@ -1794,7 +1804,7 @@ var __oj_select_many_metadata =
           }
         } else if (valueOption) {
           // value not specified
-          _ComboUtils.syncValueWithValueOption(ojContext, valueOption, value, null);
+          _ComboUtils.syncValueWithValueOption(ojContext, valueOption, value, null, options);
         }
       }
 
@@ -1806,7 +1816,7 @@ var __oj_select_many_metadata =
     // null: don't update display label
     // true: update display label in native mode
     // false: update display label in jet mode
-    syncValueWithValueOption: function (ojContext, valueOption, value, nativeRender) {
+    syncValueWithValueOption: function (ojContext, valueOption, value, nativeRender, options) {
       var newVal;
       var updateLabel = true;
       var isCustomElement = ojContext._IsCustomElement();
@@ -1839,7 +1849,7 @@ var __oj_select_many_metadata =
           }
         }
       } else {
-        _ComboUtils._forceSetValue(ojContext, newVal);
+        _ComboUtils._forceSetValue(ojContext, newVal, options);
       }
     },
 
@@ -1848,7 +1858,7 @@ var __oj_select_many_metadata =
     // null: don't update display label
     // true: update display label in native mode
     // false: update display label in jet mode
-    syncValueWithValueOptions: function (ojContext, valueOptions, value, nativeRender) {
+    syncValueWithValueOptions: function (ojContext, valueOptions, value, nativeRender, options) {
       var newVal;
       var updateLabel = true;
       if (_ComboUtils.isValueOptionsForPlaceholder(true, valueOptions)) {
@@ -1859,7 +1869,7 @@ var __oj_select_many_metadata =
           newVal = _ComboUtils.getValueForPlaceholder(true);
         }
         if (!oj$1.Object.compareValues(newVal, value)) {
-          _ComboUtils._forceSetValue(ojContext, newVal);
+          _ComboUtils._forceSetValue(ojContext, newVal, options);
         }
       } else if (valueOptions) {
         newVal = [];
@@ -1889,17 +1899,32 @@ var __oj_select_many_metadata =
             }
           }
         } else {
-          _ComboUtils._forceSetValue(ojContext, newVal);
+          _ComboUtils._forceSetValue(ojContext, newVal, options);
         }
       }
     },
 
     // _ComboUtils
     // Internally set the value option, skipping validation and the check for different value
-    _forceSetValue: function (_ojContext, newVal) {
+    _forceSetValue: function (_ojContext, newVal, options) {
       var ojContext = _ojContext;
-      var flags = { doValueChangeCheck: false,
-        _context: { internalSet: true, writeback: true } };
+      var _options = options || {};
+      // JET-43071 - messagescustom property doesn't work when initial render
+      // During the initial setup, there will not be any component messages,
+      // but there can be custom messages. So, we need to make sure that we
+      // do not clear them off when we sync value and valueOptions.
+      // There are two places where doNotClearMessages flag is checked in the _SetValue call chain.
+      // One place checks this in flags.doNotClearMessages (_AsyncValidate) and
+      // another one checks this in flags._context.doNotClearMessages (_AfterSetOptionValue)
+      var flags = {
+        doNotClearMessages: _options.doNotClearMessages,
+        doValueChangeCheck: false,
+        _context: {
+          doNotClearMessages: _options.doNotClearMessages,
+          internalSet: true,
+          writeback: true
+        }
+      };
 
       // FIX  - VALUE UNCHANGED IN DISABLED SELECT WHEN CHANGING BOUND VALUEOPTION
       // _SetValue always performs validation, which calls _CanSetValue, which returns false if
@@ -2276,55 +2301,316 @@ var __oj_select_many_metadata =
       }
     },
 
-    // _ComboUtils
-    // Add a loading indicator to the select box
-    addLoadingIndicator: function (_container) {
-      var container = _container;
+    /**
+     * Creates an instance of loading indicator for the select & combobox
+     * components. This method uses the theme information for creating the
+     * loading indicator. For instance, in redwood this generates an
+     * oj-progress-circle element, while in alta, this generates an image
+     * sourced to a gif file.
+     *
+     * @return {Element} The loading indicator element
+     *
+     * @static
+     * @member _ComboUtils
+     * @ignore
+     */
+    createLoadingIndicatorElement: function () {
+      let loaderElement;
+      if (_ComboUtils.isLegacyTheme()) {
+        // In legacy themes, the oj-progress-circle is not
+        // supported. So we will be falling back to the spinner icon
+        loaderElement = document.createElement('div');
 
-      //  - display loading indicator when fetching label for initial value is slow
-      if (container._loadingIndicatorCount === undefined) {
-        container._loadingIndicatorCount = 1;
+        // Set attributes for the loader element
+        loaderElement.setAttribute('role', 'presentation');
+        loaderElement.setAttribute('class', 'oj-icon oj-listbox-loading-icon');
       } else {
-        container._loadingIndicatorCount += 1;
+        // In redwood based themes, oj-progress-circle is supported
+        // and thus we will creating the same.
+        loaderElement = document.createElement('oj-progress-circle');
+
+        // Set attributes for the oj-progress-circle element
+        loaderElement.setAttribute('class', 'oj-listbox-loading-progress-circle');
+        loaderElement.setAttribute('data-oj-internal', '');
+        loaderElement.setAttribute('data-oj-binding-provider', 'none');
+        loaderElement.setAttribute('value', -1);
+        loaderElement.setAttribute('size', 'sm');
       }
 
-      // check if it's already added
-      if (container._saveLoadingIndicator != null) {
+      return loaderElement;
+    },
+
+    /**
+     * Updates the loading state based on whether the data loading is incomplete or not for the
+     * dropdown
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     * @param {boolean} isLoadingData A flag indicating if the data is currently being loaded or is it done
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    updateDropdownLoadingState: function (widget, isLoadingData) {
+      const _widget = widget;
+
+      if (isLoadingData) {
+        // Increment the loading indicator counter for every request so, we can keep track
+        // of total requests. This is needed for removing the loading indicator, as we should
+        // only remove the loading indicator once all the requests are resolved. This is done by
+        // decrementing this counter in the removeLoadingIndicator method for every request resolved,
+        // and when the counter reaches 0, it would then mean that all the requests are resolved and
+        // we finally remove the loading indicator there.
+        _widget._dropdownLoadingIndicatorCount += 1;
+
+        // Clear any existing timers.
+        if (_widget._dropdownLoadingIndicatorTimer) {
+          _widget._dropdownLoadingIndicatorTimer.clear();
+          delete _widget._dropdownLoadingIndicatorTimer;
+        }
+
+        // We do not want to show the loading indicator for every single fetch.
+        // We only need to show the indicator for fetches that are slow enough.
+        // So add a timer and once the timer resolves successfully, meaning that
+        // it is not cancelled, add the loading indicator.
+        const timer = TimerUtils.getTimer(_widget._loadingIndicatorDelay);
+        timer.getPromise().then(function (hasCompleted) {
+          // Add the loading indicator only if the timer is not cleared
+          // which would indicate the component still needs to show the
+          // loading indicator
+          if (hasCompleted) {
+            _ComboUtils.addDropdownProgressCircle(_widget);
+          }
+        });
+        // Store the current timer instance
+        _widget._dropdownLoadingIndicatorTimer = timer;
+      } else {
+        // Decrement the _dropdownLoadingIndicatorCount to reflect count of the resolved
+        // request. Stop decrementing when it reaches 0 (which it should not, but to make sure that
+        // the counter does not go into negative values).
+        if (_widget._dropdownLoadingIndicatorCount > 0) {
+          _widget._dropdownLoadingIndicatorCount -= 1;
+        }
+        // Clear the loading indicator only if the loadingIndicatorCount is 0 (meaning all
+        // the loading functions are resolved and no need to show the loading indicator anymore)
+        // and we currently have a loading indicator showing.
+        if (_widget._dropdownLoadingIndicatorCount === 0) {
+          // All the requests are resolved, so clear any existing timers and remove the
+          // loading indicator
+          if (_widget._dropdownLoadingIndicatorTimer) {
+            _widget._dropdownLoadingIndicatorTimer.clear();
+            delete _widget._dropdownLoadingIndicatorTimer;
+          }
+          _ComboUtils.removeDropdownProgressCircle(_widget);
+        }
+      }
+    },
+
+    /**
+     * Adds the loading indicator if one is already not there in the dropdown
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    addDropdownProgressCircle: function (widget) {
+      const _widget = widget;
+      // check if we are already showing the loading indicator, and do nothing more
+      // if we are.
+      if (_widget._hasDropdownLoadingIndicator) {
         return;
       }
 
-      // TODO: center icon
-      var item = $(document.createElement('div'));
-      item.uniqueId()
-        .attr('role', 'presentation')
-        .addClass('oj-listbox-loading-icon-container');
+      const $dropdown = _widget.dropdown;
+      const $loaderWrapper = $dropdown.find('.oj-listbox-loader-wrapper');
+      let progressCircleElement = _widget._dropdownProgressCircleElement;
 
-      var icon = $(document.createElement('div'));
-      icon.addClass('oj-icon oj-listbox-loading-icon');
-      item.append(icon); // @HTMLUpdateOK
+      // Create a new progress bar element if one is already not there
+      if (!progressCircleElement) {
+        progressCircleElement = _ComboUtils.createLoadingIndicatorElement();
+        // Store the newly created progress bar element for future use.
+        _widget._dropdownProgressCircleElement = progressCircleElement;
+      }
 
-      container.prepend(item); // @HTMLUpdateOK
+      // append the progress bar to the dropdown
+      $loaderWrapper.append(progressCircleElement); // @HTMLUpdateOK
 
-      container._saveLoadingIndicator = item;
+      // Hide the results as they are stale at this point
+      _widget.results.addClass('oj-loading');
+
+      // Set the flag to indicate, we have set the loading indicator.
+      _widget._hasDropdownLoadingIndicator = true;
+
+      // Once the loading state is changed, trigger the internal loading state
+      // changed event.
+      // We trigger this event which will be used for internal purposes like
+      // unit testing. This event is an exposed public API and should not be
+      // treated as such.
+      _widget._triggerInternalLoadingStateChange('dropdownData', true);
     },
 
-    // _ComboUtils
-    // Remove the loading indicator
-    removeLoadingIndicator: function (_container) {
-      var container = _container;
+    /**
+     * Removes the loading indicator from the dropdown if all the data
+     * loading functions are resolved
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    removeDropdownProgressCircle: function (widget) {
+      const _widget = widget;
 
-      //  - display loading indicator when fetching label for initial value is slow
-      if (container._loadingIndicatorCount !== undefined) {
-        // remove the loading indicator when reference count down to 0
-        if (container._loadingIndicatorCount === 1) {
-          container._loadingIndicatorCount = undefined;
-          if (container._saveLoadingIndicator != null) {
-            container._saveLoadingIndicator.remove();
-            container._saveLoadingIndicator = undefined;
-          }
-        } else {
-          container._loadingIndicatorCount -= 1;
+      // Show the results again as they are now updated
+      _widget.results.removeClass('oj-loading');
+
+      // Remove the loading indicator if it exists
+      if (_widget._hasDropdownLoadingIndicator) {
+        // Do not use $.remove to remove the progress bar element, as we would be reusing the
+        // same element instance for future requests. Use $.detach to keep the event handlers
+        // and data intact in the oj-progress-bar element.
+        if (_widget._dropdownProgressCircleElement) {
+          $(_widget._dropdownProgressCircleElement).detach();
         }
+        // Clear the flag since we are not showing the loading indicator anymore
+        _widget._hasDropdownLoadingIndicator = false;
+
+        // Once the loading state is changed, trigger the internal loading state
+        // changed event.
+        // We trigger this event which will be used for internal purposes like
+        // unit testing. This event is an exposed public API and should not be
+        // treated as such.
+        _widget._triggerInternalLoadingStateChange('dropdownData', false);
+      }
+    },
+
+    /**
+     * Updates the loading state based on whether the data loading is incomplete or not
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     * @param {boolean} isLoadingData A flag indicating if the data is currently being loaded or is it done
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    updateLoadingState: function (widget, isLoadingData) {
+      // If the widget does not exist, do nothing
+      if (!widget) {
+        return;
+      }
+      const _widget = widget;
+
+      if (isLoadingData) {
+        // Clear any existing timers.
+        if (_widget._loadingIndicatorTimer) {
+          _widget._loadingIndicatorTimer.clear();
+          delete _widget._loadingIndicatorTimer;
+        }
+
+        // We do not want to show the loading indicator for every single fetch.
+        // We only need to show the indicator for fetches that are slow enough.
+        // So add a timer and once the timer resolves successfully, meaning that
+        // it is not cancelled, add the loading indicator.
+        const timer = TimerUtils.getTimer(_widget._loadingIndicatorDelay);
+        timer.getPromise().then(function (hasCompleted) {
+          // Add the loading indicator only if the timer is not cleared
+          // which would indicate the component still needs to show the
+          // loading indicator
+          if (hasCompleted) {
+            _ComboUtils.addLoadingIndicator(_widget);
+          }
+        });
+        // Store the current timer instance
+        _widget._loadingIndicatorTimer = timer;
+      } else {
+        // The data is loaded, so remove the loading indicator and clear existing
+        // timer.
+        if (_widget._loadingIndicatorTimer) {
+          _widget._loadingIndicatorTimer.clear();
+          delete _widget._loadingIndicatorTimer;
+        }
+
+        _ComboUtils.removeLoadingIndicator(_widget);
+      }
+    },
+
+    /**
+     * Adds the loading indicator if one is already not there
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    addLoadingIndicator: function (widget) {
+      const _widget = widget;
+      const ojContext = _widget.ojContext;
+
+      // Increment the loading indicator counter for every request so, we can keep track
+      // of total requests. This is needed for removing the loading indicator, as we should
+      // only remove the loading indicator once all the requests are resolved. This is done by
+      // decrementing this counter in the removeLoadingIndicator method for every request resolved,
+      // and when the counter reaches 0, it would then mean that all the requests are resolved and
+      // we finally remove the loading indicator there.
+      _widget._loadingIndicatorCount += 1;
+
+      // check if we are already showing the loading indicator, and do nothing more
+      // if we are.
+      if (_widget._hasLoadingIndicator) {
+        return;
+      }
+
+      // Call the _SetLoading method to show the progressive loading.
+      ojContext._SetLoading();
+
+      // Set the flag to indicate, we have set the loading indicator.
+      _widget._hasLoadingIndicator = true;
+
+      // Once the loading state is changed, trigger the internal loading state
+      // changed event.
+      // We trigger this event which will be used for internal purposes like
+      // unit testing. This event is an exposed public API and should not be
+      // treated as such.
+      _widget._triggerInternalLoadingStateChange('textFieldLabel', true);
+    },
+
+    /**
+     * Removes the loading indicator if all the data loading functions are resolved
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    removeLoadingIndicator: function (widget) {
+      const _widget = widget;
+      const ojContext = _widget.ojContext;
+
+      // Decrement the _loadingIndicatorCount till 0
+      if (_widget._loadingIndicatorCount > 0) {
+        _widget._loadingIndicatorCount -= 1;
+      }
+
+      // Clear the loading indicator by calling _ClearLoading method.
+      // Do this, only if the loadingIndicatorCount is 0 (meaning all the loading functions are resolved
+      // and no need to show the loading indicator anymore) and we currently have a loading indicator showing.
+      if (_widget._loadingIndicatorCount === 0 && _widget._hasLoadingIndicator) {
+        ojContext._ClearLoading();
+        // Clear the flag since we are not showing the loading indicator anymore
+        _widget._hasLoadingIndicator = false;
+
+        // Once the loading state is changed, trigger the internal loading state
+        // changed event.
+        // We trigger this event which will be used for internal purposes like
+        // unit testing. This event is an exposed public API and should not be
+        // treated as such.
+        _widget._triggerInternalLoadingStateChange('textFieldLabel', false);
       }
     },
 
@@ -2614,12 +2900,22 @@ var __oj_select_many_metadata =
     // used as rejected error in the fetchFromDataProvider method
     rejectedError: {},
 
-    // _ComboUtils
-    // add busy state
-    // display an animated gif if it is fetch initially
-    // fetch from the data provider
-    // display message for furthur filtering if not all results are fetched
-    // if multiple queries are in progress, discard all but the last query
+    /**
+     * Fetches data from the data provider. While doing so, this method also sets
+     * the busy state and loading indicator (only for initial fetch). This method
+     * also takes care of displaying the dropdown message for further filtering if
+     * not all the results are fetched. If multiple calls are made to this method,
+     * it discard all the previous calls and responds only to the latest call.
+     *
+     * @param {_AbstractOjChoice} widget The widget instance
+     * @param {Object} options The options object of the widget
+     * @param {Object} query A query object containing the value for querying and the callback function
+     * @param {number} fetchSize The number of items that needs to be fetched
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
     fetchFromDataProvider: function (widget, options, query, fetchSize) {
       var context = widget.ojContext;
 
@@ -2638,14 +2934,9 @@ var __oj_select_many_metadata =
         context._saveRejectFunc = reject;
       });
 
-      // display spinning icon only for the initial fetch
-      if (widget.selection && options.fetchType === 'init' && !context._spinnerContainer) {
-        context._spinnerContainer = widget.selection;
-
-        _ComboUtils.addLoadingIndicator(context._spinnerContainer);
-        // eslint-disable-next-line no-param-reassign
-        options.fetchType = null;
-      }
+      // Clear the initial fetch flag from the options as the initial fetch is triggered
+      // eslint-disable-next-line no-param-reassign
+      options.fetchType = null;
 
       var maxItems = _ComboUtils._getMaxItems(options);
       // fetch data from dataProvider
@@ -2662,11 +2953,6 @@ var __oj_select_many_metadata =
       Promise.race([remotePromise, fetchPromise]).then(function (fetchResults) {
         // clear the reject function
         context._saveRejectFunc = null;
-
-        if (context._spinnerContainer) {
-          _ComboUtils.removeLoadingIndicator(context._spinnerContainer);
-          context._spinnerContainer = undefined;
-        }
 
         //  - search not shown before typing a character
         if (context._resolveSearchBoxLater) {
@@ -2689,6 +2975,10 @@ var __oj_select_many_metadata =
           query.callback();
           context._fetchResolveFunc();
           context._fetchResolveFunc = null;
+        } else if (error === _ComboUtils.rejectedError) {
+          // If the fetch promise is rejected because of it being an outdated fetch
+          // request to cleanup any operations left over for the previous fetch.
+          query.cleanup();
         }
       });
     },
@@ -2744,21 +3034,30 @@ var __oj_select_many_metadata =
       return container._fetchByKeys;
     },
 
-    // _ComboUtils
-    // fetch the data row by its key("value")
-    fetchByKeyFromDataProvider: function (widget, options, query) {
+    /**
+     * Fetches data from the data provider using the key provided. While doing so, this also
+     * sets the busy state and loading indicator (only for initial fetch).
+     *
+     * @param {_AbstractOjChoice|jQuery} widgetOrElement Either the instance of the widget or a jQuery object
+     * @param {Object} options The options object for the widget
+     * @param {Object} query A query object containing the value for querying and the callback function
+     *
+     * @static
+     * @memberof _ComboUtils
+     * @ignore
+     */
+    fetchByKeyFromDataProvider: function (widgetOrElement, options, query) {
       var dataProvider = _ComboUtils.getDataProvider(options);
-      // add busy context
-      var container = (widget && widget.selection) ? widget.container : widget;
-      var fetchResolveFunc = _ComboUtils._addBusyState(container, 'fetching selected data');
 
-      //  - display loading indicator when fetching label for initial value is slow
-      if (widget && widget.selection) {
-        if (widget.opts.fetchType === 'init' && !container._spinnerContainer) {
-          container._spinnerContainer = widget.selection;
-          _ComboUtils.addLoadingIndicator(container._spinnerContainer);
-        }
-      }
+      // This method can be called with either widget as the first argument or
+      // the jQuery container element. This will be a jQuery container element
+      // when called from validateFromDataProvider method, which is used by oj-select-*
+      // components. This is to support the native render mode, where the widget instance
+      // does not exist. In all other cases, this will be a widget instance.
+      // So, check for the instance type and create variables accordingly.
+      const widget = (widgetOrElement instanceof $) ? null : widgetOrElement;
+      const container = (widget != null) ? widget.container : widgetOrElement;
+      const fetchResolveFunc = _ComboUtils._addBusyState(container, 'fetching selected data');
 
       //  - sdp.fetchbykeys method is being called twice for a single value
       // Stored the selected value in container._fetchByKeys, it will be cleared when the promise
@@ -2783,11 +3082,6 @@ var __oj_select_many_metadata =
         //  - sdp.fetchbykeys method is being called twice for a single value
         // eslint-disable-next-line no-param-reassign
         container._fetchByKeys = undefined;
-
-        if (container._spinnerContainer) {
-          _ComboUtils.removeLoadingIndicator(container._spinnerContainer);
-          container._spinnerContainer = undefined;
-        }
 
         var values = [];
         fetchResults.results.forEach(function (val) {
@@ -2927,12 +3221,13 @@ var __oj_select_many_metadata =
             isLocal, text);
         });
 
-        //  - group labels participate in the filtering
-        // Reverted. In the nested data case, group may be selectable. Without putting the
-        // group data in the collection, we will find no match and new entry may be created for combobox.
-        // For group that has matching children, we need to call the matcher on the group label
-        // to update the matches array. This needs to be done before checking the group.children.length.
-        if (!isLocal || query.matcher(query.term, text(group), datum) || group.children.length) {
+        // JET-30008 - select one/ combobox, don't filter on group headers when using an array
+        // At this point, data.children != null, which makes this node a group node.
+        // A group node, no matter the depth, is not selectable. Thus, whether or not this
+        // should be included in the dropdown entirely depends on whether or not a leaf node
+        // is a match. If not, we should not include the group node, even if it matches the
+        // query term
+        if (!isLocal || (group.children.length && _ComboUtils._hasLeafNode(group))) {
           collection.push(group);
         }
       } else if (!isLocal || query.matcher(query.term, text(datum), datum)) {
@@ -2940,9 +3235,29 @@ var __oj_select_many_metadata =
       }
     },
 
+    /**
+     * Recursively checks for the presence of at least a single leaf node.
+     *
+     * @param {object} group The option/optionGroup object
+     * @returns Whether the group node has at least one leaf node
+     */
+    _hasLeafNode: function (group) {
+      // if the group node itself is a leaf, return true
+      if (group.children == null) {
+        return true;
+      }
+      for (let i = 0; i < group.children.length; i++) {
+        const child = group.children[i];
+        if (_ComboUtils._hasLeafNode(child)) {
+          return true;
+        }
+      }
+      return false;
+    },
+
     // _ComboUtils
-    checkFormatter: function (ojContext, formatter, formatterName) {
-      if ($.isFunction(formatter)) {
+    checkFormatter: function (formatter, formatterName) {
+      if (typeof formatter === 'function') {
         return true;
       }
       if (!formatter) {
@@ -3111,6 +3426,9 @@ var __oj_select_many_metadata =
     formatNoMatches: function (ojContext) {
       return ojContext.getTranslatedString('noMatchesFound');
     },
+    formatNoMoreResults: function (ojContext) {
+      return ojContext.getTranslatedString('noMoreResults');
+    },
     formatMoreMatches: function (ojContext, num) {
       if (num === 1) {
         return ojContext.getTranslatedString('oneMatchesFound');
@@ -3181,6 +3499,29 @@ var __oj_select_many_metadata =
         this.headerInitialized = false;
         this.isOjOption = this.ojContext._IsCustomElement() && !opts.options &&
                             opts.element.find('oj-option').length > 0;
+
+        // Set initial values for flags and counter used for loading indicators
+        this._loadingIndicatorCount = 0;
+        this._hasLoadingIndicator = false;
+        this._dropdownLoadingIndicatorCount = 0;
+        this._hasDropdownLoadingIndicator = false;
+
+        // JET-39086 - raw-value is not getting updated until space in android devices
+        // In android device we need to update rawValue even for composition events
+        // Get and store agent info
+        this._isAndroidDevice = (oj$1.AgentUtils.getAgentInfo().os === oj$1.AgentUtils.OS.ANDROID);
+
+        const cssOptionDefaults = this.ojContext.cssOptionDefaults;
+        let loadingIndicatorDelay = Number.parseInt(cssOptionDefaults.loadingIndicatorDelay, 10);
+        if (Number.isNaN(loadingIndicatorDelay)) {
+          loadingIndicatorDelay = _ComboUtils.DEFAULT_LOADING_INDICATOR_DELAY;
+        }
+        this._loadingIndicatorDelay = loadingIndicatorDelay;
+
+        // JET-44062 - add gap between field and dropdown
+        var dropdownVerticalOffset =
+          ThemeUtils.getCachedCSSVarValues(['--oj-private-core-global-dropdown-offset'])[0] || '0';
+        this._dropdownVerticalOffset = parseInt(dropdownVerticalOffset, 10);
 
         // 'opts.element' is initialized in _setup() method in component files
         // ojcombobox.js, ojselect.js and ojInputSearch.js.
@@ -3328,7 +3669,7 @@ var __oj_select_many_metadata =
         this.dropdown.on('mouseup', resultsSelector, this._bind(function (e) {
           if ($(e.target).closest('.oj-listbox-result-selectable').length > 0) {
             this._highlightUnderEvent(e);
-            this._selectHighlighted(null, e);
+            this._selectHighlighted(null, e, false);
           }
         }
         ));
@@ -3686,7 +4027,6 @@ var __oj_select_many_metadata =
       // _AbstractOjChoice
       _clickAwayHandler: function (event) {
         var dropdown = this.dropdown;
-        var self;
 
         //  - period character in element id prevents options box open/close
         // escapeSelector handles special characters
@@ -3696,8 +4036,7 @@ var __oj_select_many_metadata =
         }
 
         if (dropdown.length > 0) {
-          self = dropdown.data('ojlistbox');
-          self.close(event);
+          this.close(event);
         }
       },
 
@@ -3762,6 +4101,9 @@ var __oj_select_many_metadata =
           }
           element.show();
         }
+
+        // Clear all active timers
+        this._clearActiveTimers();
       },
 
       /**
@@ -4569,6 +4911,22 @@ var __oj_select_many_metadata =
         return !evt.isDefaultPrevented();
       },
 
+      /**
+       * Triggers an internal event to indicate a change in the loading indicator
+       *
+       * @param {string} content A string indicating which content the loading state represents
+       * @param {boolean} loadingState Indicates whether the component is currently loading data
+       *
+       * @instance
+       * @private
+       * @memberof _AbstractOjChoice
+       */
+      _triggerInternalLoadingStateChange: function (content, loadingState) {
+        const data = { content: content, isLoading: loadingState };
+        const event = $.Event(`${this._elemNm}-internal-loading-state-changed`, { detail: data });
+        this.opts.element.trigger(event);
+      },
+
       // _AbstractOjChoice
       _isInterfaceEnabled: function () {
         return this.enabledInterface === true;
@@ -4701,17 +5059,26 @@ var __oj_select_many_metadata =
 
       // _AbstractOjChoice
       _getDropdownPosition: function (excludeUsingHandler) {
-        var position = {
+        var defPosition = {
           my: 'start top',
           at: 'start bottom',
           of: this._getDropdownPositionElement(),
-          collision: 'flip'
+          collision: 'flip',
+          offset: { x: 0, y: this._dropdownVerticalOffset }
         };
         if (!excludeUsingHandler) {
-          position.using = this._usingHandler.bind(this);
+          defPosition.using = this._usingHandler.bind(this);
         }
         var isRtl = DomUtils.getReadingDirection() === 'rtl';
-        return oj$1.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+        var position = oj$1.PositionUtils.normalizeHorizontalAlignment(defPosition, isRtl);
+        // need to coerce to Jet and then JqUi in order for vertical offset to work
+        position = oj$1.PositionUtils.coerceToJet(position);
+        position = oj$1.PositionUtils.coerceToJqUi(position);
+        // set the position.of again to be the element, because coerceToJet will change it to a
+        // string selector, which can then result in an error being thrown from jqueryui
+        // position.js getDimensions(elem) method if the element has been removed from the DOM
+        position.of = defPosition.of;
+        return position;
       },
 
       // _AbstractOjChoice
@@ -4791,8 +5158,8 @@ var __oj_select_many_metadata =
           this._createHeader();
         }
 
-        // this._clearPlaceholder();
         this.container.addClass('oj-listbox-dropdown-open');
+        this._showDropDown();
       },
 
       // _AbstractOjChoice
@@ -4810,15 +5177,13 @@ var __oj_select_many_metadata =
 
         this._clearDropdownAlignmentPreference();
 
-        //  - picking ojselect value using filter and keyboard may cause dropdown close error
-        // For signle select only -
-        // if popup exists, refresh its content, otherwise create a popup
-
-        var popupRoot = this.dropdown.parent();
-        if (this._classNm === 'oj-select' && this.opts.multiple !== true &&
-              popupRoot && popupRoot.hasClass('oj-listbox-drop-layer')) {
+        // Check if the popup already exists and is open, if so trigger refresh event on the descendents.
+        // If not, create and open a new popup.
+        const dropdownStatus = oj$1.ZOrderUtils.getStatus(this.dropdown);
+        if (dropdownStatus === oj$1.ZOrderUtils.STATUS.OPEN) {
+          // trigger the POPUP_REFRESH event on the dropdown element
           oj$1.PopupService.getInstance()
-            .triggerOnDescendents(popupRoot, oj$1.PopupService.EVENT.POPUP_REFRESH);
+            .triggerOnDescendents(this.dropdown, oj$1.PopupService.EVENT.POPUP_REFRESH);
         } else {
           if (this.dropdown[0] !== this.body().children().last()[0]) {
             this.dropdown.detach().appendTo(this.body()); // @HTMLUpdateOK
@@ -5039,17 +5404,18 @@ var __oj_select_many_metadata =
           var choice = $(choices[index]);
           if (choice.hasClass('oj-listbox-result-selectable') && !choice.hasClass('oj-disabled') &&
                 !choice.hasClass('oj-selected')) {
-            this._highlight(index);
+            this._highlight(index, true);
             break;
           }
         }
       },
 
       // _AbstractOjChoice
-      _highlight: function (_index) {
-        var index = _index;
-        var choices = this._findHighlightableChoices();
-        var choice;
+      _highlight: function (_index, isKeyboardAction, isInitial) {
+        let index = _index;
+        const choices = this._findHighlightableChoices();
+        let choice;
+        let highlightElement;
 
         if (arguments.length === 0) {
           // If no argumnets passed then currently highlighted
@@ -5074,17 +5440,24 @@ var __oj_select_many_metadata =
         this._removeHighlight();
 
         choice = $(choices[index]);
-
+        highlightElement = choice;
         if (choice.hasClass('oj-listbox-result-with-children')) {
-          var sels = choice.children('.oj-listbox-result-label');
-          sels.addClass('oj-hover');
-          //  - acc: screenreader not reading ojselect items
-          this._updateMatchesCount(sels.text());
-        } else {
-          choice.addClass('oj-hover');
-          //  - acc: screenreader not reading ojselect items
-          this._updateMatchesCount(choice.text());
+          highlightElement = choice.children('.oj-listbox-result-label');
         }
+
+        highlightElement.addClass('oj-hover');
+        // If highlighted through keyboard action, add the keyboard
+        // focus style class
+        if (isKeyboardAction) {
+          highlightElement.addClass('oj-listbox-result-keyboard-focus');
+          // If this is not initial selection, the add oj-focus-highlight
+          // class to add outline.
+          if (!isInitial) {
+            highlightElement.addClass('oj-focus-highlight');
+          }
+        }
+        //  - acc: screenreader not reading ojselect items
+        this._updateMatchesCount(highlightElement.text());
 
         // ensure assistive technology can determine the active choice
         // /select: accessibility
@@ -5097,7 +5470,7 @@ var __oj_select_many_metadata =
 
       // _AbstractOjChoice
       _removeHighlight: function () {
-        this.results.find('.oj-hover').removeClass('oj-hover');
+        this.results.find('.oj-hover').removeClass('oj-hover oj-listbox-result-keyboard-focus oj-focus-highlight');
         this._removeHighlightFromHeaderItems();
 
         if (this._elemNm === 'ojcombobox') {
@@ -5196,6 +5569,8 @@ var __oj_select_many_metadata =
 
         this.open(null, true);
 
+        // Show loading indicator in the dropdown
+        _ComboUtils.updateDropdownLoadingState(this, true);
 
         function postRender() {
           self._positionDropdown();
@@ -5236,6 +5611,9 @@ var __oj_select_many_metadata =
             context: null,
             matcher: opts.matcher,
             callback: this._bind(function (data) {
+              // clear dropdown loading indicator
+              _ComboUtils.updateDropdownLoadingState(this, false);
+
               // ignore old responses
               if (queryNumber !== this.queryCount) {
                 return;
@@ -5251,22 +5629,33 @@ var __oj_select_many_metadata =
                 _ComboUtils.removeDropdownMessage(self.dropdown);
               }
 
+              // clear hidden class from results if any
+              this.results.removeClass('oj-helper-hidden');
+
               // save context, if any
               this.context = (!data || data.context === undefined) ? null : data.context;
               // create a default choice and prepend it to the list
 
-              if ((!data
-                     || (data.results && data.results.length === 0)
-                     || (this._isDataSelected(data) && this.ojContext.isValid()))
-                    && _ComboUtils.checkFormatter(self.ojContext,
-                      opts.formatNoMatches,
-                      'formatNoMatches')) {
-                var transtr = opts.formatNoMatches(self.ojContext, search.val());
+              const hasNoMatches = !data || (data.results && data.results.length === 0);
+              const hasAllSelectedAndValid = this._isDataSelected(data) && this.ojContext.isValid();
+              const hasNoMatchFormatter = _ComboUtils.checkFormatter(opts.formatNoMatches, 'formatNoMatches');
+              const hasNoMoreResultsFormatter = _ComboUtils.checkFormatter(opts.formatNoMoreResults, 'formatNoMoreResults');
+              if ((hasNoMatches && hasNoMatchFormatter) ||
+                  (hasAllSelectedAndValid && hasNoMoreResultsFormatter)) {
+                let translatedString;
+                // When all results are selected and it is the initial fetch, show no more results
+                if (hasAllSelectedAndValid) {
+                  translatedString = opts.formatNoMoreResults(self.ojContext);
+                } else {
+                  translatedString = opts.formatNoMatches(self.ojContext);
+                }
                 if (this._classNm === 'oj-select' || this.header) {
                   this._showDropDown();
                   this._preprocessResults(results);
 
-                  _ComboUtils.addDropdownMessage(self.dropdown, self.ojContext, transtr);
+                  _ComboUtils.addDropdownMessage(self.dropdown, self.ojContext, translatedString);
+                  // Hide the results area
+                  this.results.addClass('oj-helper-hidden');
 
                   // if no search box, don't need a separator
                   if (!this._hasSearchBox()) {
@@ -5280,7 +5669,7 @@ var __oj_select_many_metadata =
                   this.close(null, true);
                 }
 
-                this._updateMatchesCount(transtr);
+                this._updateMatchesCount(translatedString);
                 return;
               }
 
@@ -5303,6 +5692,10 @@ var __oj_select_many_metadata =
 
               this._updateMatchesCount(opts.formatMoreMatches(self.ojContext,
                 this._findHighlightableChoices().length));
+            }),
+            cleanup: this._bind(function () {
+              // clear dropdown loading indicator
+              _ComboUtils.updateDropdownLoadingState(this, false);
             })
           }
         );
@@ -5419,7 +5812,7 @@ var __oj_select_many_metadata =
       },
 
       // _AbstractOjChoice
-      _selectHighlighted: function (_options, event) {
+      _selectHighlighted: function (_options, event, isKeyboardAction) {
         var options = _options;
         if (this.header) {
           var activeDescendant = this._getActiveContainer().attr('aria-activedescendant');
@@ -5446,8 +5839,7 @@ var __oj_select_many_metadata =
         }
 
         var index = this._highlight();
-        var highlighted = this.results.find('.oj-hover');
-        var data = highlighted.closest('.oj-listbox-result').data(this._elemNm);
+        var data = this._getHighlightedForSelection(isKeyboardAction);
 
         if (data) {
           this._highlight(index);
@@ -5481,6 +5873,31 @@ var __oj_select_many_metadata =
             this.enterKeyEventHandled = true;
           }
         }
+      },
+
+      /**
+       * Fetches the item for selection. For select, this will the item that is
+       * currently highlighted, while for combobox, this will the item that is
+       * highlighted through keyboard action.
+       * @param {boolean} isKeyboardAction Flag to indicate if the selection is done by keyboard action
+       * @returns {object|undefined} The item that needs to be selected
+       *
+       * @memberof! _AbstractOjChoice
+       * @instance
+       * @private
+       */
+      _getHighlightedForSelection: function (isKeyboardAction) {
+        let highlighted;
+        if (this._classNm === 'oj-select' || !isKeyboardAction) {
+          // For mouse selection or oj-select-*,
+          // fetch any item that is currently highlighted
+          highlighted = this.results.find('.oj-hover');
+        } else {
+          // For keyboard, only fetch the highlighted item if it is highlighted
+          // through the keyboard action
+          highlighted = this.results.find('.oj-hover.oj-listbox-result-keyboard-focus');
+        }
+        return highlighted.closest('.oj-listbox-result').data(this._elemNm);
       },
 
       // _AbstractOjChoice
@@ -5547,10 +5964,12 @@ var __oj_select_many_metadata =
 
         if (_ComboUtils.duringFetchByKey(container)) {
           _ComboUtils.setValueChanged(this.ojContext, true);
-          // remove loading indicator
-          var spinnerContainer = this.selection;
-          if (spinnerContainer._saveLoadingIndicator && !this.ojContext.multiple) {
-            _ComboUtils.removeLoadingIndicator(spinnerContainer);
+
+          // Since the value is changed and we are currently fetching the key for the
+          // label, the fetch will be discarded once it resolves.
+          // So, clear the loading indicator here.
+          if (!this.ojContext.multiple) {
+            _ComboUtils.updateLoadingState(this, false);
           }
         }
       },
@@ -5786,16 +6205,22 @@ var __oj_select_many_metadata =
           len = $('#' + this.opts.list).find('li').length;
         } else if (_ComboUtils.isDataProvider(this.opts.options)) {
           //  - search not shown before typing a character
-          // in case of dataProvider and if data is not available,
-          // return true temporary, but resolve later when data is ready
-
+          // When using dataProvider and the data is currently being fetched,
+          // we will not know the result count. In this case, keep the search box
+          // hidden for now. Set the flag _resolveSearchBoxLater here, so once the
+          // data becomes available this evaluation will be done again.
           if (this.ojContext._resultCount === undefined) {
-            len = threshold + 1;
+            // Setting this flag will inform the widget to call _showSearchBox()
+            // once the data is fetched
             this.ojContext._resolveSearchBoxLater = true;
-          } else {
-            len = this.ojContext._resultCount;
-            delete this.ojContext._resolveSearchBoxLater;
+            // return false to indicate the search box should not be shown
+            return false;
           }
+
+          // If we do have the result count, then use that to evaluate whether the search box needs
+          // to be shown. And also delete the flag set for resolving the search box later.
+          len = this.ojContext._resultCount;
+          delete this.ojContext._resolveSearchBoxLater;
         } else if (this.datalist) {
           if (this.ojContext._IsCustomElement()) {
             // get the count of oj-options
@@ -5857,6 +6282,45 @@ var __oj_select_many_metadata =
        */
       // eslint-disable-next-line no-unused-vars
       _SyncRawValue: function (event, setDirty) {},
+
+      /**
+       * Determines whether or not the dropdown should be opened/closed for the provided
+       * event.
+       * @param {jQuery.Event} event The event object
+       * @returns {boolean} Whether the dropdown should be opened/closed
+       *
+       * @protected
+       * @memberof! _AbstractOjChoice
+       * @instance
+       * @ignore
+       */
+      _ShouldToggleDropdown: function (event) {
+        // Should open the dropdown only when the control is enabled and the
+        // main mouse button is used.
+        return this._isInterfaceEnabled() && (event.button === 0);
+      },
+
+      /**
+       * Determines whether to create a new entry.
+       * @param {boolean} isKeyboardAction flag indicating is this is for a keyboard action
+       * @returns flag indicating whether a new entry has to be created
+       *
+       * @memberof! _AbstractOjChoice
+       * @instance
+       * @protected
+       */
+      _ShouldCreateNewEntry: function (isKeyboardAction) {
+        if (!this.opts.manageNewEntry) {
+          // New entry not supported
+          return false;
+        }
+
+        const selector = isKeyboardAction ? '.oj-hover.oj-listbox-result-keyboard-focus' : '.oj-hover';
+        const selectedResult = this.results.find(selector);
+        const newValue = this.search.val();
+        // Create new entry if there is a new value and no result is highlighted using keyboard
+        return newValue && selectedResult.length === 0;
+      },
 
       /**
        * This method imitates an option selection from the dropdown by using a key of an item
@@ -5955,6 +6419,7 @@ var __oj_select_many_metadata =
        */
       _selectItemFromArray: function (values, options) {
         const optionsArray = this.ojContext.options.options;
+        const optionsKeys = this.ojContext.options.optionsKeys || {};
         let foundItems = new Map();
         let items = [];
 
@@ -5963,9 +6428,10 @@ var __oj_select_many_metadata =
         }
 
         for (let i = 0; i < optionsArray.length; i++) {
-          const _item = optionsArray[i];
-          if (values.includes(this.id(_item))) {
-            foundItems.set(this.id(_item), _item);
+          const item = optionsArray[i];
+          const value = _ComboUtils.lookupOptionKeys(item, optionsKeys, 'value');
+          if (values.includes(value)) {
+            foundItems.set(value, item);
 
             // prematurely break the loop if all values are found
             if (values.length === foundItems.size) {
@@ -5986,7 +6452,16 @@ var __oj_select_many_metadata =
           }
 
           // Push the created item in the array if it is not null
-          if (_item != null) items.push(_item);
+          if (_item != null) {
+            // Map using optionsKeys if specified
+            if (optionsKeys.value != null) {
+              _item.value = _item[optionsKeys.value];
+            }
+            if (optionsKeys.label != null) {
+              _item.label = _item[optionsKeys.label];
+            }
+            items.push(_item);
+          }
         }));
 
         return this._InvokeSelection(items, options);
@@ -6075,16 +6550,41 @@ var __oj_select_many_metadata =
        * @ignore
        */
       // eslint-disable-next-line no-unused-vars
-      _InvokeSelection: function (items, options) {}
-    });
+      _InvokeSelection: function (items, options) {},
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
+      /**
+       * This clears all the active timers that are currently
+       * active
+       *
+       * @private
+       * @instance
+       * @memberof! _AbstractOjChoice
+       * @ignore
+       */
+      _clearActiveTimers: function () {
+        // Clear focus timer
+        if (this._focusTimer) {
+          this._focusTimer.clear();
+          delete this._focusTimer;
+        }
+
+        // Clear loading indicator timers
+        if (this._loadingIndicatorTimer) {
+          this._loadingIndicatorTimer.clear();
+          delete this._loadingIndicatorTimer;
+        }
+        if (this._dropdownLoadingIndicatorTimer) {
+          this._dropdownLoadingIndicatorTimer.clear();
+          delete this._dropdownLoadingIndicatorTimer;
+        }
+
+        // Clear existing query timer
+        if (this._queryTimer) {
+          this._queryTimer.clear();
+          delete this._queryTimer;
+        }
+      }
+    });
 
   /**
    * @private
@@ -6269,10 +6769,16 @@ var __oj_select_many_metadata =
               // querying for the options again as component will not have list
               // of options in case value is updated programmatically.
               if (!self.valueChangeTrigger) {
+                // Show the loading indicator in the text field to show that the
+                // label is being fetched.
+                _ComboUtils.updateLoadingState(self, true);
                 opts.query(
                   {
                     value: ids,
                     callback: function (qryResult) {
+                      // Clear the loading indicator now that the label is fetched
+                      _ComboUtils.updateLoadingState(self, false);
+
                       if (qryResult && qryResult.results) {
                         var results = findOptions(qryResult.results, ids);
                         if (results && results.length) {
@@ -6321,7 +6827,8 @@ var __oj_select_many_metadata =
                       }
                       _ComboUtils.setValueChanged(self.ojContext, undefined);
                       reorderOptions();
-                    }
+                    },
+                    cleanup: $.noop
                   }
                 );
               } else {
@@ -6379,7 +6886,8 @@ var __oj_select_many_metadata =
                       }
                     }
                     callback(ordered);
-                  }
+                  },
+                  cleanup: $.noop
                 }
               );
             };
@@ -6512,7 +7020,20 @@ var __oj_select_many_metadata =
         }));
 
         this.search.on('input', this._bind(function (e) {
-          if (!this.ojContext._isComposing) {
+          // JET-39086 - raw-value is not getting updated until space in android devices
+          // In android devices, typing in an English word will behave similar to what one
+          // would see when they compose a CJK character in desktop devices. So, we need to
+          // update the raw-value for all the input events in Android devices without considering
+          // composition events so that the property gets updated for each english character and not
+          // only for delimiters. In GBoard all the CJK keyboard layouts directly allow users
+          // to input a CJK character, so we do not need to rely on composition events for that.
+          // In Japanese keyboard, one of the three available layouts uses english chars
+          // to compose a Japanese character in which case circumventing the logic would end up
+          // updating the property with garbage values. But, it is highly unlikely for one to
+          // use this layout as the other two layouts would allow users to directly type in Japanese
+          // characters. So, for now we will not have to worry about composition events in
+          // Android devices.
+          if (!this.ojContext._isComposing || this._isAndroidDevice) {
             this._onSearchInputHandler(e);
           }
         }));
@@ -6522,7 +7043,7 @@ var __oj_select_many_metadata =
             return;
           }
 
-          if (this.opts.manageNewEntry && this.search.val() && this.results.find('.oj-hover').length <= 0) {
+          if (this._ShouldCreateNewEntry(e.type === 'keyup')) {
             // The converter should only be applied for the user input.
             // This flag will be used in the overriden _parseValue method
             // in oj.Combobox and this will called synchronously for both sync and async validators
@@ -6592,7 +7113,7 @@ var __oj_select_many_metadata =
        * @instance
        */
       _mouseDownHandler: function (event) {
-        if (!this._isInterfaceEnabled()) {
+        if (!this._ShouldToggleDropdown(event)) {
           return;
         }
 
@@ -6644,27 +7165,28 @@ var __oj_select_many_metadata =
         var prev = selected.prev('.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)');
         var next = selected.next('.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)');
         var pos = (this._elemNm === 'ojselect' && !this._userTyping) ? _ComboUtils.getCursorInfo(this.selection) : _ComboUtils.getCursorInfo(this.search);
+        const keyCode = e.which || e.keyCode;
 
         if (selected.length &&
-            (e.which === _ComboUtils.KEY.LEFT
-             || e.which === _ComboUtils.KEY.RIGHT
-             || e.which === _ComboUtils.KEY.BACKSPACE
-             || e.which === _ComboUtils.KEY.DELETE
-             || e.which === _ComboUtils.KEY.ENTER)) {
+            (keyCode === _ComboUtils.KEY.LEFT
+             || keyCode === _ComboUtils.KEY.RIGHT
+             || keyCode === _ComboUtils.KEY.BACKSPACE
+             || keyCode === _ComboUtils.KEY.DELETE
+             || keyCode === _ComboUtils.KEY.ENTER)) {
           var selectedChoice = selected;
-          if (e.which === _ComboUtils.KEY.LEFT && prev.length) {
+          if (keyCode === _ComboUtils.KEY.LEFT && prev.length) {
             selectedChoice = prev;
-          } else if (e.which === _ComboUtils.KEY.RIGHT) {
+          } else if (keyCode === _ComboUtils.KEY.RIGHT) {
             selectedChoice = next.length ? next : null;
-          } else if (e.which === _ComboUtils.KEY.BACKSPACE) {
+          } else if (keyCode === _ComboUtils.KEY.BACKSPACE) {
             this._unselect(selected.first(), e);
             this._resetSearchWidth();
             selectedChoice = prev.length ? prev : next;
-          } else if (e.which === _ComboUtils.KEY.DELETE) {
+          } else if (keyCode === _ComboUtils.KEY.DELETE) {
             this._unselect(selected.first(), e);
             this._resetSearchWidth();
             selectedChoice = next.length ? next : null;
-          } else if (e.which === _ComboUtils.KEY.ENTER) {
+          } else if (keyCode === _ComboUtils.KEY.ENTER) {
             selectedChoice = null;
           }
 
@@ -6675,8 +7197,8 @@ var __oj_select_many_metadata =
           }
           return;
         } else if (this._isBackNavAllowed() && (pos.offset === 0 && !pos.length) &&
-            ((e.which === _ComboUtils.KEY.BACKSPACE && this.keydowns === 1) ||
-              e.which === _ComboUtils.KEY.LEFT)) {
+            ((keyCode === _ComboUtils.KEY.BACKSPACE && this.keydowns === 1) ||
+              keyCode === _ComboUtils.KEY.LEFT)) {
           this._selectChoice(this.selection.find('.' + this._classNm + '-selected-choice:not(.' + this._classNm + '-locked)').last());
           e.preventDefault();
           return;
@@ -6688,11 +7210,11 @@ var __oj_select_many_metadata =
           return;
         }
 
-        switch (e.which) {
+        switch (keyCode) {
           case _ComboUtils.KEY.UP:
           case _ComboUtils.KEY.DOWN:
             if (this._opened()) {
-              this._moveHighlight((e.which === _ComboUtils.KEY.UP) ? -1 : 1);
+              this._moveHighlight((keyCode === _ComboUtils.KEY.UP) ? -1 : 1);
             } else {
               this.open(e);
             }
@@ -6705,7 +7227,7 @@ var __oj_select_many_metadata =
             return;
           case _ComboUtils.KEY.ENTER:
             if (this._opened()) {
-              this._selectHighlighted(null, e);
+              this._selectHighlighted(null, e, true);
               // Fix :  PRESSING 'ENTER' WITHIN DROPDOWN SHOULD NOT PROPAGATE
               e.stopPropagation();
             }
@@ -7049,8 +7571,8 @@ var __oj_select_many_metadata =
           // The validation failed, so reset the flag
           this.hasUncommittedValue = previousHasUncommittedValue;
           // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
-          // If the input text is invalid, restore to initial value options
-          if (isSelectCombobox && !this.ojContext.isValid()) {
+          // Since the validation failed, restore to the initial valueOptions
+          if (isSelectCombobox) {
             this.setValOpts(valOptsInit);
           }
         }
@@ -7120,9 +7642,9 @@ var __oj_select_many_metadata =
           $choice = $(
             "<li class='" + this._classNm + "-selected-choice'>" +
             '    <div></div>' +
-            "    <a href='#' onclick='return false;' role='button' aria-label='remove' class='" + this._classNm + '-clear-entry ' +
-            '      oj-component-icon oj-clickable-icon-nocontext ' + this._classNm + "-clear-entry-icon' tabindex='-1'>" +
-            '    </a>' +
+            "    <span role='button' aria-label='remove' class='" + this._classNm + '-clear-entry ' +
+            '      oj-component-icon oj-default oj-clickable-icon-nocontext ' + this._classNm + "-clear-entry-icon' tabindex='-1'>" +
+            '    </span>' +
             '</li>');
         }
 
@@ -7219,7 +7741,8 @@ var __oj_select_many_metadata =
       },
 
       _unselect: function (oselected, event) {
-        var val = this.getVal() ? this.getVal().slice(0) : [];
+        var val = (this.getVal() || []).slice(0);
+        var valOptsInit = (this.getValOpts() || []).slice(0);
         var selected = oselected.closest('.' + this._classNm + '-selected-choice');
 
         if (selected.length === 0) {
@@ -7260,10 +7783,10 @@ var __oj_select_many_metadata =
 
           if (setValueReturn instanceof Promise) {
             setValueReturn.then(this._bind(function (result) {
-              this._afterUnselectSetValue(result, selected);
+              this._afterUnselectSetValue(result, selected, valOptsInit);
             }));
           } else {
-            this._afterUnselectSetValue(setValueReturn, selected);
+            this._afterUnselectSetValue(setValueReturn, selected, valOptsInit);
           }
         }
       },
@@ -7273,12 +7796,20 @@ var __oj_select_many_metadata =
        *
        * @param {boolean} result The result of setVal call
        * @param {HTMLElement} selected The current selected element that has to be removed
+       * @param {Array<object>|null} valOptsInit The initial valueOptions to revert to if validation fails
        *
        * @memberof! _AbstractMultiChoice
        * @instance
        * @private
        */
-      _afterUnselectSetValue: function (result, selected) {
+      _afterUnselectSetValue: function (result, selected, valOptsInit) {
+        var isSelectCombobox = (this._classNm === 'oj-combobox' || this._classNm === 'oj-select');
+
+        if (isSelectCombobox && result === false) {
+          // If the validation fails, restore to initial value options
+          this.setValOpts(valOptsInit);
+        }
+
         this._skipSetValueOptions = false;
         delete this.forceApplyConverter;
 
@@ -7514,24 +8045,34 @@ var __oj_select_many_metadata =
         const opts = _ComboUtils.getOpts(this.ojContext);
         const isDataProvider = opts ? _ComboUtils.isDataProvider(opts.options) : false;
 
-        let valueOptionsData = [];
-        let valueOptionsMetadata = [];
+        const values = [];
+        const valueOptions = [];
+        const valueOptionsData = [];
+        const valueOptionsMetadata = [];
 
-        if (isDataProvider) {
-          items.forEach(function (item) {
+        // Iterate through the items and generate value and valueOptions
+        items.forEach(function (item) {
+          values.push(this.id(item));
+          valueOptions.push({
+            label: item.label,
+            value: this.id(item)
+          });
+
+          // populate data and metadata only when using a data provider
+          if (isDataProvider) {
             valueOptionsData.push(item.data);
             valueOptionsMetadata.push(item.metadata);
-          });
-        }
+          }
+        }.bind(this));
+
         let context = { optionMetadata: { trigger: options.trigger } };
         context = _ComboUtils.getContextWithExtraData(context, opts, valueOptionsData,
           valueOptionsMetadata);
 
         // set valueOptions
-        this.setValOpts(items);
+        this.setValOpts(valueOptions);
         this._skipSetValueOptions = true;
 
-        const values = items.map(this.id);
         const setValueReturn = this.setVal(values, null, context);
 
         if (setValueReturn instanceof Promise) {
@@ -7544,14 +8085,6 @@ var __oj_select_many_metadata =
         return Promise.resolve(setValueReturn);
       }
     });
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @private
@@ -7576,13 +8109,15 @@ var __oj_select_many_metadata =
         var contentStructure = [
           "<div class='oj-text-field-container' role='presentation'> ",
           "<ul class='oj-combobox-choices oj-combobox-accessible-container'>",
-          "  <li class='oj-combobox-search-field'><span class='oj-helper-hidden'>&nbsp;</span>",
-          "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
+          "  <li class='oj-combobox-search-field' role='presentation'><span class='oj-helper-hidden'>&nbsp;</span>",
+          "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list'",
+          "           autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
           '  </li>',
           '</ul>',
           '</div>',
           "<div class='oj-combobox-description oj-helper-hidden-accessible'></div>",
           "<div class='oj-listbox-drop oj-listbox-drop-multi'>",
+          "   <div class='oj-listbox-loader-wrapper'></div>",
           "   <ul class='oj-listbox-results' role='listbox'>",
           '   </ul>',
           '</div>',
@@ -7622,7 +8157,7 @@ var __oj_select_many_metadata =
         // combobox many in most of situations (since we do not call this method unless
         // we know for a fact that the value is not present), when having label-edge=inside,
         // this method will be called unconditionally on focus events. Since the placeholder
-        // is being updated programatically for label animations.
+        // is being updated programmatically for label animations.
         // This results in the placeholder being set even when there is a value which
         // is causing issues.
         // In oj-combobox-one, this is not a problem as the placeholder is set on the input
@@ -7630,11 +8165,26 @@ var __oj_select_many_metadata =
         // will not be shown when there is a value selected.
         // To fix this in oj-combobox-many, we will be setting the placeholder only when there is
         // no value.
-        if (_ComboUtils.isValueForPlaceholder(true, this.getVal()) &&
-          _ComboUtils.isValueOptionsForPlaceholder(true, this.getValOpts())) {
-          // Now that we know, there is no value selected, call the superclass' method to
+        // JET-45520 - [jet10] oj-combobox-many: placeholder text is missing is if "required" turned on
+        // A regression from the fix for JET-39650. When the component is in invalid state, the
+        // this.getVal() might not reflect the actual displayValue. So, in those cases we need to
+        // use this.currentValue instead.
+        const isValid = this.ojContext.isValid();
+        const isValidValueForPlaceholder = _ComboUtils.isValueForPlaceholder(true, this.getVal()) &&
+          _ComboUtils.isValueOptionsForPlaceholder(true, this.getValOpts());
+        const isCurrentValueForPlaceholder =
+          _ComboUtils.isValueForPlaceholder(true, this.currentValue) &&
+          _ComboUtils.isValueOptionsForPlaceholder(true, this.currentItem);
+        if (
+          (isValid && isValidValueForPlaceholder) ||
+          (!isValid && isCurrentValueForPlaceholder)
+        ) {
+          // Now that we know, there are no selected pills, call the superclass' method to
           // apply the placeholder.
           _OjMultiCombobox.superclass._setPlaceholder.apply(this, arguments);
+          // After setting the placeholder, resize the input field to make sure it has proper
+          // width
+          this._resizeSearch();
         }
       },
 
@@ -7779,14 +8329,6 @@ var __oj_select_many_metadata =
     });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   const _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
@@ -7852,17 +8394,18 @@ var __oj_select_many_metadata =
           return;
         }
 
-        if (e.which === _ComboUtils.KEY.PAGE_UP || e.which === _ComboUtils.KEY.PAGE_DOWN) {
+        const keyCode = e.which || e.keyCode;
+        if (keyCode === _ComboUtils.KEY.PAGE_UP || keyCode === _ComboUtils.KEY.PAGE_DOWN) {
           // prevent the page from scrolling
           e.preventDefault();
           return;
         }
 
-        switch (e.which) {
+        switch (keyCode) {
           case _ComboUtils.KEY.UP:
           case _ComboUtils.KEY.DOWN:
             if (this._opened()) {
-              this._moveHighlight((e.which === _ComboUtils.KEY.UP) ? -1 : 1);
+              this._moveHighlight((keyCode === _ComboUtils.KEY.UP) ? -1 : 1);
             } else {
               this.open(e);
             }
@@ -7875,7 +8418,7 @@ var __oj_select_many_metadata =
             if (this._opened()) {
               e.stopPropagation();
             }
-            this._selectHighlighted(null, e);
+            this._selectHighlighted(null, e, true);
             //  - select and combobox stop keyboard event propegation
             e.preventDefault();
             if (!this._opened()) {
@@ -7960,19 +8503,17 @@ var __oj_select_many_metadata =
         }
 
         if (ariaLabel) {
-          this.search.attr('aria-label', ariaLabel);
+          this._contentElement.attr('aria-label', ariaLabel);
         }
 
         if (ariaControls) {
-          this.search.attr('aria-controls', ariaControls);
+          this._contentElement.attr('aria-controls', ariaControls);
         }
 
         selection.on('keydown', this._bind(this._containerKeydownHandler));
-        // selection.on("keyup-change input", this._bind(this._containerKeyupHandler));
 
         selection.on('mousedown', this._bind(function (e) {
-          // if the mousedown target is the end slot or if the interface is not enabled, do nothing
-          if (e.target.getAttribute('slot') === 'end' || $(this._endSlot).find(e.target).length > 0 || !this._isInterfaceEnabled()) {
+          if (!this._ShouldToggleDropdown(e)) {
             return;
           }
           // /prevent user from focusing on disabled select
@@ -8025,7 +8566,20 @@ var __oj_select_many_metadata =
         }));
 
         this.search.on('input', this._bind(function (e) {
-          if (!this.ojContext._isComposing) {
+          // JET-39086 - raw-value is not getting updated until space in android devices
+          // In android devices, typing in an English word will behave similar to what one
+          // would see when they compose a CJK character in desktop devices. So, we need to
+          // update the raw-value for all the input events in Android devices without considering
+          // composition events so that the property gets updated for each english character and not
+          // only for delimiters. In GBoard all the CJK keyboard layouts directly allow users
+          // to input a CJK character, so we do not need to rely on composition events for that.
+          // In Japanese keyboard, one of the three available layouts uses english chars
+          // to compose a Japanese character in which case circumventing the logic would end up
+          // updating the property with garbage values. But, it is highly unlikely for one to
+          // use this layout as the other two layouts would allow users to directly type in Japanese
+          // characters. So, for now we will not have to worry about composition events in
+          // Android devices.
+          if (!this.ojContext._isComposing || this._isAndroidDevice) {
             this._onSearchInputHandler(e);
           }
         }));
@@ -8039,85 +8593,65 @@ var __oj_select_many_metadata =
             return;
           }
 
-          if (this.search.val() !== undefined && this.results.find('.oj-hover').length <= 0
-              && (e.type !== 'keyup' || !this.enterKeyEventHandled)) {
-            // Call _onSelect if no previous data and there is typed in text
-            // or the previous data is different from typed in text
-            if (this.opts.manageNewEntry) {
-              var value = this.search.val();
+          if (this._ShouldCreateNewEntry(e.type === 'keyup') && (e.type !== 'keyup' || !this.enterKeyEventHandled)) {
+            var value = this.search.val();
 
-              // The converter should only be applied for the user input.
-              // This flag will be used in the overriden _parseValue method
-              // in oj.Combobox and this will called synchronously for both sync and async validators
-              // as the validation happens after the parsing.
-              this.shouldApplyConverter = true;
+            // The converter should only be applied for the user input.
+            // This flag will be used in the overriden _parseValue method
+            // in oj.Combobox and this will called synchronously for both sync and async validators
+            // as the validation happens after the parsing.
+            this.shouldApplyConverter = true;
 
-              // When creating new entry include the unparsed value as well as we will be sending
-              // the unparsed value to EditableValue for it to do its thing.
-              var valopt = this.opts.manageNewEntry(value, true);
+            // When creating new entry include the unparsed value as well as we will be sending
+            // the unparsed value to EditableValue for it to do its thing.
+            var valopt = this.opts.manageNewEntry(value, true);
 
-              var trigger = e.type === 'blur'
-                ? _ComboUtils.ValueChangeTriggerTypes.BLUR
-                : _ComboUtils.ValueChangeTriggerTypes.ENTER_PRESSED;
-              var options = {
-                trigger: trigger
-              };
+            var trigger = e.type === 'blur'
+              ? _ComboUtils.ValueChangeTriggerTypes.BLUR
+              : _ComboUtils.ValueChangeTriggerTypes.ENTER_PRESSED;
+            var options = {
+              trigger: trigger
+            };
 
-              var selectionData = this.selection.data(this._elemNm);
-              var previousValue = this.getVal();
+            var selectionData = this.selection.data(this._elemNm);
+            var previousValue = this.getVal();
 
-              if ((!selectionData && value !== '')
-                      || (selectionData && (selectionData.label !== value))
-                      || (!this.ojContext.isValid() && value !== this._previousDisplayValue)) {
-                var onSelectReturn = this._onSelect(valopt, options, e);
+            if ((!selectionData && value !== '')
+                    || (selectionData && (selectionData.label !== value))
+                    || (!this.ojContext.isValid() && value !== this._previousDisplayValue)) {
+              var onSelectReturn = this._onSelect(valopt, options, e);
 
-                if (e.type !== 'blur') {
-                  if (onSelectReturn instanceof Promise) {
-                    onSelectReturn.then(this._bind(function (result) {
-                      delete this.shouldApplyConverter;
-                      if (result) {
-                        // trigger events only if the value is set
-                        this._triggerUpdateEvent(valopt, options, e);
-                        this._triggerValueUpdatedEvent(valopt, previousValue);
-                      }
-                    }));
-                  } else {
+              if (e.type !== 'blur') {
+                if (onSelectReturn instanceof Promise) {
+                  onSelectReturn.then(this._bind(function (result) {
                     delete this.shouldApplyConverter;
-                    if (onSelectReturn !== false) {
-                      // Need to trigger the events even when onSelectReturn is null
-                      // as the events should be triggered even when setting the same value again
+                    if (result) {
+                      // trigger events only if the value is set
                       this._triggerUpdateEvent(valopt, options, e);
                       this._triggerValueUpdatedEvent(valopt, previousValue);
                     }
+                  }));
+                } else {
+                  delete this.shouldApplyConverter;
+                  if (onSelectReturn !== false) {
+                    // Need to trigger the events even when onSelectReturn is null
+                    // as the events should be triggered even when setting the same value again
+                    this._triggerUpdateEvent(valopt, options, e);
+                    this._triggerValueUpdatedEvent(valopt, previousValue);
                   }
                 }
-              } else if (e.type === 'keyup') {
-                // if the value stays the same, we still want to fire valueUpdated event to support search use cases
-                if (selectionData && selectionData.label === value) {
-                  valopt = selectionData;
-                }
-
-                // Close the dropdown
-                this.close(e);
-
-                this._triggerUpdateEvent(valopt, options, e);
-                this._triggerValueUpdatedEvent(valopt, previousValue);
               }
-            } else if (this.opts.manageNewEntry == null) {
-              var data = this.selection.data(this._elemNm);
-              if (this.search.val() === '') {
-                if (this._classNm !== 'oj-select') {
-                  this._clear(e);
-                }
-              } else if (!data && this.search.val() !== '') {
-                this._clearSearch();
-              } else if (this._classNm !== 'oj-select') {
-                //  - typing in search text & pressing enter, changes user entered search text
-                var formatted = _ComboUtils.getLabel(data);
-                if (formatted !== undefined) {
-                  this.search.val(formatted);
-                }
+            } else if (e.type === 'keyup') {
+              // if the value stays the same, we still want to fire valueUpdated event to support search use cases
+              if (selectionData && selectionData.label === value) {
+                valopt = selectionData;
               }
+
+              // Close the dropdown
+              this.close(e);
+
+              this._triggerUpdateEvent(valopt, options, e);
+              this._triggerValueUpdatedEvent(valopt, previousValue);
             }
           }
 
@@ -8267,9 +8801,7 @@ var __oj_select_many_metadata =
               // clear the ids from dropdown set as it can hold only one value for single choice
               self._idsFromDropdown.clear();
               if (id == null) {
-                var optionsKeys = self.ojContext.options.optionsKeys;
-                if ((tagName === 'select') && !self.ojContext._HasPlaceholderSet() &&
-                    (!optionsKeys || (!optionsKeys.value && !optionsKeys.label))) {
+                if ((tagName === 'select') && !self.ojContext._HasPlaceholderSet()) {
                   _ComboUtils.fetchFirstBlockFromDataProvider(self.container, opts, 1)
                     .then(function (data) {
                       // since the fetch process is not synchronous, at this point
@@ -8315,10 +8847,22 @@ var __oj_select_many_metadata =
               // querying for the options again as component will not have list
               // of options in case value is updated programmatically.
               if (!match && !self.valueChangeTrigger) {
+                // Show the loading indicator in the text field to show that the
+                // label is being fetched.
+                _ComboUtils.updateLoadingState(self, true);
+
+                const clearLoadingState = function () {
+                  _ComboUtils.updateLoadingState(self, false);
+                };
                 opts.query(
                   {
                     value: [id],
-                    callback: !$.isFunction(callback) ? $.noop : function (qryResult) {
+                    // If a callback function is provided for the initSelection call,
+                    // call the method with the match found. Otherwise do nothing
+                    // except cleaning up.
+                    callback: (typeof callback !== 'function') ? clearLoadingState : function (qryResult) {
+                      // Clear the loading indicator, now that the label is fetched
+                      clearLoadingState();
                       //  - While fetching the label for the initial value,
                       // user can still interact the component and pick a new value.
                       if (!_ComboUtils.isDataProvider(opts.options) ||
@@ -8333,7 +8877,8 @@ var __oj_select_many_metadata =
                         callback(match);
                         _ComboUtils.setValueChanged(self.ojContext, undefined);
                       }
-                    }
+                    },
+                    cleanup: $.noop
                   });
               } else {
                 if (match != null) {
@@ -8385,7 +8930,8 @@ var __oj_select_many_metadata =
                         ' defaults to ' + (usePlaceholder ? 'placeholder' : 'first option') + ' due to invalid value.');
                     }
                     callback(match);
-                  }
+                  },
+                  cleanup: $.noop
                 }
               );
             };
@@ -8405,7 +8951,8 @@ var __oj_select_many_metadata =
                     }
                     return isMatch;
                   },
-                  callback: $.noop
+                  callback: $.noop,
+                  cleanup: $.noop
                 }
               );
 
@@ -8438,7 +8985,10 @@ var __oj_select_many_metadata =
         // and highlight it
         if (noHighlightUpdate !== false) {
           if (initial === true && selected >= 0) {
-            this._highlight(selected);
+            // Highlight the initial selection as keyboard focused as
+            // pressing enter without doing anything should set the selected
+            // value
+            this._highlight(selected, true, true);
           }
         }
 
@@ -8490,6 +9040,7 @@ var __oj_select_many_metadata =
         var val;
         var unparsedData = this.sanitizeData(data, true);
         var parsedData = this.sanitizeData(data);
+        var valOptsInit = this.getValOpts();
         var valopt = parsedData;
         var previousHasUncommittedValue = this.hasUncommittedValue;
         var setValueReturn = null;
@@ -8530,7 +9081,7 @@ var __oj_select_many_metadata =
 
         if (setValueReturn instanceof Promise) {
           returnValue = setValueReturn.then(this._bind(function (result) {
-            this._onSelectAfterSetVal(result, previousHasUncommittedValue);
+            this._afterOnSelectSetVal(result, valOptsInit, previousHasUncommittedValue);
             // return the result of the validation, which can use by methods
             // that rely on the result of _onSelect call.
             return result;
@@ -8540,7 +9091,7 @@ var __oj_select_many_metadata =
           // we can treat null as a passed case, since it represents that
           // the value is already the selected values and a valid one.
           var result = (setValueReturn !== false);
-          this._onSelectAfterSetVal(result, previousHasUncommittedValue);
+          this._afterOnSelectSetVal(result, valOptsInit, previousHasUncommittedValue);
           returnValue = setValueReturn;
         }
 
@@ -8557,18 +9108,25 @@ var __oj_select_many_metadata =
        * Performs operations that has to be done after the setVal call in _onSelect
        *
        * @param {boolean} result The result of the setVal call
+       * @param {object} valOptsInit The initial valueOption to revert to if validation fails
        * @param {boolean} previousHasUncommittedValue The initial hasCommittedValue flag value
        *
        * @memberof! _AbstractSingleChoice
        * @instance
        * @private
        */
-      _onSelectAfterSetVal: function (result, previousHasUncommittedValue) {
+      _afterOnSelectSetVal: function (result, valOptsInit, previousHasUncommittedValue) {
+        var isSelectCombobox = (this._classNm === 'oj-combobox' || this._classNm === 'oj-select');
         // If the validation fails, set the hasUncommittedValue flag so as to revert it back to its
         // original state
         if (result === false) {
           // The validation failed, so reset the flag
           this.hasUncommittedValue = previousHasUncommittedValue;
+
+          // Since the validation failed, restore to the initial valueOption
+          if (isSelectCombobox) {
+            this.setValOpts(valOptsInit);
+          }
         }
 
         this._skipSetValueOptions = false;
@@ -8619,6 +9177,51 @@ var __oj_select_many_metadata =
       },
 
       /**
+       * Determines whether to create a new entry.
+       * @param {boolean} isKeyboardAction flag indicating is this is for a keyboard action
+       * @returns {boolean} flag indicating whether a new entry has to be created
+       *
+       * @memberof! _AbstractSingleChoice
+       * @override
+       * @instance
+       * @protected
+       */
+      _ShouldCreateNewEntry: function (isKeyboardAction) {
+        if (!this.opts.manageNewEntry) {
+          // New entry not supported
+          return false;
+        }
+
+        const selector = isKeyboardAction ? '.oj-hover.oj-listbox-result-keyboard-focus' : '.oj-hover';
+        const selectedResult = this.results.find(selector);
+        const newValue = this.search.val();
+        // Create new entry if there is a new value and no result is highlighted using keyboard
+        // For combobox one we need to treat '' as a value as opposed to combobox many where we
+        // do not want to react when the value is ''.
+        return newValue !== undefined && selectedResult.length === 0;
+      },
+
+      /**
+       * Determines whether or not the dropdown should be opened/closed for the provided
+       * event.
+       * @param {jQuery.Event} event The event object
+       * @returns {boolean} Whether the dropdown should be opened/closed
+       *
+       * @protected
+       * @memberof! _AbstractSingleChoice
+       * @instance
+       * @override
+       */
+      _ShouldToggleDropdown: function (event) {
+        const superResult =
+          _AbstractSingleChoice.superclass._ShouldToggleDropdown.apply(this, arguments);
+        const isTargetInEndSlot = event.target.getAttribute('slot') === 'end' ||
+          ($(this._endSlot).find(event.target).length > 0);
+        // super method should return true and the target should not be in the end slot
+        return superResult && !isTargetInEndSlot;
+      },
+
+      /**
        * Initiates selection with the provided item
        *
        * @param {Array<object>} items The item that has to be selected
@@ -8653,14 +9256,6 @@ var __oj_select_many_metadata =
   );
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   const _OjSingleCombobox = _ComboUtils.clazz(_AbstractSingleChoice,
@@ -8681,7 +9276,7 @@ var __oj_select_many_metadata =
        */
       _CreateContentElements: function () {
         var contentStructure = [
-          "<div class='oj-text-field-container' role='presentation'>",
+          "<div class='oj-text-field-container oj-text-field-has-end-slot' role='presentation'>",
           "  <div class='oj-combobox-choice oj-combobox-accessible-container' tabindex='-1' role='presentation'>",
           "   <div class='oj-text-field-middle'>",
           "     <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
@@ -8696,6 +9291,7 @@ var __oj_select_many_metadata =
           '  </div>',
           '</div>',
           "<div class='oj-listbox-drop' role='presentation'>",
+          "   <div class='oj-listbox-loader-wrapper'></div>",
           "   <ul class='oj-listbox-results' role='listbox'>",
           '   </ul>',
           '</div>',
@@ -8943,121 +9539,350 @@ var __oj_select_many_metadata =
     });
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * @ojcomponent oj.ojComboboxOne
+   * @augments oj.ojCombobox
+   * @since 0.6.0
+   * @ojdisplayname Combobox (One)
+   * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojComboboxOne<K, D, V= any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                , {"name": "V", "description": "Type of value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxOneSettableProperties<K, D, V=any> extends ojComboboxSettableProperties<V>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
+   * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
+   * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
+   * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+   * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
+   * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
+   * @ojtsimport {module: "ojvalidator-datetimerange", type: "AMD", importName: "DateTimeRangeValidator"}
+   * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
+   * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
+   * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
+   * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="comboboxOneOverview-section">
+   *   JET Combobox One
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxOneOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Combobox One provides support for single-select, text input, and search filtering.</p>
+   *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
+   * <p>A JET Combobox One can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-one>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-combobox-one>
+   * </code></pre>
+   *
+   * <p>A JET Combobox One can be created with a DataProvider.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-one options="[[dataprovider]]">
+   * &lt;/oj-combobox-one>
+   * </code></pre>
+   *
+   * <p>See the Combobox basic demo for inline options and DataProvider usage.</p>
+   *
+   * {@ojinclude "name":"selectComboDifferences"}
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
+   * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   *
+   * {@ojinclude "name":"comboboxCommon"}
    */
 
+  //-----------------------------------------------------
+  //                   Slots ComboboxOne
+  //-----------------------------------------------------
+
   /**
-     * @ojcomponent oj.ojComboboxOne
-     * @augments oj.ojCombobox
-     * @since 0.6.0
-     * @ojdisplayname Combobox (One)
-     * @ojshortdesc A combobox one is a dropdown list that supports single selection, text input, and search filtering.
-     * @ojrole combobox
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "class ojComboboxOne<K, D, V= any> extends ojCombobox<V, ojComboboxOneSettableProperties<K, D, V>, V, string>",
-     *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
-     *                , {"name": "V", "description": "Type of value of the component"}]
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojComboboxOneSettableProperties<K, D, V=any> extends ojComboboxSettableProperties<V>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     * @ojtsimport {module: "ojconverter-number", type: "AMD", imported: ["IntlNumberConverter", "NumberConverter"]}
-     * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
-     * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
-     * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
-     * @ojtsimport {module: "ojconverter-datetime", type: "AMD",  imported: ["IntlDateTimeConverter", "DateTimeConverter"]}
-     * @ojtsimport {module: "ojvalidator-daterestriction", type: "AMD", importName: "DateRestrictionValidator"}
-     * @ojtsimport {module: "ojvalidator-datetimerange", type: "AMD", importName: "DateTimeRangeValidator"}
-     * @ojtsimport {module: "ojvalidator-length", type: "AMD", importName: "LengthValidator"}
-     * @ojtsimport {module: "ojvalidator-numberrange", type: "AMD", importName: "NumberRangeValidator"}
-     * @ojtsimport {module: "ojvalidator-regexp", type: "AMD", importName: "RegExpValidator"}
-     * @ojtsimport {module: "ojvalidator-required", type: "AMD", importName: "RequiredValidator"}
-     *
-     * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
-     * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-     * @ojvbdefaultcolumns 6
-     * @ojvbmincolumns 2
-     *
-     * @classdesc
-     * <h3 id="comboboxOneOverview-section">
-     *   JET Combobox One
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxOneOverview-section"></a>
-     * </h3>
-     * <p>Description: JET Combobox One provides support for single-select, text input, and search filtering.</p>
-     *
-     * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
-     * </p>
-     * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
-     * </p>
-     * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
-     * </p>
-     *
-     * <p>A JET Combobox One can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-combobox-one>
-     *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-     *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-     *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-     *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-     * &lt;/oj-combobox-one>
-     * </code></pre>
-     *
-     * <p>A JET Combobox One can be created with a DataProvider.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-combobox-one options="[[dataprovider]]">
-     * &lt;/oj-combobox-one>
-     * </code></pre>
-     *
-     * <p>See the Combobox basic demo for inline options and DataProvider usage.</p>
-     *
-     * {@ojinclude "name":"selectComboDifferences"}
-     *
-     * {@ojinclude "name":"validationAndMessagingDoc"}
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDocOne"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDocOne"}
-     *
-     * <h3 id="perf-section">
-     *   Performance
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-     * </h3>
-     *
-     * <h4>Page Load</h4>
-     * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
-     * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
-     *
-     *
-     * {@ojinclude "name":"comboboxCommon"}
-     */
-  // --------------------------------------------------- oj.ojCombobox-One Styling Start ------------------------------------------------------------
+  * <p>The &lt;oj-combobox-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+  * accepted children and slots.</p>
+  *
+  * @ojchild Default
+  * @memberof oj.ojComboboxOne
+  * @ojshortdesc The oj-combobox-one element accepts oj-option elements as children.
+  * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
+  *
+  * @example <caption>Initialize the Combobox with child content specified:</caption>
+  * &lt;oj-combobox-one>
+  *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+  *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+  *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+  * &lt;/oj-combobox-one>
+  */
+
   /**
-     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-     * The form control style classes can be applied to the component, or an ancestor element. <br/>
-     * When applied to an ancestor element, all form components that support the style classes will be affected.
-     */
+  * <p>The &lt;oj-combobox-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+  * accepted children and slots.</p>
+  *
+  * @ojchild Default
+  * @memberof oj.ojComboboxMany
+  * @ojshortdesc The oj-combobox-many element accepts oj-option elements as children.
+  * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
+  *
+  * @example <caption>Initialize the Combobox with child content specified:</caption>
+  * &lt;oj-combobox-many>
+  *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+  *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+  *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+  * &lt;/oj-combobox-many>
+  */
+
+  /**
+  * <p>The <code class="prettyprint">end</code> slot is for replacing combobox one's drop down arrow and the divider.
+  * For example, a magnifying glass icon for a search field can be provided in this slot.
+  * When the slot is provided with empty content, nothing will be rendered in the slot.
+  * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
+  *
+  * @ojslot end
+  * @ojshortdesc The end slot enables replacement of the combobox's drop down arrow and divider. See the Help documentation for more information.
+  * @since 4.2.0
+  *
+  * @memberof oj.ojComboboxOne
+  *
+  * @example <caption>Initialize the Combobox one with child content specified for the end slot:</caption>
+  * &lt;oj-combobox-one>
+  *   &lt;a slot='end' class='mySearchButtonClass'>&lt;/a>
+  * &lt;/oj-combobox-one>
+  */
+
+  //-----------------------------------------------------
+  //                   Fragments ComboboxOne
+  //-----------------------------------------------------
+  /**
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Gesture</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *       <td>Input Field</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+  *       If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Arrow Button</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Option Item</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Tap on an option item in the drop down list to select.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxOne
+  * @instance
+  */
+  /**
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Key</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *      <td>Option item</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td> Select the highlighted choice from the drop down.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Input field</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td>Set the input text as the value.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>UpArrow or DownArrow</kbd></td>
+  *       <td> Highlight the option item on the drop down list in the direction of the arrow.
+  *         If the drop down is not open, expand the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>Esc</kbd></td>
+  *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>Tab In</kbd></td>
+  *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxOne
+  * @instance
+  */
+
+  //-----------------------------------------------------
+  //                   Fragments ComboboxMany
+  //-----------------------------------------------------
+  /**
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Gesture</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *       <td>Input Field</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+  *       If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Option Item</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Tap on an option item in the drop down list to add to selection.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Selected item with remove icon</td>
+  *       <td><kbd>Tap</kbd></td>
+  *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxMany
+  * @instance
+  */
+  /**
+  * <table class="keyboard-table">
+  *   <thead>
+  *     <tr>
+  *       <th>Target</th>
+  *       <th>Key</th>
+  *       <th>Action</th>
+  *     </tr>
+  *   </thead>
+  *   <tbody>
+  *     <tr>
+  *      <td>Option item</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td> Select the highlighted item from the drop down.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Input field</td>
+  *       <td><kbd>Enter</kbd></td>
+  *       <td>Add the input text to selections.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>UpArrow or DownArrow</kbd></td>
+  *       <td> Highlight the option item on the drop down list in the direction of the arrow.
+  *         If the drop down is not open, expand the drop down list.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>LeftArrow or RightArrow</kbd></td>
+  *       <td> Move focus to the previous or next selected item.</td>
+  *     </tr>
+  *     <tr>
+  *       <td>Selected item with remove icon</td>
+  *       <td><kbd>Backspace or Delete</kbd></td>
+  *       <td>Remove the selected item having focus.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Drop down</td>
+  *       <td><kbd>Esc</kbd></td>
+  *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+  *     </tr>
+  *     <tr>
+  *      <td>Combobox</td>
+  *       <td><kbd>Tab In</kbd></td>
+  *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
+  *        pop up the notewindow.</td>
+  *     </tr>
+  *   </tbody>
+  *  </table>
+  *
+  * <p>Disabled option items receive no highlight and are not selectable.</p>
+  *
+  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+  * @memberof oj.ojComboboxMany
+  * @instance
+  */
+
+  //-----------------------------------------------------
+  //                   Styles
+  //-----------------------------------------------------
+
   // ---------------- oj-form-control-full-width --------------
   /**
     * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
@@ -9073,69 +9898,69 @@ var __oj_select_many_metadata =
     * &lt;/oj-combobox-one>
     */
 
-   // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojComboboxOne
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-combobox-one class="oj-form-control-max-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-combobox-one>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojComboboxOne
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojComboboxOne
-     */
+  // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojComboboxOne
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-combobox-one class="oj-form-control-max-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-combobox-one>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojComboboxOne
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojComboboxOne
+   */
 
-    // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojComboboxOne
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-combobox-one class="oj-form-control-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-combobox-one>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojComboboxOne
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojComboboxOne
-     */
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojComboboxOne
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-combobox-one class="oj-form-control-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-combobox-one>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojComboboxOne
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojComboboxOne
+   */
 
-   // ---------------- oj-form-control-text-align- --------------
+  // ---------------- oj-form-control-text-align- --------------
   /**
    * Classes that help align text of the element.
    * @ojstyleset text-align
@@ -9169,106 +9994,107 @@ var __oj_select_many_metadata =
    * @ojdisplayname Align-End
    * @memberof! oj.ojComboboxOne
    */
-  // --------------------------------------------------- oj.ojCombobox -One Styling end ------------------------------------------------------------
 
+  //-----------------------------------------------------
+  //                   ComboboxMany
+  //-----------------------------------------------------
   /**
-     * @ojcomponent oj.ojComboboxMany
-     * @augments oj.ojCombobox
-     * @since 0.6.0
-     * @ojdisplayname Combobox (Many)
-     * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
-     * @ojrole combobox
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "class ojComboboxMany<K, D, V= any> extends ojCombobox<Array<V>, ojComboboxManySettableProperties<K, D, V>, Array<V>, Array<string>>",
-     *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
-     *                ,{"name": "V", "description": "Type of each item in the value of the component"}]
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojComboboxManySettableProperties<K, D, V= any> extends ojComboboxSettableProperties<Array<V>>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     *
-     *
-     * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
-     * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-     * @ojvbdefaultcolumns 6
-     * @ojvbmincolumns 2
-     *
-     * @classdesc
-     * <h3 id="comboboxManyOverview-section">
-     *   JET Combobox Many
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxManyOverview-section"></a>
-     * </h3>
-     * <p>Description: JET Combobox Many provides support for multi-select, text input, and search filtering.</p>
-     *
-     * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
-     * </p>
-     * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
-     * </p>
-     * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
-     * </p>
-     *
-     * <p>A JET Combobox Many can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-combobox-many>
-     *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-     *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-     *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-     *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-     * &lt;/oj-combobox-many>
-     * </code></pre>
-     *
-     * <p>A JET Combobox Many can be created with a DataProvider.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-combobox-many options="[[dataprovider]]">
-     * &lt;/oj-combobox-many>
-     * </code></pre>
-     *
-     * <p>See the Combobox many demo for inline options and DataProvider usage.</p>
-     *
-     * {@ojinclude "name":"selectComboDifferences"}
-     *
-     * {@ojinclude "name":"validationAndMessagingDoc"}
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDocMany"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDocMany"}
-     *
-     * <h3 id="perf-section">
-     *   Performance
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-     * </h3>
-     *
-     * <h4>Page Load</h4>
-     * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
-     * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
-     *
-     *
-     * {@ojinclude "name":"comboboxCommon"}
-     */
-  // --------------------------------------------------- oj.ojCombobox-many Styling Start ------------------------------------------------------------
-  /**
-     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-     * The form control style classes can be applied to the component, or an ancestor element. <br/>
-     * When applied to an ancestor element, all form components that support the style classes will be affected.
-     */
+   * @ojcomponent oj.ojComboboxMany
+   * @augments oj.ojCombobox
+   * @since 0.6.0
+   * @ojdisplayname Combobox (Many)
+   * @ojshortdesc A combobox many is a dropdown list that supports multiple selections, text input, and search filtering.
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojComboboxMany<K, D, V= any> extends ojCombobox<Array<V>, ojComboboxManySettableProperties<K, D, V>, Array<V>, Array<string>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                ,{"name": "V", "description": "Type of each item in the value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxManySettableProperties<K, D, V= any> extends ojComboboxSettableProperties<Array<V>>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="comboboxManyOverview-section">
+   *   JET Combobox Many
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#comboboxManyOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Combobox Many provides support for multi-select, text input, and search filtering.</p>
+   *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
+   * <p>A JET Combobox Many can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-many>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-combobox-many>
+   * </code></pre>
+   *
+   * <p>A JET Combobox Many can be created with a DataProvider.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-combobox-many options="[[dataprovider]]">
+   * &lt;/oj-combobox-many>
+   * </code></pre>
+   *
+   * <p>See the Combobox many demo for inline options and DataProvider usage.</p>
+   *
+   * {@ojinclude "name":"selectComboDifferences"}
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
+   * <p>When using a data provider, the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   *
+   * {@ojinclude "name":"comboboxCommon"}
+   */
+
+  //-----------------------------------------------------
+  //                   Styles ComboboxMany
+  //-----------------------------------------------------
+
   // ---------------- oj-form-control-full-width --------------
   /**
     * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
@@ -9284,69 +10110,69 @@ var __oj_select_many_metadata =
     * &lt;/oj-combobox-many>
     */
 
-   // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojComboboxMany
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-combobox-many class="oj-form-control-max-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-combobox-many>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojComboboxMany
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojComboboxMany
-     */
+  // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojComboboxMany
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-combobox-many class="oj-form-control-max-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-combobox-many>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojComboboxMany
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojComboboxMany
+   */
 
-    // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojComboboxMany
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-combobox-many class="oj-form-control-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-combobox-many>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojComboboxMany
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojComboboxMany
-     */
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojComboboxMany
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-combobox-many class="oj-form-control-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-combobox-many>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojComboboxMany
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojComboboxMany
+   */
 
-   // ---------------- oj-form-control-text-align- --------------
+  // ---------------- oj-form-control-text-align- --------------
   /**
    * Classes that help align text of the element.
    * @ojstyleset text-align
@@ -9380,92 +10206,96 @@ var __oj_select_many_metadata =
    * @ojdisplayname text-Align-End
    * @memberof! oj.ojComboboxMany
    */
-  // --------------------------------------------------- oj.ojCombobox-many Styling end ------------------------------------------------------------
 
+  //-----------------------------------------------------
+  //                   Abstract Combobox
+  //-----------------------------------------------------
   /**
-     * @ojcomponent oj.ojCombobox
-     * @augments oj.editableValue
-     * @ojimportmembers oj.ojDisplayOptions
-     * @since 0.6.0
-     * @abstract
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "abstract class ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV=V, RV=V> extends editableValue<V, SP, SV, RV>"
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojComboboxSettableProperties<V, SV= V, RV= V> extends editableValueSettableProperties<V, SV, RV>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     *
-     * @hideconstructor
-     * @classdesc
-     */
+   * @ojcomponent oj.ojCombobox
+   * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
+   * @since 0.6.0
+   * @abstract
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "abstract class ojCombobox<V, SP extends ojComboboxSettableProperties<V, SV, RV>, SV=V, RV=V> extends editableValue<V, SP, SV, RV>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojComboboxSettableProperties<V, SV= V, RV= V> extends editableValueSettableProperties<V, SV, RV>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   * @hideconstructor
+   * @classdesc
+   */
 
+  //-----------------------------------------------------
+  //                   Fragments Combobox
+  //-----------------------------------------------------
   /**
-     *
-     * <h3 id="rtl-section">
-     *   Reading direction
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-     * </h3>
-     *
-     * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Combobox must be <code class="prettyprint">refresh()</code>ed.</p>
-     *
-     *
-     * <h3 id="a11y-section">
-     *   Accessibility
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-     * </h3>
-     * <p>
-     * If not using the <code class="prettyprint">label-hint</code> attribute,
-     * it is up to the application developer to associate an oj-label to the combobox element.
-     * You should put an <code>id</code> on the combobox element, and then set
-     * the <code>for</code> attribute on the oj-label to be the combobox element's id.
-     * </p>
-     * <p>
-     * The element will decorate its associated label with required and help
-     * information, if the <code>required</code> and <code>help</code> attributes are set.
-     * </p>
-     *
-     * @ojfragment comboboxCommon
-     * @memberof oj.ojCombobox
-     */
-    /**
-     * <h3 id="diff-section">
-     *   Differences between Select and Combobox components
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diff-section"></a>
-     * </h3>
-     *
-     * <p>
-     * oj-select-* components and oj-combobox-* components may look and feel similar,
-     * but these components are different and are intended for very different use cases.
-     * </p>
-     *
-     * <p>
-     * While oj-select-* components allow one to filter the data in the dropdown,
-     * it is not possible to enter values that are not available in the data.
-     * This makes oj-select-* components ideal for usecases where the user can only
-     * select values that are available in the dropdown, but not provide custom
-     * values of their own.
-     * </p>
-     *
-     * <p>
-     * In contrast, oj-combobox-* components allow one to enter new values that are
-     * not available in the data in addition to using the text field for filtering dropdown data.
-     * This makes oj-combobox-* components ideal for usecases where the users can provide
-     * custom values in addition to those that are already available in the dropdown data.
-     * </p>
-     *
-     * <p>
-     * Application developers should consider the above differences when choosing between
-     * Select and Combobox components.
-     * Additionally, applications are advised to use oj-select-single instead of the deprecated oj-select-one.
-     * </p>
-     *
-     * @ojfragment selectComboDifferences
-     * @memberof oj.ojCombobox
-     */
+   *
+   * <h3 id="rtl-section">
+   *   Reading direction
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+   * </h3>
+   *
+   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Combobox must be <code class="prettyprint">refresh()</code>ed.</p>
+   *
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>
+   * The element will decorate its associated label with required and help
+   * information, if the <code>required</code> and <code>help</code> attributes are set.
+   * </p>
+   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
+   * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
+   * </p>
+   *
+   * @ojfragment comboboxCommon
+   * @memberof oj.ojCombobox
+   */
+  /**
+   * <h3 id="diff-section">
+   *   Differences between Select and Combobox components
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diff-section"></a>
+   * </h3>
+   *
+   * <p>
+   * oj-select-* components and oj-combobox-* components may look and feel similar,
+   * but these components are different and are intended for very different use cases.
+   * </p>
+   *
+   * <p>
+   * While oj-select-* components allow one to filter the data in the dropdown,
+   * it is not possible to enter values that are not available in the data.
+   * This makes oj-select-* components ideal for usecases where the user can only
+   * select values that are available in the dropdown, but not provide custom
+   * values of their own.
+   * </p>
+   *
+   * <p>
+   * In contrast, oj-combobox-* components allow one to enter new values that are
+   * not available in the data in addition to using the text field for filtering dropdown data.
+   * This makes oj-combobox-* components ideal for usecases where the users can provide
+   * custom values in addition to those that are already available in the dropdown data.
+   * </p>
+   *
+   * <p>
+   * Application developers should consider the above differences when choosing between
+   * Select and Combobox components.
+   * Additionally, applications are advised to use oj-select-single instead of the deprecated oj-select-one.
+   * </p>
+   *
+   * @ojfragment selectComboDifferences
+   * @memberof oj.ojCombobox
+   */
   oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
     {
       defaultElement: '<input>',
@@ -10304,7 +11134,7 @@ var __oj_select_many_metadata =
          * @ojshortdesc The style attributes for the drop down.
          * @expose
          * @memberof oj.ojComboboxOne
-         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this property is ignored and an error is logged."}
          * @instance
          * @type {?Object}
          * @default null
@@ -10328,7 +11158,7 @@ var __oj_select_many_metadata =
          * @ojshortdesc The style attributes for the drop down.
          * @expose
          * @memberof oj.ojComboboxMany
-         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this property is ignored and an error is logged."}
          * @instance
          * @type {?Object}
          * @default null
@@ -10344,6 +11174,8 @@ var __oj_select_many_metadata =
          * @property {boolean} leaf Whether the option is a leaf or a group.
          * @property {Object} data The data object for the option.
          * @property {Element} parentElement The option label element. The renderer can use this to directly append content.
+         * @ojsignature [{target: "Type", value: "D", for: "data", jsdocOverride:true},
+         *               {target: "Type", value: "<D = any>", for: "genericTypeParameters"}]
          */
           /**
          * {@ojinclude "name":"comboboxCommonOptionRenderer"}
@@ -10354,7 +11186,7 @@ var __oj_select_many_metadata =
          * @instance
          * @type {null|function(Object):Object}
          * @ojsignature { target: "Type",
-         *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
+         *                value: "?((param0: oj.ojCombobox.OptionContext<D>) => Element)|null",
          *                jsdocOverride: true}
          * @default null
          * @example <caption>Initialize the Combobox with a renderer:</caption>
@@ -10375,7 +11207,7 @@ var __oj_select_many_metadata =
          * @instance
          * @type {null|function(Object):Object}
          * @ojsignature { target: "Type",
-         *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
+         *                value: "?((param0: oj.ojCombobox.OptionContext<D>) => Element)|null",
          *                jsdocOverride: true}
          * @default null
          * @example <caption>Initialize the Combobox with a renderer:</caption>
@@ -10821,8 +11653,7 @@ var __oj_select_many_metadata =
          * // setter
          * myComp.readonly = false;
          *
-         * @name readOnly
-         * @alias readonly
+         * @name readonly
          * @expose
          * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          * @access public
@@ -10857,8 +11688,7 @@ var __oj_select_many_metadata =
          * // setter
          * myComp.readonly = false;
          *
-         * @name readOnly
-         * @alias readonly
+         * @name readonly
          * @expose
          * @ojshortdesc Specifies whether the component is read-only. A read-only element cannot be modified, but user interaction is allowed. See the Help documentation for more information.
          * @access public
@@ -10869,7 +11699,7 @@ var __oj_select_many_metadata =
          */
           readOnly: false,
 
-          /**
+       /**
         * {@ojinclude "name":"comboboxCommonValidators"}
         *
         *
@@ -10964,7 +11794,7 @@ var __oj_select_many_metadata =
         *                  make the JSON format work again by importing the deprecated ojvalidation module you need,
         *                  like ojvalidation-base.'}
         */
-          /**
+        /**
          * List of validators, synchronous or asynchronous,
          * used by component along with asynchronous validators from the deprecated async-validators option
          * and the implicit component validators when performing validation. Each item is either an
@@ -11535,13 +12365,21 @@ var __oj_select_many_metadata =
         }
         opts = $.extend(this.options, opts);
 
+        // Fetch the option defaults from the CSS file
+        this.cssOptionDefaults = ThemeUtils.parseJSONFromFontFamily('oj-combobox-option-defaults') || {};
+
         this.combobox = multi ? new _OjMultiCombobox() : new _OjSingleCombobox();
 
         this.combobox._init(opts);
         this._refreshRequired(this.options.required);
 
+        // JET-43071 - messagescustom property doesn't work when initial render
+        // During the initial setup, there will not be any component messages,
+        // but there can be custom messages. So, we need to make sure that we
+        // do not clear them off when we sync value and valueOptions
+        const options = { doNotClearMessages: true };
         //  - need to be able to specify the initial value of select components bound to dprv
-        this._resolveValueOptionsLater = _ComboUtils.mergeValueAndValueOptions(this);
+        this._resolveValueOptionsLater = _ComboUtils.mergeValueAndValueOptions(this, options);
       },
 
       /**
@@ -11618,6 +12456,43 @@ var __oj_select_many_metadata =
       },
 
       /**
+       * Sets multiple options
+       *
+       * @param {Object} options the options object
+       * @param {Object} flags additional flags for option
+       *
+       * @override
+       * @protected
+       * @memberof! oj.ojCombobox
+       */
+      _setOptions: function (options, flags) {
+        var processSetOptions;
+
+        // _setOptions is invoked to set multiple options and for some options, we need
+        // to enforce an order. So we will using a temporary object which is used for
+        // storing function refs which will then be executed in an order that we want to
+        // enforce. Some of the options can call _setOptions recursively to set different
+        // options. For eg., setting 'labelEdge' to 'none', will in turn calls _setOptions
+        // recursviely setting 'labelledBy'. So we need to maintain a stack of object to
+        // keep track of the call stack.
+        if (!this._processSetOptions) {
+          this._processSetOptions = [];
+        }
+        this._processSetOptions.push({});
+
+        this._super(options, flags);
+
+        // Get the top most object from the stack, which represents the current call
+        processSetOptions = this._processSetOptions.pop();
+
+        // JET-43071 - messagescustom property doesn't work when initial render
+        // After the value and valueOptions are updated, set the messages custom
+        if (processSetOptions.messagesCustom) {
+          processSetOptions.messagesCustom();
+        }
+      },
+
+      /**
          * Handles options specific to combobox.
          * @override
          * @protected
@@ -11626,6 +12501,8 @@ var __oj_select_many_metadata =
       _setOption: function (key, _value, flags) {
         var value = _value;
         var multi = this.multiple;
+        var selfSuper = this._super;
+        var processSetOptions = (this._processSetOptions || []).slice(-1)[0];
 
         if (key === 'value') {
           if (Array.isArray(value)) {
@@ -11675,6 +12552,18 @@ var __oj_select_many_metadata =
           value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
           //  - unable to clear values on lov value-option, to get the placeholder to show
           this.combobox.opts.valueOptions = value;
+        } else if (key === 'messagesCustom') {
+          if (processSetOptions != null) {
+            // JET-43071 - messagescustom property doesn't work when initial render
+            // We need to set the messagesCustom after value and valueOptions are set
+            // as they would reset the messages
+            // So store the function to be called in the process queue and return without
+            // doing anything else. The queue item will be executed in the _setOptions
+            // call.
+            // For messagesCustom option calling the super method alone is sufficient
+            processSetOptions.messagesCustom = selfSuper.bind(this, key, value, flags);
+            return;
+          }
         }
         this._super(key, value, flags);
 
@@ -12019,7 +12908,7 @@ var __oj_select_many_metadata =
       /**
        * Returns the jquery element that represents the content part of the component.
        * This is usually the component that user sets focus on (tabindex is set 0) and
-       * where aria attributes like aria-required, aria-labeledby etc. are set. This is
+       * where aria attributes like aria-required, aria-labelledby etc. are set. This is
        * also the element where the new value is updated. Usually this is the same as
        * the _GetMessagingLauncherElement.
        *
@@ -12283,7 +13172,17 @@ var __oj_select_many_metadata =
           if (hasUncommittedValue) {
             displayValue = this.combobox.getRawValue();
           } else {
-            displayValue = this.combobox.getValOpts() ? this.combobox.getValOpts().value : null;
+            // Get the current item as it would contain the item that is currently shown in the UI
+            // irrespective of it being valid or invalid
+            const currentItem = this.combobox.currentItem || [];
+            displayValue = null;
+
+            // The current item is always an array, and for single select components, it will hold a
+            // single item entry. If it exists, fetch the current value, else the displayValue will be
+            // null by default.
+            if (currentItem.length > 0 && currentItem[0] != null) {
+              displayValue = currentItem[0].value;
+            }
           }
           if (!this._IsCustomElement()) {
             if (displayValue === undefined || displayValue === null || displayValue === '') {
@@ -12528,251 +13427,7 @@ var __oj_select_many_metadata =
 
         return subId;
       }
-
-
-      // Fragments:
-
-      /**
-     * <p>The &lt;oj-combobox-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-     * accepted children and slots.</p>
-     *
-     * @ojchild Default
-     * @memberof oj.ojComboboxOne
-     * @ojshortdesc The oj-combobox-one element accepts oj-option elements as children.
-     * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
-     *
-     * @example <caption>Initialize the Combobox with child content specified:</caption>
-     * &lt;oj-combobox-one>
-     *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-     *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-     *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-     * &lt;/oj-combobox-one>
-     */
-
-      /**
-     * <p>The &lt;oj-combobox-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-     * accepted children and slots.</p>
-     *
-     * @ojchild Default
-     * @memberof oj.ojComboboxMany
-     * @ojshortdesc The oj-combobox-many element accepts oj-option elements as children.
-     * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
-     *
-     * @example <caption>Initialize the Combobox with child content specified:</caption>
-     * &lt;oj-combobox-many>
-     *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-     *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-     *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-     * &lt;/oj-combobox-many>
-     */
-
-      /**
-     * <p>The <code class="prettyprint">end</code> slot is for replacing combobox one's drop down arrow and the divider.
-     * For example, a magnifying glass icon for a search field can be provided in this slot.
-     * When the slot is provided with empty content, nothing will be rendered in the slot.
-     * When the slot is not provided, the default drop down arrow icon and the divider will be rendered.</p>
-     *
-     * @ojslot end
-     * @ojshortdesc The end slot enables replacement of the combobox's drop down arrow and divider. See the Help documentation for more information.
-     * @since 4.2.0
-     *
-     * @memberof oj.ojComboboxOne
-     *
-     * @example <caption>Initialize the Combobox one with child content specified for the end slot:</caption>
-     * &lt;oj-combobox-one>
-     *   &lt;a slot='end' class='mySearchButtonClass'>&lt;/a>
-     * &lt;/oj-combobox-one>
-     */
-
-
-      /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Input Field</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-     *       If hints, title or messages exist in a notewindow,
-     *        pop up the notewindow.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Arrow Button</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Option Item</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Tap on an option item in the drop down list to select.</td>
-     *     </tr>
-     *   </tbody>
-     *  </table>
-     *
-     * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     * @ojfragment touchDocOne - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojComboboxOne
-     * @instance
-     */
-
-      /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Gesture</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>Input Field</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-     *       If hints, title or messages exist in a notewindow,
-     *        pop up the notewindow.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Option Item</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Tap on an option item in the drop down list to add to selection.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Selected item with remove icon</td>
-     *       <td><kbd>Tap</kbd></td>
-     *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
-     *     </tr>
-     *   </tbody>
-     *  </table>
-     *
-     * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     * @ojfragment touchDocMany - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojComboboxMany
-     * @instance
-     */
-
-      /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *      <td>Option item</td>
-     *       <td><kbd>Enter</kbd></td>
-     *       <td> Select the highlighted choice from the drop down.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Input field</td>
-     *       <td><kbd>Enter</kbd></td>
-     *       <td>Set the input text as the value.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Drop down</td>
-     *       <td><kbd>UpArrow or DownArrow</kbd></td>
-     *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-     *         If the drop down is not open, expand the drop down list.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Drop down</td>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Combobox</td>
-     *       <td><kbd>Tab In</kbd></td>
-     *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
-     *        pop up the notewindow.</td>
-     *     </tr>
-     *   </tbody>
-     *  </table>
-     *
-     * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     * @ojfragment keyboardDocOne - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojComboboxOne
-     * @instance
-     */
-
-      /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *      <td>Option item</td>
-     *       <td><kbd>Enter</kbd></td>
-     *       <td> Select the highlighted item from the drop down.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Input field</td>
-     *       <td><kbd>Enter</kbd></td>
-     *       <td>Add the input text to selections.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Drop down</td>
-     *       <td><kbd>UpArrow or DownArrow</kbd></td>
-     *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-     *         If the drop down is not open, expand the drop down list.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Combobox</td>
-     *       <td><kbd>LeftArrow or RightArrow</kbd></td>
-     *       <td> Move focus to the previous or next selected item.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Selected item with remove icon</td>
-     *       <td><kbd>Backspace or Delete</kbd></td>
-     *       <td>Remove the selected item having focus.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Drop down</td>
-     *       <td><kbd>Esc</kbd></td>
-     *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
-     *     </tr>
-     *     <tr>
-     *      <td>Combobox</td>
-     *       <td><kbd>Tab In</kbd></td>
-     *       <td>Set focus to the combobox. If hints, title or messages exist in a notewindow,
-     *        pop up the notewindow.</td>
-     *     </tr>
-     *   </tbody>
-     *  </table>
-     *
-     * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojComboboxMany
-     * @instance
-     */
-
-
     });
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @private
@@ -12930,141 +13585,233 @@ var __oj_select_many_metadata =
   );
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
+   * @ojcomponent oj.ojInputSearchWidget
    * @ignore
+   * @augments oj.editableValue
+   * @since 1.2.0
+   *
+   * @classdesc
+   * <h3 id="inputSearchOverview-section">
+   *   JET InputSearch Component
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputSearchOverview-section"></a>
+   * </h3>
+   *
+   * <p>Description: JET InputSearch enhances a html input into a auto-suggest search input field.</p>
+   *
+   * <p>A JET InputSearch can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;input list="items" data-bind="ojComponent: {component: 'ojInputSearch'}"/>
+   * &lt;datalist id="items">
+   *   &lt;option value="option 1">option 1&lt;/option>
+   *   &lt;option value="option 2">option 2&lt;/option>
+   *   &lt;option value="option 3">option 3&lt;/option>
+   *   &lt;option value="option 4">option 4&lt;/option>
+   * &lt;/datalist>
+   * </code></pre>
+   *
+   * <p>Static <code class="prettyprint">options</code> array to provide the option items.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;input data-bind="ojComponent: {component: 'ojInputSearch', options:
+   *                                     [{value: 'option1', label: 'option1'}, {value: 'option2', label: 'option2'}]}"/>
+   * </code></pre>
+   *
+   * <p>Options can be provided dynamically based on input instead of statically specifying the options array as shown in the above example</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;input data-bind="ojComponent: {component: 'ojInputSearch', options: function(optionContext) {
+   *                                                                           return new Promise(function(fulfill, reject) {
+   *                                                                             var term = context.term;
+   *
+   *                                                                             // Prepare options based on current 'term'.
+   *                                                                             var options = [];
+   *
+   *                                                                             fulfill(options);
+   *                                                                           }
+   *                                                                         }}"/>
+   * </code></pre>
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   *
+   *
+   * <h3 id="rtl-section">
+   *   Reading direction
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+   * </h3>
+   *
+   * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the InputSearch must be <code class="prettyprint">refresh()</code>ed.</p>
+   *
+   *
+   * <h3 id="pseudos-section">
+   *   Pseudo-selectors
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+   * </h3>
+   *
+   * <p>The <code class="prettyprint">:oj-inputsearch</code> pseudo-selector can be used in jQuery expressions to select JET InputSearch.  For example:</p>
+   *
+   * <pre class="prettyprint">
+   * <code>$( ":oj-inputsearch" ) // selects all JET InputSearch on the page
+   * $myEventTarget.closest( ":oj-inputsearch" ) // selects the closest ancestor that is a JET InputSearch
+   * </code></pre>
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>
+   * It is up to the application developer to associate the label to the input component.
+   * For InputSearch, you should put an <code>id</code> on the input, and then set
+   * the <code>for</code> attribute on the label to be the input's id.
+   * </p>
+   * <h3 id="label-section">
+   *   Label and InputSearch
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+   * </h3>
+   * <p>
+   * If not using the <code class="prettyprint">label-hint</code> attribute, for accessibility, you should associate a label element with the input
+   * by putting an <code>id</code> on the input, and then setting the
+   * <code>for</code> attribute on the label to be the input's id.
+   * </p>
+   * <p>
+   * The component will decorate its associated label with required and help
+   * information, if the <code>required</code> and <code>help</code> options are set.
+   * </p>
+   * <h3 id="jqui2jet-section">
+   *   JET for jQuery UI developers
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
+   * </h3>
+   *
+   * <p>Event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "InputSearch".</p>
+   *
+   * @desc Creates a JET InputSearch.
+   * @example <caption>Initialize the InputSearch with no options specified:</caption>
+   * $( ".selector" ).ojInputSearch();
+   *
+   * @example <caption>Initialize the InputSearch with some options:</caption>
+   * $( ".selector" ).ojInputSearch( { "minLength": 2, "placeholder": "Search..." } );
+   *
+   * @example <caption>Initialize the InputSearch via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
+   * &lt;div id="search" data-bind="ojComponent: { component: 'ojInputSearch',
+   *                                                    minLength: 2}">
    */
 
-    /**
-     * @ojcomponent oj.ojInputSearchWidget
-     * @ignore
-     * @augments oj.editableValue
-     * @since 1.2.0
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Input Field</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list
+   *       If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Search Button</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td> Updates the value with the text entered in the input field and fires the <code class="prettyprint">optionChange</code> event which can be used to perform search.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Option Item</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Tap on a option item in the drop down list to select item.</td>
+   *     </tr>
+   *   </tbody>
+   *  </table>
+   *
+   * <p>Disabled option items receive no highlight and are not selectable.</p>
+   *
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputSearchWidget
+   */
+
+  /**
+     * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+     *   <tbody>
+     *     <tr>
+     *      <td>Input</td>
+     *       <td><kbd>Enter</kbd></td>
+     *       <td> Select the highlighted choice from the drop down.</td>
+     *     </tr>
+     *     <tr>
+     *      <td>Input</td>
+     *       <td><kbd>UpArrow or DownArrow</kbd></td>
+     *       <td> Highlight the option item on the drop down list in the direction of the arrow.
+     *         If the drop down is not open, expand the drop down list.</td>
+     *     </tr>
+     *     <tr>
+     *      <td>Input</td>
+     *       <td><kbd>Esc</kbd></td>
+     *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
+     *     </tr>
+     *     <tr>
+     *        <td>Input</td>
+     *       <td><kbd>Tab In</kbd></td>
+     *       <td>Set focus to the input. If hints, title or messages exist in a notewindow,
+     *        pop up the notewindow.</td>
+     *     </tr>
+     *   </tbody>
+     *  </table>
      *
-     * @classdesc
-     * <h3 id="inputSearchOverview-section">
-     *   JET InputSearch Component
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputSearchOverview-section"></a>
-     * </h3>
-     *
-     * <p>Description: JET InputSearch enhances a html input into a auto-suggest search input field.</p>
-     *
-     * <p>A JET InputSearch can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;input list="items" data-bind="ojComponent: {component: 'ojInputSearch'}"/>
-     * &lt;datalist id="items">
-     *   &lt;option value="option 1">option 1&lt;/option>
-     *   &lt;option value="option 2">option 2&lt;/option>
-     *   &lt;option value="option 3">option 3&lt;/option>
-     *   &lt;option value="option 4">option 4&lt;/option>
-     * &lt;/datalist>
-     * </code></pre>
-     *
-     * <p>Static <code class="prettyprint">options</code> array to provide the option items.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;input data-bind="ojComponent: {component: 'ojInputSearch', options:
-     *                                     [{value: 'option1', label: 'option1'}, {value: 'option2', label: 'option2'}]}"/>
-     * </code></pre>
-     *
-     * <p>Options can be provided dynamically based on input instead of statically specifying the options array as shown in the above example</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;input data-bind="ojComponent: {component: 'ojInputSearch', options: function(optionContext) {
-     *                                                                           return new Promise(function(fulfill, reject) {
-     *                                                                             var term = context.term;
-     *
-     *                                                                             // Prepare options based on current 'term'.
-     *                                                                             var options = [];
-     *
-     *                                                                             fulfill(options);
-     *                                                                           }
-     *                                                                         }}"/>
-     * </code></pre>
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDoc"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDoc"}
-     *
-     *
-     *
-     * <h3 id="rtl-section">
-     *   Reading direction
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-     * </h3>
-     *
-     * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the InputSearch must be <code class="prettyprint">refresh()</code>ed.</p>
-     *
-     *
-     * <h3 id="pseudos-section">
-     *   Pseudo-selectors
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
-     * </h3>
-     *
-     * <p>The <code class="prettyprint">:oj-inputsearch</code> pseudo-selector can be used in jQuery expressions to select JET InputSearch.  For example:</p>
-     *
-     * <pre class="prettyprint">
-     * <code>$( ":oj-inputsearch" ) // selects all JET InputSearch on the page
-     * $myEventTarget.closest( ":oj-inputsearch" ) // selects the closest ancestor that is a JET InputSearch
-     * </code></pre>
-     *
-     * <h3 id="a11y-section">
-     *   Accessibility
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-     * </h3>
-     * <p>
-     * It is up to the application developer to associate the label to the input component.
-     * For InputSearch, you should put an <code>id</code> on the input, and then set
-     * the <code>for</code> attribute on the label to be the input's id.
-     * </p>
-     * <h3 id="label-section">
-     *   Label and InputSearch
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
-     * </h3>
-     * <p>
-     * If not using the <code class="prettyprint">label-hint</code> attribute, for accessibility, you should associate a label element with the input
-     * by putting an <code>id</code> on the input, and then setting the
-     * <code>for</code> attribute on the label to be the input's id.
-     * </p>
-     * <p>
-     * The component will decorate its associated label with required and help
-     * information, if the <code>required</code> and <code>help</code> options are set.
-     * </p>
-     * <h3 id="jqui2jet-section">
-     *   JET for jQuery UI developers
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
-     * </h3>
-     *
-     * <p>Event names for all JET components are prefixed with "oj", instead of component-specific prefixes like "InputSearch".</p>
-     *
-     * @desc Creates a JET InputSearch.
-     * @example <caption>Initialize the InputSearch with no options specified:</caption>
-     * $( ".selector" ).ojInputSearch();
-     *
-     * @example <caption>Initialize the InputSearch with some options:</caption>
-     * $( ".selector" ).ojInputSearch( { "minLength": 2, "placeholder": "Search..." } );
-     *
-     * @example <caption>Initialize the InputSearch via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
-     * &lt;div id="search" data-bind="ojComponent: { component: 'ojInputSearch',
-     *                                                    minLength: 2}">
-     */
-    oj$1.__registerWidget('oj.ojInputSearch', $.oj.editableValue,
+     * <p>Disabled option items receive no highlight and are not selectable.</p>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputSearchWidget
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+
+  // ------------------------------ oj-listbox-header ---------------------------------
+  /**
+   * Optional. Custom header options can be added to the drop down through this styling.
+   * @ojstyleclass oj-listbox-header
+   * @ojdisplayname Custom Header
+   * @memberof oj.ojInputSearchWidget
+   */
+  // ------------------------------ oj-listbox-highlighter-section ---------------------------------
+  /**
+   * Optional. Styling to control the which part of the option label has to be considered for highlighting.
+   * @ojstyleclass oj-listbox-highlighter-section
+   * @ojdisplayname Highlighting Control
+   * @memberof oj.ojInputSearchWidget
+   */
+  oj$1.__registerWidget('oj.ojInputSearch', $.oj.editableValue,
       {
         defaultElement: '<input>',
         widgetEventPrefix: 'oj',
@@ -13806,6 +14553,11 @@ var __oj_select_many_metadata =
           opts.inputSearch = true;
           opts = $.extend(this.options, opts);
 
+          // Not used by inputsearch but this is used by selectcombobox
+          // adding an empty object here so as to not break the inputsearch
+          // widget.
+          this.cssOptionDefaults = {};
+
           this.inputSearch = new _OjInputSearchContainer();
           this.inputSearch._init(opts);
           this._refreshRequired(this.options.required);
@@ -14001,7 +14753,7 @@ var __oj_select_many_metadata =
       /**
        * Returns the jquery element that represents the content part of the component.
        * This is usually the component that user sets focus on (tabindex is set 0) and
-       * where aria attributes like aria-required, aria-labeledby etc. are set. This is
+       * where aria attributes like aria-required, aria-labelledby etc. are set. This is
        * also the element where the new value is updated. Usually this is the same as
        * the _GetMessagingLauncherElement.
        *
@@ -14192,112 +14944,7 @@ var __oj_select_many_metadata =
           }
           return subId;
         }
-
-      // Fragments:
-
-    /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Input Field</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td> If the drop down is not open, expand the drop down list. Otherwise, close the drop down list
-       *       If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Search Button</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td> Updates the value with the text entered in the input field and fires the <code class="prettyprint">optionChange</code> event which can be used to perform search.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Option Item</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Tap on a option item in the drop down list to select item.</td>
-       *     </tr>
-       *   </tbody>
-       *  </table>
-       *
-       * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojInputSearchWidget
-     */
-
-    /**
-       * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-       *   <tbody>
-       *     <tr>
-       *      <td>Input</td>
-       *       <td><kbd>Enter</kbd></td>
-       *       <td> Select the highlighted choice from the drop down.</td>
-       *     </tr>
-       *     <tr>
-       *      <td>Input</td>
-       *       <td><kbd>UpArrow or DownArrow</kbd></td>
-       *       <td> Highlight the option item on the drop down list in the direction of the arrow.
-       *         If the drop down is not open, expand the drop down list.</td>
-       *     </tr>
-       *     <tr>
-       *      <td>Input</td>
-       *       <td><kbd>Esc</kbd></td>
-       *       <td> Collapse the drop down list. If the drop down is already closed, do nothing.</td>
-       *     </tr>
-       *     <tr>
-       *        <td>Input</td>
-       *       <td><kbd>Tab In</kbd></td>
-       *       <td>Set focus to the input. If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow.</td>
-       *     </tr>
-       *   </tbody>
-       *  </table>
-       *
-       * <p>Disabled option items receive no highlight and are not selectable.</p>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojInputSearchWidget
-     */
-
-    // -------------------- Styling start ------------------------
-    // ------------------------------ oj-listbox-header ---------------------------------
-    /**
-     * Optional. Custom header options can be added to the drop down through this styling.
-     * @ojstyleclass oj-listbox-header
-     * @ojdisplayname Custom Header
-     * @memberof oj.ojInputSearchWidget
-     */
-    // ------------------------------ oj-listbox-highlighter-section ---------------------------------
-    /**
-     * Optional. Styling to control the which part of the option label has to be considered for highlighting.
-     * @ojstyleclass oj-listbox-highlighter-section
-     * @ojdisplayname Highlighting Control
-     * @memberof oj.ojInputSearchWidget
-     */
-    // -------------------- Styling end ------------------------
       });
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * @private
@@ -14330,21 +14977,24 @@ var __oj_select_many_metadata =
           '</div>',
           "<div class='oj-select-description oj-helper-hidden-accessible'></div>",
           "<div class='oj-listbox-drop' role='dialog'>",
-
           "  <div class='oj-listbox-search-wrapper'>",
 
-          "  <div class='oj-listbox-search'>",
-          "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
-          "           spellcheck='false' class='oj-listbox-input' title='Search field' ",
-          "           role='combobox' aria-expanded='false' aria-autocomplete='list' />",
+          "    <div class='oj-text-field'>",
+          "      <div class='oj-text-field-container oj-text-field-has-end-slot'>",
+          "        <div class='oj-listbox-search oj-text-field-middle'>",
+          "          <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
+          "                 spellcheck='false' class='oj-listbox-input oj-text-field-input' title='Search field' ",
+          "                 role='combobox' aria-expanded='false' aria-autocomplete='list' />",
+          '        </div>',
+          "        <span class='oj-listbox-spyglass-box oj-text-field-end'>",
+          "          <span class='oj-component-icon oj-clickable-icon-nocontext oj-fwk-icon-magnifier oj-listbox-search-icon' role='presentation'></span>",
+          '        </span>',
+          '      </div>',
+          '    </div>',
 
-          "    <span class='oj-listbox-spyglass-box'>",
-          "      <span class='oj-component-icon oj-listbox-search-icon' role='presentation'>",
-          "       <b role='presentation'></b></span>",
-          '    </span>',
           '  </div>',
 
-          '  </div>',
+          "  <div class='oj-listbox-loader-wrapper'></div>",
 
           "   <ul class='oj-listbox-results' role='listbox'>",
           '   </ul>',
@@ -14418,10 +15068,6 @@ var __oj_select_many_metadata =
         // if beforeExpand is not cancelled
         // beforeExpand event will be triggered in base class _shouldOpen method
         _OjMultiSelect.superclass._opening.apply(this, arguments);
-
-        //  - select input gets stuck with sdp fetchchain delay
-        // show drop down in order to show the searchBox
-        this._showDropDown();
 
         var searchText = null;
 
@@ -14549,14 +15195,6 @@ var __oj_select_many_metadata =
     );
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @private
    */
   const _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
@@ -14592,21 +15230,24 @@ var __oj_select_many_metadata =
           '  </div>',
           '</div>',
           "<div class='oj-listbox-drop' role='dialog'>",
-
           "  <div class='oj-listbox-search-wrapper'>",
 
-          "  <div class='oj-listbox-search'>",
-          "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
-          "           spellcheck='false' class='oj-listbox-input' title='Search field' ",
-          "           role='combobox' aria-expanded='false' aria-autocomplete='list' />",
+          "    <div class='oj-text-field'>",
+          "      <div class='oj-text-field-container oj-text-field-has-end-slot'>",
+          "        <div class='oj-listbox-search oj-text-field-middle'>",
+          "          <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
+          "                 spellcheck='false' class='oj-listbox-input oj-text-field-input' title='Search field' ",
+          "                 role='combobox' aria-expanded='false' aria-autocomplete='list' />",
+          '        </div>',
+          "        <span class='oj-listbox-spyglass-box oj-text-field-end'>",
+          "          <span class='oj-component-icon oj-clickable-icon-nocontext oj-fwk-icon-magnifier oj-listbox-search-icon' role='presentation'></span>",
+          '        </span>',
+          '      </div>',
+          '    </div>',
 
-          "    <span class='oj-listbox-spyglass-box'>",
-          "      <span class='oj-component-icon oj-listbox-search-icon' role='presentation'>",
-          "       <b role='presentation'></b></span>",
-          '    </span>',
           '  </div>',
 
-          '  </div>',
+          "  <div class='oj-listbox-loader-wrapper'></div>",
 
           "   <ul class='oj-listbox-results' role='listbox'>",
           '   </ul>',
@@ -14705,9 +15346,6 @@ var __oj_select_many_metadata =
       _opening: function (event, dontUpdateResults, dontShowSearchbox) {
         _OjSingleSelect.superclass._opening.apply(this, arguments);
 
-        //  - select input gets stuck with sdp fetchchain delay
-        // show drop down in order to show the searchBox
-        this._showDropDown();
         var searchText = null;
 
         // Show and update the search box only if the dontShowSearchbox flag
@@ -14767,12 +15405,6 @@ var __oj_select_many_metadata =
             'aria-labelledby': this.search.attr('aria-labelledby'),
             'aria-describedby': selectedId
           });
-
-        //  - missing select label
-        var label = this._getTransferredAttribute('aria-label');
-        if (label) {
-          this.selection.attr('aria-label', label);
-        }
 
         this.search.on('keydown', this._bind(this._containerKeydownHandler));
         this.search.on('keyup-change input', this._bind(this._containerKeyupHandler));
@@ -14918,6 +15550,7 @@ var __oj_select_many_metadata =
 
       // _OjSingleSelect
       _containerKeydownHandler: function (e) {
+        const keyCode = e.which || e.keyCode;
         if (_ComboUtils.KEY.isPasteAction(e)) {
           this._userTyping = true;
           // open dropdown if it is not already open
@@ -14942,13 +15575,13 @@ var __oj_select_many_metadata =
 
         //  - strange text show up after type in "<" in the select component
         //  - keyboard handling issues
-        if ((_ComboUtils.KEY.isControl(e) && e.which !== _ComboUtils.KEY.SHIFT) ||
-            (e.which === _ComboUtils.KEY.SHIFT) ||
+        if ((_ComboUtils.KEY.isControl(e) && keyCode !== _ComboUtils.KEY.SHIFT) ||
+            (keyCode === _ComboUtils.KEY.SHIFT) ||
               _ComboUtils.KEY.isFunctionKey(e)) {
           return;
         }
 
-        switch (e.which) {
+        switch (keyCode) {
           case _ComboUtils.KEY.TAB:
             this.close(e);
             // James: tab out of an expanded poplist, focus is going all the way to the top of the page.
@@ -15015,192 +15648,293 @@ var __oj_select_many_metadata =
 
     });
 
+  //-----------------------------------------------------
+  //                   SelectOne
+  //-----------------------------------------------------
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * @ojcomponent oj.ojSelectOne
+   * @augments oj.ojSelect
+   * @since 0.6.0
+   * @ojdisplayname Select (One)
+   * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
+   * @ojdeprecated {since: "8.1.0", description: "Please use &lt;oj-select-single&gt; instead."}
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
+   *                {"name": "V", "description": "Type of value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojSelectOneSettableProperties<K, D, V= any> extends ojSelectSettableProperties<V>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+   * @ojtsimport {module: "ojvalidationfactory-base", type: "AMD", imported:["Validation"]}
+   * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
+   * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
+   * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="selectOverview-section">
+   *   JET Select One
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Select One provides support for single-select and search filtering.</p>
+   *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
+   * <p>A JET Select One can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-select-one>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-select-one>
+   * </code></pre>
+   * <p>A JET Select One can be created with a DataProvider.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-select-one options="[[dataprovider]]">
+   * &lt;/oj-select-one>
+   * </code></pre>
+   *
+   * <p>See the Select one basic demo for inline options and DataProvider usage.</p>
+   *
+   * {@ojinclude "name":"selectComboDifferences"}
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
+   * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   * {@ojinclude "name":"selectCommon"}
    */
 
-    /**
-     * @ojcomponent oj.ojSelectOne
-     * @augments oj.ojSelect
-     * @since 0.6.0
-     * @ojdisplayname Select (One)
-     * @ojshortdesc A select one is a dropdown list that supports single selection and search filtering.
-     * @ojdeprecated {since: "8.1.0", description: "Please use &lt;oj-select-single&gt; instead."}
-     * @ojrole combobox
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "class ojSelectOne<K, D, V = any> extends ojSelect<V, ojSelectOneSettableProperties<K, D, V>>",
-     *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"},
-     *                , {"name": "V", "description": "Type of value of the component"}]
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojSelectOneSettableProperties<K, D, V= any> extends ojSelectSettableProperties<V>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
-     * @ojtsimport {module: "ojvalidationfactory-base", type: "AMD", imported:["Validation"]}
-     * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
-     * @ojtsimport {module: "ojvalidator", type: "AMD", importName: "Validator"}
-     * @ojtsimport {module: "ojvalidator-async", type: "AMD", importName: "AsyncValidator"}
-     *
-     * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
-     * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-     * @ojvbdefaultcolumns 6
-     * @ojvbmincolumns 2
-     *
-     * @classdesc
-     * <h3 id="selectOverview-section">
-     *   JET Select One
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectOverview-section"></a>
-     * </h3>
-     * <p>Description: JET Select One provides support for single-select and search filtering.</p>
-     *
-     * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
-     * </p>
-     * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
-     * </p>
-     * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
-     * </p>
-     *
-     * <p>A JET Select One can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-select-one>
-     *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-     *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-     *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-     *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-     * &lt;/oj-select-one>
-     * </code></pre>
-     * <p>A JET Select One can be created with a DataProvider.</p>
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-select-one options="[[dataprovider]]">
-     * &lt;/oj-select-one>
-     * </code></pre>
-     *
-     * <p>See the Select one basic demo for inline options and DataProvider usage.</p>
-     *
-     * {@ojinclude "name":"selectComboDifferences"}
-     *
-     * {@ojinclude "name":"validationAndMessagingDoc"}
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDocOne"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDocOne"}
-     *
-     * <h3 id="perf-section">
-     *   Performance
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-     * </h3>
-     *
-     * <h4>Page Load</h4>
-     * <p>If the <a href="#options">options</a> attribute is a data provider, and if there is an initially selected value, setting the <a href="#valueOption">valueOption</a> attribute initially can improve page load performance because the element will not have to fetch the selected label from the data provider.</p>
-     * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
-     *
-     * {@ojinclude "name":"selectCommon"}
-     */
-  // --------------------------------------------------- oj.ojSelectOne Styling Start ------------------------------------------------------------
-    /**
-     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-     * The form control style classes can be applied to the component, or an ancestor element. <br/>
-     * When applied to an ancestor element, all form components that support the style classes will be affected.
-     */
-    // ---------------- oj-form-control-full-width --------------
-    /**
-    * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-    * @ojstyleclass oj-form-control-full-width
-    * @ojdisplayname FullWidth
-    * @memberof oj.ojSelectOne
-    * @ojtsexample
-    * &lt;oj-select-one class="oj-form-control-full-width">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-    * &lt;/oj-select-one>
-    */
+  //-----------------------------------------------------
+  //                   Slots SelectOne
+  //-----------------------------------------------------
+  /**
+   * <p>The &lt;oj-select-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+   * accepted children and slots.</p>
+   *
+   * @ojchild Default
+   * @memberof oj.ojSelectOne
+   * @ojshortdesc The oj-select-one element accepts oj-option elements as children.
+   * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
+   *
+   * @example <caption>Initialize the select with child content specified:</caption>
+   * &lt;oj-select-one>
+   *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+   *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+   *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+   * &lt;/oj-select-one>
+   */
 
-   // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectOne
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-one class="oj-form-control-max-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-select-one>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectOne
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectOne
-     */
+  //-----------------------------------------------------
+  //                   Fragments SelectOne
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Select box or Arrow button</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+   *       If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow on tapping on select box.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Option item</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Tap on a option item in the drop down list to select a new item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>swipe up/down</kbd></td>
+   *       <td>Scroll the drop down list vertically</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSelectOne
+   * @instance
+   */
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Option item</td>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Select the highlighted choice from the drop down list.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>UpArrow or DownArrow</kbd></td>
+   *       <td>Highlight the option item in the direction of the arrow. If the drop down is not open, expand the drop down list.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>Collapse the drop down list. If the drop down is already closed, do nothing.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Select box or search box</td>
+   *       <td><kbd>any characters for the search term</kbd></td>
+   *       <td>filter down the results with the search term.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Select</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the select. If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled option items receive no highlight and are not selectable.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSelectOne
+   * @instance
+   */
 
-    // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectOne
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-one class="oj-form-control-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-select-one>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectOne
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectOne
-     */
+  //-----------------------------------------------------
+  //                   Styling SelectOne
+  //-----------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname FullWidth
+  * @memberof oj.ojSelectOne
+  * @ojtsexample
+  * &lt;oj-select-one class="oj-form-control-full-width">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+  * &lt;/oj-select-one>
+  */
 
-   // ---------------- oj-form-control-text-align- --------------
+  // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectOne
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-select-one class="oj-form-control-max-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-select-one>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectOne
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectOne
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectOne
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-select-one class="oj-form-control-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-select-one>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectOne
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectOne
+   */
+
+  // ---------------- oj-form-control-text-align- --------------
   /**
    * Classes that help align text of the element.
    * @ojstyleset text-align
@@ -15234,181 +15968,303 @@ var __oj_select_many_metadata =
    * @ojdisplayname Align-End
    * @memberof! oj.ojSelectOne
    */
-  // --------------------------------------------------- oj.ojSelectOne Styling end ------------------------------------------------------------
 
-    /**
-     * @ojcomponent oj.ojSelectMany
-     * @augments oj.ojSelect
-     * @since 0.6.0
-     * @ojdisplayname Select (Many)
-     * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
-     * @ojrole combobox
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "class ojSelectMany<K, D, V=any> extends ojSelect<Array<V>, ojSelectManySettableProperties<K, D, V>>",
-     *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
-     *                , {"name": "V", "description": "Type of each item in the value of the component"}]
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojSelectManySettableProperties<K, D, V=Array<any>> extends ojSelectSettableProperties<Array<V>>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     *
-     * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
-     * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
-     * @ojvbdefaultcolumns 6
-     * @ojvbmincolumns 2
-     *
-     * @classdesc
-     * <h3 id="selectOverview-section">
-     *   JET Select Many
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectOverview-section"></a>
-     * </h3>
-     * <p>Description: JET Select Many provides support for multi-select and search filtering.</p>
-     *
-     * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
-     * </p>
-     * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
-     * </p>
-     * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
-     * </p>
-     *
-     * <p>A JET Select Many can be created with the following markup.</p>
-     *
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-select-many>
-     *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-     *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-     *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-     *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-     * &lt;/oj-select-many>
-     * </code></pre>
-     * <p>A JET Select Many can be created with a DataProvider.</p>
-     * <pre class="prettyprint">
-     * <code>
-     * &lt;oj-select-many options="[[dataprovider]]">
-     * &lt;/oj-select-many>
-     * </code></pre>
-     *
-     * <p>See the Select many basic demo for inline options and DataProvider usage.</p>
-     *
-     * {@ojinclude "name":"selectComboDifferences"}
-     *
-     * {@ojinclude "name":"validationAndMessagingDoc"}
-     *
-     * <h3 id="touch-section">
-     *   Touch End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"touchDocMany"}
-     *
-     * <h3 id="keyboard-section">
-     *   Keyboard End User Information
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-     * </h3>
-     *
-     * {@ojinclude "name":"keyboardDocMany"}
-     *
-     * <h3 id="perf-section">
-     *   Performance
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-     * </h3>
-     *
-     * <h4>Page Load</h4>
-     * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
-     * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
-     *
-     *
-     * {@ojinclude "name":"selectCommon"}
-     */
-  // --------------------------------------------------- oj.ojSelectMany Styling Start ------------------------------------------------------------
-    /**
-     * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
-     * The form control style classes can be applied to the component, or an ancestor element. <br/>
-     * When applied to an ancestor element, all form components that support the style classes will be affected.
-     */
-    // ---------------- oj-form-control-full-width --------------
-    /**
-    * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
-    * @ojstyleclass oj-form-control-full-width
-    * @ojdisplayname Full Width
-    * @memberof oj.ojSelectMany
-    * @ojtsexample
-    * &lt;oj-select-many class="oj-form-control-full-width">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
-    * &lt;/oj-select-many>
-    */
+  //-----------------------------------------------------
+  //                   SelectMany
+  //-----------------------------------------------------
+  /**
+   * @ojcomponent oj.ojSelectMany
+   * @augments oj.ojSelect
+   * @since 0.6.0
+   * @ojdisplayname Select (Many)
+   * @ojshortdesc A select many is a dropdown list that supports multiple selections and search filtering.
+   * @ojrole combobox
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "class ojSelectMany<K, D, V=any> extends ojSelect<Array<V>, ojSelectManySettableProperties<K, D, V>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}
+   *                , {"name": "V", "description": "Type of each item in the value of the component"}]
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojSelectManySettableProperties<K, D, V=Array<any>> extends ojSelectSettableProperties<Array<V>>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   * @ojpropertylayout {propertyGroup: "common", items: ["labelHint", "placeholder", "required", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "data", items: ["value", "options"]}
+   * @ojvbdefaultcolumns 6
+   * @ojvbmincolumns 2
+   *
+   * @classdesc
+   * <h3 id="selectOverview-section">
+   *   JET Select Many
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#selectOverview-section"></a>
+   * </h3>
+   * <p>Description: JET Select Many provides support for multi-select and search filtering.</p>
+   *
+   * <p>Inline options allow you to configure dropdown content with minimal effort. Adding start and end icons can be done directly in markup. However, this approach fully realizes every option into live DOM and is thus not suitable for large data. Inline options also do not support dynamic content.
+   * </p>
+   * </p>For medium-sized static content or cases where the set of options can only be computed at runtime while initializing the component (and is not subject to further modification), using oj-bind-for-each bound to a simple (non-observable) Array is more convenient than manually inlining each option. However, just like directly specifying inline options, this approach is not suitable for large or dynamic data.
+   * </p>
+   * <p>For cases where the data is large or dynamic, options should be specified using a DataProvider. This approach will limit the amount of live DOM, regardless of data size, and is also capable of reacting to changes in data. However, configuring dropdown content may require more work than the previous approaches.
+   * </p>
+   *
+   * <p>A JET Select Many can be created with the following markup.</p>
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-select-many>
+   *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+   *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+   *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+   *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+   * &lt;/oj-select-many>
+   * </code></pre>
+   * <p>A JET Select Many can be created with a DataProvider.</p>
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-select-many options="[[dataprovider]]">
+   * &lt;/oj-select-many>
+   * </code></pre>
+   *
+   * <p>See the Select many basic demo for inline options and DataProvider usage.</p>
+   *
+   * {@ojinclude "name":"selectComboDifferences"}
+   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
+   *
+   * <h3 id="touch-section">
+   *   Touch End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"touchDoc"}
+   *
+   * <h3 id="keyboard-section">
+   *   Keyboard End User Information
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"keyboardDoc"}
+   *
+   * <h3 id="perf-section">
+   *   Performance
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+   * </h3>
+   *
+   * <h4>Page Load</h4>
+   * <p>If the <a href="#options">options</a> attribute is a data provider, and if there are initially selected values, setting the <a href="#valueOptions">valueOptions</a> attribute initially can improve page load performance because the element will not have to fetch the selected labels from the data provider.</p>
+   * <p>When using a data provider and renderMode is 'jet', the dropdown data isn't fetched until the user opens the dropdown.</p>
+   *
+   *
+   * {@ojinclude "name":"selectCommon"}
+   */
 
-   // ---------------- oj-form-control max-width --------------
-    /**
-    * In the Redwood theme the default max width of a text field is 100%.
-    * These max width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-max-width
-    * @ojdisplayname Max Width
-    * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectMany
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-many class="oj-form-control-max-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-select-many>
-    */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
-    * @ojshortdesc Sets the max width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectMany
-     */
-    /**
-    * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
-    * @ojshortdesc Sets the max width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectMany
-     */
+  //-----------------------------------------------------
+  //                   Slots SelectMany
+  //-----------------------------------------------------
+  /**
+   * <p>The &lt;oj-select-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
+   * accepted children and slots.</p>
+   *
+   * @ojchild Default
+   * @memberof oj.ojSelectMany
+   * @ojshortdesc The oj-select-many element accepts oj-option elements as children.
+   * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
+   *
+   * @example <caption>Initialize the select with child content specified:</caption>
+   * &lt;oj-select-many>
+   *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
+   *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
+   *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
+   * &lt;/oj-select-many>
+   */
+  //-----------------------------------------------------
+  //                   Fragments SelectMany
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Select box</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
+   *       If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Option item</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Tap on a option item in the drop down list to add to selection.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Selected item with remove icon</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>swipe up/down</kbd></td>
+   *       <td>Scroll the drop down list vertically</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSelectMany
+   * @instance
+   */
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Option item</td>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Select the highlighted choice from the drop down list.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>UpArrow or DownArrow</kbd></td>
+   *       <td>Highlight the option item in the direction of the arrow. If the drop down is not open, expand the drop down list.</tr>
+   *     </tr>
+   *     <tr>
+   *      <td>Select box</td>
+   *       <td><kbd>LeftArrow or RightArrow</kbd></td>
+   *       <td> Move focus to the previous or next selected item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Selected item with remove icon</td>
+   *       <td><kbd>Backspace or Delete</kbd></td>
+   *       <td>Remove the selected item having focus.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Drop down</td>
+   *       <td><kbd>Esc</kbd></td>
+   *       <td>Collapse the drop down list. If the drop down is already closed, do nothing.</tr>
+   *     </tr>
+   *     <tr>
+   *       <td>Select box or search box</td>
+   *       <td><kbd>any characters for the search term</kbd></td>
+   *       <td>filter down the results with the search term.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Select</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the select. If hints, title or messages exist in a notewindow,
+   *        pop up the notewindow.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * <p>Disabled option items receive no highlight and are not selectable.
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojSelectMany
+   * @instance
+   */
 
-    // ---------------- oj-form-control width --------------
-    /**
-    * In the Redwood theme the default width of a text field is 100%.
-    * These width convenience classes are available to create a medium or small field.<br>
-    * The class is applied to the root element.
-    * @ojstyleset form-control-width
-    * @ojdisplayname Width
-    * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
-    * @ojstylerelation exclusive
-    * @memberof oj.ojSelectMany
-    * @ojunsupportedthemes ['Alta']
-    * @ojtsexample
-    * &lt;oj-select-many class="oj-form-control-width-md">
-    *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
-    *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
-    *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
-    * &lt;/oj-select-many>
-    */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-sm
-    * @ojshortdesc Sets the width for a small field
-    * @ojdisplayname Small
-    * @memberof! oj.ojSelectMany
-     */
-    /**
-    * @ojstyleclass form-control-width.oj-form-control-width-md
-    * @ojshortdesc Sets the width for a medium field
-    * @ojdisplayname Medium
-    * @memberof! oj.ojSelectMany
-     */
+  //-----------------------------------------------------
+  //                   Styling SelectMany
+  //-----------------------------------------------------
+  /**
+   * @classdesc The following CSS classes can be applied by the page author as needed.<br/>
+   * The form control style classes can be applied to the component, or an ancestor element. <br/>
+   * When applied to an ancestor element, all form components that support the style classes will be affected.
+   */
+  // ---------------- oj-form-control-full-width --------------
+  /**
+  * Changes the max-width to 100% so that form components will occupy all the available horizontal space.
+  * @ojstyleclass oj-form-control-full-width
+  * @ojdisplayname Full Width
+  * @memberof oj.ojSelectMany
+  * @ojtsexample
+  * &lt;oj-select-many class="oj-form-control-full-width">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
+  * &lt;/oj-select-many>
+  */
 
-   // ---------------- oj-form-control-text-align- --------------
+  // ---------------- oj-form-control max-width --------------
+  /**
+  * In the Redwood theme the default max width of a text field is 100%.
+  * These max width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-max-width
+  * @ojdisplayname Max Width
+  * @ojstylesetitems ["form-control-max-width.oj-form-control-max-width-sm", "form-control-max-width.oj-form-control-max-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectMany
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-select-many class="oj-form-control-max-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-select-many>
+  */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-sm
+  * @ojshortdesc Sets the max width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectMany
+   */
+  /**
+  * @ojstyleclass form-control-max-width.oj-form-control-max-width-md
+  * @ojshortdesc Sets the max width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectMany
+   */
+
+  // ---------------- oj-form-control width --------------
+  /**
+  * In the Redwood theme the default width of a text field is 100%.
+  * These width convenience classes are available to create a medium or small field.<br>
+  * The class is applied to the root element.
+  * @ojstyleset form-control-width
+  * @ojdisplayname Width
+  * @ojstylesetitems ["form-control-width.oj-form-control-width-sm", "form-control-width.oj-form-control-width-md"]
+  * @ojstylerelation exclusive
+  * @memberof oj.ojSelectMany
+  * @ojunsupportedthemes ['Alta']
+  * @ojtsexample
+  * &lt;oj-select-many class="oj-form-control-width-md">
+  *   &lt;oj-option value="option 1">option 1&lt;/oj-option>
+  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
+  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
+  * &lt;/oj-select-many>
+  */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-sm
+  * @ojshortdesc Sets the width for a small field
+  * @ojdisplayname Small
+  * @memberof! oj.ojSelectMany
+   */
+  /**
+  * @ojstyleclass form-control-width.oj-form-control-width-md
+  * @ojshortdesc Sets the width for a medium field
+  * @ojdisplayname Medium
+  * @memberof! oj.ojSelectMany
+   */
+
+  // ---------------- oj-form-control-text-align- --------------
   /**
    * Classes that help align text of the element.
    * @ojstyleset text-align
@@ -15442,90 +16298,91 @@ var __oj_select_many_metadata =
    * @ojdisplayname Align-End
    * @memberof! oj.ojSelectMany
    */
-  // --------------------------------------------------- oj.ojSelectMany Styling end ------------------------------------------------------------
 
-    /**
-     * @ojcomponent oj.ojSelect
-     * @augments oj.editableValue
-     * @ojimportmembers oj.ojDisplayOptions
-     * @since 0.6.0
-     * @abstract
-     * @ojsignature [{
-     *                target: "Type",
-     *                value: "abstract class ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV=V> extends editableValue<V, SP, SV>"
-     *               },
-     *               {
-     *                target: "Type",
-     *                value: "ojSelectSettableProperties<V, SV=V> extends editableValueSettableProperties<V, SV>",
-     *                for: "SettableProperties"
-     *               }
-     *              ]
-     *
-     * @hideconstructor
-     * @classdesc
-     */
-    /**
-     * <h3 id="rtl-section">
-     *   Reading direction
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-     * </h3>
-     *
-     * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Select must be <code class="prettyprint">refresh()</code>ed.
-     *
-     * <h3 id="a11y-section">
-     *   Accessibility
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
-     * </h3>
-     * <p>
-     * If not using the <code class="prettyprint">label-hint</code> attribute,
-     * it is up to the application developer to associate an oj-label to the select element.
-     * You should put an <code>id</code> on the select element, and then set
-     * the <code>for</code> attribute on the oj-label to be the select's id.
-     * </p>
-     * <p>
-     * The element will decorate its associated label with required and help
-     * information, if the <code>required</code> and <code>help</code> attributes are set.
-     * </p>
-     *
-     * @ojfragment selectCommon
-     * @memberof oj.ojSelect
-     */
-    /**
-     * <h3 id="diff-section">
-     *   Differences between Select and Combobox components
-     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diff-section"></a>
-     * </h3>
-     *
-     * <p>
-     * oj-select-* components and oj-combobox-* components may look and feel similar,
-     * but these components are different and are intended for very different use cases.
-     * </p>
-     *
-     * <p>
-     * While oj-select-* components allow one to filter the data in the dropdown,
-     * it is not possible to enter values that are not available in the data.
-     * This makes oj-select-* components ideal for usecases where the user can only
-     * select values that are available in the dropdown, but not provide custom
-     * values of their own.
-     * </p>
-     *
-     * <p>
-     * In contrast, oj-combobox-* components allow one to enter new values that are
-     * not available in the data in addition to using the text field for filtering dropdown data.
-     * This makes oj-combobox-* components ideal for usecases where the users can provide
-     * custom values in addition to those that are already available in the dropdown data.
-     * </p>
-     *
-     * <p>
-     * Application developers should consider the above differences when choosing between
-     * Select and Combobox components.
-     * Additionally, applications are advised to use oj-select-single instead of the deprecated oj-select-one.
-     * </p>
-     *
-     * @ojfragment selectComboDifferences
-     * @memberof oj.ojSelect
-     */
-    oj$1.__registerWidget('oj.ojSelect', $.oj.editableValue,
+  //-----------------------------------------------------
+  //                   Abstract Select
+  //-----------------------------------------------------
+  /**
+   * @ojcomponent oj.ojSelect
+   * @augments oj.editableValue
+   * @ojimportmembers oj.ojDisplayOptions
+   * @since 0.6.0
+   * @abstract
+   * @ojsignature [{
+   *                target: "Type",
+   *                value: "abstract class ojSelect<V, SP extends ojSelectSettableProperties<V, SV>, SV=V> extends editableValue<V, SP, SV>"
+   *               },
+   *               {
+   *                target: "Type",
+   *                value: "ojSelectSettableProperties<V, SV=V> extends editableValueSettableProperties<V, SV>",
+   *                for: "SettableProperties"
+   *               }
+   *              ]
+   *
+   * @hideconstructor
+   * @classdesc
+   */
+  /**
+   * <h3 id="rtl-section">
+   *   Reading direction
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
+   * </h3>
+   *
+   * <p>As with any JET element, in the unusual case that the directionality (LTR or RTL) changes post-init, the Select must be <code class="prettyprint">refresh()</code>ed.
+   *
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   * <p>
+   * The element will decorate its associated label with required and help
+   * information, if the <code>required</code> and <code>help</code> attributes are set.
+   * </p>
+   * <p>
+   * {@ojinclude "name":"accessibilityLabelEditableValue"}
+   * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
+   * </p>
+   *
+   * @ojfragment selectCommon
+   * @memberof oj.ojSelect
+   */
+  /**
+   * <h3 id="diff-section">
+   *   Differences between Select and Combobox components
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#diff-section"></a>
+   * </h3>
+   *
+   * <p>
+   * oj-select-* components and oj-combobox-* components may look and feel similar,
+   * but these components are different and are intended for very different use cases.
+   * </p>
+   *
+   * <p>
+   * While oj-select-* components allow one to filter the data in the dropdown,
+   * it is not possible to enter values that are not available in the data.
+   * This makes oj-select-* components ideal for usecases where the user can only
+   * select values that are available in the dropdown, but not provide custom
+   * values of their own.
+   * </p>
+   *
+   * <p>
+   * In contrast, oj-combobox-* components allow one to enter new values that are
+   * not available in the data in addition to using the text field for filtering dropdown data.
+   * This makes oj-combobox-* components ideal for usecases where the users can provide
+   * custom values in addition to those that are already available in the dropdown data.
+   * </p>
+   *
+   * <p>
+   * Application developers should consider the above differences when choosing between
+   * Select and Combobox components.
+   * Additionally, applications are advised to use oj-select-single instead of the deprecated oj-select-one.
+   * </p>
+   *
+   * @ojfragment selectComboDifferences
+   * @memberof oj.ojSelect
+   */
+  oj$1.__registerWidget('oj.ojSelect', $.oj.editableValue,
       {
         defaultElement: '<select>',
         widgetEventPrefix: 'oj',
@@ -15825,6 +16682,8 @@ var __oj_select_many_metadata =
          * @property {boolean} leaf Whether the option is a leaf or a group.
          * @property {Object} data The data object for the option.
          * @property {Element} parentElement The option label element. The renderer can use this to directly append content.
+         * @ojsignature [{target: "Type", value: "D", for: "data", jsdocOverride:true},
+         *               {target: "Type", value: "<D = any>", for: "genericTypeParameters"}]
          */
         /**
          * {@ojinclude "name":"selectCommonOptionRenderer"}
@@ -15835,7 +16694,7 @@ var __oj_select_many_metadata =
          * @instance
          * @type {null|function(Object):Object}
          * @ojsignature { target: "Type",
-         *                value: "?((param0: oj.ojSelect.OptionContext) => Element)|null",
+         *                value: "?((param0: oj.ojSelect.OptionContext<D>) => Element)|null",
          *                jsdocOverride: true}
          * @default null
          * @example <caption>Initialize the select with a renderer:</caption>
@@ -15856,7 +16715,7 @@ var __oj_select_many_metadata =
          * @instance
          * @type {null|function(Object):Object}
          * @ojsignature { target: "Type",
-         *                value: "?((param0: oj.ojSelect.OptionContext) => Element)|null",
+         *                value: "?((param0: oj.ojSelect.OptionContext<D>) => Element)|null",
          *                jsdocOverride: true}
          * @default null
          * @example <caption>Initialize the Select with a renderer:</caption>
@@ -16265,7 +17124,7 @@ var __oj_select_many_metadata =
          * @ojshortdesc The style attributes for the drop down.
          * @expose
          * @memberof oj.ojSelectOne
-         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this property is ignored and an error is logged."}
          * @instance
          * @type {?Object}
          * @default null
@@ -16289,7 +17148,7 @@ var __oj_select_many_metadata =
          * @ojshortdesc The style attributes for the drop down.
          * @expose
          * @memberof oj.ojSelectMany
-         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead."}
+         * @ojdeprecated {target: "property", for: "style", since: "7.0.0", description: "Style property of pickerAttribute is deprecated as it violates the recommended <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy'>Content Security Policy</a> for JET which disallows <a href='https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src'>inline styles</a>. Use class property instead. As of 11.0.0 this property is ignored and an error is logged."}
          * @instance
          * @type {?Object}
          * @default null
@@ -16436,8 +17295,7 @@ var __oj_select_many_metadata =
          * // setter
          * myComp.readonly = false;
          *
-         * @name readOnly
-         * @alias readonly
+         * @name readonly
          * @expose
          * @ojshortdesc Specifies whether a value is readonly
          * @access public
@@ -16472,8 +17330,7 @@ var __oj_select_many_metadata =
          * // setter
          * myComp.readonly = false;
          *
-         * @name readOnly
-         * @alias readonly
+         * @name readonly
          * @expose
          * @ojshortdesc Specifies whether a value is readonly
          * @access public
@@ -17150,6 +18007,9 @@ var __oj_select_many_metadata =
           opts.ojContext = this;
           opts = $.extend(this.options, opts);
 
+          // Fetch the option defaults from the CSS file
+          this.cssOptionDefaults = ThemeUtils.parseJSONFromFontFamily('oj-select-option-defaults') || {};
+
           this.select = this.multiple ? new _OjMultiSelect() : new _OjSingleSelect();
           this.select._init(opts);
 
@@ -17194,8 +18054,13 @@ var __oj_select_many_metadata =
                 _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOption);
             }
           }
+          // JET-43071 - messagescustom property doesn't work when initial render
+          // During the initial setup, there will not be any component messages,
+          // but there can be custom messages. So, we need to make sure that we
+          // do not clear them off when we sync value and valueOptions
+          const options = { doNotClearMessages: true };
           //  - need to be able to specify the initial value of select components bound to dprv
-          this._resolveValueOptionsLater = _ComboUtils.mergeValueAndValueOptions(this);
+          this._resolveValueOptionsLater = _ComboUtils.mergeValueAndValueOptions(this, options);
           if (this._isNative()) {
             this._nativeSetup();
           } else {
@@ -17777,6 +18642,7 @@ var __oj_select_many_metadata =
         _setOptions: function (options, flags) {
           var processSetOptions;
           var setValuePromise;
+          var validateValuePromise;
 
           // _setOptions is invoked to set multiple options and for some options, we need
           // to enforce an order. So we will using a temporary object which is used for
@@ -17815,6 +18681,7 @@ var __oj_select_many_metadata =
 
           if (processSetOptions.validateValue) {
             var validateValue = function () {
+              var returnPromise;
               var originalResolveValueOptionFlag = this._resolveValueOptionsLater;
               // if the current valueOption(s) is set by us internally,
               // then we may want to resolve the valueOption against the new options
@@ -17823,8 +18690,9 @@ var __oj_select_many_metadata =
               }
 
               // validate value
-              processSetOptions.validateValue();
+              returnPromise = processSetOptions.validateValue();
               this._resolveValueOptionsLater = originalResolveValueOptionFlag;
+              return returnPromise;
             }.bind(this);
 
             // If the value is being set, the value may still not be processed, since
@@ -17832,9 +18700,25 @@ var __oj_select_many_metadata =
             // for it to complete before we go ahead with the validation part of the process.
             // If value is being set, we need to defer till it resolves.
             if (setValuePromise instanceof Promise) {
-              setValuePromise.then(validateValue);
+              validateValuePromise = setValuePromise.then(validateValue);
             } else {
-              validateValue();
+              validateValuePromise = validateValue();
+            }
+          }
+
+          // JET-43071 - messagescustom property doesn't work when initial render
+          // After the value and valueOptions are updated, set the messages custom
+          if (processSetOptions.messagesCustom) {
+            // If we are already in the middle of updating value or
+            // validating value which in turn might set value again
+            // wait for latest promise to resolve.
+            // If we are not waiting on any value updates, then synchronously
+            // set the messagesCustom
+            const latestPromise = validateValuePromise || setValuePromise;
+            if (latestPromise instanceof Promise) {
+              latestPromise.then(processSetOptions.messagesCustom);
+            } else {
+              processSetOptions.messagesCustom();
             }
           }
         },
@@ -17954,6 +18838,18 @@ var __oj_select_many_metadata =
           } else if (key === 'renderMode') {
             this._cleanup();
             bRefresh = true;
+          } else if (key === 'messagesCustom') {
+            if (processSetOptions != null) {
+              // JET-43071 - messagescustom property doesn't work when initial render
+              // We need to set the messagesCustom after value and valueOptions are set
+              // as they would reset the messages
+              // So store the function to be called in the process queue and return without
+              // doing anything else. The queue item will be executed in the _setOptions
+              // call.
+              // For messagesCustom option calling the super method alone is sufficient
+              processSetOptions.messagesCustom = selfSuper.bind(this, key, value, flags);
+              return;
+            }
           }
 
           // if we have a new data provider, remove the old dataProvider event listeners
@@ -18032,65 +18928,79 @@ var __oj_select_many_metadata =
                                     selected && selected[0] != null;
               }
               if (_ComboUtils.getDataProvider(this.options) && hasSelectedValue) {
+                // This method needs to return a Promise that resolves after
+                // all the inner async operations are completed.
                 var validateValueAgainstNewOptions = function () {
                   //  - need to be able to specify the initial value of select components bound to dprv
                   if (_ComboUtils.applyValueOptions(this.select, this.options)) {
                     this.select.opts.options = value;
                     this.select.opts = self.select._prepareOpts(this.select.opts);
-                  } else {
-                    var element = this.select.container;
-                    var options = this.options;
-                    var currentValue = this.options.value;
-                    _ComboUtils.validateFromDataProvider(element, options, currentValue)
-                      .then(function (results) {
-                        //  - need to be able to specify the initial value of select components bound to dprv
-                        var values = results ? results.value : null;
-                        if (values) {
-                          var valueOptions = results.valueOptions;
-                          if (Array.isArray(valueOptions) && valueOptions.length) {
-                            _ComboUtils.setValueOptions(self, valueOptions);
-                          }
-                          // only set value if it is valid
-                          if (Array.isArray(values) && values.length) {
-                            selfSuper.call(self, 'value', multi ? values : values[0]);
-                          }
-                        } else {
-                          var hasPlaceholderSet = (self.options.placeholder != null);
-                          var clearValue = function () {
-                            self.select.setValOpts(null);
-                            selfSuper.call(self, 'value', null);
-                            if (!multi && !hasPlaceholderSet) {
-                              // update select box
-                              self.select.text.text('');
-                            }
-                          };
-                          if (!multi && !hasPlaceholderSet) {
-                            // there is no placeholder set and the selected value is no longer valid,
-                            // fetch 1st item from data provider for single select
-                            _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container,
-                                                                        self.options, 1).then(
-                              function (data) {
-                                // Since the fetch happens asynchronously, the value may have been updated
-                                // after the fetch has been initiated. We need to make sure that we do not
-                                // alter the new value.
-                                var isValueUpdated = (currentValue !== self.select.getVal());
-                                // At this point if we still don't have a selected value then default to the first item
-                                if (data && data.length > 0 && !isValueUpdated) {
-                                  self.select._updateSelectedOption(data[0]);
-                                } else if (!isValueUpdated) {
-                                  // Clear the value only if the value is not updated.
-                                  clearValue();
-                                }
-                              });
-                          } else {
-                            // Set the default value for multi select
-                            clearValue();
-                          }
-                        }
-                        self.select.opts.options = value;
-                        self.select.opts = self.select._prepareOpts(self.select.opts);
-                      });
+                    return Promise.resolve();
                   }
+
+                  let resolver;
+                  const returnPromise = new Promise(function (resolve) {
+                    resolver = resolve;
+                  });
+                  var element = this.select.container;
+                  var options = this.options;
+                  var currentValue = this.options.value;
+                  _ComboUtils.validateFromDataProvider(element, options, currentValue)
+                    .then(function (results) {
+                      //  - need to be able to specify the initial value of select components bound to dprv
+                      var values = results ? results.value : null;
+                      var resolverPromise = Promise.resolve();
+                      if (values) {
+                        var valueOptions = results.valueOptions;
+                        if (Array.isArray(valueOptions) && valueOptions.length) {
+                          _ComboUtils.setValueOptions(self, valueOptions);
+                        }
+                        // only set value if it is valid
+                        if (Array.isArray(values) && values.length) {
+                          selfSuper.call(self, 'value', multi ? values : values[0]);
+                        }
+                      } else {
+                        var hasPlaceholderSet = (self.options.placeholder != null);
+                        var clearValue = function () {
+                          self.select.setValOpts(null);
+                          selfSuper.call(self, 'value', null);
+                          if (!multi && !hasPlaceholderSet) {
+                            // update select box
+                            self.select.text.text('');
+                          }
+                        };
+                        if (!multi && !hasPlaceholderSet) {
+                          // An async operation is being done, so replace the default
+                          // resolver Promise with this one.
+                          // there is no placeholder set and the selected value is no longer valid,
+                          // fetch 1st item from data provider for single select
+                          resolverPromise = _ComboUtils.fetchFirstBlockFromDataProvider(
+                            self.select.container, self.options, 1
+                          ).then(function (data) {
+                            // Since the fetch happens asynchronously, the value may have been updated
+                            // after the fetch has been initiated. We need to make sure that we do not
+                            // alter the new value.
+                            var isValueUpdated = (currentValue !== self.select.getVal());
+                            // At this point if we still don't have a selected value then default to the first item
+                            if (data && data.length > 0 && !isValueUpdated) {
+                              self.select._updateSelectedOption(data[0]);
+                            } else if (!isValueUpdated) {
+                              // Clear the value only if the value is not updated.
+                              clearValue();
+                            }
+                          });
+                        } else {
+                          // Set the default value for multi select
+                          clearValue();
+                        }
+                      }
+                      self.select.opts.options = value;
+                      self.select.opts = self.select._prepareOpts(self.select.opts);
+
+                      // resolve the returnPromise once the inner resolverPromise is complete
+                      resolverPromise.then(resolver);
+                    });
+                  return returnPromise;
                 }.bind(this);
                 // If this is called from setOptions, we need to wait till all the other options
                 // are processed before validating the value. If called from the setOptions method,
@@ -18681,7 +19591,7 @@ var __oj_select_many_metadata =
       /**
        * Returns the jquery element that represents the content part of the component.
        * This is usually the component that user sets focus on (tabindex is set 0) and
-       * where aria attributes like aria-required, aria-labeledby etc. are set. This is
+       * where aria attributes like aria-required, aria-labelledby etc. are set. This is
        * also the element where the new value is updated. Usually this is the same as
        * the _GetMessagingLauncherElement.
        *
@@ -18709,222 +19619,7 @@ var __oj_select_many_metadata =
          */
         _GetAriaLabelElement: function () {
           return this._GetContentElement()[0];
-        },
-
-      // Fragments:
-
-      /**
-       * <p>The &lt;oj-select-one> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-       * accepted children and slots.</p>
-       *
-       * @ojchild Default
-       * @memberof oj.ojSelectOne
-       * @ojshortdesc The oj-select-one element accepts oj-option elements as children.
-       * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
-       *
-       * @example <caption>Initialize the select with child content specified:</caption>
-       * &lt;oj-select-one>
-       *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-       *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-       *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-       * &lt;/oj-select-one>
-       */
-
-      /**
-       * <p>The &lt;oj-select-many> element accepts <code class="prettyprint">oj-option</code> elements as children. See the [oj-option]{@link oj.ojOption} documentation for details about
-       * accepted children and slots.</p>
-       *
-       * @ojchild Default
-       * @memberof oj.ojSelectMany
-       * @ojshortdesc The oj-select-many element accepts oj-option elements as children.
-       * @ojpreferredcontent ["OptionElement", "OptgroupElement"]
-       *
-       * @example <caption>Initialize the select with child content specified:</caption>
-       * &lt;oj-select-many>
-       *   &lt;oj-option value="option1">Option 1&lt;/oj-option>
-       *   &lt;oj-option value="option2">Option 2&lt;/oj-option>
-       *   &lt;oj-option value="option3">Option 3&lt;/oj-option>
-       * &lt;/oj-select-many>
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Select box or Arrow button</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-       *       If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow on tapping on select box.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Option item</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Tap on a option item in the drop down list to select a new item.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>swipe up/down</kbd></td>
-       *       <td>Scroll the drop down list vertically</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDocOne - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojSelectOne
-       * @instance
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Select box</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>If the drop down is not open, expand the drop down list. Otherwise, close the drop down list.
-       *       If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Option item</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Tap on a option item in the drop down list to add to selection.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Selected item with remove icon</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>swipe up/down</kbd></td>
-       *       <td>Scroll the drop down list vertically</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDocMany - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojSelectMany
-       * @instance
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Option item</td>
-       *       <td><kbd>Enter</kbd></td>
-       *       <td>Select the highlighted choice from the drop down list.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>UpArrow or DownArrow</kbd></td>
-       *       <td>Highlight the option item in the direction of the arrow. If the drop down is not open, expand the drop down list.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>Esc</kbd></td>
-       *       <td>Collapse the drop down list. If the drop down is already closed, do nothing.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Select box or search box</td>
-       *       <td><kbd>any characters for the search term</kbd></td>
-       *       <td>filter down the results with the search term.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Select</td>
-       *       <td><kbd>Tab In</kbd></td>
-       *       <td>Set focus to the select. If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>Disabled option items receive no highlight and are not selectable.
-       *
-       * @ojfragment keyboardDocOne - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojSelectOne
-       * @instance
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Option item</td>
-       *       <td><kbd>Enter</kbd></td>
-       *       <td>Select the highlighted choice from the drop down list.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>UpArrow or DownArrow</kbd></td>
-       *       <td>Highlight the option item in the direction of the arrow. If the drop down is not open, expand the drop down list.</tr>
-       *     </tr>
-       *     <tr>
-       *      <td>Select box</td>
-       *       <td><kbd>LeftArrow or RightArrow</kbd></td>
-       *       <td> Move focus to the previous or next selected item.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Selected item with remove icon</td>
-       *       <td><kbd>Backspace or Delete</kbd></td>
-       *       <td>Remove the selected item having focus.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Drop down</td>
-       *       <td><kbd>Esc</kbd></td>
-       *       <td>Collapse the drop down list. If the drop down is already closed, do nothing.</tr>
-       *     </tr>
-       *     <tr>
-       *       <td>Select box or search box</td>
-       *       <td><kbd>any characters for the search term</kbd></td>
-       *       <td>filter down the results with the search term.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Select</td>
-       *       <td><kbd>Tab In</kbd></td>
-       *       <td>Set focus to the select. If hints, title or messages exist in a notewindow,
-       *        pop up the notewindow.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * <p>Disabled option items receive no highlight and are not selectable.
-       *
-       * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojSelectMany
-       * @instance
-       */
-
-
+        }
       }
     );
 
@@ -18948,14 +19643,6 @@ var __oj_select_many_metadata =
 
       }
   );
-
-  /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /* jslint browser: true,devel:true*/
   /**
@@ -19012,14 +19699,6 @@ var __oj_select_many_metadata =
 
   /**
    * End of jsdoc
-   */
-
-  /**
-   * @license
-   * Copyright (c) 2017 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
    */
 
   /* jslint browser: true,devel:true*/

@@ -29,7 +29,7 @@
       $themeRootMap: map-merge($themeRootMap, (targetPlatform: $themeTargetPlatform));
   }
   $themeRootMap: map-merge($themeRootMap, (behavior: "alta"));
-  $themeRootMap: map-merge($themeRootMap, (jetReleaseVersion: "v10.1.0"));
+  $themeRootMap: map-merge($themeRootMap, (jetReleaseVersion: "v11.0.0"));
 
   .oj-theme-json {
       font-family: oj-json-from-map($themeRootMap);
@@ -93,6 +93,7 @@
   
   // NOTE: this uses !important, it is meant to be used to override a default value
   .oj-helper-overflow-wrap-anywhere {
+    overflow-wrap: break-word !important;
     overflow-wrap: anywhere !important;
   }
 

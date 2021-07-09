@@ -11,13 +11,6 @@ define(['ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'o
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
    * @ignore
    */
@@ -62,7 +55,7 @@ var __oj_time_axis_metadata =
       "value": ""
     },
     "scale": {
-      "type": "string",
+      "type": "string|DvtTimeComponentScale",
       "enumValues": [
         "days",
         "hours",
@@ -159,20 +152,19 @@ var __oj_time_axis_metadata =
   }());
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
-   * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All touch interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#touch-section">Table</a> and <a href="oj.ojDataGrid.html#touch-section">DataGrid</a> touch doc for more details.</p>
+   * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid.
+   * All touch interactions are the same as those of the root elements.
+   * See the <a href="oj.ojTable.html#touch-section">Table</a> and
+   * <a href="oj.ojDataGrid.html#touch-section">DataGrid</a> touch doc for more details.</p>
    * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
    * @memberof oj.ojTimeAxis
    */
 
   /**
-   * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All keyboard interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#keyboard-section">Table</a> and <a href="oj.ojDataGrid.html#keyboard-section">DataGrid</a> keyboard doc for more details.</p>
+   * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid.
+   * All keyboard interactions are the same as those of the root elements.
+   * See the <a href="oj.ojTable.html#keyboard-section">Table</a> and
+   * <a href="oj.ojDataGrid.html#keyboard-section">DataGrid</a> keyboard doc for more details.</p>
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojTimeAxis
    */
@@ -214,13 +206,30 @@ var __oj_time_axis_metadata =
    * <td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
    * </tr>
    * <tr>
-   * <td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following. If the value is omitted, character 'Z' should be used to specify UTC time.<br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li></ul></td><td></td><td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
+   * <td><font color="#4B8A08">Z</font></td>
+   * <td>The value in this position can be one of the following.
+   *    If the value is omitted, character 'Z' should be used to specify UTC time.
+   *    <br>
+   *    <ul>
+   *      <li><b>Z</b> indicates UTC time.</li>
+   *      <li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li>
+   *      <li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li>
+   *    </ul>
+   * </td>
+   * <td></td>
+   * <td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
    * </tr>
    * </tbody>
    * </table>
    * <p>The ISO format support short notations where the string must only include the date and not time, as in the following formats: YYYY, YYYY-MM, YYYY-MM-DD.</p>
-   * <p>The ISO format does not support time zone names. You can use the Z position to specify an offset from UTC time. If you do not include a value in the Z position, UTC time is used. The correct format for UTC should always include character 'Z' if the offset time value is omitted. The date-parsing algorithms are browser-implementation-dependent and, for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
-   * <p>You can specify midnight by using 00:00, or by using 24:00 on the previous day. The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
+   * <p>The ISO format does not support time zone names.
+   *    You can use the Z position to specify an offset from UTC time.
+   *    If you do not include a value in the Z position, UTC time is used.
+   *    The correct format for UTC should always include character 'Z' if the offset time value is omitted.
+   *    The date-parsing algorithms are browser-implementation-dependent and,
+   *    for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
+   * <p>You can specify midnight by using 00:00, or by using 24:00 on the previous day.
+   *    The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
    *
    * @ojfragment formatsDoc
    * @memberof oj.ojTimeAxis
@@ -230,15 +239,32 @@ var __oj_time_axis_metadata =
 
   /**
    * @typedef {Object} oj.ojTimeAxis.Converters
-   * @property {Object} [default=null] The default converter (an object literal or instance that duck types {@link oj.Converter}) to use for all 'scale' values that do not otherwise have a converter object provided. See also {@link DateTimeConverter}.
-   * @property {Object} [seconds=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'seconds' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [minutes=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'minutes' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [hours=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'hours' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [days=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'days' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [weeks=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'weeks' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [months=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'months' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [quarters=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'quarters' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
-   * @property {Object} [years=new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})] A converter (an instance that duck types {@link oj.Converter}) used to format the 'years' scale. If not specified, the default converter will be used for this scale. See also {@link DateTimeConverter}.
+   * @property {Object} [default=null] The default converter (an object literal or instance that duck types {@link oj.Converter})
+   *    to use for all 'scale' values that do not otherwise have a converter object provided. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [seconds=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'seconds' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [minutes=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric', 'minute': '2-digit'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'minutes' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [hours=new DateTimeConverter.IntlDateTimeConverter({'hour': 'numeric'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'hours' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [days=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'days' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [weeks=new DateTimeConverter.IntlDateTimeConverter({'month': 'numeric', 'day': '2-digit'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'weeks' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [months=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'months' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [quarters=new DateTimeConverter.IntlDateTimeConverter({'month': 'long'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'quarters' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
+   * @property {Object} [years=new DateTimeConverter.IntlDateTimeConverter({'year': 'numeric'})] A converter
+   *    (an instance that duck types {@link oj.Converter}) used to format the 'years' scale.
+   *    If not specified, the default converter will be used for this scale. See also {@link oj.DateTimeConverter}.
    * @ojsignature [{target:"Type", value:"oj.Converter.<string>", for:"default", jsdocOverride:true},
    *               {target:"Type", value:"oj.Converter.<string>", for:"seconds", jsdocOverride:true},
    *               {target:"Type", value:"oj.Converter.<string>", for:"minutes", jsdocOverride:true},
@@ -251,12 +277,23 @@ var __oj_time_axis_metadata =
    */
 
   /**
-   * @license
-   * Copyright (c) 2016 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
+   * For default date converter
+   * @static
    * @ignore
    */
+  function _getDateDefaultConverter() {
+    return {
+      default: null,
+      seconds: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+      minutes: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
+      hours: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric' }),
+      days: new ojconverterDatetime.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+      weeks: new ojconverterDatetime.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
+      months: new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' }),
+      quarters: new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' }),
+      years: new ojconverterDatetime.IntlDateTimeConverter({ year: 'numeric' })
+    };
+  }
 
   /**
    * @ojcomponent oj.ojTimeAxis
@@ -266,6 +303,7 @@ var __oj_time_axis_metadata =
    * @ojshortdesc A time axis displays a range of dates based on specified start and end dates and a time scale.
    * @ojrole application
    * @ojtsimport {module: "ojconverter", type: "AMD", importName: "Converter"}
+   * @ojtsimport {module: "ojdvttimecomponentscale", type: "AMD", imported: ["DvtTimeComponentScale"]}
    *
    * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "scale", "style"]}
    * @ojvbdefaultcolumns 12
@@ -279,7 +317,8 @@ var __oj_time_axis_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#TimeAxisOverview-section"></a>
    * </h3>
    * <p>Description:</p>
-   * <p>A JET Time Axis is a themable, WAI-ARIA compliant element that displays a range of dates based on specified start and end date and time scale.  The Time Axis is intended to be placed in the header of JET DataGrid or Table.</p>
+   * <p>A JET Time Axis is a themable, WAI-ARIA compliant element that displays a range of dates based on specified start and end date and time scale.
+   *    The Time Axis is intended to be placed in the header of JET DataGrid or Table.</p>
    *
    * <pre class="prettyprint">
    * <code>
@@ -305,7 +344,12 @@ var __oj_time_axis_metadata =
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
-   * <p>The application is responsible for supplying a meaningful <code class="prettyprint"><span class="pln">aria</span><span class="pun">-</span><span class="pln">label</span></code> to the element.</p>
+   * <p>The application is responsible for supplying a meaningful
+   *    <code class="prettyprint">
+   *        <span class="pln">aria</span>
+   *        <span class="pun">-</span>
+   *        <span class="pln">label</span>
+   *    </code> to the element.</p>
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -345,7 +389,7 @@ var __oj_time_axis_metadata =
         /**
          * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or
          * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting.
-         * See also {@link DateTimeConverter}.
+         * See also {@link oj.DateTimeConverter}.
          * @expose
          * @name converter
          * @ojshortdesc An object that converts the labels of the time axis for all 'scale' values'. See the Help documentation for more information.
@@ -383,19 +427,11 @@ var __oj_time_axis_metadata =
          *     "years": converterYears
          * };
          */
-        converter: {
-          default: null,
-          seconds: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
-          minutes: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric', minute: '2-digit' }),
-          hours: new ojconverterDatetime.IntlDateTimeConverter({ hour: 'numeric' }),
-          days: new ojconverterDatetime.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
-          weeks: new ojconverterDatetime.IntlDateTimeConverter({ month: 'numeric', day: '2-digit' }),
-          months: new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' }),
-          quarters: new ojconverterDatetime.IntlDateTimeConverter({ month: 'long' }),
-          years: new ojconverterDatetime.IntlDateTimeConverter({ year: 'numeric' })
-        },
+        converter: undefined,
         /**
-         * The start time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+         * The start time of the time axis.
+         * A valid value is required in order for the time axis to properly render.
+         * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
          * @expose
          * @name start
          * @ojrequired
@@ -418,7 +454,9 @@ var __oj_time_axis_metadata =
          */
         start: '',
         /**
-         * The end time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+         * The end time of the time axis.
+         * A valid value is required in order for the time axis to properly render.
+         * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
          * @expose
          * @name end
          * @ojrequired
@@ -442,13 +480,15 @@ var __oj_time_axis_metadata =
         end: '',
         /**
          * The time scale used for the time axis. This is required in order for the time axis to properly render.
+         * The scale must either be a scale string (see acceptable values) or a custom instance of {@link DvtTimeComponentScale}.
+         *
          * @expose
          * @name scale
          * @ojrequired
          * @ojshortdesc The time scale used for the time axis.
          * @memberof oj.ojTimeAxis
          * @instance
-         * @type {?string}
+         * @type {?(string|DvtTimeComponentScale)}
          * @ojvalue {string} "seconds"
          * @ojvalue {string} "minutes"
          * @ojvalue {string} "hours"
@@ -458,6 +498,7 @@ var __oj_time_axis_metadata =
          * @ojvalue {string} "quarters"
          * @ojvalue {string} "years"
          * @default null
+         * @ojsignature {target: "Type", value: "?(string|DvtTimeComponentScale)"}
          *
          * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">scale</code> attribute specified:</caption>
          * &lt;oj-time-axis scale='weeks'>&lt;/oj-time-axis>
@@ -516,14 +557,13 @@ var __oj_time_axis_metadata =
       _ProcessOptions: function () {
         this._super();
 
-        // Date related options support only number | string types
-        // TODO: remove deprecated number type support in favor of ISO String in future release
+        // Date related options support only ISO String
         var self = this;
         var processRootDateOptions = function (key) {
           var optionType = typeof self.options[key];
-          if (!(optionType === 'number' || optionType === 'string')) {
+          if (!(optionType === 'string')) {
             self.options[key] = null;
-          } // e.g. this will exclude Date object types
+          }
         };
 
         processRootDateOptions('start');
@@ -598,15 +638,32 @@ var __oj_time_axis_metadata =
         resources.axisLabelClass = 'oj-timeaxis-label';
         resources.axisSeparatorClass = 'oj-timeaxis-separator';
 
-        // default disable all borders
-        resources.borderTopVisible = false;
-        resources.borderRightVisible = false;
-        resources.borderBottomVisible = false;
-        resources.borderLeftVisible = false;
-
         // first day of week; locale specific
         resources.firstDayOfWeek = ojlocaledata.getFirstDayOfWeek();
+      },
+
+      // @inheritdoc
+      _GetComponentNoClonePaths: function () {
+        var noClonePaths = this._super();
+        // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+        // If the instance is a class, class methods may not be cloned for some reason.
+        noClonePaths.scale = true;
+        return noClonePaths;
       }
     });
+
+  // Add custom getters for properties
+  ojcomponentcore.setDefaultOptions(
+    {
+      ojTimeAxis:
+      {
+        converter: ojcomponentcore.createDynamicPropertyGetter(
+          function () {
+            return _getDateDefaultConverter();
+          }
+        )
+      }
+    }
+  );
 
 });

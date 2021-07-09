@@ -201,6 +201,15 @@
       padding-left: 0;
       padding-right: 0;
     }
+
+    /* clears the 'X' from Chrome */
+    .oj-text-field-input::-webkit-search-decoration,
+    .oj-text-field-input::-webkit-search-cancel-button,
+    .oj-text-field-input::-webkit-search-results-button,
+    .oj-text-field-input::-webkit-search-results-decoration {
+      display: none;
+    }
+    
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should
     // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
     // editable datagrid cells and editable table cells
@@ -401,7 +410,7 @@
         margin-left: $formControlPaddingHorizontal;
       }
     }
-    .oj-text-field .oj-text-field-end .oj-text-field-start-end-icon {
+    .oj-text-field.oj-read-only .oj-text-field-end .oj-text-field-start-end-icon {
       @include oj-ltr() {
         margin-right: 0;
         margin-left: $formControlPaddingHorizontal;
@@ -418,7 +427,7 @@
       min-height:  $formControlInputHeight;
     }
 
-    .oj-text-field.oj-disabled .oj-text-field-start .oj-text-field-start-end-icon {
+    .oj-text-field.oj-disabled .oj-text-field-start-end-icon {
       color: $iconColorDisabled;
     }
 

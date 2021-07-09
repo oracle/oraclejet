@@ -11,14 +11,6 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * @ignore
    * @export
    * @class oj.ListViewDndContext
@@ -1354,11 +1346,6 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
   ListViewDndContext.prototype.prepareContextMenu = function (contextMenu) {
     var self = this;
 
-    // only add context menu if item reordering is enabled
-    if (!this.IsItemReOrdering()) {
-      return;
-    }
-
     var menuContainer = $(contextMenu);
     if (this.m_contextMenu !== contextMenu) {
       this.m_contextMenu = contextMenu;
@@ -1667,6 +1654,12 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
    * @private
    */
   ListViewDndContext.prototype._handleContextMenuBeforeOpen = function (event, ui) {
+    var item = ui ? ui.openOptions.launcher : event.detail.openOptions.launcher;
+    if (!this.IsItemReOrdering()) {
+      this.m_contextMenuItem = item;
+      return;
+    }
+
     var menuContainer = $(event.target);
 
     // disable all menu items first, needs to be done even if there's no default menu items since
@@ -1674,7 +1667,6 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
     menuContainer.find(this._getDndContextMenuItemSelector())
       .addClass('oj-disabled');
 
-    var item = ui ? ui.openOptions.launcher : event.detail.openOptions.launcher;
     if (item == null || this.m_menuItemsSet == null || this.m_menuItemsSet.length === 0) {
       // refresh to take effect
       if (menuContainer.get(0).tagName !== 'OJ-MENU') {
@@ -1719,12 +1711,7 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
       // quickly short circuit it if it's not one of the supported keys
       if (keyCode === ListViewDndContext.X_KEY ||
           keyCode === ListViewDndContext.C_KEY ||
-          ListViewDndContext.V_KEY) {
-        // only if item reordering is enabled
-        if (!this.IsItemReOrdering()) {
-          return false;
-        }
-
+          keyCode === ListViewDndContext.V_KEY) {
         // capabilities depends on what's specified in context menu
         var contextMenu = this.listview.ojContext._GetContextMenu();
         if (contextMenu == null) {
@@ -1744,8 +1731,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
           this._handleCopy(event);
           return true;
         } else if (keyCode === ListViewDndContext.V_KEY) {
+          var active = $(this._getActiveItem());
           if (this.m_clipboard != null) {
-            var active = $(this._getActiveItem());
             var position;
             if (active.children().first().hasClass(this.listview.getGroupItemStyleClass())) {
               if (commands.indexOf('paste') > -1) {
@@ -1761,6 +1748,8 @@ define(['exports', 'ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojdnd', 'ojs/ojlistv
               this._handlePaste(event, active, position);
               return true;
             }
+          } else {
+            this.listview.Trigger('paste', event, { item: active.get(0) });
           }
         }
       }

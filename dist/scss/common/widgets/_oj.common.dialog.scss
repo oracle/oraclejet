@@ -10,12 +10,20 @@
 
 @if $includeDialogClasses != false {
   @include module-include-once("common.dialog") {
-    
     /* dialog */
     /* --------------------------------------------------------------- */
     
     oj-dialog {
       display: none;
+    }
+
+    .oj-dialog-container {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      max-height: inherit;
     }
     
     /* defines the stacking context of the dialog and for it's children '**/
@@ -34,18 +42,12 @@
 
     .oj-dialog {
       @extend .oj-component-popup;
-      overflow:hidden;
       width: 300px;
       min-width: 200px;
       height: auto;
       // note: min-height overrides height auto, so do not 
       //       specify min-height in combination with height:auto
       box-sizing: border-box;
-      display: flex;
-      // use flex direction column to achieve a sticky footer
-      flex-direction: column;
-
-
         @include oj-box-shadow($dialogBoxShadow);
         background: $dialogBgColor;
         border: $dialogBorderWidth solid $dialogBorderColor;

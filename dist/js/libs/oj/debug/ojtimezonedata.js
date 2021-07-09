@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'ojs/ojlocaledata', 'ojL10n!ojtranslations/nls/timezo
   ojtd = ojtd && Object.prototype.hasOwnProperty.call(ojtd, 'default') ? ojtd['default'] : ojtd;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Internal utilities for dealing with timezone data
    * @ignore
    */

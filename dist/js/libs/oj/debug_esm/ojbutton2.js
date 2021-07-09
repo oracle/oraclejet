@@ -5,12 +5,13 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { recentPointer, recentTouchEnd } from 'ojs/ojdomutils';
+import { recentTouchEnd, makeFocusable, getNoJQFocusHandlers } from 'ojs/ojdomutils';
 import { startDetectContextMenuGesture, stopDetectContextMenuGesture } from 'ojs/ojgestureutils';
-import { dynamicDefault, ElementVComponent, h, listener, customElement } from 'ojs/ojvcomponent-element';
+import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
+import { Component, createRef, h } from 'preact';
 import { VMenu } from 'ojs/ojvmenu';
 import 'ojs/ojvcomponent-binding';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -19,52 +20,109 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var Button2_1;
-class Props {
-    constructor() {
-        this.disabled = false;
-        this.display = 'all';
-        this.translations = {};
-    }
-}
-__decorate([
-    dynamicDefault(getChromingDefault)
-], Props.prototype, "chroming", void 0);
 function getChromingDefault() {
-    return ((parseJSONFromFontFamily('oj-button-option-defaults') || {}).chroming || 'solid');
+    return getCachedCSSVarValues(['--oj-private-button-global-chroming-default'])[0];
 }
-let Button2 = Button2_1 = class Button2 extends ElementVComponent {
+let Button2 = Button2_1 = class Button2 extends Component {
     constructor(props) {
         super(props);
+        this._rootRef = createRef();
         this._handleContextMenuGesture = (event, eventType) => {
             const contextMenuEvent = {
                 event: event,
                 eventType: eventType
             };
             event.preventDefault();
-            this.updateState({ contextMenuTriggerEvent: contextMenuEvent });
+            this.setState({ contextMenuTriggerEvent: contextMenuEvent });
+        };
+        this._handleTouchstart = (event) => {
+            this.setState({ active: true });
+        };
+        this._handleTouchend = (event) => {
+            this.setState({ active: false });
+        };
+        this._handleFocusIn = (event) => {
+            this.setState({ focus: true });
+            if (this._rootRef.current) {
+                this.focusInHandler(this._rootRef.current);
+            }
+        };
+        this._handleFocusOut = (event) => {
+            this.setState({ focus: false });
+            if (this._rootRef.current) {
+                this.focusOutHandler(this._rootRef.current);
+            }
+        };
+        this._handleMouseenter = (event) => {
+            if (!recentTouchEnd()) {
+                if (this === Button2_1._lastActive) {
+                    this.setState({ active: true });
+                }
+                this.setState({ hover: true });
+            }
+        };
+        this._handleMouseleave = (event) => {
+            this.setState({ hover: false, active: false });
+        };
+        this._handleMousedown = (event) => {
+            if (event.which === 1 && !recentTouchEnd()) {
+                this.setState({ active: true });
+                Button2_1._lastActive = this;
+                const docMouseupListener = () => {
+                    Button2_1._lastActive = null;
+                    document.removeEventListener('mouseup', docMouseupListener, true);
+                };
+                document.addEventListener('mouseup', docMouseupListener, true);
+            }
+        };
+        this._handleMouseup = (event) => {
+            this.setState({ active: false });
+        };
+        this._handleClick = (event) => {
+            var _a, _b;
+            if (event.detail <= 1) {
+                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
+            }
+        };
+        this._handleKeydown = (event) => {
+            if (event.keyCode === 32 || event.keyCode === 13) {
+                this.setState({ active: true });
+            }
+        };
+        this._handleKeyup = (event) => {
+            this.setState({ active: false });
+        };
+        this._handleFocus = (event) => {
+            var _a, _b;
+            (_b = (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.current) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
+        };
+        this._handleBlur = (event) => {
+            var _a;
+            this.setState({ active: false });
+            (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.current.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
         };
         this._onCloseCallback = (event) => {
             if (this.state.contextMenuTriggerEvent) {
-                this.updateState({ contextMenuTriggerEvent: null });
+                this.setState({ contextMenuTriggerEvent: null });
             }
         };
         this.state = {};
+        this.uniquePrefix = props.id ? props.id + getUniqueId() : getUniqueId();
     }
-    render() {
-        const props = this.props;
+    render(props, state) {
         const defaultSlot = props.children;
         const startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-start');
         const endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-end');
-        let ariaLabel = this.props['aria-label'];
-        let ariaLabelledBy = this.props['aria-labelledby'];
+        let ariaLabel = props['aria-label'];
+        let ariaLabelledBy = props['aria-labelledby'];
         const hasDefaultAriaAttribute = ariaLabel || ariaLabelledBy;
-        let title = props.title;
         let defaultContent = null;
         let clickHandler = null;
         let ariaLabelledById = null;
+        let title = props.title;
         const buttonLabel = props.label || defaultSlot;
         if (buttonLabel) {
-            title = title || props.label || this.state.derivedTitle;
+            title = this.state.derivedTitle || title || props.label;
             if (props.display === 'icons' && (startIconContent || endIconContent)) {
                 if (props.label) {
                     if (!hasDefaultAriaAttribute) {
@@ -73,7 +131,7 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
                 }
                 else {
                     if (!hasDefaultAriaAttribute) {
-                        ariaLabelledById = this.uniqueId() + '|text';
+                        ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
                     defaultContent = (h("span", { class: 'oj-button-text oj-helper-hidden-accessible', id: ariaLabelledById }, buttonLabel));
@@ -81,7 +139,7 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
             }
             else {
                 if (!hasDefaultAriaAttribute) {
-                    ariaLabelledById = this.uniqueId() + '|text';
+                    ariaLabelledById = this.uniquePrefix + '|text';
                     ariaLabelledBy = ariaLabelledById;
                 }
                 defaultContent = (h("span", { class: 'oj-button-text', id: ariaLabelledById }, buttonLabel));
@@ -98,10 +156,10 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
         }
         else {
             clickHandler = this._handleClick;
-            buttonContent = (h("button", { class: 'oj-button-button', ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, onTouchstart: this._handleTouchstart, onTouchend: this._handleTouchend, onTouchcancel: this._handleTouchend, onMouseenter: this._handleMouseenter, onMouseleave: this._handleMouseleave, onMousedown: this._handleMousedown, onMouseup: this._handleMouseup, onKeydown: this._handleKeydown, onKeyup: this._handleKeyup, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onFocus: this._handleFocus, onBlur: this._handleBlur }, labelContent));
+            buttonContent = (h("button", { class: 'oj-button-button', ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup, onFocus: this._handleFocus, onBlur: this._handleBlur }, labelContent));
         }
         const rootClasses = this._getRootClasses(startIconContent, endIconContent);
-        return (h("oj-button", { class: rootClasses, title: title, onClick: clickHandler, ref: (elem) => (this._rootRef = elem) },
+        return (h(Root, { class: rootClasses, id: props.id, title: title, onClick: clickHandler, ref: this._rootRef },
             buttonContent,
             this._renderContextMenu()));
     }
@@ -140,16 +198,6 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
             if (this.state.active) {
                 defaultState = false;
                 classList += ' oj-active';
-            }
-            if (this.state.focus) {
-                if (defaultState) {
-                    classList += ' oj-focus-only';
-                }
-                defaultState = false;
-                classList += ' oj-focus';
-                if (!recentPointer()) {
-                    classList += ' oj-focus-highlight';
-                }
             }
         }
         if (defaultState) {
@@ -197,7 +245,7 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
         const callback = () => {
             const title = this._getTextContent();
             if (title != this.state.derivedTitle) {
-                this.updateState({ derivedTitle: title });
+                this.setState({ derivedTitle: title });
             }
         };
         this._mutationObserver = new MutationObserver(callback);
@@ -206,14 +254,29 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
     _needsContextMenuDetection(props) {
         return props.contextMenu && !props.disabled;
     }
-    mounted() {
+    componentDidMount() {
         this._updateDerivedTitle();
         if (this._needsContextMenuDetection(this.props)) {
-            startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+            startDetectContextMenuGesture(this._rootRef.current, this._handleContextMenuGesture);
         }
+        this._rootRef.current.addEventListener('touchstart', this._handleTouchstart, { passive: true });
+        this._rootRef.current.addEventListener('touchend', this._handleTouchend, { passive: false });
+        this._rootRef.current.addEventListener('touchcancel', this._handleTouchend, {
+            passive: true
+        });
+        makeFocusable({
+            applyHighlight: true,
+            setupHandlers: (focusInHandler, focusOutHandler) => {
+                let noJQHandlers = getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+                this.focusInHandler = noJQHandlers.focusIn;
+                this.focusOutHandler = noJQHandlers.focusOut;
+            }
+        });
     }
-    updated(oldProps) {
-        this._updateDerivedTitle();
+    componentDidUpdate(oldProps) {
+        if (oldProps.display != this.props.display) {
+            this._updateDerivedTitle();
+        }
         this._updateContextMenuDetection(oldProps);
     }
     _updateDerivedTitle() {
@@ -227,7 +290,7 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
             this._addMutationObserver();
         }
         if (title != this.state.derivedTitle) {
-            this.updateState({ derivedTitle: title });
+            this.setState({ derivedTitle: title });
         }
     }
     _updateContextMenuDetection(oldProps) {
@@ -235,14 +298,14 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
         const newNeedsDetect = this._needsContextMenuDetection(this.props);
         if (oldNeedsDetect != newNeedsDetect) {
             if (newNeedsDetect) {
-                startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+                startDetectContextMenuGesture(this._rootRef.current, this._handleContextMenuGesture);
             }
             else {
-                stopDetectContextMenuGesture(this._rootRef);
+                stopDetectContextMenuGesture(this._rootRef.current);
             }
         }
     }
-    static updateStateFromProps(props) {
+    static getDerivedStateFromProps(props) {
         if (props.disabled) {
             return { contextMenuTriggerEvent: null };
         }
@@ -256,75 +319,15 @@ let Button2 = Button2_1 = class Button2 extends ElementVComponent {
         }
         return null;
     }
-    unmounted() {
+    componentWillUnmount() {
         if (this._mutationObserver) {
             this._mutationObserver.disconnect();
             this._mutationObserver = null;
         }
-        stopDetectContextMenuGesture(this._rootRef);
-    }
-    _handleTouchstart(event) {
-        this.updateState({ active: true });
-    }
-    _handleTouchend(event) {
-        this.updateState({ active: false });
-    }
-    _handleMouseenter(event) {
-        if (!recentTouchEnd()) {
-            if (this === Button2_1._lastActive) {
-                this.updateState({ active: true });
-            }
-            this.updateState({ hover: true });
-        }
-    }
-    _handleMouseleave(event) {
-        this.updateState({ hover: false, active: false });
-    }
-    _handleMousedown(event) {
-        if (event.which === 1 && !recentTouchEnd()) {
-            this.updateState({ active: true });
-            Button2_1._lastActive = this;
-            const docMouseupListener = () => {
-                Button2_1._lastActive = null;
-                document.removeEventListener('mouseup', docMouseupListener, true);
-            };
-            document.addEventListener('mouseup', docMouseupListener, true);
-        }
-    }
-    _handleMouseup(event) {
-        this.updateState({ active: false });
-    }
-    _handleClick(event) {
-        var _a, _b;
-        if (event.detail <= 1) {
-            (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
-        }
-    }
-    _handleKeydown(event) {
-        if (event.keyCode === 32 || event.keyCode === 13) {
-            this.updateState({ active: true });
-        }
-    }
-    _handleKeyup(event) {
-        this.updateState({ active: false });
-    }
-    _handleFocusin(event) {
-        this.updateState({ focus: true });
-    }
-    _handleFocusout(event) {
-        this.updateState({ focus: false });
-    }
-    _handleFocus(event) {
-        var _a;
-        (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
-    }
-    _handleBlur(event) {
-        var _a;
-        this.updateState({ active: false });
-        (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
+        stopDetectContextMenuGesture(this._rootRef.current);
     }
     refresh() {
-        this.render();
+        this.setState({ active: false });
     }
     focus() {
         var _a;
@@ -344,46 +347,12 @@ Button2._chromingMap = {
     callToAction: 'oj-button-cta-chrome',
     danger: 'oj-button-danger-chrome oj-button-full-chrome'
 };
-Button2.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "title": 1, "aria-label": 1, "aria-labelledby": 1 } }, "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean", "value": false }, "display": { "type": "string", "enumValues": ["all", "icons"], "value": "all" }, "label": { "type": "string" }, "translations": { "type": "object|null", "value": {} }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
-__decorate([
-    listener({ passive: true })
-], Button2.prototype, "_handleTouchstart", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleTouchend", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleMouseenter", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleMouseleave", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleMousedown", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleMouseup", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleClick", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleKeydown", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleKeyup", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleFocusin", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleFocusout", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleFocus", null);
-__decorate([
-    listener()
-], Button2.prototype, "_handleBlur", null);
+Button2.defaultProps = {
+    disabled: false,
+    display: 'all',
+    chroming: getChromingDefault()
+};
+Button2.metadata = { "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean" }, "display": { "type": "string", "enumValues": ["all", "icons"] }, "label": { "type": "string" }, "translations": { "type": "object|null" }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["id", "title", "aria-label", "aria-labelledby"] }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
 Button2 = Button2_1 = __decorate([
     customElement('oj-button')
 ], Button2);

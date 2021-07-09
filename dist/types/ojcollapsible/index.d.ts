@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojCollapsible extends baseComponent<ojCollapsibleSettableProperties> {
     disabled: boolean;
@@ -101,4 +95,21 @@ export namespace CollapsibleElement {
     type expandAreaChanged = JetElementCustomEvent<ojCollapsible["expandArea"]>;
     // tslint:disable-next-line interface-over-type-literal
     type expandedChanged = JetElementCustomEvent<ojCollapsible["expanded"]>;
+}
+export interface CollapsibleIntrinsicProps extends Partial<Readonly<ojCollapsibleSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojBeforeCollapse?: (value: ojCollapsibleEventMap['ojBeforeCollapse']) => void;
+    onojBeforeExpand?: (value: ojCollapsibleEventMap['ojBeforeExpand']) => void;
+    onojCollapse?: (value: ojCollapsibleEventMap['ojCollapse']) => void;
+    onojExpand?: (value: ojCollapsibleEventMap['ojExpand']) => void;
+    ondisabledChanged?: (value: ojCollapsibleEventMap['disabledChanged']) => void;
+    onexpandAreaChanged?: (value: ojCollapsibleEventMap['expandAreaChanged']) => void;
+    onexpandedChanged?: (value: ojCollapsibleEventMap['expandedChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-collapsible": CollapsibleIntrinsicProps;
+        }
+    }
 }

@@ -5,21 +5,17 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojmenu', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], function (exports, ojmenu, ojvcomponent, ojpopupcore) { 'use strict';
+define(['exports', 'ojs/ojmenu', 'preact'], function (exports, ojmenu, preact) { 'use strict';
 
-    class Props {
-        constructor() {
-            this.launcherElement = null;
-        }
-    }
-    class VMenu extends ojvcomponent.VComponent {
+    class VMenu extends preact.Component {
         constructor(props) {
             super(props);
+            this._rootRef = null;
         }
-        render() {
-            return (ojvcomponent.h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, this.props.children));
+        render(props) {
+            return (preact.h("div", { style: { display: 'none' }, ref: (elem) => (this._rootRef = elem) }, props.children));
         }
-        mounted() {
+        componentDidMount() {
             if (!this._menuElement) {
                 this._menuElement = this._getMenu();
                 if (this._menuElement !== null) {
@@ -28,7 +24,7 @@ define(['exports', 'ojs/ojmenu', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], functio
             }
         }
         _getMenu() {
-            const menu = this._rootRef.firstChild;
+            const menu = this._rootRef.childNodes[0];
             return menu;
         }
         _openMenu() {
@@ -60,10 +56,7 @@ define(['exports', 'ojs/ojmenu', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], functio
             };
             return openOption;
         }
-        unmounted() {
-            if (this._rootRef) {
-                ojpopupcore.PopupService.getInstance().close({ [ojpopupcore.PopupService.OPTION.POPUP]: this._rootRef });
-            }
+        componentWillUnmount() {
             this._removeCloseListener();
         }
         _removeCloseListener() {
@@ -89,7 +82,6 @@ define(['exports', 'ojs/ojmenu', 'ojs/ojvcomponent', 'ojs/ojpopupcore'], functio
             collision: 'flipfit'
         }
     };
-    VMenu.metadata = { "extension": { "_DEFAULTS": Props } };
 
     exports.VMenu = VMenu;
 

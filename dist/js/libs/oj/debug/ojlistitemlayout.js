@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojvcomponent-element'], function (exports, ojvcomponentElement) { 'use strict';
+define(['exports', 'ojs/ojvcomponent', 'preact'], function (exports, ojvcomponent, preact) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,7 +15,7 @@ define(['exports', 'ojs/ojvcomponent-element'], function (exports, ojvcomponentE
     };
     class ListItemLayoutProps {
     }
-    exports.ListItemLayout = class ListItemLayout extends ojvcomponentElement.ElementVComponent {
+    exports.ListItemLayout = class ListItemLayout extends preact.Component {
         constructor() {
             super(...arguments);
             this._hasContent = (slotContent) => (Array.isArray(slotContent) && slotContent.length > 0) || slotContent;
@@ -23,23 +23,22 @@ define(['exports', 'ojs/ojvcomponent-element'], function (exports, ojvcomponentE
         _getWrappedSlotContent(slotContent, wrapperClasses) {
             if (this._hasContent(slotContent)) {
                 if (wrapperClasses && wrapperClasses.length > 0)
-                    return ojvcomponentElement.h("div", { class: wrapperClasses }, slotContent);
+                    return preact.h("div", { class: wrapperClasses }, slotContent);
                 else
-                    return ojvcomponentElement.h("div", null, slotContent);
+                    return preact.h("div", null, slotContent);
             }
             return null;
         }
         _getWrappedSlotContentWithClickThroughDisabled(slotContent, wrapperClasses) {
             if (this._hasContent(slotContent)) {
                 if (wrapperClasses && wrapperClasses.length > 0)
-                    return (ojvcomponentElement.h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses }, slotContent));
+                    return (preact.h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses }, slotContent));
                 else
-                    return ojvcomponentElement.h("div", { "data-oj-clickthrough": 'disabled' }, slotContent);
+                    return preact.h("div", { "data-oj-clickthrough": 'disabled' }, slotContent);
             }
             return null;
         }
-        render() {
-            const props = this.props;
+        render(props) {
             const hasExtra = this._hasContent(props.metadata) ||
                 this._hasContent(props.action) ||
                 this._hasContent(props.trailing);
@@ -56,26 +55,25 @@ define(['exports', 'ojs/ojvcomponent-element'], function (exports, ojvcomponentE
                 textSlotClass = textSlotClass + ' oj-listitemlayout-start-padding';
                 quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
             }
-            return (ojvcomponentElement.h("oj-list-item-layout", null,
-                ojvcomponentElement.h("div", { class: 'oj-listitemlayout-grid' },
-                    this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector'),
-                    this._getWrappedSlotContent(props.leading, leadingClass),
-                    ojvcomponentElement.h("div", { class: textSlotClass },
-                        this._getWrappedSlotContent(props.overline),
-                        this._getWrappedSlotContent(props.children),
-                        this._getWrappedSlotContent(props.secondary),
-                        this._getWrappedSlotContent(props.tertiary, tertiaryClass)),
-                    hasExtra ? (ojvcomponentElement.h("div", { class: 'oj-listitemlayout-extra' },
-                        this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding'),
-                        this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding'),
-                        this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding'))) : null,
-                    this._getWrappedSlotContent(props.quaternary, quaternaryClass),
-                    this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation'))));
+            return (preact.h("div", { class: 'oj-listitemlayout-grid' },
+                this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector'),
+                this._getWrappedSlotContent(props.leading, leadingClass),
+                preact.h("div", { class: textSlotClass },
+                    this._getWrappedSlotContent(props.overline),
+                    this._getWrappedSlotContent(props.children),
+                    this._getWrappedSlotContent(props.secondary),
+                    this._getWrappedSlotContent(props.tertiary, tertiaryClass)),
+                hasExtra ? (preact.h("div", { class: 'oj-listitemlayout-extra' },
+                    this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding'),
+                    this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding'),
+                    this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding'))) : null,
+                this._getWrappedSlotContent(props.quaternary, quaternaryClass),
+                this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation')));
         }
     };
-    exports.ListItemLayout.metadata = { "extension": { "_DEFAULTS": ListItemLayoutProps }, "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };
+    exports.ListItemLayout.metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };
     exports.ListItemLayout = __decorate([
-        ojvcomponentElement.customElement('oj-list-item-layout')
+        ojvcomponent.customElement('oj-list-item-layout')
     ], exports.ListItemLayout);
 
     Object.defineProperty(exports, '__esModule', { value: true });

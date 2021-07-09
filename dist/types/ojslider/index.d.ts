@@ -1,20 +1,14 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { editableValue, editableValueEventMap, editableValueSettableProperties } from '../ojeditablevalue';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojRangeSlider extends editableValue<Object | null, ojRangeSliderSettableProperties> {
     disabled: boolean;
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -74,6 +68,28 @@ export namespace ojRangeSlider {
     type transientValueChanged = JetElementCustomEvent<ojRangeSlider["transientValue"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojRangeSlider["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<Object | null, ojRangeSliderSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export interface ojRangeSliderEventMap extends editableValueEventMap<Object | null, ojRangeSliderSettableProperties> {
     'ojAnimateEnd': ojRangeSlider.ojAnimateEnd;
@@ -87,14 +103,22 @@ export interface ojRangeSliderEventMap extends editableValueEventMap<Object | nu
     'stepChanged': JetElementCustomEvent<ojRangeSlider["step"]>;
     'transientValueChanged': JetElementCustomEvent<ojRangeSlider["transientValue"]>;
     'valueChanged': JetElementCustomEvent<ojRangeSlider["value"]>;
+    'describedByChanged': JetElementCustomEvent<ojRangeSlider["describedBy"]>;
+    'helpChanged': JetElementCustomEvent<ojRangeSlider["help"]>;
+    'helpHintsChanged': JetElementCustomEvent<ojRangeSlider["helpHints"]>;
+    'labelEdgeChanged': JetElementCustomEvent<ojRangeSlider["labelEdge"]>;
+    'labelHintChanged': JetElementCustomEvent<ojRangeSlider["labelHint"]>;
+    'messagesCustomChanged': JetElementCustomEvent<ojRangeSlider["messagesCustom"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<ojRangeSlider["userAssistanceDensity"]>;
+    'validChanged': JetElementCustomEvent<ojRangeSlider["valid"]>;
 }
 export interface ojRangeSliderSettableProperties extends editableValueSettableProperties<Object | null> {
     disabled: boolean;
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -119,11 +143,11 @@ export interface ojRangeSliderSettablePropertiesLenient extends Partial<ojRangeS
     [key: string]: any;
 }
 export interface ojSlider extends editableValue<number | null, ojSliderSettableProperties> {
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -180,6 +204,30 @@ export namespace ojSlider {
     type typeChanged = JetElementCustomEvent<ojSlider["type"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojSlider["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<number | null, ojSliderSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export interface ojSliderEventMap extends editableValueEventMap<number | null, ojSliderSettableProperties> {
     'ojAnimateEnd': ojSlider.ojAnimateEnd;
@@ -193,13 +241,22 @@ export interface ojSliderEventMap extends editableValueEventMap<number | null, o
     'transientValueChanged': JetElementCustomEvent<ojSlider["transientValue"]>;
     'typeChanged': JetElementCustomEvent<ojSlider["type"]>;
     'valueChanged': JetElementCustomEvent<ojSlider["value"]>;
+    'describedByChanged': JetElementCustomEvent<ojSlider["describedBy"]>;
+    'disabledChanged': JetElementCustomEvent<ojSlider["disabled"]>;
+    'helpChanged': JetElementCustomEvent<ojSlider["help"]>;
+    'helpHintsChanged': JetElementCustomEvent<ojSlider["helpHints"]>;
+    'labelEdgeChanged': JetElementCustomEvent<ojSlider["labelEdge"]>;
+    'labelHintChanged': JetElementCustomEvent<ojSlider["labelHint"]>;
+    'messagesCustomChanged': JetElementCustomEvent<ojSlider["messagesCustom"]>;
+    'userAssistanceDensityChanged': JetElementCustomEvent<ojSlider["userAssistanceDensity"]>;
+    'validChanged': JetElementCustomEvent<ojSlider["valid"]>;
 }
 export interface ojSliderSettableProperties extends editableValueSettableProperties<number | null> {
-    displayOptions: {
-        converterHint: 'display' | 'none';
-        helpInstruction: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
-        messages: 'display' | 'none';
-        validatorHint: 'display' | 'none';
+    displayOptions?: {
+        converterHint?: 'display' | 'none';
+        helpInstruction?: Array<'notewindow' | 'none'> | 'notewindow' | 'none';
+        messages?: 'display' | 'none';
+        validatorHint?: 'display' | 'none';
     };
     labelledBy: string | null;
     max: number | null;
@@ -254,6 +311,28 @@ export namespace RangeSliderElement {
     type transientValueChanged = JetElementCustomEvent<ojRangeSlider["transientValue"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojRangeSlider["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<Object | null, ojRangeSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<Object | null, ojRangeSliderSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
 }
 export namespace SliderElement {
     interface ojAnimateEnd extends CustomEvent<{
@@ -287,4 +366,81 @@ export namespace SliderElement {
     type typeChanged = JetElementCustomEvent<ojSlider["type"]>;
     // tslint:disable-next-line interface-over-type-literal
     type valueChanged = JetElementCustomEvent<ojSlider["value"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type describedByChanged = editableValue.describedByChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type disabledChanged = editableValue.disabledChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpChanged = editableValue.helpChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type helpHintsChanged = editableValue.helpHintsChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelEdgeChanged = editableValue.labelEdgeChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type labelHintChanged = editableValue.labelHintChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type messagesCustomChanged = editableValue.messagesCustomChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type userAssistanceDensityChanged = editableValue.userAssistanceDensityChanged<number | null, ojSliderSettableProperties>;
+    // tslint:disable-next-line interface-over-type-literal
+    type validChanged = editableValue.validChanged<number | null, ojSliderSettableProperties>;
+    //------------------------------------------------------------
+    // End: generated events for inherited properties
+    //------------------------------------------------------------
+}
+export interface RangeSliderIntrinsicProps extends Partial<Readonly<ojRangeSliderSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojRangeSliderEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojRangeSliderEventMap['ojAnimateStart']) => void;
+    ondisabledChanged?: (value: ojRangeSliderEventMap['disabledChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojRangeSliderEventMap['displayOptionsChanged']) => void;
+    onlabelledByChanged?: (value: ojRangeSliderEventMap['labelledByChanged']) => void;
+    onmaxChanged?: (value: ojRangeSliderEventMap['maxChanged']) => void;
+    onminChanged?: (value: ojRangeSliderEventMap['minChanged']) => void;
+    onorientationChanged?: (value: ojRangeSliderEventMap['orientationChanged']) => void;
+    onstepChanged?: (value: ojRangeSliderEventMap['stepChanged']) => void;
+    ontransientValueChanged?: (value: ojRangeSliderEventMap['transientValueChanged']) => void;
+    onvalueChanged?: (value: ojRangeSliderEventMap['valueChanged']) => void;
+    ondescribedByChanged?: (value: ojRangeSliderEventMap['describedByChanged']) => void;
+    onhelpChanged?: (value: ojRangeSliderEventMap['helpChanged']) => void;
+    onhelpHintsChanged?: (value: ojRangeSliderEventMap['helpHintsChanged']) => void;
+    onlabelEdgeChanged?: (value: ojRangeSliderEventMap['labelEdgeChanged']) => void;
+    onlabelHintChanged?: (value: ojRangeSliderEventMap['labelHintChanged']) => void;
+    onmessagesCustomChanged?: (value: ojRangeSliderEventMap['messagesCustomChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojRangeSliderEventMap['userAssistanceDensityChanged']) => void;
+    onvalidChanged?: (value: ojRangeSliderEventMap['validChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface SliderIntrinsicProps extends Partial<Readonly<ojSliderSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojAnimateEnd?: (value: ojSliderEventMap['ojAnimateEnd']) => void;
+    onojAnimateStart?: (value: ojSliderEventMap['ojAnimateStart']) => void;
+    ondisplayOptionsChanged?: (value: ojSliderEventMap['displayOptionsChanged']) => void;
+    onlabelledByChanged?: (value: ojSliderEventMap['labelledByChanged']) => void;
+    onmaxChanged?: (value: ojSliderEventMap['maxChanged']) => void;
+    onminChanged?: (value: ojSliderEventMap['minChanged']) => void;
+    onorientationChanged?: (value: ojSliderEventMap['orientationChanged']) => void;
+    onstepChanged?: (value: ojSliderEventMap['stepChanged']) => void;
+    ontransientValueChanged?: (value: ojSliderEventMap['transientValueChanged']) => void;
+    ontypeChanged?: (value: ojSliderEventMap['typeChanged']) => void;
+    onvalueChanged?: (value: ojSliderEventMap['valueChanged']) => void;
+    ondescribedByChanged?: (value: ojSliderEventMap['describedByChanged']) => void;
+    ondisabledChanged?: (value: ojSliderEventMap['disabledChanged']) => void;
+    onhelpChanged?: (value: ojSliderEventMap['helpChanged']) => void;
+    onhelpHintsChanged?: (value: ojSliderEventMap['helpHintsChanged']) => void;
+    onlabelEdgeChanged?: (value: ojSliderEventMap['labelEdgeChanged']) => void;
+    onlabelHintChanged?: (value: ojSliderEventMap['labelHintChanged']) => void;
+    onmessagesCustomChanged?: (value: ojSliderEventMap['messagesCustomChanged']) => void;
+    onuserAssistanceDensityChanged?: (value: ojSliderEventMap['userAssistanceDensityChanged']) => void;
+    onvalidChanged?: (value: ojSliderEventMap['validChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-range-slider": RangeSliderIntrinsicProps;
+            "oj-slider": SliderIntrinsicProps;
+        }
+    }
 }

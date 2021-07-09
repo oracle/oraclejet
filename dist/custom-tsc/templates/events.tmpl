@@ -17,13 +17,12 @@ for (let event in events){
     accept: (param: Promise<void>) => void;
   <?js
   }?>
-    [propName: string]: any;
   }>{}
-  <?js 
-  } 
+  <?js
+  }
   else { // event detail was specified as a type literal?>
   interface <?js= eventInterfaceName ?> extends CustomEvent<{
-  <?js 
+  <?js
   if (events[event]['detail']) {
     const details = events[event]['detail'];
     for (let detail in details) {?>
@@ -31,7 +30,7 @@ for (let event in events){
     <?js
     }
   }?>
-    [propName: string]: any;}>{}
+    }>{}
   <?js
   }
 }?>

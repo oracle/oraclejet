@@ -1220,21 +1220,6 @@
         @extend .oj-fwk-icon-arrow02-s;
     }
 
-    // Option defaults
-    //----------------------------------
-
-
-    $buttonDefaultOptions: ();
-
-    @if ($buttonChromingOptionDefault != null) {
-        $buttonDefaultOptions: map-merge($buttonDefaultOptions, (chroming: $buttonChromingOptionDefault));
-    }
-
-    .oj-button-option-defaults {
-        font-family: oj-json-from-map($buttonDefaultOptions);
-    }
-   
-  
      // alternate button colors
      //----------------------------------
      .oj-button-primary {

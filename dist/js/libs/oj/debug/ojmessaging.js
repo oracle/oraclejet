@@ -11,13 +11,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * Constructs a message object.
    * <p><strong>NOTE:</strong>  Instead of using the constructor, please use an Object
    * that duck-types Message - has summary, detail, and severity properties.
@@ -82,7 +75,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
     /**
      * Used when data inaccuracies occur when completing a field and that needs fixing before user can
      * continue. This has a lower severity level than fatal.
-     * fatal.
      */
     ERROR: 'error',
 
@@ -91,6 +83,7 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
      * severity level.
      * @const
      * @export
+     * @ojdeprecated {since: '11.0.0', description: 'Both "FATAL" and "ERROR" apply the same marker style. Use "ERROR" instead.'}
      */
     FATAL: 'fatal'
   };
@@ -102,6 +95,9 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
    * @export
    */
   Message.SEVERITY_LEVEL = {
+    /**
+     * @ojdeprecated {since: '11.0.0', description: 'Both "FATAL" and "ERROR" apply the same marker style. Use "ERROR" instead.'}
+     */
     FATAL: 5,
     ERROR: 4,
     WARNING: 3,
@@ -294,14 +290,6 @@ define(['ojs/ojcore-base', 'jquery'], function (oj, $) { 'use strict';
     Message.SEVERITY_TYPE.ERROR,
     Message.SEVERITY_TYPE.FATAL
   ];
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Extends Message to represent a component specific message, this defines options that control

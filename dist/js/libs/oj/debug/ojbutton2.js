@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-element', 'ojs/ojvmenu', 'ojs/ojvcomponent-binding', 'ojs/ojthemeutils'], function (exports, DomUtils, GestureUtils, ojvcomponentElement, ojvmenu, ojvcomponentBinding, ThemeUtils) { 'use strict';
+define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', 'preact', 'ojs/ojvmenu', 'ojs/ojvcomponent-binding', 'ojs/ojthemeutils'], function (exports, DomUtils, GestureUtils, ojvcomponent, preact, ojvmenu, ojvcomponentBinding, ThemeUtils) { 'use strict';
 
     var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -14,52 +14,109 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var Button2_1;
-    class Props {
-        constructor() {
-            this.disabled = false;
-            this.display = 'all';
-            this.translations = {};
-        }
-    }
-    __decorate([
-        ojvcomponentElement.dynamicDefault(getChromingDefault)
-    ], Props.prototype, "chroming", void 0);
     function getChromingDefault() {
-        return ((ThemeUtils.parseJSONFromFontFamily('oj-button-option-defaults') || {}).chroming || 'solid');
+        return ThemeUtils.getCachedCSSVarValues(['--oj-private-button-global-chroming-default'])[0];
     }
-    exports.Button2 = Button2_1 = class Button2 extends ojvcomponentElement.ElementVComponent {
+    exports.Button2 = Button2_1 = class Button2 extends preact.Component {
         constructor(props) {
             super(props);
+            this._rootRef = preact.createRef();
             this._handleContextMenuGesture = (event, eventType) => {
                 const contextMenuEvent = {
                     event: event,
                     eventType: eventType
                 };
                 event.preventDefault();
-                this.updateState({ contextMenuTriggerEvent: contextMenuEvent });
+                this.setState({ contextMenuTriggerEvent: contextMenuEvent });
+            };
+            this._handleTouchstart = (event) => {
+                this.setState({ active: true });
+            };
+            this._handleTouchend = (event) => {
+                this.setState({ active: false });
+            };
+            this._handleFocusIn = (event) => {
+                this.setState({ focus: true });
+                if (this._rootRef.current) {
+                    this.focusInHandler(this._rootRef.current);
+                }
+            };
+            this._handleFocusOut = (event) => {
+                this.setState({ focus: false });
+                if (this._rootRef.current) {
+                    this.focusOutHandler(this._rootRef.current);
+                }
+            };
+            this._handleMouseenter = (event) => {
+                if (!DomUtils.recentTouchEnd()) {
+                    if (this === Button2_1._lastActive) {
+                        this.setState({ active: true });
+                    }
+                    this.setState({ hover: true });
+                }
+            };
+            this._handleMouseleave = (event) => {
+                this.setState({ hover: false, active: false });
+            };
+            this._handleMousedown = (event) => {
+                if (event.which === 1 && !DomUtils.recentTouchEnd()) {
+                    this.setState({ active: true });
+                    Button2_1._lastActive = this;
+                    const docMouseupListener = () => {
+                        Button2_1._lastActive = null;
+                        document.removeEventListener('mouseup', docMouseupListener, true);
+                    };
+                    document.addEventListener('mouseup', docMouseupListener, true);
+                }
+            };
+            this._handleMouseup = (event) => {
+                this.setState({ active: false });
+            };
+            this._handleClick = (event) => {
+                var _a, _b;
+                if (event.detail <= 1) {
+                    (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
+                }
+            };
+            this._handleKeydown = (event) => {
+                if (event.keyCode === 32 || event.keyCode === 13) {
+                    this.setState({ active: true });
+                }
+            };
+            this._handleKeyup = (event) => {
+                this.setState({ active: false });
+            };
+            this._handleFocus = (event) => {
+                var _a, _b;
+                (_b = (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.current) === null || _b === void 0 ? void 0 : _b.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
+            };
+            this._handleBlur = (event) => {
+                var _a;
+                this.setState({ active: false });
+                (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.current.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
             };
             this._onCloseCallback = (event) => {
                 if (this.state.contextMenuTriggerEvent) {
-                    this.updateState({ contextMenuTriggerEvent: null });
+                    this.setState({ contextMenuTriggerEvent: null });
                 }
             };
             this.state = {};
+            this.uniquePrefix = props.id ? props.id + ojvcomponent.getUniqueId() : ojvcomponent.getUniqueId();
         }
-        render() {
-            const props = this.props;
+        render(props, state) {
             const defaultSlot = props.children;
             const startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-start');
             const endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-end');
-            let ariaLabel = this.props['aria-label'];
-            let ariaLabelledBy = this.props['aria-labelledby'];
+            let ariaLabel = props['aria-label'];
+            let ariaLabelledBy = props['aria-labelledby'];
             const hasDefaultAriaAttribute = ariaLabel || ariaLabelledBy;
-            let title = props.title;
             let defaultContent = null;
             let clickHandler = null;
             let ariaLabelledById = null;
+            let title = props.title;
             const buttonLabel = props.label || defaultSlot;
             if (buttonLabel) {
-                title = title || props.label || this.state.derivedTitle;
+                title = this.state.derivedTitle || title || props.label;
                 if (props.display === 'icons' && (startIconContent || endIconContent)) {
                     if (props.label) {
                         if (!hasDefaultAriaAttribute) {
@@ -68,35 +125,35 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
                     }
                     else {
                         if (!hasDefaultAriaAttribute) {
-                            ariaLabelledById = this.uniqueId() + '|text';
+                            ariaLabelledById = this.uniquePrefix + '|text';
                             ariaLabelledBy = ariaLabelledById;
                         }
-                        defaultContent = (ojvcomponentElement.h("span", { class: 'oj-button-text oj-helper-hidden-accessible', id: ariaLabelledById }, buttonLabel));
+                        defaultContent = (preact.h("span", { class: 'oj-button-text oj-helper-hidden-accessible', id: ariaLabelledById }, buttonLabel));
                     }
                 }
                 else {
                     if (!hasDefaultAriaAttribute) {
-                        ariaLabelledById = this.uniqueId() + '|text';
+                        ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
-                    defaultContent = (ojvcomponentElement.h("span", { class: 'oj-button-text', id: ariaLabelledById }, buttonLabel));
+                    defaultContent = (preact.h("span", { class: 'oj-button-text', id: ariaLabelledById }, buttonLabel));
                 }
             }
-            defaultContent = (ojvcomponentElement.h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
-            const labelContent = (ojvcomponentElement.h("div", { class: 'oj-button-label' },
+            defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
+            const labelContent = (preact.h("div", { class: 'oj-button-label' },
                 startIconContent,
                 defaultContent,
                 endIconContent));
             let buttonContent;
             if (props.disabled) {
-                buttonContent = (ojvcomponentElement.h("button", { class: 'oj-button-button', "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, disabled: true }, labelContent));
+                buttonContent = (preact.h("button", { class: 'oj-button-button', "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, disabled: true }, labelContent));
             }
             else {
                 clickHandler = this._handleClick;
-                buttonContent = (ojvcomponentElement.h("button", { class: 'oj-button-button', ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, onTouchstart: this._handleTouchstart, onTouchend: this._handleTouchend, onTouchcancel: this._handleTouchend, onMouseenter: this._handleMouseenter, onMouseleave: this._handleMouseleave, onMousedown: this._handleMousedown, onMouseup: this._handleMouseup, onKeydown: this._handleKeydown, onKeyup: this._handleKeyup, onFocusin: this._handleFocusin, onFocusout: this._handleFocusout, onFocus: this._handleFocus, onBlur: this._handleBlur }, labelContent));
+                buttonContent = (preact.h("button", { class: 'oj-button-button', ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup, onFocus: this._handleFocus, onBlur: this._handleBlur }, labelContent));
             }
             const rootClasses = this._getRootClasses(startIconContent, endIconContent);
-            return (ojvcomponentElement.h("oj-button", { class: rootClasses, title: title, onClick: clickHandler, ref: (elem) => (this._rootRef = elem) },
+            return (preact.h(ojvcomponent.Root, { class: rootClasses, id: props.id, title: title, onClick: clickHandler, ref: this._rootRef },
                 buttonContent,
                 this._renderContextMenu()));
         }
@@ -104,7 +161,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
             if (!this.state.contextMenuTriggerEvent || !this.props.contextMenu) {
                 return null;
             }
-            return (ojvcomponentElement.h(ojvmenu.VMenu, { eventObj: this.state.contextMenuTriggerEvent, launcherElement: this._buttonRef, onCloseCallback: this._onCloseCallback }, [this.props.contextMenu]));
+            return (preact.h(ojvmenu.VMenu, { eventObj: this.state.contextMenuTriggerEvent, launcherElement: this._buttonRef, onCloseCallback: this._onCloseCallback }, [this.props.contextMenu]));
         }
         _processIcon(icon, slotClass) {
             let iconContent;
@@ -114,7 +171,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
                 });
             }
             else if (icon) {
-                iconContent = ojvcomponentElement.h("span", { class: slotClass }, icon);
+                iconContent = preact.h("span", { class: slotClass }, icon);
             }
             return iconContent;
         }
@@ -135,16 +192,6 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
                 if (this.state.active) {
                     defaultState = false;
                     classList += ' oj-active';
-                }
-                if (this.state.focus) {
-                    if (defaultState) {
-                        classList += ' oj-focus-only';
-                    }
-                    defaultState = false;
-                    classList += ' oj-focus';
-                    if (!DomUtils.recentPointer()) {
-                        classList += ' oj-focus-highlight';
-                    }
                 }
             }
             if (defaultState) {
@@ -192,7 +239,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
             const callback = () => {
                 const title = this._getTextContent();
                 if (title != this.state.derivedTitle) {
-                    this.updateState({ derivedTitle: title });
+                    this.setState({ derivedTitle: title });
                 }
             };
             this._mutationObserver = new MutationObserver(callback);
@@ -201,14 +248,29 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
         _needsContextMenuDetection(props) {
             return props.contextMenu && !props.disabled;
         }
-        mounted() {
+        componentDidMount() {
             this._updateDerivedTitle();
             if (this._needsContextMenuDetection(this.props)) {
-                GestureUtils.startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+                GestureUtils.startDetectContextMenuGesture(this._rootRef.current, this._handleContextMenuGesture);
             }
+            this._rootRef.current.addEventListener('touchstart', this._handleTouchstart, { passive: true });
+            this._rootRef.current.addEventListener('touchend', this._handleTouchend, { passive: false });
+            this._rootRef.current.addEventListener('touchcancel', this._handleTouchend, {
+                passive: true
+            });
+            DomUtils.makeFocusable({
+                applyHighlight: true,
+                setupHandlers: (focusInHandler, focusOutHandler) => {
+                    let noJQHandlers = DomUtils.getNoJQFocusHandlers(focusInHandler, focusOutHandler);
+                    this.focusInHandler = noJQHandlers.focusIn;
+                    this.focusOutHandler = noJQHandlers.focusOut;
+                }
+            });
         }
-        updated(oldProps) {
-            this._updateDerivedTitle();
+        componentDidUpdate(oldProps) {
+            if (oldProps.display != this.props.display) {
+                this._updateDerivedTitle();
+            }
             this._updateContextMenuDetection(oldProps);
         }
         _updateDerivedTitle() {
@@ -222,7 +284,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
                 this._addMutationObserver();
             }
             if (title != this.state.derivedTitle) {
-                this.updateState({ derivedTitle: title });
+                this.setState({ derivedTitle: title });
             }
         }
         _updateContextMenuDetection(oldProps) {
@@ -230,14 +292,14 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
             const newNeedsDetect = this._needsContextMenuDetection(this.props);
             if (oldNeedsDetect != newNeedsDetect) {
                 if (newNeedsDetect) {
-                    GestureUtils.startDetectContextMenuGesture(this._rootRef, this._handleContextMenuGesture);
+                    GestureUtils.startDetectContextMenuGesture(this._rootRef.current, this._handleContextMenuGesture);
                 }
                 else {
-                    GestureUtils.stopDetectContextMenuGesture(this._rootRef);
+                    GestureUtils.stopDetectContextMenuGesture(this._rootRef.current);
                 }
             }
         }
-        static updateStateFromProps(props) {
+        static getDerivedStateFromProps(props) {
             if (props.disabled) {
                 return { contextMenuTriggerEvent: null };
             }
@@ -251,75 +313,15 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
             }
             return null;
         }
-        unmounted() {
+        componentWillUnmount() {
             if (this._mutationObserver) {
                 this._mutationObserver.disconnect();
                 this._mutationObserver = null;
             }
-            GestureUtils.stopDetectContextMenuGesture(this._rootRef);
-        }
-        _handleTouchstart(event) {
-            this.updateState({ active: true });
-        }
-        _handleTouchend(event) {
-            this.updateState({ active: false });
-        }
-        _handleMouseenter(event) {
-            if (!DomUtils.recentTouchEnd()) {
-                if (this === Button2_1._lastActive) {
-                    this.updateState({ active: true });
-                }
-                this.updateState({ hover: true });
-            }
-        }
-        _handleMouseleave(event) {
-            this.updateState({ hover: false, active: false });
-        }
-        _handleMousedown(event) {
-            if (event.which === 1 && !DomUtils.recentTouchEnd()) {
-                this.updateState({ active: true });
-                Button2_1._lastActive = this;
-                const docMouseupListener = () => {
-                    Button2_1._lastActive = null;
-                    document.removeEventListener('mouseup', docMouseupListener, true);
-                };
-                document.addEventListener('mouseup', docMouseupListener, true);
-            }
-        }
-        _handleMouseup(event) {
-            this.updateState({ active: false });
-        }
-        _handleClick(event) {
-            var _a, _b;
-            if (event.detail <= 1) {
-                (_b = (_a = this.props).onOjAction) === null || _b === void 0 ? void 0 : _b.call(_a, { originalEvent: event });
-            }
-        }
-        _handleKeydown(event) {
-            if (event.keyCode === 32 || event.keyCode === 13) {
-                this.updateState({ active: true });
-            }
-        }
-        _handleKeyup(event) {
-            this.updateState({ active: false });
-        }
-        _handleFocusin(event) {
-            this.updateState({ focus: true });
-        }
-        _handleFocusout(event) {
-            this.updateState({ focus: false });
-        }
-        _handleFocus(event) {
-            var _a;
-            (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('focus', { relatedTarget: event.relatedTarget }));
-        }
-        _handleBlur(event) {
-            var _a;
-            this.updateState({ active: false });
-            (_a = this._rootRef) === null || _a === void 0 ? void 0 : _a.dispatchEvent(new FocusEvent('blur', { relatedTarget: event.relatedTarget }));
+            GestureUtils.stopDetectContextMenuGesture(this._rootRef.current);
         }
         refresh() {
-            this.render();
+            this.setState({ active: false });
         }
         focus() {
             var _a;
@@ -339,48 +341,14 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent-ele
         callToAction: 'oj-button-cta-chrome',
         danger: 'oj-button-danger-chrome oj-button-full-chrome'
     };
-    exports.Button2.metadata = { "extension": { "_DEFAULTS": Props, "_ROOT_PROPS_MAP": { "title": 1, "aria-label": 1, "aria-labelledby": 1 } }, "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean", "value": false }, "display": { "type": "string", "enumValues": ["all", "icons"], "value": "all" }, "label": { "type": "string" }, "translations": { "type": "object|null", "value": {} }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
-    __decorate([
-        ojvcomponentElement.listener({ passive: true })
-    ], exports.Button2.prototype, "_handleTouchstart", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleTouchend", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleMouseenter", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleMouseleave", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleMousedown", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleMouseup", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleClick", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleKeydown", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleKeyup", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleFocusin", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleFocusout", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleFocus", null);
-    __decorate([
-        ojvcomponentElement.listener()
-    ], exports.Button2.prototype, "_handleBlur", null);
+    exports.Button2.defaultProps = {
+        disabled: false,
+        display: 'all',
+        chroming: getChromingDefault()
+    };
+    exports.Button2.metadata = { "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean" }, "display": { "type": "string", "enumValues": ["all", "icons"] }, "label": { "type": "string" }, "translations": { "type": "object|null" }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["id", "title", "aria-label", "aria-labelledby"] }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
     exports.Button2 = Button2_1 = __decorate([
-        ojvcomponentElement.customElement('oj-button')
+        ojvcomponent.customElement('oj-button')
     ], exports.Button2);
 
     Object.defineProperty(exports, '__esModule', { value: true });

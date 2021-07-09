@@ -8,14 +8,6 @@
 import { Obj, EventManager, MouseEvent, EventFactory, Easing, Playable, Timer, Container, Rect, Matrix, Dimension, ClipPath, Animator, Point, Rectangle, Agent, ToolkitUtils, KeyboardHandler, KeyboardEvent, BaseComponent } from 'ojs/ojdvt-toolkit';
 
 /**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @constructor
  * @param {dvt.Context} context The rendering context
  * @param {function} callback The callback for this PanZoomCanvasEventManager
@@ -683,14 +675,6 @@ PanZoomCanvasEventManager.prototype.StoreInfoByEventType = function(key) {
   }
   return PanZoomCanvasEventManager.superclass.StoreInfoByEventType.call(this, key);
 };
-
-/**
- * @license
- * Copyright (c) 2011 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
   *  Creates a canvas that supports panning and zooming.
@@ -1836,14 +1820,6 @@ PanZoomCanvas.prototype.getCursor = function(panOn) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  *  @param {dvt.EventManager} manager The owning dvt.EventManager
  *  @class PanZoomCanvasKeyboardHandler
  *  @extends {dvt.KeyboardHandler}
@@ -1899,14 +1875,6 @@ PanZoomCanvasKeyboardHandler.prototype.processKeyDown = function(event) {
     return PanZoomCanvasKeyboardHandler.superclass.processKeyDown.call(this, event);
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * A component that supports panning and zooming

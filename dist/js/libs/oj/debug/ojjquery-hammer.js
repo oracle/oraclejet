@@ -9,14 +9,6 @@ define(['ojs/ojlogger', 'hammerjs', 'jquery'], function (Logger, Hammer, $) { 'u
 
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
 
-  /**
-   * @license
-   * Copyright (c) 2015 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
   if (Hammer) {
       /** @export */
     $.fn.ojHammer = function (options) {

@@ -1,76 +1,71 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBaseComponent<ojTreemapSettableProperties<K, D>> {
-    animationDuration: number;
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    animationUpdateColor: string;
-    as: string;
-    colorLabel: string;
+    animationDuration?: number;
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    animationUpdateColor?: string;
+    as?: string;
+    colorLabel?: string;
     data: DataProvider<K, D> | null;
-    displayLevels: number;
-    drilling: 'on' | 'off';
-    groupGaps: 'all' | 'none' | 'outer';
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverBehaviorDelay: number;
-    isolatedNode: any;
-    layout: 'sliceAndDiceHorizontal' | 'sliceAndDiceVertical' | 'squarified';
-    nodeContent: {
+    displayLevels?: number;
+    drilling?: 'on' | 'off';
+    groupGaps?: 'all' | 'none' | 'outer';
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightMode?: 'categories' | 'descendants';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverBehaviorDelay?: number;
+    isolatedNode?: any;
+    layout?: 'sliceAndDiceHorizontal' | 'sliceAndDiceVertical' | 'squarified';
+    nodeContent?: {
         renderer: ((context: ojTreemap.NodeContentContext<K, D>) => ({
             insert: Element | string;
         }));
     };
-    nodeDefaults: {
-        groupLabelDisplay: 'node' | 'off' | 'header';
-        header: {
-            backgroundColor: string;
-            borderColor: string;
-            hoverBackgroundColor: string;
-            hoverInnerColor: string;
-            hoverOuterColor: string;
-            isolate: 'off' | 'on';
-            labelHalign: 'center' | 'end' | 'start';
-            labelStyle: CSSStyleDeclaration;
-            selectedBackgroundColor: string;
-            selectedInnerColor: string;
-            selectedOuterColor: string;
-            useNodeColor: 'on' | 'off';
+    nodeDefaults?: {
+        groupLabelDisplay?: 'node' | 'off' | 'header';
+        header?: {
+            backgroundColor?: string;
+            borderColor?: string;
+            hoverBackgroundColor?: string;
+            hoverInnerColor?: string;
+            hoverOuterColor?: string;
+            isolate?: 'off' | 'on';
+            labelHalign?: 'center' | 'end' | 'start';
+            labelStyle?: CSSStyleDeclaration;
+            selectedBackgroundColor?: string;
+            selectedInnerColor?: string;
+            selectedOuterColor?: string;
+            useNodeColor?: 'on' | 'off';
         };
-        hoverColor: string;
-        labelDisplay: 'off' | 'node';
-        labelHalign: 'start' | 'end' | 'center';
-        labelMinLength: number;
-        labelStyle: CSSStyleDeclaration;
-        labelValign: 'top' | 'bottom' | 'center';
-        selectedInnerColor: string;
-        selectedOuterColor: string;
+        hoverColor?: string;
+        labelDisplay?: 'off' | 'node';
+        labelHalign?: 'start' | 'end' | 'center';
+        labelMinLength?: number;
+        labelStyle?: CSSStyleDeclaration;
+        labelValign?: 'top' | 'bottom' | 'center';
+        selectedInnerColor?: string;
+        selectedOuterColor?: string;
     };
-    nodeSeparators: 'bevels' | 'gaps';
-    rootNode: any;
-    selection: any[];
-    selectionMode: 'none' | 'single' | 'multiple';
-    sizeLabel: string;
-    sorting: 'on' | 'off';
-    tooltip: {
+    nodeSeparators?: 'bevels' | 'gaps';
+    rootNode?: any;
+    selection?: any[];
+    selectionMode?: 'none' | 'single' | 'multiple';
+    sizeLabel?: string;
+    sorting?: 'on' | 'off';
+    tooltip?: {
         renderer: ((context: ojTreemap.TooltipContext<K, D>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
+    touchResponse?: 'touchStart' | 'auto';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -143,6 +138,8 @@ export namespace ojTreemap {
     // tslint:disable-next-line interface-over-type-literal
     type highlightMatchChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightMatch"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type highlightModeChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type highlightedCategoriesChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightedCategories"]>;
     // tslint:disable-next-line interface-over-type-literal
     type hoverBehaviorChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["hoverBehavior"]>;
@@ -172,6 +169,11 @@ export namespace ojTreemap {
     type tooltipChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["touchResponse"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends Node<K> | any> = dvtBaseComponent.trackResizeChanged<ojTreemapSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type DataContext = {
         color: string;
@@ -181,7 +183,7 @@ export namespace ojTreemap {
         tooltip: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Node<K> = {
+    type Node<K, D = any> = {
         categories?: string[];
         color?: string;
         drilling?: 'inherit' | 'off' | 'on';
@@ -202,10 +204,10 @@ export namespace ojTreemap {
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: NodeShortDescContext<K, D>) => string));
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
-        value?: number;
+        value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContentContext<K, D> = {
@@ -224,6 +226,14 @@ export namespace ojTreemap {
     type NodeContext = {
         indexPath: number[];
         subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeShortDescContext<K, D> = {
+        data: Node<K>;
+        id: K;
+        itemData: D;
+        label: string;
+        value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeTemplateContext = {
@@ -261,6 +271,7 @@ export interface ojTreemapEventMap<K, D extends ojTreemap.Node<K> | any> extends
     'groupGapsChanged': JetElementCustomEvent<ojTreemap<K, D>["groupGaps"]>;
     'hiddenCategoriesChanged': JetElementCustomEvent<ojTreemap<K, D>["hiddenCategories"]>;
     'highlightMatchChanged': JetElementCustomEvent<ojTreemap<K, D>["highlightMatch"]>;
+    'highlightModeChanged': JetElementCustomEvent<ojTreemap<K, D>["highlightMode"]>;
     'highlightedCategoriesChanged': JetElementCustomEvent<ojTreemap<K, D>["highlightedCategories"]>;
     'hoverBehaviorChanged': JetElementCustomEvent<ojTreemap<K, D>["hoverBehavior"]>;
     'hoverBehaviorDelayChanged': JetElementCustomEvent<ojTreemap<K, D>["hoverBehaviorDelay"]>;
@@ -276,69 +287,71 @@ export interface ojTreemapEventMap<K, D extends ojTreemap.Node<K> | any> extends
     'sortingChanged': JetElementCustomEvent<ojTreemap<K, D>["sorting"]>;
     'tooltipChanged': JetElementCustomEvent<ojTreemap<K, D>["tooltip"]>;
     'touchResponseChanged': JetElementCustomEvent<ojTreemap<K, D>["touchResponse"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojTreemap<K, D>["trackResize"]>;
 }
 export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | any> extends dvtBaseComponentSettableProperties {
-    animationDuration: number;
-    animationOnDataChange: 'auto' | 'none';
-    animationOnDisplay: 'auto' | 'none';
-    animationUpdateColor: string;
-    as: string;
-    colorLabel: string;
+    animationDuration?: number;
+    animationOnDataChange?: 'auto' | 'none';
+    animationOnDisplay?: 'auto' | 'none';
+    animationUpdateColor?: string;
+    as?: string;
+    colorLabel?: string;
     data: DataProvider<K, D> | null;
-    displayLevels: number;
-    drilling: 'on' | 'off';
-    groupGaps: 'all' | 'none' | 'outer';
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverBehaviorDelay: number;
-    isolatedNode: any;
-    layout: 'sliceAndDiceHorizontal' | 'sliceAndDiceVertical' | 'squarified';
-    nodeContent: {
+    displayLevels?: number;
+    drilling?: 'on' | 'off';
+    groupGaps?: 'all' | 'none' | 'outer';
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightMode?: 'categories' | 'descendants';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverBehaviorDelay?: number;
+    isolatedNode?: any;
+    layout?: 'sliceAndDiceHorizontal' | 'sliceAndDiceVertical' | 'squarified';
+    nodeContent?: {
         renderer: ((context: ojTreemap.NodeContentContext<K, D>) => ({
             insert: Element | string;
         }));
     };
-    nodeDefaults: {
-        groupLabelDisplay: 'node' | 'off' | 'header';
-        header: {
-            backgroundColor: string;
-            borderColor: string;
-            hoverBackgroundColor: string;
-            hoverInnerColor: string;
-            hoverOuterColor: string;
-            isolate: 'off' | 'on';
-            labelHalign: 'center' | 'end' | 'start';
-            labelStyle: CSSStyleDeclaration;
-            selectedBackgroundColor: string;
-            selectedInnerColor: string;
-            selectedOuterColor: string;
-            useNodeColor: 'on' | 'off';
+    nodeDefaults?: {
+        groupLabelDisplay?: 'node' | 'off' | 'header';
+        header?: {
+            backgroundColor?: string;
+            borderColor?: string;
+            hoverBackgroundColor?: string;
+            hoverInnerColor?: string;
+            hoverOuterColor?: string;
+            isolate?: 'off' | 'on';
+            labelHalign?: 'center' | 'end' | 'start';
+            labelStyle?: CSSStyleDeclaration;
+            selectedBackgroundColor?: string;
+            selectedInnerColor?: string;
+            selectedOuterColor?: string;
+            useNodeColor?: 'on' | 'off';
         };
-        hoverColor: string;
-        labelDisplay: 'off' | 'node';
-        labelHalign: 'start' | 'end' | 'center';
-        labelMinLength: number;
-        labelStyle: CSSStyleDeclaration;
-        labelValign: 'top' | 'bottom' | 'center';
-        selectedInnerColor: string;
-        selectedOuterColor: string;
+        hoverColor?: string;
+        labelDisplay?: 'off' | 'node';
+        labelHalign?: 'start' | 'end' | 'center';
+        labelMinLength?: number;
+        labelStyle?: CSSStyleDeclaration;
+        labelValign?: 'top' | 'bottom' | 'center';
+        selectedInnerColor?: string;
+        selectedOuterColor?: string;
     };
-    nodeSeparators: 'bevels' | 'gaps';
-    rootNode: any;
-    selection: any[];
-    selectionMode: 'none' | 'single' | 'multiple';
-    sizeLabel: string;
-    sorting: 'on' | 'off';
-    tooltip: {
+    nodeSeparators?: 'bevels' | 'gaps';
+    rootNode?: any;
+    selection?: any[];
+    selectionMode?: 'none' | 'single' | 'multiple';
+    sizeLabel?: string;
+    sorting?: 'on' | 'off';
+    tooltip?: {
         renderer: ((context: ojTreemap.TooltipContext<K, D>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    touchResponse: 'touchStart' | 'auto';
+    touchResponse?: 'touchStart' | 'auto';
     translations: {
         componentName?: string;
         labelAndValue?: string;
@@ -366,7 +379,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
 export interface ojTreemapSettablePropertiesLenient<K, D extends ojTreemap.Node<K> | any> extends Partial<ojTreemapSettableProperties<K, D>> {
     [key: string]: any;
 }
-export interface ojTreemapNode extends JetElement<ojTreemapNodeSettableProperties> {
+export interface ojTreemapNode<K = any, D = any> extends dvtBaseComponent<ojTreemapNodeSettableProperties<K, D>> {
     categories?: string[];
     color?: string;
     drilling?: 'on' | 'off' | 'inherit';
@@ -385,71 +398,72 @@ export interface ojTreemapNode extends JetElement<ojTreemapNodeSettablePropertie
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     selectable?: 'off' | 'auto';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     value: number;
-    addEventListener<T extends keyof ojTreemapNodeEventMap>(type: T, listener: (this: HTMLElement, ev: ojTreemapNodeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    addEventListener<T extends keyof ojTreemapNodeEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreemapNodeEventMap<K, D>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojTreemapNodeSettableProperties>(property: T): ojTreemapNode[T];
+    getProperty<T extends keyof ojTreemapNodeSettableProperties<K, D>>(property: T): ojTreemapNode<K, D>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojTreemapNodeSettableProperties>(property: T, value: ojTreemapNodeSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTreemapNodeSettableProperties>): void;
-    setProperties(properties: ojTreemapNodeSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojTreemapNodeSettableProperties<K, D>>(property: T, value: ojTreemapNodeSettableProperties<K, D>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojTreemapNodeSettableProperties<K, D>>): void;
+    setProperties(properties: ojTreemapNodeSettablePropertiesLenient<K, D>): void;
 }
 export namespace ojTreemapNode {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojTreemapNode["categories"]>;
+    type categoriesChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojTreemapNode["color"]>;
+    type colorChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type drillingChanged = JetElementCustomEvent<ojTreemapNode["drilling"]>;
+    type drillingChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["drilling"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type groupLabelDisplayChanged = JetElementCustomEvent<ojTreemapNode["groupLabelDisplay"]>;
+    type groupLabelDisplayChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["groupLabelDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type headerChanged = JetElementCustomEvent<ojTreemapNode["header"]>;
+    type headerChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["header"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojTreemapNode["label"]>;
+    type labelChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelDisplayChanged = JetElementCustomEvent<ojTreemapNode["labelDisplay"]>;
+    type labelDisplayChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelHalignChanged = JetElementCustomEvent<ojTreemapNode["labelHalign"]>;
+    type labelHalignChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelHalign"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojTreemapNode["labelStyle"]>;
+    type labelStyleChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelValignChanged = JetElementCustomEvent<ojTreemapNode["labelValign"]>;
+    type labelValignChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelValign"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type patternChanged = JetElementCustomEvent<ojTreemapNode["pattern"]>;
+    type patternChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["pattern"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojTreemapNode["selectable"]>;
+    type selectableChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojTreemapNode["shortDesc"]>;
+    type shortDescChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojTreemapNode["svgClassName"]>;
+    type svgClassNameChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojTreemapNode["svgStyle"]>;
+    type svgStyleChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojTreemapNode["value"]>;
+    type valueChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["value"]>;
 }
-export interface ojTreemapNodeEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojTreemapNode["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojTreemapNode["color"]>;
-    'drillingChanged': JetElementCustomEvent<ojTreemapNode["drilling"]>;
-    'groupLabelDisplayChanged': JetElementCustomEvent<ojTreemapNode["groupLabelDisplay"]>;
-    'headerChanged': JetElementCustomEvent<ojTreemapNode["header"]>;
-    'labelChanged': JetElementCustomEvent<ojTreemapNode["label"]>;
-    'labelDisplayChanged': JetElementCustomEvent<ojTreemapNode["labelDisplay"]>;
-    'labelHalignChanged': JetElementCustomEvent<ojTreemapNode["labelHalign"]>;
-    'labelStyleChanged': JetElementCustomEvent<ojTreemapNode["labelStyle"]>;
-    'labelValignChanged': JetElementCustomEvent<ojTreemapNode["labelValign"]>;
-    'patternChanged': JetElementCustomEvent<ojTreemapNode["pattern"]>;
-    'selectableChanged': JetElementCustomEvent<ojTreemapNode["selectable"]>;
-    'shortDescChanged': JetElementCustomEvent<ojTreemapNode["shortDesc"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojTreemapNode["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojTreemapNode["svgStyle"]>;
-    'valueChanged': JetElementCustomEvent<ojTreemapNode["value"]>;
+export interface ojTreemapNodeEventMap<K = any, D = any> extends dvtBaseComponentEventMap<ojTreemapNodeSettableProperties<K, D>> {
+    'categoriesChanged': JetElementCustomEvent<ojTreemapNode<K, D>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojTreemapNode<K, D>["color"]>;
+    'drillingChanged': JetElementCustomEvent<ojTreemapNode<K, D>["drilling"]>;
+    'groupLabelDisplayChanged': JetElementCustomEvent<ojTreemapNode<K, D>["groupLabelDisplay"]>;
+    'headerChanged': JetElementCustomEvent<ojTreemapNode<K, D>["header"]>;
+    'labelChanged': JetElementCustomEvent<ojTreemapNode<K, D>["label"]>;
+    'labelDisplayChanged': JetElementCustomEvent<ojTreemapNode<K, D>["labelDisplay"]>;
+    'labelHalignChanged': JetElementCustomEvent<ojTreemapNode<K, D>["labelHalign"]>;
+    'labelStyleChanged': JetElementCustomEvent<ojTreemapNode<K, D>["labelStyle"]>;
+    'labelValignChanged': JetElementCustomEvent<ojTreemapNode<K, D>["labelValign"]>;
+    'patternChanged': JetElementCustomEvent<ojTreemapNode<K, D>["pattern"]>;
+    'selectableChanged': JetElementCustomEvent<ojTreemapNode<K, D>["selectable"]>;
+    'shortDescChanged': JetElementCustomEvent<ojTreemapNode<K, D>["shortDesc"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojTreemapNode<K, D>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojTreemapNode<K, D>["svgStyle"]>;
+    'valueChanged': JetElementCustomEvent<ojTreemapNode<K, D>["value"]>;
 }
-export interface ojTreemapNodeSettableProperties extends JetSettableProperties {
+export interface ojTreemapNodeSettableProperties<K = any, D = any> extends dvtBaseComponentSettableProperties {
     categories?: string[];
     color?: string;
     drilling?: 'on' | 'off' | 'inherit';
@@ -468,16 +482,16 @@ export interface ojTreemapNodeSettableProperties extends JetSettableProperties {
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     selectable?: 'off' | 'auto';
-    shortDesc?: string;
+    shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
     svgStyle?: CSSStyleDeclaration;
     value: number;
 }
-export interface ojTreemapNodeSettablePropertiesLenient extends Partial<ojTreemapNodeSettableProperties> {
+export interface ojTreemapNodeSettablePropertiesLenient<K = any, D = any> extends Partial<ojTreemapNodeSettableProperties<K, D>> {
     [key: string]: any;
 }
 export type TreemapElement<K, D extends ojTreemap.Node<K> | any> = ojTreemap<K, D>;
-export type TreemapNodeElement = ojTreemapNode;
+export type TreemapNodeElement<K = any, D = any> = ojTreemapNode<K, D>;
 export namespace TreemapElement {
     interface ojBeforeDrill<K, D> extends CustomEvent<{
         data: ojTreemap.Node<K>;
@@ -518,6 +532,8 @@ export namespace TreemapElement {
     // tslint:disable-next-line interface-over-type-literal
     type highlightMatchChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightMatch"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type highlightModeChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type highlightedCategoriesChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["highlightedCategories"]>;
     // tslint:disable-next-line interface-over-type-literal
     type hoverBehaviorChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["hoverBehavior"]>;
@@ -547,6 +563,11 @@ export namespace TreemapElement {
     type tooltipChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["tooltip"]>;
     // tslint:disable-next-line interface-over-type-literal
     type touchResponseChanged<K, D extends ojTreemap.Node<K> | any> = JetElementCustomEvent<ojTreemap<K, D>["touchResponse"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
+    // tslint:disable-next-line interface-over-type-literal
+    type trackResizeChanged<K, D extends ojTreemap.Node<K> | any> = dvtBaseComponent.trackResizeChanged<ojTreemapSettableProperties<K, D>>;
     // tslint:disable-next-line interface-over-type-literal
     type DataContext = {
         color: string;
@@ -569,46 +590,117 @@ export namespace TreemapElement {
         itemData: D;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type NodeTemplateContext = {
+    type NodeShortDescContext<K, D> = {
+        data: ojTreemap.Node<K>;
+        id: K;
+        itemData: D;
+        label: string;
+        value: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K, D> = {
+        color: string;
         componentElement: Element;
-        data: object;
-        index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        data: ojTreemap.Node<K>;
+        id: K;
+        itemData: D;
+        label: string;
+        parentElement: Element;
+        value: number;
     };
 }
 export namespace TreemapNodeElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojTreemapNode["categories"]>;
+    type categoriesChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojTreemapNode["color"]>;
+    type colorChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type drillingChanged = JetElementCustomEvent<ojTreemapNode["drilling"]>;
+    type drillingChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["drilling"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type groupLabelDisplayChanged = JetElementCustomEvent<ojTreemapNode["groupLabelDisplay"]>;
+    type groupLabelDisplayChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["groupLabelDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type headerChanged = JetElementCustomEvent<ojTreemapNode["header"]>;
+    type headerChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["header"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojTreemapNode["label"]>;
+    type labelChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelDisplayChanged = JetElementCustomEvent<ojTreemapNode["labelDisplay"]>;
+    type labelDisplayChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelHalignChanged = JetElementCustomEvent<ojTreemapNode["labelHalign"]>;
+    type labelHalignChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelHalign"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojTreemapNode["labelStyle"]>;
+    type labelStyleChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelValignChanged = JetElementCustomEvent<ojTreemapNode["labelValign"]>;
+    type labelValignChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["labelValign"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type patternChanged = JetElementCustomEvent<ojTreemapNode["pattern"]>;
+    type patternChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["pattern"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojTreemapNode["selectable"]>;
+    type selectableChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojTreemapNode["shortDesc"]>;
+    type shortDescChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojTreemapNode["svgClassName"]>;
+    type svgClassNameChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojTreemapNode["svgStyle"]>;
+    type svgStyleChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojTreemapNode["value"]>;
+    type valueChanged<K = any, D = any> = JetElementCustomEvent<ojTreemapNode<K, D>["value"]>;
+}
+export interface TreemapIntrinsicProps extends Partial<Readonly<ojTreemapSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojBeforeDrill?: (value: ojTreemapEventMap<any, any>['ojBeforeDrill']) => void;
+    onojDrill?: (value: ojTreemapEventMap<any, any>['ojDrill']) => void;
+    onanimationDurationChanged?: (value: ojTreemapEventMap<any, any>['animationDurationChanged']) => void;
+    onanimationOnDataChangeChanged?: (value: ojTreemapEventMap<any, any>['animationOnDataChangeChanged']) => void;
+    onanimationOnDisplayChanged?: (value: ojTreemapEventMap<any, any>['animationOnDisplayChanged']) => void;
+    onanimationUpdateColorChanged?: (value: ojTreemapEventMap<any, any>['animationUpdateColorChanged']) => void;
+    onasChanged?: (value: ojTreemapEventMap<any, any>['asChanged']) => void;
+    oncolorLabelChanged?: (value: ojTreemapEventMap<any, any>['colorLabelChanged']) => void;
+    ondataChanged?: (value: ojTreemapEventMap<any, any>['dataChanged']) => void;
+    ondisplayLevelsChanged?: (value: ojTreemapEventMap<any, any>['displayLevelsChanged']) => void;
+    ondrillingChanged?: (value: ojTreemapEventMap<any, any>['drillingChanged']) => void;
+    ongroupGapsChanged?: (value: ojTreemapEventMap<any, any>['groupGapsChanged']) => void;
+    onhiddenCategoriesChanged?: (value: ojTreemapEventMap<any, any>['hiddenCategoriesChanged']) => void;
+    onhighlightMatchChanged?: (value: ojTreemapEventMap<any, any>['highlightMatchChanged']) => void;
+    onhighlightModeChanged?: (value: ojTreemapEventMap<any, any>['highlightModeChanged']) => void;
+    onhighlightedCategoriesChanged?: (value: ojTreemapEventMap<any, any>['highlightedCategoriesChanged']) => void;
+    onhoverBehaviorChanged?: (value: ojTreemapEventMap<any, any>['hoverBehaviorChanged']) => void;
+    onhoverBehaviorDelayChanged?: (value: ojTreemapEventMap<any, any>['hoverBehaviorDelayChanged']) => void;
+    onisolatedNodeChanged?: (value: ojTreemapEventMap<any, any>['isolatedNodeChanged']) => void;
+    onlayoutChanged?: (value: ojTreemapEventMap<any, any>['layoutChanged']) => void;
+    onnodeContentChanged?: (value: ojTreemapEventMap<any, any>['nodeContentChanged']) => void;
+    onnodeDefaultsChanged?: (value: ojTreemapEventMap<any, any>['nodeDefaultsChanged']) => void;
+    onnodeSeparatorsChanged?: (value: ojTreemapEventMap<any, any>['nodeSeparatorsChanged']) => void;
+    onrootNodeChanged?: (value: ojTreemapEventMap<any, any>['rootNodeChanged']) => void;
+    onselectionChanged?: (value: ojTreemapEventMap<any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojTreemapEventMap<any, any>['selectionModeChanged']) => void;
+    onsizeLabelChanged?: (value: ojTreemapEventMap<any, any>['sizeLabelChanged']) => void;
+    onsortingChanged?: (value: ojTreemapEventMap<any, any>['sortingChanged']) => void;
+    ontooltipChanged?: (value: ojTreemapEventMap<any, any>['tooltipChanged']) => void;
+    ontouchResponseChanged?: (value: ojTreemapEventMap<any, any>['touchResponseChanged']) => void;
+    ontrackResizeChanged?: (value: ojTreemapEventMap<any, any>['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface TreemapNodeIntrinsicProps extends Partial<Readonly<ojTreemapNodeSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojTreemapNodeEventMap<any, any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojTreemapNodeEventMap<any, any>['colorChanged']) => void;
+    ondrillingChanged?: (value: ojTreemapNodeEventMap<any, any>['drillingChanged']) => void;
+    ongroupLabelDisplayChanged?: (value: ojTreemapNodeEventMap<any, any>['groupLabelDisplayChanged']) => void;
+    onheaderChanged?: (value: ojTreemapNodeEventMap<any, any>['headerChanged']) => void;
+    onlabelChanged?: (value: ojTreemapNodeEventMap<any, any>['labelChanged']) => void;
+    onlabelDisplayChanged?: (value: ojTreemapNodeEventMap<any, any>['labelDisplayChanged']) => void;
+    onlabelHalignChanged?: (value: ojTreemapNodeEventMap<any, any>['labelHalignChanged']) => void;
+    onlabelStyleChanged?: (value: ojTreemapNodeEventMap<any, any>['labelStyleChanged']) => void;
+    onlabelValignChanged?: (value: ojTreemapNodeEventMap<any, any>['labelValignChanged']) => void;
+    onpatternChanged?: (value: ojTreemapNodeEventMap<any, any>['patternChanged']) => void;
+    onselectableChanged?: (value: ojTreemapNodeEventMap<any, any>['selectableChanged']) => void;
+    onshortDescChanged?: (value: ojTreemapNodeEventMap<any, any>['shortDescChanged']) => void;
+    onsvgClassNameChanged?: (value: ojTreemapNodeEventMap<any, any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojTreemapNodeEventMap<any, any>['svgStyleChanged']) => void;
+    onvalueChanged?: (value: ojTreemapNodeEventMap<any, any>['valueChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-treemap": TreemapIntrinsicProps;
+            "oj-treemap-node": TreemapNodeIntrinsicProps;
+        }
+    }
 }

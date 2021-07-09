@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { DataProvider } from '../ojdataprovider';
 import { ojMessage } from '../ojmessage';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
@@ -59,7 +53,7 @@ export namespace ojMessages {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
-        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'right';
         vertical?: 'top' | 'bottom' | 'center';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -112,7 +106,22 @@ export namespace MessagesElement {
     };
     // tslint:disable-next-line interface-over-type-literal
     type PositionAlign = {
-        horizontal?: 'start' | 'end' | 'left' | 'center' | 'bottom';
+        horizontal?: 'start' | 'end' | 'left' | 'center' | 'right';
         vertical?: 'top' | 'bottom' | 'center';
     };
+}
+export interface MessagesIntrinsicProps extends Partial<Readonly<ojMessagesSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    ondisplayChanged?: (value: ojMessagesEventMap['displayChanged']) => void;
+    ondisplayOptionsChanged?: (value: ojMessagesEventMap['displayOptionsChanged']) => void;
+    onmessagesChanged?: (value: ojMessagesEventMap['messagesChanged']) => void;
+    onpositionChanged?: (value: ojMessagesEventMap['positionChanged']) => void;
+    ontranslationsChanged?: (value: ojMessagesEventMap['translationsChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-messages": MessagesIntrinsicProps;
+        }
+    }
 }

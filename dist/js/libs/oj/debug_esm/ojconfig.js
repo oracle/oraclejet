@@ -9,13 +9,6 @@ import oj from 'ojs/ojcore-base';
 import ojt from 'ojL10n!ojtranslations/nls/ojtranslations';
 
 /**
- * @license
- * Copyright (c) 2008 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * @namespace oj.Config
  * @hideconstructor
  * @classdesc Services for setting and retrieving configuration options
@@ -122,7 +115,7 @@ Config.setLocale = function (locale, callback) {
       var localeBundle = prefix + locale + '/localeElements';
       const localePromise = import(localeBundle).then(localeElements => {
         if (localeElements) {
-          oj.LocaleData.__updateBundle(localeElements);
+          oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
         }
       });
       promises.push(localePromise);
@@ -130,7 +123,7 @@ Config.setLocale = function (locale, callback) {
         var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
           .map(bundleName => import(`${prefix}${locale}${bundleName}`));
         promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-          oj.TimezoneData.__mergeIntoLocaleElements(timezoneBundles);
+          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
         }));
       }
     }

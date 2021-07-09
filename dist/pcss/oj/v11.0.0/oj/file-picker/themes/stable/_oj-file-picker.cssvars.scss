@@ -1,0 +1,19 @@
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import dependencies
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+
+  @include module-include-once("stable.variables.filepicker") {
+:root {
+
+  // file picker
+ 
+  --oj-file-picker-border-color:              rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-file-picker-border-width:              1px;
+  --oj-file-picker-border-radius:             var(--oj-core-border-radius-xl);
+
+  
+}
+
+}

@@ -1,20 +1,12 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from 'ojs/index';
-import { GlobalAttributes } from 'ojs/oj-jsx-interfaces';
-import { ElementVComponent } from 'ojs/ojvcomponent-element';
-declare class Props {
-    children?: ElementVComponent.Children;
-    tabIndex?: number;
-    'role'?: string;
-    onOjAction?: ElementVComponent.Action<ActionDetail>;
-}
+import { JetElement, JetSettableProperties, JetElementCustomEventStrict, JetSetPropertyType } from 'ojs/index';
+import { GlobalProps } from 'ojs/ojvcomponent';
+import 'ojs/oj-jsx-interfaces';
+import { Action, Bubbles, ExtendGlobalProps, ObservedGlobalProps } from 'ojs/ojvcomponent';
+import { h, Component, ComponentChildren } from 'preact';
+declare type Props = ObservedGlobalProps<'tabIndex' | 'role'> & {
+    children?: ComponentChildren;
+    onOjAction?: Action<ActionDetail> & Bubbles;
+};
 declare type State = {
     active?: boolean;
     focus?: boolean;
@@ -22,26 +14,21 @@ declare type State = {
 declare type ActionDetail = {
     originalEvent: Event;
 };
-export declare class ActionCard extends ElementVComponent<Props, State> {
-    private _classOverlay;
-    private _rootElem;
-    private readonly _rootElemRef;
+export declare class ActionCard extends Component<ExtendGlobalProps<Props>, State> {
+    private readonly _rootRef;
     constructor(props: Readonly<Props>);
-    protected render(): any;
+    render(props: ExtendGlobalProps<Props>, state: Readonly<State>): h.JSX.Element;
+    componentDidMount(): void;
     private _isFromActiveSource;
     private _handleOjAction;
-    private _handleTouchstart;
-    private _handleTouchend;
-    private _handleTouchcancel;
-    private _handleTouchmove;
-    private _handleKeydown;
-    private _handleKeyup;
-    private _handleMousedown;
-    private _handleMouseup;
-    private _handleMousemove;
-    private _handleFocusin;
-    private _handleFocusout;
-    protected _vprops?: VProps;
+    private readonly _handleStart;
+    private readonly _handleUpEnd;
+    private readonly _handleTouchcancel;
+    private readonly _handleMove;
+    private readonly _handleKeydown;
+    private readonly _handleKeyup;
+    private readonly _handleFocusin;
+    private readonly _handleFocusout;
 }
 // Custom Element interfaces
 export interface ActionCardElement extends JetElement<ActionCardElementSettableProperties>, ActionCardElementSettableProperties {
@@ -55,7 +42,6 @@ export interface ActionCardElement extends JetElement<ActionCardElementSettableP
 }
 export namespace ActionCardElement {
   interface ojAction extends CustomEvent<ActionDetail & {
-    [propName: string]: any;
   }>{}
 }
 export interface ActionCardElementEventMap extends HTMLElementEventMap {
@@ -66,14 +52,14 @@ export interface ActionCardElementSettableProperties extends JetSettableProperti
 export interface ActionCardElementSettablePropertiesLenient extends Partial<ActionCardElementSettableProperties> {
   [key: string]: any;
 }
-export interface ActionCardProperties extends Partial<ActionCardElementSettableProperties>, GlobalAttributes {
-}
-export interface VProps extends Props, GlobalAttributes {
+export interface ActionCardIntrinsicProps extends Partial<Readonly<ActionCardElementSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+  children?: ComponentChildren;
+  onojAction?: (value: ActionCardElementEventMap['ojAction']) => void;
 }
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "oj-action-card": ActionCardProperties;
+      "oj-action-card": ActionCardIntrinsicProps;
     }
   }
 }

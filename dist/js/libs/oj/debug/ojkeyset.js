@@ -11,13 +11,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
   KeySetImpl$1 = KeySetImpl$1 && Object.prototype.hasOwnProperty.call(KeySetImpl$1, 'default') ? KeySetImpl$1['default'] : KeySetImpl$1;
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-  /**
    * An immutable set of keys.
    * @class KeySet
    *
@@ -212,13 +205,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
 
   KeySetImpl$1.call(KeySet.prototype);
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Create a new immutable KeySet containing the keys of the expanded items.
    * Use this KeySet when specifying individual keys to expand.
@@ -487,13 +473,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
     return this.Clone();
   };
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Create a new immutable KeySet containing the keys of items.
    * Use this KeySet when specifying individual keys to select or expand.
@@ -793,13 +772,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojkeysetimpl'], function (exports, oj
     return this.Clone();
   };
 
-  /**
-   * @license
-   * Copyright (c) 2019 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
   /**
    * Contains a set of utility methods for working with KeySet.
    * @class

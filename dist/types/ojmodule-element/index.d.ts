@@ -1,11 +1,5 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ModuleElementAnimation {
     animate(context: {
@@ -47,7 +41,7 @@ export interface ojModule extends JetElement<ojModuleSettableProperties> {
     config: {
         cleanupMode?: 'onDisconnect' | 'none';
         view: Node[];
-        viewModel: ModuleViewModel | null;
+        viewModel?: ModuleViewModel | null;
     };
     addEventListener<T extends keyof ojModuleEventMap>(type: T, listener: (this: HTMLElement, ev: ojModuleEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -97,9 +91,53 @@ export interface ojModuleSettableProperties extends JetSettableProperties {
     config: {
         cleanupMode?: 'onDisconnect' | 'none';
         view: Node[];
-        viewModel: ModuleViewModel | null;
+        viewModel?: ModuleViewModel | null;
     };
 }
 export interface ojModuleSettablePropertiesLenient extends Partial<ojModuleSettableProperties> {
     [key: string]: any;
+}
+export type ModuleElement = ojModule;
+export namespace ModuleElement {
+    interface ojTransitionEnd extends CustomEvent<{
+        viewModel: ModuleViewModel;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojTransitionStart extends CustomEvent<{
+        viewModel: ModuleViewModel;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojViewConnected extends CustomEvent<{
+        viewModel: ModuleViewModel;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojViewDisconnected extends CustomEvent<{
+        view: Node[];
+        viewModel: ModuleViewModel;
+        [propName: string]: any;
+    }> {
+    }
+    // tslint:disable-next-line interface-over-type-literal
+    type animationChanged = JetElementCustomEvent<ojModule["animation"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type configChanged = JetElementCustomEvent<ojModule["config"]>;
+}
+export interface ModuleIntrinsicProps extends Partial<Readonly<ojModuleSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojTransitionEnd?: (value: ojModuleEventMap['ojTransitionEnd']) => void;
+    onojTransitionStart?: (value: ojModuleEventMap['ojTransitionStart']) => void;
+    onojViewConnected?: (value: ojModuleEventMap['ojViewConnected']) => void;
+    onojViewDisconnected?: (value: ojModuleEventMap['ojViewDisconnected']) => void;
+    onanimationChanged?: (value: ojModuleEventMap['animationChanged']) => void;
+    onconfigChanged?: (value: ojModuleEventMap['configChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-module": ModuleIntrinsicProps;
+        }
+    }
 }

@@ -373,21 +373,5 @@
         }
 
     }
-
-
-    // Option defaults
-    //----------------------------------
-
-    // TODO
-    $buttonsetDefaultOptions: ();
-
-    @if ($buttonsetChromingOptionDefault != null) {
-        $buttonsetDefaultOptions: map-merge($buttonsetDefaultOptions, (chroming: $buttonsetChromingOptionDefault));
-    }
-
-    .oj-buttonset-option-defaults {
-        font-family: oj-json-from-map($buttonsetDefaultOptions);
-    }
-
   }
 }

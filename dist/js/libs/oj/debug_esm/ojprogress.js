@@ -10,13 +10,6 @@ import 'ojs/ojcomponentcore';
 import oj$1 from 'ojs/ojcore';
 import $ from 'jquery';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_progress_metadata = 
 {
@@ -63,14 +56,6 @@ var __oj_progress_metadata =
 }());
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ojcomponent oj.ojProgress
  *
  * @since 1.0.0
@@ -106,9 +91,9 @@ var __oj_progress_metadata =
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="accessibility-section">
+ * <h3 id="a11y-section">
  *   Accessibility
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
  * <p>If this element is being used to describe the loading process of a particular region of a page, then the <code class="prettyprint">aria-describedby</code>
@@ -116,58 +101,84 @@ var __oj_progress_metadata =
  *
  *
  */
-// --------------------------------------------------- oj.ojProgress Styling Start -----------------------------------------------------------
-  // ---------------- oj-progress-bar-embedded --------------
-  /**
-  * Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.
-  * @ojstyleclass oj-progress-bar-embedded
-  * @ojdisplayname Embedded
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
-   // ---------------- oj-progress-bar-start-label --------------
-  /**
-  * Optional class that can be set on a div after the oj-progress element. This div contains the start text to display underneath the oj-progress bar.
-  * @ojstyleclass oj-progress-bar-start-label
-  * @ojdisplayname Start Label
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *     &lt;div class='oj-progress-bar-start-label'>0%
-  *     &lt;/div>
-  *     &lt;div class='oj-progress-bar-end-label'>100%
-  *     &lt;/div>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
-   // ---------------- oj-progress-bar-end-label --------------
-  /**
-  * Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar.
-  * @ojstyleclass oj-progress-bar-end-label
-  * @ojdisplayname End Label
-  * @memberof oj.ojProgress
-  * @ojtsexample
-  * &lt;div class='oj-web-applayout-page'>
-  *   &lt;header class='oj-web-applayout-header'>
-  *   &lt;</header>
-  *   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
-  *     &lt;div class='oj-progress-bar-start-label'>0%
-  *     &lt;/div>
-  *     &lt;div class='oj-progress-bar-end-label'>100%
-  *     &lt;/div>
-  *   &lt;/oj-progress>
-  * &lt;/div>
-  */
-// --------------------------------------------------- oj.ojProgress Styling end -----------------------------------------------------------
+
+//-----------------------------------------------------
+//                   Fragments
+//-----------------------------------------------------
+
+/**
+ * <p>This element has no touch interaction.  </p>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojProgress
+ */
+
+/**
+ * <p>This element has no keyboard interaction.  </p>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojProgress
+ */
+
+//-----------------------------------------------------
+//                   Styles
+//-----------------------------------------------------
+
+// ---------------- oj-progress-bar-embedded --------------
+/**
+* Optional class that can be set on a oj-progress bar element to style an embedded progress bar within a web application or dialog.
+* @ojstyleclass oj-progress-bar-embedded
+* @ojdisplayname Embedded
+* @memberof oj.ojProgress
+* @ojtsexample
+* &lt;div class='oj-web-applayout-page'>
+*   &lt;header class='oj-web-applayout-header'>
+*   &lt;</header>
+*   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+*   &lt;/oj-progress>
+* &lt;/div>
+*/
+// ---------------- oj-progress-bar-start-label --------------
+/**
+* Optional class that can be set on a div after the oj-progress element. This div contains the start text to display underneath the oj-progress bar.
+* @ojstyleclass oj-progress-bar-start-label
+* @ojdisplayname Start Label
+* @memberof oj.ojProgress
+* @ojtsexample
+* &lt;div class='oj-web-applayout-page'>
+*   &lt;header class='oj-web-applayout-header'>
+*   &lt;</header>
+*   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+*     &lt;div class='oj-progress-bar-start-label'>0%
+*     &lt;/div>
+*     &lt;div class='oj-progress-bar-end-label'>100%
+*     &lt;/div>
+*   &lt;/oj-progress>
+* &lt;/div>
+*/
+// ---------------- oj-progress-bar-end-label --------------
+/**
+* Optional class that can be set on a div after the oj-progress element. This div contains the end text to display underneath the oj-progress bar.
+* @ojstyleclass oj-progress-bar-end-label
+* @ojdisplayname End Label
+* @memberof oj.ojProgress
+* @ojtsexample
+* &lt;div class='oj-web-applayout-page'>
+*   &lt;header class='oj-web-applayout-header'>
+*   &lt;</header>
+*   &lt;oj-progress class='oj-progress-bar-embedded' value='{{loadingValue}}'>
+*     &lt;div class='oj-progress-bar-start-label'>0%
+*     &lt;/div>
+*     &lt;div class='oj-progress-bar-end-label'>100%
+*     &lt;/div>
+*   &lt;/oj-progress>
+* &lt;/div>
+*/
+
+//-----------------------------------------------------
+//                   Slots
+//-----------------------------------------------------
 
 /**
  * @ojslot contextMenu
@@ -519,7 +530,7 @@ var __oj_progress_metadata =
       var isCircle = this.options.type === 'circle';
       if (isCircle) {
         this._setupCircleSVG();
-      } else if (!isCircle) {
+      } else {
         this.valueDiv
           .toggle(this._indeterminate || value > this.min)
           .width(percentage.toFixed(0) + '%');
@@ -587,23 +598,5 @@ var __oj_progress_metadata =
       }
       this._super();
     }
-
-    // Fragments:
-
-    /**
-     * <p>This element has no touch interaction.  </p>
-     *
-     *
-     * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-     * @memberof oj.ojProgress
-     */
-
-    /**
-     * <p>This element has no keyboard interaction.  </p>
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojProgress
-     */
-
   });
 }());

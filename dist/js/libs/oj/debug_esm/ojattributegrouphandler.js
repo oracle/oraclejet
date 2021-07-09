@@ -9,14 +9,6 @@ import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
  * @param {Object.<string, *>=} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
@@ -128,14 +120,6 @@ AttributeGroupHandler.prototype.getCategoryAssignments = function () {
 AttributeGroupHandler.prototype.addMatchRule = function (category, attributeValue) {
   this._matchRules[category] = attributeValue;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Creates a color attribute group handler that will generate color attribute values.
@@ -293,7 +277,7 @@ ColorAttributeGroupHandler.__processAttrDiv = function (attrGpsDiv) {
 /**
  * @license
  * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
+ * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignoreg
  */

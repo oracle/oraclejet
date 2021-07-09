@@ -7,15 +7,6 @@
  */
 define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  // todo: this should be used by Timeline also
   var DvtTimeAxisCalendar = function(options)
   {
     this.Init(options);
@@ -46,64 +37,51 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   DvtTimeAxisCalendar.prototype.adjustDate = function(date, scale)
   {
     var _adjustedDate = new Date(date.getTime());
-    if (scale == 'weeks')
+    if (scale === 'weeks')
     {
-      _adjustedDate.setHours(0, 0, 0);
+      _adjustedDate.setHours(0, 0, 0, 0);
       var roll_amt = (date.getDay() - this.getFirstDayOfWeek() + 7) % 7;
-      if (roll_amt > 0)
-        _adjustedDate.setTime(_adjustedDate.getTime() - roll_amt * this._dayInMillis);
+      if (roll_amt > 0) {
+        // Work with date instead of time in ms to avoid daylight savings issues
+        _adjustedDate.setDate(_adjustedDate.getDate() - roll_amt);
+      }
     }
-    else if (scale == 'months')
+    else if (scale === 'months')
     {
       _adjustedDate.setDate(1);
+      _adjustedDate.setHours(0, 0, 0, 0);
     }
-    else if (scale == 'days')
+    else if (scale === 'days')
     {
-      _adjustedDate.setHours(0, 0, 0);
+      _adjustedDate.setHours(0, 0, 0, 0);
     }
-    else if (scale == 'hours')
+    else if (scale === 'hours')
     {
       _adjustedDate.setMinutes(0, 0, 0);
     }
-    else if (scale == 'minutes')
+    else if (scale === 'minutes')
     {
       _adjustedDate.setSeconds(0, 0);
     }
-    else if (scale == 'seconds')
+    else if (scale === 'seconds')
     {
       _adjustedDate.setMilliseconds(0);
     }
-    else if (scale == 'quarters')
+    else if (scale === 'quarters')
     {
+      var quarter = Math.floor((_adjustedDate.getMonth()) / 3);
       _adjustedDate.setDate(1);
-      roll_amt = 2 - (date.getMonth() + 11) % 3;
-      if (roll_amt > 0)
-        _adjustedDate.setMonth(_adjustedDate.getMonth() + roll_amt);
+      _adjustedDate.setHours(0, 0, 0, 0);
+      _adjustedDate.setMonth(quarter * 3);
     }
-    else if (scale == 'halfyears')
-    {
-      _adjustedDate.setDate(1);
-      roll_amt = 5 - (date.getMonth() + 11) % 6;
-      if (roll_amt > 0)
-        _adjustedDate.setMonth(_adjustedDate.getMonth() + roll_amt);
-    }
-    else if (scale == 'years')
+    else if (scale === 'years')
     {
       _adjustedDate.setMonth(0);
       _adjustedDate.setDate(1);
-    }
-    else if (scale == 'twoyears')
-    {
-      _adjustedDate.setMonth(0);
-      _adjustedDate.setDate(1);
+      _adjustedDate.setHours(0, 0, 0, 0);
     }
 
     return _adjustedDate;
-  };
-
-  DvtTimeAxisCalendar.prototype.getNextDate = function(time, scale)
-  {
-    return this.getAdjacentDate(time, scale, 'next');
   };
 
   /**
@@ -115,32 +93,26 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtTimeAxisCalendar.prototype.getAdjacentDate = function(time, scale, direction)
   {
-    var directionSign = direction == 'next' ? 1 : -1;
+    var directionSign = direction === 'next' ? 1 : -1;
 
-    if (scale == 'milliseconds')
-      return new Date(time + directionSign * 1);
-    else if (scale == 'seconds')
+    if (scale === 'seconds')
       return new Date(time + directionSign * 1000);
-    else if (scale == 'minutes')
+    else if (scale === 'minutes')
       return new Date(time + directionSign * 60000);
-    else if (scale == 'hours')
+    else if (scale === 'hours')
       return new Date(time + directionSign * 3600000);
     // for larger scales, no set amount of time can be added
     var _adjacentDate = new Date(time);
-    if (scale == 'days')
+    if (scale === 'days')
       _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 1);
-    else if (scale == 'weeks')
+    else if (scale === 'weeks')
       _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 7);
-    else if (scale == 'months')
+    else if (scale === 'months')
       _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 1);
-    else if (scale == 'quarters')
+    else if (scale === 'quarters')
       _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 3);
-    else if (scale == 'halfyears')
-      _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 6);
-    else if (scale == 'years')
+    else if (scale === 'years')
       _adjacentDate.setFullYear(_adjacentDate.getFullYear() + directionSign * 1);
-    else if (scale == 'twoyears')
-      _adjacentDate.setFullYear(_adjacentDate.getFullYear() + directionSign * 2);
     else
     {
       // circuit breaker
@@ -148,14 +120,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     }
     return _adjacentDate;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   var DvtTimeAxisDefaults = function(context)
   {
@@ -176,258 +140,16 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
+   * @override
    */
-
-  var DvtTimeAxisFormatter = function(type, dateFormatStrings, locale)
-  {
-    this.Init(type, dateFormatStrings, locale);
+  DvtTimeAxisDefaults.prototype.getNoCloneObject = function () {
+    return {
+      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+      // If the instance is a class, class methods may not be cloned for some reason.
+      scale: true,
+      zoomOrder: true
+    };
   };
-
-  dvt.Obj.createSubclass(DvtTimeAxisFormatter, dvt.Obj);
-
-  DvtTimeAxisFormatter.LONG = 0;
-  DvtTimeAxisFormatter.SHORT = 1;
-
-  DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings, locale)
-  {
-    this._type = type;
-    this._dateFormatStrings = dateFormatStrings;
-    this._locale = locale;
-
-    this._formats = [];
-    this._formats[0] = new Object();
-    this._formats[0]['seconds'] = 'HH:MM:ss';
-    this._formats[0]['minutes'] = 'HH:MM';
-    this._formats[0]['hours'] = 'HH:MM';
-    this._formats[0]['days'] = 'dddd';
-    this._formats[0]['weeks'] = 'm/dd';
-    this._formats[0]['months'] = 'mmmm';
-    this._formats[0]['quarters'] = 'mmmm';
-    this._formats[0]['halfyears'] = 'yyyy';
-    this._formats[0]['years'] = 'yyyy';
-    this._formats[0]['twoyears'] = 'yyyy';
-
-    this._formats[1] = new Object();
-    this._formats[1]['seconds'] = 'HH:MM:ss';
-    this._formats[1]['minutes'] = 'HH:MM';
-    this._formats[1]['hours'] = 'HH:MM';
-    this._formats[1]['days'] = 'm/dd';
-    this._formats[1]['weeks'] = 'm/dd';
-    this._formats[1]['months'] = 'mmm';
-    this._formats[1]['quarters'] = 'mmm';
-    this._formats[1]['halfyears'] = 'yy';
-    this._formats[1]['years'] = 'yy';
-    this._formats[1]['twoyears'] = 'yy';
-  };
-
-  /**
-   * Change the format string for a particular time scale.
-   *
-   * @param scale
-   * @param pattern - the format string
-   */
-  DvtTimeAxisFormatter.prototype.setPattern = function(scale, pattern)
-  {
-    this._formats[this._type][scale] = pattern;
-  };
-
-  DvtTimeAxisFormatter.prototype.format = function(date, scale, timeZoneOffsets)
-  {
-    var mask = this._formats[this._type][scale];
-    if (mask != null)
-    {
-      var isUTC = false;
-      if (timeZoneOffsets)
-      {
-        var timeInMS = date.getTime();
-        var dates = Object.keys(timeZoneOffsets);
-        var offset = 0;
-        for (var i = 0; i < dates.length; i++)
-        {
-          if (timeInMS >= parseInt(dates[i], 10))
-            offset = timeZoneOffsets[dates[i]];
-        }
-        date = new Date(timeInMS + offset);
-        isUTC = true;
-      }
-      if (mask.indexOf(':') != -1)
-        var separator = ':';
-      else if (mask.indexOf('/') != -1)
-        separator = '/';
-      if (separator)
-      {
-        mask = mask.split(separator);
-        var newString = this.getDateFormatValue(date, mask[0], isUTC);
-        for (var i = 1; i < mask.length; i++)
-        {
-          newString += separator + this.getDateFormatValue(date, mask[i], isUTC);
-        }
-        return newString;
-      }
-      else
-        return this.getDateFormatValue(date, mask, isUTC);
-    }
-    else
-    {
-      // Locales argument supported in all major browsers except iOS 9 safari
-      // at the time of writing:
-      try {
-        return date.toLocaleString(this._locale);
-      } catch (e) {
-        if (e.name === 'RangeError')
-          return date.toLocaleString();
-      }
-      return date.toLocaleString();
-    }
-  };
-
-  /**
-   * Gets the formatted date value corresponding to the desired mask.
-   * Valid mask values are: 'ss', 'MM', 'HH', 'dd', 'dddd', 'm',
-   * 'mmm', 'mmmm', 'yy', and 'yyyy'.
-   * @param {Date} date The date object to be formatted.
-   * @param {string} mask The format mask to be used.
-   * @param {boolean} isUTC Whether UTC values should be used.
-   * @return {string} The formatted date value.
-   */
-  DvtTimeAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
-  {
-    if (isUTC)
-    {
-      switch (mask)
-      {
-        case 'ss':
-          var value = date.getUTCSeconds();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'HH':
-          value = date.getUTCHours();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'MM':
-          value = date.getUTCMinutes();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'dd':
-          value = date.getUTCDate();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'dddd':
-          return this._dateFormatStrings.dayNames[date.getUTCDay() + 7];
-          break;
-
-        case 'm':
-          return date.getUTCMonth() + 1;
-          break;
-
-        case 'mmm':
-          return this._dateFormatStrings.monthNames[date.getUTCMonth()];
-          break;
-
-        case 'mmmm':
-          return this._dateFormatStrings.monthNames[date.getUTCMonth() + 12];
-          break;
-
-        case 'yy':
-          return date.getUTCFullYear().toString().substring(2, 4);
-          break;
-
-        default:
-          // 'yyyy' case
-          return date.getUTCFullYear();
-      }
-    }
-    else
-    {
-      switch (mask)
-      {
-        case 'ss':
-          value = date.getSeconds();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'HH':
-          value = date.getHours();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'MM':
-          value = date.getMinutes();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'dd':
-          value = date.getDate();
-          if (value < 10)
-            return '0' + value;
-          else
-            return value;
-          break;
-
-        case 'dddd':
-          return this._dateFormatStrings.dayNames[date.getDay() + 7];
-          break;
-
-        case 'm':
-          return date.getMonth() + 1;
-          break;
-
-        case 'mmm':
-          return this._dateFormatStrings.monthNames[date.getMonth()];
-          break;
-
-        case 'mmmm':
-          return this._dateFormatStrings.monthNames[date.getMonth() + 12];
-          break;
-
-        case 'yy':
-          return date.getFullYear().toString().substring(2, 4);
-          break;
-
-        default:
-          // 'yyyy' case
-          return date.getFullYear();
-      }
-    }
-  };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   var DvtTimeAxisParser = function() {};
 
@@ -447,7 +169,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     ret.inlineStyle = options['style'];
     ret.id = options['id'];
     ret.shortDesc = options['shortDesc'];
-    ret.timeZoneOffsets = options['_tzo'];
     ret.itemPosition = options['_ip'];
     ret.customTimeScales = options['_cts'];
     ret.customFormatScales = options['_cfs'];
@@ -475,14 +196,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     return ret;
   };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Style related utility functions for TimeAxis.
@@ -616,16 +329,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * Gets the axis border class.
-   * @param {object} options The object containing data and specifications for the component.
-   * @return {string|undefined} The axis class.
-   */
-  DvtTimeAxisStyleUtils.getAxisBorderClass = function(options)
-  {
-    return options['_resources'] ? options['_resources']['axisBorderClass'] : undefined;
-  };
-
-  /**
    * Gets the axis label class.
    * @param {object} options The object containing data and specifications for the component.
    * @return {string|undefined} The axis label class.
@@ -644,54 +347,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   {
     return options['_resources'] ? options['_resources']['axisSeparatorClass'] : undefined;
   };
-
-  /**
-   * Gets whether border top is visible.
-   * @param {object} options The object containing data and specifications for the component.
-   * @return {boolean} whether the border top is visible.
-   */
-  DvtTimeAxisStyleUtils.isBorderTopVisible = function(options)
-  {
-    return options['_resources'] ? options['_resources']['borderTopVisible'] : false;
-  };
-
-  /**
-   * Gets whether border right is visible.
-   * @param {object} options The object containing data and specifications for the component.
-   * @return {boolean} whether the border right is visible.
-   */
-  DvtTimeAxisStyleUtils.isBorderRightVisible = function(options)
-  {
-    return options['_resources'] ? options['_resources']['borderRightVisible'] : false;
-  };
-
-  /**
-   * Gets whether border bottom is visible.
-   * @param {object} options The object containing data and specifications for the component.
-   * @return {boolean} whether the border bottom is visible.
-   */
-  DvtTimeAxisStyleUtils.isBorderBottomVisible = function(options)
-  {
-    return options['_resources'] ? options['_resources']['borderBottomVisible'] : false;
-  };
-
-  /**
-   * Gets whether border left is visible.
-   * @param {object} options The object containing data and specifications for the component.
-   * @return {boolean} whether the border left is visible.
-   */
-  DvtTimeAxisStyleUtils.isBorderLeftVisible = function(options)
-  {
-    return options['_resources'] ? options['_resources']['borderLeftVisible'] : false;
-  };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * Utility functions for TimeAxis.
@@ -717,7 +372,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     getDatePosition: function (startTime, endTime, time, width) {
       var number = (time - startTime) * width;
       var denominator = (endTime - startTime);
-      if (number == 0 || denominator == 0)
+      if (number === 0 || denominator === 0)
         return 0;
 
       return number / denominator;
@@ -733,7 +388,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
      */
     getPositionDate: function (startTime, endTime, pos, width) {
       var number = pos * (endTime - startTime);
-      if (number == 0 || width == 0)
+      if (number === 0 || width === 0)
         return startTime;
 
       return (number / width) + startTime;
@@ -741,325 +396,281 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Renderer for TimeAxis.
    * @class
    */
-  var DvtTimeAxisRenderer = new Object();
+  const DvtTimeAxisRenderer = {};
 
   dvt.Obj.createSubclass(DvtTimeAxisRenderer, dvt.Obj);
 
   /**
-   * Renders the time axis (top left corner at (0,0)).
+   * Renders the given viewport of the time axis (top left corner at (0,0)).
    * @param {TimeAxis} timeAxis The timeAxis being rendered.
+   * @param {number} viewStartTime The start time of the viewport.
+   * @param {number} viewEndTime The end time of the viewport.
+   * @param {boolean=} throttle Whether to throttle the rendering with requestAnimationFrame. Default false.
+   *    Throttling is useful on high fire rate interactions such as scroll.
+   *    I notice it's slightly smoother on across Chrome/Safari/Firefox compared to without
+   *    On Firefox, if this is not done, mouse wheel zoom bugs out sometimes and scrolls the page, so throttling is a must.
    */
-  DvtTimeAxisRenderer.renderTimeAxis = function(timeAxis)
-  {
-    if (timeAxis.hasValidOptions())
-    {
-      var axisSize = timeAxis.getSize();
-      var axisStart = 0;
-      DvtTimeAxisRenderer._renderAxisBlock(timeAxis, axisStart, axisSize, DvtTimeAxisStyleUtils.getAxisSeparatorStyle(timeAxis.Options));
+  DvtTimeAxisRenderer.renderTimeAxis = function (timeAxis, viewStartTime, viewEndTime, throttle) {
+    if (!timeAxis.hasValidOptions()) {
+      return;
     }
-    // else?!
+
+    const render = function () {
+      // Start fresh; possible future improvement is to do efficient diffing
+      timeAxis.removeChildren();
+
+      DvtTimeAxisRenderer._renderBackground(timeAxis);
+      const tickLabelsContainer = new dvt.Container(timeAxis.getCtx());
+
+      // dates.length >= 2 always, because there's always the first and last tick.
+      const dates = timeAxis.getViewportDates(timeAxis.getScale(), viewStartTime, viewEndTime);
+      const datePositions = dates.map(function (date) {
+        return {
+          date: date,
+          pos: TimeAxisUtils.getDatePosition(
+            timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
+        };
+      });
+
+      DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, timeAxis, datePositions);
+
+      // We don't need the label of the last tick.
+      const labelTexts = timeAxis.getDateLabelTexts(dates,
+        timeAxis.getScale()).slice(0, dates.length - 1);
+      DvtTimeAxisRenderer._renderLabels(tickLabelsContainer, timeAxis, datePositions, labelTexts);
+
+      timeAxis._axis.addChild(tickLabelsContainer);
+    };
+
+    if (throttle) {
+      // Modelled after https://developer.mozilla.org/en-US/docs/Web/API/Document/scroll_event#Example
+      if (!timeAxis.__isRendering) {
+        requestAnimationFrame(function () {
+          render();
+          // eslint-disable-next-line no-param-reassign
+          timeAxis.__isRendering = false;
+        });
+        // eslint-disable-next-line no-param-reassign
+        timeAxis.__isRendering = true;
+      }
+    } else {
+      render();
+    }
   };
 
   /**
-   * Renders the time axis block, draws a border around it, and initiates ticks and labels rendering.
+   * Renders the time axis block, draws a border around it.
    * @param {TimeAxis} timeAxis The timeAxis being rendered.
-   * @param {number} axisStart The start position of the axis.
-   * @param {number} axisSize The axis size.
-   * @param {string} separatorStyle The axis separator style.
    * @private
    */
-  DvtTimeAxisRenderer._renderAxisBlock = function(timeAxis, axisStart, axisSize, separatorStyle)
-  {
-    var context = timeAxis.getCtx();
-    if (timeAxis._axis == null)
-    {
-      var cp = new dvt.ClipPath();
-      if (timeAxis.isVertical())
-      {
-        timeAxis._axis = new dvt.Path(context,
-          dvt.PathUtils.roundedRectangle(
-            axisStart,
-            -timeAxis.getBorderWidth('top'),
-            axisSize,
-            timeAxis.getAxisLength(),
-            0, 0, 0, 0
-          ),
-          'axis'
-        );
-        cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
-      }
-      else
-      {
-        timeAxis._axis = new dvt.Path(context,
-          dvt.PathUtils.roundedRectangle(
-            -timeAxis.getBorderWidth('left'),
-            axisStart,
-            timeAxis.getAxisLength(),
-            axisSize,
-            0, 0, 0, 0
-          ),
-          'axis'
-        );
-        cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
-      }
-      timeAxis._axis.setCSSStyle(timeAxis._axisStyle);
-      // setCSSStyle doesn't actually apply styles for dvt.Path. Adopt the logic from dvt.Rect:
-      var elem = timeAxis._axis.getElem();
-      var val = timeAxis._axisStyle.getStyle('background-color');
-      if (val) {
-        dvt.ToolkitUtils.setAttrNullNS(elem, 'fill', val);
-      }
-      val = timeAxis._axisStyle.getStyle('border-color');
-      if (val) {
-        dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke', val);
-      }
-      val = timeAxis._axisStyle.getStyle('border-width');
-      if (val) {
-        dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke-width', val);
-      }
+  DvtTimeAxisRenderer._renderBackground = function (timeAxis) {
+    const axisStart = 0;
+    const axisSize = timeAxis.getSize();
+    const context = timeAxis.getCtx();
 
-      timeAxis._axis.setPixelHinting(true);
-      timeAxis._axis.setClipPath(cp);
-
-      timeAxis.addChild(timeAxis._axis);
-
-      var axisClass = DvtTimeAxisStyleUtils.getAxisClass(timeAxis.Options);
-      if (axisClass)
-        timeAxis._axis.getElem().setAttribute('class', axisClass);
-    }
-    else
-    {
+    if (timeAxis._axis) {
       timeAxis._axis.setClipPath(null);
-      cp = new dvt.ClipPath();
-      if (timeAxis.isVertical())
-      {
-        timeAxis._axis.setCmds(
-          dvt.PathUtils.roundedRectangle(
-            axisStart,
-            -timeAxis.getBorderWidth('top'),
-            axisSize,
-            timeAxis.getAxisLength(),
-            0, 0, 0, 0
-          )
-        );
-        cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
-      }
-      else
-      {
-        timeAxis._axis.setCmds(
-          dvt.PathUtils.roundedRectangle(
-            -timeAxis.getBorderWidth('left'),
-            axisStart,
-            timeAxis.getAxisLength(),
-            axisSize,
-            0, 0, 0, 0
-          )
-        );
-        cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
-      }
-      timeAxis._axis.setClipPath(cp);
+    }
+    const cp = new dvt.ClipPath();
+    if (timeAxis.isVertical()) {
+      // eslint-disable-next-line no-param-reassign
+      timeAxis._axis = new dvt.Path(context,
+        dvt.PathUtils.roundedRectangle(
+          axisStart,
+          -timeAxis.getBorderWidth('top'),
+          axisSize,
+          timeAxis.getAxisLength(),
+          0, 0, 0, 0
+        ),
+        'axis'
+      );
+      cp.addRect(axisStart, 0, axisSize, timeAxis._contentLength);
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      timeAxis._axis = new dvt.Path(context,
+        dvt.PathUtils.roundedRectangle(
+          -timeAxis.getBorderWidth('left'),
+          axisStart,
+          timeAxis.getAxisLength(),
+          axisSize,
+          0, 0, 0, 0
+        ),
+        'axis'
+      );
+      cp.addRect(0, axisStart, timeAxis._contentLength, axisSize);
+    }
+    timeAxis._axis.setCSSStyle(timeAxis._axisStyle);
+    // setCSSStyle doesn't actually apply styles for dvt.Path. Adopt the logic from dvt.Rect:
+    const elem = timeAxis._axis.getElem();
+    let val = timeAxis._axisStyle.getStyle('background-color');
+    if (val) {
+      dvt.ToolkitUtils.setAttrNullNS(elem, 'fill', val);
+    }
+    val = timeAxis._axisStyle.getStyle('border-color');
+    if (val) {
+      dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke', val);
+    }
+    val = timeAxis._axisStyle.getStyle('border-width');
+    if (val) {
+      dvt.ToolkitUtils.setAttrNullNS(elem, 'stroke-width', val);
     }
 
-    // remove all existing ticks and labels
-    timeAxis._axis.removeChildren();
+    timeAxis._axis.setPixelHinting(true);
+    timeAxis._axis.setClipPath(cp);
+
+    timeAxis.addChild(timeAxis._axis);
+
+    const axisClass = DvtTimeAxisStyleUtils.getAxisClass(timeAxis.Options) || '';
+    timeAxis._axis.getElem().setAttribute('class', axisClass);
 
     // apply stroke dash array to turn on/off border sides accordingly
     timeAxis._axis.getElem().setAttribute('stroke-dasharray', timeAxis.calcStrokeDashArray());
-
-    var separatorStyle = new dvt.CSSStyle(separatorStyle);
-    timeAxis._separatorStroke = new dvt.Stroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR));
-
-    var axisSize = timeAxis.getContentSize();
-    var axisStart = axisStart + timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
-    var axisEnd = (axisStart + axisSize);
-
-    DvtTimeAxisRenderer._renderAxisTicksLabels(timeAxis, 0, timeAxis._canvasSize, timeAxis._axis, timeAxis._contentLength, axisEnd, axisStart, axisStart);
   };
 
   /**
-   * Renders the ticks and labels of the time axis.
-   * @param {TimeAxis} timeAxis The timeAxis being rendered.
-   * @param {number} startPos The start position for rendering.
-   * @param {number} endPos The end position for rendering.
+   * Renders the tick marks at the given the dates/positions.
    * @param {dvt.Container} container The container to render into.
-   * @param {number} length The length of the axis.
-   * @param {number} axisEnd The end position of the axis.
-   * @param {number} tickStart The start position of the first interval.
-   * @param {number} labelStart The start position of the first label.
+   * @param {TimeAxis} timeAxis The timeAxis being rendered.
+   * @param {Array} datePositions Array of objects representing the date and position for each tick, each of shape { date: Date, pos: number }. Length must be >= 2.
    * @private
    */
-  DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos, container, length, axisEnd, tickStart, labelStart)
-  {
-    var context = timeAxis.getCtx();
-    var isRTL = dvt.Agent.isRightToLeft(context);
+  DvtTimeAxisRenderer._renderTicks = function (container, timeAxis, datePositions) {
+    // Build Path command of tick marks
+    const context = timeAxis.getCtx();
+    const isRTL = dvt.Agent.isRightToLeft(context);
+    const axisSizeStart = timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
+    const axisSizeEnd = axisSizeStart + timeAxis.getContentSize();
 
-    var block = new dvt.Container(context, 'block_' + startPos + '_' + endPos);
-    block.startPos = startPos;
-    block.endPos = endPos;
-    container.addChild(block);
-
-    var labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options);
-    var separatorClass = DvtTimeAxisStyleUtils.getAxisSeparatorClass(timeAxis.Options);
-    var maxLabelHeight = timeAxis.getContentSize();
-
-    // the last date in dates is past the end time, and only used as the last 'next' date
-    var dates = timeAxis._dates[timeAxis._zoomLevelOrder];
-    var labels = timeAxis._labels[timeAxis._zoomLevelOrder];
-    for (var i = 0; i < dates.length - 1; i++)
-    {
-      var date = dates[i];
-      var next = dates[i + 1];
-      var label = labels[i];
-
-      var currentPos = TimeAxisUtils.getDatePosition(timeAxis._start, timeAxis._end, date, length);
-      var nextPos = TimeAxisUtils.getDatePosition(timeAxis._start, timeAxis._end, next, length);
-
-      if (currentPos != 0)
-      {
-        if (timeAxis.isVertical())
-          var tickElem = DvtTimeAxisRenderer._addTick(context, block, axisEnd, tickStart, currentPos, currentPos, timeAxis._separatorStroke, 's_tick' + date, separatorClass);
-        else if (!isRTL)
-          tickElem = DvtTimeAxisRenderer._addTick(context, block, currentPos, currentPos, axisEnd, tickStart, timeAxis._separatorStroke, 's_tick' + date, separatorClass);
-        else
-          tickElem = DvtTimeAxisRenderer._addTick(context, block, length - currentPos, length - currentPos, axisEnd, tickStart, timeAxis._separatorStroke, 's_tick' + date, separatorClass);
-        // save the time associated with the element for dynamic resize
-        tickElem.time = date;
+    let cmds = '';
+    // Overall first/last date can be before/past or on the overall start/end time
+    // Skip last date tick; if last date tick is on the overall end, then it will interfere with the border
+    // If not, the last date tick will show up as the start tick as the user pans, so it's not noticable.
+    for (let i = 0; i < datePositions.length - 1; i++) {
+      if (timeAxis.isVertical()) {
+        cmds += dvt.PathUtils.moveTo(axisSizeStart, datePositions[i].pos)
+          + dvt.PathUtils.horizontalLineTo(axisSizeEnd);
+      } else if (!isRTL) {
+        cmds += dvt.PathUtils.moveTo(datePositions[i].pos, axisSizeStart)
+          + dvt.PathUtils.verticalLineTo(axisSizeEnd);
+      } else {
+        cmds += dvt.PathUtils.moveTo(timeAxis._contentLength - datePositions[i].pos, axisSizeStart)
+          + dvt.PathUtils.verticalLineTo(axisSizeEnd);
       }
+    }
 
-      // Label may have been truncated in the previous render. Start fresh for this render:
-      if (label.isTruncated())
-        label.setTextString(label.getUntruncatedTextString());
-      var truncateStart = false;
+    // Render ticks as a single giant Path
+    const ticks = new dvt.Path(timeAxis.getCtx(), cmds);
+    const separatorStyle = new dvt.CSSStyle(
+      DvtTimeAxisStyleUtils.getAxisSeparatorStyle(timeAxis.Options));
+    ticks.setStroke(new dvt.Stroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR)));
+    ticks.setPixelHinting(true);
 
-      if (timeAxis.isVertical())
-      {
-        label.alignCenter(); // set horizontal bounding box reference point to be horizontally center
-        DvtTimeAxisRenderer._addAxisLabel(block, label, labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart, nextPos - currentPos, labelClass);
-      }
-      else
-      {
-        // First and Last label can get cut off because first currentPos/last next date can be before/past the overall start/end time ( - date in major axis is getting cut off in some cases)
-        // Have the first and last label be truncated with ellipses if necessary, whilst maintaining the same position as if inter-tick region is not cut off.
-        if (i === 0 && currentPos < 0) // first label currentPos is before the overall start time pos (at pos 0)
-        {
-          var labelWidth = label.getDimensions().w;
-          var maxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+    const separatorClass = DvtTimeAxisStyleUtils.getAxisSeparatorClass(timeAxis.Options) || '';
+    ticks.getElem().setAttribute('class', separatorClass);
+
+    container.addChild(ticks);
+  };
+
+  /**
+   * Renders labels given the tick dates/positions and corresponding label strings.
+   * @param {dvt.Container} container The container to render into.
+   * @param {TimeAxis} timeAxis The timeAxis being rendered.
+   * @param {Array} datePositions Array of objects representing the date and position for each tick, each of shape { date: Date, pos: number }. Length must be >= 2.
+   * @param {Array} labelTexts Array of label strings.
+   * @private
+   */
+  DvtTimeAxisRenderer._renderLabels = function (container, timeAxis, datePositions, labelTexts) {
+    const context = timeAxis.getCtx();
+    const axisStart = timeAxis.isVertical() ? timeAxis.getBorderWidth('left') : timeAxis.getBorderWidth('top');
+    const axisEnd = axisStart + timeAxis.getContentSize();
+    const isRTL = dvt.Agent.isRightToLeft(context);
+    const labelStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(timeAxis.Options);
+    const labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options) || '';
+
+    for (let i = 0; i < datePositions.length - 1; i++) {
+      const currentPos = datePositions[i].pos;
+      const nextPos = datePositions[i + 1].pos;
+
+      const timePos = !isRTL
+        ? currentPos + ((nextPos - currentPos) / 2)
+        : timeAxis._contentLength - (currentPos + ((nextPos - currentPos) / 2));
+      const sizePos = axisStart + ((axisEnd - axisStart) / 2);
+
+      const x = timeAxis.isVertical() ? sizePos : timePos;
+      const y = timeAxis.isVertical() ? timePos : sizePos;
+      const maxSize = timeAxis.getContentSize();
+      const maxLength = nextPos - currentPos;
+      const maxLabelWidth = timeAxis.isVertical() ? maxSize : maxLength;
+      const maxLabelHeight = timeAxis.isVertical() ? maxLength : maxSize;
+
+      const label = new dvt.OutputText(context, labelTexts[i], x, 0);
+      label.setCSSStyle(labelStyle);
+      label.getElem().setAttribute('class', labelClass);
+      label.alignCenter();
+      dvt.TextUtils.centerTextVertically(label, y);
+      dvt.TextUtils.fitText(label, maxLabelWidth, maxLabelHeight, container);
+
+      // Truncate first/last labels overlapping overall start/end if needed
+      if (!timeAxis.isVertical()) {
+        if (i === 0 && datePositions[i].date.getTime() < timeAxis._start) {
+          if (label.isTruncated()) {
+            label.setTextString(label.getUntruncatedTextString());
+          }
+          const labelWidth = label.getDimensions().w;
+          const adjustedMaxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
           // Can't simply take center of inter-tick region and alignCenter() for first label treatment if the label is going to be truncated
           // Instead, align right and manually calculate label placement
-          if (!isRTL)
+          const horizPos = Math.max(0, adjustedMaxLength);
+          if (!isRTL) {
             label.alignRight();
-          var horizPos = Math.max(0, maxLength);
-          truncateStart = true;
-        }
-        else if (i === dates.length - 2 && nextPos > length) // last label nextPos is after the overall end time pos (at pos length)
-        {
-          labelWidth = label.getDimensions().w;
-          maxLength = length - currentPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+            label.setX(horizPos);
+          } else {
+            label.alignLeft();
+            label.setX(timeAxis._contentLength - horizPos);
+          }
+          const fit = dvt.TextUtils.fitText(label, adjustedMaxLength, maxLabelHeight, container);
+          if (label.isTruncated() && fit) {
+            // label truncated from the back at this point. Since truncation from the start is desired,
+            // manually move the ellipsis to the front and add/remove characters accordingly
+            const textString = label.getTextString();
+            const untruncatedTextString = label.getUntruncatedTextString();
+            if (textString !== untruncatedTextString) {
+              const numTruncatedChars = label.getTextString().length - 1;
+              const indexEnd = untruncatedTextString.length;
+              const indexStart = Math.max(0, indexEnd - numTruncatedChars);
+              const truncatedStartString = dvt.OutputText.ELLIPSIS
+                + untruncatedTextString.substring(indexStart, indexEnd);
+              label.setTextString(truncatedStartString);
+            }
+          }
+        } else if (i === datePositions.length - 2
+          && datePositions[i + 1].date.getTime() > timeAxis._end) {
+          if (label.isTruncated()) {
+            label.setTextString(label.getUntruncatedTextString());
+          }
+          const labelWidth = label.getDimensions().w;
+          const adjustedMaxLength = timeAxis._contentLength
+            - currentPos
+            - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
           // Can't simply take center of inter-tick region and alignCenter() for last label treatment if the label is going to be truncated
           // Instead, align right and manually calculate label placement
-          if (isRTL)
+          const horizPos = Math.max(currentPos,
+            (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+          if (!isRTL) {
+            label.alignLeft();
+            label.setX(horizPos);
+          } else {
             label.alignRight();
-          horizPos = Math.max(currentPos, (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+            label.setX(timeAxis._contentLength - horizPos);
+          }
+          dvt.TextUtils.fitText(label, adjustedMaxLength, maxLabelHeight, container);
         }
-        else
-        {
-          maxLength = nextPos - currentPos;
-          // take center of inter-tick region and alignCenter()
-          horizPos = currentPos + ((nextPos - currentPos) / 2);
-          label.alignCenter(); // set horizontal bounding box reference point to be horizontally center
-        }
-        var labelY = labelStart + ((axisEnd - labelStart) / 2);
-        var labelX = !isRTL ? horizPos : length - horizPos;
-        DvtTimeAxisRenderer._addAxisLabel(block, label, labelX, labelY, maxLength, maxLabelHeight, labelClass, truncateStart);
       }
     }
   };
-
-
-  /**
-   * Adds an axis label.
-   * @param {dvt.Container} container The container to render into.
-   * @param {dvt.OutputText} label The label text object
-   * @param {number} x The x coordinate of the label bounding box's reference point
-   * @param {number} y The y coordinate of the label (assuming bounding box's reference point at vertical center of the label)
-   * @param {number} maxLength The maximum length of the label area
-   * @param {number} maxHeight The maximum height of the label area
-   * @param {string=} labelClass The class to be applied on the text element
-   * @param {boolean=} truncateStart Whether to truncate beginning characters and add ellipses to the front (as opposed to normal truncation and ellipsis from the back)
-   * @private
-   */
-  DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, maxHeight, labelClass, truncateStart)
-  {
-    var fit = dvt.TextUtils.fitText(label, maxLength, maxHeight, container);
-
-    if (truncateStart && label.isTruncated() && fit)
-    {
-      // label truncated from the back at this point. Since truncation from the start is desired,
-      // manually move the ellipsis to the front and add/remove characters accordingly
-      var textString = label.getTextString();
-      var untruncatedTextString = label.getUntruncatedTextString();
-      if (textString !== untruncatedTextString)
-      {
-        var numTruncatedChars = label.getTextString().length - 1;
-        var indexEnd = untruncatedTextString.length;
-        var indexStart = Math.max(0, indexEnd - numTruncatedChars);
-        var truncatedStartString = dvt.OutputText.ELLIPSIS + untruncatedTextString.substring(indexStart, indexEnd);
-        label.setTextString(truncatedStartString);
-      }
-    }
-
-    label.setX(x);
-    dvt.TextUtils.centerTextVertically(label, y); // align text vertically
-
-    if (labelClass)
-      label.getElem().setAttribute('class', labelClass);
-  };
-
-  /**
-   * Adds a tick mark.
-   * @param {dvt.Context} context The rendering context.
-   * @param {dvt.Container} container The container to render into.
-   * @param {number} x1 The x coordinate of an endpoint of the tick line
-   * @param {number} x2 The x coordinate of the other  endpoint of the tick line
-   * @param {number} y1 The y coordinate of an endpoint of the tick line
-   * @param {number} y2 The y coordinate of the other endpoint of the tick line
-   * @param {dvt.Stroke} stroke The stroke of the tick mark.
-   * @param {string} id The id of the tick mark
-   * @param {string=} tickClass The class to be applied on the line element
-   * @return {dvt.Line}
-   * @private
-   */
-  DvtTimeAxisRenderer._addTick = function(context, container, x1, x2, y1, y2, stroke, id, tickClass)
-  {
-    var line = new dvt.Line(context, x1, y1, x2, y2, id);
-    line.setStroke(stroke);
-    line.setPixelHinting(true);
-
-    container.addChild(line);
-    if (tickClass)
-      line.getElem().setAttribute('class', tickClass);
-
-    return line;
-  };
-
-  /**
-   * @license
-   * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
 
   /**
    * TimeAxis component. Use the newInstance function to instantiate.
@@ -1118,12 +729,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     this.setBorderVisibility(false, false, false, false);
     this._dateToIsoWithTimeZoneConverter = context.getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
-    // Internationalization strings
-    this._dateFormatStrings = {
-      dayNames: context.LocaleData.getDayNames('abbreviated').concat(context.LocaleData.getDayNames('wide')),
-      monthNames: context.LocaleData.getMonthNames('abbreviated').concat(context.LocaleData.getMonthNames('wide'))
-    };
-
     // Create the defaults object
     this.Defaults = new DvtTimeAxisDefaults(context);
   };
@@ -1156,7 +761,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   TimeAxis.prototype._applyParsedProperties = function(props)
   {
     var orientation = props.orientation;
-    if (orientation && orientation == TimeAxis.ORIENTATION_VERTICAL)
+    if (orientation && orientation === TimeAxis.ORIENTATION_VERTICAL)
       this._isVertical = true;
     else
       this._isVertical = false;
@@ -1165,11 +770,11 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     this._shortDesc = props.shortDesc;
 
-    // TODO: update zoom implementation to handle longest value first
-    // for now, just reverse order to ensure no regressions
-    this._zoomOrder = props.zoomOrder ? props.zoomOrder.reverse() : [props.scale]; // else no zooming. set zoom order to only have 1 scale.
+    // zoom implementation handles shortest value first,
+    // so zoom order needs to be reversed.
+    // Due to custom timescales, zoomOrder is no longer (deep) cloned, so we need to reverse a shallow clone.
+    this._zoomOrder = props.zoomOrder ? props.zoomOrder.slice().reverse() : [props.scale]; // else no zooming. set zoom order to only have 1 scale.
 
-    this._timeZoneOffsets = props.timeZoneOffsets;
     this._customTimeScales = props.customTimeScales;
     this._customFormatScales = props.customFormatScales;
 
@@ -1182,24 +787,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     this._converter = props.converter;
 
     this.applyStyleValues();
-  };
-
-  /**
-   * Gets the date translation strings.
-   * @return {object}
-   */
-  TimeAxis.prototype.getDateFormatStrings = function()
-  {
-    return this._dateFormatStrings;
-  };
-
-  /**
-   * Returns the overall length of the content.
-   * @return {number} The overall length of the content.
-   */
-  TimeAxis.prototype.getContentLength = function()
-  {
-    return this._contentLength;
   };
 
   /**
@@ -1247,60 +834,44 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   /**
    * Renders the component with the specified data.  If no data is supplied to a component
    * that has already been rendered, the component will be rerendered to the specified size.
+   * Regarding options parameter:
+   *     Standalone component:
+   *         1. Initial render: options is available.
+   *         2. Rerenders (e.g. due to resize): options is null.
+   *     Inside Gantt/Timeline:
+   *         1. Initial render: options only contains _viewStartTime and _viewEndTime that defines the visible viewport.
+   *              and _throttle to signify whether render should be throttled with requestAnimationFrame.
+   *         2. Rerenders: Same, options contains only _viewStartTime, _viewEndTime, _throttle.
    * @param {object} options The object containing specifications and data for this component.
    * @param {number} width The width of the component.
    * @param {number} height The height of the component.
    */
   TimeAxis.prototype.render = function(options, width, height)
   {
-    if (options) // if initial render or rerender with new options
-    {
-      this.Width = width;
-      this.Height = height;
-      this._prepareCanvasViewport();
+    // Whether this is a standalone component render/resize
+    var isComponentRender = options && options._viewStartTime == null;
+    var isResizeRender = options == null;
+
+    this.Width = width;
+    this.Height = height;
+    this._prepareCanvasViewport();
+
+    if (isComponentRender) {
       this.getPreferredLength(options, this._canvasLength);
     }
-    this._handleResize(width, height); // else just resize already rendered axis
 
-    // Done rendering...fire the ready event.
-    this.RenderComplete();
-  };
+    this.setContentLength(this._canvasLength);
+    this._setAxisDimensions();
 
-  /**
-   * Returns the preferred content/axis length given the minimum viewport length (canvas width if
-   * horizontal, canvas height if vertical).
-   * @param {object} options The object containing specifications and data for this component.
-   * @param {number} minViewPortLength The minimum viewport length.
-   * @return {number} The suggested TimeAxis length.
-   */
-  TimeAxis.prototype.getPreferredLength = function(options, minViewPortLength)
-  {
-    // ensure options is updated
-    this.SetOptions(options);
+    var viewStartTime = options && options._viewStartTime ? options._viewStartTime : this._start;
+    var viewEndTime = options && options._viewEndTime ? options._viewEndTime : this._end;
+    var throttle = (options && options._throttle) || false;
+    DvtTimeAxisRenderer.renderTimeAxis(this, viewStartTime, viewEndTime, throttle);
 
-    this._resources = this.Options['_resources'];
-    if (this._resources == null)
-      this._resources = [];
-
-    this._locale = this.Options['_locale'] ? this.Options['_locale'] : 'en-US';
-
-    var firstDayOfWeek = this._resources['firstDayOfWeek'];
-    if (firstDayOfWeek == null)
-      firstDayOfWeek = 0; // default to sunday
-    this._calendar.setFirstDayOfWeek(firstDayOfWeek);
-
-    if (!this._dateToIsoWithTimeZoneConverter)
-      this._dateToIsoWithTimeZoneConverter = this.getCtx().getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
-
-    var props = this.Parse(this.Options);
-    this._applyParsedProperties(props);
-
-    if (this.hasValidOptions())
-    {
-      this.prepareTimeAxisZoomLevelIntervals(this._start, this._end, minViewPortLength);
+    // Done rendering...fire the ready event for standalone component case
+    if (isComponentRender || isResizeRender) {
+      this.RenderComplete();
     }
-
-    return this._contentLength;
   };
 
   /**
@@ -1309,7 +880,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   TimeAxis.prototype.hasValidOptions = function()
   {
-    var hasValidScale = this._scale && TimeAxis._VALID_SCALES.indexOf(this._scale) != -1;
+    var hasValidScale = this._scale && (TimeAxis._VALID_SCALES.indexOf(this._scale) !== -1 || this.isTimeComponentScale(this._scale));
     var hasValidCustomScale = this._scale && this._customTimeScales && this._customTimeScales[this._scale];
     var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
 
@@ -1317,14 +888,23 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * @override
+   * Helper method to decide whether or not the scale is an instance of the DvtTimeComponentScale interface
+   * @return {boolean} Whether this scale is an instance of the DvtTimeComponentScale interface
    */
-  TimeAxis.prototype.GetComponentDescription = function()
+  TimeAxis.prototype.isTimeComponentScale = function(scale)
   {
-    if (this._shortDesc)
-      return this._shortDesc;
-    else
-      return this.Options.translations.componentName;
+    return scale.getNextDate != null && scale.getPreviousDate != null && scale.formatter != null && scale.name != null;
+  };
+
+  /**
+   * Helper method to decide whether or not the scale is an instance of the DvtTimeComponentScale interface
+   * @return {boolean} Whether this scale is an instance of the DvtTimeComponentScale interface
+   */
+  TimeAxis.prototype.isEqualScale = function(scale1, scale2)
+  {
+    return scale1 === scale2 ||
+    (scale1.name != null && scale2 != null
+      && scale1.name === scale2.name);
   };
 
   /**
@@ -1375,184 +955,236 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * Update axis dimensions with new canvas width/height; for standalone TimeAxis.
-   * @param {number} width The new width of the axis
-   * @param {number} height The new height of the axis
-   * @private
+   * Returns the preferred content/axis length given the minimum viewport length (canvas width if
+   * horizontal, canvas height if vertical).
+   * @param {object} options The object containing specifications and data for this component.
+   * @param {number} minViewPortLength The minimum viewport length.
+   * @return {number} The suggested TimeAxis length.
    */
-  TimeAxis.prototype._updateDimensions = function(width, height)
+  TimeAxis.prototype.getPreferredLength = function(options, minViewPortLength)
   {
-    this.Width = width;
-    this.Height = height;
+    // ensure options is updated
+    this.SetOptions(options);
 
-    this._prepareCanvasViewport();
+    this._resources = this.Options['_resources'] ? this.Options['_resources'] : [];
+    this._locale = this.Options['_locale'] ? this.Options['_locale'] : 'en-US';
 
-    this.setContentLength(this._canvasLength);
+    // default to sunday
+    var firstDayOfWeek = this._resources['firstDayOfWeek'] ? this._resources['firstDayOfWeek'] : 0;
+    this._calendar.setFirstDayOfWeek(firstDayOfWeek);
 
-    this._setAxisDimensions();
-  };
+    if (!this._dateToIsoWithTimeZoneConverter)
+      this._dateToIsoWithTimeZoneConverter = this.getCtx().getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
-  /**
-   * Rerenders TimeAxis with new width and height values.
-   * @param {number} width The new width of the axis
-   * @param {number} height The new height of the axis
-   * @private
-   */
-  TimeAxis.prototype._handleResize = function(width, height)
-  {
-    this._updateDimensions(width, height);
-    DvtTimeAxisRenderer.renderTimeAxis(this);
-  };
+    var props = this.Parse(this.Options);
+    this._applyParsedProperties(props);
 
-  /**
-   * Calculates and stores the dates/labels/zoomlevellengths for each specified zoom order scale.
-   * @param {number} startTime the start time of the axis in milliseconds
-   * @param {number} endTime the end time of the axis in milliseconds
-   * @param {number} minViewPortLength The minimum viewport length
-   */
-  TimeAxis.prototype.prepareTimeAxisZoomLevelIntervals = function(startTime, endTime, minViewPortLength)
-  {
-    this.setConverter(this._converter);
-    this.setType('short', this._dateFormatStrings);
-
-    this._dates = [];
-    this._labels = [];
-    this._zoomLevelLengths = [];
-
-    if (this._isVertical)
-      this.setDefaultConverter(this._resources['converterVert']);
-    else
-      this.setDefaultConverter(this._resources['converter']);
-    if (this._timeZoneOffsets)
-      this.setTimeZoneOffsets(this._timeZoneOffsets);
-
-    var originalScale = this._scale;
-
-    for (var i = 0; i < this._zoomOrder.length; i++)
+    if (this.hasValidOptions())
     {
-      var scale = this._zoomOrder[i];
-      var minLength = this._prepareScaleDatesLabels(scale, originalScale, startTime, endTime);
-      this._prepareZoomLevelLengths(i, scale, startTime, endTime, minLength, minViewPortLength);
-    }
-    this.setScale(originalScale);
-  };
+      this.setConverter(this._converter);
 
-  /**
-   * Calculates and stores the dates/labels for given scale.
-   * @param {string} scale The current scale.
-   * @param {string} originalScale The initial scale.
-   * @param {number} startTime The start time of the axis in milliseconds
-   * @param {number} endTime The end time of the axis in milliseconds
-   * @return {number} The minimum ratio between time in one interval and label length of the interval
-   * @private
-   */
-  TimeAxis.prototype._prepareScaleDatesLabels = function(scale, originalScale, startTime, endTime)
-  {
-    this.setScale(scale);
-    var minLength = Infinity;
-    var maxSize = 0;
+      if (this._isVertical) {
+        this.setDefaultConverter(this._resources['converterVert']);
+      } else {
+        this.setDefaultConverter(this._resources['converter']);
+      }
 
-    var dates;
-    var labelTexts;
-    if (this._customTimeScales && this._customTimeScales[scale])
-    {
-      var customScale = this._customTimeScales[scale];
-      dates = customScale['times'];
-      labelTexts = customScale['labels'];
-    }
-    else if (this._customFormatScales && this._customFormatScales[scale])
-    {
-      var customFormatScale = this._customFormatScales[scale];
-      dates = customFormatScale['times'];
-      labelTexts = customFormatScale['labels'];
-    }
-    else
-    {
-      dates = [];
-      labelTexts = [];
-      var currentTime = this.adjustDate(startTime).getTime();
-      dates.push(currentTime);
-      while (currentTime < endTime)
-      {
-        labelTexts.push(this.formatDate(new Date(currentTime)));
-        currentTime = this.getNextDate(currentTime).getTime();
-        // the last currentTime added in this loop is outside of the time range, but is needed
-        // for the last 'next' date when actually creating the time axis in renderTimeAxis
-        dates.push(currentTime);
+      this._zoomLevelLengths = this._zoomOrder.map(function () { return 0; });
+      // update dimensions for all zoom levels, by sampling dates across the entire time range
+      var allZoomLevelOrders = this._zoomOrder.map(function (_, i) { return i; });
+      // In the horizontal case, we can sparsely sample, and estimate the largests label width
+      // This should work in many cases, and even if we're wrong and cause a label truncation,
+      // users can manually zoom in further to see the full label.
+      // In the vertical case however, we still need to compute ALL labels to determine the
+      // time axis width that would fit all the labels. We need to be 100% sure because if a label
+      // is truncated, there's no way to see the full label in the vertical case.
+      var samplingStrategy = this._isVertical
+        ? {
+          type: 'range',
+          params: { startTime: this._start, endTime: this._end }
+        }
+        : {
+          type: 'sparse',
+          // 4 sections and 10 interval sections is arbitrary, which samples some labels at every quarter.
+          // This is more than enough for the current default scales and labels because they're very equally spaced.
+          // but this may not work well with weird custom scales such as reptitions of [3 weeks, 7 days, 2 months]
+          // for a span of 1 year, in which case we may only see weeks and months in our sample, but not days,
+          // and we underestimate the content lengths.
+          // But even then, users may still be able to zoom in sufficiently to see everything they need.
+          // If it turns out this doesn't work well for some common cases, we can bump these params up
+          // to cover more intervals in the future.
+          params: { numSections: 4, numIntervalsPerSection: 10 }
+        };
+      this._maxContentLength = minViewPortLength; // will be updated in updateDimensions();
+      this.updateDimensions(allZoomLevelOrders, samplingStrategy, minViewPortLength);
+
+      if (this._canvasSize !== null) {
+        // standalone timeaxis case
+        this._zoomLevelLengths[this._zoomLevelOrder] = minViewPortLength;
       }
     }
 
-    var labels = [];
-    for (var j = 0; j < labelTexts.length; j++)
-    {
-      currentTime = dates[j];
-      var label = new dvt.OutputText(this.getCtx(), labelTexts[j], 0, 0, 's_label' + currentTime);
-      label.setCSSStyle(DvtTimeAxisStyleUtils.getAxisLabelStyle(this.Options));
-      // save the time associated with the element for dynamic resize
-      label.time = currentTime;
-      var nextTime = dates[j + 1];
-
-      // update maximum label width and height
-      var dim = label.getDimensions();
-      if (this._isVertical)
-      {
-        var lengthDim = dim.h;
-        var sizeDim = dim.w;
-        var defaultLength = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_HEIGHT;
-      }
-      else
-      {
-        lengthDim = dim.w;
-        sizeDim = dim.h;
-        defaultLength = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_WIDTH;
-      }
-      var labelLength = Math.max(defaultLength, lengthDim + (DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2));
-      var lengthFactor = (nextTime - currentTime) / labelLength;
-      if (lengthFactor < minLength)
-        minLength = lengthFactor;
-      if (sizeDim > maxSize)
-        maxSize = sizeDim;
-
-      labels.push(label);
-    }
-
-    this.setContentSize(maxSize + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2);
-
-    this._dates.push(dates);
-    this._labels.push(labels);
-
-    this.setScale(originalScale);
-
-    return minLength;
+    return this._contentLength;
   };
 
   /**
-   * Calculates and stores the zoom order lengths for given scale.
-   * @param {number} i The zoom order index
-   * @param {string} scale The current scale.
-   * @param {number} startTime The start time of the axis in milliseconds
-   * @param {number} endTime The end time of the axis in milliseconds
-   * @param {number} minLength The minimum ratio between time in one interval and label length of the interval
-   * @param {number} minViewPortLength The minimum viewport length
+   * Updates the time axis dimensions (content size, content length at each given zoom level, max content size)
+   * using the given sampling strategy to obtain the dates to derive these dimensions from.
+   * E.g. the exact dimensions can be obtained by considering ALL dates and labels in the axis time range
+   * or approximations can be obtained by considering only a subset of the possible dates and labels.
+   * @param {Array} zoomlevelOrders Array of zoom level indices
+   * @param {object} samplingStrategy Object defining the sample strategy, either {type: 'range', params: {startTime: number, endTime: number}}
+   * which means consider only dates within the given range, or {type: 'global', params: {numSections: number, numIntervalsPerSection: number}}
+   * which means divide up the entire time axis into sections, and sample only some dates within those sections. See also _sampleIntervals().
+   * @param {number=} minViewPortLength The minimum viewport length.
+   */
+  TimeAxis.prototype.updateDimensions = function(zoomLevelOrders, samplingStrategy, minViewPortLength)
+  {
+    for (var i = 0; i < zoomLevelOrders.length; i++) {
+      var zoomLevelOrder = zoomLevelOrders[i];
+      if (zoomLevelOrder >= 0 && zoomLevelOrder < this._zoomOrder.length) {
+        var scale = this._zoomOrder[zoomLevelOrder];
+        if (this.isEqualScale(scale, this._scale)) {
+          this._zoomLevelOrder = zoomLevelOrder;
+        }
+        var intervals;
+        if (samplingStrategy.type === 'sparse') {
+          // Rather than computing all dates (and labels) to obtain exact dimensions,
+          // heuristically sample a subset of dates for better performance.
+          // Assumption is that in many usecases, label widths have small variance.
+          // Even if our estimation is off and cause a label trunction, users can manually zoom in to see the full label.
+          intervals = this._sampleIntervals(scale, samplingStrategy.params.numSections,
+            samplingStrategy.params.numIntervalsPerSection);
+
+          // Estimate maxContentLength
+          var intervalStartTimes = Object.keys(intervals);
+          var avgTimePerInterval = intervalStartTimes.reduce(function (sum, prevTime) {
+            return sum + (intervals[prevTime] - prevTime);
+          }, 0) / intervalStartTimes.length;
+          var estNumIntervals = (this._end - this._start) / avgTimePerInterval;
+          this._maxContentLength = Math.max(this._maxContentLength,
+            estNumIntervals * minViewPortLength);
+        } else {
+          // Estimate dimensions from ALL dates and labels
+          intervals = {};
+          var viewportDates = this.getViewportDates(scale,
+            samplingStrategy.params.startTime,
+            samplingStrategy.params.endTime);
+          for (var k = 0; k < viewportDates.length - 1; k++) {
+            intervals[viewportDates[k].getTime()] = viewportDates[k + 1].getTime();
+          }
+          this._maxContentLength = Math.max(this._maxContentLength,
+            Object.keys(intervals).length * minViewPortLength);
+        }
+        this._updateZoomLevelLength(zoomLevelOrder, intervals);
+      }
+    }
+
+    this.setContentLength(this._zoomLevelLengths[this._zoomLevelOrder], minViewPortLength);
+  };
+
+  /**
+   * Computes and updates the time axis dimensions for the given zoom level order, using the
+   * given set of date intervals.
+   * @param {number} zoomLevelOrder The zoom level index.
+   * @param {object} representativeIntervals Object representing intervals of shape { [start time number]: end time number }
    * @private
    */
-  TimeAxis.prototype._prepareZoomLevelLengths = function(i, scale, startTime, endTime, minLength, minViewPortLength)
+  TimeAxis.prototype._updateZoomLevelLength = function(zoomLevelOrder, representativeIntervals)
   {
-    if (this._canvasSize !== null) //standalone timeaxis case
-    {
-      var zoomLevelLength = minViewPortLength;
-    }
-    else
-      zoomLevelLength = ((endTime - startTime) / minLength);
+    var context = this.getCtx();
+    var cssStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(this.Options);
+    var contentPadding = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
+    var maxIntervalHeight = dvt.TextUtils.getTextStringHeight(this.getCtx(), cssStyle) + contentPadding;
+    var scale = this._zoomOrder[zoomLevelOrder];
 
-    this._zoomLevelLengths.push(zoomLevelLength);
-    if (scale == this._scale)
-    {
-      this._zoomLevelOrder = i;
-      this.setContentLength(zoomLevelLength, minViewPortLength);
+    var maxIntervalWidth = DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_WIDTH;
+    var minTimeDimFactor = Infinity;
+    var minHeightDimFactor = Infinity;
+
+    Object.keys(representativeIntervals).forEach(function (prevTime) {
+      var currTime = representativeIntervals[prevTime];
+      var labelText = this.formatDate(new Date(currTime), null, 'axis', scale);
+      var contentWidth = dvt.TextUtils.getTextStringWidth(context, labelText, cssStyle) + contentPadding;
+      maxIntervalWidth = Math.max(maxIntervalWidth, contentWidth);
+      minTimeDimFactor = Math.min(minTimeDimFactor, (currTime - prevTime) / maxIntervalWidth);
+      minHeightDimFactor = Math.min(minHeightDimFactor, (currTime - prevTime) / maxIntervalHeight);
+    }, this);
+
+    var minLengthFactor = this._isVertical ? minHeightDimFactor : minTimeDimFactor;
+    var zoomLevelLength = ((this._end - this._start) / minLengthFactor);
+    this._zoomLevelLengths[zoomLevelOrder] = zoomLevelLength;
+
+    this.setContentSize(this._isVertical ? maxIntervalWidth : maxIntervalHeight);
+  };
+
+  /**
+   * Returns a set of date intervals sampled using the following procedure:
+   * 1. Divide up the time range into numSections sections
+   * 2. For each section, take the first numIntervalsPerSection intervals from the start,
+   *    plus the last interval of the section.
+   * 3. Consolidate all of them and return
+   * @param {string} scale The scale.
+   * @param {number} numSections Number of sections
+   * @param {number} numIntervalsPerSection Number of intervals per section
+   * @return {object} Object representing intervals of shape { [start time number]: end time number }
+   */
+  TimeAxis.prototype._sampleIntervals = function(scale, numSections, numIntervalsPerSection)
+  {
+    // key: interval start time, value: interval end time
+    // Use object key/value store to prevent duplicate intervals
+    var intervals = {};
+
+    var sectionInterval = Math.floor((this._end - this._start) / numSections);
+    for (var i = 0; i < numSections; i++) {
+      var sectionStartTime = this._start + (sectionInterval * i);
+      var sectionEndTime = Math.min(this._start + (sectionInterval * (i + 1)), this._end);
+
+      var prevTime = this.adjustDate(sectionStartTime, scale).getTime();
+      for (var j = 0; j < numIntervalsPerSection; j++) {
+        if (prevTime >= sectionEndTime) {
+          break;
+        }
+        var currTime = this.getNextDate(prevTime, scale).getTime();
+        intervals[prevTime] = currTime;
+        prevTime = currTime;
+      }
+
+      // Also consider last label at the end of the section
+      prevTime = this.adjustDate(sectionEndTime - 1, scale).getTime();
+      intervals[prevTime] = this.getNextDate(prevTime, scale).getTime();
     }
-    if (i == 0)
-      this._maxContentLength = this._labels[this._labels.length - 1].length * minViewPortLength;
+
+    return intervals;
+  };
+
+  /**
+   * Returns an array of dates in the specified scale and viewport.
+   * @param {string} scale The scale.
+   * @param {number} viewStartTime The viewport start time in ms.
+   * @param {number} viewEndTime The viewport end time in ms.
+   * @return {Array<Date>} The array of dates in the viewport.
+   */
+  TimeAxis.prototype.getViewportDates = function(scale, viewStartTime, viewEndTime)
+  {
+    const dates = [this.adjustDate(viewStartTime, scale)];
+    while (dates[dates.length - 1].getTime() < viewEndTime) {
+      dates.push(this.getNextDate(dates[dates.length - 1].getTime(), scale));
+    }
+    return dates;
+  };
+
+  /**
+   * Returns an array of formatted date strings given an array of dates.
+   * @param {Array<Date>} dates Array of dates.
+   * @param {string} scale The scale.
+   * @return {Array<string>} Corresponding formatted date strings.
+   */
+  TimeAxis.prototype.getDateLabelTexts = function(dates, scale)
+  {
+    return dates.map(function (date) {
+      return this.formatDate(date, null, 'axis', scale);
+    }, this);
   };
 
   /**
@@ -1574,15 +1206,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * Sets the timezone offsets.
-   * @param {string} timeZoneOffsets The new timezone offsets.
-   */
-  TimeAxis.prototype.setTimeZoneOffsets = function(timeZoneOffsets)
-  {
-    this._timeZoneOffsets = timeZoneOffsets;
-  };
-
-  /**
    * Increases current scale by an order.
    * @return {boolean} whether successful
    */
@@ -1590,8 +1213,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   {
     for (var s = 0; s < this._zoomOrder.length - 1; s++)
     {
-      if (this._zoomOrder[s] == this._scale)
-      {
+      if (this.isEqualScale(this._zoomOrder[s], this._scale)) {
         this._scale = this._zoomOrder[s + 1];
         return true;
       }
@@ -1607,7 +1229,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   {
     for (var s = 1; s < this._zoomOrder.length; s++)
     {
-      if (this._zoomOrder[s] == this._scale)
+      if (this._zoomOrder[s] === this._scale)
       {
         this._scale = this._zoomOrder[s - 1];
         return true;
@@ -1651,19 +1273,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   {
     if (contentSize > this._contentSize)
       this._contentSize = contentSize;
-  };
-
-  /**
-   * Gets the TimeAxis width.
-   * @return {number}
-   */
-  TimeAxis.prototype.getTimeAxisWidth = function()
-  {
-    // read from skin?
-    if (this._timeAxisWidth == null)
-      this._timeAxisWidth = 30;
-
-    return this._timeAxisWidth;
   };
 
   /**
@@ -1717,12 +1326,12 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
 
     var dashArray = [];
     var currentDashLength = 0;
-    var currentDashState = 1;
+    var currentDashState = true;
     var sideEvalOrder = ['top', 'right', 'bottom', 'left'];
     for (var i = 0; i < sideEvalOrder.length; i++)
     {
       var sideVisibility = this.getBorderWidth(sideEvalOrder[i]) > 0;
-      if (sideVisibility == currentDashState)
+      if (sideVisibility === currentDashState)
       {
         currentDashLength += borderLengths[sideEvalOrder[i]];
       }
@@ -1730,7 +1339,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
       {
         dashArray.push(currentDashLength);
         currentDashLength = borderLengths[sideEvalOrder[i]];
-        currentDashState = Math.abs(currentDashState - 1);
+        currentDashState = !currentDashState;
       }
     }
     dashArray.push(currentDashLength);
@@ -1744,15 +1353,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   TimeAxis.prototype.getSizeBorderWidth = function()
   {
     return this._borderTopWidth + this._borderBottomWidth;
-  };
-
-  /**
-   * Gets the length dimension taken up by border width.
-   * @return {number}
-   */
-  TimeAxis.prototype.getLengthBorderWidth = function()
-  {
-    return this._borderRightWidth + this._borderLeftWidth;
   };
 
   /**
@@ -1782,45 +1382,53 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   };
 
   /**
-   * Sets the date formatter based on new type and date (translation) strings.
-   * @param {string} type The type
-   * @param {object} dateFormatStrings Object defining the date translation strings
-   */
-  TimeAxis.prototype.setType = function(type, dateFormatStrings)
-  {
-    // create a new formatter based on the new type
-    this._formatter = new DvtTimeAxisFormatter(type == 'short' ? DvtTimeAxisFormatter.SHORT : DvtTimeAxisFormatter.LONG, dateFormatStrings, this._locale);
-  };
-
-  /**
    * Finds the closest date to the time scale of the specified date.
    * @param {Date | string | number} date The date in question.
+   * @param {string=} scale The scale (optional). If not specified, the current scale is used.
    * @return {Date} date The date closest to the time scale of the date in question.
    */
-  TimeAxis.prototype.adjustDate = function(date)
+  TimeAxis.prototype.adjustDate = function(date, scale)
   {
-    return this._calendar.adjustDate(new Date(date), this._scale);
+    var scaleVal = scale || this._scale;
+    if (this.isTimeComponentScale(scaleVal)) {
+      return new Date(scaleVal.getPreviousDate(new Date(date)));
+    }
+    return this._calendar.adjustDate(new Date(date), scaleVal);
   };
 
   /**
    * Gets the next date an interval away from the specified time based on current scale.
    * @param {number} time The time in question in milliseconds
+   * @param {string=} scale The scale (optional). If not specified, the current scale is used.
    * @return {Date} The next date
    */
-  TimeAxis.prototype.getNextDate = function(time)
+  TimeAxis.prototype.getNextDate = function(time, scale)
   {
-    return this.getAdjacentDate(time, this._scale, 'next');
+    var scaleVal = scale || this._scale;
+    if (this.isTimeComponentScale(scaleVal)) {
+      return new Date(scaleVal.getNextDate(new Date(time)));
+    }
+    return this.getAdjacentDate(time, scaleVal, 'next');
   };
 
   /**
    * Gets the next or previous date an interval away from the specified time based on a given scale.
    * @param {number} time The time in question in milliseconds
-   * @param {string} scale
+   * @param {string | Object} scale
    * @param {string} direction Either 'next' or 'previous'
    * @return {Date} The adjacent date
    */
   TimeAxis.prototype.getAdjacentDate = function(time, scale, direction)
   {
+    var scaleVal = scale || this._scale;
+    if (this.isTimeComponentScale(scaleVal)) {
+      let nextDate = new Date(scaleVal.getNextDate(new Date(time)));
+      if (direction === 'next') {
+        return nextDate;
+      } else {
+        return new Date(time*2 - nextDate);
+      }
+    }
     return this._calendar.getAdjacentDate(time, scale, direction);
   };
 
@@ -1830,75 +1438,52 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    * @param {Date} date The query date
    * @param {object=} converter Optional custom converter.
    * @param {string=} converterType Optional; 'axis' if for formatting axis labels, 'general' if for general date formatting. Defaults to 'axis'.
+   * @param {string= | Object} scale Options; defaults to current scale
    * @return {string} The formatted date string
    */
-  TimeAxis.prototype.formatDate = function(date, converter, converterType)
+  TimeAxis.prototype.formatDate = function(date, converter, converterType, scale)
   {
-    var factoryOptions, scale = this.getScale();
+    var scaleVal = scale || this.getScale(); // default to current scale
+    if (this.isTimeComponentScale(scaleVal)) {
+      return scaleVal.formatter((this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date));
+    }
+
     converterType = converterType || 'axis'; // default converterType 'axis'
 
-    if (converterType == 'axis')
+    if (converterType === 'axis')
     {
       converter = converter || this._converter; // if no converter passed in, try to use axis converter from options
       if (converter)
       {
-        if (converter[scale])
-          converter = converter[scale];
+        if (converter[scaleVal])
+          converter = converter[scaleVal];
         else if (converter['default'])
           converter = converter['default'];
       }
       // Use default scale converter (if available), if no converter available, or if the converter not usable for this scale.
-      if ((!converter || !converter['format']) && this._defaultConverter && this._defaultConverter[scale])
-        converter = this._defaultConverter[scale];
+      if ((!converter || !converter['format']) && this._defaultConverter && this._defaultConverter[scaleVal])
+        converter = this._defaultConverter[scaleVal];
     }
     else // general formatting
     {
       if (!converter)
       {
-        // Note: The native javascript Date.toLocaleString() or Date.toLocaleDateString() methods
-        // uses the system locale by default, which may be different from the app specified locale.
-        // Those methods accepts a locale (and option) argument in all major browsers except Safari [OS X/iOS] 9,
-        // which are supported by JET at the time of writing. In lieu of using the native JS methods, below
-        // retrieves converters passed in from the JET side. The converters are automatically app locale aware and works on all supported browsers.
+        // Retrieves converters passed in from the JET side (which should always be available).
+        // The converters are automatically app locale aware and works on all supported browsers.
         var defaultDateTimeConverter = this._resources['defaultDateTimeConverter'];
         var defaultDateConverter = this._resources['defaultDateConverter'];
-        if (defaultDateTimeConverter && defaultDateConverter)
+        if (scaleVal === 'hours' || scaleVal === 'minutes' || scaleVal === 'seconds')
         {
-          if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
-          {
-            converter = defaultDateTimeConverter;
-          }
-          else
-          {
-            converter = defaultDateConverter;
-          }
+          converter = defaultDateTimeConverter;
         }
         else
         {
-          // If no converters found for some reason (should never get here in JET), use native JS Date toLocaleDateSTring/toLocaleString() methods
-          // See above Note for caveats:
-          var localeStringMethod = 'toLocaleDateString';
-          var options = {'year': 'numeric', 'month': 'short', 'day': 'numeric'}; // e.g. Jan 1, 2016
-          if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
-          {
-            localeStringMethod = 'toLocaleString';
-            options = {'year': 'numeric', 'month': 'short', 'day': 'numeric', 'hour': 'numeric', 'minute': 'numeric', 'second': 'numeric'}; // e.g. Jan 1, 2016, 5:53:39 PM
-          }
-
-          try {
-            return date[localeStringMethod](this._locale, options); // should work on all supported browsers except iOS 9 Safari
-          } catch (e) {
-            if (e.name === 'RangeError')
-              return date[localeStringMethod](); // fallback to using system locale rather than using app's locale
-          }
-          return date[localeStringMethod]();
+          converter = defaultDateConverter;
         }
       }
     }
 
-    if (converter && converter['format'])
-        return converter['format'](this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date);
-    return this._formatter.format(date, scale, this._timeZoneOffsets);
+    return converter['format'](this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date);
   };
 
   /**
@@ -1908,15 +1493,6 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
   TimeAxis.prototype.getZoomOrder = function()
   {
     return this._zoomOrder;
-  };
-
-  /**
-   * Sets zoom order.
-   * @param {string[]} zoomOrder The new zoom order.
-   */
-  TimeAxis.prototype.setZoomOrder = function(zoomOrder)
-  {
-    this._zoomOrder = zoomOrder;
   };
 
   /**

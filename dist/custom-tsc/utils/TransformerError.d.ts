@@ -1,3 +1,3 @@
 export declare class TransformerError extends Error {
-    constructor(message: string);
+    constructor(className: string, message: string);
 }

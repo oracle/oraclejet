@@ -8,7 +8,10 @@
 
 import './oj-requirejs-plugins';
 export namespace oj {
+    let _sDefaultNumberConverter: any;
+    let fromCollapsible: any;
     let revision: string;
+    let toCollapsible: any;
     let version: string;
 }
 export interface baseComponent<SP extends baseComponentSettableProperties = baseComponentSettableProperties> extends JetElement<SP> {
@@ -61,6 +64,17 @@ export interface JetElementCustomEvent<V> extends CustomEvent<{
         [key: string]: any;
     };
     [key: string]: any;
+}> {
+}
+export interface JetElementCustomEventStrict<V> extends CustomEvent<{
+    value: V;
+    previousValue: V;
+    updatedFrom: 'external' | 'internal';
+    subproperty: {
+        path: string;
+        value: any;
+        previousValue: any;
+    };
 }> {
 }
 // This interfaces is empty but required to keep the component chain intact. Avoid lint-rule

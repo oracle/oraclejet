@@ -14,13 +14,6 @@ import 'ojs/ojjquery-hammer';
 import 'ojs/ojcomponentcore';
 import { unwrap, isTouchSupported, removeResizeListener, addResizeListener } from 'ojs/ojdomutils';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 (function () {
 var __oj_indexer_metadata = 
 {
@@ -71,15 +64,6 @@ var __oj_indexer_metadata =
   __oj_indexer_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label', 'aria-labelledby'];
   oj.CustomElementBridge.register('oj-indexer', { metadata: __oj_indexer_metadata });
 }());
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 
 /**
  * The interface for oj.IndexerModel which should be implemented by all object instances
@@ -152,15 +136,12 @@ IndexerModel.SECTION_OTHERS = {
  * @ojsignature {target: "Type", value: "(): oj.IndexerModel.Section[]"}
  */
 
-/**
- * @license
- * Copyright (c) 2015 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 (function () {
+  // constants
+  const _DATA_INCLUDES = 'data-includes';
+  const _DATA_RANGE = 'data-range';
+  const _DATA_OTHERS = 'data-others';
+
   /*!
    * JET Indexer @VERSION
    *
@@ -212,9 +193,9 @@ IndexerModel.SECTION_OTHERS = {
    *
    * {@ojinclude "name":"keyboardDoc"}
    *
-   * <h3 id="accessibility-section">
+   * <h3 id="a11y-section">
    *   Accessibility
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    * <p>
    * The JET Indexer is accessible - it sets and maintains the appropriate aria- attributes,
@@ -224,6 +205,95 @@ IndexerModel.SECTION_OTHERS = {
    * Application developer should associate a ListView with the Indexer by specifying the id of the ListView in the aria-controls attribute in the Indexer.
    * </p>
    */
+
+  //-----------------------------------------------------
+  //                   Fragments
+  //-----------------------------------------------------
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Characters</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td>Selects the character in the indexer, which scrolls to the corresponding group header in the associated ListView.
+   *           When tap on the ellipsis character, the character in between will be selected.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Characters</td>
+   *       <td><kbd>Pan</kbd></td>
+   *       <td>Selects the character in the indexer, which scrolls to the corresponding group header in the associated ListView.
+   *           When pan up and down the ellipsis character, the indexer will select the range of characters represented by the ellipsis.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojIndexer
+   */
+
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td rowspan = "3" nowrap>Section</td>
+   *       <td><kbd>DownArrow</kbd></td>
+   *       <td>Move focus to the section below.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>UpArrow</kbd></td>
+   *       <td>Move focus to the section above.</td>
+   *     </tr>
+   *     <tr>
+   *       <td><kbd>Enter</kbd></td>
+   *       <td>Selects the current section.  No op if the section is already selected.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojIndexer
+   */
+
+  //-----------------------------------------------------
+  //                   Sub-ids
+  //-----------------------------------------------------
+
+  /**
+   * <p>Sub-ID for the sections within the Indexer.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
+   * method for details.</p>
+   *
+   * @ojsubid oj-indexer-section
+   * @memberof oj.ojIndexer
+   *
+   * @example <caption>Get the node that represents the specified prefix 'A' in the indexer:</caption>
+   * var node = myIndexer.getNodeBySubId({'subId': 'oj-indexer-section', 'section': 'A'});
+   */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+  /**
+  * @ojstylevariableset oj-indexer-css-set1
+  * @ojstylevariable oj-indexer-text-color {description: "Indexer text color", formats: ["color"], help: "#css-variables"}
+  * @ojstylevariable oj-indexer-font-size {description: "Indexer font size", formats: ["length"], help: "#css-variables"}
+  * @memberof oj.ojIndexer
+  */
+  // --------------------------------------------------- oj.ojIndexer Styling End -----------------------------------------------------------
+
   oj.__registerWidget('oj.ojIndexer', $.oj.baseComponent,
     {
       defaultElement: '<ul>',
@@ -393,7 +463,7 @@ IndexerModel.SECTION_OTHERS = {
         this.m_current = null;
       },
 
-      //* * @inheritdoc */
+
       getNodeBySubId: function (locator) {
         if (locator == null) {
           return this.element ? this.element[0] : null;
@@ -405,13 +475,13 @@ IndexerModel.SECTION_OTHERS = {
           var sections = this.element.children('li');
           for (var i = 0; i < sections.length; i++) {
             var node = sections.get(i);
-            var data = $(node).data('data-range');
+            var data = $(node).data(_DATA_RANGE);
             if (data === section) {
               return node;
             }
 
             // it's a separator, check the sections included in the range
-            var includes = $(node).data('data-includes');
+            var includes = $(node).data(_DATA_INCLUDES);
             if (includes != null) {
               for (var j = 0; j < includes.length; j++) {
                 if (includes[j] === section) {
@@ -425,10 +495,10 @@ IndexerModel.SECTION_OTHERS = {
         return null;
       },
 
-      //* * @inheritdoc */
+
       getSubIdByNode: function (node) {
         if (node != null) {
-          var section = $(node).data('data-range');
+          var section = $(node).data(_DATA_RANGE);
           if (section != null) {
             return { subId: 'oj-indexer-section', section: section };
           }
@@ -587,7 +657,7 @@ IndexerModel.SECTION_OTHERS = {
         var label = section.label ? section.label : section;
 
         var item = $(document.createElement('li'));
-        item.data('data-range', section)
+        item.data(_DATA_RANGE, section)
             .text(label);
 
         if (missingSections != null && missingSections.indexOf(section) > -1) {
@@ -604,11 +674,11 @@ IndexerModel.SECTION_OTHERS = {
         var includes = [];
         var item = $(document.createElement('li'));
         item.addClass('oj-indexer-ellipsis')
-            .data('data-range', sections[from + Math.round((to - from) / 2)]);
+            .data(_DATA_RANGE, sections[from + Math.round((to - from) / 2)]);
         for (var i = from; i <= to; i++) {
           includes.push(sections[i]);
         }
-        item.data('data-includes', includes);
+        item.data(_DATA_INCLUDES, includes);
         return item;
       },
       /** ************************** end core rendering **********************************/
@@ -756,8 +826,8 @@ IndexerModel.SECTION_OTHERS = {
        * @private
        */
       _setCurrent: function (item) {
-        var section = item.data('data-range');
-        if (item.attr('data-others')) {
+        var section = item.data(_DATA_RANGE);
+        if (item.attr(_DATA_OTHERS)) {
           section = IndexerModel.SECTION_OTHERS;
         }
 
@@ -797,7 +867,7 @@ IndexerModel.SECTION_OTHERS = {
        * @private
        */
       _updateAriaProperties: function (item) {
-        var includes = item.data('data-includes');
+        var includes = item.data(_DATA_INCLUDES);
         var valueText = '';
 
         if (includes != null) {
@@ -811,7 +881,7 @@ IndexerModel.SECTION_OTHERS = {
                                                  { first: first, second: second });
           }
         } else {
-          var val = item.data('data-range');
+          var val = item.data(_DATA_RANGE);
           // checks if it's the special others section
           if (val === IndexerModel.SECTION_OTHERS) {
             valueText = this.getTranslatedString('ariaOthersLabel');
@@ -840,8 +910,8 @@ IndexerModel.SECTION_OTHERS = {
 
         for (var i = 0; i < children.length; i++) {
           var item = children.get(i);
-          var value = $(item).data('data-range');
-          var includes = $(item).data('data-includes');
+          var value = $(item).data(_DATA_RANGE);
+          var includes = $(item).data(_DATA_INCLUDES);
 
           if ((value != null && value === section) ||
               (includes != null && includes.indexOf(section) > -1)) {
@@ -924,7 +994,7 @@ IndexerModel.SECTION_OTHERS = {
             self._setCurrent($(target));
 
             currentTarget = target;
-            currentSection = $(target).data('data-range');
+            currentSection = $(target).data(_DATA_RANGE);
             currentY = y;
           })
           .on('panmove', function (event) {
@@ -946,7 +1016,7 @@ IndexerModel.SECTION_OTHERS = {
             var section;
 
             if (currentTarget === target) {
-              range = $(target).data('data-includes');
+              range = $(target).data(_DATA_INCLUDES);
               // if the section is a range (dot), then try to set the next section inside the range current
               // for example, if move on * which represents range BCD, if current is C then move up should go to B and move down should go to D
               if (range != null) {
@@ -963,8 +1033,8 @@ IndexerModel.SECTION_OTHERS = {
                   self._setCurrentSection(section);
                 }
               }
-            } else if ($(target).data('data-range')) {
-              range = $(target).data('data-includes');
+            } else if ($(target).data(_DATA_RANGE)) {
+              range = $(target).data(_DATA_INCLUDES);
               section = null;
               // if the target is a range (dot), check to see if we should set the section to the beginning of
               // range or end of range.  For example, if you have A * E with * represents BCD, coming from A should go to B
@@ -978,7 +1048,7 @@ IndexerModel.SECTION_OTHERS = {
               }
 
               if (section == null) {
-                section = $(target).data('data-range');
+                section = $(target).data(_DATA_RANGE);
               }
 
               currentTarget = target;
@@ -1006,89 +1076,9 @@ IndexerModel.SECTION_OTHERS = {
           this.m_height = height;
         }
       }
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Gesture</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td>Characters</td>
-       *       <td><kbd>Tap</kbd></td>
-       *       <td>Selects the character in the indexer, which scrolls to the corresponding group header in the associated ListView.
-       *           When tap on the ellipsis character, the character in between will be selected.</td>
-       *     </tr>
-       *     <tr>
-       *       <td>Characters</td>
-       *       <td><kbd>Pan</kbd></td>
-       *       <td>Selects the character in the indexer, which scrolls to the corresponding group header in the associated ListView.
-       *           When pan up and down the ellipsis character, the indexer will select the range of characters represented by the ellipsis.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-       * @memberof oj.ojIndexer
-       */
-
-      /**
-       * <table class="keyboard-table">
-       *   <thead>
-       *     <tr>
-       *       <th>Target</th>
-       *       <th>Key</th>
-       *       <th>Action</th>
-       *     </tr>
-       *   </thead>
-       *   <tbody>
-       *     <tr>
-       *       <td rowspan = "3" nowrap>Section</td>
-       *       <td><kbd>DownArrow</kbd></td>
-       *       <td>Move focus to the section below.</td>
-       *     </tr>
-       *     <tr>
-       *       <td><kbd>UpArrow</kbd></td>
-       *       <td>Move focus to the section above.</td>
-       *     </tr>
-       *     <tr>
-       *       <td><kbd>Enter</kbd></td>
-       *       <td>Selects the current section.  No op if the section is already selected.</td>
-       *     </tr>
-       *   </tbody>
-       * </table>
-       *
-       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-       * @memberof oj.ojIndexer
-       */
-
-      // ////////////////     SUB-IDS     //////////////////
-
-      /**
-       * <p>Sub-ID for the sections within the Indexer.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
-       * method for details.</p>
-       *
-       * @ojsubid oj-indexer-section
-       * @memberof oj.ojIndexer
-       *
-       * @example <caption>Get the node that represents the specified prefix 'A' in the indexer:</caption>
-       * var node = myIndexer.getNodeBySubId({'subId': 'oj-indexer-section', 'section': 'A'});
-       */
-
     });
 }());
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 /**
  * Implementation of the IndexerModel used by ListView.  This implementation groups the data based on the first letter of the
  * group header text and the alphabet of the current locale.

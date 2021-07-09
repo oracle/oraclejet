@@ -11,14 +11,6 @@ define(['ojs/ojcore-base', 'knockout', 'ojs/ojlogger', 'ojs/ojcontext'], functio
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * ojModule Conventions
    * @namespace
    * @ojtsmodule

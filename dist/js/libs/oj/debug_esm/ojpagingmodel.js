@@ -8,14 +8,6 @@
 import oj from 'ojs/ojcore-base';
 import 'jquery';
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 /* jslint browser: true,devel:true*/
 /**
  * The interface for PagingModel which should be implemented by all object instances

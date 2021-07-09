@@ -2,36 +2,29 @@
 const data = obj;
 const componentPropertyInterfaceWithGenerics = data.componentPropertyInterface + data.propsClassTypeParamsDeclaration;
 const propsClassNameWithGenerics = data.propsClassName + data.propsClassTypeParams;
-const vpropsClassNameWithGenerics = data.vpropsClassName + data.propsClassTypeParamsDeclaration;
 const readOnlyProps = obj.readOnlyProps;
-if (data.propsClassName) {
-  if (readOnlyProps) {
-?>
-export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParams ?>>, GlobalAttributes {
+if (data.propsClassName) {?>
+export interface <?js= data.componentPropertyInterface ?> extends Partial<Readonly<<?js= data.settablePropertiesInterface ?><?js= data.propsTypeParamsAny ?>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
 <?js
-for (let prop of readOnlyProps) {
-?>
+if (readOnlyProps && readOnlyProps.length > 0) {
+  for (let prop of readOnlyProps) { ?>
   <?js= `${prop}?: never;` ?>
-<?js } ?>
+  <?js 
+  } 
 }
-export interface <?js= vpropsClassNameWithGenerics ?> extends <?js= propsClassNameWithGenerics ?>, GlobalAttributes {
+if (data.slots || data.dynamicSlots){?>
+  children?: ComponentChildren;
 <?js
-for (let prop of readOnlyProps) {
-?>
-  <?js= `${prop}?: never;` ?>
-<?js } ?>
 }
-<?js } else { ?>
-export interface <?js= componentPropertyInterfaceWithGenerics ?> extends Partial<<?js= data.settablePropertiesInterface ?><?js= data.propsClassTypeParams ?>>, GlobalAttributes {}
-export interface <?js= vpropsClassNameWithGenerics ?> extends <?js= propsClassNameWithGenerics ?>, GlobalAttributes {}
-<?js } ?>
+?>
+<?js= this.partial('listenerproperties.tmpl', data) ?>
+}
 declare global {
-  namespace JSX {
+  namespace preact.JSX {
     interface IntrinsicElements {
-      "<?js= data.customElementName ?>": <?js= data.componentPropertyInterface ?><?js= data.propsTypeParamsAny ?>;
+      "<?js= data.customElementName ?>": <?js= data.componentPropertyInterface ?>;
     }
   }
 }
-<?js } else { ?>
-export interface <?js= vpropsClassNameWithGenerics ?> extends GlobalAttributes {}
-<?js } ?>
+<?js 
+} ?>

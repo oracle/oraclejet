@@ -11,6 +11,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
   "use strict";
 
 
+
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -113,12 +114,11 @@ oj.FlattenedTreeTableDataSource = function (data, options) {
     function sortNumber(a, b) {
       return a - b;
     }
-    indexArray = indexArray.sort(sortNumber);
     self._realignRowIndices();
     self._hasMore = true;
     oj.TableDataSource.superclass.handleEvent
       .call(self, oj.TableDataSource.EventType.REMOVE,
-            { data: rowArray, keys: keyArray, indexes: indexArray });
+            { data: rowArray, keys: keyArray, indexes: indexArray.sort(sortNumber) });
   };
 
   this.Init();

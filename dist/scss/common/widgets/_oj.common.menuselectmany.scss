@@ -39,13 +39,8 @@
       }
 
       .oj-menucheckbox-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-          width: $menuIconSize;
-          height: $menuIconSize;
-        
+        width: $menuIconSize;
+        height: $menuIconSize;
       }
   
       .oj-menucheckbox-icon::after {

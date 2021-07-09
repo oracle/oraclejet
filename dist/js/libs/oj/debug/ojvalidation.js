@@ -9,4 +9,5 @@
 define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojmessaging', 'ojs/ojvalidation-datetime', 'ojs/ojvalidation-number'], function(oj, $, ojld)
 {
   "use strict";
+
 });

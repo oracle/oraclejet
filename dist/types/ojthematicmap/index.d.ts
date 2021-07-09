@@ -1,36 +1,30 @@
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * Licensed under The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
+import { GlobalProps } from 'ojs/ojvcomponent';
+import { ComponentChildren } from 'preact';
 import 'geojson';
 import { DataProvider } from '../ojdataprovider';
 import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettableProperties } from '../ojdvt-base';
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
    any> extends dvtBaseComponent<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>> {
-    animationDuration: number;
-    animationOnDisplay: 'auto' | 'none';
-    areaData: DataProvider<K1, D1> | null;
-    as: string;
-    focusRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    animationDuration?: number;
+    animationOnDisplay?: 'auto' | 'none';
+    areaData?: DataProvider<K1, D1> | null;
+    as?: string;
+    focusRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    initialZooming: 'auto' | 'none';
-    isolatedItem: K1;
-    labelDisplay: 'on' | 'off' | 'auto';
-    labelType: 'long' | 'short';
-    linkData: DataProvider<K2, D2> | null;
+    initialZooming?: 'auto' | 'none';
+    isolatedItem?: K1;
+    labelDisplay?: 'on' | 'off' | 'auto';
+    labelType?: 'long' | 'short';
+    linkData?: DataProvider<K2, D2> | null;
     mapProvider: {
         geo: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon> | GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
         propertiesKeys: {
@@ -39,19 +33,19 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
             shortLabel?: string;
         };
     };
-    markerData: DataProvider<K3, D3> | null;
-    markerZoomBehavior: 'zoom' | 'fixed';
-    maxZoom: number;
-    panning: 'auto' | 'none';
-    renderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    markerData?: DataProvider<K3, D3> | null;
+    markerZoomBehavior?: 'zoom' | 'fixed';
+    maxZoom?: number;
+    panning?: 'auto' | 'none';
+    renderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    selection: Array<K1 | K2 | K3>;
-    selectionMode: 'none' | 'single' | 'multiple';
-    selectionRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    selection?: Array<K1 | K2 | K3>;
+    selectionMode?: 'none' | 'single' | 'multiple';
+    selectionRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    styleDefaults: {
+    styleDefaults?: {
         areaSvgStyle?: CSSStyleDeclaration;
         dataAreaDefaults?: {
             borderColor?: string;
@@ -77,16 +71,16 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
             width?: number;
         };
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojThematicMap.TooltipContext<K1, K2, K3, D1, D2, D3>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    tooltipDisplay: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
-    touchResponse: 'touchStart' | 'auto';
-    zooming: 'auto' | 'none';
+    tooltipDisplay?: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
+    touchResponse?: 'touchStart' | 'auto';
+    zooming?: 'auto' | 'none';
     translations: {
         areasRegion?: string;
         componentName?: string;
@@ -206,8 +200,14 @@ export namespace ojThematicMap {
     // tslint:disable-next-line interface-over-type-literal
     type zoomingChanged<K1, K2, K3, D1 extends Area<K1> | any, D2 extends Link<K2, K1 | K3> | any, D3 extends Marker<K3> | any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2,
        D3>["zooming"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type Area<K> = {
+    type trackResizeChanged<K1, K2, K3, D1 extends Area<K1> | any, D2 extends Link<K2, K1 | K3> | any, D3 extends Marker<K3> |
+       any> = dvtBaseComponent.trackResizeChanged<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Area<K, D = any> = {
         categories?: string[];
         color?: string;
         id?: K;
@@ -216,9 +216,20 @@ export namespace ojThematicMap {
         location: string;
         opacity?: number;
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: AreaShortDescContext<K, D>) => string));
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type AreaShortDescContext<K1, D1> = {
+        data: Area<K1, D1>;
+        id: K1;
+        itemData: D1 | null;
+        label: string;
+        location: string | null;
+        locationName: string | null;
+        x: number;
+        y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type AreaTemplateContext = {
@@ -235,7 +246,7 @@ export namespace ojThematicMap {
         tooltip: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Link<K1, K2> = {
+    type Link<K1, K2, D1 = any> = {
         categories?: string[];
         color?: string;
         endLocation: {
@@ -246,7 +257,7 @@ export namespace ojThematicMap {
         };
         id?: K1;
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: LinkShortDescContext<K1, K2, D1>) => string));
         startLocation: {
             id?: K2;
             location?: string;
@@ -258,6 +269,13 @@ export namespace ojThematicMap {
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type LinkShortDescContext<K1, K2, D1> = {
+        data: Link<K1, K2, D1>;
+        id: K1;
+        itemData: D1 | null;
+        label: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
         componentElement: Element;
         data: object;
@@ -265,14 +283,14 @@ export namespace ojThematicMap {
         key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type Marker<K> = {
+    type Marker<K3, D3 = any> = {
         borderColor?: string;
         borderStyle?: 'solid' | 'none';
         borderWidth?: number;
         categories?: string[];
         color?: string;
         height?: number;
-        id?: K;
+        id?: K3;
         label?: string;
         labelPosition?: 'bottom' | 'center' | 'top';
         labelStyle?: CSSStyleDeclaration;
@@ -281,7 +299,7 @@ export namespace ojThematicMap {
         rotation?: number;
         selectable?: 'auto' | 'off';
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-        shortDesc?: string;
+        shortDesc?: (string | ((context: MarkerShortDescContext<K3, D3>) => string));
         source?: string;
         sourceHover?: string;
         sourceHoverSelected?: string;
@@ -292,6 +310,17 @@ export namespace ojThematicMap {
         width?: number;
         x?: number;
         y?: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type MarkerShortDescContext<K3, D3> = {
+        data: Marker<K3>;
+        id: K3;
+        itemData: D3 | null;
+        label: string;
+        location: string | null;
+        locationName: string | null;
+        x: number;
+        y: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type MarkerTemplateContext = {
@@ -309,7 +338,7 @@ export namespace ojThematicMap {
     type RendererContext<K1, K2, K3, D1, D2, D3> = {
         color: string;
         componentElement: Element;
-        data: Area<K1> | Link<K2, K1 | K3> | Marker<K3>;
+        data: Area<K1, D1> | Link<K2, K1 | K3, D2> | Marker<K3, D3>;
         id: K1 | K2 | K3;
         itemData: D1 | D2 | D3 | null;
         label: string;
@@ -336,7 +365,7 @@ export namespace ojThematicMap {
     type TooltipContext<K1, K2, K3, D1, D2, D3> = {
         color: string | null;
         componentElement: Element;
-        data: Area<K1> | Link<K2, K1 | K3> | Marker<K3> | null;
+        data: Area<K1, D1> | Link<K2, K1 | K3, D2> | Marker<K3, D3> | null;
         id: K1 | K2 | K3 | null;
         itemData: D1 | D2 | D3 | null;
         label: string | null;
@@ -379,28 +408,29 @@ export interface ojThematicMapEventMap<K1, K2, K3, D1 extends ojThematicMap.Area
     'tooltipDisplayChanged': JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["tooltipDisplay"]>;
     'touchResponseChanged': JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["touchResponse"]>;
     'zoomingChanged': JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["zooming"]>;
+    'trackResizeChanged': JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["trackResize"]>;
 }
 export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
    any> extends dvtBaseComponentSettableProperties {
-    animationDuration: number;
-    animationOnDisplay: 'auto' | 'none';
-    areaData: DataProvider<K1, D1> | null;
-    as: string;
-    focusRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    animationDuration?: number;
+    animationOnDisplay?: 'auto' | 'none';
+    areaData?: DataProvider<K1, D1> | null;
+    as?: string;
+    focusRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    hiddenCategories: string[];
-    highlightMatch: 'any' | 'all';
-    highlightedCategories: string[];
-    hoverBehavior: 'dim' | 'none';
-    hoverRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    hiddenCategories?: string[];
+    highlightMatch?: 'any' | 'all';
+    highlightedCategories?: string[];
+    hoverBehavior?: 'dim' | 'none';
+    hoverRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    initialZooming: 'auto' | 'none';
-    isolatedItem: K1;
-    labelDisplay: 'on' | 'off' | 'auto';
-    labelType: 'long' | 'short';
-    linkData: DataProvider<K2, D2> | null;
+    initialZooming?: 'auto' | 'none';
+    isolatedItem?: K1;
+    labelDisplay?: 'on' | 'off' | 'auto';
+    labelType?: 'long' | 'short';
+    linkData?: DataProvider<K2, D2> | null;
     mapProvider: {
         geo: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon> | GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
         propertiesKeys: {
@@ -409,19 +439,19 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
             shortLabel?: string;
         };
     };
-    markerData: DataProvider<K3, D3> | null;
-    markerZoomBehavior: 'zoom' | 'fixed';
-    maxZoom: number;
-    panning: 'auto' | 'none';
-    renderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    markerData?: DataProvider<K3, D3> | null;
+    markerZoomBehavior?: 'zoom' | 'fixed';
+    maxZoom?: number;
+    panning?: 'auto' | 'none';
+    renderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    selection: Array<K1 | K2 | K3>;
-    selectionMode: 'none' | 'single' | 'multiple';
-    selectionRenderer: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
+    selection?: Array<K1 | K2 | K3>;
+    selectionMode?: 'none' | 'single' | 'multiple';
+    selectionRenderer?: ((context: ojThematicMap.RendererContext<K1, K2, K3, D1, D2, D3>) => {
         insert: SVGElement;
     } | void) | null;
-    styleDefaults: {
+    styleDefaults?: {
         areaSvgStyle?: CSSStyleDeclaration;
         dataAreaDefaults?: {
             borderColor?: string;
@@ -447,16 +477,16 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
             width?: number;
         };
     };
-    tooltip: {
+    tooltip?: {
         renderer: ((context: ojThematicMap.TooltipContext<K1, K2, K3, D1, D2, D3>) => ({
             insert: Element | string;
         } | {
             preventDefault: boolean;
         }));
     };
-    tooltipDisplay: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
-    touchResponse: 'touchStart' | 'auto';
-    zooming: 'auto' | 'none';
+    tooltipDisplay?: 'auto' | 'labelAndShortDesc' | 'none' | 'shortDesc';
+    touchResponse?: 'touchStart' | 'auto';
+    zooming?: 'auto' | 'none';
     translations: {
         areasRegion?: string;
         componentName?: string;
@@ -484,306 +514,308 @@ export interface ojThematicMapSettablePropertiesLenient<K1, K2, K3, D1 extends o
    any> extends Partial<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>> {
     [key: string]: any;
 }
-export interface ojThematicMapArea extends JetElement<ojThematicMapAreaSettableProperties> {
-    categories: string[];
-    color: string;
-    label: string;
-    labelStyle: CSSStyleDeclaration;
+export interface ojThematicMapArea<K1 = any, D1 = any> extends dvtBaseComponent<ojThematicMapAreaSettableProperties<K1, D1>> {
+    categories?: string[];
+    color?: string;
+    label?: string;
+    labelStyle?: CSSStyleDeclaration;
     location: string;
-    opacity: number;
-    selectable: 'auto' | 'off';
-    shortDesc: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    addEventListener<T extends keyof ojThematicMapAreaEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    opacity?: number;
+    selectable?: 'auto' | 'off';
+    shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    addEventListener<T extends keyof ojThematicMapAreaEventMap<K1, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap<K1, D1>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojThematicMapAreaSettableProperties>(property: T): ojThematicMapArea[T];
+    getProperty<T extends keyof ojThematicMapAreaSettableProperties<K1, D1>>(property: T): ojThematicMapArea<K1, D1>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojThematicMapAreaSettableProperties>(property: T, value: ojThematicMapAreaSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapAreaSettableProperties>): void;
-    setProperties(properties: ojThematicMapAreaSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojThematicMapAreaSettableProperties<K1, D1>>(property: T, value: ojThematicMapAreaSettableProperties<K1, D1>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapAreaSettableProperties<K1, D1>>): void;
+    setProperties(properties: ojThematicMapAreaSettablePropertiesLenient<K1, D1>): void;
 }
 export namespace ojThematicMapArea {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapArea["categories"]>;
+    type categoriesChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapArea["color"]>;
+    type colorChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojThematicMapArea["label"]>;
+    type labelChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojThematicMapArea["labelStyle"]>;
+    type labelStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type locationChanged = JetElementCustomEvent<ojThematicMapArea["location"]>;
+    type locationChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["location"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type opacityChanged = JetElementCustomEvent<ojThematicMapArea["opacity"]>;
+    type opacityChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["opacity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapArea["selectable"]>;
+    type selectableChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapArea["shortDesc"]>;
+    type shortDescChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapArea["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapArea["svgStyle"]>;
+    type svgStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgStyle"]>;
 }
-export interface ojThematicMapAreaEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojThematicMapArea["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojThematicMapArea["color"]>;
-    'labelChanged': JetElementCustomEvent<ojThematicMapArea["label"]>;
-    'labelStyleChanged': JetElementCustomEvent<ojThematicMapArea["labelStyle"]>;
-    'locationChanged': JetElementCustomEvent<ojThematicMapArea["location"]>;
-    'opacityChanged': JetElementCustomEvent<ojThematicMapArea["opacity"]>;
-    'selectableChanged': JetElementCustomEvent<ojThematicMapArea["selectable"]>;
-    'shortDescChanged': JetElementCustomEvent<ojThematicMapArea["shortDesc"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapArea["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojThematicMapArea["svgStyle"]>;
+export interface ojThematicMapAreaEventMap<K1 = any, D1 = any> extends dvtBaseComponentEventMap<ojThematicMapAreaSettableProperties<K1, D1>> {
+    'categoriesChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["color"]>;
+    'labelChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["label"]>;
+    'labelStyleChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["labelStyle"]>;
+    'locationChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["location"]>;
+    'opacityChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["opacity"]>;
+    'selectableChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["selectable"]>;
+    'shortDescChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["shortDesc"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgStyle"]>;
 }
-export interface ojThematicMapAreaSettableProperties extends JetSettableProperties {
-    categories: string[];
-    color: string;
-    label: string;
-    labelStyle: CSSStyleDeclaration;
+export interface ojThematicMapAreaSettableProperties<K1 = any, D1 = any> extends dvtBaseComponentSettableProperties {
+    categories?: string[];
+    color?: string;
+    label?: string;
+    labelStyle?: CSSStyleDeclaration;
     location: string;
-    opacity: number;
-    selectable: 'auto' | 'off';
-    shortDesc: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
+    opacity?: number;
+    selectable?: 'auto' | 'off';
+    shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
 }
-export interface ojThematicMapAreaSettablePropertiesLenient extends Partial<ojThematicMapAreaSettableProperties> {
+export interface ojThematicMapAreaSettablePropertiesLenient<K1 = any, D1 = any> extends Partial<ojThematicMapAreaSettableProperties<K1, D1>> {
     [key: string]: any;
 }
-export interface ojThematicMapLink extends JetElement<ojThematicMapLinkSettableProperties> {
-    categories: string[];
-    color: string;
+export interface ojThematicMapLink<K1 = any, K2 = any, D1 = any> extends dvtBaseComponent<ojThematicMapLinkSettableProperties<K1, K2, D1>> {
+    categories?: string[];
+    color?: string;
     endLocation: {
         id?: any;
         location?: string;
         x?: number;
         y?: number;
     };
-    selectable: 'auto' | 'off';
-    shortDesc: string;
+    selectable?: 'auto' | 'off';
+    shortDesc?: (string | ((context: ojThematicMap.LinkShortDescContext<K1, K2, D1>) => string));
     startLocation: {
         id?: any;
         location?: string;
         x?: number;
         y?: number;
     };
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    width: number;
-    addEventListener<T extends keyof ojThematicMapLinkEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    width?: number;
+    addEventListener<T extends keyof ojThematicMapLinkEventMap<K1, K2, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap<K1, K2, D1>[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojThematicMapLinkSettableProperties>(property: T): ojThematicMapLink[T];
+    getProperty<T extends keyof ojThematicMapLinkSettableProperties<K1, K2, D1>>(property: T): ojThematicMapLink<K1, K2, D1>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojThematicMapLinkSettableProperties>(property: T, value: ojThematicMapLinkSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapLinkSettableProperties>): void;
-    setProperties(properties: ojThematicMapLinkSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojThematicMapLinkSettableProperties<K1, K2, D1>>(property: T, value: ojThematicMapLinkSettableProperties<K1, K2, D1>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapLinkSettableProperties<K1, K2, D1>>): void;
+    setProperties(properties: ojThematicMapLinkSettablePropertiesLenient<K1, K2, D1>): void;
 }
 export namespace ojThematicMapLink {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapLink["categories"]>;
+    type categoriesChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapLink["color"]>;
+    type colorChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endLocationChanged = JetElementCustomEvent<ojThematicMapLink["endLocation"]>;
+    type endLocationChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["endLocation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapLink["selectable"]>;
+    type selectableChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapLink["shortDesc"]>;
+    type shortDescChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startLocationChanged = JetElementCustomEvent<ojThematicMapLink["startLocation"]>;
+    type startLocationChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["startLocation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapLink["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapLink["svgStyle"]>;
+    type svgStyleChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojThematicMapLink["width"]>;
+    type widthChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["width"]>;
 }
-export interface ojThematicMapLinkEventMap extends HTMLElementEventMap {
-    'categoriesChanged': JetElementCustomEvent<ojThematicMapLink["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojThematicMapLink["color"]>;
-    'endLocationChanged': JetElementCustomEvent<ojThematicMapLink["endLocation"]>;
-    'selectableChanged': JetElementCustomEvent<ojThematicMapLink["selectable"]>;
-    'shortDescChanged': JetElementCustomEvent<ojThematicMapLink["shortDesc"]>;
-    'startLocationChanged': JetElementCustomEvent<ojThematicMapLink["startLocation"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapLink["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojThematicMapLink["svgStyle"]>;
-    'widthChanged': JetElementCustomEvent<ojThematicMapLink["width"]>;
+export interface ojThematicMapLinkEventMap<K1 = any, K2 = any, D1 = any> extends dvtBaseComponentEventMap<ojThematicMapLinkSettableProperties<K1, K2, D1>> {
+    'categoriesChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["color"]>;
+    'endLocationChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["endLocation"]>;
+    'selectableChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["selectable"]>;
+    'shortDescChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["shortDesc"]>;
+    'startLocationChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["startLocation"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgStyle"]>;
+    'widthChanged': JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["width"]>;
 }
-export interface ojThematicMapLinkSettableProperties extends JetSettableProperties {
-    categories: string[];
-    color: string;
+export interface ojThematicMapLinkSettableProperties<K1 = any, K2 = any, D1 = any> extends dvtBaseComponentSettableProperties {
+    categories?: string[];
+    color?: string;
     endLocation: {
         id?: any;
         location?: string;
         x?: number;
         y?: number;
     };
-    selectable: 'auto' | 'off';
-    shortDesc: string;
+    selectable?: 'auto' | 'off';
+    shortDesc?: (string | ((context: ojThematicMap.LinkShortDescContext<K1, K2, D1>) => string));
     startLocation: {
         id?: any;
         location?: string;
         x?: number;
         y?: number;
     };
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    width: number;
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    width?: number;
 }
-export interface ojThematicMapLinkSettablePropertiesLenient extends Partial<ojThematicMapLinkSettableProperties> {
+export interface ojThematicMapLinkSettablePropertiesLenient<K1 = any, K2 = any, D1 = any> extends Partial<ojThematicMapLinkSettableProperties<K1, K2, D1>> {
     [key: string]: any;
 }
-export interface ojThematicMapMarker extends JetElement<ojThematicMapMarkerSettableProperties> {
-    borderColor: string;
-    borderStyle: 'solid' | 'none';
-    borderWidth: number;
-    categories: string[];
-    color: string;
-    height: number;
-    label: string;
-    labelPosition: 'bottom' | 'center' | 'top';
-    labelStyle: CSSStyleDeclaration;
-    location: string;
-    opacity: number;
-    rotation: number;
-    selectable: 'auto' | 'off';
+export interface ojThematicMapMarker<K3 = any, D3 = any> extends dvtBaseComponent<ojThematicMapMarkerSettableProperties<K3, D3>> {
+    borderColor?: string;
+    borderStyle?: 'solid' | 'none';
+    borderWidth?: number;
+    categories?: string[];
+    color?: string;
+    height?: number;
+    label?: string;
+    labelPosition?: 'bottom' | 'center' | 'top';
+    labelStyle?: CSSStyleDeclaration;
+    location?: string;
+    opacity?: number;
+    rotation?: number;
+    selectable?: 'auto' | 'off';
     shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-    shortDesc: string;
-    source: string;
-    sourceHover: string;
-    sourceHoverSelected: string;
-    sourceSelected: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    value: number;
-    width: number;
-    x: number | null;
-    y: number | null;
-    addEventListener<T extends keyof ojThematicMapMarkerEventMap>(type: T, listener: (this: HTMLElement, ev: ojThematicMapMarkerEventMap[T]) => any, options?: (boolean |
+    shortDesc?: (string | ((context: ojThematicMap.MarkerShortDescContext<K3, D3>) => string));
+    source?: string;
+    sourceHover?: string;
+    sourceHoverSelected?: string;
+    sourceSelected?: string;
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    value?: number;
+    width?: number;
+    x?: number | null;
+    y?: number | null;
+    addEventListener<T extends keyof ojThematicMapMarkerEventMap<K3, D3>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapMarkerEventMap<K3, D3>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
-    getProperty<T extends keyof ojThematicMapMarkerSettableProperties>(property: T): ojThematicMapMarker[T];
+    getProperty<T extends keyof ojThematicMapMarkerSettableProperties<K3, D3>>(property: T): ojThematicMapMarker<K3, D3>[T];
     getProperty(property: string): any;
-    setProperty<T extends keyof ojThematicMapMarkerSettableProperties>(property: T, value: ojThematicMapMarkerSettableProperties[T]): void;
-    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapMarkerSettableProperties>): void;
-    setProperties(properties: ojThematicMapMarkerSettablePropertiesLenient): void;
+    setProperty<T extends keyof ojThematicMapMarkerSettableProperties<K3, D3>>(property: T, value: ojThematicMapMarkerSettableProperties<K3, D3>[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojThematicMapMarkerSettableProperties<K3, D3>>): void;
+    setProperties(properties: ojThematicMapMarkerSettablePropertiesLenient<K3, D3>): void;
 }
 export namespace ojThematicMapMarker {
     // tslint:disable-next-line interface-over-type-literal
-    type borderColorChanged = JetElementCustomEvent<ojThematicMapMarker["borderColor"]>;
+    type borderColorChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderColor"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type borderStyleChanged = JetElementCustomEvent<ojThematicMapMarker["borderStyle"]>;
+    type borderStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type borderWidthChanged = JetElementCustomEvent<ojThematicMapMarker["borderWidth"]>;
+    type borderWidthChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderWidth"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapMarker["categories"]>;
+    type categoriesChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapMarker["color"]>;
+    type colorChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type heightChanged = JetElementCustomEvent<ojThematicMapMarker["height"]>;
+    type heightChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["height"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojThematicMapMarker["label"]>;
+    type labelChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelPositionChanged = JetElementCustomEvent<ojThematicMapMarker["labelPosition"]>;
+    type labelPositionChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelPosition"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojThematicMapMarker["labelStyle"]>;
+    type labelStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type locationChanged = JetElementCustomEvent<ojThematicMapMarker["location"]>;
+    type locationChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["location"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type opacityChanged = JetElementCustomEvent<ojThematicMapMarker["opacity"]>;
+    type opacityChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["opacity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type rotationChanged = JetElementCustomEvent<ojThematicMapMarker["rotation"]>;
+    type rotationChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["rotation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapMarker["selectable"]>;
+    type selectableChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shapeChanged = JetElementCustomEvent<ojThematicMapMarker["shape"]>;
+    type shapeChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shape"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapMarker["shortDesc"]>;
+    type shortDescChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceChanged = JetElementCustomEvent<ojThematicMapMarker["source"]>;
+    type sourceChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["source"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceHoverChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHover"]>;
+    type sourceHoverChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHover"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceHoverSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHoverSelected"]>;
+    type sourceHoverSelectedChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHoverSelected"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceSelected"]>;
+    type sourceSelectedChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceSelected"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapMarker["svgClassName"]>;
+    type svgClassNameChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapMarker["svgStyle"]>;
+    type svgStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojThematicMapMarker["value"]>;
+    type valueChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojThematicMapMarker["width"]>;
+    type widthChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["width"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type xChanged = JetElementCustomEvent<ojThematicMapMarker["x"]>;
+    type xChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["x"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type yChanged = JetElementCustomEvent<ojThematicMapMarker["y"]>;
+    type yChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["y"]>;
 }
-export interface ojThematicMapMarkerEventMap extends HTMLElementEventMap {
-    'borderColorChanged': JetElementCustomEvent<ojThematicMapMarker["borderColor"]>;
-    'borderStyleChanged': JetElementCustomEvent<ojThematicMapMarker["borderStyle"]>;
-    'borderWidthChanged': JetElementCustomEvent<ojThematicMapMarker["borderWidth"]>;
-    'categoriesChanged': JetElementCustomEvent<ojThematicMapMarker["categories"]>;
-    'colorChanged': JetElementCustomEvent<ojThematicMapMarker["color"]>;
-    'heightChanged': JetElementCustomEvent<ojThematicMapMarker["height"]>;
-    'labelChanged': JetElementCustomEvent<ojThematicMapMarker["label"]>;
-    'labelPositionChanged': JetElementCustomEvent<ojThematicMapMarker["labelPosition"]>;
-    'labelStyleChanged': JetElementCustomEvent<ojThematicMapMarker["labelStyle"]>;
-    'locationChanged': JetElementCustomEvent<ojThematicMapMarker["location"]>;
-    'opacityChanged': JetElementCustomEvent<ojThematicMapMarker["opacity"]>;
-    'rotationChanged': JetElementCustomEvent<ojThematicMapMarker["rotation"]>;
-    'selectableChanged': JetElementCustomEvent<ojThematicMapMarker["selectable"]>;
-    'shapeChanged': JetElementCustomEvent<ojThematicMapMarker["shape"]>;
-    'shortDescChanged': JetElementCustomEvent<ojThematicMapMarker["shortDesc"]>;
-    'sourceChanged': JetElementCustomEvent<ojThematicMapMarker["source"]>;
-    'sourceHoverChanged': JetElementCustomEvent<ojThematicMapMarker["sourceHover"]>;
-    'sourceHoverSelectedChanged': JetElementCustomEvent<ojThematicMapMarker["sourceHoverSelected"]>;
-    'sourceSelectedChanged': JetElementCustomEvent<ojThematicMapMarker["sourceSelected"]>;
-    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapMarker["svgClassName"]>;
-    'svgStyleChanged': JetElementCustomEvent<ojThematicMapMarker["svgStyle"]>;
-    'valueChanged': JetElementCustomEvent<ojThematicMapMarker["value"]>;
-    'widthChanged': JetElementCustomEvent<ojThematicMapMarker["width"]>;
-    'xChanged': JetElementCustomEvent<ojThematicMapMarker["x"]>;
-    'yChanged': JetElementCustomEvent<ojThematicMapMarker["y"]>;
+export interface ojThematicMapMarkerEventMap<K3 = any, D3 = any> extends dvtBaseComponentEventMap<ojThematicMapMarkerSettableProperties<K3, D3>> {
+    'borderColorChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderColor"]>;
+    'borderStyleChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderStyle"]>;
+    'borderWidthChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderWidth"]>;
+    'categoriesChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["categories"]>;
+    'colorChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["color"]>;
+    'heightChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["height"]>;
+    'labelChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["label"]>;
+    'labelPositionChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelPosition"]>;
+    'labelStyleChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelStyle"]>;
+    'locationChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["location"]>;
+    'opacityChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["opacity"]>;
+    'rotationChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["rotation"]>;
+    'selectableChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["selectable"]>;
+    'shapeChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shape"]>;
+    'shortDescChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shortDesc"]>;
+    'sourceChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["source"]>;
+    'sourceHoverChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHover"]>;
+    'sourceHoverSelectedChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHoverSelected"]>;
+    'sourceSelectedChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceSelected"]>;
+    'svgClassNameChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgClassName"]>;
+    'svgStyleChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgStyle"]>;
+    'valueChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["value"]>;
+    'widthChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["width"]>;
+    'xChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["x"]>;
+    'yChanged': JetElementCustomEvent<ojThematicMapMarker<K3, D3>["y"]>;
 }
-export interface ojThematicMapMarkerSettableProperties extends JetSettableProperties {
-    borderColor: string;
-    borderStyle: 'solid' | 'none';
-    borderWidth: number;
-    categories: string[];
-    color: string;
-    height: number;
-    label: string;
-    labelPosition: 'bottom' | 'center' | 'top';
-    labelStyle: CSSStyleDeclaration;
-    location: string;
-    opacity: number;
-    rotation: number;
-    selectable: 'auto' | 'off';
+export interface ojThematicMapMarkerSettableProperties<K3 = any, D3 = any> extends dvtBaseComponentSettableProperties {
+    borderColor?: string;
+    borderStyle?: 'solid' | 'none';
+    borderWidth?: number;
+    categories?: string[];
+    color?: string;
+    height?: number;
+    label?: string;
+    labelPosition?: 'bottom' | 'center' | 'top';
+    labelStyle?: CSSStyleDeclaration;
+    location?: string;
+    opacity?: number;
+    rotation?: number;
+    selectable?: 'auto' | 'off';
     shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
-    shortDesc: string;
-    source: string;
-    sourceHover: string;
-    sourceHoverSelected: string;
-    sourceSelected: string;
-    svgClassName: string;
-    svgStyle: CSSStyleDeclaration;
-    value: number;
-    width: number;
-    x: number | null;
-    y: number | null;
+    shortDesc?: (string | ((context: ojThematicMap.MarkerShortDescContext<K3, D3>) => string));
+    source?: string;
+    sourceHover?: string;
+    sourceHoverSelected?: string;
+    sourceSelected?: string;
+    svgClassName?: string;
+    svgStyle?: CSSStyleDeclaration;
+    value?: number;
+    width?: number;
+    x?: number | null;
+    y?: number | null;
 }
-export interface ojThematicMapMarkerSettablePropertiesLenient extends Partial<ojThematicMapMarkerSettableProperties> {
+export interface ojThematicMapMarkerSettablePropertiesLenient<K3 = any, D3 = any> extends Partial<ojThematicMapMarkerSettableProperties<K3, D3>> {
     [key: string]: any;
 }
 export type ThematicMapElement<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> | any> = ojThematicMap<K1, K2,
    K3, D1, D2, D3>;
-export type ThematicMapAreaElement = ojThematicMapArea;
-export type ThematicMapLinkElement = ojThematicMapLink;
-export type ThematicMapMarkerElement = ojThematicMapMarker;
+export type ThematicMapAreaElement<K1 = any, D1 = any> = ojThematicMapArea<K1, D1>;
+export type ThematicMapLinkElement<K1 = any, K2 = any, D1 = any> = ojThematicMapLink<K1>;
+export type ThematicMapMarkerElement<K3 = any, D3 = any> = ojThematicMapMarker<K3>;
 export namespace ThematicMapElement {
     // tslint:disable-next-line interface-over-type-literal
     type animationDurationChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
@@ -872,8 +904,14 @@ export namespace ThematicMapElement {
     // tslint:disable-next-line interface-over-type-literal
     type zoomingChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
        any> = JetElementCustomEvent<ojThematicMap<K1, K2, K3, D1, D2, D3>["zooming"]>;
+    //------------------------------------------------------------
+    // Start: generated events for inherited properties
+    //------------------------------------------------------------
     // tslint:disable-next-line interface-over-type-literal
-    type Area<K> = {
+    type trackResizeChanged<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | any, D2 extends ojThematicMap.Link<K2, K1 | K3> | any, D3 extends ojThematicMap.Marker<K3> |
+       any> = dvtBaseComponent.trackResizeChanged<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>;
+    // tslint:disable-next-line interface-over-type-literal
+    type Area<K, D = any> = {
         categories?: string[];
         color?: string;
         id?: K;
@@ -882,16 +920,39 @@ export namespace ThematicMapElement {
         location: string;
         opacity?: number;
         selectable?: 'auto' | 'off';
-        shortDesc?: string;
+        shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K, D>) => string));
         svgClassName?: string;
         svgStyle?: CSSStyleDeclaration;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type DataContext = {
-        color: string;
-        label: string;
-        selected: boolean;
-        tooltip: string;
+    type AreaTemplateContext = {
+        componentElement: Element;
+        data: object;
+        index: number;
+        key: any;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type Link<K1, K2, D1 = any> = {
+        categories?: string[];
+        color?: string;
+        endLocation: {
+            id?: K2;
+            location?: string;
+            x?: number;
+            y?: number;
+        };
+        id?: K1;
+        selectable?: 'auto' | 'off';
+        shortDesc?: (string | ((context: ojThematicMap.LinkShortDescContext<K1, K2, D1>) => string));
+        startLocation: {
+            id?: K2;
+            location?: string;
+            x?: number;
+            y?: number;
+        };
+        svgClassName?: string;
+        svgStyle?: CSSStyleDeclaration;
+        width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LinkTemplateContext = {
@@ -901,131 +962,224 @@ export namespace ThematicMapElement {
         key: any;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type MarkerTemplateContext = {
-        componentElement: Element;
-        data: object;
-        index: number;
-        key: any;
-    };
-    // tslint:disable-next-line interface-over-type-literal
-    type RendererContext<K1, K2, K3, D1, D2, D3> = {
-        color: string;
-        componentElement: Element;
-        data: ojThematicMap.Area<K1> | ojThematicMap.Link<K2, K1 | K3> | ojThematicMap.Marker<K3>;
-        id: K1 | K2 | K3;
-        itemData: D1 | D2 | D3 | null;
+    type MarkerShortDescContext<K3, D3> = {
+        data: ojThematicMap.Marker<K3>;
+        id: K3;
+        itemData: D3 | null;
         label: string;
         location: string | null;
+        locationName: string | null;
+        x: number;
+        y: number;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type NodeContext = {
+        index: number;
+        subId: string;
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type TooltipContext<K1, K2, K3, D1, D2, D3> = {
+        color: string | null;
+        componentElement: Element;
+        data: ojThematicMap.Area<K1, D1> | ojThematicMap.Link<K2, K1 | K3, D2> | ojThematicMap.Marker<K3, D3> | null;
+        id: K1 | K2 | K3 | null;
+        itemData: D1 | D2 | D3 | null;
+        label: string | null;
+        location: string | null;
+        locationName: string | null;
         parentElement: Element;
-        previousState: {
-            focused: boolean;
-            hovered: boolean;
-            selected: boolean;
-        };
-        renderDefaultFocus: (() => void);
-        renderDefaultHover: (() => void);
-        renderDefaultSelection: (() => void);
-        root: Element | null;
-        state: {
-            focused: boolean;
-            hovered: boolean;
-            selected: boolean;
-        };
-        x: number | null;
-        y: number | null;
+        tooltip: string;
+        x: number;
+        y: number;
     };
 }
 export namespace ThematicMapAreaElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapArea["categories"]>;
+    type categoriesChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapArea["color"]>;
+    type colorChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojThematicMapArea["label"]>;
+    type labelChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojThematicMapArea["labelStyle"]>;
+    type labelStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type locationChanged = JetElementCustomEvent<ojThematicMapArea["location"]>;
+    type locationChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["location"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type opacityChanged = JetElementCustomEvent<ojThematicMapArea["opacity"]>;
+    type opacityChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["opacity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapArea["selectable"]>;
+    type selectableChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapArea["shortDesc"]>;
+    type shortDescChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapArea["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapArea["svgStyle"]>;
+    type svgStyleChanged<K1 = any, D1 = any> = JetElementCustomEvent<ojThematicMapArea<K1, D1>["svgStyle"]>;
 }
 export namespace ThematicMapLinkElement {
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapLink["categories"]>;
+    type categoriesChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapLink["color"]>;
+    type colorChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type endLocationChanged = JetElementCustomEvent<ojThematicMapLink["endLocation"]>;
+    type endLocationChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["endLocation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapLink["selectable"]>;
+    type selectableChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapLink["shortDesc"]>;
+    type shortDescChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type startLocationChanged = JetElementCustomEvent<ojThematicMapLink["startLocation"]>;
+    type startLocationChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["startLocation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapLink["svgClassName"]>;
+    type svgClassNameChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapLink["svgStyle"]>;
+    type svgStyleChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojThematicMapLink["width"]>;
+    type widthChanged<K1 = any, K2 = any, D1 = any> = JetElementCustomEvent<ojThematicMapLink<K1, K2, D1>["width"]>;
 }
 export namespace ThematicMapMarkerElement {
     // tslint:disable-next-line interface-over-type-literal
-    type borderColorChanged = JetElementCustomEvent<ojThematicMapMarker["borderColor"]>;
+    type borderColorChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderColor"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type borderStyleChanged = JetElementCustomEvent<ojThematicMapMarker["borderStyle"]>;
+    type borderStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type borderWidthChanged = JetElementCustomEvent<ojThematicMapMarker["borderWidth"]>;
+    type borderWidthChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["borderWidth"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type categoriesChanged = JetElementCustomEvent<ojThematicMapMarker["categories"]>;
+    type categoriesChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["categories"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type colorChanged = JetElementCustomEvent<ojThematicMapMarker["color"]>;
+    type colorChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["color"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type heightChanged = JetElementCustomEvent<ojThematicMapMarker["height"]>;
+    type heightChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["height"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelChanged = JetElementCustomEvent<ojThematicMapMarker["label"]>;
+    type labelChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelPositionChanged = JetElementCustomEvent<ojThematicMapMarker["labelPosition"]>;
+    type labelPositionChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelPosition"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type labelStyleChanged = JetElementCustomEvent<ojThematicMapMarker["labelStyle"]>;
+    type labelStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["labelStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type locationChanged = JetElementCustomEvent<ojThematicMapMarker["location"]>;
+    type locationChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["location"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type opacityChanged = JetElementCustomEvent<ojThematicMapMarker["opacity"]>;
+    type opacityChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["opacity"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type rotationChanged = JetElementCustomEvent<ojThematicMapMarker["rotation"]>;
+    type rotationChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["rotation"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type selectableChanged = JetElementCustomEvent<ojThematicMapMarker["selectable"]>;
+    type selectableChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["selectable"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shapeChanged = JetElementCustomEvent<ojThematicMapMarker["shape"]>;
+    type shapeChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shape"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type shortDescChanged = JetElementCustomEvent<ojThematicMapMarker["shortDesc"]>;
+    type shortDescChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["shortDesc"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceChanged = JetElementCustomEvent<ojThematicMapMarker["source"]>;
+    type sourceChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["source"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceHoverChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHover"]>;
+    type sourceHoverChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHover"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceHoverSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceHoverSelected"]>;
+    type sourceHoverSelectedChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceHoverSelected"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type sourceSelectedChanged = JetElementCustomEvent<ojThematicMapMarker["sourceSelected"]>;
+    type sourceSelectedChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["sourceSelected"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgClassNameChanged = JetElementCustomEvent<ojThematicMapMarker["svgClassName"]>;
+    type svgClassNameChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgClassName"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type svgStyleChanged = JetElementCustomEvent<ojThematicMapMarker["svgStyle"]>;
+    type svgStyleChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["svgStyle"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type valueChanged = JetElementCustomEvent<ojThematicMapMarker["value"]>;
+    type valueChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["value"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type widthChanged = JetElementCustomEvent<ojThematicMapMarker["width"]>;
+    type widthChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["width"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type xChanged = JetElementCustomEvent<ojThematicMapMarker["x"]>;
+    type xChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["x"]>;
     // tslint:disable-next-line interface-over-type-literal
-    type yChanged = JetElementCustomEvent<ojThematicMapMarker["y"]>;
+    type yChanged<K3 = any, D3 = any> = JetElementCustomEvent<ojThematicMapMarker<K3, D3>["y"]>;
+}
+export interface ThematicMapIntrinsicProps extends Partial<Readonly<ojThematicMapSettableProperties<any, any, any, any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onanimationDurationChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['animationDurationChanged']) => void;
+    onanimationOnDisplayChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['animationOnDisplayChanged']) => void;
+    onareaDataChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['areaDataChanged']) => void;
+    onasChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['asChanged']) => void;
+    onfocusRendererChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['focusRendererChanged']) => void;
+    onhiddenCategoriesChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['hiddenCategoriesChanged']) => void;
+    onhighlightMatchChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['highlightMatchChanged']) => void;
+    onhighlightedCategoriesChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['highlightedCategoriesChanged']) => void;
+    onhoverBehaviorChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['hoverBehaviorChanged']) => void;
+    onhoverRendererChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['hoverRendererChanged']) => void;
+    oninitialZoomingChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['initialZoomingChanged']) => void;
+    onisolatedItemChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['isolatedItemChanged']) => void;
+    onlabelDisplayChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['labelDisplayChanged']) => void;
+    onlabelTypeChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['labelTypeChanged']) => void;
+    onlinkDataChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['linkDataChanged']) => void;
+    onmapProviderChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['mapProviderChanged']) => void;
+    onmarkerDataChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['markerDataChanged']) => void;
+    onmarkerZoomBehaviorChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['markerZoomBehaviorChanged']) => void;
+    onmaxZoomChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['maxZoomChanged']) => void;
+    onpanningChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['panningChanged']) => void;
+    onrendererChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['rendererChanged']) => void;
+    onselectionChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['selectionChanged']) => void;
+    onselectionModeChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['selectionModeChanged']) => void;
+    onselectionRendererChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['selectionRendererChanged']) => void;
+    onstyleDefaultsChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['styleDefaultsChanged']) => void;
+    ontooltipChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['tooltipChanged']) => void;
+    ontooltipDisplayChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['tooltipDisplayChanged']) => void;
+    ontouchResponseChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['touchResponseChanged']) => void;
+    onzoomingChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['zoomingChanged']) => void;
+    ontrackResizeChanged?: (value: ojThematicMapEventMap<any, any, any, any, any, any>['trackResizeChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface ThematicMapAreaIntrinsicProps extends Partial<Readonly<ojThematicMapAreaSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojThematicMapAreaEventMap<any, any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojThematicMapAreaEventMap<any, any>['colorChanged']) => void;
+    onlabelChanged?: (value: ojThematicMapAreaEventMap<any, any>['labelChanged']) => void;
+    onlabelStyleChanged?: (value: ojThematicMapAreaEventMap<any, any>['labelStyleChanged']) => void;
+    onlocationChanged?: (value: ojThematicMapAreaEventMap<any, any>['locationChanged']) => void;
+    onopacityChanged?: (value: ojThematicMapAreaEventMap<any, any>['opacityChanged']) => void;
+    onselectableChanged?: (value: ojThematicMapAreaEventMap<any, any>['selectableChanged']) => void;
+    onshortDescChanged?: (value: ojThematicMapAreaEventMap<any, any>['shortDescChanged']) => void;
+    onsvgClassNameChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojThematicMapAreaEventMap<any, any>['svgStyleChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface ThematicMapLinkIntrinsicProps extends Partial<Readonly<ojThematicMapLinkSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    oncategoriesChanged?: (value: ojThematicMapLinkEventMap<any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojThematicMapLinkEventMap<any>['colorChanged']) => void;
+    onendLocationChanged?: (value: ojThematicMapLinkEventMap<any>['endLocationChanged']) => void;
+    onselectableChanged?: (value: ojThematicMapLinkEventMap<any>['selectableChanged']) => void;
+    onshortDescChanged?: (value: ojThematicMapLinkEventMap<any>['shortDescChanged']) => void;
+    onstartLocationChanged?: (value: ojThematicMapLinkEventMap<any>['startLocationChanged']) => void;
+    onsvgClassNameChanged?: (value: ojThematicMapLinkEventMap<any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojThematicMapLinkEventMap<any>['svgStyleChanged']) => void;
+    onwidthChanged?: (value: ojThematicMapLinkEventMap<any>['widthChanged']) => void;
+    children?: ComponentChildren;
+}
+export interface ThematicMapMarkerIntrinsicProps extends Partial<Readonly<ojThematicMapMarkerSettableProperties<any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onborderColorChanged?: (value: ojThematicMapMarkerEventMap<any>['borderColorChanged']) => void;
+    onborderStyleChanged?: (value: ojThematicMapMarkerEventMap<any>['borderStyleChanged']) => void;
+    onborderWidthChanged?: (value: ojThematicMapMarkerEventMap<any>['borderWidthChanged']) => void;
+    oncategoriesChanged?: (value: ojThematicMapMarkerEventMap<any>['categoriesChanged']) => void;
+    oncolorChanged?: (value: ojThematicMapMarkerEventMap<any>['colorChanged']) => void;
+    onheightChanged?: (value: ojThematicMapMarkerEventMap<any>['heightChanged']) => void;
+    onlabelChanged?: (value: ojThematicMapMarkerEventMap<any>['labelChanged']) => void;
+    onlabelPositionChanged?: (value: ojThematicMapMarkerEventMap<any>['labelPositionChanged']) => void;
+    onlabelStyleChanged?: (value: ojThematicMapMarkerEventMap<any>['labelStyleChanged']) => void;
+    onlocationChanged?: (value: ojThematicMapMarkerEventMap<any>['locationChanged']) => void;
+    onopacityChanged?: (value: ojThematicMapMarkerEventMap<any>['opacityChanged']) => void;
+    onrotationChanged?: (value: ojThematicMapMarkerEventMap<any>['rotationChanged']) => void;
+    onselectableChanged?: (value: ojThematicMapMarkerEventMap<any>['selectableChanged']) => void;
+    onshapeChanged?: (value: ojThematicMapMarkerEventMap<any>['shapeChanged']) => void;
+    onshortDescChanged?: (value: ojThematicMapMarkerEventMap<any>['shortDescChanged']) => void;
+    onsourceChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceChanged']) => void;
+    onsourceHoverChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceHoverChanged']) => void;
+    onsourceHoverSelectedChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceHoverSelectedChanged']) => void;
+    onsourceSelectedChanged?: (value: ojThematicMapMarkerEventMap<any>['sourceSelectedChanged']) => void;
+    onsvgClassNameChanged?: (value: ojThematicMapMarkerEventMap<any>['svgClassNameChanged']) => void;
+    onsvgStyleChanged?: (value: ojThematicMapMarkerEventMap<any>['svgStyleChanged']) => void;
+    onvalueChanged?: (value: ojThematicMapMarkerEventMap<any>['valueChanged']) => void;
+    onwidthChanged?: (value: ojThematicMapMarkerEventMap<any>['widthChanged']) => void;
+    onxChanged?: (value: ojThematicMapMarkerEventMap<any>['xChanged']) => void;
+    onyChanged?: (value: ojThematicMapMarkerEventMap<any>['yChanged']) => void;
+    children?: ComponentChildren;
+}
+declare global {
+    namespace preact.JSX {
+        interface IntrinsicElements {
+            "oj-thematic-map": ThematicMapIntrinsicProps;
+            "oj-thematic-map-area": ThematicMapAreaIntrinsicProps;
+            "oj-thematic-map-link": ThematicMapLinkIntrinsicProps;
+            "oj-thematic-map-marker": ThematicMapMarkerIntrinsicProps;
+        }
+    }
 }

@@ -266,22 +266,5 @@
          @include oj-box-shadow(0px -3px 3px 0 unquote('hsla(0, 0%, 0%, 0.10)'));
        }
 
-
-
-    // Native theming
-    //--------------------------------------------
-
-    /* Override default options*/
-    $offcanvasDefaultOptions: ();
-
-    @if ($offcanvasDisplayModeOptionDefault)
-    {
-      $offcanvasDefaultOptions: map-merge($offcanvasDefaultOptions, (displayMode: $offcanvasDisplayModeOptionDefault));
-    }
-    .oj-offcanvas-option-defaults {
-      font-family: oj-json-from-map($offcanvasDefaultOptions);
-    }
-
-
   }
 }

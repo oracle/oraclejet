@@ -9,6 +9,71 @@ define(['exports', 'ojs/ojcore-base'], function (exports, oj) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
+    /**
+     * @preserve Copyright 2013 jQuery Foundation and other contributors
+     * Released under the MIT license.
+     * http://jquery.org/license
+     */
+
+    /* jslint browser: true,devel:true*/
+    /**
+     *
+     * @since 11.0.0
+     * @export
+     * @class GenericEvent
+     * @classdesc
+     */
+
+    /**
+     *
+     * @since 11.0.0
+     * @export
+     * @namespace EventTargetMixin
+     * @classdesc Mixin class to provide generic implementation of addEventListener and removeEventListener
+     * methods for the {@link DataGridProvider} interface.
+     * <p>
+     * This class cannot be instantiated.  You can only call the static applyMixin
+     * method to add the implementation to another class.
+     * </p>
+     * @hideconstructor
+     */
+
+    /**
+     * Apply this mixin to another class
+     *
+     * @since 11.0.0
+     * @param {Function} derivedCtor the constructor of an existing class
+     * @export
+     * @expose
+     * @memberof EventTargetMixin
+     * @method
+     * @name applyMixin
+     * @return {void}
+     * @ojtsexample <caption>Apply the mixin in Typescript:</caption>
+     * class CustomDataGridProvider&lt;D> implements DataGridProvider&lt;D> {
+     *   // Add a stand-in property to satisfy the compiler
+     *   addEventListener: () => void;
+     *   removeEventListener: () => void;
+     *
+     *   constructor() {
+     *     // Constructor implementation
+     *   }
+     * }
+     *
+     * EventTargetMixin.applyMixin(CustomDataGridProvider);
+     *
+     * @ojtsexample <caption>Apply the mixin in Javascript:</caption>
+     * function CustomDataGridProvider() {
+     *   // Constructor implementation
+     * }
+     *
+     * EventTargetMixin.applyMixin(CustomDataGridProvider);
+     */
+
+    /**
+     * End of jsdoc
+     */
+
     class GenericEvent {
         constructor(type, options) {
             this.type = type;

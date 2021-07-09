@@ -18,27 +18,19 @@ import ListDataProviderView from 'ojs/ojlistdataproviderview';
 import 'ojs/ojselector';
 import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
-import { unwrap, addResizeListener, removeResizeListener, getReadingDirection, setScrollLeft, isMetaKeyPressed } from 'ojs/ojdomutils';
+import { unwrap, getCSSTimeUnitAsMillis, addResizeListener, removeResizeListener, getReadingDirection, setScrollLeft, isMetaKeyPressed } from 'ojs/ojdomutils';
 import { error, warn, info } from 'ojs/ojlogger';
 import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { applyParameters } from 'ojs/ojtranslation';
-import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, subtreeDetached, __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { disableAllFocusableElements, isMobileTouchDevice, getDefaultScrollBarWidth, containsKey, getAddEventKeysResult, applyMergedInlineStyles, getLogicalChildPopup, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isEventClickthroughDisabled, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { disableAllFocusableElements, isMobileTouchDevice, getDefaultScrollBarWidth, containsKey, getAddEventKeysResult, applyMergedInlineStyles, getLogicalChildPopup, isEscapeKeyEvent, isEnterKeyEvent, isF2KeyEvent, isTabKeyEvent, isArrowUpKeyEvent, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isHomeKeyEvent, isEndKeyEvent, isSpaceBarKeyEvent, isEventClickthroughDisabled, isFromDefaultSelector, getFocusableElementsInNode, enableAllFocusableElements, KEYBOARD_KEYS, areKeySetsEqual, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { startAnimation } from 'ojs/ojanimation';
 import DomScroller from 'ojs/ojdomscroller';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 import { KeySetImpl, AllKeySetImpl } from 'ojs/ojkeyset';
 import RegExpValidator from 'ojs/ojvalidator-regexp';
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 (function () {
 var __oj_table_metadata = 
@@ -48,7 +40,7 @@ var __oj_table_metadata =
       "type": "object",
       "properties": {
         "rowHeader": {
-          "type": "string"
+          "type": "string|Array<string>"
         }
       }
     },
@@ -101,9 +93,6 @@ var __oj_table_metadata =
         },
         "minWidth": {
           "type": "string|number",
-          "enumValues": [
-            "auto"
-          ],
           "value": "auto"
         },
         "renderer": {
@@ -149,7 +138,18 @@ var __oj_table_metadata =
       "writeback": true
     },
     "data": {
-      "type": "object"
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "11.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
     },
     "display": {
       "type": "string",
@@ -316,6 +316,21 @@ var __oj_table_metadata =
         "maxCount": {
           "type": "number",
           "value": 500
+        },
+        "scroller": {
+          "type": "string"
+        },
+        "scrollerOffsetBottom": {
+          "type": "number"
+        },
+        "scrollerOffsetEnd": {
+          "type": "number"
+        },
+        "scrollerOffsetStart": {
+          "type": "number"
+        },
+        "scrollerOffsetTop": {
+          "type": "number"
         }
       }
     },
@@ -544,13 +559,6 @@ var __oj_table_metadata =
 }());
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-/**
  * <table class="keyboard-table">
  *   <thead>
  *     <tr>
@@ -638,11 +646,11 @@ var __oj_table_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>LeftArrow</kbd></td>
- *       <td>Do nothing.</td>
+ *       <td>Move accessibility focus to the cell to the left (only applies when using a screen reader).</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>Do nothing.</td>
+ *       <td>Move accessibility focus to the cell to the right (only applies when using a screen reader).</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Home</kbd></td>
@@ -747,7 +755,7 @@ var __oj_table_metadata =
  *       <td>Make the current row readonly.</td>
  *     </tr>
  *     <tr>
- *       <td rowspan="13">Column Header</td>
+ *       <td rowspan="15">Column Header</td>
  *       <td><kbd>Tab</kbd></td>
  *       <td>Navigate to next focusable element on page (outside table).</td>
  *     </tr>
@@ -800,7 +808,16 @@ var __oj_table_metadata =
  *       <td>Select column.</td>
  *     </tr>
  *     <tr>
- *       <td rowspan="13">Column Footer</td>
+ *       <td><kbd>F2</kbd></td>
+ *       <td>Toggle the column header region to actionable mode if there exists a tabbable element in the region. Once toggled to actionable mode, focus will be moved to be first tabbable element in the region.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Exit actionable mode.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan="15">Column Footer</td>
  *       <td><kbd>Tab</kbd></td>
  *       <td>Navigate to next focusable element on page (outside table).</td>
  *     </tr>
@@ -852,6 +869,15 @@ var __oj_table_metadata =
  *       <td><kbd>Space</kbd></td>
  *       <td>Select column.</td>
  *     </tr>
+ *     <tr>
+ *       <td><kbd>F2</kbd></td>
+ *       <td>Toggle the column footer region to actionable mode if there exists a tabbable element in the region. Once toggled to actionable mode, focus will be moved to be first tabbable element in the region.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Exit actionable mode.</td>
+ *     </tr>
  *   </tbody>
  * </table>
  *
@@ -863,32 +889,28 @@ var __oj_table_metadata =
 /**
  * <p>Applications can customize animations triggered by actions in Table by either listening for <code class="prettyprint">animateStart/animateEnd</code>
  *    events or overriding action specific style classes on the animated item. To disable animations for specific table, please call event.preventDefault() from your listener.
- *    To disable animations for all tables, the sass variable values can be modified to specify empty effects. See the documentation of <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>
+ *    To disable animations for all tables, the CSS variable values can be modified to specify empty effects. See the documentation of <a href="AnimationUtils.html">AnimationUtils</a>
  *    class for details.</p>
  *
- * <p>The following are actions and their corresponding sass variables in which applications can use to customize animation effects.
+ * <p>The following are actions in which applications can use to customize animation effects.
  * <table class="keyboard-table">
  *   <thead>
  *     <tr>
  *       <th>Action</th>
- *       <th>Sass Variable</th>
  *       <th>Description</th>
  *     </tr>
  *   </thead>
  *   <tbody>
  *     <tr>
  *       <td><kbd>add</kbd></td>
- *       <td>$tableAddAnimation</td>
  *       <td>When a new row is added to the TableDataSource associated with Table.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>remove</kbd></td>
- *       <td>$tableRemoveAnimation</td>
  *       <td>When an existing row is removed from the TableDataSource associated with Table.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>update</kbd></td>
- *       <td>$tableUpdateAnimation</td>
  *       <td>When an existing row is updated in the TableDataSource associated with Table.</td>
  *     </tr>
  *   </tbody>
@@ -1185,14 +1207,6 @@ var __oj_table_metadata =
  */
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Creates a new Table
  * @constructor
  * @private
@@ -1235,6 +1249,7 @@ Table._LOGGER_MSG = {
  * @private
  */
 Table._UPDATE = {
+  _ATTACHED: 'attached',
   _DATA_REFRESH: 'dataRefresh',
   _DATA_SORT: 'dataSort',
   _RESIZE: 'resize',
@@ -1243,7 +1258,27 @@ Table._UPDATE = {
   _COL_RESIZE: 'colResize',
   _ROW_REFRESH: 'rowRefresh',
   _ROWS_ADDED: 'rowsAdded',
-  _ROWS_REMOVED: 'rowsRemoved'
+  _ROWS_REMOVED: 'rowsRemoved',
+  _SHOWN: 'shown'
+};
+
+/**
+ * @private
+ */
+Table._SUB_ID = {
+  _TABLE_CELL: 'oj-table-cell',
+  _TABLE_HEADER: 'oj-table-header',
+  _TABLE_FOOTER: 'oj-table-footer',
+  _TABLE_SORT_ASCENDING: 'oj-table-sort-ascending',
+  _TABLE_SORT_DESCENDING: 'oj-table-sort-descending'
+};
+
+/**
+ * @private
+ */
+Table._POSITION = {
+  _START_TOP: 'start top',
+  _START_BOTTOM: 'start bottom'
 };
 
 /**
@@ -1469,6 +1504,14 @@ Table._OPTION_EDIT_MODE = {
 /**
  * @private
  */
+Table._OPTION_FROZEN_EDGE = {
+  _END: 'end',
+  _START: 'start'
+};
+
+/**
+ * @private
+ */
 Table._OPTION_SELECTION_MODES = {
   _SINGLE: 'single',
   _MULTIPLE: 'multiple',
@@ -1497,6 +1540,9 @@ Table._COLUMN_SORT_ORDER = {
  */
 Table._DND_REORDER_TABLE_ID_DATA_KEY = 'oj-table-dnd-reorder-table-id';
 
+/**
+ * @private
+ */
 Table._CURRENT_ROW_STATUS = {
   _UPDATED: 'updated',
   _IGNORED: 'ignored',
@@ -1504,16 +1550,50 @@ Table._CURRENT_ROW_STATUS = {
   _ERROR: 'error'
 };
 
+/**
+ * @private
+ */
+Table._ROW_ITEM_EXPANDO = 'oj-table-oj-row-item';
+
+/**
+ * @private
+ */
+Table._DATA_OJ_COMMAND = 'data-oj-command';
+
+/**
+ * @private
+ */
+Table._DATA_OJ_BINDING_PROVIDER = 'data-oj-binding-provider';
+
+/**
+ * @private
+ */
 Table._BATCH_PROCESS_SIZE_WHEN_IDLE = 5;
 
 /**
  * @private
  */
+Table.RESIZE_OFFSET = 10;
+
+/**
+ * @private
+ */
+Table._CSS_Vars = {
+  enableSticky: '--oj-private-table-global-sticky-default',
+  enableSelector: '--oj-private-table-global-enable-selector-default',
+  showIndicatorDelay: '--oj-private-core-global-loading-indicator-delay-duration',
+  loadIndicator: '--oj-private-table-global-load-indicator-default',
+  horizontalGridVisible: '--oj-private-table-global-display-list-horizontal-grid-visible-default',
+  addAnimation: '--oj-private-table-global-add-animation',
+  removeAnimation: '--oj-private-table-global-remove-animation',
+  updateAnimation: '--oj-private-table-global-update-animation'
+};
+
+/**
+ * @private
+ */
 Table.prototype._isStickyLayoutEnabled = function () {
-  if (this._defaultOptions == null) {
-    this._defaultOptions = parseJSONFromFontFamily('oj-table-option-defaults');
-  }
-  if (this._defaultOptions.enableSticky === true) {
+  if (this._getDefaultOptions().enableSticky === 'true') {
     return true;
   }
   return false;
@@ -1532,6 +1612,20 @@ Table.prototype._isFixedLayoutEnabled = function () {
 Table.prototype._isTableStretchEnabled = function () {
   var tableContainer = this._getTableContainer();
   return tableContainer.classList.contains(Table.CSS_CLASSES._TABLE_STRETCH_CLASS);
+};
+
+/**
+ * @private
+ */
+Table.prototype._isExternalScrollEnabled = function () {
+  // external scroller is only supported with 'sticky' layout
+  if (this._isStickyLayoutEnabled()) {
+    var scrollPolicyOptions = this.options.scrollPolicyOptions;
+    if (scrollPolicyOptions != null) {
+      return scrollPolicyOptions.scroller != null;
+    }
+  }
+  return false;
 };
 
 /**
@@ -1611,7 +1705,9 @@ Table.prototype._handleDataFetchStart = function () {
  */
 Table.prototype._setDataWaitingState = function (showMessage) {
   if (showMessage !== false) {
-    this._clearScrollBuffer();
+    if (!this._isExternalScrollEnabled()) {
+      this._clearScrollBuffer();
+    }
     this._showStatusMessage();
     this._hideNoDataMessage();
   }
@@ -1821,6 +1917,7 @@ Table.prototype._clearAllComponentBusyStates = function () {
 Table.prototype._cleanComponent = function (isDestroy) {
   // cleanup needed for both, 'destroy()' and 'ReleaseResources()' calls
 
+  this._isTableTab = null;
   // clear any pending timeouts
   this._clearAllComponentTimeouts();
   // remove any pending busy states
@@ -1831,10 +1928,13 @@ Table.prototype._cleanComponent = function (isDestroy) {
   this._clearIdleCallback();
   // clear any existing DomScroller references
   this._unregisterDomScroller();
+  // clear the current layout manager, and any listeners it has setup
+  this._clearLayoutManager();
 
   if (isDestroy) {
     // cleanup needed for 'destroy()' call only
     $(this._getTableBody()).removeAttr(_OJ_CONTAINER_ATTR);
+    $(this._getTableBody()).removeAttr(Context._OJ_CONTEXT_ATTRIBUTE);
 
     this.element.children().remove('.' + Table.CSS_CLASSES._TABLE_HEADER_CLASS);
     this.element.children().remove('.' + Table.CSS_CLASSES._TABLE_BODY_CLASS);
@@ -1939,7 +2039,7 @@ Table.prototype._queueTask = function (task) {
   }.bind(this)).then(function (value) {
     this._taskCount -= 1;
     if (this._taskCount === 0) {
-      this._pendingTasks = undefined;
+      this._pendingTasks = null;
       try {
         if (!this._componentDestroyed) {
           if (this._finalTask) {
@@ -1957,7 +2057,7 @@ Table.prototype._queueTask = function (task) {
   }.bind(this), function (error$1) {
     this._taskCount -= 1;
     if (this._taskCount === 0) {
-      this._pendingTasks = undefined;
+      this._pendingTasks = null;
       error(error$1);
       this._setComponentReady();
     }
@@ -1980,7 +2080,8 @@ Table.prototype._draw = function () {
     } else {
       this._validateInitialSelectionState();
     }
-    if (this._resetAriaLabel && this._accRowIndex != null && this._accColumnIndex != null) {
+    if (this._resetAriaLabel && ((this._accRowIndex != null && this._accColumnIndex != null) ||
+                                 this._accHeaderIndex != null || this._accFooterIndex != null)) {
       this._updateAccStatusInfo(this._accRowIndex, this._accColumnIndex,
                                 this._accHeaderIndex, this._accFooterIndex);
     }
@@ -2113,6 +2214,17 @@ Table.prototype._refreshTableHeader = function () {
     }
   }
 
+  // replace existing legacy width buffer cells
+  var tableLegacyWidthBuffer = this._getTableBodyLegacyWidthBuffer();
+  if (tableLegacyWidthBuffer != null) {
+    $(tableLegacyWidthBuffer).empty();
+    for (i = 0; i < columnsCount; i++) {
+      var widthBufferCell = this._createTableBodyCell();
+      widthBufferCell.classList.add(Table.CSS_CLASSES._TABLE_LEGACY_WIDTH_BUFFER_CELL_CLASS);
+      tableLegacyWidthBuffer.appendChild(widthBufferCell); // @HTMLUpdateOK
+    }
+  }
+
   var tableHeader = this._getTableHeader();
   if (!tableHeader) {
     if (this._isTableHeaderless()) {
@@ -2196,7 +2308,7 @@ Table.prototype._refreshTableHeader = function () {
           }
           var slotContext = this._getHeaderSlotTemplateContextObject(column.headerText, i);
           var headerContent = templateEngine.execute(
-            componentElement, headerSlotTemplate, slotContext, this.options.as);
+            componentElement, headerSlotTemplate, slotContext, this.options.as, headerColumn);
           if (!(headerContent instanceof Array)) {
             headerContent = [headerContent];
           }
@@ -2217,7 +2329,7 @@ Table.prototype._refreshTableHeader = function () {
       tableHeaderRow.firstChild);
   }
   this._renderedTableHeaderColumns = true;
-  return this._finalizeRowRendering([tableHeaderRow]);
+  return this._finalizeNonBodyRowRendering([tableHeaderRow]);
 };
 
 /**
@@ -2298,7 +2410,7 @@ Table.prototype._refreshTableFooter = function () {
           if (templateEngine != null) {
             var slotContext = this._getFooterSlotTemplateContextObject(i);
             var footerContent = templateEngine.execute(componentElement, footerSlotTemplate,
-                                                       slotContext, this.options.as);
+                                                       slotContext, this.options.as, footerCell);
             if (!(footerContent instanceof Array)) {
               footerContent = [footerContent];
             }
@@ -2318,7 +2430,7 @@ Table.prototype._refreshTableFooter = function () {
       tableFooterRow.insertBefore(footerSelectorCell, tableFooterRow.firstChild);
     }
   }
-  return this._finalizeRowRendering([tableFooterRow]);
+  return this._finalizeNonBodyRowRendering([tableFooterRow]);
 };
 
 /**
@@ -2376,17 +2488,15 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
   }
   this._clearCachedDomRowData();
   this._hideNoDataMessage();
-  tableBodyRows = tableBody.children;
 
   // if no data then bail
-  if (rows.length === 0 && tableBodyRows.length === 0) {
+  if (rows.length === 0 && this._getRawTableBodyRow(0) == null) {
     this._showNoDataMessage();
   } else {
-    var tableBodyDocFrag;
-
     // for the pre-fetching case, we'll render items during idle cycles
     // don't do it when the scroll is caused by handling scroll position
-    if (startIndex > 0 && this._isOverflow() && !this._fetchBySyncScroll) {
+    if (startIndex > 0 && this._isLoadMoreOnScroll() && !this._isLastRowInViewport()
+      && !this._fetchBySyncScroll) {
       return new Promise(function (resolve, reject) {
         this._setIdleRenderBusyState();
 
@@ -2395,6 +2505,8 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
           resultObject.isMouseWheel);
       }.bind(this));
     }
+    var layoutManager = this._getLayoutManager();
+    var tableBodyDocFrag = document.createDocumentFragment();
 
     var rowsCount = rows.length;
     if (this._animateOnFetch && this._IsCustomElement()) {
@@ -2403,20 +2515,24 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
       var rowIdxArray = [];
       for (i = 0; i < rowsCount; i++) {
         rowIdxArray.push(rows[i].rowIdx);
-        addedTableBodyRows.push(this._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row));
+        addedTableBodyRows.push(
+          this._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row,
+                                      tableBodyDocFrag, startIndex));
       }
+      layoutManager.handleAfterRowsProcessed(tableBodyDocFrag);
+      this._appendElementToTableBody(tableBodyDocFrag, tableBody);
       return this._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(function () {
-        return this._finalizeBodyRowRendering(addedTableBodyRows);
+        return this._afterRowsRendered(tableBody);
       }.bind(this));
     }
     this._animateOnFetch = false;
     if (!keepVisible) {
       tableBody.style[Table.CSS_PROP._VISIBILITY] = Table.CSS_VAL._HIDDEN;
     }
-    tableBodyDocFrag = document.createDocumentFragment();
     for (i = 0; i < rowsCount; i++) {
       this._renderRow(rows[i], tableBodyDocFrag, startIndex);
     }
+    layoutManager.handleAfterRowsProcessed(tableBodyDocFrag);
     this._appendElementToTableBody(tableBodyDocFrag, tableBody);
     return this._afterRowsRendered(tableBody);
   }
@@ -2429,10 +2545,7 @@ Table.prototype._refreshTableBody = function (resultObject, startIndex, keepVisi
  * @private
  */
 Table.prototype._isDefaultSelectorEnabled = function () {
-  if (this._defaultOptions == null) {
-    this._defaultOptions = parseJSONFromFontFamily('oj-table-option-defaults');
-  }
-  if (this._defaultOptions.enableSelector === true &&
+  if (this._getDefaultOptions().enableSelector === 'true' &&
     this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE) {
     return true;
   }
@@ -2452,7 +2565,6 @@ Table.prototype._isDefaultSelectorEnabled = function () {
 Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docFrag,
   docFragStartIdx) {
   var rowRenderer = this._getRowRenderer();
-  var tableBody = this._getTableBody();
 
   if (isNaN(rowIdx) || rowIdx < 0) {
     // validate rowIdx value
@@ -2509,7 +2621,7 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
         // attributes just in case it was replaced or the attributes
         // got removed
         // eslint-disable-next-line no-param-reassign
-        tableBodyRow = tableBody.children[rowIdx];
+        tableBodyRow = this._getRawTableBodyRow(rowIdx);
       } else {
         // eslint-disable-next-line no-param-reassign
         docFragStartIdx = docFragStartIdx == null ? 0 : docFragStartIdx;
@@ -2529,8 +2641,12 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
       var templateEngine = this._getTemplateEngine();
       if (templateEngine != null) {
         var slotContext = this._getRowSlotTemplateContextObject(context);
+
+        // tableBodyRow may be replaced, so we need to pass in the <tbody> element itself to ensure
+        // busy context parent traversal continues to function correctly
+        var tableBody = this._getTableBody();
         var nodes = templateEngine.execute(componentElement, rowSlotTemplate,
-                      slotContext, this.options.as);
+                      slotContext, this.options.as, tableBody);
         for (let i = 0; i < nodes.length; i++) {
           if (nodes[i].tagName === 'TR') {
             tableBodyRow.parentNode.replaceChild(nodes[i], tableBodyRow);
@@ -2541,7 +2657,7 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
         }
         if (docFrag == null) {
           // eslint-disable-next-line no-param-reassign
-          tableBodyRow = tableBody.children[rowIdx];
+          tableBodyRow = this._getRawTableBodyRow(rowIdx);
         } else {
           // eslint-disable-next-line no-param-reassign
           docFragStartIdx = docFragStartIdx == null ? 0 : docFragStartIdx;
@@ -2598,20 +2714,21 @@ Table.prototype._refreshTableBodyRow = function (rowIdx, row, tableBodyRow, docF
   }
 
   // eslint-disable-next-line no-param-reassign
-  tableBodyRow['oj-table-oj-row-item'] = row;
+  tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
 
   return tableBodyRow;
 };
 
 /**
- * Waits for any children components of the given body rows to finish rendering.
- * Disables any and all focusable elements within those rows if not editable.
+ * Waits for any child components of the table body to finish rendering.
+ * Disables any and all focusable elements within the given rows if not editable.
  * @param {Array<Element>} rowElements the row elements to finalize
  * @returns {Promise}
  * @private
  */
 Table.prototype._finalizeBodyRowRendering = function (rowElements) {
-  return this._waitForAllBodyElementsToResolve(rowElements).then(function () {
+  var tableBody = this._getTableBody();
+  return this._waitForAllElementsToResolve([tableBody]).then(function () {
     var editableRowKey = this._hasEditableRow() ? this._getEditableRowKey() : null;
     rowElements.forEach(function (tableBodyRow) {
       var rowKey = this._getRowKey(tableBodyRow);
@@ -2625,34 +2742,19 @@ Table.prototype._finalizeBodyRowRendering = function (rowElements) {
 };
 
 /**
- * Waits for any children components of the given rows to finish rendering.
- * Disables any and all focusable elements within those rows.
+ * Waits for any child components of the header or footer row to finish rendering.
+ * Disables any and all focusable elements within the given rows.
  * @param {Array<Element>} rowElements the row elements to finalize
  * @returns {Promise}
  * @private
  */
-Table.prototype._finalizeRowRendering = function (rowElements) {
+Table.prototype._finalizeNonBodyRowRendering = function (rowElements) {
   return this._waitForAllElementsToResolve(rowElements).then(function () {
     rowElements.forEach(function (rowElement) {
       disableAllFocusableElements(rowElement);
     });
     return Promise.resolve(true);
   });
-};
-
-/**
- * Returns a Promise which resolves when all JET elements in the array of rows have resolved
- * @param {Array<Element>} elements Array of DOM elements
- * @return {Promise} Promise which resolves when all child JET elements have resolved
- * @private
- */
-Table.prototype._waitForAllBodyElementsToResolve = function (elements) {
-  // Only bother checking if there are templates/renderers defined. If not,
-  // JET elements can't be embedded in the cells so we can skip the check
-  if (elements.length > 0 && this._hasRowOrCellRendererOrTemplate()) {
-    return this._waitForAllElementsToResolve(elements);
-  }
-  return Promise.resolve();
 };
 
 /**
@@ -2664,7 +2766,7 @@ Table.prototype._waitForAllBodyElementsToResolve = function (elements) {
 Table.prototype._waitForAllElementsToResolve = function (elements) {
   var busyContextPromiseArray = [];
   elements.forEach(function (element) {
-    // Only wait on busyContext of non-null row elements. Otherwise, busy state lock can occur
+    // Only wait on busyContext of non-null elements. Otherwise, busy state lock can occur
     if (element) {
       busyContextPromiseArray.push(Context.getContext(element).getBusyContext().whenReady());
     }
@@ -2765,6 +2867,9 @@ Table.prototype._showStatusMessage = function () {
       // clear any existing table rows (if a sort for example)
       // skip this step if paging data since paging data should
       // have already been fetched by the paging control
+      if (this._isExternalScrollEnabled()) {
+        this._bufferScrollerForLastRow();
+      }
       this._removeAllTableBodyRows();
     }
   }
@@ -2838,11 +2943,17 @@ Table.prototype._isStatusMessageShown = function () {
 };
 
 /**
+ * Gets all the default options
+ * @return {Object} The default options value
  * @private
  */
 Table.prototype._getDefaultOptions = function () {
   if (this._defaultOptions == null) {
-    this._defaultOptions = parseJSONFromFontFamily('oj-table-option-defaults') || {};
+    this._defaultOptions = {};
+    const keys = Object.keys(Table._CSS_Vars);
+    const vars = keys.map(key => Table._CSS_Vars[key]);
+    const values = getCachedCSSVarValues(vars);
+    keys.forEach((key, i) => { this._defaultOptions[key] = values[i]; });
   }
   return this._defaultOptions;
 };
@@ -2853,8 +2964,7 @@ Table.prototype._getDefaultOptions = function () {
  * @private
  */
 Table.prototype._getShowStatusDelay = function () {
-  var delay = parseInt(this._getDefaultOptions().showIndicatorDelay, 10);
-  return isNaN(delay) ? 0 : delay;
+  return getCSSTimeUnitAsMillis(this._getDefaultOptions().showIndicatorDelay);
 };
 
 /**
@@ -2880,11 +2990,7 @@ Table.prototype._showNoDataMessage = function () {
       var tableBody = this._getTableBody();
       table.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS);
       var noDataContentRow = document.createElement(Table.DOM_ELEMENT._TR); // @HTMLUpdateOK
-      noDataContentRow.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS);
-      var tableContainer = this._getTableContainer();
-      if (tableContainer.classList.contains(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS)) {
-        noDataContentRow.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_ROW_CLASS);
-      }
+      noDataContentRow.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_ROW_CLASS);
       this._appendElementToTableBody(noDataContentRow, tableBody);
       var noDataContentCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
       var columnCount = this._getColumnDefs().length;
@@ -2897,7 +3003,7 @@ Table.prototype._showNoDataMessage = function () {
       var templateEngine = this._getTemplateEngine();
       if (templateEngine != null) {
         var nodes = templateEngine.execute(this._getRootElement(), noDataTemplate,
-          {}, null);
+          {}, null, tableBody);
         nodes.forEach(function (node) {
           noDataContentCell.appendChild(node); // @HTMLUpdateOK
         });
@@ -2937,7 +3043,7 @@ Table.prototype._hideNoDataMessage = function () {
       if (table.classList.contains(Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS)) {
         table.classList.remove(Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS);
         var noDataRow = table.querySelector('tr.' +
-          Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS);
+          Table.CSS_CLASSES._TABLE_NO_DATA_ROW_CLASS);
         if (noDataRow != null) {
           this._cleanTemplateNodes(noDataRow);
           $(noDataRow).remove();
@@ -3003,7 +3109,7 @@ Table.prototype._handleContextMenuSelect = function (event, ui) {
   } else {
     item = $(event.target);
   }
-  var menuItemCommand = item.attr('data-oj-command');
+  var menuItemCommand = item.attr(Table._DATA_OJ_COMMAND);
   var headerColumn = this._getFirstAncestor(this._contextMenuEvent.target,
     '.' + Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS, true);
   headerColumn = headerColumn == null ? this._contextMenuEventHeaderColumn : headerColumn;
@@ -3028,13 +3134,13 @@ Table.prototype._handleContextMenuSelect = function (event, ui) {
     this._nonContiguousSelection = true;
     this._removeTableBodyRowTouchSelectionAffordance();
     // update to disable command
-    item.attr('data-oj-command', 'oj-table-disableNonContiguousSelection');
+    item.attr(Table._DATA_OJ_COMMAND, 'oj-table-disableNonContiguousSelection'); // @HTMLUpdateOK
     item.children().first()
       .text(this.getTranslatedString('labelDisableNonContiguousSelection'));
   } else if (menuItemCommand === 'oj-table-disableNonContiguousSelection') {
     this._nonContiguousSelection = false;
     // update to enable command
-    item.attr('data-oj-command', 'oj-table-enableNonContiguousSelection');
+    item.attr(Table._DATA_OJ_COMMAND, 'oj-table-enableNonContiguousSelection'); // @HTMLUpdateOK
     item.children().first()
       .text(this.getTranslatedString('labelEnableNonContiguousSelection'));
   } else if (menuItemCommand === 'oj-table-resize') {
@@ -3044,14 +3150,11 @@ Table.prototype._handleContextMenuSelect = function (event, ui) {
     var target = headerColumn || tableBodyCell;
     var columnWidth = this._getLayoutManager().getColumnWidthProperty(target);
 
-    var launcher;
+    var launcher = this._getTable();
     if (headerColumn != null) {
       launcher = headerColumn;
     } else if (tableBodyCell != null) {
       launcher = tableBodyCell;
-    } else {
-      // this should never happen
-      launcher = this._getTable();
     }
 
     var spinner = document.getElementById(
@@ -3203,7 +3306,7 @@ Table.prototype._isTableHeaderColumnsRendered = function () {
  */
 Table.prototype._isTableRefreshNeeded = function (key, value) {
   var currentOptions = this._cachedOptions;
-  var refresh = false;
+  var refresh;
 
   if (key === 'contextMenu' &&
       value === '#' + this._getTableId() + '_contextmenu') {
@@ -3215,7 +3318,12 @@ Table.prototype._isTableRefreshNeeded = function (key, value) {
     refresh = false;
   } else if (key !== 'selection' && key !== 'currentRow' &&
              !oj.Object.compareValues(value, currentOptions[key])) {
+    if (key === 'verticalGridVisible') {
+      this._renderedTableHeaderColumns = false;
+    }
     refresh = true;
+  } else {
+    refresh = false;
   }
   this._cachedOptions = $.extend(true, {}, this.options);
 
@@ -3430,7 +3538,7 @@ Table.prototype._hideTableHeaderColumnSortIcon = function (columnIdx) {
       var sortContainer = this._getSortIconContainer(tableHeaderColumn);
       var sortIcon = this._getSortIcon(tableHeaderColumn);
       if (sortContainer != null && sortIcon != null) {
-        sortContainer.setAttribute('title', this.getTranslatedString('labelSortAsc'));
+        sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
         sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
         sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
         sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
@@ -3488,7 +3596,7 @@ Table.prototype._refreshSortTableHeaderColumn = function (key, ascending) {
     $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._ASCENDING);
 
     if (sortIcon != null) {
-      sortContainer.setAttribute('title', this.getTranslatedString('labelSortDsc'));
+      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortDsc')); // @HTMLUpdateOK
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
       sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
@@ -3497,7 +3605,7 @@ Table.prototype._refreshSortTableHeaderColumn = function (key, ascending) {
     // store sort order on the DOM element
     $(tableHeaderColumn).data('sorted', Table._COLUMN_SORT_ORDER._DESCENDING);
     if (sortIcon != null) {
-      sortContainer.setAttribute('title', this.getTranslatedString('labelSortAsc'));
+      sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DEFAULT_SORT_ICON_CLASS);
       sortIcon.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
       sortIcon.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
@@ -3643,15 +3751,14 @@ Table.prototype._getRowRenderer = function () {
 };
 
 /**
- * Checks whether content is overflowed
+ * Returns true if the last row is in viewport.  Otherwise returns false (including no data).
  * @private
  */
-Table.prototype._isOverflow = function () {
-  if (this._isLoadMoreOnScroll() && this._domScroller) {
-    var scrollBuffer = this._getTableBodyScrollBuffer();
-    return (scrollBuffer == null && this._domScroller.isOverflow());
-  }
-  return false;
+Table.prototype._isLastRowInViewport = function () {
+  var tableBodyRows = this._getTableBodyRows();
+  var lastRow = tableBodyRows[tableBodyRows.length - 1];
+  var vertOverflowDiff = this._getLayoutManager().getVerticalOverflowDiff(lastRow);
+  return ((vertOverflowDiff.bottom - lastRow.offsetHeight) <= 0);
 };
 
 /**
@@ -3661,17 +3768,18 @@ Table.prototype._registerDomScroller = function () {
   // clear any existing DomScroller references
   this._unregisterDomScroller();
 
+  var layoutManager = this._getLayoutManager();
   this._domScrollerSuccessFunc = function (result) {
     this._clearDataWaitingState();
     if (result != null) {
       this._noMoreData = false;
       if (result.maxCountLimit) {
+         // set if there will be no more data returned from the DomScroller going forward
         this._noMoreData = true;
         this._handleScrollerMaxRowCount();
-        this._clearScrollBuffer();
-        this._syncScrollPosition();
-      } else {
-        var value = result[Table._CONST_VALUE];
+      }
+      var value = result[Table._CONST_VALUE];
+      if (value != null) {
         var data = value[Table._CONST_DATA];
         var keys = value.metadata.map(function (_value) {
           return _value[Table._CONST_KEY];
@@ -3690,7 +3798,6 @@ Table.prototype._registerDomScroller = function () {
 
         if (data.length > 0) {
           this._queueTask(function () {
-            var layoutManager = this._getLayoutManager();
             layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
             var tableBodyRows = this._getTableBodyRows();
             var rowCount = tableBodyRows.length;
@@ -3715,14 +3822,16 @@ Table.prototype._registerDomScroller = function () {
               }
             }.bind(this));
           }.bind(this));
-        } else if (result.done) {
-          this._noMoreData = true;
-          this._clearScrollBuffer();
-          this._syncScrollPosition();
-        } else {
-          this._clearScrollBuffer();
-          this._syncScrollPosition(null, this._scrollPosition != null);
+          return;
         }
+      }
+      if (result.done) {
+        this._noMoreData = true;
+        this._clearScrollBuffer();
+        this._syncScrollPosition();
+      } else {
+        this._clearScrollBuffer();
+        this._syncScrollPosition(null, this._scrollPosition != null);
       }
     } else {
       // for case where result != null, the syncPosition would be done in final task
@@ -3734,8 +3843,9 @@ Table.prototype._registerDomScroller = function () {
   var tableBodyRows = this._getTableBodyRows();
   var rowCount = tableBodyRows.length;
   this._requiresDomScrollerRefresh = false;
-  this._domScroller = new DomScroller(this._getLayoutManager().getScroller(), this._getData(), {
+  this._domScroller = new DomScroller(layoutManager.getScroller(), this._getData(), {
     asyncIterator: this._dataProviderAsyncIterator,
+    contentElement: layoutManager.getContentElement(),
     fetchSize: this.options.scrollPolicyOptions.fetchSize,
     maxCount: this.options.scrollPolicyOptions.maxCount,
     initialRowCount: rowCount,
@@ -3756,7 +3866,7 @@ Table.prototype._registerDomScroller = function () {
     beforeScroll: this._clearScrollPosBusyState.bind(this),
     // set fetch trigger to 2px to create a buffer for browser quirks where scrollHeight is
     // greater than clientHeight in some cases. Otherwise, domScroller fetching is broken.
-    fetchTrigger: 2
+    fetchTrigger: 4
   });
 };
 
@@ -3767,6 +3877,42 @@ Table.prototype._unregisterDomScroller = function () {
   if (this._domScroller != null) {
     this._domScroller.destroy();
     this._domScroller = null;
+  }
+};
+
+/**
+ * @private
+ */
+Table.prototype._updateHeaderTop = function (top) {
+  if (this._isDefaultSelectorEnabled()) {
+    var headerSelector = this._getTableSelectorColumn();
+    if (headerSelector != null) {
+      headerSelector.style[Table.CSS_PROP._TOP] = top + 'px';
+    }
+  }
+  var tableHeaderColumns = this._getTableHeaderColumns();
+  if (tableHeaderColumns != null) {
+    for (var i = 0; i < tableHeaderColumns.length; i++) {
+      tableHeaderColumns[i].style[Table.CSS_PROP._TOP] = top + 'px';
+    }
+  }
+};
+
+/**
+ * @private
+ */
+Table.prototype._updateFooterBottom = function (bottom) {
+  if (this._isDefaultSelectorEnabled()) {
+    var footerSelector = this._getTableFooterSelectorCell();
+    if (footerSelector != null) {
+      footerSelector.style[Table.CSS_PROP._BOTTOM] = bottom + 'px';
+    }
+  }
+  var footerCells = this._getTableFooterCells();
+  if (footerCells != null) {
+    for (var i = 0; i < footerCells.length; i++) {
+      footerCells[i].style[Table.CSS_PROP._BOTTOM] = bottom + 'px';
+    }
   }
 };
 
@@ -3802,10 +3948,8 @@ Table.prototype._clearIdleCallback = function () {
  * @private
  */
 Table.prototype._requestIdleCallback = function (isMouseWheel, callback) {
-  // IE/Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
-  // also Chrome has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
-  if (isMouseWheel || !window.requestIdleCallback || !window.cancelIdleCallback) {
+  // IE/legacy Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
+  if (!window.requestIdleCallback || !window.cancelIdleCallback) {
     this._idleCallback = window.requestAnimationFrame(function () {
       callback();
     });
@@ -3819,13 +3963,19 @@ Table.prototype._requestIdleCallback = function (isMouseWheel, callback) {
     idleTimeout = null;
   }, 250);
 
+  // Chromium has an issue with requestIdleCallback when mouse wheel is used, see Chrome :
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=822269
+  var options;
+  if (isMouseWheel && oj.AgentUtils.getAgentInfo().engine === oj.AgentUtils.ENGINE.BLINK) {
+    options = { timeout: 100 };
+  }
   this._idleCallback = window.requestIdleCallback(function (idleDeadline) {
     if (idleTimeout == null) {
       return;
     }
     window.clearTimeout(idleTimeout);
     callback(idleDeadline);
-  });
+  }, options);
 };
 
 /**
@@ -3870,7 +4020,7 @@ Table.prototype._renderRowsWhenIdle = function (rows, tableBody, startIndex, res
     var timeRemaining = idleDeadline.timeRemaining();
     var lastTimeTaken = 0;
     tableBodyDocFrag = document.createDocumentFragment();
-    while (timeRemaining > lastTimeTaken) {
+    while (timeRemaining > lastTimeTaken || idleDeadline.didTimeout) {
       if (rows.length === 0) {
         break;
       }
@@ -3920,7 +4070,7 @@ Table.prototype._renderRow = function (rowData, tableBodyDocFrag, startIndex) {
   var rowIdx = rowData.rowIdx;
   if (row != null) {
     var tableBodyRow = this._createTableBodyRow();
-    tableBodyRow['oj-table-oj-row-item'] = row;
+    tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
     this._styleTableBodyRow(tableBodyRow, true);
     this._insertTableBodyRow(rowIdx, tableBodyRow, row, tableBodyDocFrag);
     this._refreshTableBodyRow(rowIdx, row, tableBodyRow, tableBodyDocFrag, startIndex);
@@ -4030,11 +4180,12 @@ Table.prototype._syncTableSizing = function (skipSizingRequiredCheck) {
   // if loadMoreOnScroll then check if we have underflow and do a fetch if we do
   if (this._isLoadMoreOnScroll() && !this._dataFetching && this._domScroller) {
     this._setDataWaitingState(false);
-    this._domScroller.checkViewport(scrollBufferHeight > 0).then(
+    this._domScroller.checkViewport(scrollBufferHeight > 0 || this._noDataMessageShown).then(
       this._domScrollerSuccessFunc, this._checkViewportRejected.bind(this));
     // syncScrollPosition would be invoked after data are fetched and new rows are rendered
   } else {
     // syncScrollPosition must be done after sizing is done (refreshTableDimensions is invoked)
+    this._clearScrollBuffer();
     this._syncScrollPosition();
   }
 };
@@ -4049,7 +4200,7 @@ Table.prototype._updateScrollBufferHeight = function () {
   if (scrollBuffer != null) {
     scrollBufferHeight = scrollBuffer.offsetHeight;
     if (scrollBufferHeight > 0) {
-      var bottomOverflowDiff = layoutManager.getRowBottomOverflowDiff(scrollBuffer);
+      var bottomOverflowDiff = layoutManager.getVerticalOverflowDiff(scrollBuffer).bottom;
       var newScrollBufferHeight =
         Math.min(Math.max(0, scrollBufferHeight - bottomOverflowDiff), scrollBufferHeight);
       if (newScrollBufferHeight !== scrollBufferHeight) {
@@ -4084,7 +4235,7 @@ Table.prototype._clearScrollBuffer = function () {
  */
 Table.prototype._addSingleTableBodyRow = function (rowIdx, row, docFrag, docFragStartIdx) {
   var tableBodyRow = this._createTableBodyRow();
-  tableBodyRow['oj-table-oj-row-item'] = row;
+  tableBodyRow[Table._ROW_ITEM_EXPANDO] = row;
   this._styleTableBodyRow(tableBodyRow, true);
   // insert the <tr> element in to the table body DOM
   this._insertTableBodyRow(rowIdx, tableBodyRow, row, docFrag);
@@ -4154,7 +4305,6 @@ Table.prototype._cleanTemplateNodes = function (rootNode) {
  */
 Table.prototype._clearCachedMetadata = function () {
   this._columnDefArray = null;
-  this._columnOffsets = null;
   this._setTableActionableMode(false);
 };
 
@@ -4281,7 +4431,6 @@ Table.prototype._getVisibleRowIdxs = function () {
     if (tableBodyRect.bottom > windowHeight) {
       // the last visible row is at the bottom of the viewport
       tableElemBottom = document.elementFromPoint(tableElemX, windowHeight - 1);
-      rowIdx = null;
       if (tableElemBottom != null) {
         lastRowIdx = this._getElementRowIdx(tableElemBottom);
       }
@@ -4374,9 +4523,11 @@ Table.prototype._initFetch = function (options, isSortUpdate) {
     return this._queueTask(function () {
       layoutManager.notifyTableUpdate(isSortUpdate ? Table._UPDATE._DATA_SORT :
                                                      Table._UPDATE._REFRESH);
-      // reset the scrollTop when we do an initial fetch
-      this._scrollTop = 0;
-      layoutManager.getScroller().scrollTop = 0;
+      if (!this._isExternalScrollEnabled()) {
+        // reset the scrollTop when we do an initial fetch
+        this._scrollTop = 0;
+        layoutManager.getScroller().scrollTop = 0;
+      }
       if (dataprovider instanceof oj.TableDataSourceAdapter) {
         updatedOptions.fetchType = 'init';
         if (this._isLoadMoreOnScroll()) {
@@ -4467,6 +4618,7 @@ Table.prototype._invokeDataFetchRows = function (options) {
     return new Promise(function (resolve) {
       this._noMoreData = false;
       this._setDataWaitingState();
+      this._hasRefreshInQueue = false;
       this._dataProviderAsyncIterator =
         dataprovider.fetchFirst(updatedOptions)[Symbol.asyncIterator]();
 
@@ -4484,7 +4636,7 @@ Table.prototype._invokeDataFetchRows = function (options) {
         }
 
         var nextPromise = this._dataProviderAsyncIterator.next();
-        var fetchMoreData = nextPromise.then(function (value) {
+        return (nextPromise.then(function (value) {
           // eslint-disable-next-line no-param-reassign
           result.done = value.done;
           // eslint-disable-next-line no-param-reassign
@@ -4492,9 +4644,7 @@ Table.prototype._invokeDataFetchRows = function (options) {
           // eslint-disable-next-line no-param-reassign
           result.value.metadata = result.value.metadata.concat(value.value.metadata);
           return helperFunction(result, value.value.metadata, updatedScrollToKey);
-        });
-
-        return (fetchMoreData);
+        }));
       }.bind(this);
 
       var scrollToKeyPromise = this._getScrollToKey();
@@ -4893,7 +5043,10 @@ Table.prototype._animateTableBodyRows = function (tableBodyRowArray, action) {
  */
 Table.prototype._getAnimationEffect = function (action) {
   if (this.defaultAnimations == null) {
-    this.defaultAnimations = this._getDefaultOptions().animation || {};
+    this.defaultAnimations = {};
+  }
+  if (this.defaultAnimations[action] == null) {
+    this.defaultAnimations[action] = JSON.parse(this._getDefaultOptions()[`${action}Animation`]);
   }
   return this.defaultAnimations[action];
 };
@@ -4927,14 +5080,6 @@ Table.prototype._startAnimation = function (elem, action, effect) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * @ignore
  * @export
  * @class oj.TableDndContext
@@ -4950,6 +5095,15 @@ oj._registerLegacyNamespaceProp('TableDndContext', TableDndContext);
 
 // Subclass from oj.Object
 oj.Object.createSubclass(TableDndContext, oj.Object, 'oj.TableDndContext');
+
+/**
+ * @private
+ */
+TableDndContext._CSS_CLASSES = {
+  _DRAG_SOURCE: 'oj-table-drag-source',
+  _DRAG_SOURCE_OPAQUE: 'oj-table-drag-source-opaque',
+  _DROP_TARGET_EMPTY: 'oj-table-drop-target-empty'
+};
 
 /**
  * Initializes the instance.
@@ -4968,8 +5122,9 @@ TableDndContext.prototype.Init = function () {
  */
 TableDndContext.prototype._addDragMarkerClass = function (columnIdx) {
   var column = this.component._getTableHeaderColumn(columnIdx);
-  column.classList.add('oj-table-drag-source-opaque');
-  this.component._setTableColumnCellsClass(columnIdx, true, 'oj-table-drag-source-opaque');
+  column.classList.add(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
+  this.component._setTableColumnCellsClass(columnIdx, true,
+    TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
 };
 
 /**
@@ -4980,14 +5135,15 @@ TableDndContext.prototype._addDragMarkerClass = function (columnIdx) {
 TableDndContext.prototype._removeDragMarkerClass = function () {
   var dragColumns =
       this.component._getTableElementsByClassName(this.component._getTableHeader(),
-        'oj-table-drag-source-opaque');
+        TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
   if (dragColumns != null && dragColumns.length > 0) {
     var dragColumnsCount = dragColumns.length;
     for (var i = 0; i < dragColumnsCount; i++) {
-      dragColumns[i].classList.remove('oj-table-drag-source-opaque');
+      dragColumns[i].classList.remove(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
     }
   }
-  this.component._setTableColumnCellsClass(null, false, 'oj-table-drag-source-opaque');
+  this.component._setTableColumnCellsClass(null, false,
+    TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
 };
 
 /**
@@ -5115,7 +5271,11 @@ TableDndContext.prototype._getOverRowIndex = function (event) {
   if (cell != null) {
     var tableBodyRow = this.component._getFirstAncestor(cell, '.' + Table.CSS_CLASSES._TABLE_DATA_ROW_CLASS, true);
     if (tableBodyRow != null) {
-      newRowIndex = $(tableBodyRow).index();
+      newRowIndex = this.component._getTableBodyRows().indexOf(tableBodyRow);
+      var targetElementRect = event.target.getBoundingClientRect();
+      if (event.offsetY > targetElementRect.height / 2) {
+        newRowIndex += 1;
+      }
     }
   } else if ($(overRow).hasClass(Table.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_CLASS)) {
     newRowIndex = this._dropRowIndex;
@@ -5127,7 +5287,7 @@ TableDndContext.prototype._getOverRowIndex = function (event) {
     // When drop target is empty table
     if (newRowIndex === 0) {
       let tableBody = this.component._getTableBody();
-      tableBody.classList.add('oj-table-drop-target-empty');
+      tableBody.classList.add(TableDndContext._CSS_CLASSES._DROP_TARGET_EMPTY);
     }
   }
 
@@ -5371,7 +5531,7 @@ TableDndContext.prototype.handleRowDragEnd = function (event) {
   this._destroyDragImage();
   if (this.component._rowsDragged && this.component._rowsDragged.length > 0) {
     this.component._rowsDragged.forEach(function (row) {
-      row.classList.remove('oj-table-drag-source-opaque');
+      row.classList.remove(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
       row.classList.remove('oj-table-row-drag-source-hide');
     });
   }
@@ -5391,15 +5551,8 @@ TableDndContext.prototype.handleRowDragEnd = function (event) {
  */
 TableDndContext.prototype.handleRowDragEnter = function (event) {
   var newRowIndex = this._getOverRowIndex(event);
-
-  var returnValue = this._invokeDropCallback('rows', 'dragEnter', event,
+  return this._invokeDropCallback('rows', 'dragEnter', event,
                                              { rowIndex: newRowIndex });
-
-  if (returnValue === false || event.isDefaultPrevented()) {
-    this._updateDragRowsState(event, newRowIndex);
-  }
-
-  return returnValue;
 };
 
 /**
@@ -5412,8 +5565,14 @@ TableDndContext.prototype.handleRowDragEnter = function (event) {
  * @memberof oj.TableDndContext
  */
 TableDndContext.prototype.handleRowDragOver = function (event) {
-  return this._invokeDropCallback('rows', 'dragOver', event,
-                                  { rowIndex: this._dropRowIndex });
+  var newRowIndex = this._getOverRowIndex(event);
+
+  var returnValue = this._invokeDropCallback('rows', 'dragOver', event,
+                                  { rowIndex: newRowIndex });
+  if (returnValue === false || event.isDefaultPrevented()) {
+    this._updateDragRowsState(event, newRowIndex);
+  }
+  return returnValue;
 };
 
 /**
@@ -5433,7 +5592,7 @@ TableDndContext.prototype.handleRowDragLeave = function (event) {
   // this may be the last dnd event we get.
   if (!this._isDndEventInElement(event, event.currentTarget)) {
     var tableBody = this.component._getTableBody();
-    tableBody.classList.remove('oj-table-drop-target-empty');
+    tableBody.classList.remove(TableDndContext._CSS_CLASSES._DROP_TARGET_EMPTY);
     this.component._removeDragOverIndicatorRow();
     this._dropRowIndex = null;
   }
@@ -5456,7 +5615,7 @@ TableDndContext.prototype.handleRowDrop = function (event) {
   // Perform any cleanup
   this._destroyDragImage();
   var tableBody = this.component._getTableBody();
-  tableBody.classList.remove('oj-table-drop-target-empty');
+  tableBody.classList.remove(TableDndContext._CSS_CLASSES._DROP_TARGET_EMPTY);
   this.component._removeDragOverIndicatorRow();
   this._dropRowIndex = null;
 
@@ -5617,32 +5776,20 @@ TableDndContext.prototype._matchDragDataType = function (event, itemType) {
 };
 
 /**
- * Set the draggable attribute of a header column
- * @param {Element} headerColumn  the header column DOM element
- * @param {boolean} draggable  true if header column is draggable; false otherwise.
+ * Set the draggable attribute of a DOM element
+ * @param {Element} element  the DOM element
+ * @param {boolean} draggable  true if the DOM element is draggable; false otherwise.
  * @memberof oj.TableDndContext
  * @private
  */
-TableDndContext.prototype._setHeaderColumnDraggable = function (headerColumn, draggable) {
-  // eslint-disable-next-line no-param-reassign
-  headerColumn.draggable = draggable;
+TableDndContext.prototype.setElementDraggable = function (element, draggable) {
   if (draggable) {
-    headerColumn.classList.add(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
+    element.setAttribute(Table.DOM_ATTR._DRAGGABLE, true); // @HTMLUpdateOK
+    element.classList.add(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
+  } else {
+    element.removeAttribute(Table.DOM_ATTR._DRAGGABLE);
+    element.classList.remove(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
   }
-};
-
-/**
- * Clear the draggable attribute of a header column
- * @param {Element} headerColumn  the header column DOM element
- * @memberof oj.TableDndContext
- * @private
- */
-TableDndContext.prototype._clearHeaderColumnDraggable = function (headerColumn) {
-  // eslint-disable-next-line no-param-reassign
-  headerColumn.draggable = '';
-  // eslint-disable-next-line no-param-reassign
-  headerColumn.style[Table.CSS_PROP._CURSOR] = Table.CSS_VAL._AUTO;
-  headerColumn.classList.remove(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
 };
 
 /**
@@ -5724,9 +5871,9 @@ TableDndContext.prototype._setDragRowsImage = function (nativeEvent, tableContai
   var offsetX = Math.max(0, nativeEvent.offsetX);
   var offsetY = Math.max(0, nativeEvent.offsetY);
   // Drag source styles
-  tableBody.classList.add('oj-table-drag-source');
+  tableBody.classList.add(TableDndContext._CSS_CLASSES._DRAG_SOURCE);
   this.component._rowsDragged.forEach(function (row) {
-    row.classList.add('oj-table-drag-source-opaque');
+    row.classList.add(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
   });
   nativeEvent.dataTransfer.setDragImage(tableContainerClone, offsetX, offsetY);
 
@@ -5768,20 +5915,14 @@ TableDndContext.prototype._updateDragRowsState = function (event, newRowIndex) {
     this._dropRowIndex = newRowIndex;
 
     // indicator style based on whether dnd within component or across component
-    let indicatorStyle = (event.currentTarget.classList.contains('oj-table-drag-source') ||
-      event.currentTarget.classList.contains('oj-table-drop-target-empty')) ? 'space' : 'line';
+    let indicatorStyle =
+      (event.currentTarget.classList.contains(TableDndContext._CSS_CLASSES._DRAG_SOURCE) ||
+      event.currentTarget.classList.contains(TableDndContext._CSS_CLASSES._DROP_TARGET_EMPTY))
+        ? 'space' : 'line';
     this.component._displayDragOverIndicatorRow(this._dropRowIndex, overRow, indicatorStyle,
-      event.currentTarget.classList.contains('oj-table-drag-source'));
+      event.currentTarget.classList.contains(TableDndContext._CSS_CLASSES._DRAG_SOURCE));
   }
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @private
@@ -5794,6 +5935,20 @@ const TableLayoutManager = function (table) {
 // Subclass from oj.Object
 oj.Object.createSubclass(TableLayoutManager, oj.Object, 'TableLayoutManager');
 
+
+/**
+ * Return the table scroller
+ * @return {Element} scroller
+ * @private
+ */
+TableLayoutManager.prototype.getScroller = function () {};
+
+/**
+ * Returns the table scrollable content element
+ * @return {Element} the table scrollable content element
+ * @private
+ */
+TableLayoutManager.prototype.getContentElement = function () {};
 
 /**
  * @private
@@ -5922,7 +6077,7 @@ TableLayoutManager.prototype.handleAfterRowsProcessed = function () { };
 /**
  * @private
  */
-TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
+ TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
   this._table._scrollLeft = scrollLeft;
 };
 
@@ -5930,7 +6085,7 @@ TableLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
  * Handle scrollTop on scroller
  * @private
  */
-TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
+ TableLayoutManager.prototype._handleScrollerScrollTop = function (scrollTop) {
   // if no domScroller is set, make sure scroll pos busy state is cleared here
   if (!this._table._domScroller) {
     this._table._clearScrollPosBusyState();
@@ -6012,7 +6167,7 @@ TableLayoutManager.prototype.unregisterScrollListeners = function () {
 /**
  * @private
  */
-TableLayoutManager.prototype._restoreScrollLeft = function (scrollLeft) {
+ TableLayoutManager.prototype._restoreScrollLeft = function (scrollLeft) {
   setScrollLeft(this.getScroller(), scrollLeft);
 };
 
@@ -6027,7 +6182,7 @@ TableLayoutManager.prototype.getColumnWidthProperty = function (cell) {
     // IE 11 has an issue where border-box still returns just the inner content-box width
     return parseFloat(computedStyle.width) + boxStyle.paddingWidth;
   }
-  return parseFloat(computedStyle.width) + ((boxStyle.boxSizing === 'border-box') ?
+  return parseFloat(computedStyle.width) + ((boxStyle.boxSizing === Table.CSS_VAL._BORDER_BOX) ?
     -boxStyle.borderWidth : boxStyle.paddingWidth);
 };
 
@@ -6127,9 +6282,9 @@ TableLayoutManager.prototype._getForcedColumnWidth = function (cell, cellCompSty
   // add in the border width or substract the padding width based on the box-sizing style.
   var cellBoxStyle = this._getBoxStyle(cellCompStyle);
   if (columnWidth != null) {
-    return columnWidth + ((cellBoxStyle.boxSizing === 'border-box') ?
+    return columnWidth + ((cellBoxStyle.boxSizing === Table.CSS_VAL._BORDER_BOX) ?
       cellBoxStyle.borderWidth : -cellBoxStyle.paddingWidth);
-  } else if (this._table._isIE() && cellBoxStyle.boxSizing === 'border-box') {
+  } else if (this._table._isIE() && cellBoxStyle.boxSizing === Table.CSS_VAL._BORDER_BOX) {
     // IE 11 has an issue where border-box still returns just the inner content-box width
     return parseFloat(cellCompStyle.width) + cellBoxStyle.paddingWidth + cellBoxStyle.borderWidth;
   }
@@ -6220,6 +6375,18 @@ TableLayoutManager.prototype.clearCachedDimensions = function () {
   this._scrollWidth = null;
   this._scrollHeight = null;
 };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype._clearColumnSizingCache = function () {
+  this._table._columnOffsets = null;
+};
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.getColumnScrollLeft = function () { };
 
 /**
  * @private
@@ -6393,6 +6560,15 @@ TableLayoutManager.prototype._setForcedColumnWidths = function () {
       }
 
       // update column table body cell widths
+      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
+      // check for width buffer row for legacy rendering
+      if (legacyWidthBuffer != null) {
+        var bufferCell = legacyWidthBuffer.childNodes[i];
+        var bufferCellWidth = this._getForcedColumnWidth(bufferCell,
+          window.getComputedStyle(bufferCell), columnWidth);
+        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
+      }
+
       // if first row is in edit mode then fetching cell style from second row
       if (this._table._editableRowIdx === 0 && tableBodyRows.length > 1) {
         tableBodyCell = this._table._getTableBodyCell(1, i, null);
@@ -6470,7 +6646,7 @@ TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, r
   var headerCell;
   var tableBodyCell;
   var footerCell;
-  var colWidth;
+  var colWidth = 0;
 
   var valueApplied = false;
   var columnCellCompStyle = null;
@@ -6508,6 +6684,15 @@ TableLayoutManager.prototype._applyColMinMax = function (columns, columnIndex, r
       }
 
       // update column table body cell widths
+      var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
+      // check for width buffer row for legacy rendering
+      if (legacyWidthBuffer != null) {
+        var bufferCell = legacyWidthBuffer.childNodes[columnIndex];
+        var bufferCellWidth = this._getForcedColumnWidth(bufferCell,
+          window.getComputedStyle(bufferCell), colTestWidth);
+        this._applyForcedColumnWidth(bufferCell, bufferCellWidth);
+      }
+
       if (!this._table._hasRowOrCellRendererOrTemplate(columnIndex)) {
         columnCellCompStyle = window.getComputedStyle(tableBodyCell);
         forcedColumnCellWidth =
@@ -6570,12 +6755,119 @@ TableLayoutManager.prototype._getMinWidthAutoEquivalent = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * @private
  */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleMouseEnterHeaderCell = function (event) { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleMouseDownHeaderCell = function (event) {
+  if (event.which === 1) {
+    if (!this._handleHeaderColumnResizeStart(event, true)) {
+      // get the column index
+      var columnIdx = this._table._getElementColumnIdx(
+        this._table._getEventTargetElement(event));
+      // set the column focus if shift key is not pressed
+      if (!event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
+        // skip scrolling column into viewport
+        this._table._setHeaderColumnFocus(columnIdx, true, true);
+        $(event.target).data(Table._FOCUS_CALLED, true);
+      }
+    }
+    if (this._table._isFF() && isMetaKeyPressed(event)) {
+      event.preventDefault();
+    }
+  }
+};
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleMouseMoveHeader = function (event) { };
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleMouseMoveHeaderCell = function (event) { };
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleMouseUp = function (event) { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleMouseLeaveTable = function () { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleTouchStartHeaderCell = function (event) {
+  var fingerCount = event.originalEvent.touches.length;
+  if (fingerCount === 1) {
+    if (this._table._isTableColumnsResizable() && this._handleHeaderColumnResizeStart(event)) {
+      event.preventDefault();
+    }
+  }
+};
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleTouchMoveHeader = function (event) { };
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype.handleTouchEnd = function (event) { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleTouchCancel = function () { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleKeyDownEsc = function () { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype.handleFocusout = function () { };
+
+/**
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLayoutManager.prototype._handleHeaderColumnResizeStart = function (event, isMouse) { };
+
+/**
+ * @private
+ */
+TableLayoutManager.prototype._getPageX = function (event) {
+  if (event.pageX !== undefined) {
+    // MouseEvent has pageX on event itself
+    return event.pageX;
+  } else if (event.changedTouches !== undefined) {
+    // TouchEvent has pageX on changedTouches, targetTouches, and touches.
+    // For one-finger drag, they contain the same value on all touch events
+    // except for touchend, in which only changedTouches has the point at
+    // which the finger leaves the touch surface.
+    return event.changedTouches[0].pageX;
+  }
+
+  // We shouldn't get here unless event is neither MouseEvent nor TouchEvent
+  return 0;
+};
 
 /**
  * @private
@@ -6601,6 +6893,7 @@ TableLegacyLayoutManager.prototype.handleAfterRowsProcessed = function (tableBod
  */
 TableLegacyLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
   TableLegacyLayoutManager.superclass._handleScrollerScrollLeft.call(this, scrollLeft);
+
   var tableHeaderRow = this._table._getTableHeaderRow();
   if (tableHeaderRow) {
     setScrollLeft(tableHeaderRow.parentNode, scrollLeft);
@@ -6695,6 +6988,36 @@ TableLegacyLayoutManager.prototype.getScroller = function () {
 };
 
 /**
+ * Returns the table scrollable content element
+ * @return {Element} the table scrollable content element
+ * @private
+ */
+TableLegacyLayoutManager.prototype.getContentElement = function () {
+  // external scroller is not supported for legacy renderer
+  return null;
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.getColumnScrollLeft = function (columnIndex) {
+  if (columnIndex === 0) {
+    return 0;
+  }
+  var scroller = this.getScroller();
+  var isRTL = this._table._GetReadingDirection() === 'rtl';
+  var tableHeaderColumn = this._table._getTableHeaderColumn(columnIndex);
+  if (tableHeaderColumn != null) {
+    if (!isRTL) {
+      return tableHeaderColumn.offsetLeft;
+    }
+    return scroller.clientWidth - tableHeaderColumn.offsetLeft - tableHeaderColumn.offsetWidth;
+  }
+  // invalid column index
+  return undefined;
+};
+
+/**
  * @private
  */
 TableLegacyLayoutManager.prototype.getRowScrollTop = function (row) {
@@ -6702,31 +7025,45 @@ TableLegacyLayoutManager.prototype.getRowScrollTop = function (row) {
 };
 
 /**
- * Determines the number of pixels the Table would need to scroll down to align
- * the top of the given row with the top of the viewport.
+ * Determines the number of pixels the Table would need to scroll to align each
+ * vertical edge of the given row with the corresponding edge of the scrollable viewport.
  * @param {Element} tableBodyRow The row to be scrolled.
  * @private
  */
-TableLegacyLayoutManager.prototype.getRowTopOverflowDiff = function (tableBodyRow) {
+TableLegacyLayoutManager.prototype.getVerticalOverflowDiff = function (tableBodyRow) {
   var scroller = this.getScroller();
   var rowRect = tableBodyRow.getBoundingClientRect();
   var scrollingElementRect = scroller.getBoundingClientRect();
-  return (scrollingElementRect.top - rowRect.top) + scroller.clientTop;
+
+  var vertDiff = {};
+  vertDiff.top = (scrollingElementRect.top - rowRect.top) + scroller.clientTop;
+  vertDiff.bottom = (rowRect.bottom - scrollingElementRect.bottom) +
+                    (scroller.offsetHeight - scroller.clientHeight - scroller.clientTop);
+  return vertDiff;
 };
 
 /**
- * Determines the number of pixels the Table would need to scroll up to align
- * the bottom of the given row with the bottom of the viewport.
- * @param {Element} tableBodyRow The row to be scrolled.
- * @private
- */
-TableLegacyLayoutManager.prototype.getRowBottomOverflowDiff = function (tableBodyRow) {
-  var scroller = this.getScroller();
-  var rowRect = tableBodyRow.getBoundingClientRect();
-  var scrollingElementRect = scroller.getBoundingClientRect();
+* Determines the number of pixels the Table would need to scroll to align each
+* horizontal edge of the given column with the corresponding edge of the scrollable viewport.
+* @param {Element} columnCell A cell in the column to be scrolled.
+* @param {number} columnIndex The index of the column to be scrolled.
+* @private
+*/
+TableLegacyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnCell) {
+  var isRTL = (this._table._GetReadingDirection() === 'rtl');
+  var scrollingElement = this.getScroller();
+  var scrollbarWidth = this.getScrollBarWidth();
+  var columnRect = columnCell.getBoundingClientRect();
+  var scrollingElementRect = scrollingElement.getBoundingClientRect();
 
-  return (rowRect.bottom - scrollingElementRect.bottom) +
-         (scroller.offsetHeight - scroller.clientHeight - scroller.clientTop);
+  var horDiff = {};
+  if (isRTL) {
+    horDiff.left = (scrollingElementRect.left - columnRect.left) + scrollbarWidth;
+    horDiff.right = columnRect.right - scrollingElementRect.right;
+  }
+  horDiff.left = scrollingElementRect.left - columnRect.left;
+  horDiff.right = (columnRect.right - scrollingElementRect.right) + scrollbarWidth;
+  return horDiff;
 };
 
 /**
@@ -6737,17 +7074,21 @@ TableLegacyLayoutManager.prototype._freezeColumnWidths = function (fragment) {
   var columns = this._table._getColumnDefs();
   var columnsCount = columns.length;
 
-  var tableBodyCell;
   if (!this._frozenWidthRows) {
     this._frozenWidthRows = [];
   }
 
   var minWidths = [];
+  var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
   for (var i = 0; i < columnsCount; i++) {
-    tableBodyCell = this._table._getTableBodyCell(0, i, null);
-    var minWidth = parseFloat(tableBodyCell.style[Table.CSS_PROP._MIN_WIDTH]);
-    if (!isNaN(minWidth)) {
-      minWidths.push(minWidth);
+    var tableBodyCell = legacyWidthBuffer.childNodes[i];
+    if (tableBodyCell != null) {
+      var minWidth = parseFloat(tableBodyCell.style[Table.CSS_PROP._MIN_WIDTH]);
+      if (!isNaN(minWidth)) {
+        minWidths.push(minWidth);
+      } else {
+        minWidths.push(null);
+      }
     } else {
       minWidths.push(null);
     }
@@ -6806,6 +7147,7 @@ TableLegacyLayoutManager.prototype._setColumnWidths = function (scrollBarWidth) 
   var cellWidths = [];
   var footerWidths = [];
   var columnsCount = this._table._getColumnDefs().length;
+  var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
 
   // loop through remaining columns to get the remaining column widths
   for (i = 0; i < columnsCount; i++) {
@@ -6830,7 +7172,7 @@ TableLegacyLayoutManager.prototype._setColumnWidths = function (scrollBarWidth) 
       }
 
       // find column table body cell widths
-      tableBodyCell = this._table._getTableBodyCell(0, i, null);
+      tableBodyCell = legacyWidthBuffer.childNodes[i];
       if (tableBodyCell != null) {
         cellWidths[i] =
           this._getForcedColumnWidth(tableBodyCell, window.getComputedStyle(tableBodyCell));
@@ -6888,7 +7230,7 @@ TableLegacyLayoutManager.prototype._setColumnWidths = function (scrollBarWidth) 
       }
 
       // update column table body cell widths
-      tableBodyCell = this._table._getTableBodyCell(0, i, null);
+      tableBodyCell = legacyWidthBuffer.childNodes[i];
       if (tableBodyCell != null) {
         this._applyForcedColumnWidth(tableBodyCell, cellWidths[i]);
       }
@@ -6935,6 +7277,8 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
   var tableUpdates = this._getTableUpdates();
   if (!tableUpdates.has(Table._UPDATE._DATA_REFRESH) &&
       !tableUpdates.has(Table._UPDATE._DATA_SORT) &&
+      !tableUpdates.has(Table._UPDATE._ATTACHED) &&
+      !tableUpdates.has(Table._UPDATE._SHOWN) &&
       !tableUpdates.has(Table._UPDATE._RESIZE) &&
       !tableUpdates.has(Table._UPDATE._REFRESH) &&
       !tableUpdates.has(Table._UPDATE._COL_RESIZE) &&
@@ -6947,6 +7291,8 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
     this._enableTableVisibility();
     return;
   }
+  // clear cached column values if outer size updates or column information changes
+  this._clearColumnSizingCache();
 
   var tableElem = this._table._getTable();
   var tableContainer = this._table._getTableContainer();
@@ -6956,51 +7302,32 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
   var tableBottomSlot = this._table._getTableBottomSlot();
 
   // preserve the scrollTop & scrollLeft
-  var scrollTop = null;
-  var scrollLeft = null;
-  if (this._table._scrollTop != null && this._table._scrollTop > 0) {
-    scrollTop = this._table._scrollTop;
-  }
-  if (this._table._scrollLeft != null && this._table._scrollLeft > 0) {
-    scrollLeft = this._table._scrollLeft;
-  }
+  var scrollTop = (this._table._scrollTop != null && this._table._scrollTop > 0) ?
+    this._table._scrollTop : null;
+  var scrollLeft = (this._table._scrollLeft != null && this._table._scrollLeft > 0) ?
+    this._table._scrollLeft : null;
 
   // first remove any styling so that the browser sizes the table
   this.clearCachedDimensions();
   this._removeTableDimensionsStyling();
   this._table._styleTableContainer(tableContainer);
 
-  // set the forced column widths before checking for scroll state, otherwise we
-  // may miss cases where the columns[].width attribute values cause overflow
+  // set forced widths before checking scroll state to ensure overflow state is accurate
   this._setForcedColumnWidths();
   this._verifyMinAndMaxWidths();
 
   // find Table's bottom slot height to use when determining if overflow if present
-  var bottomSlotHeight;
-  if (tableBottomSlot != null && tableBottomSlot.clientHeight > 0 &&
-      tableBottomSlot.style[Table.CSS_PROP._DISPLAY] !== Table.CSS_VAL._NONE) {
-    bottomSlotHeight = tableBottomSlot.offsetHeight;
-  } else {
-    bottomSlotHeight = 0;
-  }
+  var bottomSlotHeight = (tableBottomSlot != null && tableBottomSlot.clientHeight > 0 &&
+                          tableBottomSlot.style[Table.CSS_PROP._DISPLAY] !== Table.CSS_VAL._NONE) ?
+        tableBottomSlot.offsetHeight : 0;
 
-  var tableContainerScrollableState =
-  this._getTableContainerScrollableState(bottomSlotHeight);
-  if (tableContainerScrollableState[0] === 1) {
-    sizingState.hasVerticalOverflow = true;
-  } else {
-    sizingState.hasVerticalOverflow = false;
-  }
-  if (tableContainerScrollableState[1] === 1) {
-    sizingState.hasHorizontalOverflow = true;
-  } else {
-    sizingState.hasHorizontalOverflow = false;
-  }
+  var tableContainerScrollableState = this._getTableContainerScrollableState(bottomSlotHeight);
+  sizingState.hasVerticalOverflow = (tableContainerScrollableState[0] === 1);
+  sizingState.hasHorizontalOverflow = (tableContainerScrollableState[1] === 1);
 
   if (tableBody == null) {
     return;
   }
-
   // calculate table body border height before scrollbars may be present
   var tableBodyBorderHeight = tableBody.offsetHeight - tableBody.clientHeight;
 
@@ -7008,8 +7335,7 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
     var containerClientWidth = tableContainer.clientWidth;
     var containerClientHeight = tableContainer.clientHeight;
 
-    // If there is overflow in only one direction, we need to check if the addition of
-    // scrollbars will cause overflow in the other direction as well
+    // if there is overflow in only one direction, check if added scrollbar triggers overflow in the other direction
     var browserScrollBarSize = this._getDefaultScrollBarSize();
     if (browserScrollBarSize > 0) {
       if (!sizingState.hasHorizontalOverflow && !this._isVerticalScrollBarHidden()) {
@@ -7029,8 +7355,8 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
         }
       } else if (!sizingState.hasVerticalOverflow) {
         // determine if height is set on the container by seeing if it adjusts when inner table height increases
-        tableElem.style[Table.CSS_PROP._HEIGHT] =
-          ((containerClientHeight + browserScrollBarSize) - bottomSlotHeight) + Table.CSS_VAL._PX;
+        var legacySizer = this._table._getTableLegacySizer();
+        legacySizer.style[Table.CSS_PROP._HEIGHT] = browserScrollBarSize + Table.CSS_VAL._PX;
         if (tableContainer.clientHeight < containerClientHeight + browserScrollBarSize) {
           containerClientHeight = tableContainer.clientHeight;
           tableElem.style[Table.CSS_PROP._HEIGHT] =
@@ -7041,28 +7367,21 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
           }
         } else {
           containerClientHeight = tableContainer.clientHeight;
-          tableElem.style[Table.CSS_PROP._HEIGHT] = '';
         }
+        legacySizer.style[Table.CSS_PROP._HEIGHT] = '';
       }
     }
-
     // hide the vertical scrollbar
     if (sizingState.hasVerticalOverflow && this._isVerticalScrollBarHidden()) {
       tableBody.style[Table.CSS_PROP._OVERFLOW_Y] = 'hidden';
     }
-    var actualScrollBarWidth = this.getScrollBarWidth();
-
     // now that overflow is determined, set the column widths
+    var actualScrollBarWidth = this.getScrollBarWidth();
     this._setColumnWidths(actualScrollBarWidth);
 
     // add in scrolling class for specific vertical or horizontal scrolling
     if (sizingState.hasVerticalOverflow) {
       tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
-      var noDataRow = tableElem.querySelector('tr.' +
-        Table.CSS_CLASSES._TABLE_NO_DATA_CONTAINER_CLASS);
-      if (noDataRow != null) {
-        noDataRow.classList.add(Table.CSS_CLASSES._TABLE_NO_DATA_ROW_CLASS);
-      }
     }
     if (sizingState.hasHorizontalOverflow) {
       tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
@@ -7082,13 +7401,7 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
           tableContainerStyle[Table.CSS_PROP._BORDER_TOP];
       }
     }
-
     // apply the styling which sets the fixed column headers, etc
-    var tableHeaderHeight = 0;
-    if (tableHeader != null) {
-      tableHeaderHeight = tableHeader.offsetHeight;
-    }
-
     tableBody.style[Table.CSS_PROP._WIDTH] = containerClientWidth + Table.CSS_VAL._PX;
 
     var tableFooterHeight = 0;
@@ -7098,6 +7411,7 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
     }
 
     // Size the table body to fit in the height
+    var tableHeaderHeight = (tableHeader != null) ? tableHeader.offsetHeight : 0;
     var tableBodyHeight = containerClientHeight - tableHeaderHeight - tableFooterHeight -
       captionHeight - bottomSlotHeight - tableBodyBorderHeight;
     if (tableBodyHeight > 0) {
@@ -7126,7 +7440,6 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
     } else {
       headerFooterWidth = containerClientWidth + Table.CSS_VAL._PX;
     }
-
     if (tableHeader != null) {
       tableHeader.style[Table.CSS_PROP._WIDTH] = headerFooterWidth;
     }
@@ -7135,12 +7448,11 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
       tableFooter.style[Table.CSS_PROP._WIDTH] = headerFooterWidth;
     }
   } else {
+    // no overflow is present, but column widths still need to be set
     if (this._isTableColumnsWidthSet()) {
-      // no overflow is present, but column widths still need to be set
       this._setColumnWidths(0);
     }
-
-    // if bottom slot present, ensure bottom slot is pinned to bottom when underflow
+    // if bottom slot present, ensure bottom slot is pinned to bottom when underflow is present
     if (bottomSlotHeight > 0) {
       var availableHeight = tableContainer.clientHeight - bottomSlotHeight;
       if (availableHeight !== tableElem.offsetHeight) {
@@ -7149,11 +7461,9 @@ TableLegacyLayoutManager.prototype.refreshTableDimensions = function () {
       }
     }
   }
-
   if (this._table._isStatusMessageShown()) {
     this._table._refreshTableStatusPosition();
   }
-
   this._table._refreshTouchAffordanceGlassPanePosition();
   this._finalizeTableDimensions(scrollTop, scrollLeft);
 };
@@ -7202,10 +7512,10 @@ TableLegacyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = func
           }
         }
       } else {
-        tableBodyCell = this._table._getTableBodyCell(0, i, null);
+        var legacyWidthBuffer = this._table._getTableBodyLegacyWidthBuffer();
+        tableBodyCell = legacyWidthBuffer.childNodes[i];
         if (tableBodyCell != null) {
           this._applyForcedColumnWidth(tableBodyCell, '');
-          this._table._styleTableBodyCell(i, tableBodyCell);
         }
       }
     }
@@ -7227,12 +7537,396 @@ TableLegacyLayoutManager.prototype._removeHeaderColumnAndCellColumnWidths = func
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * @private
  */
+TableLegacyLayoutManager.prototype.handleMouseEnterHeaderCell = function (event) {
+  this._setResizeCursor(event);
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleMouseMoveHeader = function (event) {
+  this._setResizeCursor(event);
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleMouseMoveHeaderCell = function (event) {
+  if (this._setResizeCursor(event)) {
+    this._table._handleMouseLeaveColumnHeader(this._table._getEventTargetElement(event));
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleMouseUp = function (event) {
+  this._handleHeaderColumnResizeEnd(event);
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleMouseLeaveTable = function () {
+  this._clearTableHeaderColumnsResize();
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleTouchMoveHeader = function (event) {
+  if (this._table._isTableColumnsResizable()) {
+    this._setResizeCursor(event);
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleTouchEnd = function (event) {
+  if (this._handleHeaderColumnResizeEnd(event)) {
+    event.preventDefault();
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleTouchCancel = function () {
+  this._clearTableHeaderColumnsResize();
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleKeyDownEsc = function () {
+  this._clearTableHeaderColumnsResize();
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype.handleFocusout = function () {
+  this._clearTableHeaderColumnsResize();
+};
+
+/**
+ * Set resize cursor
+ * @param {Event} event Event
+ * @private
+ */
+TableLegacyLayoutManager.prototype._setResizeCursor = function (event) {
+  var eventTarget = this._table._getEventTargetElement(event);
+  var columnIdx = this._table._getElementColumnIdx(eventTarget);
+
+  if (columnIdx == null) {
+    return false;
+  }
+
+  var column = this._table._getColumnDefs()[columnIdx];
+
+  if (column.resizable === Table._OPTION_DISABLED &&
+    this._resizeStartColumnIdx !== columnIdx - 1 &&
+    this._resizeStartColumnIdx !== columnIdx + 1) {
+    return false;
+  }
+
+  if (this._resizeStartColumnIdx == null) {
+    if (this._isHeaderColumnResizeStart(event) !== null) {
+      eventTarget.style.cursor = Table.CSS_VAL._COL_RESIZE;
+      return true;
+    }
+    eventTarget.style.cursor = '';
+    return false;
+  }
+
+  var headerColumns = this._table._getTableHeaderColumns();
+  if (!headerColumns) {
+    return false;
+  }
+
+  // move the indicator
+  if (columnIdx === this._resizeStartColumnIdx ||
+      (this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx - 1) ||
+      (!this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx + 1)) {
+    var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
+    if (tableHeaderColumnResizeIndicator != null) {
+      var tableScroller = this.getScroller();
+      var scrollerRect = tableScroller.getBoundingClientRect();
+      tableHeaderColumnResizeIndicator.style.left = (this._getPageX(event) - scrollerRect.left) + 'px';
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Handle header column resize start
+ * @param {Event} event Event
+ * @return {boolean} Return whether column resize started
+ * @private
+ */
+// eslint-disable-next-line no-unused-vars
+TableLegacyLayoutManager.prototype._handleHeaderColumnResizeStart = function (event, isMouse) {
+  var eventTarget = this._table._getEventTargetElement(event);
+  var columnIdx = this._table._getElementColumnIdx(eventTarget);
+
+  if (columnIdx != null) {
+    var column = this._table._getColumnDefs()[columnIdx];
+    this._resizeColumnStart = this._isHeaderColumnResizeStart(event);
+
+    if (column.resizable === Table._OPTION_ENABLED && this._resizeColumnStart !== null) {
+      this._resizeStartColumnIdx = columnIdx;
+      this._resizeStartPageX = this._getPageX(event);
+      this._setTableHeaderColumnsResizeStyling();
+      this._setTableHeaderColumnResizeIndicator(columnIdx);
+      event.preventDefault();
+      return true;
+    }
+  }
+  this._resizeStartColumnIdx = null;
+  this._resizeStartPageX = null;
+  return false;
+};
+
+/**
+ * Handle header column resize end
+ * @param {Event} event Event
+ * @return {boolean} Return whether column resize ended
+ * @private
+ */
+TableLegacyLayoutManager.prototype._handleHeaderColumnResizeEnd = function (event) {
+  var columnsCount = this._table.options.columns.length;
+  var eventTarget = this._table._getEventTargetElement(event);
+  var columnIdx = this._table._getElementColumnIdx(eventTarget);
+
+  // only resize if we end the resize on the same column or adjacent columns
+  if ((columnIdx !== null && columnIdx === this._resizeStartColumnIdx) ||
+      (this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx - 1) ||
+      (!this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx + 1)) {
+    var headerColumn = this._table._getTableHeaderColumn(this._resizeStartColumnIdx);
+    if (headerColumn != null) {
+      var headerColumnRect = headerColumn.getBoundingClientRect();
+      var headerColumnWidth = headerColumnRect.width;
+      // when scrollbar is present, reduce last column width by scrollbar width
+      if (this._resizeStartColumnIdx === columnsCount - 1 && this.isTableHeightConstrained()) {
+        headerColumnWidth -= this.getScrollBarWidth();
+      }
+      var widthChange;
+      if ((this._table._GetReadingDirection() === 'rtl' && this._resizeColumnStart) ||
+          (this._table._GetReadingDirection() === 'ltr' && !this._resizeColumnStart)) {
+        widthChange = this._getPageX(event) - this._resizeStartPageX;
+      } else {
+        widthChange = this._resizeStartPageX - this._getPageX(event);
+      }
+      if (Math.abs(widthChange) > 2) {
+        var startColWidth = headerColumnWidth + widthChange;
+        // ensure new column width is not less than the minimum required width
+        var minWidth = this.getMinimumForcedOffsetWidth(this._resizeStartColumnIdx);
+        if (minWidth > startColWidth) {
+          widthChange += (minWidth - startColWidth);
+          startColWidth = minWidth;
+        }
+        var clonedColumnsOption = [];
+        for (var i = 0; i < columnsCount; i++) {
+          clonedColumnsOption[i] = $.extend({}, {}, this._table.options.columns[i]);
+        }
+
+        // a resize operation should increase one column and decrease the other
+        var headerColumnAdjacentIdx = this._resizeColumnStart ?
+          this._resizeStartColumnIdx - 1 : this._resizeStartColumnIdx + 1;
+        // when scrollbar is present, reduce last column width by scrollbar width
+        if (headerColumnAdjacentIdx === columnsCount - 1 && this.isTableHeightConstrained()) {
+          widthChange += this.getScrollBarWidth();
+        }
+        var headerColumnAdjacent = this._table._getTableHeaderColumn(headerColumnAdjacentIdx);
+        if (headerColumnAdjacent) {
+          var headerColumnAdjacentRect = headerColumnAdjacent.getBoundingClientRect();
+          var adjacentColWidth = headerColumnAdjacentRect.width - widthChange;
+
+          minWidth = this.getMinimumForcedOffsetWidth(headerColumnAdjacentIdx);
+          if (minWidth > adjacentColWidth) {
+            startColWidth += (adjacentColWidth - minWidth);
+            adjacentColWidth = minWidth;
+          }
+          clonedColumnsOption[headerColumnAdjacentIdx].width =
+            this.getWidthPropertyFromOffsetWidth(adjacentColWidth, headerColumnAdjacent);
+        }
+        clonedColumnsOption[this._resizeStartColumnIdx].width =
+          this.getWidthPropertyFromOffsetWidth(startColWidth, headerColumn);
+
+        this._table.option('columns', clonedColumnsOption, {
+          _context: {
+            writeback: true,
+            internalSet: true
+          }
+        });
+        this._table._clearCachedMetadata();
+        this._table._queueTask(function () {
+          this.notifyTableUpdate(Table._UPDATE._COL_RESIZE);
+          // delay the focus to ensure table resize information is not cleared before 'click' handling occurs
+          // otherwise, column resizing will lead to selection handling as well
+          setTimeout(function () { // @HTMLUpdateOK
+            this._clearTableHeaderColumnsResize();
+          }.bind(this), 0);
+        }.bind(this));
+        return true;
+      }
+    }
+  }
+  this._clearTableHeaderColumnsResize();
+  return false;
+};
+
+/**
+ * Clear any column resize
+ * @private
+ */
+TableLegacyLayoutManager.prototype._clearTableHeaderColumnsResize = function () {
+  this._resizeStartColumnIdx = null;
+  this._resizeColumnStart = null;
+  this._resizeStartPageX = null;
+  this._clearTableHeaderColumnsResizeStyling();
+  this._removeTableHeaderColumnResizeIndicator();
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._isHeaderColumnResizeStart = function (event) {
+  var resizeColumnStart = null;
+  var columnsCount = this._table.options.columns.length;
+  var columnIdx = this._table._getElementColumnIdx(event.target);
+  var headerColumn = this._table._getTableHeaderColumn(columnIdx);
+  if (headerColumn !== null) {
+    var readingDir = this._table._GetReadingDirection();
+    var columnRect = headerColumn.getBoundingClientRect();
+    var distFromLeft = Math.abs(this._getPageX(event) - columnRect.left);
+    var distFromRight = Math.abs(this._getPageX(event) - columnRect.right);
+
+    // don't show resize cursor for column dividers at the start and end of the table
+    if (distFromLeft <= Table.RESIZE_OFFSET) {
+      if (readingDir === 'rtl' && columnIdx !== columnsCount - 1) {
+        resizeColumnStart = false;
+      } else if (readingDir === 'ltr' && columnIdx !== 0) {
+        resizeColumnStart = true;
+      }
+    } else if (distFromRight <= Table.RESIZE_OFFSET) {
+      if (readingDir === 'ltr' && columnIdx !== columnsCount - 1) {
+        resizeColumnStart = false;
+      } else if (readingDir === 'rtl' && columnIdx !== 0) {
+        resizeColumnStart = true;
+      }
+    }
+  }
+  return resizeColumnStart;
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._setTableHeaderColumnResizeIndicator = function (columnIdx) {
+  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
+  if (tableHeaderColumnResizeIndicator == null) {
+    tableHeaderColumnResizeIndicator = this._createTableHeaderColumnResizeIndicator();
+  }
+  var table = this._table._getTable();
+  var tableRect = table.getBoundingClientRect();
+  var tableScroller = this.getScroller();
+  var scrollerRect = tableScroller.getBoundingClientRect();
+  var headerColumn = this._table._getTableHeaderColumn(columnIdx);
+  var headerColumnRect = headerColumn.getBoundingClientRect();
+  tableHeaderColumnResizeIndicator.style.height = tableRect.height + 'px';
+
+  if (this._resizeColumnStart) {
+    if (this._table._GetReadingDirection() === 'rtl') {
+      tableHeaderColumnResizeIndicator.style.left =
+        ((headerColumnRect.left + headerColumnRect.width) - scrollerRect.left) + 'px';
+    } else {
+      tableHeaderColumnResizeIndicator.style.left =
+        (headerColumnRect.left - scrollerRect.left) + 'px';
+    }
+    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '2px';
+    tableHeaderColumnResizeIndicator.style.borderRightWidth = '0';
+  } else {
+    if (this._table._GetReadingDirection() === 'rtl') {
+      tableHeaderColumnResizeIndicator.style.left =
+        (headerColumnRect.left - scrollerRect.left) + 'px';
+    } else {
+      tableHeaderColumnResizeIndicator.style.left =
+        ((headerColumnRect.left + headerColumnRect.width) - scrollerRect.left) + 'px';
+    }
+    tableHeaderColumnResizeIndicator.style.borderRightWidth = '2px';
+    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '0';
+  }
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._setTableHeaderColumnsResizeStyling = function () {
+  var table = this._table._getTable();
+  table.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
+};
+
+/**
+ * @private
+ */
+TableLegacyLayoutManager.prototype._clearTableHeaderColumnsResizeStyling = function () {
+  var headerColumns = this._table._getTableHeaderColumns();
+  if (headerColumns) {
+    for (var i = 0; i < headerColumns.length; i++) {
+      headerColumns[i].style.cursor = '';
+    }
+  }
+  var table = this._table._getTable();
+  table.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
+};
+
+/**
+ * Create a div element for resize indicator
+ * @return {Element} div DOM element
+ * @private
+ */
+TableLegacyLayoutManager.prototype._createTableHeaderColumnResizeIndicator = function () {
+  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
+
+  if (!tableHeaderColumnResizeIndicator) {
+    var tableContainer = this._table._getTableContainer();
+    tableHeaderColumnResizeIndicator = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    tableContainer.appendChild(tableHeaderColumnResizeIndicator);
+    tableHeaderColumnResizeIndicator.classList.add(
+      Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
+    this._table._cacheDomElement(Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS,
+                          tableHeaderColumnResizeIndicator);
+  }
+
+  return tableHeaderColumnResizeIndicator;
+};
+
+/**
+ * Return resize indicator
+ * @return {Element} div DOM element
+ * @private
+ */
+TableLegacyLayoutManager.prototype._getTableHeaderColumnResizeIndicator = function () {
+  return this._table._getTableElementByClassName(
+    Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS, true);
+};
+
+/**
+ * Remove resize indicator
+ * @private
+ */
+TableLegacyLayoutManager.prototype._removeTableHeaderColumnResizeIndicator = function () {
+  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
+  if (tableHeaderColumnResizeIndicator) {
+    $(tableHeaderColumnResizeIndicator).remove();
+    this._table._clearDomCache(Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
+  }
+};
 
 /**
  * @private
@@ -7246,12 +7940,88 @@ oj.Object.createSubclass(TableStickyLayoutManager, TableLayoutManager, 'TableSti
 
 
 /**
+ * @private
+ */
+TableStickyLayoutManager.prototype.unregisterListeners = function () {
+  TableStickyLayoutManager.superclass.unregisterListeners.call(this);
+  this._clearMouseResizeListeners();
+};
+
+/**
  * Return the table scroller
  * @return {Element} scroller
  * @private
  */
 TableStickyLayoutManager.prototype.getScroller = function () {
-  return this._table._getTableScroller();
+  if (this._scroller == null) {
+    var scroller;
+    var scrollPolicyOptions = this._table.options.scrollPolicyOptions;
+    if (scrollPolicyOptions != null) {
+      scroller = scrollPolicyOptions.scroller;
+      if (scroller != null) {
+        if (typeof scroller === 'string') {
+          scroller = document.querySelector(scroller);
+          if (scroller == null) {
+            error('the css selector string specified in scroller attribute does not resolve to any element');
+          }
+        }
+
+        // make sure the scroller is an ancestor
+        if (scroller != null && !scroller.contains(this._table._getRootElement())) {
+          error('the specified scroller must be an ancestor of the component');
+          scroller = null;
+        }
+      }
+    }
+    this._scroller = scroller != null ? scroller : this._table._getTableScroller();
+  }
+  return this._scroller;
+};
+
+/**
+ * Returns the table scrollable content element
+ * @return {Element} the table scrollable content element
+ * @private
+ */
+TableStickyLayoutManager.prototype.getContentElement = function () {
+  return (this.getScroller() !== this._table._getTableScroller()) ? this._table._getTable() : null;
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype.getColumnScrollLeft = function (columnIndex) {
+  if (columnIndex === 0) {
+    return 0;
+  }
+  var i;
+  var frozenIndex;
+  var frozenOffset = 0;
+  if (this._table._isDefaultSelectorEnabled()) {
+    frozenOffset += this._selectorColWidth;
+  }
+  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  for (i = 0; i < frozenStartColumns.length; i++) {
+    frozenIndex = frozenStartColumns[i];
+    if (frozenIndex < columnIndex) {
+      frozenOffset += this._appliedColumnWidths[frozenIndex];
+    } else {
+      break;
+    }
+  }
+
+  var scroller = this.getScroller();
+  var isRTL = this._table._GetReadingDirection() === 'rtl';
+  var tableHeaderColumn = this._table._getTableHeaderColumn(columnIndex);
+  if (tableHeaderColumn != null) {
+    if (!isRTL) {
+      return tableHeaderColumn.offsetLeft - frozenOffset;
+    }
+    return scroller.clientWidth - frozenOffset -
+           tableHeaderColumn.offsetLeft - tableHeaderColumn.offsetWidth;
+  }
+  // invalid column index
+  return undefined;
 };
 
 /**
@@ -7268,36 +8038,114 @@ TableStickyLayoutManager.prototype.getRowScrollTop = function (row) {
 };
 
 /**
- * Determines the number of pixels the Table would need to scroll down to align
- * the top of the given row with the top of the viewport.
- * @param {Element} tableBodyRow The row to be scrolled.
  * @private
  */
-TableStickyLayoutManager.prototype.getRowTopOverflowDiff = function (tableBodyRow) {
-  var rowRect = tableBodyRow.getBoundingClientRect();
-  var scrollingElementRect = this.getScroller().getBoundingClientRect();
-  if (this._table._isTableHeaderless()) {
-    return scrollingElementRect.top - rowRect.top;
-  }
-  var headerHeight = this._table._getTableHeader().offsetHeight;
-  return (scrollingElementRect.top + headerHeight) - rowRect.top;
+TableStickyLayoutManager.prototype._handleScrollerScrollLeft = function (scrollLeft) {
+  TableStickyLayoutManager.superclass._handleScrollerScrollLeft.call(this, scrollLeft);
+
+  this._updateFrozenEdges(scrollLeft, false);
 };
 
 /**
- * Determines the number of pixels the Table would need to scroll up to align
- * the bottom of the given row with the bottom of the viewport.
+ * Determines the number of pixels the Table would need to scroll to align each
+ * vertical edge of the given row with the corresponding edge of the scrollable viewport.
  * @param {Element} tableBodyRow The row to be scrolled.
  * @private
  */
-TableStickyLayoutManager.prototype.getRowBottomOverflowDiff = function (tableBodyRow) {
+ TableStickyLayoutManager.prototype.getVerticalOverflowDiff = function (tableBodyRow) {
   var rowRect = tableBodyRow.getBoundingClientRect();
   var scrollingElementRect = this.getScroller().getBoundingClientRect();
   var scrollBarHeight = this.getScrollBarHeight();
-  if (this._table._isTableFooterless()) {
-    return (rowRect.bottom - scrollingElementRect.bottom) + scrollBarHeight;
+  var scrollerTopOffset;
+  var scrollerBottomOffset;
+  if (this._table._isExternalScrollEnabled()) {
+    scrollerTopOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetTop == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetTop;
+    scrollerBottomOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetBottom == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetBottom;
+  } else {
+    scrollerTopOffset = 0;
+    scrollerBottomOffset = 0;
   }
-  var footerHeight = this._table._getTableFooter().offsetHeight;
-  return (rowRect.bottom - (scrollingElementRect.bottom - footerHeight)) + scrollBarHeight;
+
+  var vertDiff = {};
+  if (this._table._isTableHeaderless()) {
+    vertDiff.top = (scrollingElementRect.top + scrollerTopOffset) - rowRect.top;
+  } else {
+    var headerHeight = this._table._getTableHeader().offsetHeight;
+    vertDiff.top = (scrollingElementRect.top + scrollerTopOffset + headerHeight) - rowRect.top;
+  }
+  if (this._table._isTableFooterless()) {
+    vertDiff.bottom = (rowRect.bottom - scrollingElementRect.bottom - scrollerBottomOffset) +
+      scrollBarHeight;
+  } else {
+    var footerHeight = this._table._getTableFooter().offsetHeight;
+    vertDiff.bottom = (rowRect.bottom -
+      (scrollingElementRect.bottom - scrollerBottomOffset - footerHeight)) + scrollBarHeight;
+  }
+  return vertDiff;
+};
+
+/**
+ * Determines the number of pixels the Table would need to scroll to align each
+ * horizontal edge of the given column with the corresponding edge of the scrollable viewport.
+ * @param {Element} columnCell A cell in the column to be scrolled.
+ * @param {number} columnIndex The index of the column to be scrolled.
+ * @private
+ */
+TableStickyLayoutManager.prototype.getHorizontalOverflowDiff = function (columnCell, columnIndex) {
+  var i;
+  var frozenIndex;
+  var isRTL = (this._table._GetReadingDirection() === 'rtl');
+  var scrollingElement = this.getScroller();
+  var scrollbarWidth = this.getScrollBarWidth();
+  var columnRect = columnCell.getBoundingClientRect();
+  var scrollingElementRect = scrollingElement.getBoundingClientRect();
+
+  var frozenStartOffset;
+  var frozenEndOffset;
+  if (this._table._isExternalScrollEnabled()) {
+    frozenStartOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetStart == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetStart;
+    frozenEndOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetEnd == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetEnd;
+  } else {
+    frozenStartOffset = 0;
+    frozenEndOffset = 0;
+  }
+  if (this._table._isDefaultSelectorEnabled()) {
+    frozenStartOffset += this._selectorColWidth;
+  }
+  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  for (i = 0; i < frozenStartColumns.length; i++) {
+    frozenIndex = frozenStartColumns[i];
+    if (frozenIndex < columnIndex) {
+      frozenStartOffset += this._appliedColumnWidths[frozenIndex];
+    } else {
+      break;
+    }
+  }
+  var frozenEndColumns = this._getFrozenEndColumnIndexes();
+  for (i = frozenEndColumns.length - 1; i > -1; i--) {
+    frozenIndex = frozenEndColumns[i];
+    if (frozenIndex > columnIndex) {
+      frozenEndOffset += this._appliedColumnWidths[frozenIndex];
+    } else {
+      break;
+    }
+  }
+
+  var horDiff = {};
+  if (isRTL) {
+    horDiff.left = ((scrollingElementRect.left + frozenEndOffset) - columnRect.left) +
+                   scrollbarWidth;
+    horDiff.right = (columnRect.right - scrollingElementRect.right) + frozenStartOffset;
+  } else {
+    horDiff.left = (scrollingElementRect.left + frozenStartOffset) - columnRect.left;
+    horDiff.right = (columnRect.right - scrollingElementRect.right) + frozenEndOffset +
+                    scrollbarWidth;
+  }
+  return horDiff;
 };
 
 /**
@@ -7311,6 +8159,7 @@ TableStickyLayoutManager.prototype._clearAllCache = function () {
  * @private
  */
 TableStickyLayoutManager.prototype._clearColumnSizingCache = function () {
+  TableStickyLayoutManager.superclass._clearColumnSizingCache.call(this);
   this._appliedColumnWidths = null;
   this._columnInitWidths = null;
   this._selectorColWidth = null;
@@ -7326,6 +8175,8 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
   if (tableUpdates.has(Table._UPDATE._REFRESH)) {
     this._clearAllCache();
   } else if (tableUpdates.has(Table._UPDATE._DATA_REFRESH) ||
+             tableUpdates.has(Table._UPDATE._ATTACHED) ||
+             tableUpdates.has(Table._UPDATE._SHOWN) ||
              tableUpdates.has(Table._UPDATE._RESIZE) ||
              tableUpdates.has(Table._UPDATE._COL_RESIZE) ||
              tableUpdates.has(Table._UPDATE._COL_REORDER) ||
@@ -7334,6 +8185,11 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
     // clear cached column values if outer size updates or column information changes
     this._clearColumnSizingCache();
   } else {
+    if (tableUpdates.has(Table._UPDATE._ROWS_ADDED) ||
+        tableUpdates.has(Table._UPDATE._ROW_REFRESH) ||
+        tableUpdates.has(Table._UPDATE._DATA_SORT)) {
+      this._initializeFrozenColumns();
+    }
     // updates do not require a sizing refresh - clear updates and return
     this._clearTableUpdates();
     this._enableTableVisibility();
@@ -7363,7 +8219,6 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
 
   var tableContainer = this._table._getTableContainer();
   var tableElem = this._table._getTable();
-  var tableBody = this._table._getTableBody();
 
   this.clearCachedDimensions();
   this._removeTableDimensionsStyling();
@@ -7385,6 +8240,7 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
   overallWidth = this._determineColumnWidths();
   tableElem.style[Table.CSS_PROP._WIDTH] = overallWidth + Table.CSS_VAL._PX;
   tableElem.style['table-layout'] = 'fixed';
+  this._initializeFrozenColumns();
 
   var tableContainerScrollableState =
     this._getTableContainerScrollableState(bottomSlotHeight);
@@ -7393,18 +8249,12 @@ TableStickyLayoutManager.prototype.refreshTableDimensions = function () {
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
   } else {
     sizingState.hasVerticalOverflow = false;
-    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_VERTICAL_CLASS);
   }
   if (tableContainerScrollableState[1] === 1) {
     sizingState.hasHorizontalOverflow = true;
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
   } else {
     sizingState.hasHorizontalOverflow = false;
-    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_SCROLL_HORIZONTAL_CLASS);
-  }
-
-  if (tableBody == null) {
-    return;
   }
 
   if (this._table._isStatusMessageShown()) {
@@ -7585,12 +8435,561 @@ TableStickyLayoutManager.prototype._savePreferredColWidths = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
+ * @private
  */
+TableStickyLayoutManager.prototype._initializeFrozenColumns = function () {
+  var i;
+  var frozenIndex;
+  var frozenStartOffset;
+  var frozenEndOffset;
+
+  if (this._table._isExternalScrollEnabled()) {
+    frozenStartOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetStart == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetStart;
+    frozenEndOffset = (this._table.options.scrollPolicyOptions.scrollerOffsetEnd == null) ?
+      0 : this._table.options.scrollPolicyOptions.scrollerOffsetEnd;
+  } else {
+    frozenStartOffset = 0;
+    frozenEndOffset = 0;
+  }
+
+  var updateFrozenEdges = false;
+  if (this._table._isDefaultSelectorEnabled()) {
+    this._applyFrozenOffset(-1, frozenStartOffset, true);
+    frozenStartOffset += this._selectorColWidth;
+    updateFrozenEdges = true;
+  }
+  var frozenStartColumns = this._getFrozenStartColumnIndexes();
+  if (frozenStartColumns.length > 0) {
+    updateFrozenEdges = true;
+    for (i = 0; i < frozenStartColumns.length; i++) {
+      frozenIndex = frozenStartColumns[i];
+      this._applyFrozenOffset(frozenIndex, frozenStartOffset, true);
+      frozenStartOffset += this._appliedColumnWidths[frozenIndex];
+    }
+  }
+
+  var frozenEndColumns = this._getFrozenEndColumnIndexes();
+  if (frozenEndColumns.length > 0) {
+    updateFrozenEdges = true;
+    for (i = frozenEndColumns.length - 1; i > -1; i--) {
+      frozenIndex = frozenEndColumns[i];
+      this._applyFrozenOffset(frozenIndex, frozenEndOffset, false);
+      frozenEndOffset += this._appliedColumnWidths[frozenIndex];
+    }
+  }
+
+  if (updateFrozenEdges) {
+    this._updateFrozenEdges(this._scrollLeft, true);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._getFrozenStartColumnIndexes = function () {
+  var frozenStartColumns = [];
+  var columns = this._table._getColumnDefs();
+  for (var i = 0; i < columns.length; i++) {
+    if (columns[i].frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
+      frozenStartColumns.push(i);
+    }
+  }
+  return frozenStartColumns;
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._getFrozenEndColumnIndexes = function () {
+  var frozenEndColumns = [];
+  var columns = this._table._getColumnDefs();
+  for (var i = 0; i < columns.length; i++) {
+    if (columns[i].frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
+      frozenEndColumns.push(i);
+    }
+  }
+  return frozenEndColumns;
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._applyFrozenOffset = function (columnIndex, offset, isStart) {
+  var i;
+  var styleProperty;
+  var isRTL = (this._table._GetReadingDirection() === 'rtl');
+  if ((isStart && !isRTL) || (!isStart && isRTL)) {
+    styleProperty = Table.CSS_PROP._LEFT;
+  } else {
+    styleProperty = Table.CSS_PROP._RIGHT;
+  }
+  var styleValue = offset + Table.CSS_VAL._PX;
+
+  var tableBodyRows = this._table._getTableBodyRows();
+  if (columnIndex === -1) {
+    // update header cell
+    var headerSelector = this._table._getTableSelectorColumn();
+    if (headerSelector != null) {
+      headerSelector.style[styleProperty] = styleValue;
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyRow = this._table._getTableBodyRow(i);
+      var tableBodySelectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
+      if (tableBodySelectorCell != null) {
+        tableBodySelectorCell.style[styleProperty] = styleValue;
+      }
+    }
+    // update footer cell
+    var footerSelector = this._table._getTableFooterSelectorCell();
+    if (footerSelector != null) {
+      footerSelector.style[styleProperty] = styleValue;
+    }
+  } else {
+    // update header cell
+    var headerCell = this._table._getTableHeaderColumn(columnIndex);
+    if (headerCell != null) {
+      headerCell.style[styleProperty] = styleValue;
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyCell = this._table._getTableBodyCell(i, columnIndex);
+      if (tableBodyCell != null) {
+        tableBodyCell.style[styleProperty] = styleValue;
+      }
+    }
+    // update footer cell
+    var footerCell = this._table._getTableFooterCell(columnIndex);
+    if (footerCell != null) {
+      footerCell.style[styleProperty] = styleValue;
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._updateFrozenEdges = function (scrollLeft, isForce) {
+  var i;
+  var currIndex;
+  var startIndex;
+  var endIndex;
+  var newScrollPosition = this._table._getCurrentHorizontalScrollPosition(scrollLeft);
+
+  // update frozen start edge if present
+  if (newScrollPosition.x === 0) {
+    startIndex = null;
+  } else {
+    var currentColumnIndex = newScrollPosition.columnIndex;
+    startIndex = this._table._isDefaultSelectorEnabled() ? -1 : null;
+    var frozenStartColumns = this._getFrozenStartColumnIndexes();
+    for (i = 0; i < frozenStartColumns.length; i++) {
+      currIndex = frozenStartColumns[i];
+      if (currIndex < currentColumnIndex) {
+        startIndex = currIndex;
+      } else {
+        break;
+      }
+    }
+  }
+  this._updateFrozenEdge(startIndex, true, isForce);
+
+  // update frozen end edge if present
+  var scroller = this.getScroller();
+  var maxScrollPos = scroller.scrollWidth - scroller.clientWidth;
+  var endOverflow = maxScrollPos - newScrollPosition.x;
+  // browser zoom levels cause rounding where the max scroll position may never be reached, but it should always be within 1
+  if (endOverflow < 1) {
+    endIndex = null;
+  } else {
+    var colWidths = 0;
+    var frozenEndColumns = this._getFrozenEndColumnIndexes();
+    for (i = this._appliedColumnWidths.length - 1; i > -1; i--) {
+      if (frozenEndColumns.indexOf(i) !== -1) {
+        endIndex = i;
+      } else {
+        colWidths += this._appliedColumnWidths[i];
+        if (colWidths > endOverflow) {
+          break;
+        }
+      }
+    }
+  }
+  this._updateFrozenEdge(endIndex, false, isForce);
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._updateFrozenEdge = function (columnIndex, isStart, isForce) {
+  var appliedEdge = false;
+  if (isStart) {
+    if (this._frozenStartIndex !== columnIndex) {
+      if (this._frozenStartIndex != null) {
+        this._removeFrozenEdge(this._frozenStartIndex);
+      }
+      if (columnIndex != null) {
+        this._applyFrozenEdge(columnIndex);
+        appliedEdge = true;
+      }
+      this._frozenStartIndex = columnIndex;
+    }
+  } else if (this._frozenEndIndex !== columnIndex) {
+    if (this._frozenEndIndex != null) {
+      this._removeFrozenEdge(this._frozenEndIndex);
+    }
+    if (columnIndex != null) {
+      this._applyFrozenEdge(columnIndex);
+      appliedEdge = true;
+    }
+    this._frozenEndIndex = columnIndex;
+  }
+  if (isForce && !appliedEdge) {
+    this._applyFrozenEdge(columnIndex);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._applyFrozenEdge = function (columnIndex) {
+  var i;
+  var tableBodyRows = this._table._getTableBodyRows();
+
+  if (columnIndex === -1) {
+    // update header cell
+    var headerSelector = this._table._getTableSelectorColumn();
+    if (headerSelector != null) {
+      headerSelector.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyRow = this._table._getTableBodyRow(i);
+      var tableBodySelectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
+      if (tableBodySelectorCell != null) {
+        tableBodySelectorCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      }
+    }
+    // update footer cell
+    var footerSelector = this._table._getTableFooterSelectorCell();
+    if (footerSelector != null) {
+      footerSelector.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+  } else {
+    // update header cell
+    var headerCell = this._table._getTableHeaderColumn(columnIndex);
+    if (headerCell != null) {
+      headerCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyCell = this._table._getTableBodyCell(i, columnIndex);
+      if (tableBodyCell != null) {
+        tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      }
+    }
+    // update footer cell
+    var footerCell = this._table._getTableFooterCell(columnIndex);
+    if (footerCell != null) {
+      footerCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._removeFrozenEdge = function (columnIndex) {
+  var i;
+  var tableBodyRows = this._table._getTableBodyRows();
+
+  if (columnIndex === -1) {
+    // update header cell
+    var headerSelector = this._table._getTableSelectorColumn();
+    if (headerSelector != null) {
+      headerSelector.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyRow = this._table._getTableBodyRow(i);
+      var tableBodySelectorCell = this._table._getTableBodySelectorCell(tableBodyRow);
+      if (tableBodySelectorCell != null) {
+        tableBodySelectorCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      }
+    }
+    // update footer cell
+    var footerSelector = this._table._getTableFooterSelectorCell();
+    if (footerSelector != null) {
+      footerSelector.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+  } else {
+    // update header cell
+    var headerCell = this._table._getTableHeaderColumn(columnIndex);
+    if (headerCell != null) {
+      headerCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+    // update table body cells
+    for (i = 0; i < tableBodyRows.length; i++) {
+      var tableBodyCell = this._table._getTableBodyCell(i, columnIndex);
+      if (tableBodyCell != null) {
+        tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+      }
+    }
+    // update footer cell
+    var footerCell = this._table._getTableFooterCell(columnIndex);
+    if (footerCell != null) {
+      footerCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_EDGE);
+    }
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype.handleMouseMoveHeaderCell = function (event) {
+  if (!this._isColumnResizing) {
+    this._setResizeCursor(event);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._setResizeCursor = function (event) {
+  var eventTarget = this._table._getEventTargetElement(event);
+  var columnIdx = this._table._getElementColumnIdx(eventTarget);
+
+  if (columnIdx == null) {
+    return;
+  }
+
+  var column = this._table._getColumnDefs()[columnIdx];
+  if (column.resizable === Table._OPTION_DISABLED) {
+    this._cursor = null;
+    eventTarget.style.cursor = '';
+    return;
+  }
+
+  var isResize = false;
+  var headerColumn = this._table._getTableHeaderColumn(columnIdx);
+  if (headerColumn !== null) {
+    var readingDir = this._table._GetReadingDirection();
+    var columnsCount = this._table.options.columns.length;
+    var columnRect = headerColumn.getBoundingClientRect();
+    var distFromLeft = Math.abs(this._getPageX(event) - columnRect.left);
+    var distFromRight = Math.abs(this._getPageX(event) - columnRect.right);
+
+    // don't show resize cursor for column dividers at the start and end of the table
+    if (distFromLeft <= Table.RESIZE_OFFSET) {
+      if (readingDir === 'rtl' && columnIdx !== columnsCount - 1) {
+        isResize = true;
+        this._resizeStartIndex = columnIdx;
+        this._resizeEndIndex = columnIdx + 1;
+      } else if (readingDir === 'ltr' && columnIdx !== 0) {
+        isResize = true;
+        this._resizeStartIndex = columnIdx - 1;
+        this._resizeEndIndex = columnIdx;
+      }
+    } else if (distFromRight <= Table.RESIZE_OFFSET) {
+      if (readingDir === 'ltr' && columnIdx !== columnsCount - 1) {
+        isResize = true;
+        this._resizeStartIndex = columnIdx;
+        this._resizeEndIndex = columnIdx + 1;
+      } else if (readingDir === 'rtl' && columnIdx !== 0) {
+        isResize = true;
+        this._resizeStartIndex = columnIdx - 1;
+        this._resizeEndIndex = columnIdx;
+      }
+    }
+  }
+  if (isResize) {
+    this._cursor = 'col-resize';
+    eventTarget.style.cursor = Table.CSS_VAL._COL_RESIZE;
+  } else {
+    this._cursor = null;
+    eventTarget.style.cursor = '';
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._handleHeaderColumnResizeStart = function (event, isMouse) {
+  if (!isMouse || (this._resizeStartIndex == null && this._resizeEndIndex == null)) {
+    this._setResizeCursor(event);
+  }
+  if (this._cursor === 'col-resize') {
+    this._isColumnResizing = true;
+    this._resizeStartPageX = this._getPageX(event);
+    this._minimumStartColWidth = this.getMinimumForcedOffsetWidth(this._resizeStartIndex);
+    this._minimumEndColWidth = this.getMinimumForcedOffsetWidth(this._resizeEndIndex);
+    event.preventDefault();
+    if (isMouse) {
+      this._setupMouseResizeListeners();
+    }
+    this._table._queueTask(function () {
+      // if column resizing is still happening, wait for it to end
+      if (this._isColumnResizing) {
+        return new Promise(function (resolve) {
+          this._finishResize = resolve;
+        }.bind(this));
+      }
+      // else just resolve
+      return Promise.resolve();
+    }.bind(this));
+    return true;
+  }
+  this._resizeStartPageX = null;
+  return false;
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._setupMouseResizeListeners = function () {
+  this._clearMouseResizeListeners();
+
+  this._docMouseMoveListener = this._handleResizeMouseMove.bind(this);
+  this._docMouseUpListener = this._handleResizeMouseUp.bind(this);
+
+  document.addEventListener('mousemove', this._docMouseMoveListener, false);
+  document.addEventListener('mouseup', this._docMouseUpListener, false);
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._clearMouseResizeListeners = function () {
+  if (this._docMouseMoveListener != null) {
+    document.removeEventListener('mousemove', this._docMouseMoveListener, false);
+    this._docMouseMoveListener = null;
+  }
+  if (this._docMouseUpListener != null) {
+    document.removeEventListener('mouseup', this._docMouseUpListener, false);
+    this._docMouseUpListener = null;
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._handleResizeMouseMove = function (event) {
+  if (event && event.buttons === 0) {
+    // mouseup must have occurred outside of the document - treat as a mouse up
+    this._handleResizeMouseUp(event);
+  } else {
+    this._updateResizeColumnWidths(event);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._handleResizeMouseUp = function (event) {
+  this._updateResizeColumnWidths(event, true);
+  this._cleanupColumnResizing();
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._cleanupColumnResizing = function () {
+  this._clearMouseResizeListeners();
+
+  this._resizeStartIndex = null;
+  this._resizeEndIndex = null;
+  this._isColumnResizing = null;
+  this._resizeStartPageX = null;
+  this._minimumStartColWidth = null;
+  this._minimumEndColWidth = null;
+
+  if (this._finishResize != null) {
+    this._finishResize();
+    this._finishResize = null;
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype.handleTouchMoveHeader = function (event) {
+  if (this._isColumnResizing) {
+    this._updateResizeColumnWidths(event);
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype.handleTouchEnd = function (event) {
+  if (this._isColumnResizing) {
+    event.preventDefault();
+    this._updateResizeColumnWidths(event, true);
+    this._cleanupColumnResizing();
+  }
+};
+
+/**
+ * @private
+ */
+TableStickyLayoutManager.prototype._updateResizeColumnWidths = function (event, updateOptions) {
+  var readingDir = this._table._GetReadingDirection();
+  var startColInitWidth = this._appliedColumnWidths[this._resizeStartIndex];
+  var endColInitWidth = this._appliedColumnWidths[this._resizeEndIndex];
+  var xDiff = this._getPageX(event) - this._resizeStartPageX;
+  var newStartColWidth;
+  var newEndColWidth;
+  if (readingDir === 'ltr') {
+    newStartColWidth = startColInitWidth + xDiff;
+    newEndColWidth = endColInitWidth - xDiff;
+  } else {
+    newStartColWidth = startColInitWidth - xDiff;
+    newEndColWidth = endColInitWidth + xDiff;
+  }
+  // ensure columns do not become smaller than allowable minimum
+  var minimumDiff;
+  if (this._minimumStartColWidth > newStartColWidth) {
+    minimumDiff = this._minimumStartColWidth - newStartColWidth;
+    newStartColWidth = this._minimumStartColWidth;
+    newEndColWidth -= minimumDiff;
+  } else if (this._minimumEndColWidth > newEndColWidth) {
+    minimumDiff = this._minimumEndColWidth - newEndColWidth;
+    newEndColWidth = this._minimumEndColWidth;
+    newStartColWidth -= minimumDiff;
+  }
+  var tableStartCol = this._table._getTableCol(this._resizeStartIndex);
+  var tableEndCol = this._table._getTableCol(this._resizeEndIndex);
+  tableStartCol.style[Table.CSS_PROP._WIDTH] = newStartColWidth + Table.CSS_VAL._PX;
+  tableEndCol.style[Table.CSS_PROP._WIDTH] = newEndColWidth + Table.CSS_VAL._PX;
+
+  if (updateOptions) {
+    var columnsCount = this._table.options.columns.length;
+    var clonedColumnsOption = [];
+    for (var i = 0; i < columnsCount; i++) {
+      clonedColumnsOption[i] = Object.assign({}, {}, this._table.options.columns[i]);
+    }
+    var startHeaderColumn = this._table._getTableHeaderColumn(this._resizeStartIndex);
+    clonedColumnsOption[this._resizeStartIndex].width =
+      this.getWidthPropertyFromOffsetWidth(newStartColWidth, startHeaderColumn);
+    var endHeaderColumn = this._table._getTableHeaderColumn(this._resizeEndIndex);
+    clonedColumnsOption[this._resizeEndIndex].width =
+      this.getWidthPropertyFromOffsetWidth(newEndColWidth, endHeaderColumn);
+
+    this._table.option('columns', clonedColumnsOption, {
+      _context: {
+        writeback: true,
+        internalSet: true
+      }
+    });
+    this._table._clearCachedMetadata();
+    this.notifyTableUpdate(Table._UPDATE._COL_RESIZE);
+    if (this._finishResize != null) {
+      this._finishResize();
+      this._finishResize = null;
+    }
+  }
+};
 
 /**
  * Creates an accessibility-specific child DOM element that contains the
@@ -7602,8 +9001,22 @@ Table.prototype._createContextInfo = function () {
   contextInfo.id = this.createSubId('context');
   contextInfo.classList.add(Table.CSS_CLASSES._TABLE_ACC_CONTEXT_INFO_CLASS);
   contextInfo.classList.add(Table.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+
+  // row context info
+  var rowContext = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+  rowContext.id = this.createSubId('rowContext');
+  rowContext.classList.add(Table.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  contextInfo.appendChild(rowContext);
+
+  // column context info
+  var columnContext = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+  columnContext.id = this.createSubId('columnContext');
+  columnContext.classList.add(Table.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+  contextInfo.appendChild(columnContext);
+
   this._getTableContainer().appendChild(contextInfo);
-  this._contextInfo = contextInfo;
+  this._rowContextInfo = rowContext;
+  this._columnContextInfo = columnContext;
 
   return contextInfo;
 };
@@ -7658,9 +9071,9 @@ Table.prototype._updateAccStatusInfo = function (rowIndex, columnIndex, headerIn
   }
   if (headerIndex != null) {
     // update column header context information
-    this._contextInfo.textContent =
+    this._columnContextInfo.textContent =
       this.getTranslatedString('accessibleColumnHeaderContext', { index: headerIndex + 1 });
-    label += this._contextInfo.id + ' ';
+    label += this._columnContextInfo.id + ' ';
 
     if (headerIndex === -1) {
       // handle select all column header case
@@ -7692,9 +9105,9 @@ Table.prototype._updateAccStatusInfo = function (rowIndex, columnIndex, headerIn
     label += tableHeaderColumn.id + ' ' + this._stateInfo.id;
   } else if (footerIndex != null) {
     // update column footer context information
-    this._contextInfo.textContent =
+    this._columnContextInfo.textContent =
       this.getTranslatedString('accessibleColumnFooterContext', { index: footerIndex + 1 });
-    label += this._contextInfo.id + ' ';
+    label += this._columnContextInfo.id + ' ';
 
     var tableFooterCell;
     if (footerIndex === -1) {
@@ -7719,24 +9132,33 @@ Table.prototype._updateAccStatusInfo = function (rowIndex, columnIndex, headerIn
     }
     label += tableFooterCell.id + ' ' + this._stateInfo.id;
   } else {
-    // update row / column context information if changed
-    this._contextInfo.textContent = '';
+    // update row context information if changed
     if (rowIndex !== this._accRowIndex) {
-      this._contextInfo.textContent +=
+      this._rowContextInfo.textContent =
         this.getTranslatedString('accessibleRowContext', { index: rowIndex + 1 }) + ' ';
+      label += this._rowContextInfo.id + ' ' + this._getRowHeaderIds(rowIndex);
     }
+    // update column context information if changed
     if (columnIndex !== this._accColumnIndex) {
-      this._contextInfo.textContent +=
+      this._columnContextInfo.textContent =
         this.getTranslatedString('accessibleColumnContext', { index: columnIndex + 1 });
+      label += this._columnContextInfo.id + ' ';
     }
-    label += this._contextInfo.id + ' ';
 
     // populate cell information
     var tableBodyCellElements = this._getTableElementsByClassName(
       this._getTableBodyRow(rowIndex), Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
-    tableHeaderColumn = this._getTableHeaderColumn(columnIndex);
-    if (tableHeaderColumn != null) {
-      label += tableHeaderColumn.id + ' ' + tableBodyCellElements[columnIndex].id + ' ';
+    if (columnIndex === -1) {
+      // handle row selector cell
+      var selectorCell = this._getTableBodySelectorCell(this._getTableBodyRow(rowIndex));
+      if (selectorCell != null) {
+        label += selectorCell.id + ' ';
+      }
+    } else {
+      tableHeaderColumn = this._getTableHeaderColumn(columnIndex);
+      if (tableHeaderColumn != null) {
+        label += tableHeaderColumn.id + ' ' + tableBodyCellElements[columnIndex].id + ' ';
+      }
     }
 
     // find state of the row
@@ -7772,91 +9194,38 @@ Table.prototype._applyAccStatusLabel = function (label) {
 };
 
 /**
- * Updates the Table's accessibility status to point to the given row.
  * @private
  */
-Table.prototype._setRowLabelledBy = function (rowIdx, tableBodyRow) {
-  var i;
-  this._contextInfo.textContent =
-    this.getTranslatedString('accessibleRowContext', { index: rowIdx + 1 });
-  var tableBodyCellElements = this._getTableElementsByClassName(tableBodyRow,
-    Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
-  var label = '';
-  if (this._accFirstFocus !== false) {
-    label += this._getTableContainer().id + ' ';
-  }
-  label += this._contextInfo.id + ' ';
-  for (i = 0; i < tableBodyCellElements.length; i++) {
-    label += this._getTableHeaderColumn(i).id + ' ' +
-      tableBodyCellElements[i].id + ' ';
-  }
-  label += this._stateInfo.id;
-  var stateInfo = '';
-  var selectedRowIdxs = this._getSelectedRowIdxs();
-  for (i = 0; i < selectedRowIdxs.length; i++) {
-    if (selectedRowIdxs[i] === rowIdx) {
-      stateInfo += this.getTranslatedString('accessibleStateSelected') + ' ';
-      break;
+Table.prototype._getRowHeaderIds = function (rowIndex) {
+  var rowHeaderCell;
+  var rowHeaderIds = '';
+  var accessibility = this.options.accessibility;
+  if (accessibility != null && accessibility.rowHeader != null) {
+    var rowHeaders = accessibility.rowHeader;
+    if (!Array.isArray(rowHeaders)) {
+      rowHeaders = [rowHeaders];
     }
-  }
-  this._stateInfo.textContent = stateInfo;
-
-  // apply new label
-  this._applyAccStatusLabel(label);
-};
-
-/**
- * Updates the Table's accessibility status to point to the given column header.
- * @private
- */
-Table.prototype._setHeaderColumnLabelledBy = function (columnIdx) {
-  this._contextInfo.textContent =
-    this.getTranslatedString('accessibleColumnHeaderContext', { index: columnIdx + 1 });
-  var tableHeaderColumn;
-  var stateInfo = '';
-  // handle select all column header case
-  if (columnIdx === -1) {
-    tableHeaderColumn = this._getTableSelectorColumn();
-    this._stateInfo.textContent = '';
+    var columnDefs = this._getColumnDefs();
+    for (var i = 0; i < rowHeaders.length; i++) {
+      var headerColumnId = rowHeaders[i];
+      for (var j = 0; j < columnDefs.length; j++) {
+        if (headerColumnId === columnDefs[j].id) {
+          rowHeaderCell = this._getTableBodyCell(rowIndex, j);
+          if (rowHeaderCell != null) {
+            rowHeaderIds += rowHeaderCell.id + ' ';
+          }
+          break;
+        }
+      }
+    }
   } else {
-    tableHeaderColumn = this._getTableHeaderColumn(columnIdx);
-    var selectedColumnsIdxs = this._getSelectedHeaderColumnIdxs();
-    for (var i = 0; i < selectedColumnsIdxs.length; i++) {
-      if (selectedColumnsIdxs[i] === columnIdx) {
-        stateInfo += this.getTranslatedString('accessibleStateSelected') + ' ';
-        break;
-      }
+    rowHeaderCell = this._getTableBodyCell(rowIndex, 0);
+    if (rowHeaderCell != null) {
+      rowHeaderIds += rowHeaderCell.id + ' ';
     }
-    var column = this._getColumnDefs()[columnIdx];
-    var sorted = $(tableHeaderColumn).data('sorted');
-    if (sorted != null) {
-      if (sorted === Table._COLUMN_SORT_ORDER._ASCENDING) {
-        stateInfo += this.getTranslatedString('accessibleSortAscending', { id: '' }) + ' ';
-      } else {
-        stateInfo += this.getTranslatedString('accessibleSortDescending', { id: '' }) + ' ';
-      }
-    } else if (column.sortable === Table._OPTION_ENABLED) {
-      stateInfo += this.getTranslatedString('accessibleSortable', { id: '' }) + ' ';
-    }
-    this._stateInfo.textContent = stateInfo;
   }
-  var label = '';
-  if (this._accFirstFocus !== false) {
-    label += this._getTableContainer().id + ' ';
-  }
-  label += this._contextInfo.id + ' ' + tableHeaderColumn.id + ' ' + this._stateInfo.id;
-
-  // apply new label
-  this._applyAccStatusLabel(label);
+  return rowHeaderIds;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * Return the datasource object defined for this table
@@ -7954,6 +9323,11 @@ Table.prototype._unregisterDataSourceEventListeners = function () {
  */
 Table.prototype._handleDataRefresh = function (event) {
   try {
+    // if a refresh is already in the queue, but a fetch hasn't started, just return
+    if (this._hasRefreshInQueue) {
+      return;
+    }
+    // if already handling a fetch, mark pending fetch result as stale, and return
     if (this._dataFetching) {
       this._pendingFetchStale = true;
       return;
@@ -7968,6 +9342,7 @@ Table.prototype._handleDataRefresh = function (event) {
         this._animateOnFetch = true;
       }.bind(this));
     } else {
+      this._hasRefreshInQueue = true;
       this._queueTask(function () {
         this._getLayoutManager().notifyTableUpdate(Table._UPDATE._DATA_REFRESH);
         this._beforeDataRefresh();
@@ -8018,18 +9393,26 @@ Table.prototype._removeRowsAfterLastValidRow = function (lastValidKey) {
  * @private
  */
 Table.prototype._bufferScrollerForLastRow = function (lastValidKey) {
+  var scrollBuffer;
   var layoutManager = this._getLayoutManager();
-  var rowIndex = this._getRowIdxForRowKey(lastValidKey);
-  if (rowIndex != null) {
-    var tableBodyRow = this._getTableBodyRow(rowIndex);
-    var bottomOverflowDiff = layoutManager.getRowBottomOverflowDiff(tableBodyRow);
-    // if bottom of the final row is above the bottom of the vieport, increase scroll buffer to account for the difference
-    if (bottomOverflowDiff < 0) {
-      var scrollBuffer = this._createTableBodyScrollBuffer();
-      // need to add 1px to the difference to prevent browser underscroll when things align exactly
-      scrollBuffer.style[Table.CSS_PROP._HEIGHT] =
-        (Math.abs(bottomOverflowDiff) + 1) + Table.CSS_VAL._PX;
+  if (lastValidKey != null) {
+    var rowIndex = this._getRowIdxForRowKey(lastValidKey);
+    if (rowIndex != null) {
+      var tableBodyRow = this._getTableBodyRow(rowIndex);
+      var bottomOverflowDiff = layoutManager.getVerticalOverflowDiff(tableBodyRow).bottom;
+      // if bottom of the final row is above the bottom of the vieport, increase scroll buffer to account for the difference
+      if (bottomOverflowDiff < 0) {
+        scrollBuffer = this._createTableBodyScrollBuffer();
+        // need to add 1px to the difference to prevent browser underscroll when things align exactly
+        scrollBuffer.style[Table.CSS_PROP._HEIGHT] =
+          (Math.abs(bottomOverflowDiff) + 1) + Table.CSS_VAL._PX;
+      }
     }
+  } else {
+    // buffer entire viewport if no start row
+    scrollBuffer = this._createTableBodyScrollBuffer();
+    scrollBuffer.style[Table.CSS_PROP._HEIGHT] =
+      (this._getTableBody().offsetHeight) + Table.CSS_VAL._PX;
   }
 };
 
@@ -8158,7 +9541,6 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
             if (tableBodyRow != null &&
                 $.contains(tableBodyRow, document.activeElement)) {
               resetFocus = true;
-              checkFocus = false;
               break;
             }
           }
@@ -8217,8 +9599,10 @@ Table.prototype._handleDataRowRemove = function (eventDetail, addEventDetail) {
               removeAll ||
               currentRowIndex >= tableBodyRows.length) {
             self._setCurrentRow(null, null, false);
-          } else if (!self._isTableActionableMode() || rowKeyArray.indexOf(currentRowKey) !== -1) {
+          } else if (rowKeyArray.indexOf(currentRowKey) !== -1) {
             self._setCurrentRow({ rowIndex: currentRowIndex, rowKey: null }, null, false);
+          } else {
+            self._updateCurrentRowIndex();
           }
         }
 
@@ -8306,7 +9690,8 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
         }
         return undefined;
       }
-      this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
+      var layoutManager = this._getLayoutManager();
+      layoutManager.notifyTableUpdate(Table._UPDATE._ROWS_ADDED);
 
       // see if we should batch add
       // only batch if we are adding a block of contiguous rows
@@ -8315,6 +9700,9 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
       var rowIdxArray = [];
       var i;
       var rowsCount;
+      var tableBodyDocFrag;
+      var tableBodyRowBefore;
+      var tableBody = this._getTableBody();
 
       if (rows.length > 1) {
         rowsCount = rows.length;
@@ -8329,8 +9717,7 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
         }
 
         if (isContiguous) {
-          var tableBody = this._getTableBody();
-          var tableBodyDocFrag = document.createDocumentFragment();
+          tableBodyDocFrag = document.createDocumentFragment();
           rowsCount = rows.length;
           for (i = 0; i < rowsCount; i++) {
             addedTableBodyRows.push(this._addSingleTableBodyRow(rows[i].rowIdx,
@@ -8338,18 +9725,13 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
                                                                 tableBodyDocFrag,
                                                                 rows[0].rowIdx));
           }
-          if (rows[0].rowIdx === 0) {
-            tableBody.insertBefore(tableBodyDocFrag, tableBody.firstChild); // @HTMLUpdateOK
+          layoutManager.handleAfterRowsProcessed(tableBodyDocFrag);
+          tableBodyRowBefore = this._getTableBodyRow(rows[0].rowIdx);
+          if (tableBodyRowBefore != null) {
+            tableBody.insertBefore(tableBodyDocFrag, tableBodyRowBefore);// @HTMLUpdateOK
           } else {
-            var tableBodyRowBefore = this._getTableBodyRow(rows[0].rowIdx);
-            if (tableBodyRowBefore != null) {
-              tableBody.insertBefore(tableBodyDocFrag, tableBodyRowBefore);// @HTMLUpdateOK
-            } else {
-              this._appendElementToTableBody(tableBodyDocFrag, tableBody);
-            }
+            this._appendElementToTableBody(tableBodyDocFrag, tableBody);
           }
-          this._clearCachedDomRowData();
-          subtreeAttached(tableBody);
           batchAdd = true;
         }
       }
@@ -8357,7 +9739,17 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
       if (!batchAdd) {
         rowsCount = rows.length;
         for (i = 0; i < rowsCount; i++) {
-          addedTableBodyRows.push(this._addSingleTableBodyRow(rows[i].rowIdx, rows[i].row));
+          var rowIndex = rows[i].rowIdx;
+          tableBodyDocFrag = document.createDocumentFragment();
+          addedTableBodyRows.push(this._addSingleTableBodyRow(rowIndex, rows[i].row,
+                                                              tableBodyDocFrag, rowIndex));
+          layoutManager.handleAfterRowsProcessed(tableBodyDocFrag);
+          tableBodyRowBefore = this._getTableBodyRow(rowIndex);
+          if (tableBodyRowBefore != null) {
+            tableBody.insertBefore(tableBodyDocFrag, tableBodyRowBefore);// @HTMLUpdateOK
+          } else {
+            this._appendElementToTableBody(tableBodyDocFrag, tableBody);
+          }
         }
       }
       this._clearCachedDomRowData();
@@ -8370,10 +9762,12 @@ Table.prototype._executeTableBodyRowsAdd = function (eventDetail) {
       }
       if (this._IsCustomElement()) {
         return this._animateVisibleRows(addedTableBodyRows, rowIdxArray, 'add').then(function () {
-          return this._finalizeBodyRowRendering(addedTableBodyRows);
+          this._updateCurrentRowIndex();
+          return this._afterRowsRendered(tableBody);
         }.bind(this));
       }
-      return this._finalizeBodyRowRendering(addedTableBodyRows);
+      this._updateCurrentRowIndex();
+      return this._afterRowsRendered(tableBody);
     }.bind(this));
   }
 };
@@ -8459,6 +9853,11 @@ Table.prototype._getRowsFromEventDetailAdd = function (eventDetail) {
   return rowArray;
 };
 
+Table.prototype._updateCurrentRowIndex = function () {
+  var currentRow = this._getCurrentRow();
+  var currentRowKey = currentRow != null ? currentRow.rowKey : null;
+  this._setCurrentRow({ rowIndex: null, rowKey: currentRowKey }, null, false, true);
+};
 /**
  * Updates to Table's state to reflect that an add event containing rows outside of the current
  * viewport has occurred.
@@ -8491,18 +9890,17 @@ Table.prototype._handleDataRowChange = function (eventDetail) {
 /**
   * Change all the rows contained in the event detail.
   * @param {Object} eventDetail Event detail
-  * @param {number} startIndex index of first row in the table in the data source
   * @private
   */
-// eslint-disable-next-line no-unused-vars
-Table.prototype._executeTableBodyRowsChange = function (eventDetail, startIndex) {
+Table.prototype._executeTableBodyRowsChange = function (eventDetail) {
   this._queueTask(function () {
+    // update selection state based on row updates
+    this._updateSelectionStateFromEventDetailChange(eventDetail);
+
     // This function will try to find the row index from the DOM, so it must
     // be called right before we're ready to update the UI.  If we call it
     // outside of this queued task, the DOM may have changed from other
     // data operations, and the row index can be wrong.
-    var tableBody = this._getTableBody();
-    var checkFocus = $.contains(tableBody, document.activeElement);
     var rows = this._getRowsFromEventDetailChange(eventDetail);
     if (rows.length === 0) {
       return undefined;
@@ -8512,15 +9910,29 @@ Table.prototype._executeTableBodyRowsChange = function (eventDetail, startIndex)
     var rowsCount = rows.length;
     var updatedTableBodyRows = [];
     var rowIdxArray = [];
+    var resetFocus = false;
 
     for (var i = 0; i < rowsCount; i++) {
-      var tableBodyRow = this._refreshTableBodyRow(rows[i].rowIdx, rows[i].row);
+      var row = rows[i];
+
+      // if existing (stale) row contains focus, reset focus to overall table element
+      var staleRow = this._getTableBodyRow(row.rowIdx);
+      if (staleRow != null && staleRow !== document.activeElement &&
+          staleRow.contains(document.activeElement)) {
+        resetFocus = true;
+      }
+      // if existing (stale) row update its hidden item to updated item
+      if (staleRow) {
+        staleRow[Table._ROW_ITEM_EXPANDO] = rows[i].row;
+      }
+
+      var tableBodyRow = this._refreshTableBodyRow(row.rowIdx, row.row);
       if (tableBodyRow) {
         updatedTableBodyRows.push(tableBodyRow);
-        rowIdxArray.push(rows[i].rowIdx);
+        rowIdxArray.push(row.rowIdx);
       }
     }
-    if (checkFocus) {
+    if (resetFocus) {
       this._getTable().focus();
     }
     // row values may have changed so refresh the footer
@@ -8570,14 +9982,6 @@ Table.prototype._getRowsFromEventDetailChange = function (eventDetail) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Clear any cached DOM
  * @private
  */
@@ -8609,7 +10013,7 @@ Table.prototype._createContextMenuContainer = function () {
               this._isTableColumnsResizable())) {
     if (this._IsCustomElement()) {
       menuContainer = document.createElement('oj-menu');
-      menuContainer.setAttribute('data-oj-binding-provider', 'none');
+      menuContainer.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
     } else {
       menuContainer = document.createElement(Table.DOM_ELEMENT._UL); // @HTMLUpdateOK
       $(menuContainer).ojMenu();
@@ -8670,7 +10074,7 @@ Table.prototype._populateContextMenuItems = function (contextMenuNode, handleCon
         for (i = 0; i < listItems.length; i++) {
           if (listItems[i].tagName === 'OJ-OPTION' ||
               listItems[i].getElementsByTagName(Table.DOM_ELEMENT._A).length === 0) {
-            command = listItems[i].getAttribute('data-oj-command').split('-');
+            command = listItems[i].getAttribute(Table._DATA_OJ_COMMAND).split('-');
             newItem = this._createContextMenuItem(command[command.length - 1],
                                                   this._IsCustomElement());
             if (listItems[i].tagName === 'OJ-OPTION') {
@@ -8745,7 +10149,7 @@ Table.prototype._createContextMenuItem = function (command, useOjOption) {
  */
 Table.prototype._createContextMenuListItem = function (command, useOjOption) {
   var contextMenuListItem = document.createElement(useOjOption ? 'oj-option' : 'li');
-  contextMenuListItem.setAttribute('data-oj-command', 'oj-table-' + command);
+  contextMenuListItem.setAttribute(Table._DATA_OJ_COMMAND, 'oj-table-' + command); // @HTMLUpdateOK
   contextMenuListItem.appendChild(this._createContextMenuLabel(command, useOjOption)); // @HTMLUpdateOK
 
   return contextMenuListItem;
@@ -8796,10 +10200,12 @@ Table.prototype._createContextMenuLabel = function (command, useOjOption) {
 Table.prototype._createContextMenuResizePopup = function (initialSize) {
   // eslint-disable-next-line no-param-reassign
   initialSize = Math.round(initialSize);
+  var tableContainer = this._getTableContainer();
   var popup = this._getContextMenuResizePopup();
+  var tableId = this._getTableId();
+  var popupTextContent = this.getTranslatedString('labelResizePopupSpinner');
   var spinner;
   var cancelActionHandler;
-  var tableContainer;
   var popupHeader;
   var popupBody;
   var popupFooter;
@@ -8808,37 +10214,40 @@ Table.prototype._createContextMenuResizePopup = function (initialSize) {
   var popupTitle;
   var position;
 
+  function setupPopup() {
+    popup.setAttribute('id', tableId + '_resize_popup');
+    popup.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
+    tableContainer.appendChild(popup); // @HTMLUpdateOK
+    popupHeader = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    popupBody = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    popupFooter = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    popupFooter.classList.add(Table.CSS_CLASSES._TEXT_ALIGN_END);
+    popup.appendChild(popupHeader); // @HTMLUpdateOK
+    popup.appendChild(popupBody); // @HTMLUpdateOK
+    popup.appendChild(popupFooter); // @HTMLUpdateOK
+
+    // create the popup content
+    popupTitle = document.createElement('h6');
+    popupTitle.textContent = popupTextContent;
+    popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
+  }
+
   if (this._IsCustomElement()) {
     // create the base popup
     if (popup == null) {
-      tableContainer = this._getTableContainer();
       popup = document.createElement('oj-popup');
-      popup.setAttribute('id', this._getTableId() + '_resize_popup');
-      popup.setAttribute('data-oj-binding-provider', 'none');
-      tableContainer.appendChild(popup); // @HTMLUpdateOK
-      popupHeader = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupBody = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupFooter = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupFooter.classList.add(Table.CSS_CLASSES._TEXT_ALIGN_END);
-      popup.appendChild(popupHeader); // @HTMLUpdateOK
-      popup.appendChild(popupBody); // @HTMLUpdateOK
-      popup.appendChild(popupFooter); // @HTMLUpdateOK
-
-      // create the popup content
-      popupTitle = document.createElement('h6');
-      popupTitle.textContent = this.getTranslatedString('labelResizePopupSpinner');
-      popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
+      setupPopup();
 
       spinner = document.createElement('oj-input-number');
-      spinner.setAttribute('id', this._getTableId() + '_resize_popup_spinner');
+      spinner.setAttribute('id', tableId + '_resize_popup_spinner');
 
       popupCancelButton = document.createElement('oj-button');
-      popupCancelButton.setAttribute('id', this._getTableId() + '_resize_popup_popupcancel');
+      popupCancelButton.setAttribute('id', tableId + '_resize_popup_popupcancel');
       popupCancelButton.style.margin = '5px';
       popupCancelButton.textContent = this.getTranslatedString('labelResizePopupCancel');
 
       popupOKButton = document.createElement('oj-button');
-      popupOKButton.setAttribute('id', this._getTableId() + '_resize_popup_popupsubmit');
+      popupOKButton.setAttribute('id', tableId + '_resize_popup_popupsubmit');
       popupOKButton.style.margin = '5px';
       popupOKButton.textContent = this.getTranslatedString('labelResizePopupSubmit');
 
@@ -8855,7 +10264,6 @@ Table.prototype._createContextMenuResizePopup = function (initialSize) {
       popupCancelButton.addEventListener('click', cancelActionHandler);
       popupOKButton.addEventListener('click', this._handleContextMenuResizePopup.bind(this));
 
-      spinner.max = 1000;
       spinner.min = 10;
       spinner.step = 1;
       spinner.value = initialSize;
@@ -8877,98 +10285,80 @@ Table.prototype._createContextMenuResizePopup = function (initialSize) {
       });
 
       position = {
-        my: 'start top',
-        at: 'start bottom',
+        my: Table._POSITION._START_TOP,
+        at: Table._POSITION._START_BOTTOM,
         collision: 'flipfit'
       };
 
       popup.setAttribute('position', JSON.stringify(position));
       popup.setAttribute('modality', 'modal');
-      this._cacheDomElement(this._getTableId() + '_resize_popup', popup);
+      this._cacheDomElement(tableId + '_resize_popup', popup);
     } else {
-      spinner = document.getElementById(this._getTableId() + '_resize_popup_spinner');
+      spinner = document.getElementById(tableId + '_resize_popup_spinner');
       spinner.value = initialSize;
     }
-  } else {
-    tableContainer = this._getTableContainer();
+  } else if (popup == null) {
     // create the base popup
-    if (popup == null) {
-      popup = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popup.setAttribute('id', this._getTableId() + '_resize_popup');
-      popup.setAttribute('data-oj-context', '');
-      tableContainer.appendChild(popup); // @HTMLUpdateOK
-      popupHeader = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupBody = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupFooter = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-      popupFooter.classList.add(Table.CSS_CLASSES._TEXT_ALIGN_END);
-      popup.appendChild(popupHeader); // @HTMLUpdateOK
-      popup.appendChild(popupBody); // @HTMLUpdateOK
-      popup.appendChild(popupFooter); // @HTMLUpdateOK
+    popup = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+    setupPopup();
 
-      // create the popup content
-      popupTitle = document.createElement('h6');
-      popupTitle.textContent = this.getTranslatedString('labelResizePopupSpinner');
-      popupHeader.appendChild(popupTitle); // @HTMLUpdateOK
+    spinner = document.createElement(Table.DOM_ELEMENT._INPUT); // @HTMLUpdateOK
+    spinner.setAttribute('id', tableId + '_resize_popup_spinner');
+    popupCancelButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
+    popupCancelButton.setAttribute('id', tableId + '_resize_popup_popupcancel');
+    popupCancelButton.style.margin = '5px';
+    popupOKButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
+    popupOKButton.setAttribute('id', tableId + '_resize_popup_popupsubmit');
+    popupOKButton.style.margin = '5px';
 
-      spinner = document.createElement(Table.DOM_ELEMENT._INPUT); // @HTMLUpdateOK
-      spinner.setAttribute('id', this._getTableId() + '_resize_popup_spinner');
-      popupCancelButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
-      popupCancelButton.setAttribute('id', this._getTableId() + '_resize_popup_popupcancel');
-      popupCancelButton.style.margin = '5px';
-      popupOKButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
-      popupOKButton.setAttribute('id', this._getTableId() + '_resize_popup_popupsubmit');
-      popupOKButton.style.margin = '5px';
+    popupBody.appendChild(spinner); // @HTMLUpdateOK
+    popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
+    popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
 
-      popupBody.appendChild(spinner); // @HTMLUpdateOK
-      popupFooter.appendChild(popupOKButton); // @HTMLUpdateOK
-      popupFooter.appendChild(popupCancelButton); // @HTMLUpdateOK
-
-      $(popupOKButton).ojButton({
-        component: 'ojButton',
-        label: this.getTranslatedString('labelResizePopupSubmit')
-      });
-      $(popupCancelButton).ojButton({
-        component: 'ojButton',
-        label: this.getTranslatedString('labelResizePopupCancel')
-      });
-      cancelActionHandler = function () {
-        $(popupOKButton).ojButton({ disabled: false });
-        $(spinner).ojInputNumber({ value: 0 });
-        $(popup).ojPopup('close');
-      };
-      $(popupOKButton).on('click', this._handleContextMenuResizePopup.bind(this));
-      $(popupCancelButton).on('click', cancelActionHandler);
-      $(spinner).ojInputNumber({
-        component: 'ojInputNumber',
-        max: 10000,
-        min: 10,
-        step: 1,
-        value: initialSize,
-        displayOptions: {
-          messages: ['notewindow']
-        },
-        userAssistanceDensity: 'compact',
-        validators: [new RegExpValidator({
-          pattern: '^[1-9][0-9]*$',
-          messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
-        })]
-      });
-      $(popup).ojPopup({
-        modality: 'modal',
-        position: {
-          my: 'start top',
-          at: 'start bottom',
-          collision: 'flipfit'
-        }
-      });
-      $(spinner).on('change', function () {
-        $(popupOKButton).ojButton({ disabled: !$(spinner).ojInputNumber('validate') });
-      });
-      this._cacheDomElement(this._getTableId() + '_resize_popup', popup);
-    } else {
-      spinner = document.getElementById(this._getTableId() + '_resize_popup_spinner');
-      $(spinner).ojInputNumber('option', 'value', initialSize);
-    }
+    $(popupOKButton).ojButton({
+      component: 'ojButton',
+      label: this.getTranslatedString('labelResizePopupSubmit')
+    });
+    $(popupCancelButton).ojButton({
+      component: 'ojButton',
+      label: this.getTranslatedString('labelResizePopupCancel')
+    });
+    cancelActionHandler = function () {
+      $(popupOKButton).ojButton({ disabled: false });
+      $(spinner).ojInputNumber({ value: 0 });
+      $(popup).ojPopup('close');
+    };
+    $(popupOKButton).on('click', this._handleContextMenuResizePopup.bind(this));
+    $(popupCancelButton).on('click', cancelActionHandler);
+    $(spinner).ojInputNumber({
+      component: 'ojInputNumber',
+      min: 10,
+      step: 1,
+      value: initialSize,
+      displayOptions: {
+        messages: ['notewindow']
+      },
+      userAssistanceDensity: 'compact',
+      validators: [new RegExpValidator({
+        pattern: '^[1-9][0-9]*$',
+        messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
+      })]
+    });
+    $(popup).ojPopup({
+      modality: 'modal',
+      position: {
+        my: Table._POSITION._START_TOP,
+        at: Table._POSITION._START_BOTTOM,
+        collision: 'flipfit'
+      }
+    });
+    $(spinner).on('change', function () {
+      $(popupOKButton).ojButton({ disabled: !$(spinner).ojInputNumber('validate') });
+    });
+    this._cacheDomElement(tableId + '_resize_popup', popup);
+  } else {
+    spinner = document.getElementById(tableId + '_resize_popup_spinner');
+    $(spinner).ojInputNumber('option', 'value', initialSize);
   }
   return popup;
 };
@@ -8995,6 +10385,10 @@ Table.prototype._createInitialTable = function (isTableHeaderless, isTableFooter
     this._createTableFooter();
   }
   this._createTableBody();
+  if (!this._isStickyLayoutEnabled()) {
+    this._createTableBodyLegacyWidthBuffer();
+    this._createTableLegacySizer();
+  }
   this._createTableStatusMessage();
   this._createTableStatusAccNotification();
   this._createContextInfo();
@@ -9034,6 +10428,31 @@ Table.prototype._createTableBodyScrollBuffer = function () {
 };
 
 /**
+ * Create an empty row for legacy layout width buffering in the table body
+ * @private
+ */
+Table.prototype._createTableBodyLegacyWidthBuffer = function () {
+ var bufferRow = this._createTableBodyRow();
+ bufferRow.classList.add(Table.CSS_CLASSES._TABLE_LEGACY_WIDTH_BUFFER_ROW_CLASS);
+ this._getTableBody().appendChild(bufferRow);
+ return bufferRow;
+};
+
+/**
+ * Create an empty div for legacy sizing
+ * @private
+ */
+Table.prototype._createTableLegacySizer = function () {
+  var tableSizer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+  tableSizer.classList.add(Table.CSS_CLASSES._TABLE_LEGACY_SIZER_CLASS);
+  var tableContainer = this._getTableContainer();
+  tableContainer.appendChild(tableSizer); // @HTMLUpdateOK
+  this._cacheDomElement(Table.CSS_CLASSES._TABLE_LEGACY_SIZER_CLASS, tableSizer);
+
+  return tableSizer;
+};
+
+/**
  * @private
  */
 Table.prototype._appendElementToTableBody = function (element, tableBody) {
@@ -9068,22 +10487,27 @@ Table.prototype._createTableBodyDefaultSelector = function (rowKey, tableBodyRow
 
   selectorCell = document.createElement(Table.DOM_ELEMENT._TD); // @HTMLUpdateOK
   selectorCell.classList.add(Table.CSS_CLASSES._TABLE_SELECTOR_CELL);
+  if (this._isStickyLayoutEnabled()) {
+    selectorCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  }
   if (this._isVerticalGridEnabled()) {
     selectorCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
   }
 
   var selector = document.createElement('oj-selector');
-  selector.id = 'table_selector' + rowKey;
-  selector.selectedKeys = this.options.selected.row;
-  selector.setAttribute('data-oj-binding-provider', 'none');
+  selector.id = this._getTableId() + '_table_selector_' + rowKey;
+  let rowSelected = this.options.selected.row;
+  if (rowSelected.has(rowKey)) {
+    selector.selectedKeys = new KeySetImpl([rowKey]);
+  } else {
+    selector.selectedKeys = new KeySetImpl();
+  }
+
+  selector.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
   selector.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS);
   selector.setAttribute('selection-mode', 'multiple');
   selector.rowKey = rowKey;
-  selector.addEventListener('selectedKeysChanged', function (event) {
-    if (event.detail.updatedFrom === 'internal') {
-      this._setSelected({ row: event.detail.value, column: new KeySetImpl() }, false, true);
-    }
-  }.bind(this));
+  selector.addEventListener('selectedKeysChanged', this._selectedKeysChangedListener.bind(this));
   selectorCell.appendChild(selector);
 
   tableBodyRow.insertBefore(selectorCell, tableBodyRow.firstChild); // @HTMLUpdateOK
@@ -9099,20 +10523,19 @@ Table.prototype._createTableBodyDefaultSelector = function (rowKey, tableBodyRow
 Table.prototype._createTableHeaderSelectorColumn = function () {
   var headerColumn = document.createElement(Table.DOM_ELEMENT._TH); // @HTMLUpdateOK
   headerColumn.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_SELECTOR_CELL_CLASS);
+  if (this._isStickyLayoutEnabled()) {
+    headerColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  }
   if (this._isVerticalGridEnabled()) {
     headerColumn.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
   }
 
   var selector = document.createElement('oj-selector');
   selector.selectedKeys = this.options.selected.row;
-  selector.setAttribute('data-oj-binding-provider', 'none');
+  selector.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
   selector.classList.add(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
   selector.setAttribute('selection-mode', 'all');
-  selector.addEventListener('selectedKeysChanged', function (event) {
-    if (event.detail.updatedFrom === 'internal') {
-      this._setSelected({ row: event.detail.value, column: new KeySetImpl() }, false, true);
-    }
-  }.bind(this));
+  selector.addEventListener('selectedKeysChanged', this._selectedKeysChangedListener.bind(this));
   headerColumn.appendChild(selector);
 
   return headerColumn;
@@ -9124,6 +10547,9 @@ Table.prototype._createTableHeaderSelectorColumn = function () {
 Table.prototype._createTableFooterSelectorCell = function () {
   var footerCell = this._createTableFooterCell();
   footerCell.classList.add(Table.CSS_CLASSES._TABLE_FOOTER_SELECTOR_CELL_CLASS);
+  if (this._isStickyLayoutEnabled()) {
+    footerCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+  }
   if (this._isVerticalGridEnabled()) {
     footerCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
   }
@@ -9499,27 +10925,6 @@ Table.prototype._createTableHeaderColumnDragImage = function (columnIdxs) {
 };
 
 /**
- * Create a div element for resize indicator
- * @return {Element} div DOM element
- * @private
- */
-Table.prototype._createTableHeaderColumnResizeIndicator = function () {
-  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
-
-  if (!tableHeaderColumnResizeIndicator) {
-    var tableContainer = this._getTableContainer();
-    tableHeaderColumnResizeIndicator = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
-    tableContainer.appendChild(tableHeaderColumnResizeIndicator);
-    tableHeaderColumnResizeIndicator.classList.add(
-      Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
-    this._cacheDomElement(Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS,
-                          tableHeaderColumnResizeIndicator);
-  }
-
-  return tableHeaderColumnResizeIndicator;
-};
-
-/**
  * Helper method to create subid based on the root element's id
  * @param {string} subId - the id to append to the root element id
  * @return {string} the subId to append to the root element id
@@ -9809,6 +11214,22 @@ Table.prototype._getTableBodyScrollBuffer = function () {
 };
 
 /**
+ * Return the table body legacy width buffer element
+ * @private
+ */
+Table.prototype._getTableBodyLegacyWidthBuffer = function () {
+  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_LEGACY_WIDTH_BUFFER_ROW_CLASS);
+};
+
+/**
+ * Return the table legacy sizer element
+ * @private
+ */
+ Table.prototype._getTableLegacySizer = function () {
+  return this._getTableElementByClassName(Table.CSS_CLASSES._TABLE_LEGACY_SIZER_CLASS);
+};
+
+/**
  * Return the cell element
  * @param {number} rowIdx  row index
  * @param {number} columnIdx  column index
@@ -9889,6 +11310,18 @@ Table.prototype._getTableBodyMessageRow = function () {
     }
   }
   return null;
+};
+
+/**
+ * Return table row. Used for calls prior to row styling.
+ * @private
+ */
+Table.prototype._getRawTableBodyRow = function (rowIdx) {
+  var tableBody = this._getTableBody();
+  if (!this._isStickyLayoutEnabled()) {
+    return tableBody.children[rowIdx + 1];
+  }
+  return tableBody.children[rowIdx];
 };
 
 /**
@@ -10099,16 +11532,6 @@ Table.prototype._getTableCol = function (columnIdx) {
 };
 
 /**
- * Return resize indicator
- * @return {Element} div DOM element
- * @private
- */
-Table.prototype._getTableHeaderColumnResizeIndicator = function () {
-  return this._getTableElementByClassName(
-    Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS, true);
-};
-
-/**
  * Return all table column headers
  * @return {Array|null} array of th DOM elements
  * @private
@@ -10280,13 +11703,10 @@ Table.prototype._insertTableBodyRow = function (rowIdx, tableBodyRow, row, docFr
 
   if (docFrag == null) {
     var tableBody = this._getTableBody();
-    var tableBodyRows = this._getTableBodyRows();
 
-    if (rowIdx === 0) {
-      tableBody.insertBefore(tableBodyRow, tableBody.firstChild); // @HTMLUpdateOK
-    } else if (tableBodyRows.length >= rowIdx) {
-      var previousRow = tableBodyRows[rowIdx - 1];
-      previousRow.parentNode.insertBefore(tableBodyRow, previousRow.nextSibling); // @HTMLUpdateOK
+    var tableBodyRowBefore = this._getTableBodyRow(rowIdx);
+    if (tableBodyRowBefore != null) {
+      tableBody.insertBefore(tableBodyRow, tableBodyRowBefore);// @HTMLUpdateOK
     } else {
       this._appendElementToTableBody(tableBodyRow, tableBody);
     }
@@ -10361,14 +11781,14 @@ Table.prototype._moveTableBodyRowTouchSelectionAffordanceTop = function (rowIdx)
       // eslint-disable-next-line no-param-reassign
       rowIdx = $(topAffordance).data('rowIdx');
     }
-    var tableBody = this._getTableBody();
+    var scroller = this._getLayoutManager().getScroller();
     var tableBodyRow = this._getTableBodyRow(rowIdx);
     var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var touchAffordanceGlassPane = this._getTouchAffordanceGlassPane();
     var touchAffordanceGlassPaneRect = touchAffordanceGlassPane.getBoundingClientRect();
     topAffordance.style[Table.CSS_PROP._TOP] = (tableBodyRowRect.top -
       touchAffordanceGlassPaneRect.top - (topAffordance.clientHeight / 2)) + Table.CSS_VAL._PX;
-    topAffordance.style[Table.CSS_PROP._LEFT] = (tableBody.clientWidth / 2) + Table.CSS_VAL._PX;
+    topAffordance.style[Table.CSS_PROP._LEFT] = (scroller.clientWidth / 2) + Table.CSS_VAL._PX;
   }
 };
 
@@ -10387,7 +11807,7 @@ Table.prototype._moveTableBodyRowTouchSelectionAffordanceBottom = function (rowI
       // eslint-disable-next-line no-param-reassign
       rowIdx = $(bottomAffordance).data('rowIdx');
     }
-    var tableBody = this._getTableBody();
+    var scroller = this._getLayoutManager().getScroller();
     var tableBodyRow = this._getTableBodyRow(rowIdx);
     var tableBodyRowRect = tableBodyRow.getBoundingClientRect();
     var touchAffordanceGlassPane = this._getTouchAffordanceGlassPane();
@@ -10395,7 +11815,7 @@ Table.prototype._moveTableBodyRowTouchSelectionAffordanceBottom = function (rowI
     bottomAffordance.style[Table.CSS_PROP._TOP] =
       (((tableBodyRowRect.top - touchAffordanceGlassPaneRect.top) + tableBodyRowRect.height) -
        (bottomAffordance.clientHeight / 2)) + Table.CSS_VAL._PX;
-    bottomAffordance.style[Table.CSS_PROP._LEFT] = (tableBody.clientWidth / 2) + Table.CSS_VAL._PX;
+    bottomAffordance.style[Table.CSS_PROP._LEFT] = (scroller.clientWidth / 2) + Table.CSS_VAL._PX;
   }
 };
 
@@ -10455,7 +11875,6 @@ Table.prototype._moveTableHeaderColumn = function (columnIdxs, destIdx, event) {
         if (afterColumn) {
           destTableFooterCell.parentNode.insertBefore(tableFooterCells[i], // @HTMLUpdateOK
                                                       destTableFooterCell.nextSibling);
-          destTableFooterCell = tableFooterCells[i];
         } else {
           destTableFooterCell.parentNode.insertBefore(tableFooterCells[i], destTableFooterCell); // @HTMLUpdateOK
         }
@@ -10546,7 +11965,7 @@ Table.prototype._refreshContextMenu = function () {
         contextMenuLabel = $(listItems[i]);
       }
       if (contextMenuLabel.length > 0) {
-        var command = listItems[i].getAttribute('data-oj-command').split('-');
+        var command = listItems[i].getAttribute(Table._DATA_OJ_COMMAND).split('-');
         command = command[command.length - 1];
 
         var commandString;
@@ -10651,7 +12070,9 @@ Table.prototype._removeAllTableBodyRows = function () {
         // need to re-register DOM event listeners after cleaning the node
         this._registerDomEventListeners();
       }
-      $(tableBody).empty();
+      for (var i = 0; i < tableBodyRows.length; i++) {
+        $(tableBodyRows[i]).remove();
+      }
     }
     this._clearCachedDomRowData();
   }
@@ -10672,18 +12093,6 @@ Table.prototype._removeTableBodyRowTouchSelectionAffordance = function () {
 };
 
 /**
- * Remove resize indicator
- * @private
- */
-Table.prototype._removeTableHeaderColumnResizeIndicator = function () {
-  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
-  if (tableHeaderColumnResizeIndicator) {
-    $(tableHeaderColumnResizeIndicator).remove();
-    this._clearDomCache(Table.CSS_CLASSES._COLUMN_HEADER_RESIZE_INDICATOR_CLASS);
-  }
-};
-
-/**
  * Set the attributes on the cell
  * @param {number} rowIdx  row index
  * @param {Object} rowKey  row key
@@ -10696,51 +12105,17 @@ Table.prototype._setTableBodyCellAttributes = function (rowIdx, rowKey, rowHashC
   columnIdx, tableBodyCell) {
   // if cell already has an id then bail
   var cellId = tableBodyCell.getAttribute(Table.DOM_ATTR._ID);
-
   if (cellId != null && cellId.length > 0) {
     return;
   }
-
-  var accessibility = this.options.accessibility;
   var column = this._getColumnDefs()[columnIdx];
   if (column == null) {
     return;
   }
-
-  var rowHeaderColumnId = null;
-  var isTableHeaderless = this._isTableHeaderless();
-
-  if (accessibility != null && accessibility.rowHeader != null) {
-    rowHeaderColumnId = accessibility.rowHeader;
-  } else {
-    rowHeaderColumnId = this._getColumnDefs()[0].id;
-  }
-
   var rowKeyStr = rowKey != null ? rowKey.toString() : rowIdx.toString();
   var rowKeyStrHashCode = rowHashCode == null ? this._hashCode(rowKeyStr) : rowHashCode;
-  var cellRowHeaderId = this._getTableId() + ':' + rowHeaderColumnId + '_' + rowKeyStrHashCode;
-
-  var headers = this._getTableId() + ':' + column.id;
-  if (rowHeaderColumnId === column.id) {
-    cellId = cellRowHeaderId;
-
-    if (isTableHeaderless) {
-      headers = '';
-    }
-  } else {
-    cellId = cellRowHeaderId + '_' + columnIdx;
-
-    if (!isTableHeaderless) {
-      headers = headers + ' ' + cellRowHeaderId;
-    } else {
-      headers = cellRowHeaderId;
-    }
-  }
+  cellId = this._getTableId() + ':' + rowKeyStrHashCode + '_' + columnIdx;
   tableBodyCell.setAttribute(Table.DOM_ATTR._ID, cellId); // @HTMLUpdateOK
-
-  if (!tableBodyCell.getAttribute(Table.DOM_ATTR._HEADERS)) {
-    tableBodyCell.setAttribute(Table.DOM_ATTR._HEADERS, headers); // @HTMLUpdateOK
-  }
 };
 
 /**
@@ -10883,6 +12258,7 @@ Table.prototype._styleTableBody = function (tableBody) {
   tableBody.classList.add(Table.CSS_CLASSES._TABLE_BODY_CLASS);
   // Add a special marker attribute to tell child components that they are container within table
   tableBody.setAttribute(_OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
+  tableBody.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, ''); // @HTMLUpdateOK
 };
 
 /**
@@ -10918,6 +12294,20 @@ Table.prototype._styleTableBodyCell = function (columnIdx, tableBodyCell, isNew)
       !tableBodyCell.classList.contains(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS))) {
     tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_VGRID_LINES_CLASS);
   }
+
+  // apply frozen edge classes if specified
+  if (this._isStickyLayoutEnabled()) {
+    if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
+      tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    } else if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
+      tableBodyCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    } else {
+      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableBodyCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    }
+  }
 };
 
 /**
@@ -10927,8 +12317,6 @@ Table.prototype._styleTableBodyCell = function (columnIdx, tableBodyCell, isNew)
  * @private
  */
 Table.prototype._styleTableBodyRow = function (tableBodyRow, isNew) {
-  tableBodyRow.setAttribute(Context._OJ_CONTEXT_ATTRIBUTE, ''); // @HTMLUpdateOK
-
   if (isNew || !tableBodyRow.classList.contains(Table.CSS_CLASSES._TABLE_DATA_ROW_CLASS)) {
     tableBodyRow.classList.add(Table.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
   }
@@ -10960,6 +12348,36 @@ Table.prototype._styleTableContainer = function (tableContainer) {
     tableContainer.classList.add(Table.CSS_CLASSES._TABLE_STICKY_CLASS);
   } else {
     tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_STICKY_CLASS);
+  }
+  if (this._isExternalScrollEnabled()) {
+    tableContainer.classList.add(Table.CSS_CLASSES._TABLE_EXTERNAL_SCROLL_CLASS);
+    if (!this._isTableHeaderless()) {
+      var top = '0';
+      if (this.options.scrollPolicyOptions.scrollerOffsetTop != null) {
+        top = this.options.scrollPolicyOptions.scrollerOffsetTop;
+      }
+      this._updateHeaderTop(top);
+    }
+    if (!this._isTableFooterless()) {
+      var bottom = '0';
+      if (this.options.scrollPolicyOptions.scrollerOffsetBottom != null) {
+        bottom = this.options.scrollPolicyOptions.scrollerOffsetBottom;
+      }
+      this._updateFooterBottom(bottom);
+    }
+  } else if (this._isStickyLayoutEnabled()) {
+    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_EXTERNAL_SCROLL_CLASS);
+    if (!this._isTableHeaderless()) {
+      this._updateHeaderTop('');
+    }
+    if (!this._isTableFooterless()) {
+      this._updateFooterBottom('');
+    }
+  }
+  if (this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE) {
+    tableContainer.classList.add(Table.CSS_CLASSES._TABLE_MULTI_ROW_SELECT_CLASS);
+  } else {
+    tableContainer.classList.remove(Table.CSS_CLASSES._TABLE_MULTI_ROW_SELECT_CLASS);
   }
 };
 
@@ -11004,6 +12422,20 @@ Table.prototype._styleTableFooterCell = function (columnIdx, tableFooterCell) {
   if (column.footerClassName) {
     // Use jquery addClass because column.footerClassName can contain multiple classes
     $(tableFooterCell).addClass(column.footerClassName);
+  }
+
+  // apply frozen edge classes if specified
+  if (this._isStickyLayoutEnabled()) {
+    if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
+      tableFooterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    } else if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
+      tableFooterCell.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    } else {
+      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableFooterCell.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    }
   }
 };
 
@@ -11059,6 +12491,20 @@ Table.prototype._styleTableHeaderColumn = function (columnIdx, tableHeaderColumn
       (isNew || !$(tableHeaderColumn).hasClass(column.headerClassName))) {
     $(tableHeaderColumn).addClass(column.headerClassName);
   }
+
+  // apply frozen edge classes if specified
+  if (this._isStickyLayoutEnabled()) {
+    if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._START) {
+      tableHeaderColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_START);
+      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+    } else if (column.frozenEdge === Table._OPTION_FROZEN_EDGE._END) {
+      tableHeaderColumn.classList.add(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    } else {
+      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_END);
+      tableHeaderColumn.classList.remove(Table.CSS_CLASSES._TABLE_FROZEN_START);
+    }
+  }
 };
 
 /**
@@ -11100,8 +12546,7 @@ Table.prototype._isHorizontalGridEnabled = function () {
     if (this.options.display === Table._OPTION_DISPLAY._GRID) {
       return true;
     }
-    var defaultOptions = this._getDefaultOptions();
-    if (defaultOptions.horizontalGridVisible === 'enabled') {
+    if (this._getDefaultOptions().horizontalGridVisible === 'enabled') {
       return true;
     }
   }
@@ -11592,14 +13037,17 @@ Table.prototype._getTableFooterSelectorCell = function () {
  * @private
  */
 Table.CSS_CLASSES = {
+  _OPTION_DEFAULTS_CLASS: 'oj-table-option-defaults',
   _TABLE_CONTAINER_CLASS: 'oj-table-container',
   _TABLE_SCROLLER_CLASS: 'oj-table-scroller',
+  _TABLE_EXTERNAL_SCROLL_CLASS: 'oj-table-external-scroll',
   _TABLE_CLASS: 'oj-table',
   _TABLE_STICKY_CLASS: 'oj-table-sticky',
   _TABLE_STRETCH_CLASS: 'oj-table-stretch',
   _TABLE_COMPACT_CLASS: 'oj-table-grid-display',
   _TABLE_HGRID_CLASS: 'oj-table-horizontal-grid',
   _TABLE_EDIT_CLASS: 'oj-table-editable',
+  _TABLE_MULTI_ROW_SELECT_CLASS: 'oj-table-multiple-row-selection',
   _TABLE_SCROLL_VERTICAL_CLASS: 'oj-table-scroll-vertical',
   _TABLE_SCROLL_HORIZONTAL_CLASS: 'oj-table-scroll-horizontal',
   _TABLE_SORT_CLASS: 'oj-table-sort',
@@ -11629,6 +13077,8 @@ Table.CSS_CLASSES = {
   _COLUMN_HEADER_RESIZE_INDICATOR_CLASS: 'oj-table-column-header-resize-indicator',
   _TABLE_BODY_CLASS: 'oj-table-body',
   _TABLE_BUFFER_ROW_CLASS: 'oj-table-body-scroll-buffer',
+  _TABLE_LEGACY_WIDTH_BUFFER_ROW_CLASS: 'oj-table-legacy-width-buffer',
+  _TABLE_LEGACY_WIDTH_BUFFER_CELL_CLASS: 'oj-table-legacy-width-buffer-cell',
   _TABLE_DATA_ROW_CLASS: 'oj-table-body-row',
   _TABLE_DATA_ROW_DRAG_INDICATOR_CLASS: 'oj-table-body-row-drag-indicator',
   _TABLE_TOUCH_AFFORDANCE_GLASS_PANE_CLASS: 'oj-table-touch-affordance-glass-pane',
@@ -11669,6 +13119,10 @@ Table.CSS_CLASSES = {
   _WIDGET_ICON_CLASS: 'oj-component-icon',
   _HIDDEN_CONTENT_ACC_CLASS: 'oj-helper-hidden-accessible',
   _TEXT_ALIGN_END: 'oj-helper-text-align-end',
+  _TABLE_FROZEN_START: 'oj-table-frozen-start',
+  _TABLE_FROZEN_END: 'oj-table-frozen-end',
+  _TABLE_FROZEN_EDGE: 'oj-table-frozen-edge',
+  _TABLE_LEGACY_SIZER_CLASS: 'oj-table-legacy-sizer',
   _TABLE_LEGACY_SCROLL_CLASS: 'oj-table-legacy-scroll'
 };
 
@@ -11728,7 +13182,8 @@ Table.CSS_VAL = {
   _MOVE: 'move',
   _FIXED: 'fixed',
   _TRANSPARENT: 'transparent',
-  _BORDER_BOX: 'border-box'
+  _BORDER_BOX: 'border-box',
+  _COL_RESIZE: 'col-resize'
 };
 
 /**
@@ -11741,8 +13196,8 @@ Table.DOM_ATTR = {
   _ID: 'id',
   _TITLE: 'title',
   _HREF: 'href',
-  _HEADERS: 'headers',
   _COLSPAN: 'colspan',
+  _DRAGGABLE: 'draggable',
   _ROLE: 'role',
   _ARIA_LABEL: 'aria-label',
   _ARIA_LABELLEDBY: 'aria-labelledby',
@@ -11790,15 +13245,6 @@ Table.MARKER_STYLE_CLASSES = {
   _DRAG: 'oj-drag',
   _HIDE_VERTICAL_SCROLLBAR: 'oj-table-hide-vertical-scrollbar'
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
 
 /**
  * @private
@@ -11849,10 +13295,13 @@ Table.prototype._handleFocusout = function (event, isPopupFocusout) {
       return;
     }
   }
+
   this._setFocusoutBusyState();
 
   // set timeout to stay in editable/actionable mode if focus comes back into the table
   this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
+    this._isTableTab = null;
+    this._tempFFFocus = null;
     this._clearOpenPopupListeners();
     this._accFirstFocus = true;
     this._focusOutHandler($(table));
@@ -11861,7 +13310,7 @@ Table.prototype._handleFocusout = function (event, isPopupFocusout) {
     this._clearFocusedHeaderColumn();
     this._clearFocusedFooterColumn();
     this._clearFocusedRow(false);
-    this._clearTableHeaderColumnsResize();
+    this._getLayoutManager().handleFocusout();
     this._setTableEditable(false, false, 0, true, event, true);
 
     // clear styling on previous editable data cell if necessary
@@ -11896,7 +13345,7 @@ Table.prototype._handleFocusin = function (event, isPopupFocusin) {
 
       if (!this._isNodeEditable(event.target) &&
           !this._isNodeClickable(event.target) && !this._isTableActionableMode() &&
-          !this._hasEditableRow() && !this._temporaryTableChildElementFocus &&
+          !this._hasEditableRow() && !this._tempFFFocus &&
           focusedRowIdx == null && focusedHeaderColumnIdx == null) {
         // when table is not in editable/actionable mode there shouldn't be
         // focus to child row elements. Delay the focus to prevent a race
@@ -11904,8 +13353,20 @@ Table.prototype._handleFocusin = function (event, isPopupFocusin) {
         setTimeout(function () {
           table.focus();
         }, 0);
+      } else if (this._isTableTab) {
+        // make sure to scroll the focused column into view if this is due to a 'tab' within the component
+        if (focusedRowIdx != null) {
+          var focusedRowCells = this._getTableBodyCells(focusedRowIdx);
+          for (var i = 0; i < focusedRowCells.length; i++) {
+            var cell = focusedRowCells[i];
+            if ($(cell).has(event.target).length > 0) {
+              this._scrollColumnIntoViewport(i);
+              break;
+            }
+          }
+        }
       }
-    } else if (this._isFF() && event.target === tableBody) {
+    } else if (this._isFF() && event.target === tableBody && !this._tempFFFocus) {
       // workaround for FF. In FF, the tbody is focusable even though it has
       // tabindex -1. So we have to shift focus back to the table itself if
       // focus is set on the tbody (ex. a shift-tab from outside the table)
@@ -11914,6 +13375,7 @@ Table.prototype._handleFocusin = function (event, isPopupFocusin) {
       }, 0);
     }
   }
+  this._isTableTab = null;
 };
 
 /**
@@ -12047,14 +13509,17 @@ Table.prototype._events = {
    * Cancel any resize if the mouse leaves the table
    */
   'mouseleave .oj-table-element': function () {
-    this._clearTableHeaderColumnsResize();
+    this._getLayoutManager().handleMouseLeaveTable();
   },
 
   /*
    * Keep track of mousedown/mouseup for multiple selection
    */
   'mousedown .oj-table-body': function (event) {
-    if (isEventClickthroughDisabled(event, this._getTable())) {
+    var isShift = event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
+    // disable click event if event source is selector
+    if (isEventClickthroughDisabled(event, this._getTable()) ||
+      (isFromDefaultSelector(event) && !isShift)) {
       return;
     }
     // perform selection only for left click
@@ -12126,22 +13591,7 @@ Table.prototype._events = {
       return;
     }
     this._lastSelectedHeaderIdx = null;
-    if (event.which === 1) {
-      if (!this._handleHeaderColumnResizeStart(event)) {
-        // get the column index
-        var columnIdx = this._getElementColumnIdx(
-          this._getEventTargetElement(event));
-        // set the column focus if shift key is not pressed
-        if (!event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
-          // skip scrolling column into viewport
-          this._setHeaderColumnFocus(columnIdx, true, true);
-          $(event.target).data(Table._FOCUS_CALLED, true);
-        }
-      }
-      if (this._isFF() && isMetaKeyPressed(event)) {
-        event.preventDefault();
-      }
-    }
+    this._getLayoutManager().handleMouseDownHeaderCell(event);
   },
 
   /*
@@ -12171,7 +13621,7 @@ Table.prototype._events = {
    * show the sort icon when the mouse enters a column header
    */
   'mouseenter .oj-table-column-header-cell': function (event) {
-    this._setResizeCursor(event);
+    this._getLayoutManager().handleMouseEnterHeaderCell(event);
     var eventTarget = this._getEventTargetElement(event);
     this._handleMouseEnterColumnHeader(eventTarget);
   },
@@ -12180,17 +13630,15 @@ Table.prototype._events = {
    * show the resize cursor
    */
   'mousemove .oj-table-header': function (event) {
-    this._setResizeCursor(event);
+    this._getLayoutManager().handleMouseMoveHeader(event);
   },
 
   /*
    * remove the hover for resize
    */
   'mousemove .oj-table-column-header-cell': function (event) {
+    this._getLayoutManager().handleMouseMoveHeaderCell(event);
     var eventTarget = this._getEventTargetElement(event);
-    if (this._setResizeCursor(event)) {
-      this._handleMouseLeaveColumnHeader(eventTarget);
-    }
     this._handleMouseEnterColumnHeader(eventTarget);
   },
 
@@ -12206,7 +13654,7 @@ Table.prototype._events = {
    * handle column resizing.
    */
   'mouseup .oj-table-column-header-cell': function (event) {
-    this._handleHeaderColumnResizeEnd(event);
+    this._getLayoutManager().handleMouseUp(event);
   },
 
   /*
@@ -12234,7 +13682,7 @@ Table.prototype._events = {
    * handle column resizing.
    */
   'mouseup .oj-table-data-cell': function (event) {
-    this._handleHeaderColumnResizeEnd(event);
+    this._getLayoutManager().handleMouseUp(event);
   },
 
   /*
@@ -12274,7 +13722,7 @@ Table.prototype._events = {
     var focusCalled = $(event.target).data(Table._FOCUS_CALLED);
 
     var isShift = event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
-    if (!focusCalled && (!isShift || (isShift && this._getFocusedRowIdx() == null))) {
+    if (!focusCalled && (!isShift || this._getFocusedRowIdx() == null)) {
       var focused = this._setRowFocus(rowIdx, true, true, eventTarget, event);
       $(event.target).data(Table._FOCUS_CALLED, false);
 
@@ -12284,6 +13732,10 @@ Table.prototype._events = {
     }
 
     this._fireActionEvent(rowIdx, event);
+
+    if (isFromDefaultSelector(event) && !isShift) {
+      return;
+    }
 
     // check if we are selecting
     if (isShift) {
@@ -12358,7 +13810,7 @@ Table.prototype._events = {
     }
     // get the column index
     var eventTarget = this._getEventTargetElement(event);
-    if (eventTarget.style.cursor === 'col-resize') {
+    if (eventTarget.style.cursor === Table.CSS_VAL._COL_RESIZE) {
       return;
     }
     var columnIdx = this._getElementColumnIdx(eventTarget);
@@ -12366,7 +13818,7 @@ Table.prototype._events = {
     var focusCalled = $(event.target).data(Table._FOCUS_CALLED);
 
     var isShift = event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
-    if (!focusCalled && (!isShift || (isShift && this._getFocusedHeaderColumnIdx() == null))) {
+    if (!focusCalled && (!isShift || this._getFocusedHeaderColumnIdx() == null)) {
       // set the column focus
       this._setHeaderColumnFocus(columnIdx, true, false);
       $(event.target).data(Table._FOCUS_CALLED, false);
@@ -12400,7 +13852,7 @@ Table.prototype._events = {
     }
     // get the column index
     var eventTarget = this._getEventTargetElement(event);
-    if (eventTarget.style.cursor === 'col-resize') {
+    if (eventTarget.style.cursor === Table.CSS_VAL._COL_RESIZE) {
       return;
     }
     var columnIdx = this._getElementColumnIdx(eventTarget);
@@ -12408,7 +13860,7 @@ Table.prototype._events = {
     var focusCalled = $(event.target).data(Table._FOCUS_CALLED);
 
     var isShift = event[Table._KEYBOARD_CODES._MODIFIER_SHIFT];
-    if (!focusCalled && (!isShift || (isShift && this._getFocusedFooterColumnIdx() == null))) {
+    if (!focusCalled && (!isShift || this._getFocusedFooterColumnIdx() == null)) {
       // set the column focus
       this._setFooterColumnFocus(columnIdx, true, false);
       $(event.target).data(Table._FOCUS_CALLED, false);
@@ -12437,7 +13889,7 @@ Table.prototype._events = {
    */
   'dragstart .oj-table-column-header-cell': function (event) {
     var eventTarget = this._getEventTargetElement(event);
-    if (eventTarget.style.cursor !== 'col-resize') {
+    if (eventTarget.style.cursor !== Table.CSS_VAL._COL_RESIZE) {
       return this._getTableDndContext().handleColumnDragStart(event);
     }
     return undefined;
@@ -12578,7 +14030,7 @@ Table.prototype._getTouchEventTargetElement = function (event) {
  * @private
  */
 Table.prototype._registerCustomEvents = function () {
-  var jqEvent = (/** @type {{special: Object}} */($.event));
+  var jqEvent = /** @type {{special: Object}} */($.event);
   var jqEventSpecial = jqEvent.special;
   // ojtablebeforecurrentrow handlers will be passed an object which contains the
   // old and new current row
@@ -12643,9 +14095,7 @@ Table.prototype._registerTouchEvents = function () {
         this._handleMouseEnterSelection(eventTarget, true);
       }
       this._mouseDownRowIdx = null;
-      if (this._handleHeaderColumnResizeEnd(event)) {
-        event.preventDefault();
-      }
+      this._getLayoutManager().handleTouchEnd(event);
     },
 
     /*
@@ -12667,7 +14117,7 @@ Table.prototype._registerTouchEvents = function () {
      */
     touchcancel: function () {
       this._mouseDownRowIdx = null;
-      this._clearTableHeaderColumnsResize();
+      this._getLayoutManager().handleTouchCancel();
     }
   };
 
@@ -12702,21 +14152,14 @@ Table.prototype._registerTouchEvents = function () {
      * column resizing
      */
     'touchstart .oj-table-column-header-cell': function (event) {
-      var fingerCount = event.originalEvent.touches.length;
-      if (fingerCount === 1) {
-        if (this._isTableColumnsResizable() && this._handleHeaderColumnResizeStart(event)) {
-          event.preventDefault();
-        }
-      }
+      this._getLayoutManager().handleTouchStartHeaderCell(event);
     },
 
     /*
      * Keep track of touchmove for column resize
      */
     'touchmove .oj-table-header': function (event) {
-      if (this._isTableColumnsResizable()) {
-        this._setResizeCursor(event);
-      }
+      this._getLayoutManager().handleTouchMoveHeader(event);
     },
 
     /*
@@ -12786,21 +14229,14 @@ Table.prototype._registerTouchEvents = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Check and set the row or header column focus
  * @private
  */
 Table.prototype._checkRowOrHeaderColumnFocus = function (event) {
   var focusedRowIdx = this._getFocusedRowIdx();
   var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
-  if (focusedRowIdx == null && focusedHeaderColumnIdx == null) {
+  var focusedFooterColumnIdx = this._getFocusedFooterColumnIdx();
+  if (focusedRowIdx == null && focusedHeaderColumnIdx == null && focusedFooterColumnIdx == null) {
     var focusRowIdx = null;
     var currentRow = this._getCurrentRow();
     var currentRowKey = currentRow != null ? currentRow.rowKey : null;
@@ -12905,11 +14341,9 @@ Table.prototype._getFirstVisibleColumnIndex = function (currentIndex, isForward)
  * @private
  */
 Table.prototype._getNextVisibleColumnIndex = function (currentIndex, isForward) {
-  var startIndex;
-  if (isForward) {
-    startIndex = currentIndex + 1;
-  } else {
-    startIndex = currentIndex - 1;
+  var startIndex = isForward ? currentIndex + 1 : currentIndex - 1;
+  if (startIndex === -1) {
+    return this._isDefaultSelectorEnabled() ? startIndex : currentIndex;
   }
   var firstVisibleIndex = this._getFirstVisibleColumnIndex(startIndex, isForward);
   return (firstVisibleIndex !== null) ? firstVisibleIndex : currentIndex;
@@ -12988,9 +14422,10 @@ Table.prototype._scrollRowIntoViewport = function (rowIdx) {
   var tableBodyRow = this._getTableBodyRow(rowIdx);
   var $scrollingElement = $(layoutManager.getScroller());
 
-  var topOverflowDiff = layoutManager.getRowTopOverflowDiff(tableBodyRow);
+  var vertOverflowDiff = layoutManager.getVerticalOverflowDiff(tableBodyRow);
+  var topOverflowDiff = vertOverflowDiff.top;
   var hasTopOverflow = topOverflowDiff >= 0;
-  var bottomOverflowDiff = layoutManager.getRowBottomOverflowDiff(tableBodyRow);
+  var bottomOverflowDiff = vertOverflowDiff.bottom;
   var hasBottomOverflow = bottomOverflowDiff >= 0;
 
   // don't adjust scroll position if row has overflow in both directions
@@ -13005,12 +14440,14 @@ Table.prototype._scrollRowIntoViewport = function (rowIdx) {
     } else {
       $scrollingElement.scrollTop($scrollingElement.scrollTop() - topOverflowDiff);
     }
+    this._skipScrollUpdate = false;
   } else if (hasTopOverflow) {
     if (Math.abs(bottomOverflowDiff) > Math.abs(topOverflowDiff)) {
       $scrollingElement.scrollTop($scrollingElement.scrollTop() - topOverflowDiff);
     } else {
       $scrollingElement.scrollTop($scrollingElement.scrollTop() + bottomOverflowDiff);
     }
+    this._skipScrollUpdate = false;
   }
 };
 
@@ -13026,39 +14463,23 @@ Table.prototype._scrollColumnIntoViewport = function (columnIdx) {
   } else {
     tableHeaderColumn = this._getTableHeaderColumn(columnIdx);
   }
-
   if (!tableHeaderColumn) {
     return;
   }
 
   var layoutManager = this._getLayoutManager();
-  var isRTL = (this._GetReadingDirection() === 'rtl');
   var scrollingElement = layoutManager.getScroller();
   var $scrollingElement = $(scrollingElement);
-  var scrollbarWidth = layoutManager.getScrollBarWidth();
-  var headerColumnRect = tableHeaderColumn.getBoundingClientRect();
-  var scrollingElementRect = scrollingElement.getBoundingClientRect();
 
-  var leftOverflowDiff;
-  var hasLeftOverflow;
-  var rightOverflowDiff;
-  var hasRightOverflow;
+  var horOverflowDiff = layoutManager.getHorizontalOverflowDiff(tableHeaderColumn, columnIdx);
+  var leftOverflowDiff = horOverflowDiff.left;
+  var rightOverflowDiff = horOverflowDiff.right;
+  var hasLeftOverflow = leftOverflowDiff >= 0;
+  var hasRightOverflow = rightOverflowDiff >= 0;
 
-  if (isRTL) {
-    leftOverflowDiff = (scrollingElementRect.left - headerColumnRect.left) + scrollbarWidth;
-    hasLeftOverflow = leftOverflowDiff >= 0;
-    rightOverflowDiff = headerColumnRect.right - scrollingElementRect.right;
-    hasRightOverflow = rightOverflowDiff >= 0;
-    var browser = oj.AgentUtils.getAgentInfo().browser;
-    if (browser === oj.AgentUtils.BROWSER.IE || browser === oj.AgentUtils.BROWSER.EDGE) {
-      leftOverflowDiff *= -1;
-      rightOverflowDiff *= -1;
-    }
-  } else {
-    leftOverflowDiff = scrollingElementRect.left - headerColumnRect.left;
-    hasLeftOverflow = leftOverflowDiff >= 0;
-    rightOverflowDiff = (headerColumnRect.right - scrollingElementRect.right) + scrollbarWidth;
-    hasRightOverflow = rightOverflowDiff >= 0;
+  if (oj.AgentUtils.getAgentInfo().browser === oj.AgentUtils.BROWSER.EDGE) {
+    leftOverflowDiff *= -1;
+    rightOverflowDiff *= -1;
   }
 
   // don't adjust scroll position if column has overflow in both directions
@@ -13073,12 +14494,14 @@ Table.prototype._scrollColumnIntoViewport = function (columnIdx) {
     } else {
       $scrollingElement.scrollLeft($scrollingElement.scrollLeft() + rightOverflowDiff);
     }
+    this._skipScrollUpdate = false;
   } else if (hasRightOverflow) {
     if (Math.abs(leftOverflowDiff) > Math.abs(rightOverflowDiff)) {
       $scrollingElement.scrollLeft($scrollingElement.scrollLeft() + rightOverflowDiff);
     } else {
       $scrollingElement.scrollLeft($scrollingElement.scrollLeft() - leftOverflowDiff);
     }
+    this._skipScrollUpdate = false;
   }
 };
 
@@ -13096,7 +14519,7 @@ Table.prototype._scrollColumnIntoViewport = function (columnIdx) {
  * @throws {Error}
  * @private
  */
-Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
+Table.prototype._setCurrentRow = function (currentRow, event, optionChange, isNoFocusChange) {
   var existingCurrentRow = this._currentRow;
   var errSummary;
   var errDetail;
@@ -13121,6 +14544,14 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
       errSummary = Table._LOGGER_MSG._ERR_CURRENTROW_UNAVAILABLE_INDEX_SUMMARY;
       errDetail = applyParameters(
         Table._LOGGER_MSG._ERR_CURRENTROW_UNAVAILABLE_INDEX_DETAIL, { rowIdx: localRowIndex });
+      // setting currentRow to previous valid value
+      this.option('currentRow', this._currentRow, {
+        _context: {
+          writeback: true,
+          originalEvent: event,
+          internalSet: true
+        }
+      });
       if (optionChange) {
         // Only throw an Error if the current row was set through option change
         // so that the caller can be notified of the invalid row.
@@ -13151,12 +14582,40 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
         Table._LOGGER_MSG._ERR_PRECURRENTROW_ERROR_DETAIL, { error: err.toString() });
       info(errSummary + '\n' + errDetail);
       // do not update the currentRow to the new value if an exception was caught
+      this.option('currentRow', this._currentRow, {
+        _context: {
+          writeback: true,
+          originalEvent: event,
+          internalSet: true
+        }
+      });
       return Table._CURRENT_ROW_STATUS._ERROR;
     }
 
     if (!currentRowUpdateAllowed) {
       // do not update the currentRow to the new value if a listener returned false
+      this.option('currentRow', this._currentRow, {
+        _context: {
+          writeback: true,
+          originalEvent: event,
+          internalSet: true
+        }
+      });
       return Table._CURRENT_ROW_STATUS._VETOED;
+    }
+
+    // no focus change, updates currentRow attribute
+    if (isNoFocusChange) {
+      this._currentRow = updatedCurrentRow;
+
+      this.option('currentRow', this._currentRow, {
+        _context: {
+          writeback: true,
+          originalEvent: event,
+          internalSet: true
+        }
+      });
+      return Table._CURRENT_ROW_STATUS._UPDATED;
     }
 
     var isExistingCurrentRowClear = (existingCurrentRow == null ||
@@ -13185,6 +14644,13 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
           }
         }.bind(this));
         // do not update the currentRow to the new value if updateEditable returned false
+        this.option('currentRow', this._currentRow, {
+          _context: {
+            writeback: true,
+            originalEvent: event,
+            internalSet: true
+          }
+        });
         return Table._CURRENT_ROW_STATUS._IGNORED;
       }
 
@@ -13209,8 +14675,9 @@ Table.prototype._setCurrentRow = function (currentRow, event, optionChange) {
       }
     }
   }
-  if ((currentRowChanged || currentFocusedRowIdx !== localRowIndex) && event == null) {
-    this._setRowFocus(localRowIndex, true, false);
+  if ((currentRowChanged || currentFocusedRowIdx !== localRowIndex) && event == null &&
+    !isNoFocusChange) {
+      this._setRowFocus(localRowIndex, true, false);
   }
   return Table._CURRENT_ROW_STATUS._UPDATED;
 };
@@ -13248,7 +14715,11 @@ Table.prototype._setCellFocus = function (rowIdx, columnIdx) {
   if (tableBodyCell) {
     var elements = getFocusableElementsInNode(tableBodyCell);
     if (elements.length > 0) {
-      elements[0].focus();
+      var firstElem = elements[0];
+      firstElem.focus();
+      if (typeof firstElem.select === 'function') {
+        firstElem.select();
+      }
       return true;
     }
   }
@@ -13338,10 +14809,7 @@ Table.prototype._setRowFocus = function (rowIdx, focused, updateCurrentRow, elem
       if (updateRowFocus !== Table._CURRENT_ROW_STATUS._UPDATED) {
         return false;
       }
-      if (this._accColumnIndex == null) {
-        this._accColumnIndex = 0;
-      }
-      this._updateAccStatusInfo(rowIdx, this._accColumnIndex);
+      this._updateAccStatusInfo(rowIdx, this._accColumnIndex != null ? this._accColumnIndex : 0);
     }
     focusedRowIdx = this._getFocusedRowIdx();
     if (focusedRowIdx != null && focusedRowIdx !== rowIdx) {
@@ -13636,9 +15104,11 @@ Table.prototype._adjustScrollPositionOnFetch = function () {
     // row index gets re-computed after refresh
     delete scrollPosition.rowIndex;
   } else {
-    // remain at the top
-    scrollPosition.y = 0;
-    scrollPosition.rowIndex = 0;
+    if (!this._isExternalScrollEnabled()) {
+      // remain at the top
+      scrollPosition.y = 0;
+    }
+    delete scrollPosition.rowIndex;
     // row key gets re-computed after refresh
     delete scrollPosition.rowKey;
   }
@@ -13810,21 +15280,19 @@ Table.prototype._syncScrollPosition = function (position, skipKeyValidation) {
 
   // figure out what the final y should be
   var coord = this._getScrollCoordinates(position);
-  var x = coord.x;
-  var y = coord.y;
+  var x = this._isScrollableX() ? coord.x : 0;
+  var y = this._isScrollableY() ? coord.y : 0;
 
   if (isNaN(x) && isNaN(y)) {
     // invalid scroll position
-    if (this._scrollPosition != null) {
-      // we'll still need to report current scroll position, which could have changed because of scroll and fetch
-      this.option('scrollPosition', this._getCurrentScrollPosition(), {
-        _context: {
-          originalEvent: null,
-          internalSet: true
-        }
-      });
-      this._scrollPosition = null;
-    }
+    // we'll still need to report current scroll position, which could have changed because of scroll and fetch
+    this.option('scrollPosition', this._getCurrentScrollPosition(), {
+      _context: {
+        originalEvent: null,
+        internalSet: true
+      }
+    });
+    this._scrollPosition = null;
     this._editRowCallback = null;
     return true;
   }
@@ -13835,17 +15303,13 @@ Table.prototype._syncScrollPosition = function (position, skipKeyValidation) {
   // check if only x updated
   if ((!isNaN(x) && isNaN(y)) ||
       (!isNaN(x) && y === scrollTop && x !== scrollLeft)) {
-    if (!this._isScrollableX()) {
-      return true;
+    var newScrollPosition;
+    if (this._isScrollableX()) {
+      this._setScrollX(x);
+      newScrollPosition = this._getCurrentScrollPosition(x);
+    } else {
+      newScrollPosition = this._getCurrentScrollPosition();
     }
-
-    this._setScrollX(x);
-    var scrollPosition = this.options.scrollPosition;
-    var newScrollPosition = this._getCurrentHorizontalScrollPosition(x);
-    newScrollPosition.y = scrollPosition.y;
-    newScrollPosition.rowIndex = scrollPosition.rowIndex;
-    newScrollPosition.rowKey = scrollPosition.rowKey;
-    newScrollPosition.offsetY = scrollPosition.offsetY;
 
     this.option('scrollPosition', newScrollPosition, {
       _context: {
@@ -13861,6 +15325,12 @@ Table.prototype._syncScrollPosition = function (position, skipKeyValidation) {
         delete position.y;
         return this._syncScrollPosition(position, skipKeyValidation);
       }
+      this.option('scrollPosition', this._getCurrentScrollPosition(), {
+        _context: {
+          originalEvent: null,
+          internalSet: true
+        }
+      });
       return true;
     }
 
@@ -14013,15 +15483,7 @@ Table.prototype._getScrollTopByKey = function (rowKey) {
  * @private
  */
 Table.prototype._getScrollLeftByIndex = function (columnIndex) {
-  if (columnIndex === 0) {
-    return 0;
-  }
-  var tableHeaderColumn = this._getTableHeaderColumn(columnIndex);
-  if (tableHeaderColumn != null) {
-    return tableHeaderColumn.offsetLeft;
-  }
-  // invalid column index
-  return undefined;
+  return this._getLayoutManager().getColumnScrollLeft(columnIndex);
 };
 
 /**
@@ -14043,14 +15505,15 @@ Table.prototype._getScrollLeftByKey = function (columnKey) {
 Table.prototype._getScrollCoordinates = function (scrollPosition) {
   var y;
   var x;
+  var layoutManager = this._getLayoutManager();
 
   // key first
   var rowKey = scrollPosition.rowKey;
-  if (isNaN(y) && rowKey != null) {
+  if (rowKey != null) {
     y = this._getScrollTopByKey(rowKey);
   }
   var columnKey = scrollPosition.columnKey;
-  if (isNaN(x) && columnKey != null) {
+  if (columnKey != null) {
     x = this._getScrollLeftByKey(columnKey);
   }
 
@@ -14079,7 +15542,6 @@ Table.prototype._getScrollCoordinates = function (scrollPosition) {
     x = Math.max(0, scrollPosition.x);
   }
   if (isNaN(y) && !isNaN(scrollPosition.y)) {
-    var layoutManager = this._getLayoutManager();
     if (scrollPosition.y > layoutManager.getScrollHeight()) {
       // if there's more data to fetch, returns -1, otherwise returns the max scrollTop
       y = this._hasMoreToFetch() ? -1 : layoutManager.getScrollHeight() -
@@ -14092,8 +15554,10 @@ Table.prototype._getScrollCoordinates = function (scrollPosition) {
 };
 
 Table.prototype._getCurrentHorizontalScrollPosition = function (scrollLeft) {
-  var scrollPosition = {};
-  scrollPosition.x = scrollLeft === undefined ? this._scrollLeft : scrollLeft;
+  var scrollPosition = {
+    x: scrollLeft === undefined ? this._scrollLeft : scrollLeft
+  };
+
   var prevScrollPosition = this.option('scrollPosition');
   var diff = Math.abs(prevScrollPosition.x - scrollPosition.x);
   if (diff < 1 && prevScrollPosition.columnKey != null && !isNaN(prevScrollPosition.columnIndex)) {
@@ -14122,13 +15586,14 @@ Table.prototype._getCurrentHorizontalScrollPosition = function (scrollLeft) {
 };
 
 Table.prototype._getCurrentVerticalScrollPosition = function (scrollTop) {
-  var scrollPosition = {};
-  scrollPosition.y = scrollTop === undefined ? this._scrollTop : scrollTop;
+  var scrollPosition = {
+    y: scrollTop === undefined ? this._scrollTop : scrollTop
+  };
 
   // precheck for row Height in case it wasn't set earlier.
-  var tableBody = this._getTableBody();
-  if (isNaN(this._rowHeight) && tableBody.rows.length > 1) {
-    this._rowHeight = tableBody.rows[1].offsetHeight;
+  var tableBodyRows = this._getTableBodyRows();
+  if (isNaN(this._rowHeight) && tableBodyRows.length > 1) {
+    this._rowHeight = tableBodyRows[1].offsetHeight;
   }
 
   // we used the row height to approximate where to begin the search
@@ -14168,11 +15633,10 @@ Table.prototype._getColumnLocations = function () {
     var headerColumns = this._getTableHeaderColumns();
     if (headerColumns && headerColumns.length > 0) {
       // depending on browser, offsetLeft of first column might not be 0
-      var firstColumnOffset = 0;
-      firstColumnOffset = headerColumns[0].offsetLeft;
+      var initOffset = this._getScrollLeftByIndex(0);
       this._columnOffsets.push(0);
       for (var i = 1; i < headerColumns.length; i++) {
-        this._columnOffsets.push(headerColumns[i].offsetLeft - firstColumnOffset);
+        this._columnOffsets.push(this._getScrollLeftByIndex(i) - initOffset);
       }
     }
   }
@@ -14227,15 +15691,13 @@ Table.prototype._findClosestElementToTop = function (scrollPosition, currScrollT
     index -= 1;
   }
 
-  var found = false;
-  while (!found && index >= 0 && index < rows.length) {
+  while (index >= 0 && index < rows.length) {
     var prevOffsetTop = offsetTop;
     elem = rows[index];
     offsetTop = layoutManager.getRowScrollTop(elem);
     diff = Math.abs(scrollTop - offsetTop);
 
-    found = (diff < 1) || (forward ? scrollTop <= offsetTop : scrollTop >= offsetTop);
-    if (found) {
+    if ((diff < 1) || (forward ? scrollTop <= offsetTop : scrollTop >= offsetTop)) {
       // perfect match (diff < 1 due to subpixel) or if we are walking backwards
       if (diff < 1 || !forward) {
         result = { index: index, elem: elem, offsetTop: offsetTop, offset: diff };
@@ -14324,6 +15786,13 @@ Table.prototype._setTableActionableMode = function (value, skipFocusReset) {
         focusedBoundaryElement = this._getTableHeaderRow();
       }
     }
+    if (focusedElement == null) {
+      var focusedFooterColumnIdx = this._getFocusedFooterColumnIdx();
+      if (focusedFooterColumnIdx != null) {
+        focusedElement = this._getTableFooterCell(focusedFooterColumnIdx);
+        focusedBoundaryElement = this._getTableFooterRow();
+      }
+    }
     if (focusedElement != null) {
       // enable all focusable elements
       enableAllFocusableElements(focusedBoundaryElement);
@@ -14341,14 +15810,14 @@ Table.prototype._setTableActionableMode = function (value, skipFocusReset) {
     }
   } else {
     this._tableActionableMode = false;
-    var resetFocus = $.contains(this._getTableBody(), document.activeElement);
+    var resetFocus = $.contains(this._getTable(), document.activeElement);
     // disable all focusable elements
     if (this._tableActionableElement != null) {
       disableAllFocusableElements(this._tableActionableBoundaryElement);
     }
     if (resetFocus && !skipFocusReset) {
-      this._getTable().focus();
       this._focusInHandler($(this._tableActionableElement));
+      this._getTable().focus();
     }
     this._tableActionableElement = null;
     this._tableActionableBoundaryElement = null;
@@ -14449,11 +15918,7 @@ Table.prototype._setNextRowEditable = function (columnIdx, event) {
   if (editableRowIdx >= 0 && editableRowIdx < rowCount - 1) {
     var updateEditable = this._setTableEditable(false, false, columnIdx, true, event);
     if (updateEditable === false) {
-      this._queueTask(function () {
-        setTimeout(function () { // @HTMLUpdateOK
-          this._setCellFocus(editableRowIdx, columnIdx);
-        }.bind(this), 0);
-      }.bind(this));
+      this._setEditableCellFocus(editableRowIdx, columnIdx);
     } else {
       this._setCurrentRow({ rowIndex: editableRowIdx + 1 }, event, false);
       this._setTableEditable(true, false, columnIdx, true, event);
@@ -14476,11 +15941,7 @@ Table.prototype._setPreviousRowEditable = function (columnIdx, event) {
   if (editableRowIdx >= 1) {
     var updateEditable = this._setTableEditable(false, false, columnIdx, false, event);
     if (updateEditable === false) {
-      this._queueTask(function () {
-        setTimeout(function () { // @HTMLUpdateOK
-          this._setCellFocus(editableRowIdx, columnIdx);
-        }.bind(this), 0);
-      }.bind(this));
+      this._setEditableCellFocus(editableRowIdx, columnIdx);
     } else {
       this._setCurrentRow({ rowIndex: editableRowIdx - 1 }, event, false);
       this._setTableEditable(true, false, columnIdx, false, event);
@@ -14489,6 +15950,17 @@ Table.prototype._setPreviousRowEditable = function (columnIdx, event) {
     this._setTableEditable(false, false, columnIdx, false, event);
     this._getTable().focus();
   }
+};
+
+/**
+ * @private
+ */
+Table.prototype._setEditableCellFocus = function (editableRowIdx, columnIdx) {
+  this._queueTask(function () {
+    setTimeout(function () { // @HTMLUpdateOK
+      this._setCellFocus(editableRowIdx, columnIdx);
+    }.bind(this), 0);
+  }.bind(this));
 };
 
 /**
@@ -14545,7 +16017,7 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
           },
           isCurrentRow: true
         });
-        rowContext.item = tableBodyRow['oj-table-oj-row-item'];
+        rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
         updateEditMode = this._trigger('beforeRowEdit', event, { rowContext: rowContext });
         if (updateEditMode) {
           newEditRowValue = { rowKey: rowKey, rowIndex: rowIdx };
@@ -14562,7 +16034,7 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
           },
           isCurrentRow: true
         });
-        rowContext.item = tableBodyRow['oj-table-oj-row-item'];
+        rowContext.item = tableBodyRow[Table._ROW_ITEM_EXPANDO];
         updateEditMode = this._trigger('beforeRowEditEnd', event, {
           rowContext: rowContext,
           cancelEdit: cancelled
@@ -14597,9 +16069,9 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
       this._queueTask(function () {
         this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ROW_REFRESH);
         this._refreshRow(rowIdx, true).then(function () {
-          // set focus on the column in the row
-          this._setRowFocus(rowIdx, true, false);
-          this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
+        // set focus on the column in the row
+        this._setRowFocus(rowIdx, true, false);
+        this._setCellInRowFocus(rowIdx, columnIdx, forwardSearch);
         }.bind(this));
       }.bind(this));
     } else {
@@ -14621,14 +16093,6 @@ Table.prototype._setTableEditable = function (editable, cancelled, columnIdx, fo
   }
   return undefined;
 };
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
 
 /**
  * @private
@@ -14750,13 +16214,10 @@ Table.prototype._handleKeydownLeftRight = function (event, isExtend) {
     if (isExtend) {
       this._isNavigate = false;
       // select all columns between focusedHeaderIndex and target
-      this._selectRange(focusedHeaderIndex, target, false);
+      this._selectRange(focusedHeaderIndex, Math.max(0, target), false);
       this._scrollColumnIntoViewport(target);
     } else {
       this._isNavigate = true;
-      if (current === 0 && focusNext === false && this._isDefaultSelectorEnabled()) {
-        target = -1;
-      }
       if (target !== focusedHeaderIndex) {
         this._setHeaderColumnFocus(target, true, false);
       }
@@ -14774,13 +16235,10 @@ Table.prototype._handleKeydownLeftRight = function (event, isExtend) {
     if (isExtend) {
       this._isNavigate = false;
       // select all columns between focusedFooterIndex and target
-      this._selectRange(focusedFooterIndex, target, false);
+      this._selectRange(focusedFooterIndex, Math.max(0, target), false);
       this._scrollColumnIntoViewport(target);
     } else {
       this._isNavigate = true;
-      if (current === 0 && focusNext === false && this._isDefaultSelectorEnabled()) {
-        target = -1;
-      }
       if (target !== focusedFooterIndex) {
         this._setFooterColumnFocus(target, true, false);
       }
@@ -14894,15 +16352,16 @@ Table.prototype._getTabbableElements = function (element, ignoreHidden) {
 Table.prototype._handleKeydownTab = function (event) {
   // if Tab is pressed while a row has focus and we are in actionable/editable
   // mode then want to Tab within that row until Esc or F2 is pressed
+  this._isTableTab = true;
   var tabHandled = false;
   var focusedRowIdx = this._getFocusedRowIdx();
   var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
   var tabbableElementsInFocusedElement;
   var focusedElement;
+  var tableBody = this._getTableBody();
 
   if (this._isTableActionableMode() || this._hasEditableRow()) {
     var currentFocusElement = document.activeElement;
-    var tableBody = this._getTableBody();
     var tableHeader = this._getTableHeader();
 
     if (focusedRowIdx != null && this._getEditableRowIdx() === focusedRowIdx) {
@@ -14995,7 +16454,8 @@ Table.prototype._handleKeydownTab = function (event) {
         focusedElement = null;
         if (focusedRowIdx != null) {
           focusedElement = this._getTableBodyRow(focusedRowIdx);
-        } else if (focusedHeaderColumnIdx != null) {
+        } else {
+          // relies on focusedHeaderColumnIdx != null check above
           focusedElement = this._getTableHeaderColumn(focusedHeaderColumnIdx);
         }
         tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
@@ -15008,7 +16468,8 @@ Table.prototype._handleKeydownTab = function (event) {
           // tabbable element in the body
           var tabbableElementsInBody = this._getTabbableElements(tableBody);
           $(tabbableElementsInBody[0]).focus();
-        } else if (focusedHeaderColumnIdx != null) {
+        } else {
+          // relies on focusedHeaderColumnIdx != null check above
           // if there are no tabbable elements
           // in the column then focus on the first
           // tabbable element in the thead
@@ -15021,52 +16482,16 @@ Table.prototype._handleKeydownTab = function (event) {
     }
   }
 
-  if (!tabHandled) {
-    // tab out of the component to the next tabbable element on the page
-    var table = this._getTable();
-    var tabbableElementsInTable = this._getTabbableElements(table, true);
-    var tabbableElementsInTableCount =
-      tabbableElementsInTable != null ? tabbableElementsInTable.length : 0;
-
-    // Table should not set focus to elements outside of itself because
-    // ancestor such as modal dialog may want to confine the focus.  It
-    // should just set focus to itself in backward tabbing or to its last
-    // tabbable descendant in forward tabbing.  Then allow the ancestors
-    // to handle the event and determine the next tabstop.
-    var temporaryFocus = table;
-
-    if (!event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
-      // If we are tabbing forward and the table contains tabbable
-      // elements, focus on the last tabbable element.
-      if (this._isFF()) {
-        // workaround for FF. In FF, the tbody is focusable even though it has
-        // tabindex -1. So we have to create a temporary focusable element
-        // as the last element in the table container and focus on that one.
-        temporaryFocus = document.createElement(Table.DOM_ELEMENT._A); // @HTMLUpdateOK
-        temporaryFocus.setAttribute(Table.DOM_ATTR._TABINDEX, '0'); // @HTMLUpdateOK
-        temporaryFocus.setAttribute(Table.DOM_ATTR._HREF, '#'); // @HTMLUpdateOK
-        temporaryFocus.classList.add(Table.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-        table.insertAdjacentElement('afterend', temporaryFocus);
-        this._temporaryFocusForFF = temporaryFocus;
-      } else if (tabbableElementsInTableCount > 0) {
-        temporaryFocus = tabbableElementsInTable[tabbableElementsInTableCount - 1];
-      }
-    }
+  if (!tabHandled && this._isFF() && !this._isStickyLayoutEnabled() &&
+      !event[Table._KEYBOARD_CODES._MODIFIER_SHIFT]) {
+    // workaround for FF. In FF, the tbody is focusable even if it has tabindex -1.
 
     // Need to set this variable because the focus() call will
     // trigger a focusin which we do not want to handle.
-    this._temporaryTableChildElementFocus = true;
-    temporaryFocus.focus();
-    setTimeout(function () { // @HTMLUpdateOK
-      this._temporaryTableChildElementFocus = false;
-      if (this._temporaryFocusForFF) {
-        $(this._temporaryFocusForFF).remove();
-        this._temporaryFocusForFF = null;
-      }
-    }.bind(this), 0);
-
-    return;
+    this._tempFFFocus = true;
+    tableBody.focus();
   }
+
   // we need to remove Tab on keydown because we may not
   // get a keyup for it if focus moves
   // outside of table
@@ -15194,14 +16619,12 @@ Table.prototype._handleKeydownEsc = function (event) {
     event.preventDefault();
     event.stopPropagation();
     this._setTableEditable(false, true, 0, true, event);
-    this._getTable().focus();
   } else if (this._isTableActionableMode()) {
     event.preventDefault();
     event.stopPropagation();
     this._setTableActionableMode(false);
-    this._getTable().focus();
   }
-  this._clearTableHeaderColumnsResize();
+  this._getLayoutManager().handleKeyDownEsc();
 };
 
 /**
@@ -15271,14 +16694,6 @@ Table.prototype._handleKeydownEnd = function (event) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Column Header Renderer
  * @param {Object} context renderer context
  * @param {function(Object)|null} delegateRenderer delegate renderer
@@ -15318,7 +16733,8 @@ Table.prototype._columnHeaderSortableIconRenderer = function (context, delegateR
 
   var sortContainer = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
   sortContainer.classList.add(Table.CSS_CLASSES._TABLE_SORT_ICON_CONTAINER_CLASS);
-  sortContainer.setAttribute('title', this.getTranslatedString('labelSortAsc'));
+  sortContainer.setAttribute(Table.DOM_ATTR._TITLE, this.getTranslatedString('labelSortAsc')); // @HTMLUpdateOK
+  sortContainer.setAttribute(Table.DOM_ATTR._ARIA_HIDDEN, 'true'); // @HTMLUpdateOK
   this._AddHoverable($(sortContainer));
   headerColumnDiv.appendChild(sortContainer); // @HTMLUpdateOK
   var sortIcon = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
@@ -15448,10 +16864,11 @@ Table.prototype._tableBodyCellDefaultRenderer = function (rowIdx, columnIdx,
       var componentElement = this._getRootElement();
       var templateEngine = this._getTemplateEngine();
       if (templateEngine != null) {
+        var tableBody = this._getTableBody();
         var slotContext = this._getCellSlotTemplateContextObject(rendererContext);
         var cellContent =
             templateEngine.execute(componentElement, cellSlotTemplate,
-                                   slotContext, this.options.as);
+                                   slotContext, this.options.as, tableBody);
         if (!(cellContent instanceof Array)) {
           cellContent = [cellContent];
         }
@@ -15473,8 +16890,9 @@ Table.prototype._tableBodyCellDefaultRenderer = function (rowIdx, columnIdx,
   * @private
   */
 Table.prototype._getRendererContextObject = function (parentElement, options) {
-  var context = {};
-  context.component = __GetWidgetConstructor(this.element, 'ojTable');
+  var context = {
+    component: __GetWidgetConstructor(this.element, 'ojTable')
+  };
   var dataSource = this.options.data;
   // unwrap the datasource if we have a PagingTableDataSource
   if (this._isPagingModelTableDataSource()) {
@@ -15539,7 +16957,7 @@ Table.prototype._getCellSlotTemplateContextObject = function (context) {
   slotContext.columnIndex = columnIndex;
   slotContext.mode = context.cellContext.mode;
   slotContext[Table._CONST_KEY] = rowKey;
-  slotContext.item = context.parentElement.parentElement['oj-table-oj-row-item'];
+  slotContext.item = context.parentElement.parentElement[Table._ROW_ITEM_EXPANDO];
   slotContext.columnKey = this._getColumnKeyForColumnIdx(context.columnIndex);
   var dataSource = this.options.data;
   if (this._isPagingModelTableDataSource()) {
@@ -15562,7 +16980,7 @@ Table.prototype._getRowSlotTemplateContextObject = function (context) {
   slotContext.rowContext = context.rowContext;
   slotContext.mode = context.rowContext.mode;
   slotContext[Table._CONST_KEY] = context.rowContext.status.rowKey;
-  slotContext.item = context.parentElement['oj-table-oj-row-item'];
+  slotContext.item = context.parentElement[Table._ROW_ITEM_EXPANDO];
   var dataSource = this.options.data;
   if (this._isPagingModelTableDataSource()) {
     dataSource = dataSource.getWrappedDataSource();
@@ -15674,330 +17092,13 @@ Table.prototype._getVal = function (val) {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
- * @private
- */
-Table.RESIZE_OFFSET = 10;
-
-/**
- * Set resize cursor
- * @param {Event} event Event
- * @private
- */
-Table.prototype._setResizeCursor = function (event) {
-  var eventTarget = this._getEventTargetElement(event);
-  var columnIdx = this._getElementColumnIdx(eventTarget);
-
-  if (columnIdx == null) {
-    return false;
-  }
-
-  var column = this._getColumnDefs()[columnIdx];
-
-  if (column.resizable === Table._OPTION_DISABLED &&
-    this._resizeStartColumnIdx !== columnIdx - 1 &&
-    this._resizeStartColumnIdx !== columnIdx + 1) {
-    return false;
-  }
-
-  if (this._resizeStartColumnIdx == null) {
-    if (this._isHeaderColumnResizeStart(event) !== null) {
-      eventTarget.style.cursor = 'col-resize';
-      return true;
-    }
-    eventTarget.style.cursor = '';
-    return false;
-  }
-
-  var headerColumns = this._getTableHeaderColumns();
-  if (!headerColumns) {
-    return false;
-  }
-
-  // move the indicator
-  if (columnIdx === this._resizeStartColumnIdx ||
-      (this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx - 1) ||
-      (!this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx + 1)) {
-    var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
-    if (tableHeaderColumnResizeIndicator != null) {
-      var tableScroller = this._getLayoutManager().getScroller();
-      var scrollerRect = tableScroller.getBoundingClientRect();
-      tableHeaderColumnResizeIndicator.style.left = (this._getPageX(event) - scrollerRect.left) + 'px';
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
-  * Handle header column resize start
-  * @param {Event} event Event
-  * @return {boolean} Return whether column resize started
-  * @private
-  */
-Table.prototype._handleHeaderColumnResizeStart = function (event) {
-  var eventTarget = this._getEventTargetElement(event);
-  var columnIdx = this._getElementColumnIdx(eventTarget);
-
-  if (columnIdx != null) {
-    var column = this._getColumnDefs()[columnIdx];
-    this._resizeColumnStart = this._isHeaderColumnResizeStart(event);
-
-    if (column.resizable === Table._OPTION_ENABLED &&
-      this._resizeColumnStart !== null) {
-      this._resizeStartColumnIdx = columnIdx;
-      this._resizeStartPageX = this._getPageX(event);
-      this._setTableHeaderColumnsResizeStyling();
-      this._setTableHeaderColumnResizeIndicator(columnIdx);
-      return true;
-    }
-  }
-  this._resizeStartColumnIdx = null;
-  this._resizeStartPageX = null;
-  return false;
-};
-
-/**
-  * Handle header column resize end
-  * @param {Event} event Event
-  * @return {boolean} Return whether column resize ended
-  * @private
-  */
-Table.prototype._handleHeaderColumnResizeEnd = function (event) {
-  var layoutManager = this._getLayoutManager();
-  var columnsCount = this.options.columns.length;
-  var eventTarget = this._getEventTargetElement(event);
-  var columnIdx = this._getElementColumnIdx(eventTarget);
-
-  // only resize if we end the resize on the same column or adjacent columns
-  if ((columnIdx !== null && columnIdx === this._resizeStartColumnIdx) ||
-      (this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx - 1) ||
-      (!this._resizeColumnStart && columnIdx === this._resizeStartColumnIdx + 1)) {
-    var headerColumn = this._getTableHeaderColumn(this._resizeStartColumnIdx);
-    if (headerColumn != null) {
-      var headerColumnRect = headerColumn.getBoundingClientRect();
-      var headerColumnWidth = headerColumnRect.width;
-      // legacy only: when scrollbar is present, reduce last column width by scrollbar width
-      var isLegacyImpl = !this._isStickyLayoutEnabled();
-      if (isLegacyImpl && this._resizeStartColumnIdx === columnsCount - 1 &&
-          layoutManager.isTableHeightConstrained()) {
-        headerColumnWidth -= layoutManager.getScrollBarWidth();
-      }
-      var widthChange;
-      if ((this._GetReadingDirection() === 'rtl' && this._resizeColumnStart) ||
-          (this._GetReadingDirection() === 'ltr' && !this._resizeColumnStart)) {
-        widthChange = this._getPageX(event) - this._resizeStartPageX;
-      } else {
-        widthChange = this._resizeStartPageX - this._getPageX(event);
-      }
-      if (Math.abs(widthChange) > 2) {
-        var startColWidth = headerColumnWidth + widthChange;
-        // ensure new column width is not less than the minimum required width
-        var minWidth = layoutManager.getMinimumForcedOffsetWidth(this._resizeStartColumnIdx);
-        if (minWidth > startColWidth) {
-          widthChange += (minWidth - startColWidth);
-          startColWidth = minWidth;
-        }
-        var clonedColumnsOption = [];
-        for (var i = 0; i < columnsCount; i++) {
-          clonedColumnsOption[i] = $.extend({}, {}, this.options.columns[i]);
-        }
-
-        // a resize operation should increase one column and decrease the other
-        var headerColumnAdjacentIdx = this._resizeColumnStart ?
-          this._resizeStartColumnIdx - 1 : this._resizeStartColumnIdx + 1;
-        // legacy only: when scrollbar is present, reduce last column width by scrollbar width
-        if (isLegacyImpl && headerColumnAdjacentIdx === columnsCount - 1 &&
-            layoutManager.isTableHeightConstrained()) {
-          widthChange += layoutManager.getScrollBarWidth();
-        }
-        var headerColumnAdjacent = this._getTableHeaderColumn(headerColumnAdjacentIdx);
-        if (headerColumnAdjacent) {
-          var headerColumnAdjacentRect = headerColumnAdjacent.getBoundingClientRect();
-          var adjacentColWidth = headerColumnAdjacentRect.width - widthChange;
-
-          minWidth = layoutManager.getMinimumForcedOffsetWidth(headerColumnAdjacentIdx);
-          if (minWidth > adjacentColWidth) {
-            startColWidth += (adjacentColWidth - minWidth);
-            adjacentColWidth = minWidth;
-          }
-          clonedColumnsOption[headerColumnAdjacentIdx].width =
-            layoutManager.getWidthPropertyFromOffsetWidth(adjacentColWidth, headerColumnAdjacent);
-        }
-        clonedColumnsOption[this._resizeStartColumnIdx].width =
-          layoutManager.getWidthPropertyFromOffsetWidth(startColWidth, headerColumn);
-
-        this.option('columns', clonedColumnsOption, {
-          _context: {
-            writeback: true,
-            internalSet: true
-          }
-        });
-        this._clearCachedMetadata();
-        this._queueTask(function () {
-          layoutManager.notifyTableUpdate(Table._UPDATE._COL_RESIZE);
-          // delay the focus to ensure table resize information is not cleared before 'click' handling occurs
-          // otherwise, column resizing will lead to selection handling as well
-          setTimeout(function () { // @HTMLUpdateOK
-            this._clearTableHeaderColumnsResize();
-          }.bind(this), 0);
-        }.bind(this));
-        return true;
-      }
-    }
-  }
-  this._clearTableHeaderColumnsResize();
-  return false;
-};
-
-/**
-  * Clear any column resize
-  * @private
-  */
-Table.prototype._clearTableHeaderColumnsResize = function () {
-  this._resizeStartColumnIdx = null;
-  this._resizeColumnStart = null;
-  this._resizeStartPageX = null;
-  this._clearTableHeaderColumnsResizeStyling();
-  this._removeTableHeaderColumnResizeIndicator();
-};
-
-/**
- * @private
- */
-Table.prototype._getPageX = function (event) {
-  if (event.pageX !== undefined) {
-    // MouseEvent has pageX on event itself
-    return event.pageX;
-  } else if (event.changedTouches !== undefined) {
-    // TouchEvent has pageX on changedTouches, targetTouches, and touches.
-    // For one-finger drag, they contain the same value on all touch events
-    // except for touchend, in which only changedTouches has the point at
-    // which the finger leaves the touch surface.
-    return event.changedTouches[0].pageX;
-  }
-
-  // We shouldn't get here unless event is neither MouseEvent nor TouchEvent
-  return 0;
-};
-
-/**
- * @private
- */
-Table.prototype._isHeaderColumnResizeStart = function (event) {
-  var resizeColumnStart = null;
-  var columnsCount = this.options.columns.length;
-  var columnIdx = this._getElementColumnIdx(event.target);
-  var headerColumn = this._getTableHeaderColumn(columnIdx);
-  if (headerColumn !== null) {
-    var readingDir = this._GetReadingDirection();
-    var columnRect = headerColumn.getBoundingClientRect();
-    var distFromLeft = Math.abs(this._getPageX(event) - columnRect.left);
-    var distFromRight = Math.abs(this._getPageX(event) - columnRect.right);
-
-    // don't show resize cursor for column dividers at the start and end of the table
-    if (distFromLeft <= Table.RESIZE_OFFSET) {
-      if (readingDir === 'rtl' && columnIdx !== columnsCount - 1) {
-        resizeColumnStart = false;
-      } else if (readingDir === 'ltr' && columnIdx !== 0) {
-        resizeColumnStart = true;
-      }
-    } else if (distFromRight <= Table.RESIZE_OFFSET) {
-      if (readingDir === 'ltr' && columnIdx !== columnsCount - 1) {
-        resizeColumnStart = false;
-      } else if (readingDir === 'rtl' && columnIdx !== 0) {
-        resizeColumnStart = true;
-      }
-    }
-  }
-  return resizeColumnStart;
-};
-
-/**
- * @private
- */
-Table.prototype._setTableHeaderColumnResizeIndicator = function (columnIdx) {
-  var tableHeaderColumnResizeIndicator = this._getTableHeaderColumnResizeIndicator();
-  if (tableHeaderColumnResizeIndicator == null) {
-    tableHeaderColumnResizeIndicator = this._createTableHeaderColumnResizeIndicator();
-  }
-  var table = this._getTable();
-  var tableRect = table.getBoundingClientRect();
-  var tableScroller = this._getLayoutManager().getScroller();
-  var scrollerRect = tableScroller.getBoundingClientRect();
-  var headerColumn = this._getTableHeaderColumn(columnIdx);
-  var headerColumnRect = headerColumn.getBoundingClientRect();
-  tableHeaderColumnResizeIndicator.style.height = tableRect.height + 'px';
-
-  if (this._resizeColumnStart) {
-    if (this._GetReadingDirection() === 'rtl') {
-      tableHeaderColumnResizeIndicator.style.left =
-        ((headerColumnRect.left + headerColumnRect.width) - scrollerRect.left) + 'px';
-    } else {
-      tableHeaderColumnResizeIndicator.style.left =
-        (headerColumnRect.left - scrollerRect.left) + 'px';
-    }
-    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '2px';
-    tableHeaderColumnResizeIndicator.style.borderRightWidth = '0';
-  } else {
-    if (this._GetReadingDirection() === 'rtl') {
-      tableHeaderColumnResizeIndicator.style.left =
-        (headerColumnRect.left - scrollerRect.left) + 'px';
-    } else {
-      tableHeaderColumnResizeIndicator.style.left =
-        ((headerColumnRect.left + headerColumnRect.width) - scrollerRect.left) + 'px';
-    }
-    tableHeaderColumnResizeIndicator.style.borderRightWidth = '2px';
-    tableHeaderColumnResizeIndicator.style.borderLeftWidth = '0';
-  }
-};
-
-/**
- * @private
- */
-Table.prototype._setTableHeaderColumnsResizeStyling = function () {
-  var table = this._getTable();
-  table.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
-};
-
-/**
- * @private
- */
-Table.prototype._clearTableHeaderColumnsResizeStyling = function () {
-  var headerColumns = this._getTableHeaderColumns();
-  if (headerColumns) {
-    for (var i = 0; i < headerColumns.length; i++) {
-      headerColumns[i].style.cursor = '';
-    }
-  }
-  var table = this._getTable();
-  table.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_RESIZING_CLASS);
-};
-
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-/**
  * Return the row selection mode
  * @return {string|null} single, multiple, none, or null
  * @private
  */
 Table.prototype._getRowSelectionMode = function () {
-  var rowSelectionMode = this.options.selectionMode == null ?
+  return this.options.selectionMode == null ?
     null : this.options.selectionMode[Table._CONST_ROW];
-  return rowSelectionMode;
 };
 
 /**
@@ -16017,9 +17118,8 @@ Table.prototype._isRowSelectionEnabled = function () {
  * @private
  */
 Table.prototype._getColumnSelectionMode = function () {
-  var columnSelectionMode = this.options.selectionMode == null ?
+  return this.options.selectionMode == null ?
     null : this.options.selectionMode[Table._CONST_COLUMN];
-  return columnSelectionMode;
 };
 
 /**
@@ -16080,6 +17180,42 @@ Table.prototype._updateSelectionStateFromEventDetailRemove = function (eventDeta
         this._selectFirstRowOrColumn();
       } else {
         this._setSelected(selected);
+      }
+    }
+  }
+};
+
+/**
+ * @private
+ */
+Table.prototype._updateSelectionStateFromEventDetailChange = function (eventDetail) {
+  var currentFirstSelectedRow = this.option('firstSelectedRow');
+  if (currentFirstSelectedRow != null) {
+    var eventKeys = [];
+    eventDetail[Table._CONST_KEYS].forEach(function (key) {
+      eventKeys.push(key);
+    });
+    for (var i = 0; i < eventKeys.length; i++) {
+      var key = eventKeys[i];
+      var updatedRowData = eventDetail[Table._CONST_DATA][i];
+      // update firstSelectedRow data if selected row is updated
+      if (oj.KeyUtils.equals(key, currentFirstSelectedRow.key)) {
+        this.option('firstSelectedRow', { key: key, data: updatedRowData }, {
+          _context: {
+            writeback: true,
+            internalSet: true
+          }
+        });
+      }
+      // update any affected row key data for out of view selections
+      if (this._validatedSelectedRowKeyData != null) {
+        for (var j = 0; j < this._validatedSelectedRowKeyData.length; j++) {
+          var rowKeyData = this._validatedSelectedRowKeyData[j];
+          if (oj.KeyUtils.equals(key, rowKeyData.key)) {
+            this._validatedSelectedRowKeyData[j] = updatedRowData;
+            break;
+          }
+        }
       }
     }
   }
@@ -16366,7 +17502,7 @@ Table.prototype._processRowRangeSelection = function (rangeObj, rowKeySet, colum
     startRowIndex = this._getDataSourceRowIndexForRowKey(startRowKey);
     if (isNaN(startRowIndex)) {
       // start key is outside of range
-      status = undefined;
+      status = null;
     }
   } else if (rangeObj.startIndex != null && rangeObj.startIndex[Table._CONST_ROW] != null) {
     startRowIndex = rangeObj.startIndex[Table._CONST_ROW];
@@ -16377,7 +17513,7 @@ Table.prototype._processRowRangeSelection = function (rangeObj, rowKeySet, colum
     if (endRowIndex === null && this._isLoadMoreOnScroll()) {
       // we'll still need to process range selection next time
       endRowIndex = this._getDataSourceLastFetchedRowIndex();
-      status = undefined;
+      status = null;
     }
   } else if (rangeObj.endIndex != null && rangeObj.endIndex[Table._CONST_ROW] != null) {
     endRowIndex = rangeObj.endIndex[Table._CONST_ROW];
@@ -16385,7 +17521,7 @@ Table.prototype._processRowRangeSelection = function (rangeObj, rowKeySet, colum
     if (this._isLoadMoreOnScroll() && endRowIndex > lastRowIndex) {
       // we'll still need to process range selection next time
       endRowIndex = lastRowIndex;
-      status = undefined;
+      status = null;
     }
   }
 
@@ -16836,13 +17972,7 @@ Table.prototype._applyRowSelection = function (rowIdx, tableBodyRow, selected) {
     // Set the draggable property on the row element if the dnd.drag.rows option is specified
     var dragOption = this.options.dnd.drag;
     if (dragOption && (dragOption === 'rows' || dragOption.rows)) {
-      // eslint-disable-next-line no-param-reassign
-      tableBodyRow.draggable = selected;
-      if (selected) {
-        tableBodyRow.classList.add(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
-      } else if (tableBodyRow.classList.contains(Table.MARKER_STYLE_CLASSES._DRAGGABLE)) {
-        tableBodyRow.classList.remove(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
-      }
+      this._getTableDndContext().setElementDraggable(tableBodyRow, selected);
     }
   }
 
@@ -16865,19 +17995,11 @@ Table.prototype._applyRowSelection = function (rowIdx, tableBodyRow, selected) {
  * @private
  */
 Table.prototype._applyColumnSelection = function (columnIdx, selected) {
-  // Set the draggable property on the row element if the dnd.drag.rows option is specified
+  // Set the draggable property on the header element if the dnd.reorder.columns option is specified
   var reorderOption = this.options.dnd.reorder;
   if (reorderOption && reorderOption.columns === Table._OPTION_ENABLED) {
     var headerColumn = this._getTableHeaderColumn(columnIdx);
-    var containsDraggbleClass = headerColumn.classList.contains(
-                                      Table.MARKER_STYLE_CLASSES._DRAGGABLE);
-    headerColumn.draggable = selected;
-
-    if (selected && !containsDraggbleClass) {
-      headerColumn.classList.add(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
-    } else if (!selected && containsDraggbleClass) {
-      headerColumn.classList.remove(Table.MARKER_STYLE_CLASSES._DRAGGABLE);
-    }
+    this._getTableDndContext().setElementDraggable(headerColumn, selected);
   }
   this._setHeaderColumnState(columnIdx, { selected: selected });
 };
@@ -17028,8 +18150,6 @@ Table.prototype._handleMouseEnterSelection = function (element, isTouchAffordanc
   if (this._mouseDownRowIdx != null && rowIdx != null && this._mouseDownRowIdx !== rowIdx) {
     if (this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE) {
       this._selectRange(this._mouseDownRowIdx, rowIdx, true);
-    } else {
-      this._selectRange(rowIdx, rowIdx, true);
     }
     if (rowIdx < this._mouseDownRowIdx) {
       this._moveTableBodyRowTouchSelectionAffordanceTop(rowIdx);
@@ -17201,30 +18321,76 @@ Table.prototype._clearSelectionState = function () {
 };
 
 /**
+ * Listener applied to internal selector elements.
+ * @private
+ */
+Table.prototype._selectedKeysChangedListener = function (event) {
+  if (event.detail.updatedFrom === 'internal') {
+    if (event.detail.value.isAddAll()) {
+      this._setSelected({ row: event.detail.value, column: new KeySetImpl() },
+        false, true);
+    } else {
+      let rowSelectedKeySet = this.option('selected').row;
+      // header selector
+      if (!event.target.rowKey) {
+        this._setSelected({ row: new KeySetImpl(), column: new KeySetImpl() },
+          false, true);
+        return;
+      }
+      if (rowSelectedKeySet.has(event.target.rowKey)) {
+        rowSelectedKeySet = rowSelectedKeySet.delete([event.target.rowKey]);
+      } else {
+        rowSelectedKeySet = rowSelectedKeySet.add([event.target.rowKey]);
+      }
+      this._setSelected({ row: rowSelectedKeySet, column: new KeySetImpl() },
+        false, true);
+    }
+  }
+};
+
+/**
  * Set selector values
  * @param {Object} selected the selected key set
  * @private
  */
 Table.prototype._updateSelector = function (selected) {
-  var table = this._getTable();
-  var selectors = table.getElementsByClassName(Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS);
-  for (var i = 0; i < selectors.length; i++) {
-    selectors[i].selectedKeys = selected;
-  }
-  var headerSelectorElements =
+  let table = this._getTable();
+  let headerSelectorElements =
     table.getElementsByClassName(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
   if (headerSelectorElements.length > 0) {
     headerSelectorElements[0].selectedKeys = selected;
   }
-};
 
-/**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
+  let selectedSelectorCells = Array.from(table.getElementsByClassName(Table.CSS_CLASSES._TABLE_SELECTOR_CELL + ' ' +
+    Table.MARKER_STYLE_CLASSES._SELECTED));
+  if (!selected.isAddAll()) {
+    selectedSelectorCells.forEach((selectorCell) => {
+      let selector = selectorCell.firstChild;
+      if (selected.has(selector.rowKey)) {
+        selected.delete([selector.rowKey]);
+      } else {
+        selector.selectedKeys = new KeySetImpl([]);
+      }
+    });
+    let selectors = Array.from(
+      table.getElementsByClassName(Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS));
+    for (let i = 0; i < selectors.length; i++) {
+      if (selected.has(selectors[i].rowKey)) {
+        selectors[i].selectedKeys = new KeySetImpl([selectors[i].rowKey]);
+      }
+    }
+  } else {
+    let selectors = Array.from(
+      table.getElementsByClassName(Table.CSS_CLASSES._TABLE_DATA_ROW_SELECTOR_CLASS));
+    for (let i = 0; i < selectors.length; i++) {
+      if (selected.has(selectors[i].rowKey)) {
+        selectors[i].selectedKeys = new KeySetImpl([selectors[i].rowKey]);
+      } else {
+        selectors[i].selectedKeys = new KeySetImpl([]);
+      }
+    }
+  }
+};
 
 /**
  * @private
@@ -17483,15 +18649,6 @@ TableFixedLayoutManager.prototype._getMinWidthAutoEquivalent = function () {
 };
 
 /**
- * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
- * The Universal Permissive License (UPL), Version 1.0
- * as shown at https://oss.oracle.com/licenses/upl/
- * @ignore
- */
-
-
-/**
  * @ojcomponent oj.ojTable
  * @augments oj.baseComponent
  *
@@ -17562,6 +18719,9 @@ TableFixedLayoutManager.prototype._getMinWidthAutoEquivalent = function () {
  * </h3>
  *
  * <p>Developers should always either specify the <code class="prettyprint">aria-label</code> attribute or use other alternatives for the table element to conform to accessibility guidelines.</p>
+ *
+ * <p>To facilitate drag and drop including row reordering using only keyboard, application must ensure that either to expose the functionality using context menu, and/or
+ * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.
  *
  * <h3 id="perf-section">
  *   Performance
@@ -17668,22 +18828,20 @@ Table.prototype.options = {
   accessibility: null,
 
   /**
-   * The column id to be used as the row header by screen readers.
+   * The column ids to be used as the row headers by screen readers. This can be a string if there is only one
+   * column id, or an array of strings if multiple column ids are desired.
    *
-   * <p>The td cells in the column specified by this
-   * attribute will be assigned an id and then referenced by the
-   * headers attribute in the rest of the cells in the row.
-   * This is required by screen readers. By default the first column
+   * <p>This is required by screen readers. By default the first column
    * will be taken as the row header.</p>
    * <p>See the <a href="#accessibility">accessibility</a> attribute for usage examples.</p>
    *
    * @expose
    * @name accessibility.rowHeader
-   * @ojshortdesc Specifies the column id to be used as the row header by screen readers. See the Help documentation for more information.
+   * @ojshortdesc Specifies the column ids to be used as the row headers by screen readers. See the Help documentation for more information.
    * @memberof! oj.ojTable
    * @instance
    * @public
-   * @type {string}
+   * @type {string | Array.<string>}
    */
   /**
    * Triggered when the default animation of a particular action is about to start.  The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
@@ -17791,6 +18949,8 @@ Table.prototype.options = {
    * @ojsignature [{target: "Type", value: "DataProvider<K, D>|null"},
    *               {target: "Type", value: "DataProvider|TableDataSource|null", consumedBy:"js"}]
    * @default null
+   * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
+   *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
    *
    * @example <caption>Initialize the Table with the <code class="prettyprint">data</code> attribute specified:</caption>
    * &lt;oj-table data='{{dataProvider}}'>&lt;/oj-table>
@@ -17806,8 +18966,8 @@ Table.prototype.options = {
 
   /**
    * Whether to display table in list or grid mode. Setting a value of grid
-   * will cause the table to display in grid mode. The default value of this
-   * attribute is set through the theme.
+   * will cause the table to display in grid mode.
+   *
    * @expose
    * @public
    * @instance
@@ -18151,6 +19311,7 @@ Table.prototype.options = {
   /**
    * Whether the horizontal gridlines are to be drawn. Can be enabled or disabled.
    * The default value of auto means it's determined by the display attribute.
+   *
    * @expose
    * @public
    * @instance
@@ -18385,7 +19546,77 @@ Table.prototype.options = {
      * @default 500
      * @ojmin 0
      */
-    maxCount: 500
+    maxCount: 500,
+
+    /**
+     * The CSS selector string to an element which Table uses to determine the scroll position as well as the maximum scroll position.  For example in a lot of mobile use cases where Table occupies the entire screen, developers should set the scroller option to 'html'.
+     * @expose
+     * @name scrollPolicyOptions.scroller
+     * @ojshortdesc The CSS selector string to an element used to determine the scroll position as well as the maximum scroll position. See the Help documentation for more information.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {string|null}
+     * @ojsignature {target:"Type", value:"? | keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string"}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     */
+    scroller: null,
+
+    /**
+     * The bottom offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's footer region becomes 'sticky' when the 'scroller' attribute is specified.
+     * @expose
+     * @name scrollPolicyOptions.scrollerOffsetBottom
+     * @ojshortdesc The bottom offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's footer region becomes 'sticky' when the 'scroller' attribute is specified.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {number|null}
+     * @ojsignature {target:"Type", value:"?"}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     */
+    scrollerOffsetBottom: null,
+
+    /**
+     * The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'start' columns (or frozen 'end' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @expose
+     * @name scrollPolicyOptions.scrollerOffsetStart
+     * @ojshortdesc The start offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'start' columns (or frozen 'end' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {number|null}
+     * @ojsignature {target:"Type", value:"?"}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     */
+    scrollerOffsetStart: null,
+
+    /**
+     * The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'end' columns (or frozen 'start' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @expose
+     * @name scrollPolicyOptions.scrollerOffsetEnd
+     * @ojshortdesc The end offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's frozen 'end' columns (or frozen 'start' columns in RTL) become 'sticky' when the 'scroller' attribute is specified.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {number|null}
+     * @ojsignature {target:"Type", value:"?"}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     */
+    scrollerOffsetEnd: null,
+
+    /**
+     * The top offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's header region becomes 'sticky' when the 'scroller' attribute is specified.
+     * @expose
+     * @name scrollPolicyOptions.scrollerOffsetTop
+     * @ojshortdesc The top offset value (in pixels) used for the Table's external scroller. This value is used to specify the location where the Table's header region becomes 'sticky' when the 'scroller' attribute is specified.
+     * @memberof! oj.ojTable
+     * @instance
+     * @type {number|null}
+     * @ojsignature {target:"Type", value:"?"}
+     * @default null
+     * @ojunsupportedthemes ["Alta"]
+     */
+    scrollerOffsetTop: null
   },
 
   /**
@@ -18696,7 +19927,7 @@ Table.prototype.options = {
    * <a href="#selection">selection</a> and <a href="#selected">selected</a> attributes. If any rows specified are not immediately
    * available, the Table's underlying <a href="DataProvider.html">DataProvider</a> will be queried. This will only occur if the
    * data provider supports <a href="DataProvider.html#getCapability">getCapability</a>, and returns a
-   * <a href="oj.FetchByKeysCapability.html#implementation">fetchByKeys capability implementation</a> of <code class="prettyprint">lookup</code>.
+   * <a href="FetchByKeysCapability.html#implementation">fetchByKeys capability implementation</a> of <code class="prettyprint">lookup</code>.
    * Any rows that fail this validation process will be removed from the <a href="#selection">selection</a> and <a href="#selected">selected</a>
    * attributes. This guarantees that the Table's <a href="#firstSelectedRow">firstSelectedRow</a> attribute is populated at all times.
    *
@@ -18747,6 +19978,166 @@ Table.prototype.options = {
   verticalGridVisible: 'auto',
 
   /**
+   * @typedef {Object} oj.ojTable.ColumnsRendererContext Context object passed into the columns[].renderer callback function.
+   * @property {Object} cellContext Context of the cell containing properties.
+   * @property {DataProvider<K, D>|null} cellContext.datasource The "data" attribute of the Table.
+   * @property {"edit"|"navigation"} cellContext.mode The mode of the row.  It can be "edit" or "navigation".
+   * @property {ojTable.ContextStatus<K>} cellContext.status Contains the rowIndex, rowKey, and currentRow.
+   * @property {number} columnIndex The column index.
+   * @property {Element} componentElement A reference to the Table root element.
+   * @property {any} data The cell data.
+   * @property {Element} parentElement Empty rendered &lt;td> element.
+   * @property {Object} row Key/value pairs of the row.
+   * @ojsignature [{target:"Type", value:"D", for:"row", jsdocOverride:true},
+   *               {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+   */
+  /**
+   * @typedef {Object} oj.ojTable.FooterRendererContext Context object passed into the footerRenderer callback function.
+   * @property {number} columnIndex The column index.
+   * @property {Element} componentElement A reference to the Table root element.
+   * @property {Object} footerContext Context of the footer.
+   * @property {DataProvider<K, D>|null} footerContext.datasource The "data" attribute of the Table.
+   * @property {Element} parentElement Empty rendered <td> element.
+   * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
+   */
+  /**
+   * @typedef {Object} oj.ojTable.FooterTemplateContext Context passed into default and column-specific footer templates.
+   * @property {Element} componentElement The &lt;oj-table> custom element.
+   * @property {number} columnIndex The zero-based index of the current column during initial rendering.
+   * @property {any} columnKey The key of the current column being rendered.
+   * @ojdeprecated {target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." }
+   * @ojsignature [{target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
+   * {target:"Type", value:"<D>", for:"genericTypeParameters"}]
+   */
+  /**
+   * @typedef {Object} oj.ojTable.HeaderRendererContext Context object passed into the headerRenderer callback function.
+   * @property {number} columnIndex The column index.
+   * @property {function(Object, function(Element):void):void} [columnHeaderDefaultRenderer]
+   *           If the column is not sortable then this function will be included in the context.
+   *           The options parameter specifies the options (future use) for the renderer while the
+   *           delegateRenderer parameter specifies the function which the developer would
+   *           like to be called during rendering of the column header.
+   * @property {function(Object, function(Element):void):void} [columnHeaderSortableIconRenderer]
+   *           If the column is sortable then this function will be included in the context.
+   *           The options parameter specifies the options (future use) for the renderer while the
+   *           delegateRenderer parameter specifies the function which the developer would
+   *           like to be called during rendering of the sortable column header. Calling the
+   *           columnHeaderSortableIconRenderer function enables rendering custom header content
+   *           while also preserving the sort icons.
+   * @property {Element} componentElement A reference to the Table root element.
+   * @property {string} data The header text for the column.
+   * @property {Object} headerContext Context for the header.
+   * @property {DataProvider<K, D>|null} headerContext.datasource
+   *           The "data" attribute of the Table.
+   * @property {Element} parentElement Empty rendered TH element.
+   * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
+   */
+  /**
+   * @typedef {Object} oj.ojTable.HeaderTemplateContext Context passed into default and column-specific header templates.
+   * @property {Element} componentElement The &lt;oj-table> custom element.
+   * @property {any} data The data object for the current header.
+   * @property {number} columnIndex The zero-based index of the current column during initial rendering.
+   * @property {any} columnKey  The key of the current column being rendered.
+   * @property {string} headerText The text for the current header being rendered.
+   * @ojdeprecated [{target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." },
+   * {target:"property", for: "data", since:"10.0.0", description:"Use HeaderTemplateContext.headerText instead." }]
+   * @ojsignature [{target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
+   * {target:"Type", value:"<D>", for:"genericTypeParameters"}]
+   */
+  /**
+   * @typedef {Object} oj.ojTable.CellTemplateContext Context passed into default and column-specific cell templates.
+   * @property {Element} componentElement The &lt;oj-table> custom element.
+   * @property {any} data The data for the current cell being rendered.
+   * @property {any} row  The data for the row contained the current cell being rendered.
+   * @property {number} index The zero-based index of the current row during initial rendering.  Note the index is not updated in response to row additions and removals.
+   * @property {number} columnIndex The zero-based index of the current column during initial rendering.
+   * @property {any} key The key of the current cell being rendered.
+   * @property {"edit"|"navigation"} mode The mode of the row containing the cell.  It can be "edit" or "navigation".
+   * @property {Item<K,D>} item The Item<K, D> for the row being rendered.
+   * @property {any} columnKey The key of the current column being rendered.
+   * @property {DataProvider<K, D> | null} datasource The "data" attribute of the Table.
+   * @ojsignature [{target:"Type", value:"D[keyof D]", for:"data", jsdocOverride:true},
+   * {target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
+   * {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+   * @ojdeprecated [{target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." },
+   * {target:"property", for: "row", since:"10.0.0", description:"Use CellTemplateContext.item.data instead." },
+   * {target:"property", for: "key", since:"10.0.0", description:"Use CellTemplateContext.item.key instead." }]
+   */
+  /**
+   * Object that defines Column properties
+   * @typedef {object} oj.ojTable.Column
+   * @ojimportmembers oj.ojTableBaseColumnProperties
+   * @ojimportmembers oj.ojTableColumnProperties
+   * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
+   */
+  /**
+   * The knockout template used to render the content of the column header.
+   *
+   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+   * component option. The following
+   *   variables are also passed into the template
+   *     <ul>
+   *       <li>$columnIndex: The column index</li>
+   *       <li>$data: The header text</li>
+   *       <li>$headerContext: The header context</li>
+   *     </ul>
+   *   </li>
+   *
+   * @ojbindingonly
+   * @name headerTemplate
+   * @memberof! oj.ojTable.Column
+   * @instance
+   * @type {string|null}
+   * @ojsignature {target:"Type", value:"?"}
+   * @default null
+   *
+   * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
+   * // set the template
+   * &lt;oj-table aria-label="Departments Table"
+   *      data='{{dataProvider}}'
+   *      columns='[{"headerText": "Department Id", "field": "DepartmentId"},
+   *                {"headerText": "Department Name", "field": "DepartmentName"},
+   *                {"headerText": "Location Id", "field": "LocationId"},
+   *                {"headerText": "Manager Id", "field": "ManagerId"},
+   *                {"headerTemplate": "oracle_link_hdr"}]'&gt;
+   * &lt;/oj-table&gt;
+   *
+   * @ignore
+   */
+  /**
+   * The knockout template used to render the content of the column footer.
+   *
+   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+   * component option. The following
+   *   variables are also passed into the template
+   *     <ul>
+   *       <li>$columnIndex: The column index</li>
+   *       <li>$footerContext: The header context</li>
+   *     </ul>
+   *   </li>
+   *
+   * @ojbindingonly
+   * @name footerTemplate
+   * @memberof! oj.ojTable.Column
+   * @instance
+   * @type {string|null}
+   * @ojsignature {target:"Type", value:"?"}
+   * @default null
+   *
+   * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
+   * // set the template
+   * &lt;oj-table aria-label="Departments Table"
+   *      data='{{dataProvider}}'
+   *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+   *                       {"headerText": "Department Name", "field": "DepartmentName"},
+   *                       {"headerText": "Location Id", "field": "LocationId"},
+   *                       {"headerText": "Manager Id", "field": "ManagerId"},
+   *                       {"footerTemplate": "oracle_link_ftr"}]'&gt;
+   * &lt;/oj-table&gt;
+   *
+   * @ignore
+   */
+  /**
    * An array of column definitions.
    * <p>If the application change the column definitions after the Table is loaded, it must call the
    * <a href="#refresh"><code class="prettyprint">refresh()</code></a> method to update the Table display.
@@ -18759,6 +20150,8 @@ Table.prototype.options = {
    * @ojwriteback
    * @type {Array.<Object>|null}
    * @default null
+   * @ojsignature [{target: "Type", value: "Array<oj.ojTable.Column<K,D>> | null", jsdocOverride: true},
+   *               {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
    * @example <caption>Initialize the table with the <code class="prettyprint">columns</code> attribute specified:</caption>
    * &lt;oj-table
    *   columns='[{"headerText": "Department Id", "field": "DepartmentId"},
@@ -18776,635 +20169,116 @@ Table.prototype.options = {
    * myTable.columns = [{"headerText": "Department Id", "field": "DepartmentId"},
    *                    {"headerText": "Department Name", "field": "DepartmentName"}];
    */
-  columns: [{
-    /**
-     * @typedef {Object} oj.ojTable.ColumnsRendererContext Context object passed into the columns[].renderer callback function.
-     * @property {Object} cellContext Context of the cell containing properties.
-     * @property {DataProvider<K, D>|null} cellContext.datasource The "data" attribute of the Table.
-     * @property {"edit"|"navigation"} cellContext.mode The mode of the row.  It can be "edit" or "navigation".
-     * @property {ojTable.ContextStatus<K>} cellContext.status Contains the rowIndex, rowKey, and currentRow.
-     * @property {number} columnIndex The column index.
-     * @property {Element} componentElement A reference to the Table root element.
-     * @property {any} data The cell data.
-     * @property {Element} parentElement Empty rendered &lt;td> element.
-     * @property {Object} row Key/value pairs of the row.
-     * @ojsignature [{target:"Type", value:"D", for:"row", jsdocOverride:true},
-     *               {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
-     */
-
-    /**
-     * The renderer function that renders the content of the cell.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>cellContext.datasource: The "data" attribute of the Table.</li>
-     *   <li>cellContext.mode: The mode of the row.  It can be "edit" or "navigation".</li>
-     *   <li>cellContext.status: Contains the rowIndex, rowKey, and currentRow.</li>
-     *   <li>columnIndex: The column index.</li>
-     *   <li>componentElement: A reference to the Table root element.</li>
-     *   <li>data: The cell data.</li>
-     *   <li>parentElement: Empty rendered <td> element.</li>
-     *   <li>row: Key/value pairs of the row.</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the cell data as a String.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].renderer
-     * @ojshortdesc A function that renders the content of the cell. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.ColumnsRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
-    renderer: null,
-
-    /**
-     * The CSS class to apply to the column cells.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].className
-     * @ojshortdesc The CSS class to apply to the column cells.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
-    className: null,
-
-    /**
-     * The data field that this column refers to.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].field
-     * @ojshortdesc The data field that this column refers to.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
+  columns: [{ className: null,
     field: null,
-
-    /**
-     * The CSS class to apply to the footer cell.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].footerClassName
-     * @ojshortdesc The CSS class to apply to the footer cell.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     footerClassName: null,
-
-    /**
-     * @typedef {Object} oj.ojTable.FooterRendererContext Context object passed into the footerRenderer callback function.
-     * @property {number} columnIndex The column index.
-     * @property {Element} componentElement A reference to the Table root element.
-     * @property {Object} footerContext Context of the footer.
-     * @property {DataProvider<K, D>|null} footerContext.datasource The "data" attribute of the Table.
-     * @property {Element} parentElement Empty rendered <td> element.
-     * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
-     */
-    /**
-     * The renderer function that renders the content of the footer.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>columnIndex: The column index</li>
-     *   <li>componentElement: A reference to the Table root element</li>
-     *   <li>footerContext.datasource: The "data" attribute of the Table</li>
-     *   <li>parentElement: Empty rendered <td> element</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the footer.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the footer data as a String.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].footerRenderer
-     * @ojshortdesc A function that renders the content of the footer cell. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.FooterRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
     footerRenderer: null,
-
-    /**
-     * The CSS styling to apply to the footer cell.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].footerStyle
-     * @ojshortdesc The CSS styling to apply to the footer cell.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
     footerStyle: null,
-
-    /**
-     * @typedef {Object} oj.ojTable.FooterTemplateContext Context passed into default and column-specific footer templates.
-     * @property {Element} componentElement The &lt;oj-table> custom element.
-     * @property {number} columnIndex The zero-based index of the current column during initial rendering.
-     * @property {any} columnKey The key of the current column being rendered.
-     * @ojdeprecated {target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." }
-     * @ojsignature [{target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
-     * {target:"Type", value:"<D>", for:"genericTypeParameters"}]
-     */
-    /**
-     * <p>The name of the slot used to specify the template for rendering the footer cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;td> element, only what's inside it.
-     * When both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.</p>
-     * <p>When the template is executed for each footer, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - An object that contains information for the current footer being rendered. (See the table below for a list of properties available on $current) </li>
-     *   <li>alias - If data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].footerTemplate
-     * @ojshortdesc The slot name used to specify the template for rendering the footer cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.FooterTemplateContext
-     */
     footerTemplate: null,
-
-    /**
-     * The CSS class to apply to the column header text.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].headerClassName
-     * @ojshortdesc The CSS class to apply to the column header text.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
+    frozenEdge: null,
     headerClassName: null,
-
-    /**
-     * @typedef {Object} oj.ojTable.HeaderRendererContext Context object passed into the headerRenderer callback function.
-     * @property {number} columnIndex The column index.
-     * @property {function(Object, function(Element):void):void} [columnHeaderDefaultRenderer]
-     *           If the column is not sortable then this function will be included in the context.
-     *           The options parameter specifies the options (future use) for the renderer while the
-     *           delegateRenderer parameter specifies the function which the developer would
-     *           like to be called during rendering of the column header.
-     * @property {function(Object, function(Element):void):void} [columnHeaderSortableIconRenderer]
-     *           If the column is sortable then this function will be included in the context.
-     *           The options parameter specifies the options (future use) for the renderer while the
-     *           delegateRenderer parameter specifies the function which the developer would
-     *           like to be called during rendering of the sortable column header. Calling the
-     *           columnHeaderSortableIconRenderer function enables rendering custom header content
-     *           while also preserving the sort icons.
-     * @property {Element} componentElement A reference to the Table root element.
-     * @property {string} data The header text for the column.
-     * @property {Object} headerContext Context for the header.
-     * @property {DataProvider<K, D>|null} headerContext.datasource
-     *           The "data" attribute of the Table.
-     * @property {Element} parentElement Empty rendered TH element.
-     * @ojsignature {target:"Type", value:"<K,D>", for:"genericTypeParameters"}
-     */
-    /**
-     * The renderer function that renders the content of the header.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>columnIndex: The column index.</li>
-     *   <li>columnHeaderDefaultRenderer(options, delegateRenderer): If the column
-     *   is not sortable then this function will be included in the context.
-     *   The options parameter specifies the options (future use) for the renderer while the
-     *   delegateRenderer parameter specifies the function which the developer would
-     *   like to be called during rendering of the column header.</li>
-     *   <li>columnHeaderSortableIconRenderer(options, delegateRenderer): If the column
-     *   is sortable then this function will be included in the context.
-     *   The options parameter specifies the options (future use) for the renderer while the
-     *   delegateRenderer parameter specifies the function which the developer would
-     *   like to be called during rendering of the sortable column header. Calling the
-     *   columnHeaderSortableIconRenderer function enables rendering custom header content
-     *   while also preserving the sort icons.</li>
-     *   <li>componentElement: A reference to the Table root element.</li>
-     *   <li>data: The header text for the column.</li>
-     *   <li>headerContext.datasource: The "data" attribute of the Table.</li>
-     *   <li>parentElement: Empty rendered TH element.</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the header data as a String.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].headerRenderer
-     * @ojshortdesc A function that renders the content of the header. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.HeaderRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
     headerRenderer: null,
-
-    /**
-     * The CSS styling to apply to the column header text.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].headerStyle
-     * @ojshortdesc The CSS styling to apply to the column header text.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
     headerStyle: null,
-
-    /**
-     * @typedef {Object} oj.ojTable.HeaderTemplateContext Context passed into default and column-specific header templates.
-     * @property {Element} componentElement The &lt;oj-table> custom element.
-     * @property {any} data The data object for the current header.
-     * @property {number} columnIndex The zero-based index of the current column during initial rendering.
-     * @property {any} columnKey  The key of the current column being rendered.
-     * @property {string} headerText The text for the current header being rendered.
-     * @ojdeprecated [{target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." },
-     * {target:"property", for: "data", since:"10.0.0", description:"Use HeaderTemplateContext.headerText instead." }]
-     * @ojsignature [{target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
-     * {target:"Type", value:"<D>", for:"genericTypeParameters"}]
-     */
-    /**
-     * <p>The name of the slot used to specify the template for rendering the header cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;th> element, only what's inside it.
-     * When both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.</p>
-     * <p>When the template is executed for each header, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - an object that contains information for the current header being rendered. (See the table below for a list of properties available on $current) </li>
-     *   <li>alias - if data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].headerTemplate
-     * @ojshortdesc The slot name used to specify the template for rendering the header cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature [{target:"Type", value:"?"},
-     *               {target:"Type", value:"D", for:"data", jsdocOverride:true}]
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.HeaderTemplateContext
-     */
     headerTemplate: null,
-
-    /**
-     * Text to display in the header of the column.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].headerText
-     * @ojshortdesc The text to display in the column header.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     * @ojtranslatable
-     */
     headerText: null,
-
-    /**
-     * The identifier for the column.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].id
-     * @ojshortdesc The identifier for the column.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     */
-    id: null,
-
-    /**
-     * The maximum width style string of the column. This value is used during initial render only, and does not apply when users resize columns. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].maxWidth
-     * @type {string|number|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    maxWidth: null,
-
-    /**
-     * The minimum width style string of the column. This value is used during initial render only, and does not apply when users resize columns. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].minWidth
-     * @type {string|number|null}
-     * @ojvalue {string} "auto" The minWidth value will be determined by the theme and layout attribute.
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    minWidth: null,
-
-    /**
-     * Enable or disable width resizing along the column end headers.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].resizable
-     * @type {string}
-     * @ojvalue {string} 'enabled'
-     * @ojvalue {string} 'disabled'
-     * @default "disabled"
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    renderer: null,
     resizable: 'disabled',
-
-    /**
-     * Whether or not the column is sortable.
-     * <p>
-     * A sortable column has a clickable header that (when clicked)
-     * sorts the table by that column's property. Note that
-     * in order for a column to be sortable, this attribute
-     * must be set to "enabled" and the underlying model must
-     * support sorting by this column's property. If this attribute
-     * is set to "auto" then the column will be sortable if the
-     * underlying model supports sorting. A value of "disabled" will
-     * disable sorting on the column.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].sortable
-     * @ojshortdesc Specifies whether a column is sortable. See the Help documentation for more information.
-     * @type {string}
-     * @ojvalue {string} "auto" Column will be sortable if the underlying model supports sorting.
-     * @ojvalue {string} "enabled" Sorting is enabled if the underlying model supports sorting.
-     * @ojvalue {string} "disabled" Sorting is disabled.
-     * @default "auto"
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    sortable: 'auto',
-
-    /**
-     * Indicates the row attribute used for sorting when sort is invoked on this
-     * column. Useful for concatenated columns, where the sort is done by only a subset
-     * of the concatenated items.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].sortProperty
-     * @ojshortdesc Specifies the row attribute used for sorting when a sort is invoked on this column. See the Help documentation for more information.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    id: null,
     sortProperty: null,
-
-    /**
-     * The CSS styling to apply to the column cells.
-     *
-     * <p>See the <a href="#columns">columns</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].style
-     * @ojshortdesc The CSS styling to apply to the column cells.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    sortable: 'auto',
     style: null,
-
-    /**
-     * @typedef {Object} oj.ojTable.CellTemplateContext Context passed into default and column-specific cell templates.
-     * @property {Element} componentElement The &lt;oj-table> custom element.
-     * @property {any} data The data for the current cell being rendered.
-     * @property {any} row  The data for the row contained the current cell being rendered.
-     * @property {number} index The zero-based index of the current row during initial rendering.  Note the index is not updated in response to row additions and removals.
-     * @property {number} columnIndex The zero-based index of the current column during initial rendering.
-     * @property {any} key The key of the current cell being rendered.
-     * @property {"edit"|"navigation"} mode The mode of the row containing the cell.  It can be "edit" or "navigation".
-     * @property {Item<K,D>} item The Item<K, D> for the row being rendered.
-     * @property {any} columnKey The key of the current column being rendered.
-     * @property {DataProvider<K, D> | null} datasource The "data" attribute of the Table.
-     * @ojsignature [{target:"Type", value:"D[keyof D]", for:"data", jsdocOverride:true},
-     * {target:"Type", value:"keyof D", for:"columnKey", jsdocOverride:true},
-     * {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
-     * @ojdeprecated [{target:"property", for: "componentElement", since:"10.0.0", description:"Use HTMLDocument methods to retrieve this element." },
-     * {target:"property", for: "row", since:"10.0.0", description:"Use CellTemplateContext.item.data instead." },
-     * {target:"property", for: "key", since:"10.0.0", description:"Use CellTemplateContext.item.key instead." }]
-     */
-
-    /**
-     * <p>The name of the slot used to specify the template for rendering the cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;td> element, only what's inside it.
-     * When both cell template and cell renderer are specified, the cell renderer takes precedence.</p>
-     * <p>When the template is executed for the cell, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - An object that contains information for the current cell being rendered (See the table below for a list of properties available on $current)</li>
-     *   <li>alias - If data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].template
-     * @ojshortdesc The slot name used to specify the template for rendering the cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature [{target:"Type", value:"?"},
-     *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
-     *               {target:"Type", value:"D", for:"row", jsdocOverride:true}]
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.CellTemplateContext
-     */
     template: null,
-
-    /**
-     * The sizing weight of the column. This must be a positive number greater than or equal to 1. When the Table's <code class="prettyprint">layout</code>
-     * attribute is set to <code class="prettyprint">fixed</code>, this value is used to determine the relative width of the column compared to the other
-     * columns. For example, a column with a weight of 2 will have twice as much space allocated to it as a column with a weight of 1. This value has no effect
-     * when the Table's <code class="prettyprint">layout</code> attribute is set to <code class="prettyprint">contents</code>.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].weight
-     * @type {number|null}
-     * @default null
-     * @ojunsupportedthemes ["Alta"]
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    minWidth: null,
+    maxWidth: null,
     weight: null,
+    width: null }],
 
-    /**
-     * The width style string of the column. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columns[].width
-     * @type {string|number|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    width: null
-
-    /**
-     * The knockout template used to render the content of the column header.
-     *
-     * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-     * component option. The following
-     *   variables are also passed into the template
-     *     <ul>
-     *       <li>$columnIndex: The column index</li>
-     *       <li>$data: The header text</li>
-     *       <li>$headerContext: The header context</li>
-     *     </ul>
-     *   </li>
-     *
-     * @ojbindingonly
-     * @name columns[].headerTemplate
-     * @memberof! oj.ojTable
-     * @instance
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     *
-     * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
-     * // set the template
-     * &lt;oj-table aria-label="Departments Table"
-     *      data='{{dataProvider}}'
-     *      columns='[{"headerText": "Department Id", "field": "DepartmentId"},
-     *                {"headerText": "Department Name", "field": "DepartmentName"},
-     *                {"headerText": "Location Id", "field": "LocationId"},
-     *                {"headerText": "Manager Id", "field": "ManagerId"},
-     *                {"headerTemplate": "oracle_link_hdr"}]'&gt;
-     * &lt;/oj-table&gt;
-     *
-     * @ignore
-     */
-    /**
-     * The knockout template used to render the content of the column footer.
-     *
-     * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-     * component option. The following
-     *   variables are also passed into the template
-     *     <ul>
-     *       <li>$columnIndex: The column index</li>
-     *       <li>$footerContext: The header context</li>
-     *     </ul>
-     *   </li>
-     *
-     * @ojbindingonly
-     * @name columns[].footerTemplate
-     * @memberof! oj.ojTable
-     * @instance
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     *
-     * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
-     * // set the template
-     * &lt;oj-table aria-label="Departments Table"
-     *      data='{{dataProvider}}'
-     *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
-     *                       {"headerText": "Department Name", "field": "DepartmentName"},
-     *                       {"headerText": "Location Id", "field": "LocationId"},
-     *                       {"headerText": "Manager Id", "field": "ManagerId"},
-     *                       {"footerTemplate": "oracle_link_ftr"}]'&gt;
-     * &lt;/oj-table&gt;
-     *
-     * @ignore
-     */
-  }],
-
+ /**
+   * The default knockout template used to render the content of the column header.
+   *
+   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+   * component option. The following
+   *   variables are also passed into the template
+   *     <ul>
+   *       <li>$columnIndex: The column index.</li>
+   *       <li>$data: The header text.</li>
+   *       <li>$headerContext: The header context.</li>
+   *     </ul>
+   *   </li>
+   *
+   * @ojbindingonly
+   * @name headerTemplate
+   * @memberof! oj.ojTable.ColumnDefault
+   * @instance
+   * @type {string|null}
+   * @ojsignature {target:"Type", value:"?"}
+   * @default null
+   *
+   * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
+   * // set the template
+   * &lt;oj-table aria-label="Departments Table"
+   *      data='{{dataProvider}}'
+   *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+   *                        {"headerText": "Department Name", "field": "DepartmentName"},
+   *                        {"headerText": "Location Id", "field": "LocationId"},
+   *                        {"headerText": "Manager Id", "field": "ManagerId"},
+   *                        {"headerTemplate": "oracle_link_hdr"}]'&gt;
+   * &lt;/oj-table&gt;
+   *
+   * @ignore
+   */
+  /**
+   * The default knockout template used to render the content of the column footer.
+   *
+   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+   * component option. The following
+   *   variables are also passed into the template
+   *     <ul>
+   *       <li>$columnIndex: The column index.</li>
+   *       <li>$footerContext: The header context.</li>
+   *     </ul>
+   *   </li>
+   *
+   * @ojbindingonly
+   * @name footerTemplate
+   * @memberof! oj.ojTable.ColumnDefault
+   * @instance
+   * @type {string|null}
+   * @ojsignature {target:"Type", value:"?"}
+   * @default null
+   *
+   * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
+   * // set the template
+   * &lt;oj-table aria-label="Departments Table"
+   *      data='{{dataProvider}}'
+   *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
+   *                        {"headerText": "Department Name", "field": "DepartmentName"},
+   *                        {"headerText": "Location Id", "field": "LocationId"},
+   *                        {"headerText": "Manager Id", "field": "ManagerId"},
+   *                        {"footerTemplate": "oracle_link_ftr"}]'&gt;
+   * &lt;/oj-table&gt;
+   *
+   * @ignore
+   */
+  /**
+   * Object that defines Column default properties
+   * @typedef {object} oj.ojTable.ColumnDefault
+   * @ojimportmembers oj.ojTableBaseColumnProperties
+   * @ojimportmembers oj.ojTableColumnDefaultProperties
+   * @ojsignature [{target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
+   * @ojdeprecated [{target:"property", for: "footerTemplate", since:"7.0.0", description:"Use the footerTemplate slot instead." },
+   * {target:"property", for: "headerTemplate", since:"7.0.0", description:"Use the headerTemplate slot instead." },
+   * {target:"property", for: "template", since:"7.0.0", description:"Use the template slot instead." }]
+   */
   /**
    * Default values to apply to all column objects.
    * @expose
    * @public
    * @instance
    * @memberof! oj.ojTable
-   * @type {Object}
+   * @type {Object|null}
+   * @ojsignature [{target: "Type", value: "oj.ojTable.ColumnDefault<K,D> | null", jsdocOverride: true},
+   *                {target:"Type", value:"<K,D>", for:"genericTypeParameters"}]
    *
    * @example <caption>Initialize the component, overriding some columns defaults and leaving the others intact:</caption>
    * &lt;!-- Using dot notation -->
@@ -19430,524 +20304,27 @@ Table.prototype.options = {
    *     headerStyle: 'text-align: left; white-space:nowrap;'
    * };
    */
-  columnsDefault: {
-    /**
-     * The renderer function that renders the content of the cell.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>cellContext.datasource: The "data" attribute of the Table.</li>
-     *   <li>cellContext.mode: The mode of the row.  It can be "edit" or "navigation".</li>
-     *   <li>cellContext.status: Contains the rowIndex, rowKey, and currentRow.</li>
-     *   <li>columnIndex: The column index.</li>
-     *   <li>componentElement: A reference to the Table root element.</li>
-     *   <li>data: The cell data.</li>
-     *   <li>parentElement: Empty rendered <td> element.</li>
-     *   <li>row: Key/value pairs of the row.</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the cell data as a String.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.renderer
-     * @ojshortdesc A function that renders the content of the cell. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.ColumnsRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
-    renderer: null,
-
-    /**
-     * The default CSS class for column cells.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.className
-     * @ojshortdesc The default CSS class for column cells.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    className: null,
-
-    /**
-     * The default data field for the column.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.field
-     * @ojshortdesc The default data field for the column.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
+  columnsDefault: { className: null,
     field: null,
-
-    /**
-     * The default CSS class to apply to the footer cell.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.footerClassName
-     * @ojshortdesc The default CSS class to apply to the footer cell.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     footerClassName: null,
-
-    /**
-     * The renderer function that renders the content of the footer.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>columnIndex: The column index.</li>
-     *   <li>componentElement: A reference to the Table root element.</li>
-     *   <li>footerContext.datasource: The "data" attribute of the Table.</li>
-     *   <li>parentElement: Empty rendered <td> element.</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the footer.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the footer data as a String.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.footerRenderer
-     * @ojshortdesc A function that renders the content of the footer cell. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.FooterRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
     footerRenderer: null,
-
-    /**
-     * The default CSS styling to apply to the footer cell.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.footerStyle
-     * @ojshortdesc The default CSS styling to apply to the footer cell.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     footerStyle: null,
-
-    /**
-     * <p>The name of the slot used to specify the template for rendering the footer cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;td> element, only what's inside it.
-     * When both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.</p>
-     * <p>When the template is executed for each footer, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - An object that contains information for the current footer being rendered. (See the table below for a list of properties available on $current) </li>
-     *   <li>alias - If data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.footerTemplate
-     * @ojshortdesc The slot name used to specify the template for rendering the footer cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.FooterTemplateContext
-     * @ojdeprecated {since: "7.0.0", description: "Use the footerTemplate slot instead."}
-     */
     footerTemplate: null,
-
-    /**
-     * The default CSS class to apply to the column header.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.headerClassName
-     * @ojshortdesc The default CSS class to apply to the column header.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     headerClassName: null,
-
-    /**
-     * The renderer function that renders the content of the header.
-     * The function will be passed a context object which contains
-     * the following objects:
-     * <ul>
-     *   <li>columnIndex: The column index.</li>
-     *   <li>columnHeaderDefaultRenderer(options, delegateRenderer): If the column
-     *   is not sortable then this function will be included in the context.
-     *   The options parameter specifies the options (future use) for the renderer while the
-     *   delegateRenderer parameter specifies the function which the developer would
-     *   like to be called during rendering of the column header.</li>
-     *   <li>columnHeaderSortableIconRenderer(options, delegateRenderer): If the column
-     *   is sortable then this function will be included in the context.
-     *   The options parameter specifies the options (future use) for the renderer while the
-     *   delegateRenderer parameter specifies the function which the developer would
-     *   like to be called during rendering of the sortable column header. Calling the
-     *   columnHeaderSortableIconRenderer function enables rendering custom header content
-     *   while also preserving the sort icons.</li>
-     *   <li>componentElement: A reference to the Table root element.</li>
-     *   <li>data: The header text for the column.</li>
-     *   <li>headerContext.datasource: The "data" attribute of the Table.</li>
-     *   <li>parentElement: Empty rendered TH element.</li>
-     * </ul>
-     * The function should return one of the following:
-     * <ul>
-     *   <li>An Object with the following property:
-     *     <ul><li>insert: HTMLElement | string - A string or a DOM element of the content inside the header.</li></ul>
-     *   </li>
-     *   <li>undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.</li>
-     * </ul>
-     * If no renderer is specified, the Table will treat the header data as a String.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.headerRenderer
-     * @ojshortdesc A function that renders the content of the header. The function takes a context argument, provided by the table. See the Help documentation for more information.
-     * @type {Function|null}
-     * @ojsignature {target: "Type", value: "?((context: oj.ojTable.HeaderRendererContext<K,D>) => {insert: HTMLElement | string} | void) | null"}
-     * @default null
-     */
     headerRenderer: null,
-
-    /**
-     * The default CSS styling to apply to the column header.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.headerStyle
-     * @ojshortdesc The default CSS styling to apply to the column header.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     headerStyle: null,
-
-    /**
-     * <p>The name of the slot used to specify the template for rendering the header cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;th> element, only what's inside it.
-     * When both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.</p>
-     * <p>When the template is executed for each header, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - An object that contains information for the current header being rendered. (See the table below for a list of properties available on $current) </li>
-     *   <li>alias - If data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.headerTemplate
-     * @ojshortdesc The slot name used to specify the template for rendering the header cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature [{target:"Type", value:"?"},
-     *               {target:"Type", value:"D", for:"data", jsdocOverride:true}]
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.HeaderTemplateContext
-     * @ojdeprecated {since: "7.0.0", description: "Use the headerTemplate slot instead."}
-     */
     headerTemplate: null,
-
-    /**
-     * Default text to display in the header of the column.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.headerText
-     * @ojshortdesc The default text to display in the column header.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     * @ojtranslatable
-     */
     headerText: null,
-
-    /**
-     * The default maximum width style string of the column. This value is used during initial render only, and does not apply when users resize columns. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.maxWidth
-     * @type {string|number|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    maxWidth: null,
-
-    /**
-     * The default minimum width style string of the column. This value is used during initial render only, and does not apply when users resize columns. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.minWidth
-     * @type {string|number|null}
-     * @ojvalue {string} "auto" The minWidth value will be determined by the theme and layout attribute.
-     * @default "auto"
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    minWidth: 'auto',
-
-    /**
-     * Enable or disable width resizing along the column end headers.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.resizable
-     * @type {string|null}
-     * @ojvalue {string} 'enabled'
-     * @ojvalue {string} 'disabled'
-     * @default "disabled"
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    renderer: null,
     resizable: 'disabled',
-
-    /**
-     * Whether or not the column is sortable.
-     * <p>
-     * A sortable column has a clickable header that (when clicked)
-     * sorts the table by that column's property. Note that
-     * in order for a column to be sortable, this attribute
-     * must be set to "enabled" and the underlying model must
-     * support sorting by this column's property. If this attribute
-     * is set to "auto" then the column will be sortable if the
-     * underlying model supports sorting. A value of "disabled" will
-     * disable sorting on the column.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.sortable
-     * @ojshortdesc Specifies whether a column is sortable. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojvalue {string} "auto" Column will be sortable if the underlying model supports sorting.
-     * @ojvalue {string} "enabled" Sorting is enabled if the underlying model supports sorting.
-     * @ojvalue {string} "disabled" Sorting is disabled.
-     * @default "auto"
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    sortable: 'auto',
-
-    /**
-     * Indicates the row attribute used for sorting when sort is invoked on this
-     * column. Useful for concatenated columns, where the sort is done by only a subset
-     * of the concatenated items.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.sortProperty
-     * @ojshortdesc Specifies the row attribute used for sorting when a sort is invoked on this column. See the Help documentation for more information.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
     sortProperty: null,
-
-    /**
-     * The default CSS styling to apply to the column cells.
-     *
-     * <p>See the <a href="#columnsDefault">columns-default</a> attribute for usage examples.
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.style
-     * @ojshortdesc The default CSS styling to apply to the column cells.
-     * @type {string|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    sortable: 'auto',
     style: null,
-
-    /**
-     * <p>The name of the slot used to specify the template for rendering the cell. The slot content must be a &lt;template> element.
-     * The content of the template should not include the &lt;td> element, only what's inside it.
-     * When both cell template and cell renderer are specified, the cell renderer takes precedence.</p>
-     * <p>When the template is executed for the cell, it will have access to the binding context containing the following properties:</p>
-     * <ul>
-     *   <li>$current - An object that contains information for the current cell being rendered.</li>
-     *   <li>alias - If data-oj-as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
-     * </ul>
-     *
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.template
-     * @ojshortdesc The slot name used to specify the template for rendering the cell. See the Help documentation for more information.
-     * @type {string|null}
-     * @ojsignature [{target:"Type", value:"?"},
-     *               {target:"Type", value:"D", for:"data", jsdocOverride:true},
-     *               {target:"Type", value:"D", for:"row", jsdocOverride:true}]
-     * @default null
-     * @ojtemplateslotprops oj.ojTable.CellTemplateContext
-     * @ojdeprecated {since: "7.0.0", description: "Use the cellTemplate slot instead."}
-     */
     template: null,
-
-    /**
-     * The default sizing weight of the column. This must be a positive number greater than or equal to 1. When the Table's <code class="prettyprint">layout</code>
-     * attribute is set to <code class="prettyprint">fixed</code>, this value is used to determine the relative width of the column compared to the other
-     * columns. For example, a column with a weight of 2 will have twice as much space allocated to it as a column with a weight of 1. This value has no effect
-     * when the Table's <code class="prettyprint">layout</code> attribute is set to <code class="prettyprint">contents</code>.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.weight
-     * @type {number|null}
-     * @default 1
-     * @ojunsupportedthemes ["Alta"]
-     * @ojsignature {target:"Type", value:"?"}
-     */
+    minWidth: 'auto',
+    maxWidth: null,
     weight: 1,
-
-    /**
-     * The default width style string of the column. If a number is provided, pixels will be used as the size unit.
-     * @expose
-     * @public
-     * @instance
-     * @memberof! oj.ojTable
-     * @alias columnsDefault.width
-     * @type {string|number|null}
-     * @default null
-     * @ojsignature {target:"Type", value:"?"}
-     */
-    width: null
-
-    /**
-     * The default knockout template used to render the content of the column header.
-     *
-     * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-     * component option. The following
-     *   variables are also passed into the template
-     *     <ul>
-     *       <li>$columnIndex: The column index.</li>
-     *       <li>$data: The header text.</li>
-     *       <li>$headerContext: The header context.</li>
-     *     </ul>
-     *   </li>
-     *
-     * @ojbindingonly
-     * @name columnsDefault.headerTemplate
-     * @memberof! oj.ojTable
-     * @instance
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     *
-     * @example <caption>Specify the column header <code class="prettyprint">template</code> when initializing Table:</caption>
-     * // set the template
-     * &lt;oj-table aria-label="Departments Table"
-     *      data='{{dataProvider}}'
-     *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
-     *                        {"headerText": "Department Name", "field": "DepartmentName"},
-     *                        {"headerText": "Location Id", "field": "LocationId"},
-     *                        {"headerText": "Manager Id", "field": "ManagerId"},
-     *                        {"headerTemplate": "oracle_link_hdr"}]'&gt;
-     * &lt;/oj-table&gt;
-     *
-     * @ignore
-     */
-    /**
-     * The default knockout template used to render the content of the column footer.
-     *
-     * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-     * component option. The following
-     *   variables are also passed into the template
-     *     <ul>
-     *       <li>$columnIndex: The column index.</li>
-     *       <li>$footerContext: The header context.</li>
-     *     </ul>
-     *   </li>
-     *
-     * @ojbindingonly
-     * @name columnsDefault.footerTemplate
-     * @memberof! oj.ojTable
-     * @instance
-     * @type {string|null}
-     * @ojsignature {target:"Type", value:"?"}
-     * @default null
-     *
-     * @example <caption>Specify the column footer <code class="prettyprint">template</code> when initializing Table:</caption>
-     * // set the template
-     * &lt;oj-table aria-label="Departments Table"
-     *      data='{{dataProvider}}'
-     *      columns-default='[{"headerText": "Department Id", "field": "DepartmentId"},
-     *                        {"headerText": "Department Name", "field": "DepartmentName"},
-     *                        {"headerText": "Location Id", "field": "LocationId"},
-     *                        {"headerText": "Manager Id", "field": "ManagerId"},
-     *                        {"footerTemplate": "oracle_link_ftr"}]'&gt;
-     * &lt;/oj-table&gt;
-     *
-     * @ignore
-     */
-  },
+    width: null },
 
   /**
    * Triggered before the current row is changed via the <code class="prettyprint">currentRow</code> property or via the UI.
@@ -20064,7 +20441,7 @@ Table.prototype.options = {
    * @ojcancelable
    * @memberof oj.ojTable
    * @instance
-   * @property {Element} header The key of the header which was sorted on.
+   * @property {string} header The key of the header which was sorted on.
    * @property {'ascending'|'descending'} direction The direction of the sort.
    */
   sort: null
@@ -20103,9 +20480,8 @@ Table.prototype.options = {
  * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
  * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
  * @ojsignature {target:"Type", value:"{subId: 'oj-table-cell', rowIndex: number, columnIndex: number, key:string} | {subId: 'oj-table-footer'|'oj-table-header',index: number}",for:"returns"}
- *
- * @example {@ojinclude "name":"nodeContextExample"}
  * @alias getContextByNode
+ * @example {@ojinclude "name":"nodeContextExample"}
  * @expose
  * @instance
  * @memberof! oj.ojTable
@@ -20115,7 +20491,7 @@ Table.prototype.getContextByNode = function (node) {
   // context objects are documented with @ojnodecontext
   var context = this.getSubIdByNode(node, true);
   if (context) {
-    if (context.subId === 'oj-table-cell') {
+    if (context.subId === Table._SUB_ID._TABLE_CELL) {
       var rowIdx = context.rowIndex;
       var rowKey = this._getRowKeyForRowIdx(rowIdx);
       context.key = rowKey;
@@ -20137,8 +20513,8 @@ Table.prototype.getContextByNode = function (node) {
  * </table>
  * @ojsignature {target: "Type", value: "(rowIndex: number) : {data: D, index: number, key: K} | null"}
  * @export
- * @alias getDataForVisibleRow
  * @expose
+ * @alias getDataForVisibleRow
  * @memberof! oj.ojTable
  * @instance
  * @example <caption>Invoke the <code class="prettyprint">getDataForVisibleRow</code> method:</caption>
@@ -20163,19 +20539,19 @@ Table.prototype.getNodeBySubId = function (locator) {
   }
   var columnIdx;
   var subId = locator.subId;
-  if (subId === 'oj-table-cell') {
+  if (subId === Table._SUB_ID._TABLE_CELL) {
     var rowIdx = parseInt(locator.rowIndex, 10);
     columnIdx = parseInt(locator.columnIndex, 10);
     return this._getTableBodyLogicalCells(rowIdx)[columnIdx];
-  } else if (subId === 'oj-table-header' ||
-              subId === 'oj-table-sort-ascending' ||
-              subId === 'oj-table-sort-descending') {
+  } else if (subId === Table._SUB_ID._TABLE_HEADER ||
+              subId === Table._SUB_ID._TABLE_SORT_ASCENDING ||
+              subId === Table._SUB_ID._TABLE_SORT_DESCENDING) {
     columnIdx = locator.index;
     var tableHeaderColumn = this._getTableHeaderLogicalColumns()[columnIdx];
     if (tableHeaderColumn != null) {
-      if (subId === 'oj-table-header') {
+      if (subId === Table._SUB_ID._TABLE_HEADER) {
         return tableHeaderColumn;
-      } else if (subId === 'oj-table-sort-ascending') {
+      } else if (subId === Table._SUB_ID._TABLE_SORT_ASCENDING) {
         var tableHeaderColumnSortAsc =
           this._getTableElementsByClassName(tableHeaderColumn,
             Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
@@ -20191,7 +20567,7 @@ Table.prototype.getNodeBySubId = function (locator) {
         }
       }
     }
-  } else if (subId === 'oj-table-footer') {
+  } else if (subId === Table._SUB_ID._TABLE_FOOTER) {
     columnIdx = locator.index;
     var tableFooterCell = this._getTableFooterLogicalCells()[columnIdx];
     if (tableFooterCell != null) {
@@ -20209,7 +20585,7 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
     '.' + Table.CSS_CLASSES._TABLE_DATA_CELL_CLASS, true);
   if (cell != null) {
     return {
-      subId: 'oj-table-cell',
+      subId: Table._SUB_ID._TABLE_CELL,
       rowIndex: this._getElementRowIdx(cell),
       columnIndex: this._getElementColumnIdx(cell)
     };
@@ -20219,7 +20595,7 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
     '.' + Table.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS, true);
   if (headerSortAsc != null) {
     return {
-      subId: ignoreSortIcons ? 'oj-table-header' : 'oj-table-sort-ascending',
+      subId: ignoreSortIcons ? Table._SUB_ID._TABLE_HEADER : Table._SUB_ID._TABLE_SORT_ASCENDING,
       index: this._getElementColumnIdx(headerSortAsc)
     };
   }
@@ -20228,7 +20604,7 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
     '.' + Table.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS, true);
   if (headerSortDsc != null) {
     return {
-      subId: ignoreSortIcons ? 'oj-table-header' : 'oj-table-sort-descending',
+      subId: ignoreSortIcons ? Table._SUB_ID._TABLE_HEADER : Table._SUB_ID._TABLE_SORT_DESCENDING,
       index: this._getElementColumnIdx(headerSortDsc)
     };
   }
@@ -20237,7 +20613,7 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
     '.' + Table.CSS_CLASSES._COLUMN_HEADER_CELL_CLASS, true);
   if (header != null) {
     return {
-      subId: 'oj-table-header',
+      subId: Table._SUB_ID._TABLE_HEADER,
       index: this._getElementColumnIdx(header)
     };
   }
@@ -20246,7 +20622,7 @@ Table.prototype.getSubIdByNode = function (node, ignoreSortIcons) {
     '.' + Table.CSS_CLASSES._TABLE_FOOTER_CELL_CLASS, true);
   if (footer != null) {
     return {
-      subId: 'oj-table-footer',
+      subId: Table._SUB_ID._TABLE_FOOTER,
       index: this._getElementColumnIdx(footer)
     };
   }
@@ -20400,7 +20776,7 @@ Table.prototype._destroy = function () {
    */
 Table.prototype._NotifyAttached = function () {
   this._super();
-  this._getLayoutManager().notifyTableUpdate(Table._UPDATE._RESIZE);
+  this._getLayoutManager().notifyTableUpdate(Table._UPDATE._ATTACHED);
   // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
   if (!this._hasPendingTasks()) {
     this._syncTableSizing();
@@ -20418,7 +20794,7 @@ Table.prototype._NotifyAttached = function () {
  */
 Table.prototype._NotifyShown = function () {
   this._super();
-  this._getLayoutManager().notifyTableUpdate(Table._UPDATE._RESIZE);
+  this._getLayoutManager().notifyTableUpdate(Table._UPDATE._SHOWN);
   // refresh dimensions if no tasks are pending since refresh dimensions runs during final task
   if (!this._hasPendingTasks()) {
     this._syncTableSizing();
@@ -20435,7 +20811,7 @@ Table.prototype._VerifyConnectedForSetup = function () {
   return true;
 };
 
-//* * @inheritdoc */
+
 Table.prototype._GetDefaultContextMenu = function () {
   return this._defaultContextMenu;
 };
@@ -20476,8 +20852,8 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
     if (this._contextMenuEvent.target === table) {
       if (headerColumn != null) {
         openOptions.position = {
-          my: 'start top',
-          at: 'start bottom',
+          my: Table._POSITION._START_TOP,
+          at: Table._POSITION._START_BOTTOM,
           of: headerColumn
         };
       } else {
@@ -20485,22 +20861,22 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
         if (focusedRowIdx >= 0) {
           var tableBodyRow = this._getTableBodyRow(focusedRowIdx);
           openOptions.position = {
-            my: 'start top',
-            at: 'start bottom',
+            my: Table._POSITION._START_TOP,
+            at: Table._POSITION._START_BOTTOM,
             of: tableBodyRow
           };
         } else {
           openOptions.position = {
-            my: 'start top',
-            at: 'start bottom',
+            my: Table._POSITION._START_TOP,
+            at: Table._POSITION._START_BOTTOM,
             of: this._contextMenuEvent.target
           };
         }
       }
     } else {
       openOptions.position = {
-        my: 'start top',
-        at: 'start bottom',
+        my: Table._POSITION._START_TOP,
+        at: Table._POSITION._START_BOTTOM,
         of: this._contextMenuEvent.target
       };
     }
@@ -20525,12 +20901,12 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
       if (contextMenuItemAsc.nodeName === 'OJ-OPTION') {
         contextMenuItemAsc.removeAttribute('disabled');
       } else {
-        contextMenuItemAsc.classList.remove('oj-disabled');
+        contextMenuItemAsc.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
       }
     } else if (contextMenuItemAsc.nodeName === 'OJ-OPTION') {
       contextMenuItemAsc.setAttribute('disabled', 'true');
     } else {
-      contextMenuItemAsc.classList.add('oj-disabled');
+      contextMenuItemAsc.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
     }
   }
   var contextMenuItemDsc = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-sortDsc]');
@@ -20540,12 +20916,12 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
       if (contextMenuItemDsc.nodeName === 'OJ-OPTION') {
         contextMenuItemDsc.removeAttribute('disabled');
       } else {
-        contextMenuItemDsc.classList.remove('oj-disabled');
+        contextMenuItemDsc.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
       }
     } else if (contextMenuItemDsc.nodeName === 'OJ-OPTION') {
       contextMenuItemDsc.setAttribute('disabled', 'true');
     } else {
-      contextMenuItemDsc.classList.add('oj-disabled');
+      contextMenuItemDsc.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
     }
   }
   var contextMenuItemResize = contextMenuNode.querySelectorAll('[data-oj-command=oj-table-resize]');
@@ -20555,12 +20931,12 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
       if (contextMenuItemResize.nodeName === 'OJ-OPTION') {
         contextMenuItemResize.removeAttribute('disabled');
       } else {
-        contextMenuItemResize.classList.remove('oj-disabled');
+        contextMenuItemResize.classList.remove(Table.MARKER_STYLE_CLASSES._DISABLED);
       }
     } else if (contextMenuItemResize.nodeName === 'OJ-OPTION') {
       contextMenuItemResize.setAttribute('disabled', 'true');
     } else {
-      contextMenuItemResize.classList.add('oj-disabled');
+      contextMenuItemResize.classList.add(Table.MARKER_STYLE_CLASSES._DISABLED);
     }
   }
   this._OpenContextMenu(event, eventType, openOptions);
@@ -20570,7 +20946,7 @@ Table.prototype._NotifyContextMenuGesture = function (contextMenu, event, eventT
  * @override
  * @private
  */
-Table.prototype._setOption = function (key, value) {
+Table.prototype._setOption = function (key, value, subKeyValue) {
   if (key === 'selection') {
     this._selectionSet = true;
     // update row index/key values in the 'selection' option
@@ -20584,16 +20960,31 @@ Table.prototype._setOption = function (key, value) {
     // after applying the new selected value, sync the selection state
     this._validateInitialSelectionState(true);
   } else if (key === 'currentRow') {
-    var updated = this._setCurrentRow(value, null, true);
-    if (updated === Table._CURRENT_ROW_STATUS._UPDATED) {
-      this._superApply(arguments);
-    }
+    this._queueTask(function () {
+      this._setCurrentRow(value, null, true);
+    }.bind(this)).catch(function () {});
+    this._superApply(arguments);
   } else if (key === 'scrollPosition') {
-    // syncScrollPosition will update with proper value
-    this._syncScrollPosition(value);
+    this._queueTask(function () {
+      // syncScrollPosition will update with proper value
+      this._syncScrollPosition(value);
+    }.bind(this));
+    this._superApply(arguments);
   } else if (key === 'editRow') {
     // setEditRow will update with all props within value
     this._setEditRow(value);
+  } else if (this._isStickyLayoutEnabled() && key === 'scrollPolicyOptions' &&
+             subKeyValue != null && (subKeyValue.subkey === 'scrollerOffsetTop' ||
+             subKeyValue.subkey === 'scrollerOffsetBottom' ||
+             subKeyValue.subkey === 'scrollerOffsetStart' ||
+             subKeyValue.subkey === 'scrollerOffsetEnd')) {
+    this._superApply(arguments);
+    if (subKeyValue.subkey === 'scrollerOffsetTop' ||
+        subKeyValue.subkey === 'scrollerOffsetBottom') {
+      this._styleTableContainer(this._getTableContainer());
+    } else {
+      this._getLayoutManager()._initializeFrozenColumns();
+    }
   } else {
     this._superApply(arguments);
     var shouldRefresh = this._isTableRefreshNeeded(key, value);
@@ -20694,8 +21085,6 @@ Table.prototype._whenReady = function() {
 }
 */
 
-/** ** end internal functions ****/
-
 // --------------------------------------------------- oj.ojTable Styling Start -----------------------------------------------------------
 // ---------------- oj-table-data-cell-no-padding --------------
 /**
@@ -20752,6 +21141,13 @@ Table.prototype._whenReady = function() {
 * &lt;oj-table id="tableId" class='oj-table-stretch'>
 * &lt;/oj-table>
 */
+/**
+ * @ojstylevariableset oj-table-css-set1
+ * @ojdisplayname Table cell padding CSS
+ * @ojstylevariable oj-table-cell-padding-horizontal {description: "Table horizontal cell padding", formats: ["length"], help:"#oj-table-css-set1"}
+ * @memberof oj.ojTable
+ */
+
 // --------------------------------------------------- oj.ojTable Styling End -----------------------------------------------------------
 (function () {
   oj.__registerWidget('oj.ojTable', $.oj.baseComponent, new Table());
@@ -20760,7 +21156,7 @@ Table.prototype._whenReady = function() {
 setDefaultOptions({
   ojTable: {
     display: createDynamicPropertyGetter(function () {
-      return (parseJSONFromFontFamily('oj-table-option-defaults') || {}).display;
+      return getCachedCSSVarValues(['--oj-private-table-global-display-default'])[0];
     })
   }
 });

@@ -20,17 +20,17 @@ class LengthFilter {
         options.countBy = options.countBy === undefined ? 'codePoint' : options.countBy;
     }
     filter(currentRawValue, proposedRawValue) {
-        let proposedValueLength = this.calcLength(proposedRawValue);
+        const proposedValueLength = this.calcLength(proposedRawValue);
         return proposedValueLength <= this.options.max
             ? proposedRawValue
             : currentRawValue.slice(0, this.options.max);
     }
     calcLength(text) {
-        let countBy = this.options.countBy;
+        const countBy = this.options.countBy;
         if (text == '' || text == null || text == undefined) {
             return 0;
         }
-        let codeUnitLength = text.length;
+        const codeUnitLength = text.length;
         let length;
         let surrogateLength = 0;
         switch (countBy) {

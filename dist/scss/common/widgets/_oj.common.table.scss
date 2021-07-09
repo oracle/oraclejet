@@ -21,54 +21,6 @@
       }
     }
 
-    /* Component option defaults. */
-    $tableDefaultOptions: ();
-    $tableAnimationDefaults: ();
-
-    @if ($tableAddAnimation) {
-        $tableAnimationDefaults: map-merge($tableAnimationDefaults, (add: $tableAddAnimation));
-    }
-
-    @if ($tableRemoveAnimation) {
-        $tableAnimationDefaults: map-merge($tableAnimationDefaults, (remove: $tableRemoveAnimation));
-    }
-
-    @if ($tableUpdateAnimation) {
-        $tableAnimationDefaults: map-merge($tableAnimationDefaults, (update: $tableUpdateAnimation));
-    }
-
-    @if ($tableAnimationDefaults) {
-        $tableDefaultOptions: map-merge($tableDefaultOptions, (animation: $tableAnimationDefaults));
-    }
-
-    @if ($tableDisplayOptionDefault != null) {
-       $tableDefaultOptions: map-merge($tableDefaultOptions, (display: $tableDisplayOptionDefault));
-    }
-
-    @if ($tableHorizontalGridVisibleOptionDefault != null) {
-      $tableDefaultOptions: map-merge($tableDefaultOptions, (horizontalGridVisible: $tableHorizontalGridVisibleOptionDefault));
-    }
-
-    @if ($tableLoadIndicator) {
-      $tableDefaultOptions: map-merge($tableDefaultOptions, (loadIndicator: $tableLoadIndicator));
-    }
-
-    @if ($tableEnableSelector) {
-      $tableDefaultOptions: map-merge($tableDefaultOptions, (enableSelector: $tableEnableSelector));
-    }
-
-    @if ($tableEnableSticky != null) {
-      $tableDefaultOptions: map-merge($tableDefaultOptions, (enableSticky: $tableEnableSticky));
-    }
-
-    @if ($loadingIndicatorDelayDuration != null) {
-      $tableDefaultOptions: map-merge($tableDefaultOptions, (showIndicatorDelay: $loadingIndicatorDelayDuration));
-    }
-
-    .oj-table-option-defaults {
-       font-family: oj-json-from-map($tableDefaultOptions);
-    }
-
     /* Styling for the root component element. */
     .oj-table {
        position: relative;
@@ -113,6 +65,11 @@
       overflow: auto;
       // enable momentum based scrolling for touch devices
       -webkit-overflow-scrolling: touch;
+    }
+
+    .oj-table-external-scroll.oj-table-container,
+    .oj-table-external-scroll .oj-table-scroller {
+      overflow: visible;
     }
   
     .oj-table-stretch .oj-table-scroller {
@@ -533,9 +490,6 @@
     /* Styling for the data body element. */
     .oj-table-body {
       color: $collectionCellTextColor;
-      border-color: $collectionBorderColor;
-      border-width: 0 0 1px;
-      border-style: solid;
       font-size: inherit;
       overflow: hidden;
     }
@@ -549,19 +503,22 @@
     }
 
     /* Styling for the table body element when table has vertical scrollbars. */
-    .oj-table-scroll-vertical:not(.oj-table-sticky) .oj-table-body {
+    /* Firefox does not work correctly with overflow:auto, so we need to set scroll explicitly */
+    .oj-table-scroll-vertical:not(.oj-table-sticky) .oj-table-body,
+    .oj-table-scroll-vertical .oj-table-scroller {
       overflow-y: scroll;
     }
 
     /* Styling for the table body element when table has horizontal scrollbars. */
-    .oj-table-scroll-horizontal:not(.oj-table-sticky) .oj-table-body {
+    /* Firefox does not work correctly with overflow:auto, so we need to set scroll explicitly */
+    .oj-table-scroll-horizontal:not(.oj-table-sticky) .oj-table-body,
+    .oj-table-scroll-horizontal .oj-table-scroller {
       overflow-x: scroll;
     }
 
     /* Grid display styling for the data body element. */
     .oj-table-grid-display .oj-table-body {
       background-color: $collectionCellBgColor;
-      border: 0;
     }
 
     /* Styling for the data row elements. */
@@ -574,6 +531,26 @@
 
     .oj-table-body-scroll-buffer {
       height: 0px;
+    }
+
+    .oj-table-legacy-width-buffer {
+      visibility: collapse;
+      height: 0px;
+    }
+
+    .oj-table-legacy-width-buffer-cell {
+      height: 0px;
+      padding-top: 0px;
+      padding-bottom: 0px;
+    }
+
+    .oj-table-legacy-sizer {
+      visibility: hidden;
+      position: relative;
+      top: 0px;
+      left: 0px;
+      height: 0px;
+      width: 0px;
     }
 
     .oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row,
@@ -734,7 +711,7 @@
     /* Styling on read only table cells, oj-readOnly must be applied by the application */
     .oj-table-data-cell.oj-read-only {
 
-        background-color: $collectionEditableCellBgColorReadOnly;
+      background-image: linear-gradient($collectionEditableCellBgColorReadOnly, $collectionEditableCellBgColorReadOnly);
 
     }
 

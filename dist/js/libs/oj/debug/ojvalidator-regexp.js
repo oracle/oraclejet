@@ -11,14 +11,6 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
   Validator = Validator && Object.prototype.hasOwnProperty.call(Validator, 'default') ? Validator['default'] : Validator;
 
   /**
-   * @license
-   * Copyright (c) 2008 2021, Oracle and/or its affiliates.
-   * The Universal Permissive License (UPL), Version 1.0
-   * as shown at https://oss.oracle.com/licenses/upl/
-   * @ignore
-   */
-
-  /**
    * Constructs a RegExpValidator that ensures the value matches the provided pattern.
    * @param {Object=} options an object literal used to provide the pattern, an optional hint and error
    * message.

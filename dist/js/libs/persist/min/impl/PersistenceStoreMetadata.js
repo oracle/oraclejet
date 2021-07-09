@@ -1,1 +1,6 @@
-define([],function(){"use strict";var a=function(a,b,c){this.name=a,this.persistenceStoreFactory=b,this.versions=c};return a.prototype={},a.prototype.name,a.prototype.persistenceStoreFactory,a.prototype.versions,a});
+/**
+ * Copyright (c) 2017, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+define([],(function(){"use strict";var t=function(t,e,r){this.name=t,this.persistenceStoreFactory=e,this.versions=r};return(t.prototype={}).persistenceStoreFactory,t.prototype.versions,t}));

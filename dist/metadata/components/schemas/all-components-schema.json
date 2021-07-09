@@ -28,6 +28,12 @@
         ]
       }
     },
+    "styleVariables": {
+      "type": "array",
+      "items": {
+        "$ref": "component-schema.json#/definitions/styleVariableDef"
+      }
+    },
     "additionalProperties": false
   },
   "additionalProperties": false
