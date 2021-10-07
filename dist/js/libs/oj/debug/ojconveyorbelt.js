@@ -1351,8 +1351,10 @@ var __oj_conveyor_belt_metadata =
       // FIX : set a flag indicating we've scrolled for this touch event
       this._scrolledForThisTouch = true;
     }
-    event.preventDefault();
-    event.stopPropagation();
+    if (this._scrolledForThisTouch) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   };
 
   /**

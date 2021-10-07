@@ -42,7 +42,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojcac
      * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
      * "FetchListResult","FetchListParameters"]}
      * @ojtsmodule
-     * @ignore
+     * @ojhidden
      */
 
     /**

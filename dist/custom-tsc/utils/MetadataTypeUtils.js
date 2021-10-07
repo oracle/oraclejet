@@ -23,7 +23,7 @@ exports.getEnumStringsFromUnion = exports.isClassDeclaration = exports.possibleC
 const ts = __importStar(require("typescript"));
 const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
-const _REGEX_EXTRA_WHITESPACE = new RegExp(/\s\s+/g);
+const _REGEX_EXTRA_WHITESPACE = new RegExp(/\s\s*/g);
 const _OR_NULL = "|null";
 function getGenericsAndTypeParameters(node, isPropsClass) {
     var _a;
@@ -250,7 +250,10 @@ function getTypeReferenceNodeSignature(node, isPropSignature, metaUtilObj) {
     let refNodeTypeName = typeRefNode.typeName.getText();
     const typeObject = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
     const strType = metaUtilObj.typeChecker.typeToString(typeObject);
-    if (typeRefNode.typeArguments) {
+    if (MetaUtils.isMappedType(typeObject)) {
+        refNodeTypeName = strType;
+    }
+    else if (typeRefNode.typeArguments) {
         refNodeTypeName += MetaUtils.getGenericTypeParameters(typeRefNode);
     }
     let typeObj = {
@@ -813,7 +816,7 @@ const _NON_OBJECT_TYPES = new Set([
 ]);
 function possibleComplexProperty(symbolType, type, scope) {
     let iscomplex = true;
-    if (!symbolType.isIntersection()) {
+    if (!(symbolType.isIntersection() || MetaUtils.isMappedType(symbolType))) {
         if (_NON_OBJECT_TYPES.has(type) ||
             isDomType(symbolType) ||
             isClassDeclaration(symbolType) ||
@@ -917,25 +920,29 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
                 if (ts.isIndexedAccessTypeNode(typeRefNode)) {
                     const typeObject = getSymbolTypeFromIndexedAccessTypeNode(typeRefNode, metaUtilObj);
                     if (typeObject) {
-                        type = !isTypeLiteralType(typeObject)
-                            ? getTypeNameFromType(typeObject)
-                            : "object";
                         symbolType = typeObject;
+                        type = !isTypeLiteralType(symbolType)
+                            ? MetaUtils.isMappedType(symbolType)
+                                ? metaUtilObj.typeChecker.typeToString(symbolType)
+                                : getTypeNameFromType(symbolType)
+                            : "object";
                     }
                     else {
                         return {};
                     }
                 }
                 else {
+                    symbolType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
                     if (!ts.isTypeLiteralNode(typeRefNode)) {
-                        type = ts.isTypeReferenceNode(typeRefNode)
-                            ? getTypeNameFromTypeReference(typeRefNode)
-                            : typeRefNode.getText();
+                        type = MetaUtils.isMappedType(symbolType)
+                            ? metaUtilObj.typeChecker.typeToString(symbolType)
+                            : ts.isTypeReferenceNode(typeRefNode)
+                                ? getTypeNameFromTypeReference(typeRefNode)
+                                : typeRefNode.getText();
                     }
                     else {
                         type = "object";
                     }
-                    symbolType = metaUtilObj.typeChecker.getTypeAtLocation(typeRefNode);
                 }
             }
             else {
@@ -961,7 +968,7 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
     }
     let processedMembers = 0;
     const metadata = {};
-    MetaUtils.walkTypeMembers(symbolType, metaUtilObj.typeChecker, (symbol, key) => {
+    MetaUtils.walkTypeMembers(symbolType, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
         var _a, _b;
         if (processedMembers < 0) {
             return;
@@ -989,9 +996,9 @@ function getComplexPropertyHelper(memberSymbol, type, seen, scope, stack, metaUt
         }
         else {
             if (scope == MetaTypes.MetadataScope.DT) {
-                metaObj.optional = symbol.valueDeclaration["questionToken"]
-                    ? true
-                    : false;
+                const propSym = mappedTypeSymbol !== null && mappedTypeSymbol !== void 0 ? mappedTypeSymbol : symbol;
+                metaObj.optional =
+                    propSym.flags & ts.SymbolFlags.Optional ? true : false;
             }
             let isExtensionMd = false;
             if (scope == MetaTypes.MetadataScope.DT && metaObj.isArrayOfObject) {

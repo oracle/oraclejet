@@ -396,8 +396,11 @@ class WaterfallLayoutContentHandler extends IteratingDataProviderContentHandler 
             vnode.props.tabIndex = -1;
             vnode.props['data-oj-positioned'] = x != -1 && y != -1 ? 'true' : 'false';
             vnode.props['data-oj-key'] = key;
+            if (typeof key === 'number') {
+                vnode.props['data-oj-key-type'] = 'number';
+            }
             const styleClasses = this.getItemStyleClass(visible, x, y, this.newItemsTracker.has(key), initialFetch);
-            const classProp = vnode.props.className ? 'className' : 'class';
+            const classProp = vnode.props.class ? 'class' : 'className';
             const currentClasses = vnode.props[classProp]
                 ? [vnode.props[classProp], ...styleClasses]
                 : styleClasses;
@@ -581,8 +584,8 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             const data = this.getData();
             const positions = this.state.skeletonPositions;
             if (data) {
-                if (data && data.value && data.value.data.length === 0) {
-                    content = [];
+                if (data.value && data.value.data.length === 0) {
+                    content = this.contentHandler.renderNoData();
                 }
                 else {
                     if (positions != null && this.contentHandler.isInitialFetch()) {
@@ -1086,7 +1089,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
     _restoreCurrentItem(items) {
         if (this.currentKey != null) {
             for (const curr of items) {
-                if (this.contentHandler.getKey(curr) == this.currentKey) {
+                if (curr.key == this.currentKey) {
                     const elem = curr.element;
                     this._setFocus(elem, false);
                     this.currentItem = elem;
@@ -1094,7 +1097,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 }
             }
             if ((this.currentItem == null || this.currentItem.parentNode == null) && items.length > 0) {
-                this.currentKey = this.contentHandler.getKey(items[0]);
+                this.currentKey = items[0].key;
                 const elem = items[0].element;
                 this._setFocus(elem, false);
                 this.currentItem = elem;

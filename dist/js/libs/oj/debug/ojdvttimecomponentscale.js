@@ -102,6 +102,22 @@ define(function () { 'use strict';
 	 */
 
 	/**
+	 * The position of the label relative to its time interval. This only takes effect on horizontal time axes. The behavior of "auto" varies based on consuming component and theme.
+	 * @since 11.1.0
+	 * @export
+	 * @expose
+	 * @memberof DvtTimeComponentScale
+	 * @instance
+	 * @name labelPosition
+	 * @type {?string}
+	 * @ojvalue {string} "start"
+	 * @ojvalue {string} "center"
+	 * @ojvalue {string} "auto"
+	 * @ojsignature {target: "Type", value: '?("start"|"center"|"auto")'}
+	 * @default "auto"
+	 */
+
+	/**
 	 * Formats the given date into a label used for display.
 	 * @param {string} date The date to be formatted.
 	 *                  See <a href="#formats-section">datetime formatting</a> for more details on the required string format.

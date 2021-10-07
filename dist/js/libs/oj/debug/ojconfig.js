@@ -82,84 +82,61 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    * @export
    */
   Config.getLocale = function () {
-    if (oj.__isAmdLoaderPresent()) {
-      oj.Assert.assert(typeof trans !== 'undefined', 'ojtranslations module must be defined');
-      var rl = trans._ojLocale_;
+    const rl = trans._ojLocale_;
 
-      // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
-      // set, and neither navigator.language or navigator.userLanguage were not available), return "en"
-      return (rl === 'root') ? 'en' : rl;
-    }
-    var loc = Config._locale;
-    if (loc == null) {
-      loc = document.documentElement.lang;
-      if (!loc) {
-        loc = navigator === undefined ? 'en' :
-                              (navigator.language ||
-                               navigator.userLanguage || 'en').toLowerCase();
-      }
-      loc = loc.toLowerCase();
-      Config._locale = loc;
-    }
-    return loc;
+    // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
+    // set, and neither navigator.language or navigator.userLanguage were not available), return "en"
+    return (rl === 'root') ? 'en' : rl;
   };
 
   /**
    * Changes the current locale
    * @method setLocale
    * @param {string} locale (language code and subtags separated by dash)
-   * @param {function(): void} [callback] - for applications running with an AMD Loader (such as Require.js), this optional callback
-   * will be invoked when the framework is done loading its translated resources and Locale Elements for the newly specified locale.
-   * For applications running without an AMD loader, this optional callback will be invoked immediately
+   * @param {function(): void} [callback] this optional callback will be invoked when the framework is done loading
+   * its translated resources and Locale Elements for the newly specified locale.
    * @return {undefined}
    * @export
    * @memberof oj.Config
    */
   Config.setLocale = function (locale, callback) {
-    if (oj.__isAmdLoaderPresent()) {
-      var prefix = 'ojL10n!ojtranslations/nls/';
-      var translationBundle = prefix + locale + '/ojtranslations';
-      /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
-      const translationPromise = new Promise(function (resolve, reject) { require([translationBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(translations => {
-        trans = translations;
-      });
-      var promises = [translationPromise];
+    var prefix = 'ojL10n!ojtranslations/nls/';
+    var translationBundle = prefix + locale + '/ojtranslations';
+    /* ojWebpackError: 'Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
+    const translationPromise = new Promise(function (resolve, reject) { require([translationBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(translations => {
+      trans = translations;
+    });
+    var promises = [translationPromise];
 
-      // Request LocaleElements only if the ojs/ojlocaledata module is loaded;
-      // oj.LocaleData will exist in that case.
-      // Validators/Converters that need locale data import ojs/ojlocaledata
-      // themselves.
-      // If you're just using Config.setLocale to change your
-      // translation bundle, this code will do that without
-      // incurring the download hit of the ojs/ojlocaledata module.
-      if (oj.LocaleData) {
-        var localeBundle = prefix + locale + '/localeElements';
-        const localePromise = new Promise(function (resolve, reject) { require([localeBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(localeElements => {
-          if (localeElements) {
-            oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
-          }
-        });
-        promises.push(localePromise);
-        if (oj.TimezoneData) {
-          var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
-            .map(bundleName => new Promise(function (resolve, reject) { require([`${prefix}${locale}${bundleName}`], function (m) { resolve(_interopNamespace(m)); }, reject) }));
-          promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
-            timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
-          }));
+    // Request LocaleElements only if the ojs/ojlocaledata module is loaded;
+    // oj.LocaleData will exist in that case.
+    // Validators/Converters that need locale data import ojs/ojlocaledata
+    // themselves.
+    // If you're just using Config.setLocale to change your
+    // translation bundle, this code will do that without
+    // incurring the download hit of the ojs/ojlocaledata module.
+    if (oj.LocaleData) {
+      var localeBundle = prefix + locale + '/localeElements';
+      const localePromise = new Promise(function (resolve, reject) { require([localeBundle], function (m) { resolve(_interopNamespace(m)); }, reject) }).then(localeElements => {
+        if (localeElements) {
+          oj.LocaleData.__updateBundle(Object.assign({}, localeElements.default));
         }
-      }
-      Promise.all(promises).then(() => {
-          if (callback) {
-            callback();
-          }
-        }
-      );
-    } else {
-      Config._locale = locale;
-      if (callback) {
-        callback();
+      });
+      promises.push(localePromise);
+      if (oj.TimezoneData) {
+        var tzBundlesPromises = oj.TimezoneData.__getBundleNames()
+          .map(bundleName => new Promise(function (resolve, reject) { require([`${prefix}${locale}${bundleName}`], function (m) { resolve(_interopNamespace(m)); }, reject) }));
+        promises.push(Promise.all(tzBundlesPromises).then((timezoneBundles) => {
+          timezoneBundles.forEach(oj.TimezoneData.__mergeIntoLocaleElements);
+        }));
       }
     }
+    Promise.all(promises).then(() => {
+        if (callback) {
+          callback();
+        }
+      }
+    );
   };
 
   /**
@@ -297,7 +274,7 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
   
   Config._getOjBaseUrl = function () {
     var base = null;
-    if (oj.__isAmdLoaderPresent()) {
+    if (typeof require !== 'undefined' && require.toUrl) {
       // : use ojs/_foo_ instead of ojs/ojcore to handle the case when ojs.core ends up in a partition bundle
       // in a different location
       var modulePath = require.toUrl('ojs/_foo_');
@@ -314,9 +291,6 @@ define(['require', 'exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/ojtr
    */
   Config.__getTemplateEngine = function () {
     if (!Config._templateEnginePromise) {
-      if (!oj.__isAmdLoaderPresent()) {
-        throw new Error('JET Template engine cannot be loaded without an AMD loader');
-      }
       Config._templateEnginePromise = new Promise(function (resolve, reject) { require(['ojs/ojtemplateengine'], function (m) { resolve(_interopNamespace(m)); }, reject) })
       .then((engine) => engine.default);
     }

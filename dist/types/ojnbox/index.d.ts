@@ -33,14 +33,14 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
         animationDuration?: number;
         cellDefaults?: {
             labelHalign?: 'center' | 'end' | 'start';
-            labelStyle?: CSSStyleDeclaration;
-            maximizedSvgStyle?: CSSStyleDeclaration;
-            minimizedSvgStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
+            maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+            minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
             showCount?: 'on' | 'off' | 'auto';
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
-        columnLabelStyle?: CSSStyleDeclaration;
-        columnsTitleStyle?: CSSStyleDeclaration;
+        columnLabelStyle?: Partial<CSSStyleDeclaration>;
+        columnsTitleStyle?: Partial<CSSStyleDeclaration>;
         hoverBehaviorDelay?: number;
         nodeDefaults?: {
             borderColor?: string;
@@ -74,11 +74,11 @@ export interface ojNBox<K, D extends ojNBox.Node<K> | any> extends dvtBaseCompon
                 source?: string;
                 width?: number;
             };
-            labelStyle?: CSSStyleDeclaration;
-            secondaryLabelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
+            secondaryLabelStyle?: Partial<CSSStyleDeclaration>;
         };
-        rowLabelStyle?: CSSStyleDeclaration;
-        rowsTitleStyle?: CSSStyleDeclaration;
+        rowLabelStyle?: Partial<CSSStyleDeclaration>;
+        rowsTitleStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
         renderer: ((context: ojNBox.TooltipContext<K>) => ({
@@ -188,16 +188,16 @@ export namespace ojNBox {
         column: string;
         label?: string;
         labelHalign?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         maximizedSvgClassName?: string;
-        maximizedSvgStyle?: CSSStyleDeclaration;
+        maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
         minimizedSvgClassName?: string;
-        minimizedSvgStyle?: CSSStyleDeclaration;
+        minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
         row: string;
         shortDesc?: string;
         showCount?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CellContext = {
@@ -209,7 +209,7 @@ export namespace ojNBox {
     type Column = {
         id: string;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CountLabelContext = {
@@ -252,7 +252,7 @@ export namespace ojNBox {
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         id?: K;
@@ -269,7 +269,7 @@ export namespace ojNBox {
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         label?: string;
@@ -277,7 +277,7 @@ export namespace ojNBox {
         secondaryLabel?: string;
         shortDesc?: (string | ((context: NodeShortDescContext<K>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         xPercentage?: number;
         yPercentage?: number;
     };
@@ -305,7 +305,7 @@ export namespace ojNBox {
     type Row = {
         id: string;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K> = {
@@ -381,14 +381,14 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
         animationDuration?: number;
         cellDefaults?: {
             labelHalign?: 'center' | 'end' | 'start';
-            labelStyle?: CSSStyleDeclaration;
-            maximizedSvgStyle?: CSSStyleDeclaration;
-            minimizedSvgStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
+            maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
+            minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
             showCount?: 'on' | 'off' | 'auto';
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
-        columnLabelStyle?: CSSStyleDeclaration;
-        columnsTitleStyle?: CSSStyleDeclaration;
+        columnLabelStyle?: Partial<CSSStyleDeclaration>;
+        columnsTitleStyle?: Partial<CSSStyleDeclaration>;
         hoverBehaviorDelay?: number;
         nodeDefaults?: {
             borderColor?: string;
@@ -422,11 +422,11 @@ export interface ojNBoxSettableProperties<K, D extends ojNBox.Node<K> | any> ext
                 source?: string;
                 width?: number;
             };
-            labelStyle?: CSSStyleDeclaration;
-            secondaryLabelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
+            secondaryLabelStyle?: Partial<CSSStyleDeclaration>;
         };
-        rowLabelStyle?: CSSStyleDeclaration;
-        rowsTitleStyle?: CSSStyleDeclaration;
+        rowLabelStyle?: Partial<CSSStyleDeclaration>;
+        rowsTitleStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
         renderer: ((context: ojNBox.TooltipContext<K>) => ({
@@ -485,7 +485,7 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number | null;
     };
     indicatorColor?: string;
@@ -501,7 +501,7 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string | null;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration | null;
+        svgStyle?: Partial<CSSStyleDeclaration> | null;
         width?: number | null;
     };
     label?: string;
@@ -509,7 +509,7 @@ export interface ojNBoxNode<K = any> extends dvtBaseComponent<ojNBoxNodeSettable
     secondaryLabel?: string;
     shortDesc?: (string | ((context: ojNBox.NodeShortDescContext<K>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration | null;
+    svgStyle?: Partial<CSSStyleDeclaration> | null;
     xPercentage?: number | null;
     yPercentage?: number | null;
     addEventListener<T extends keyof ojNBoxNodeEventMap<K>>(type: T, listener: (this: HTMLElement, ev: ojNBoxNodeEventMap<K>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -596,7 +596,7 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number | null;
     };
     indicatorColor?: string;
@@ -612,7 +612,7 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
         shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         source?: string | null;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration | null;
+        svgStyle?: Partial<CSSStyleDeclaration> | null;
         width?: number | null;
     };
     label?: string;
@@ -620,7 +620,7 @@ export interface ojNBoxNodeSettableProperties<K = any> extends dvtBaseComponentS
     secondaryLabel?: string;
     shortDesc?: (string | ((context: ojNBox.NodeShortDescContext<K>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration | null;
+    svgStyle?: Partial<CSSStyleDeclaration> | null;
     xPercentage?: number | null;
     yPercentage?: number | null;
 }
@@ -696,22 +696,22 @@ export namespace NBoxElement {
         column: string;
         label?: string;
         labelHalign?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         maximizedSvgClassName?: string;
-        maximizedSvgStyle?: CSSStyleDeclaration;
+        maximizedSvgStyle?: Partial<CSSStyleDeclaration>;
         minimizedSvgClassName?: string;
-        minimizedSvgStyle?: CSSStyleDeclaration;
+        minimizedSvgStyle?: Partial<CSSStyleDeclaration>;
         row: string;
         shortDesc?: string;
         showCount?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Column = {
         id: string;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type DialogContext = {
@@ -739,7 +739,7 @@ export namespace NBoxElement {
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         id?: K;
@@ -756,7 +756,7 @@ export namespace NBoxElement {
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             source?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         label?: string;
@@ -764,7 +764,7 @@ export namespace NBoxElement {
         secondaryLabel?: string;
         shortDesc?: (string | ((context: ojNBox.NodeShortDescContext<K>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         xPercentage?: number;
         yPercentage?: number;
     };
@@ -780,7 +780,7 @@ export namespace NBoxElement {
     type Row = {
         id: string;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
     };
 }
 export namespace NBoxNodeElement {

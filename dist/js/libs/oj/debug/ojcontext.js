@@ -191,6 +191,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * <b>This constructor should never be invoked by the application code directly.</b>
    * @hideconstructor
    * @param {Element=} hostNode DOM element associated with this busy context
+   * @param {Context} context The oj.Context instance
    * @export
    * @constructor oj.BusyContext
    * @ojtsmodule
@@ -199,8 +200,8 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @since 2.1.0
    * @classdesc Framework service for querying the busy state of components on the page.
    */
-  const BusyContext = function (hostNode) {
-    this.Init(hostNode);
+  const BusyContext = function (hostNode, context) {
+    this.Init(hostNode, context);
   };
 
   oj.Object.createSubclass(BusyContext, oj.Object, 'oj.BusyContext');
@@ -255,13 +256,15 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
 
   /**
    * @param {Element=} hostNode DOM element associated with this busy context
+   * @param {Context=} context The oj.Context object
    * @instance
    * @protected
    */
-  BusyContext.prototype.Init = function (hostNode) {
+  BusyContext.prototype.Init = function (hostNode, context) {
     BusyContext.superclass.Init.call(this);
 
     this._hostNode = hostNode;
+    this._context = context;
 
     /**
      * Busy states cache.
@@ -863,11 +866,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @return {oj.BusyContext} returns the nearest parent context
    */
   BusyContext.prototype._getParentBusyContext = function () {
-    if (this._hostNode) {
-      var parentContext = oj.Context.getContext(oj.Context.getParentElement(this._hostNode));
-      if (parentContext) {
-        return parentContext.getBusyContext();
-      }
+    var parentContext = this._context.getParentContext();
+    if (parentContext) {
+      return parentContext.getBusyContext();
     }
 
     return null;
@@ -1101,6 +1102,20 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
   };
 
   /**
+   * Get the parent context given the element
+   * @ignore
+   * @private
+   * @param {Element} element
+   * @return Context The parent context
+   */
+  Context.prototype.getParentContext = function () {
+    if (this._node) {
+      return Context.getContext(Context.getParentElement(this._node));
+    }
+    return null;
+  };
+
+  /**
    * Returns the closest enclosing JET context for a node.
    * Any DOM element may be designated by the page author as a host of JET context.
    * The designation must be expressed in HTML markup by specifying the "data-oj-context"
@@ -1171,7 +1186,9 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
    * @returns {oj.BusyContext} busy state context
    */
   Context.prototype.getBusyContext = function () {
-    if (!this._busyContext) { this._busyContext = new BusyContext(this._node); }
+    if (!this._busyContext) {
+      this._busyContext = new BusyContext(this._node, this);
+    }
 
     return this._busyContext;
   };
@@ -1220,7 +1237,7 @@ define(['ojs/ojcore-base', 'ojs/ojlogger'], function (oj, Logger) { 'use strict'
 
   /**
    * @ignore
-   * @public
+   * @private
    * @param {Element} element target
    * @return {Element} the logical parent of an element accounting for open popups
    * @memberof oj.Context

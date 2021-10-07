@@ -107,7 +107,7 @@ class StreamListContentHandler extends IteratingDataProviderContentHandler {
                 vnode.props['data-oj-key-type'] = 'number';
             }
             const styleClasses = this.getItemStyleClass(visible, this.newItemsTracker.has(key), initialFetch);
-            const classProp = vnode.props.className ? 'className' : 'class';
+            const classProp = vnode.props.class ? 'class' : 'className';
             const currentClasses = vnode.props[classProp]
                 ? [vnode.props[classProp], ...styleClasses]
                 : styleClasses;
@@ -248,7 +248,7 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
                 vnode.props['data-oj-key-type'] = 'number';
             }
             const styleClasses = this.getItemStyleClass(metadata, visible, this.newItemsTracker.has(metadata.key), initialFetch);
-            const classProp = vnode.props.className ? 'className' : 'class';
+            const classProp = vnode.props.class ? 'class' : 'className';
             const currentClasses = vnode.props[classProp]
                 ? [vnode.props[classProp], ...styleClasses]
                 : styleClasses;

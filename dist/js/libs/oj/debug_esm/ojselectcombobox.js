@@ -5310,6 +5310,12 @@ const _AbstractOjChoice = _ComboUtils.clazz(Object,
 
       //  - press escape after search in select causes select to become unresponsive
       $.removeData(this.container, this._classNm + '-last-term');
+
+      // JET-46223 - search field is not displayed after entering text with no search results
+      // When the dropdown is closed, the ojContext._resultsCount property need to be reseted.
+      // This way we can make sure that the stale value is not used when the dropdown is opened
+      // again and we need to figure out whether or not to show the search field.
+      delete this.ojContext._resultCount;
     },
 
 
@@ -7150,7 +7156,6 @@ const _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
           this._focusSearch();
         }
       }
-      event.preventDefault();
     },
 
     /**
@@ -8119,7 +8124,7 @@ const _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice,
       var contentStructure = [
         "<div class='oj-text-field-container' role='presentation'> ",
         "<ul class='oj-combobox-choices oj-combobox-accessible-container'>",
-        "  <li class='oj-combobox-search-field' role='presentation'><span class='oj-helper-hidden'>&nbsp;</span>",
+        "  <li class='oj-combobox-search-field'><span class='oj-helper-hidden'>&nbsp;</span>",
         "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list'",
         "           autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
         '  </li>',

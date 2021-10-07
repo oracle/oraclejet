@@ -1,7 +1,7 @@
 <?js
 var properties = obj.properties;
-var propsClassName = obj.propsClassName;
-var propsTypeParams = obj.typeParams;
+var propsName = obj.propsName;
+var typeParams = obj.typeParams;
 var propsToInclude = obj.propsToInclude; // readOnly | settable
 var self = this;
 var props = properties? Object.keys(properties) : undefined;
@@ -20,7 +20,7 @@ for (let prop of props) {
     let strProp = properties[prop]['readOnly']? `readonly ${prop}`: `${prop}`;
     strProp = `${strProp}${optional}`;
     ?>
-  <?js= `${strProp}: ${propsClassName}${propsTypeParams}['${prop}'];` ?>
+  <?js= `${strProp}: ${propsName}${typeParams}['${prop}'];` ?>
   <?js
   }
 }

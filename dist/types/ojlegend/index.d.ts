@@ -19,7 +19,7 @@ export interface ojLegend<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | 
     scrolling?: 'off' | 'asNeeded';
     symbolHeight?: number;
     symbolWidth?: number;
-    textStyle?: CSSStyleDeclaration;
+    textStyle?: Partial<CSSStyleDeclaration>;
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         componentName?: string;
@@ -108,24 +108,24 @@ export namespace ojLegend {
         markerColor?: string;
         markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         markerSvgClassName?: string;
-        markerSvgStyle?: CSSStyleDeclaration;
+        markerSvgStyle?: Partial<CSSStyleDeclaration>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shortDesc?: string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
         text: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
-        parentData: any[];
-        parentKey: any;
+        key: K;
+        parentData: D[];
+        parentKey: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type NodeContext = {
@@ -147,7 +147,7 @@ export namespace ojLegend {
         sections?: Array<Section<K>>;
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
 }
 export interface ojLegendEventMap<K, D extends ojLegend.Item<K> | ojLegend.Section<K> | any> extends dvtBaseComponentEventMap<ojLegendSettableProperties<K, D>> {
@@ -185,7 +185,7 @@ export interface ojLegendSettableProperties<K, D extends ojLegend.Item<K> | ojLe
     scrolling?: 'off' | 'asNeeded';
     symbolHeight?: number;
     symbolWidth?: number;
-    textStyle?: CSSStyleDeclaration;
+    textStyle?: Partial<CSSStyleDeclaration>;
     valign?: 'middle' | 'bottom' | 'top';
     translations: {
         componentName?: string;
@@ -223,13 +223,13 @@ export interface ojLegendItem extends JetElement<ojLegendItemSettableProperties>
     markerColor?: string;
     markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSvgClassName?: string;
-    markerSvgStyle?: CSSStyleDeclaration;
+    markerSvgStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     shortDesc?: string;
     source?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     symbolType?: 'line' | 'lineWithMarker' | 'image' | 'marker';
     text: string;
     addEventListener<T extends keyof ojLegendItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -309,13 +309,13 @@ export interface ojLegendItemSettableProperties extends JetSettableProperties {
     markerColor?: string;
     markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSvgClassName?: string;
-    markerSvgStyle?: CSSStyleDeclaration;
+    markerSvgStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     shortDesc?: string;
     source?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     symbolType?: 'line' | 'lineWithMarker' | 'image' | 'marker';
     text: string;
 }
@@ -326,7 +326,7 @@ export interface ojLegendSection extends JetElement<ojLegendSectionSettablePrope
     collapsible?: 'on' | 'off';
     text?: string;
     textHalign?: 'center' | 'end' | 'start';
-    textStyle?: CSSStyleDeclaration;
+    textStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojLegendSectionEventMap>(type: T, listener: (this: HTMLElement, ev: ojLegendSectionEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojLegendSectionSettableProperties>(property: T): ojLegendSection[T];
@@ -355,7 +355,7 @@ export interface ojLegendSectionSettableProperties extends JetSettableProperties
     collapsible?: 'on' | 'off';
     text?: string;
     textHalign?: 'center' | 'end' | 'start';
-    textStyle?: CSSStyleDeclaration;
+    textStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojLegendSectionSettablePropertiesLenient extends Partial<ojLegendSectionSettableProperties> {
     [key: string]: any;
@@ -419,13 +419,13 @@ export namespace LegendElement {
         markerColor?: string;
         markerShape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
         markerSvgClassName?: string;
-        markerSvgStyle?: CSSStyleDeclaration;
+        markerSvgStyle?: Partial<CSSStyleDeclaration>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
         shortDesc?: string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         symbolType?: 'image' | 'line' | 'lineWithMarker' | 'marker';
         text: string;
     };
@@ -444,7 +444,7 @@ export namespace LegendElement {
         sections?: Array<ojLegend.Section<K>>;
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
 }
 export namespace LegendItemElement {

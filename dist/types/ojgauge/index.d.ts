@@ -74,7 +74,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     borderColor?: string;
     color?: string;
     label?: {
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
     max?: number;
@@ -82,7 +82,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
         converter?: Converter<string>;
         rendered?: 'on' | 'off';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -90,7 +90,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
     rotation?: 90 | 180 | 270 | 0;
     size?: number;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thresholds?: ojLedGauge.Threshold[];
     tooltip?: {
         renderer: ((context: ojLedGauge.TooltipContext) => ({
@@ -183,7 +183,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
     borderColor?: string;
     color?: string;
     label?: {
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
     max?: number;
@@ -191,7 +191,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
         converter?: Converter<string>;
         rendered?: 'on' | 'off';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -199,7 +199,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
     rotation?: 90 | 180 | 270 | 0;
     size?: number;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thresholds?: ojLedGauge.Threshold[];
     tooltip?: {
         renderer: ((context: ojLedGauge.TooltipContext) => ({
@@ -223,7 +223,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     describedBy?: string | null;
     disabled?: boolean;
@@ -233,7 +233,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     labelledBy?: string | null;
     max?: number;
@@ -247,7 +247,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     size?: 'small' | 'medium' | 'large' | 'fit';
     step?: 0.5 | 1 | number;
@@ -266,7 +266,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     value?: number | null;
     visualEffects?: 'none' | 'auto';
@@ -370,7 +370,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     describedBy?: string | null;
     disabled?: boolean;
@@ -380,7 +380,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     labelledBy?: string | null;
     max?: number;
@@ -394,7 +394,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     size?: 'small' | 'medium' | 'large' | 'fit';
     step?: 0.5 | 1 | number;
@@ -413,7 +413,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         shape?: 'circle' | 'diamond' | 'human' | 'square' | 'star' | 'triangle' | string;
         source?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     value?: number | null;
     visualEffects?: 'none' | 'auto';
@@ -441,7 +441,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     innerRadius?: number;
     label?: {
         position?: 'center' | 'start' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
     labelledBy?: string | null;
@@ -451,7 +451,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -463,14 +463,14 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     readonly?: boolean;
     referenceLines?: ojStatusMeterGauge.ReferenceLine[];
     startAngle?: number;
     step?: number | null;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thresholdDisplay?: 'currentOnly' | 'all' | 'onIndicator';
     thresholds?: ojStatusMeterGauge.Threshold[];
     tooltip?: {
@@ -646,7 +646,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     innerRadius?: number;
     label?: {
         position?: 'center' | 'start' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
     labelledBy?: string | null;
@@ -656,7 +656,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         position?: 'center' | 'insideIndicatorEdge' | 'outsideIndicatorEdge' | 'outsidePlotArea' | 'withLabel' | 'auto';
         rendered?: 'on' | 'off' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
         text?: string;
         textType?: 'percent' | 'number';
     };
@@ -668,14 +668,14 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         color?: string;
         rendered?: 'on' | 'off' | 'auto';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     readonly?: boolean;
     referenceLines?: ojStatusMeterGauge.ReferenceLine[];
     startAngle?: number;
     step?: number | null;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thresholdDisplay?: 'currentOnly' | 'all' | 'onIndicator';
     thresholds?: ojStatusMeterGauge.Threshold[];
     tooltip?: {

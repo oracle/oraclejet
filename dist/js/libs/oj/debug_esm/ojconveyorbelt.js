@@ -1355,8 +1355,10 @@ ConveyorBeltCommon.prototype._handleTouchMove = function (event) {
     // FIX : set a flag indicating we've scrolled for this touch event
     this._scrolledForThisTouch = true;
   }
-  event.preventDefault();
-  event.stopPropagation();
+  if (this._scrolledForThisTouch) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 };
 
 /**

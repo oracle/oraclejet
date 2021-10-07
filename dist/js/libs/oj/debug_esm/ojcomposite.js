@@ -235,12 +235,12 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
       var set = function (value, bOuterSet) {
         // Properties can be set before the component is created. These early
         // sets are actually saved until after component creation and played back.
-        if (bOuterSet) {
-          // eslint-disable-next-line no-param-reassign
-          value =
-          CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
-        }
         if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
+          if (bOuterSet) {
+            // eslint-disable-next-line no-param-reassign
+            value =
+            CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+          }
           // Property trackers are observables are referenced when the property is set or retrieved,
           // which allows us to automatically update the View when the property is mutated.
           var propertyTracker = CompositeElementBridge._getPropertyTracker(this._BRIDGE,

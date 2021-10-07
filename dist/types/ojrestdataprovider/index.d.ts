@@ -1,5 +1,5 @@
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult, FetchListParameters,
-   FetchByKeysCapability, FetchByOffsetCapability, FilterCapability, SortCapability, DataProviderMutationEventDetail } from '../ojdataprovider';
+   FetchByKeysCapability, FetchByOffsetCapability, FilterCapability, SortCapability, DataProviderMutationEventDetail, ItemMetadata } from '../ojdataprovider';
 export class RESTDataProvider<K, D> implements DataProvider<K, D> {
     constructor(options: RESTDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
@@ -67,6 +67,7 @@ export namespace RESTDataProvider {
         data: D[];
         hasMore?: boolean;
         keys?: K[];
+        metadata?: ItemMetadata<K>[];
         totalSize?: number;
     };
     // tslint:disable-next-line interface-over-type-literal

@@ -65,7 +65,7 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
             borderRadius?: string;
             height?: number;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         height?: number;
@@ -78,11 +78,11 @@ export interface ojGantt<K1, K2, D1 extends ojGantt.Dependency<K1, K2> | any, D2
             borderRadius?: string;
             height?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         resizable?: 'disabled' | 'enabled';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     tooltip: {
@@ -316,14 +316,14 @@ export namespace ojGantt {
             height?: number;
             start?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         end?: string;
         height?: number;
         label?: string;
         labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         overlap?: {
             behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
         };
@@ -331,14 +331,14 @@ export namespace ojGantt {
             borderRadius?: string;
             height?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             value?: number;
         };
         rowId?: any;
         shortDesc?: (string | ((context: TaskShortDescContext<K2, D2>) => string));
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -348,7 +348,7 @@ export namespace ojGantt {
         shortDesc?: string;
         successorTaskId: K2;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -379,7 +379,7 @@ export namespace ojGantt {
         shortDesc?: string;
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'area' | 'line';
         value?: string;
     };
@@ -387,7 +387,7 @@ export namespace ojGantt {
     type Row<K2> = {
         id?: any;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         tasks?: Array<RowTask<K2>>;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -407,7 +407,7 @@ export namespace ojGantt {
             height?: number;
             start?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         end?: string;
@@ -415,7 +415,7 @@ export namespace ojGantt {
         id: K2;
         label?: string;
         labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         overlap?: {
             behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
         };
@@ -423,13 +423,13 @@ export namespace ojGantt {
             borderRadius?: string;
             height?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             value?: number;
         };
         shortDesc?: (string | ((context: TaskShortDescContext<K2, D2>) => string));
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -575,7 +575,7 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
             borderRadius?: string;
             height?: number;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         height?: number;
@@ -588,11 +588,11 @@ export interface ojGanttSettableProperties<K1, K2, D1 extends ojGantt.Dependency
             borderRadius?: string;
             height?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         resizable?: 'disabled' | 'enabled';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     tooltip: {
@@ -713,7 +713,7 @@ export interface ojGanttDependency extends JetElement<ojGanttDependencySettableP
     shortDesc?: string | null;
     successorTaskId: any;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
     addEventListener<T extends keyof ojGanttDependencyEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttDependencyEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -750,7 +750,7 @@ export interface ojGanttDependencySettableProperties extends JetSettableProperti
     shortDesc?: string | null;
     successorTaskId: any;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'finishStart' | 'finishFinish' | 'startStart' | 'startFinish';
 }
 export interface ojGanttDependencySettablePropertiesLenient extends Partial<ojGanttDependencySettableProperties> {
@@ -758,7 +758,7 @@ export interface ojGanttDependencySettablePropertiesLenient extends Partial<ojGa
 }
 export interface ojGanttRow extends JetElement<ojGanttRowSettableProperties> {
     label?: string;
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojGanttRowEventMap>(type: T, listener: (this: HTMLElement, ev: ojGanttRowEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojGanttRowSettableProperties>(property: T): ojGanttRow[T];
@@ -779,7 +779,7 @@ export interface ojGanttRowEventMap extends HTMLElementEventMap {
 }
 export interface ojGanttRowSettableProperties extends JetSettableProperties {
     label?: string;
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojGanttRowSettablePropertiesLenient extends Partial<ojGanttRowSettableProperties> {
     [key: string]: any;
@@ -791,14 +791,14 @@ export interface ojGanttTask<K2 = any, D2 = any> extends dvtTimeComponent<ojGant
         height?: number;
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     borderRadius?: string;
     end?: string;
     height?: number;
     label?: string;
     labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     overlap?: {
         behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
     };
@@ -806,14 +806,14 @@ export interface ojGanttTask<K2 = any, D2 = any> extends dvtTimeComponent<ojGant
         borderRadius?: string;
         height?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
     rowId?: any;
     shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
     start?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'normal' | 'milestone' | 'summary' | 'auto';
     addEventListener<T extends keyof ojGanttTaskEventMap<K2, D2>>(type: T, listener: (this: HTMLElement, ev: ojGanttTaskEventMap<K2, D2>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -880,14 +880,14 @@ export interface ojGanttTaskSettableProperties<K2 = any, D2 = any> extends dvtTi
         height?: number;
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     borderRadius?: string;
     end?: string;
     height?: number;
     label?: string;
     labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     overlap?: {
         behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
     };
@@ -895,14 +895,14 @@ export interface ojGanttTaskSettableProperties<K2 = any, D2 = any> extends dvtTi
         borderRadius?: string;
         height?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
     rowId?: any;
     shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
     start?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'normal' | 'milestone' | 'summary' | 'auto';
 }
 export interface ojGanttTaskSettablePropertiesLenient<K2 = any, D2 = any> extends Partial<ojGanttTaskSettableProperties<K2, D2>> {
@@ -1017,14 +1017,14 @@ export namespace GanttElement {
             height?: number;
             start?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
         borderRadius?: string;
         end?: string;
         height?: number;
         label?: string;
         labelPosition?: 'start' | 'innerCenter' | 'innerStart' | 'innerEnd' | 'end' | 'none';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         overlap?: {
             behavior?: 'stack' | 'stagger' | 'overlay' | 'auto';
         };
@@ -1032,14 +1032,14 @@ export namespace GanttElement {
             borderRadius?: string;
             height?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             value?: number;
         };
         rowId?: any;
         shortDesc?: (string | ((context: ojGantt.TaskShortDescContext<K2, D2>) => string));
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'normal' | 'milestone' | 'summary' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -1063,7 +1063,7 @@ export namespace GanttElement {
         shortDesc?: string;
         start?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'area' | 'line';
         value?: string;
     };

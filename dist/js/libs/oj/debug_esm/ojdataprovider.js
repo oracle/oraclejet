@@ -124,6 +124,22 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *     </tr>
  *     <tr>
  *       <td>
+ *         {@link RESTDataProvider}
+ *       </td>
+ *       <td>
+ *         DataProvider implementation that fetches data from a JSON-based REST API.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
+ *         {@link RESTTreeDataProvider}
+ *       </td>
+ *       <td>
+ *         TreeDataProvider implementation that fetches hierarchical data from a JSON-based REST API.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>
  *         {@link TreeDataProviderView}
  *       </td>
  *       <td>
@@ -144,10 +160,12 @@ import { GenericEvent } from 'ojs/ojeventtarget';
  *     <li>{@link FlattenedTreeDataProviderView}</li>
  *     <li>{@link ListDataProviderView}</li>
  *     <li>{@link PagingDataProviderView}</li>
+ *     <li>{@link RESTDataProvider}</li>
  *     <li><b>Interface {@link TreeDataProvider}</b></li>
  *       <ul>
  *         <li>{@link ArrayTreeDataProvider}</li>
  *         <li>{@link IndexerModelTreeDataProvider}</li>
+ *         <li>{@link RESTTreeDataProvider}</li>
  *         <li>{@link TreeDataProviderView}</li>
  *       </ul>
  *     </li>

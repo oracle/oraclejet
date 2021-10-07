@@ -145,6 +145,7 @@ var __oj_switch_metadata =
     __oj_switch_metadata.extension._WIDGET_NAME = 'ojSwitch';
     __oj_switch_metadata.extension._INNER_ELEM = 'input';
     __oj_switch_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+    __oj_switch_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
     oj.CustomElementBridge.register('oj-switch', {
       metadata:
         oj.CollectionUtils.mergeDeep(__oj_switch_metadata, {
@@ -742,6 +743,7 @@ var __oj_switch_metadata =
         }
 
         this._inputElementOriginalDisplay = this.element.css('display');
+        this._inputElementTabIndex = this.element.attr('tabindex') || 0;
         this.element
           .css('display', 'none')
           .attr('type', 'checkbox')
@@ -756,7 +758,15 @@ var __oj_switch_metadata =
           this._element2 = this.element.wrap('<div></div>').parent(); // @HTMLUpdateOK trusted string
         }
         this._element2.addClass('oj-switch oj-component oj-form-control');
-        this._element2.append("<div class='oj-switch-container oj-form-control-container'><div class='oj-switch-track'><div class='oj-switch-thumb' tabIndex='0'></div></div></div>"); // @HTMLUpdateOK append or prepend trusted new DOM to switch elem
+
+        const switchContainerHTML = `
+      <div class='oj-switch-container oj-form-control-container'>
+        <div class='oj-switch-track'>
+          <div class='oj-switch-thumb' tabIndex='${this._inputElementTabIndex}'></div>
+        </div>
+      </div>
+      `;
+        this._element2.append(switchContainerHTML); // @HTMLUpdateOK append or prepend trusted new DOM to switch elem
 
 
         this.switchThumb = this._element2.find('.oj-switch-thumb');
@@ -857,7 +867,7 @@ var __oj_switch_metadata =
           .attr('checked', this.option('value')); // Switch vs Input synchonization
 
         rootElement.removeClass('oj-disabled oj-read-only oj-selected oj-hover oj-active');
-        $(this.switchThumb).attr('tabindex', '0');
+        $(this.switchThumb).attr('tabindex', this._inputElementTabIndex);
         $(this.switchThumb).html(''); // @HTMLUpdateOK
 
         if (this.option('disabled') || this.option('readOnly')) {

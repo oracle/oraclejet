@@ -9,8 +9,13 @@ export declare function getDtMetadata(objWithJsDoc: ts.HasJSDoc, metaUtilObj: Me
 export declare function addMetadataToClassNode(classNode: ts.ClassDeclaration, metadata: MetaTypes.RuntimeMetadata): ts.ClassDeclaration;
 export declare function getPropsInfo(typeRef: ts.TypeReferenceNode, vexportToAlias: MetaTypes.DecoratorAliases, checker: ts.TypeChecker): MetaTypes.PropsInfo | null;
 export declare function getIntersectionTypeNodeInfo(intersectionTypeNode: ts.IntersectionTypeNode, vexportToAlias: MetaTypes.DecoratorAliases, isInline: boolean, checker: ts.TypeChecker): MetaTypes.IntersectionTypeNodeInfo;
-export declare function walkTypeMembers(type: ts.Type, checker: ts.TypeChecker, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String) => void): void;
-export declare function walkTypeNodeMembers(typeNode: ts.TypeNode, checker: ts.TypeChecker, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String) => void): void;
+export declare function getMappedTypesInfo(outerType: ts.Type, checker: ts.TypeChecker, isPropsInfo: boolean, outerTypeNode?: ts.TypeNode): MetaTypes.MappedTypesInfo | null;
+export declare function isPropsMappedType(type: ts.Type, typeNode?: ts.TypeNode): boolean;
+export declare function isAliasToMappedType(type: ts.Type, typeNode: ts.TypeNode): boolean;
+export declare function constructMappedTypeName(mappedTypesInfo: MetaTypes.MappedTypesInfo, wrappedTypeGenerics?: string): string;
+export declare function isMappedType(type: ts.Type): boolean;
+export declare function walkTypeMembers(type: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String, mappedTypeSymbol?: ts.Symbol) => void): void;
+export declare function walkTypeNodeMembers(typeNode: ts.TypeNode, metaUtilObj: MetaTypes.MetaUtilObj, callback: (memberSymbol: ts.Symbol, memberKey: ts.__String, mappedTypeSymbol?: ts.Symbol) => void): void;
 export declare function updateCompilerPropsMetadata(propsInfo: MetaTypes.PropsInfo, readOnlyProps: string[], metaUtilObj: MetaTypes.MetaUtilObj): void;
 export declare function updateCompilerClassMetadata(classNode: ts.ClassDeclaration, metaUtilObj: MetaTypes.MetaUtilObj): void;
 export declare function pruneCompilerMetadata(metaUtilObj: MetaTypes.MetaUtilObj): void;

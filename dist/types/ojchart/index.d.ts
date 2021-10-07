@@ -407,28 +407,28 @@ export namespace ojChart {
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotDefaults = {
         medianSvgClassName?: string;
-        medianSvgStyle?: CSSStyleDeclaration;
+        medianSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
         whiskerEndSvgClassName?: string;
-        whiskerEndSvgStyle?: CSSStyleDeclaration;
+        whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerSvgClassName?: string;
-        whiskerSvgStyle?: CSSStyleDeclaration;
+        whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotStyle = {
         medianSvgClassName?: string;
-        medianSvgStyle?: CSSStyleDeclaration;
+        medianSvgStyle?: Partial<CSSStyleDeclaration>;
         q2Color?: string;
         q2SvgClassName?: string;
-        q2SvgStyle?: CSSStyleDeclaration;
+        q2SvgStyle?: Partial<CSSStyleDeclaration>;
         q3Color?: string;
         q3SvgClassName?: string;
-        q3SvgStyle?: CSSStyleDeclaration;
+        q3SvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
         whiskerEndSvgClassName?: string;
-        whiskerEndSvgStyle?: CSSStyleDeclaration;
+        whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerSvgClassName?: string;
-        whiskerSvgStyle?: CSSStyleDeclaration;
+        whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CategoricalValueFormat<T extends string | number = string | number> = {
@@ -467,7 +467,7 @@ export namespace ojChart {
         high?: number;
         label?: string | string[];
         labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         low?: number;
         markerDisplayed?: 'on' | 'off' | 'auto';
         markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -485,7 +485,7 @@ export namespace ojChart {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         targetValue?: number;
         value?: number;
         volume?: number;
@@ -589,7 +589,7 @@ export namespace ojChart {
         drilling?: 'on' | 'off' | 'inherit';
         groups?: Group[];
         id?: string | number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         name?: string;
         shortDesc?: string;
     };
@@ -635,7 +635,7 @@ export namespace ojChart {
         items?: I;
         label?: string | string[];
         labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         low?: number;
         markerDisplayed?: 'on' | 'off' | 'auto';
         markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -652,7 +652,7 @@ export namespace ojChart {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         targetValue?: number;
         value?: number;
         volume?: number;
@@ -691,11 +691,11 @@ export namespace ojChart {
         z: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LabelValueFormat = {
@@ -716,10 +716,10 @@ export namespace ojChart {
         size?: string;
         symbolHeight?: number;
         symbolWidth?: number;
-        textStyle?: CSSStyleDeclaration;
+        textStyle?: Partial<CSSStyleDeclaration>;
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendItem = {
@@ -749,7 +749,7 @@ export namespace ojChart {
     type LegendReferenceObjectSection = {
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSection = {
@@ -757,13 +757,13 @@ export namespace ojChart {
         sections?: LegendSection[];
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSeriesSection = {
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LineStyle = 'dotted' | 'dashed' | 'solid';
@@ -803,7 +803,7 @@ export namespace ojChart {
     type PieCenter = {
         converter?: (Converter<number>);
         label?: number | string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         renderer?: dvtBaseComponent.PreventableDOMRendererFunction<PieCenterContext>;
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
     };
@@ -817,7 +817,7 @@ export namespace ojChart {
             y: number;
         };
         label: string;
-        labelStyle: CSSStyleDeclaration;
+        labelStyle: Partial<CSSStyleDeclaration>;
         outerBounds: {
             height: number;
             width: number;
@@ -854,7 +854,7 @@ export namespace ojChart {
     type Series<K, I extends Array<Item<any, null>> | number[] | null> = {
         areaColor?: string;
         areaSvgClassName?: string;
-        areaSvgStyle?: CSSStyleDeclaration;
+        areaSvgStyle?: Partial<CSSStyleDeclaration>;
         assignedToY2?: 'on' | 'off';
         borderColor?: string;
         borderWidth?: number;
@@ -873,7 +873,7 @@ export namespace ojChart {
         markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
         markerSize?: number;
         markerSvgClassName?: string;
-        markerSvgStyle?: CSSStyleDeclaration;
+        markerSvgStyle?: Partial<CSSStyleDeclaration>;
         name?: string;
         pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
            'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
@@ -885,7 +885,7 @@ export namespace ojChart {
         sourceSelected?: string;
         stackCategory?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -932,7 +932,7 @@ export namespace ojChart {
         dataItemGaps?: string;
         dataLabelCollision?: 'fitInBounds' | 'none';
         dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        dataLabelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;
         groupSeparators?: GroupSeparatorDefaults;
         hoverBehaviorDelay?: number;
@@ -953,14 +953,14 @@ export namespace ojChart {
         selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
         seriesEffect?: 'color' | 'pattern' | 'gradient';
         shapes?: string[];
-        stackLabelStyle?: CSSStyleDeclaration;
+        stackLabelStyle?: Partial<CSSStyleDeclaration>;
         stockFallingColor?: string;
         stockRangeColor?: string;
         stockRisingColor?: string;
         stockVolumeColor?: string;
         threeDEffect?: 'on' | 'off';
-        tooltipLabelStyle?: CSSStyleDeclaration;
-        tooltipValueStyle?: CSSStyleDeclaration;
+        tooltipLabelStyle?: Partial<CSSStyleDeclaration>;
+        tooltipValueStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext<K, D, I extends Array<Item<any, null>> | number[] | null> = {
@@ -1029,7 +1029,7 @@ export namespace ojChart {
         step?: number;
         tickLabel?: XTickLabel<T>;
         title?: string;
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
         viewportEndGroup?: T;
         viewportMax?: T;
         viewportMin?: T;
@@ -1048,7 +1048,7 @@ export namespace ojChart {
         low?: T;
         shortDesc?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         text?: string;
         type?: 'area' | 'line';
         value?: T;
@@ -1059,7 +1059,7 @@ export namespace ojChart {
         rendered?: 'off' | 'on';
         rotation?: 'none' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type Y2Axis = {
@@ -1083,7 +1083,7 @@ export namespace ojChart {
         step?: number;
         tickLabel?: YTickLabel;
         title?: string;
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type YAxis = {
@@ -1106,7 +1106,7 @@ export namespace ojChart {
         step?: number;
         tickLabel?: YTickLabel;
         title?: string;
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
         viewportMax?: number;
         viewportMin?: number;
     };
@@ -1125,7 +1125,7 @@ export namespace ojChart {
         low?: number;
         shortDesc?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         text?: string;
         type?: 'area' | 'line';
         value?: number;
@@ -1136,7 +1136,7 @@ export namespace ojChart {
         position?: 'inside' | 'outside';
         rendered?: 'off' | 'on';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
-        style?: CSSStyleDeclaration;
+        style?: Partial<CSSStyleDeclaration>;
     };
 }
 export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
@@ -1300,7 +1300,7 @@ export interface ojChartSettablePropertiesLenient<K, D extends ojChart.DataItem<
 }
 export interface ojChartGroup extends JetElement<ojChartGroupSettableProperties> {
     drilling?: 'on' | 'off' | 'inherit';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     shortDesc?: string;
     addEventListener<T extends keyof ojChartGroupEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartGroupEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -1329,7 +1329,7 @@ export interface ojChartGroupEventMap extends HTMLElementEventMap {
 }
 export interface ojChartGroupSettableProperties extends JetSettableProperties {
     drilling?: 'on' | 'off' | 'inherit';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     shortDesc?: string;
 }
@@ -1350,7 +1350,7 @@ export interface ojChartItem<K = any, D = any, I extends Array<ojChart.Item<any,
     items?: (Array<ojChart.Item<any, null>> | number[]);
     label?: string | string[];
     labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-    labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+    labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
     low?: number;
     markerDisplayed?: 'on' | 'off' | 'auto';
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -1368,7 +1368,7 @@ export interface ojChartItem<K = any, D = any, I extends Array<ojChart.Item<any,
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     targetValue?: number;
     value?: number;
     volume?: number;
@@ -1541,7 +1541,7 @@ export interface ojChartItemSettableProperties<K = any, D = any, I extends Array
     items?: (Array<ojChart.Item<any, null>> | number[]);
     label?: string | string[];
     labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-    labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+    labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
     low?: number;
     markerDisplayed?: 'on' | 'off' | 'auto';
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -1559,7 +1559,7 @@ export interface ojChartItemSettableProperties<K = any, D = any, I extends Array
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     targetValue?: number;
     value?: number;
     volume?: number;
@@ -1574,7 +1574,7 @@ export interface ojChartItemSettablePropertiesLenient<K = any, D = any, I extend
 export interface ojChartSeries extends JetElement<ojChartSeriesSettableProperties> {
     areaColor?: string;
     areaSvgClassName?: string;
-    areaSvgStyle?: CSSStyleDeclaration;
+    areaSvgStyle?: Partial<CSSStyleDeclaration>;
     assignedToY2?: 'on' | 'off';
     borderColor?: string;
     borderWidth?: number;
@@ -1591,7 +1591,7 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
     markerSvgClassName?: string;
-    markerSvgStyle?: CSSStyleDeclaration;
+    markerSvgStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
@@ -1603,7 +1603,7 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     sourceSelected?: string;
     stackCategory?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
     addEventListener<T extends keyof ojChartSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -1716,7 +1716,7 @@ export interface ojChartSeriesEventMap extends HTMLElementEventMap {
 export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     areaColor?: string;
     areaSvgClassName?: string;
-    areaSvgStyle?: CSSStyleDeclaration;
+    areaSvgStyle?: Partial<CSSStyleDeclaration>;
     assignedToY2?: 'on' | 'off';
     borderColor?: string;
     borderWidth?: number;
@@ -1733,7 +1733,7 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
     markerSize?: number;
     markerSvgClassName?: string;
-    markerSvgStyle?: CSSStyleDeclaration;
+    markerSvgStyle?: Partial<CSSStyleDeclaration>;
     name?: string;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'auto';
@@ -1745,7 +1745,7 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     sourceSelected?: string;
     stackCategory?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
 }
 export interface ojChartSeriesSettablePropertiesLenient extends Partial<ojChartSeriesSettableProperties> {
@@ -1757,7 +1757,7 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     animationOnDisplay?: 'auto' | 'none';
     areaColor?: string;
     areaSvgClassName?: string;
-    areaSvgStyle?: CSSStyleDeclaration;
+    areaSvgStyle?: Partial<CSSStyleDeclaration>;
     as?: string;
     barGapRatio?: number;
     baselineScaling?: 'zero' | 'min';
@@ -1774,7 +1774,7 @@ export interface ojSparkChart<K, D extends ojSparkChart.Item | any> extends dvtB
     markerSize?: number;
     referenceObjects?: ojSparkChart.ReferenceObject[];
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     tooltip?: {
         renderer: ((context: ojSparkChart.TooltipContext) => ({
             insert: Element | string;
@@ -1880,7 +1880,7 @@ export namespace ojSparkChart {
         markerShape?: 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | 'auto' | string;
         markerSize?: number;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -1893,11 +1893,11 @@ export namespace ojSparkChart {
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
@@ -1908,7 +1908,7 @@ export namespace ojSparkChart {
         location?: 'front' | 'back';
         low?: number;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         type?: 'area' | 'line';
         value?: number;
     };
@@ -1954,7 +1954,7 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     animationOnDisplay?: 'auto' | 'none';
     areaColor?: string;
     areaSvgClassName?: string;
-    areaSvgStyle?: CSSStyleDeclaration;
+    areaSvgStyle?: Partial<CSSStyleDeclaration>;
     as?: string;
     barGapRatio?: number;
     baselineScaling?: 'zero' | 'min';
@@ -1971,7 +1971,7 @@ export interface ojSparkChartSettableProperties<K, D extends ojSparkChart.Item |
     markerSize?: number;
     referenceObjects?: ojSparkChart.ReferenceObject[];
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     tooltip?: {
         renderer: ((context: ojSparkChart.TooltipContext) => ({
             insert: Element | string;
@@ -2014,7 +2014,7 @@ export interface ojSparkChartItem extends JetElement<ojSparkChartItemSettablePro
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number | null;
     addEventListener<T extends keyof ojSparkChartItemEventMap>(type: T, listener: (this: HTMLElement, ev: ojSparkChartItemEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -2071,7 +2071,7 @@ export interface ojSparkChartItemSettableProperties extends JetSettablePropertie
     markerShape?: 'auto' | 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
     markerSize?: number;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number | null;
 }
 export interface ojSparkChartItemSettablePropertiesLenient extends Partial<ojSparkChartItemSettableProperties> {
@@ -2322,12 +2322,12 @@ export namespace ChartElement {
     // tslint:disable-next-line interface-over-type-literal
     type BoxPlotDefaults = {
         medianSvgClassName?: string;
-        medianSvgStyle?: CSSStyleDeclaration;
+        medianSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerEndLength?: string;
         whiskerEndSvgClassName?: string;
-        whiskerEndSvgStyle?: CSSStyleDeclaration;
+        whiskerEndSvgStyle?: Partial<CSSStyleDeclaration>;
         whiskerSvgClassName?: string;
-        whiskerSvgStyle?: CSSStyleDeclaration;
+        whiskerSvgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type CategoricalValueFormat<T extends string | number = string | number> = {
@@ -2358,7 +2358,7 @@ export namespace ChartElement {
         high?: number;
         label?: string | string[];
         labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         low?: number;
         markerDisplayed?: 'on' | 'off' | 'auto';
         markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -2376,7 +2376,7 @@ export namespace ChartElement {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         targetValue?: number;
         value?: number;
         volume?: number;
@@ -2449,7 +2449,7 @@ export namespace ChartElement {
         items?: I;
         label?: string | string[];
         labelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        labelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        labelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         low?: number;
         markerDisplayed?: 'on' | 'off' | 'auto';
         markerShape?: 'circle' | 'diamond' | 'human' | 'plus' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | 'auto' | string;
@@ -2466,7 +2466,7 @@ export namespace ChartElement {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         targetValue?: number;
         value?: number;
         volume?: number;
@@ -2525,13 +2525,13 @@ export namespace ChartElement {
     type LegendReferenceObjectSection = {
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LegendSeriesSection = {
         title?: string;
         titleHalign?: 'center' | 'end' | 'start';
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type LineType = 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight';
@@ -2558,7 +2558,7 @@ export namespace ChartElement {
             y: number;
         };
         label: string;
-        labelStyle: CSSStyleDeclaration;
+        labelStyle: Partial<CSSStyleDeclaration>;
         outerBounds: {
             height: number;
             width: number;
@@ -2606,7 +2606,7 @@ export namespace ChartElement {
         dataItemGaps?: string;
         dataLabelCollision?: 'fitInBounds' | 'none';
         dataLabelPosition?: 'center' | 'outsideSlice' | 'aboveMarker' | 'belowMarker' | 'beforeMarker' | 'afterMarker' | 'insideBarEdge' | 'outsideBarEdge' | 'none' | 'auto';
-        dataLabelStyle?: CSSStyleDeclaration | CSSStyleDeclaration[];
+        dataLabelStyle?: Partial<CSSStyleDeclaration> | Array<Partial<CSSStyleDeclaration>>;
         funnelBackgroundColor?: string;
         groupSeparators?: ojChart.GroupSeparatorDefaults;
         hoverBehaviorDelay?: number;
@@ -2627,14 +2627,14 @@ export namespace ChartElement {
         selectionEffect?: 'explode' | 'highlightAndExplode' | 'highlight';
         seriesEffect?: 'color' | 'pattern' | 'gradient';
         shapes?: string[];
-        stackLabelStyle?: CSSStyleDeclaration;
+        stackLabelStyle?: Partial<CSSStyleDeclaration>;
         stockFallingColor?: string;
         stockRangeColor?: string;
         stockRisingColor?: string;
         stockVolumeColor?: string;
         threeDEffect?: 'on' | 'off';
-        tooltipLabelStyle?: CSSStyleDeclaration;
-        tooltipValueStyle?: CSSStyleDeclaration;
+        tooltipLabelStyle?: Partial<CSSStyleDeclaration>;
+        tooltipValueStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ValueFormats = {
@@ -2669,7 +2669,7 @@ export namespace ChartElement {
         low?: T;
         shortDesc?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         text?: string;
         type?: 'area' | 'line';
         value?: T;
@@ -2696,7 +2696,7 @@ export namespace ChartElement {
         step?: number;
         tickLabel?: ojChart.YTickLabel;
         title?: string;
-        titleStyle?: CSSStyleDeclaration;
+        titleStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type YReferenceObject = {
@@ -2713,7 +2713,7 @@ export namespace ChartElement {
         low?: number;
         shortDesc?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         text?: string;
         type?: 'area' | 'line';
         value?: number;
@@ -2968,15 +2968,15 @@ export namespace SparkChartElement {
         markerShape?: 'square' | 'circle' | 'diamond' | 'plus' | 'triangleDown' | 'triangleUp' | 'human' | 'star' | 'auto' | string;
         markerSize?: number;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         index: number;
-        key: any;
+        key: K;
     };
     // tslint:disable-next-line interface-over-type-literal
     type TooltipContext = {

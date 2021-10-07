@@ -203,12 +203,7 @@ define(['exports', 'ojs/ojcore-base', 'ojL10n!ojtranslations/nls/localeElements'
     if (b) {
       return b;
     }
-
-    if (oj.__isAmdLoaderPresent()) {
-      oj.Assert.assert(ojld !== undefined, 'LocaleElements module must be loaded');
-      return ojld;
-    }
-    return {};
+    return ojld;
   };
 
   /**

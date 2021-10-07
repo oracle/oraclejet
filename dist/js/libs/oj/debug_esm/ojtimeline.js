@@ -376,6 +376,12 @@ var __oj_timeline_metadata =
         "componentName": {
           "type": "string"
         },
+        "labelAccNavNextPage": {
+          "type": "string"
+        },
+        "labelAccNavPreviousPage": {
+          "type": "string"
+        },
         "labelAndValue": {
           "type": "string"
         },
@@ -412,6 +418,9 @@ var __oj_timeline_metadata =
         "labelTitle": {
           "type": "string"
         },
+        "navArrowDisabledState": {
+          "type": "string"
+        },
         "stateCollapsed": {
           "type": "string"
         },
@@ -440,6 +449,12 @@ var __oj_timeline_metadata =
           "type": "string"
         },
         "stateVisible": {
+          "type": "string"
+        },
+        "tipArrowNextPage": {
+          "type": "string"
+        },
+        "tipArrowPreviousPage": {
           "type": "string"
         },
         "tooltipZoomIn": {
@@ -564,6 +579,14 @@ var __oj_timeline_metadata =
       "type": "string",
       "value": ""
     },
+    "viewportNavigationMode": {
+      "type": "string",
+      "enumValues": [
+        "continuous",
+        "discrete"
+      ],
+      "value": "continuous"
+    },
     "viewportStart": {
       "type": "string",
       "value": ""
@@ -600,6 +623,16 @@ var __oj_timeline_item_metadata =
     "end": {
       "type": "string",
       "value": ""
+    },
+    "itemType": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "duration-bar",
+        "duration-event",
+        "event"
+      ],
+      "value": "auto"
     },
     "label": {
       "type": "string",
@@ -692,29 +725,29 @@ var __oj_timeline_series_metadata =
  *     <tr>
  *       <td rowspan="2">Timeline Panel</td>
  *       <td>Drag</td>
- *       <td>Paning: navigate forward and backward in time in horizontal/vertical orientation.</td>
+ *       <td>Panning: navigate forward and backward in time in horizontal/vertical orientation.</td>
  *     </tr>
  *     <tr>
  *       <td rowspan>Pinch-Close/Spread-Open</td>
- *       <td>Zoom In/Out.</td>
+ *       <td>Zoom In/Out. In discrete viewport-navigation-mode, this is not supported.</td>
  *     </tr>
  *     <tr>
  *       <td rowspan="2">Zoom Control</td>
  *       <td>Tap on "+" element</td>
- *       <td>Zoom In.</td>
+ *       <td>Zoom In. In discrete viewport-navigation-mode, this is not supported.</td>
  *     </tr>
  *     <tr>
  *       <td>Tap on "-" element</td>
- *       <td>Zoom Out.</td>
+ *       <td>Zoom Out. In discrete viewport-navigation-mode, this is not supported.</td>
  *     </tr>
  *     <tr>
  *       <td rowspan="2">Overview</td>
  *       <td>Press on right/left side of window & Hold & Drag in right of left direction</td>
- *       <td>Zoom In/Out (resize overview window).</td>
+ *       <td>Zoom In/Out (resize overview window). In discrete viewport-navigation-mode, this is not supported.</td>
  *     </tr>
  *     <tr>
  *       <td>Press & Hold on the body of window & Drag in right of left direction</td>
- *       <td>Pan (move overview window).</td>
+ *       <td>Pan (move overview window). In discrete viewport-navigation-mode, this is not supported.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -734,7 +767,7 @@ var __oj_timeline_series_metadata =
  *   <tbody>
  *     <tr>
  *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next element.</td>
+ *       <td>Move focus to next element. If discrete viewport-navigation-mode is enabled, the initial focus item is the previous Nav Arrow Button.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + Tab</kbd></td>
@@ -749,11 +782,11 @@ var __oj_timeline_series_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>LeftArrow</kbd></td>
- *       <td>Move focus and selection to previous data item (on left).</td>
+ *       <td>Move focus and selection to previous data item (on left). If discrete viewport-navigation-mode is enabled, Timeline will navigate to the next Nav Arrow from the first series item, and the previous Nav Arrow from the next Nav Arrow.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>Move focus and selection to next data item (on right).</td>
+ *       <td>Move focus and selection to next data item (on right). If discrete viewport-navigation-mode is enabled, Timeline will navigate between the previous Nav Arrow and the next Nav Arrow before going to the first item.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + UpArrow</kbd></td>
@@ -793,11 +826,11 @@ var __oj_timeline_series_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>= or +</kbd></td>
- *       <td>Zoom in one level if zooming is enabled.</td>
+ *       <td>Zoom in one level if zooming is enabled. In discrete viewport-navigation-mode, this is disabled.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>- or _</kbd></td>
- *       <td>Zoom out one level if zooming is enabled.</td>
+ *       <td>Zoom out one level if zooming is enabled. In discrete viewport-navigation-mode, this is disabled.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>PageUp</kbd></td>
@@ -809,11 +842,11 @@ var __oj_timeline_series_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + PageUp</kbd></td>
- *       <td>Pan left in left-to-right locales. Pan right in right-to-left locales.</td>
+ *       <td>Pan left in left-to-right locales. Pan right in right-to-left locales. In discrete viewport-navigation-mode, this changes the viewport to the next time frame.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + PageDown</kbd></td>
- *       <td>Pan right in left-to-right locales. Pan left in right-to-left locales.</td>
+ *       <td>Pan right in left-to-right locales. Pan left in right-to-left locales. In discrete viewport-navigation-mode, this changes the viewport to the previous time frame.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -1232,6 +1265,32 @@ var __oj_timeline_series_metadata =
  * <code class="prettyprint">label</code> attribute specified:</caption>
  * &lt;oj-timeline-item label="[[$current.data.label]]">&lt;/oj-timeline-item>
  */
+/**
+ * The item type for the bubble. If not specified, defaults to auto behavior.
+ * <ul>
+ *  <li>event: item bubble using only the start date</li>
+ *  <li>duration-bar: item bubble with a bar on the time-axis that matches the duration of the event using the start/end dates</li>
+ *  <li>duration-event: item bubble with width equal to the duration and edges of the event matching the start/end date (only available on horizontal timeline)</li>
+ *  <li>auto (default behavior): event item-type if end date not specified, duration-bar if end date specified.</li>
+ * </ul>
+ *
+ * @since 11.1.0
+ * @expose
+ * @name itemType
+ * @memberof! oj.ojTimelineItem
+ * @instance
+ * @type {string=}
+ * @ojvalue {string} "event"
+ * @ojvalue {string} "duration-bar"
+ * @ojvalue {string} "duration-event"
+ * @ojvalue {string} "auto"
+ * @default "auto"
+ * @ojunsupportedthemes ['Alta']
+ *
+ * @example <caption>Create a timeline item using the
+ * <code class="prettyprint">item-type</code> attribute specified:</caption>
+ * &lt;oj-timeline-item item-type="event">&lt;/oj-timeline-item>
+ */
 
 /**
  * @ojcomponent oj.ojTimelineSeries
@@ -1589,13 +1648,14 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
        * @memberof! oj.ojTimeline
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        */
         svgStyle: {},
       /**
        * An array of strings or instances of {@link DvtTimeComponentScale}
        * used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
+       * In discrete viewport-navigation-mode, this will not be used.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
        *
        * @expose
@@ -1691,7 +1751,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
        * @memberof! oj.ojTimeline
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        */
         svgStyle: {}
@@ -1720,6 +1780,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       orientation: 'horizontal',
     /**
      * An object with the following properties, used to define a timeline overview. If not specified, no overview will be shown.
+     * Overview cannot be navigated when using the discrete viewport-navigation-mode.
      * @expose
      * @name overview
      * @ojshortdesc An object defining the optional timeline overview.
@@ -1775,7 +1836,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
        * @memberof! oj.ojTimeline
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        */
         svgStyle: {}
@@ -2141,7 +2202,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           descriptionStyle: undefined,
         /**
@@ -2205,7 +2266,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           titleStyle: undefined
         },
@@ -2257,7 +2318,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           labelStyle: undefined,
         /**
@@ -2297,7 +2358,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           labelStyle: undefined,
         /**
@@ -2348,7 +2409,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           labelStyle: undefined,
         /**
@@ -2466,7 +2527,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           emptyTextStyle: undefined,
         /**
@@ -2478,7 +2539,7 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
          * @memberof! oj.ojTimeline
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          */
           labelStyle: undefined
         }
@@ -2898,6 +2959,39 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      */
       viewportStart: '',
     /**
+     * Specify the navigation mode for the timeline, continuous or discrete. If none specified, will behave as continuous.
+     *
+     * @since 11.1.0
+     * @expose
+     * @name viewportNavigationMode
+     * @ojshortdesc The viewport navigation mode of the timeline.
+     * @memberof oj.ojTimeline
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "continuous" In continuous mode, users can pan horizontally and vertically, and zoom in and out throughout the entire timeline.
+     * @ojvalue {string} "discrete" In discrete mode only vertical panning is supported. Zooming is not supported.
+     * The viewport will use the viewport-start and the viewport-end to set the viewport duration width.
+     * Discrete mode will show "preview wings" which will extend slightly beyond the start and end of your actual viewport-start and viewport-end dates.
+     * The user can navigate the timeline via paging arrows, which may be disabled if the timeline does not have a full viewport worth of time data to display.
+     * To get the best usage, the timeline start and end should be set with a small buffer before and after their actual values (e.g. Dec 15, 2012 - Jan 15, 2014)
+     * The viewport-start and viewport-end should be carefully configured to start and end within the time period of usage.
+     * The timeline will pick the closest axis label when navigating through with the navigation arrows.
+     * Note: discrete mode is only supported in redwood. In vertical timeline orientation, the viewport navigation mode uses continuous behavior.
+     * @default "continuous"
+     * @ojunsupportedthemes ['Alta']
+     *
+     * @example <caption>Initialize the Timeline with the <code class="prettyprint">viewport-navigation-mode</code> attribute specified:</caption>
+     * &lt;oj-timeline viewport-navigation-mode='discrete'>&lt;/oj-timeline>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">viewportNavigationMode</code> property after initialization:</caption>
+     * // getter
+     * var value = myTimeline.viewportNavigationMode;
+     *
+     * // setter
+     * myTimeline.viewportNavigationMode = "discrete";
+     */
+     viewportNavigationMode: 'continuous',
+    /**
      * Triggered after the viewport is changed due to a zoom or scroll operation.
      * If the viewport changes the minor-axis scale into a custom timescale instance of {@link DvtTimeComponentScale},
      * then the minorAxisScale will be the "name" field value of the instance.
@@ -2987,12 +3081,18 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       styleClasses['oj-timeline-item'] = [
         // { path: 'styleDefaults/item/borderColor', property: 'border-color' },
         { path: 'styleDefaults/item/borderColor', property: 'border-top-color' },
-        { path: 'styleDefaults/item/backgroundColor', property: 'background-color' }
+        { path: 'styleDefaults/item/backgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/item/padding', property: 'padding-top' },
+        { path: 'styleDefaults/item/borderRadius', property: 'border-top-left-radius' }
+      ];
+      styleClasses['oj-timeline-item-duration-event-overflow-bubble'] = [
+        { path: 'styleDefaults/durationEventOverflow/backgroundColor', property: 'background-color' }
       ];
       styleClasses['oj-timeline-item oj-hover'] = [
         // { path: 'styleDefaults/item/hoverBorderColor', property: 'border-color' },
         { path: 'styleDefaults/item/hoverBorderColor', property: 'border-top-color' },
-        { path: 'styleDefaults/item/hoverBackgroundColor', property: 'background-color' }
+        { path: 'styleDefaults/item/hoverBackgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/item/hoverStrokeWidth', property: 'stroke-width' },
       ];
       styleClasses['oj-timeline-item oj-selected'] = [
         // { path: 'styleDefaults/item/selectedBorderColor', property: 'border-color' },
@@ -3065,13 +3165,17 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
 
       resources.converterVert = converterVert;
 
-    // Zoom control icons
+      // Zoom control icons
       resources.zoomIn = 'oj-fwk-icon oj-fwk-icon-plus';
       resources.zoomOut = 'oj-fwk-icon oj-fwk-icon-minus';
 
-    // Overview icons
+      // Overview icons
       resources.overviewHandleHor = 'oj-fwk-icon oj-fwk-icon-drag-horizontal';
       resources.overviewHandleVert = 'oj-fwk-icon oj-fwk-icon-drag-vertical';
+
+      // Nav arrows
+      resources.prev = 'oj-fwk-icon oj-fwk-icon-caret-start';
+      resources.next = 'oj-fwk-icon oj-fwk-icon-caret-end';
     },
 
     // @inheritdoc

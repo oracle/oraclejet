@@ -44,7 +44,7 @@ import 'ojs/ojdataprovider';
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters"]}
  * @ojtsmodule
- * @ignore
+ * @ojhidden
  */
 
 /**

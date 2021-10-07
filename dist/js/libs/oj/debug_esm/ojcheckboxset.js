@@ -1133,6 +1133,11 @@ var __oj_checkboxset_metadata =
     // attribute of the rendered chekcboxes, let's make sure the checkboxset
     // has an ID
         $element.uniqueId();
+        // Retrieve the tabindex from the container and store it in an instance variable.
+        // Also we need to remove the tabindex from the container so that it will not receive
+        // focus
+        this._externalTabIndex = this.element.attr('tabindex') || 0;
+        this.element.removeAttr('tabindex');
         // Async step that generates oj-option if DateProvider is used.
         // RadioCheckboxUtils will set this._optionsDataProvider, this._optionsDataListener
         // and this._optionsDataArray.
@@ -1170,7 +1175,7 @@ var __oj_checkboxset_metadata =
         if (this.options.readOnly) {
           let domElem = this.element[0];
           let wrapperDom = domElem.querySelector('.oj-checkboxset-wrapper');
-          wrapperDom.setAttribute('tabindex', 0);
+          wrapperDom.setAttribute('tabindex', this._externalTabIndex);
         }
         this._on(this._events);
         this._setup();
@@ -1421,6 +1426,9 @@ var __oj_checkboxset_metadata =
           // The value is needed for accessibiliy of the image used for the checkbox
           checkbox.setAttribute('value', ojoption.value);
           checkbox.setAttribute('id', checkboxId);
+          // Need to transfer the tabindex to the input element
+          // All the input element will have the same tabindex
+          checkbox.setAttribute('tabindex', this._externalTabIndex);
           // in readonly mode, if a option is selected, the <oj-option> will be surrounded by <label> tag
           // if a option is selected, we can set attribute for the previous label and there is no need to create a new label
           // if a option is not selected, we need to create a new label.
@@ -2067,7 +2075,7 @@ var __oj_checkboxset_metadata =
             var wrapperDom = this.element[0].querySelector('.oj-checkboxset-wrapper');
             var val = this.options.value;
             if (this.options.readOnly) {
-              wrapperDom.setAttribute('tabindex', 0);
+              wrapperDom.setAttribute('tabindex', this._externalTabIndex);
               this.element.addClass('oj-read-only');
             } else {
               // remove tabindex and role

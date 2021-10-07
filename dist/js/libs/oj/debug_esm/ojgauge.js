@@ -1466,7 +1466,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
          * @memberof! oj.ojLedGauge
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         style: {},
@@ -1549,7 +1549,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
          * @memberof! oj.ojLedGauge
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         style: {},
@@ -1654,7 +1654,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @ojshortdesc The inline style to apply to the gauge. See the Help documentation for more information.
        * @instance
        * @type {Object=}
-       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        */
       svgStyle: {},
@@ -1956,7 +1956,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
          * @ojshortdesc The inline style to apply to the changed state. See the Help documentation for more information.
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {}
@@ -2045,7 +2045,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
          * @ojshortdesc The inline style to apply to the hover state. See the Help documentation for more information.
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {}
@@ -2287,7 +2287,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
          * @ojshortdesc The inline style to apply to the selected state. See the Help documentation for more information.
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {}
@@ -2430,7 +2430,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
          * @ojshortdesc The inline style to apply to the unselected state. See the Help documentation for more information.
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {}
@@ -2834,7 +2834,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
          * @memberof! oj.ojStatusMeterGauge
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         style: {},
@@ -2995,7 +2995,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
          * @memberof! oj.ojStatusMeterGauge
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         style: {},
@@ -3138,7 +3138,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
          * @ojshortdesc The inline style to apply to the plot area. See the Help documentation for more information.
          * @instance
          * @type {Object=}
-         * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {}
@@ -3233,7 +3233,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @ojshortdesc The inline style to apply to the gauge indicator. See the Help documentation for more information.
        * @instance
        * @type {Object=}
-       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        */
       svgStyle: {},

@@ -144,6 +144,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    */
   DvtTimeAxisDefaults.prototype.getNoCloneObject = function () {
     return {
+      _secondaryAxis: true,
       // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
       // If the instance is a class, class methods may not be cloned for some reason.
       scale: true,
@@ -434,8 +435,46 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
             timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
         };
       });
+      let tickDates = dates;
 
-      DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, timeAxis, datePositions);
+      // Determine whether to render secondary major ticks
+      let showMajorTicks = false;
+      const majorAxis = timeAxis.Options._secondaryAxis;
+      let majorViewportDates = majorAxis ? majorAxis.getViewportDates(majorAxis.getScale(), viewStartTime, viewEndTime) : [];
+      if (majorAxis && timeAxis.getCtx().getThemeBehavior() !== 'alta') {
+        // TODO: Unify this logic with the similar part in DvtGanttRenderer._renderVerticalGridline.
+        // This is a "nice to have" implementation detail. Tracked by JET-46323.
+        // We can't easily do this right now because timeaxis rendering is virtualized, but vertical gridlines are not.
+        // In the future also virtualize vertical gridlines rendering and drive both from a single source of truth.
+        const minorViewportDates = dates;
+        // If major dates is a subset of minor dates, then the two grids line up. Don't render the minor dates at overlap (due to opacity, minor line would show through major line otherwise).
+        // Otherwise the major and minor axis do not "line up" (e.g. months and weeks scale together). Render minor lines only.
+        const majorViewportDatesSet = new Set(majorViewportDates.map(d => d.getTime()));
+        const minorViewportDatesSet = new Set(minorViewportDates.map(d => d.getTime()));
+        // only consider major dates that are in range (e.g. first and/or last ticks may be out of range)
+        showMajorTicks = majorViewportDates.filter(d => (d.getTime() > viewStartTime && d.getTime() < viewEndTime) && !minorViewportDatesSet.has(d.getTime())).length === 0;
+        tickDates = showMajorTicks ? minorViewportDates.filter(d => !majorViewportDatesSet.has(d.getTime())) : minorViewportDates;
+      }
+
+      const tickDatePositions = tickDates.map(function (date) {
+        return {
+          date: date,
+          pos: TimeAxisUtils.getDatePosition(
+            timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
+        };
+      });
+      DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, timeAxis, tickDatePositions);
+
+      if (showMajorTicks) {
+        const majorDatePositions = majorViewportDates.map(function (date) {
+          return {
+            date: date,
+            pos: TimeAxisUtils.getDatePosition(
+              timeAxis._start, timeAxis._end, date.getTime(), timeAxis._contentLength)
+          };
+        });
+        DvtTimeAxisRenderer._renderTicks(tickLabelsContainer, majorAxis, majorDatePositions);
+      }
 
       // We don't need the label of the last tick.
       const labelTexts = timeAxis.getDateLabelTexts(dates,
@@ -589,40 +628,73 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
     const isRTL = dvt.Agent.isRightToLeft(context);
     const labelStyle = DvtTimeAxisStyleUtils.getAxisLabelStyle(timeAxis.Options);
     const labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options) || '';
+    const scale = timeAxis.getScale();
+    const labelPosition = timeAxis.Options._scaleLabelPosition[timeAxis.isTimeComponentScale(scale) ? scale.name : scale];
 
     for (let i = 0; i < datePositions.length - 1; i++) {
       const currentPos = datePositions[i].pos;
       const nextPos = datePositions[i + 1].pos;
 
-      const timePos = !isRTL
+      const label = new dvt.OutputText(context, labelTexts[i], 0, 0);
+      label.setCSSStyle(labelStyle);
+      label.getElem().setAttribute('class', labelClass);
+
+      const timeCenterPos = !isRTL
         ? currentPos + ((nextPos - currentPos) / 2)
         : timeAxis._contentLength - (currentPos + ((nextPos - currentPos) / 2));
-      const sizePos = axisStart + ((axisEnd - axisStart) / 2);
+      const sizeCenterPos = axisStart + ((axisEnd - axisStart) / 2);
+      let y = timeAxis.isVertical() ? timeCenterPos : sizeCenterPos;
+      let x;
+      switch (labelPosition) {
+        case 'start':
+          if (timeAxis.isVertical()) {
+            x = sizeCenterPos;
+            label.alignCenter();
+          } else if (isRTL) {
+            x = timeAxis._contentLength - (currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2);
+            label.alignRight();
+          } else {
+            // In 11.0.0, padding is 2px on both sides, center positioning.
+            // In 11.1 minor release, positioning is "start". To preserve original width while increasing
+            // label start padding, the padding is 4px on the left and 0px on the right.
+            x = currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
+            label.alignLeft();
+          }
+          break;
+        case 'center':
+        default:
+          x = timeAxis.isVertical() ? sizeCenterPos : timeCenterPos;
+          label.alignCenter();
+      }
 
-      const x = timeAxis.isVertical() ? sizePos : timePos;
-      const y = timeAxis.isVertical() ? timePos : sizePos;
+      label.setX(x);
+      dvt.TextUtils.centerTextVertically(label, y);
+
       const maxSize = timeAxis.getContentSize();
       const maxLength = nextPos - currentPos;
       const maxLabelWidth = timeAxis.isVertical() ? maxSize : maxLength;
       const maxLabelHeight = timeAxis.isVertical() ? maxLength : maxSize;
 
-      const label = new dvt.OutputText(context, labelTexts[i], x, 0);
-      label.setCSSStyle(labelStyle);
-      label.getElem().setAttribute('class', labelClass);
-      label.alignCenter();
-      dvt.TextUtils.centerTextVertically(label, y);
       dvt.TextUtils.fitText(label, maxLabelWidth, maxLabelHeight, container);
 
-      // Truncate first/last labels overlapping overall start/end if needed
+      // Truncate first/last labels overlapping overall start/end if needed:
+      // To take into account the case where the interval is not fully shown due to start/end edge and label is truncated,
+      // we need to manually calculate label placement
       if (!timeAxis.isVertical()) {
         if (i === 0 && datePositions[i].date.getTime() < timeAxis._start) {
           if (label.isTruncated()) {
             label.setTextString(label.getUntruncatedTextString());
           }
           const labelWidth = label.getDimensions().w;
-          const adjustedMaxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
-          // Can't simply take center of inter-tick region and alignCenter() for first label treatment if the label is going to be truncated
-          // Instead, align right and manually calculate label placement
+          let adjustedMaxLength;
+          switch (labelPosition) {
+            case 'start':
+              adjustedMaxLength = nextPos - Math.max(0, nextPos - currentPos - labelWidth - DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2);
+              break;
+            case 'center':
+            default:
+              adjustedMaxLength = nextPos - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+          }
           const horizPos = Math.max(0, adjustedMaxLength);
           if (!isRTL) {
             label.alignRight();
@@ -651,14 +723,25 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
           if (label.isTruncated()) {
             label.setTextString(label.getUntruncatedTextString());
           }
-          const labelWidth = label.getDimensions().w;
-          const adjustedMaxLength = timeAxis._contentLength
-            - currentPos
-            - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
-          // Can't simply take center of inter-tick region and alignCenter() for last label treatment if the label is going to be truncated
-          // Instead, align right and manually calculate label placement
-          const horizPos = Math.max(currentPos,
-            (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+          let adjustedMaxLength;
+          let horizPos;
+          switch (labelPosition) {
+            case 'start':
+              adjustedMaxLength = timeAxis._contentLength
+                - currentPos
+                - DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
+              horizPos = currentPos + DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING * 2;
+              break;
+            case 'center':
+            default: {
+              const labelWidth = label.getDimensions().w;
+              adjustedMaxLength = timeAxis._contentLength
+                - currentPos
+                - Math.max(0, ((nextPos - currentPos - labelWidth) / 2));
+              horizPos = Math.max(currentPos,
+                (currentPos + ((nextPos - currentPos) / 2)) - (labelWidth / 2));
+            }
+          }
           if (!isRTL) {
             label.alignLeft();
             label.setX(horizPos);
@@ -839,6 +922,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
    *         1. Initial render: options is available.
    *         2. Rerenders (e.g. due to resize): options is null.
    *     Inside Gantt/Timeline:
+   *         1. Initial prep: options is the bundled options contructured by the parent time component.
    *         1. Initial render: options only contains _viewStartTime and _viewEndTime that defines the visible viewport.
    *              and _throttle to signify whether render should be throttled with requestAnimationFrame.
    *         2. Rerenders: Same, options contains only _viewStartTime, _viewEndTime, _throttle.

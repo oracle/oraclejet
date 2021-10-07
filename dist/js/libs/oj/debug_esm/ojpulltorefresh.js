@@ -168,9 +168,6 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
         }
 
         checkTolerance = true;
-
-        // apply pull-to-refresh-action class to block children events in the panel element
-        panel[0].classList.add('oj-pulltorefresh-action');
       }
     })
     .on(type + 'move.pulltorefresh', function (event) {
@@ -186,6 +183,9 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
 
       // wrong direction
       if (height < 0) {
+        // remove pull-to-refresh-action class to block children events in the panel element
+        panel[0].classList.remove('oj-pulltorefresh-action');
+
         return;
       }
 
@@ -217,6 +217,10 @@ PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options)
       }
 
       content.css('height', height);
+
+
+        // apply pull-to-refresh-action class to block children events in the panel element
+        panel[0].classList.add('oj-pulltorefresh-action');
 
       // fire pull event
       PullToRefreshUtils._fireEvent(event, 'pull', content, height);

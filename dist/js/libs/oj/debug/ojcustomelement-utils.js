@@ -151,10 +151,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                 throw new JetElementError(elem, `Error while parsing parsing attribute ${attr}. ${err.stack || err}`);
             }
         }
-        static coerceValue(elem, attr, value, type) {
-            const tagName = elem.tagName.toLowerCase();
+        static parseAttributeValue(tagName, attr, value, type, id = null) {
             if (!type) {
-                throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}'. \
+                throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${id}'. \
         This attribute only supports data bound values. Check the API doc for supported types`);
             }
             const supportedTypes = ElementUtils.getSupportedTypes(type);
@@ -167,7 +166,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                     return JSON.parse(value);
                 }
                 catch (ex) {
-                    throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}' \
+                    throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${id}' \
           to a JSON Object. Check the value for correct JSON syntax, e.g. double quoted strings. ${ex}`);
                 }
             }
@@ -175,23 +174,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
                 return value;
             }
             else if (supportedTypes.boolean) {
-                return AttributeUtils.coerceBooleanValue(elem, attr, value, type);
+                return AttributeUtils.parseBooleanValue(tagName, attr, value, type, id);
             }
             else if (supportedTypes.number && !isNaN(value)) {
                 return Number(value);
             }
-            throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}' \
+            throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${id}' \
       to a ${type}.`);
         }
-        static coerceBooleanValue(elem, attr, value, type) {
+        static parseBooleanValue(tagName, attr, value, type, id) {
             if (value == null || value === 'true' || value === '' || value.toLowerCase() === attr) {
                 return true;
             }
             else if (value === 'false') {
                 return false;
             }
+            throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${id}' to a ${type}.`);
+        }
+        static coerceValue(elem, attr, value, type) {
             const tagName = elem.tagName.toLowerCase();
-            throw new Error(`Unable to parse ${attr}='${value}' for ${tagName} with id '${elem.id}' to a ${type}.`);
+            return AttributeUtils.parseAttributeValue(tagName, attr, value, type, elem.id);
+        }
+        static coerceBooleanValue(elem, attr, value, type) {
+            return AttributeUtils.parseBooleanValue(elem.tagName.toLowerCase(), attr, value, type, elem.id);
         }
         static isGlobalOrData(prop) {
             return (Object.prototype.hasOwnProperty.call(GLOBAL_PROPS, prop) ||
@@ -275,8 +280,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             return ((_a = CustomElementUtils.getElementRegistration(tagName)) === null || _a === void 0 ? void 0 : _a.descriptor) || {};
         }
         static getElementProperties(element) {
+            return CustomElementUtils.getPropertiesForElementTag(element.tagName);
+        }
+        static getPropertiesForElementTag(tagName) {
             var _a, _b;
-            const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+            const descriptor = CustomElementUtils.getElementDescriptor(tagName);
             return ((_b = ((_a = descriptor['_metadata']) !== null && _a !== void 0 ? _a : descriptor.metadata)) === null || _b === void 0 ? void 0 : _b.properties) || {};
         }
         static getElementInfo(element) {
@@ -296,11 +304,14 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         }
         static getElementBridge(element) {
             let bridge = element[CustomElementUtils._ELEMENT_BRIDGE_KEY];
-            if (!bridge && CustomElementUtils.isElementRegistered(element.tagName)) {
+            if (bridge === undefined && CustomElementUtils.isElementRegistered(element.tagName)) {
+                bridge = null;
                 const bridgeProto = CustomElementUtils.getElementRegistration(element.tagName).bridgeProto;
-                bridge = Object.create(bridgeProto);
-                const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
-                bridge.initializeBridge(element, descriptor);
+                if (bridgeProto !== undefined) {
+                    bridge = Object.create(bridgeProto);
+                    const descriptor = CustomElementUtils.getElementDescriptor(element.tagName);
+                    bridge.initializeBridge(element, descriptor);
+                }
                 Object.defineProperty(element, CustomElementUtils._ELEMENT_BRIDGE_KEY, { value: bridge });
             }
             return bridge !== null && bridge !== void 0 ? bridge : null;

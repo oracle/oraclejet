@@ -1290,7 +1290,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             labelStyle: undefined,
 
@@ -1303,7 +1303,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             maximizedSvgStyle: undefined,
 
@@ -1316,7 +1316,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             minimizedSvgStyle: undefined,
 
@@ -1344,7 +1344,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             svgStyle: undefined
           },
@@ -1359,7 +1359,7 @@ var __oj_n_box_node_metadata =
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
           columnLabelStyle: undefined,
 
@@ -1373,7 +1373,7 @@ var __oj_n_box_node_metadata =
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
           columnsTitleStyle: undefined,
 
@@ -1768,7 +1768,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             labelStyle: undefined,
 
@@ -1782,7 +1782,7 @@ var __oj_n_box_node_metadata =
              * @memberof! oj.ojNBox
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             secondaryLabelStyle: undefined
           },
@@ -1797,7 +1797,7 @@ var __oj_n_box_node_metadata =
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
           rowLabelStyle: undefined,
 
@@ -1810,7 +1810,7 @@ var __oj_n_box_node_metadata =
            * @memberof! oj.ojNBox
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default null
            */
           rowsTitleStyle: undefined
@@ -2199,6 +2199,13 @@ var __oj_n_box_node_metadata =
 
       getSubIdByNode: function (node) {
         return this._super(node);
+      },
+
+      _GetComponentNoClonePaths: function () {
+        var noClonePaths = this._super();
+        noClonePaths.data = true;
+        noClonePaths.nodes = true;
+        return noClonePaths;
       },
 
       /**
@@ -2670,10 +2677,10 @@ var __oj_n_box_node_metadata =
    * @property {(string|function)=} shortDesc The description of this node. This is used for accessibility and also for customizing the tooltip text.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "icon.svgStyle", jsdocOverride:true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "indicatorIcon.svgStyle", jsdocOverride:true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "icon.svgStyle", jsdocOverride:true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "indicatorIcon.svgStyle", jsdocOverride:true},
    *               {target: "Type", value: "?(string | ((context: oj.ojNBox.NodeShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride:true}]
    */
 
   /**
@@ -2691,10 +2698,10 @@ var __oj_n_box_node_metadata =
    * @property {string} row The id of the row containing this cell.
    * @property {"on"|"off"|"auto"} [showCount="auto"] Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
    * @property {string=} shortDesc The description of this cell. This is used for accessibility.
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "maximizedSvgStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "minimizedSvgStyle", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "maximizedSvgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "minimizedSvgStyle", jsdocOverride: true}]
    */
 
   /**
@@ -2702,7 +2709,7 @@ var __oj_n_box_node_metadata =
    * @property {string} id The id of the column. Used to identify this column.
    * @property {string=} label The text for the column label.
    * @property {Object=} labelStyle The CSS style object defining the style of the column label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true}
    */
 
   /**
@@ -2710,7 +2717,7 @@ var __oj_n_box_node_metadata =
    * @property {string} id The id of the row. Used to identify this row.
    * @property {string=} label The text for the row label.
    * @property {Object=} labelStyle The CSS style object defining the style of the row label. The following style properties are supported: color, cursor, fontFamily, fontSize, fontStyle, fontWeight, textDecoration.
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true}
    */
 
   /**
@@ -3363,7 +3370,7 @@ var __oj_n_box_node_metadata =
    * @memberof! oj.ojNBoxNode
    * @instance
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    *
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">icon.svgStyle</code> attribute specified:</caption>
@@ -3606,7 +3613,7 @@ var __oj_n_box_node_metadata =
    * @memberof! oj.ojNBoxNode
    * @instance
    * @type {(Object|null)=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration|null", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>|null", jsdocOverride: true}
    *
    * @example <caption>Initialize NBox node with the
    * <code class="prettyprint">indicatorIcon.svgStyle</code> attribute specified:</caption>
@@ -3709,7 +3716,7 @@ var __oj_n_box_node_metadata =
    * @memberof! oj.ojNBoxNode
    * @instance
    * @type {(Object|null)=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration|null", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>|null", jsdocOverride: true}
    * @default null
    *
    * @example <caption>Initialize NBox node with the

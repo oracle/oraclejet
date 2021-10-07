@@ -20,9 +20,10 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var DrawerPopup_1;
 const PopupService = oj.PopupService;
 const targetElement = window;
-let DrawerPopup = class DrawerPopup extends Component {
+let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
     constructor() {
         super(...arguments);
         this.state = {
@@ -30,24 +31,16 @@ let DrawerPopup = class DrawerPopup extends Component {
             selfClosed: false
         };
         this.rootRef = createRef();
-        this.focusableItems = createRef();
         this.isShiftKeyActive = false;
-        this.handleFocusout = (event) => {
-            const isTargetWithinContent = Array.from(this.focusableItems.current).find((item) => item === event.relatedTarget);
-            if (!isTargetWithinContent) {
-                const { length, 0: firstItem, [length - 1]: lastItem } = this.focusableItems.current;
-                const nextFocusedElement = this.isShiftKeyActive ? lastItem : firstItem;
-                event.preventDefault();
-                nextFocusedElement.focus();
-            }
-        };
         this.handleKeyDown = (event) => {
             if (event.key === DrawerConstants.keys.ESC) {
                 this.selfClose();
+                return;
             }
+            const focusables = this.getFocusables();
             if (event.key === DrawerConstants.keys.TAB && this.props.modality === 'modal') {
                 this.isShiftKeyActive = event.shiftKey;
-                const { length, 0: firstItem, [length - 1]: lastItem } = this.focusableItems.current;
+                const { length, 0: firstItem, [length - 1]: lastItem } = focusables;
                 if (!length) {
                     event.preventDefault();
                     this.rootRef.current.focus();
@@ -70,16 +63,48 @@ let DrawerPopup = class DrawerPopup extends Component {
             }
         };
         this.autoDismissHandler = (event) => {
-            if (!event.target.closest('oj-drawer-popup') && this.props.autoDismiss === 'focus-loss') {
-                this.selfClose();
+            const focusables = this.getFocusables();
+            const zorderLayer = this.rootRef.current.parentNode;
+            if (this.props.autoDismiss === 'focus-loss') {
+                const isTargetWithin = this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings(zorderLayer, event.target);
+                if (event.type === 'focus' && this.props.modality === 'modal' && !isTargetWithin) {
+                    event.preventDefault();
+                    const elementLosingFocus = event.relatedTarget;
+                    const firstFocusableElement = focusables[0];
+                    const lastFocusableElement = focusables[focusables.length - 1];
+                    if (elementLosingFocus === firstFocusableElement) {
+                        lastFocusableElement.focus();
+                    }
+                    else {
+                        firstFocusableElement.focus();
+                    }
+                    return;
+                }
+                if (!isTargetWithin) {
+                    this.selfClose();
+                }
             }
+        };
+        this.getFocusables = () => {
+            return this.rootRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
+        };
+        this.isTargetDescendantOfOwnZorderLayerOrItsNextSiblings = (zorderLayer, target) => {
+            const zorderLayersBuffer = [zorderLayer];
+            let nextZorderLayer = zorderLayer.nextSibling;
+            while (nextZorderLayer) {
+                zorderLayersBuffer.push(nextZorderLayer);
+                nextZorderLayer = nextZorderLayer.nextSibling;
+            }
+            return zorderLayersBuffer.some((zorderLayerItem) => {
+                return zorderLayerItem.contains(target);
+            });
         };
         this.handleSwipeAction = () => {
             this.selfClose();
         };
     }
     render(props) {
-        return (h(Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown, onfocusout: this.handleFocusout }, props.children));
+        return (h(Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown }, props.children));
     }
     selfClose() {
         var _a, _b;
@@ -95,9 +120,9 @@ let DrawerPopup = class DrawerPopup extends Component {
         const PSOptions = {};
         const PSoption = PopupService.OPTION;
         PSOptions[PSoption.POPUP] = $drawerElement;
-        PSOptions[PSoption.LAUNCHER] = targetElement;
+        PSOptions[PSoption.LAUNCHER] = $(document.activeElement);
         PSOptions[PSoption.MODALITY] = this.props.modality;
-        PSOptions[PSoption.LAYER_SELECTORS] = DrawerConstants.DrawerPopupStyleSurrogate;
+        PSOptions[PSoption.LAYER_SELECTORS] = this.getDrawerSurrogateLayerSelectors();
         PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
         const PSEvent = PopupService.EVENT;
         PSOptions[PSoption.EVENTS] = {
@@ -130,6 +155,14 @@ let DrawerPopup = class DrawerPopup extends Component {
     beforeCloseHandler(edge) {
         return slideOut(this.rootRef.current, DrawerUtils.getAnimationOptions(DrawerConstants.stringClose, edge));
     }
+    getDrawerSurrogateLayerSelectors() {
+        let surrogateLayerStyles = DrawerConstants.DrawerPopupStyleSurrogate;
+        const stringModal = 'modal';
+        if (this.props.modality === stringModal) {
+            surrogateLayerStyles += ` ${DrawerConstants.stringOjDrawer}${DrawerConstants.charDash}${stringModal}`;
+        }
+        return surrogateLayerStyles;
+    }
     getDrawerPosition(edge) {
         let pos = `${edge} ${edge === 'bottom' ? 'bottom' : 'top'}`;
         let position = {
@@ -144,14 +177,7 @@ let DrawerPopup = class DrawerPopup extends Component {
         return this.state['opened'];
     }
     getPopupStyleClasses(edge) {
-        let customStyleClassMap = {};
-        const stringModal = 'modal';
-        if (this.props.modality === stringModal) {
-            customStyleClassMap = {
-                [`${DrawerConstants.stringOjDrawer}${DrawerConstants.charDash}${stringModal}`]: true
-            };
-        }
-        return DrawerUtils.getStyleClassesMapAsString(Object.assign(customStyleClassMap, DrawerUtils.getCommonStyleClasses(edge, this.isDrawerOpened())));
+        return DrawerUtils.getStyleClassesMapAsString(Object.assign({}, DrawerUtils.getCommonStyleClasses(edge, this.isDrawerOpened())));
     }
     static getDerivedStateFromProps(props, state) {
         const derivedState = {};
@@ -166,7 +192,7 @@ let DrawerPopup = class DrawerPopup extends Component {
         return derivedState;
     }
     handleFocus(prevState) {
-        this.focusableItems.current = this.rootRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), video');
+        const focusables = this.getFocusables();
         if (this.state.opened && prevState.opened !== this.state.opened) {
             const autofocusItems = this.rootRef.current.querySelectorAll('[autofocus]');
             const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
@@ -174,12 +200,22 @@ let DrawerPopup = class DrawerPopup extends Component {
                 autofocusFirstItem.focus();
                 return;
             }
-            const { length: focusableLength, 0: focusableFirstItem } = this.focusableItems.current;
+            const { length: focusableLength, 0: focusableFirstItem } = focusables;
             const firstFocusableElem = focusableLength > 0 ? focusableFirstItem : this.rootRef.current;
             firstFocusableElem.focus();
         }
     }
     componentDidUpdate(prevProps, prevState) {
+        this.handleComponentUpdate(prevState);
+    }
+    componentDidMount() {
+        if (DrawerPopup_1.defaultProps.opened != this.props.opened) {
+            const stateCopy = Object.assign({}, this.state);
+            stateCopy.opened = false;
+            this.handleComponentUpdate(stateCopy);
+        }
+    }
+    handleComponentUpdate(prevState) {
         this.renderDrawer(prevState);
         if (this.isDrawerOpened() && this.props.closeGesture === 'swipe') {
             this.registerCloseWithSwipeListener();
@@ -224,7 +260,7 @@ DrawerPopup.defaultProps = {
     closeGesture: 'swipe'
 };
 DrawerPopup.metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["start", "end", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["focus-loss", "none"] }, "closeGesture": { "type": "string", "enumValues": ["swipe", "none"] } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
-DrawerPopup = __decorate([
+DrawerPopup = DrawerPopup_1 = __decorate([
     customElement('oj-drawer-popup')
 ], DrawerPopup);
 

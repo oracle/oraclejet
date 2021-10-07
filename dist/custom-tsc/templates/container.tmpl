@@ -17,7 +17,13 @@ export interface <?js= data.vcomponentName ?><?js= data.classTypeParamsDeclarati
 <?js
   if (data.properties) {
     data.propsToInclude = 'readOnly';
-    data.typeParams = this.propsTypeParams;
+    if (data.propsReadonlyMappedTypesClassName.length > 0) {
+      data.propsName = data.propsReadonlyMappedTypesClassName;
+      data.typeParams = "";
+    } else {
+      data.propsName = data.propsClassName;
+      data.typeParams = this.propsTypeParams;
+    }
     ?>
     <?js= this.partial('properties.tmpl', data) ?>
   <?js
@@ -59,7 +65,13 @@ export interface <?js= data.settablePropertiesInterface ?><?js= data.propsClassT
 <?js
 if (data.properties) {
     data.propsToInclude = 'settable';
-    data.typeParams = propsClassTypeParams;
+    if (data.propsMappedTypesClassName.length > 0) {
+      data.propsName = data.propsMappedTypesClassName;
+      data.typeParams = "";
+    } else {
+      data.propsName = data.propsClassName;
+      data.typeParams = this.propsClassTypeParams;
+    }
   ?>
   <?js= this.partial('properties.tmpl', data) ?>
 <?js

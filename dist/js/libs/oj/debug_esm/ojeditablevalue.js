@@ -874,6 +874,9 @@ EditableValueUtils._createOrUpdateReadonlyDiv = function (input, createCondition
   let readonlyElem = this._getReadonlyDiv();
   if (!readonlyElem && createConditions) {
     readonlyElem = this._createReadonlyDiv(input);
+    if (!readonlyElem) {
+      return;
+    }
     if (this.options.labelledBy) {
       this._setReadonlyDivLabelledBy(this.options.labelledBy);
     }
@@ -882,6 +885,19 @@ EditableValueUtils._createOrUpdateReadonlyDiv = function (input, createCondition
 
   if (readonlyElem) {
     readonlyElem.textContent = this._GetDisplayValue();
+    EditableValueUtils._setTabIndex(input, readonlyElem);
+  }
+};
+
+/**
+ * @ignore
+ * @private
+ */
+ EditableValueUtils._setTabIndex = function (input, readonlyElem) {
+  let tabIndex = input.tabIndex;
+  let readonlyElemToSet = readonlyElem;
+  if (tabIndex !== null) {
+    readonlyElemToSet.tabIndex = tabIndex;
   }
 };
 
@@ -1570,8 +1586,6 @@ EditableValueUtils._createReadonlyDiv = function (element) {
     // to have the text vertically centered in the div.
     var readonlyInnerElem = document.createElement('div');
     readonlyInnerElem.classList.add('oj-text-field-readonly');
-    // for accessibility you need to be able to tab into a readonly field.
-    readonlyInnerElem.setAttribute('tabindex', '0');
     readonlyInnerElem.setAttribute('role', 'textbox');
     readonlyInnerElem.setAttribute('aria-readonly', true);
 
@@ -9244,6 +9258,26 @@ InlineMessagingStrategy.prototype._queueAction = function (contentToShow) {
     clearTimeout(this._timeoutId);
   }
 
+  // JET-46567 - JAWS is reading out error message even after selecting correct value
+  // allow a component to opt-in to receive notification before and after the timer fires
+  // so that it can wait until after messages have been updated to finish processing,
+  // for example to change focus after screen reader text has been updated
+  var component = this.GetComponent();
+  if (component && component._NotifyMessagingStrategyQueueAction) {
+    if (!this._notifyQueueActionPromise) {
+      var promiseResolve;
+      this._notifyQueueActionPromise = new Promise(function (resolve) {
+        promiseResolve = resolve;
+      });
+      this._notifyQueueActionPromiseResolve = function () {
+        this._notifyQueueActionPromise = null;
+        this._notifyQueueActionPromiseResolve = null;
+        promiseResolve();
+      }.bind(this);
+    }
+    component._NotifyMessagingStrategyQueueAction(this._notifyQueueActionPromise);
+  }
+
   this._timeoutId = setTimeout(function () {
     self._timeoutId = null;
 
@@ -9263,6 +9297,10 @@ InlineMessagingStrategy.prototype._queueAction = function (contentToShow) {
         rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
         self._addRemoveOjHasMessagesClass(contentToShow);
         self._clearBusyState();
+
+        if (self._notifyQueueActionPromiseResolve) {
+          self._notifyQueueActionPromiseResolve();
+        }
       } else {
         // aria-live polite is needed so a screen reader will read the inline message without the
         // user needing to set focus to the input field. aria-live: 'off' is needed before
@@ -9312,6 +9350,10 @@ InlineMessagingStrategy.prototype._queueAction = function (contentToShow) {
                 self._addRemoveOjHasMessagesClass(contentToShow);
               }
               self._clearBusyState();
+
+              if (self._notifyQueueActionPromiseResolve) {
+                self._notifyQueueActionPromiseResolve();
+              }
             }
           });
       }
@@ -9319,6 +9361,10 @@ InlineMessagingStrategy.prototype._queueAction = function (contentToShow) {
       // Just clear the busy state if $messagingContentRoot no longer exists
       self._addRemoveOjHasMessagesClass('');
       self._clearBusyState();
+
+      if (self._notifyQueueActionPromiseResolve) {
+        self._notifyQueueActionPromiseResolve();
+      }
     }
   }, 0);
 };

@@ -95,6 +95,7 @@ const LABELEDGE_INSIDE = 'inside';
 const LABELEDGE_NONE = 'none';
 const LABELEDGE_START = 'start';
 const LABELEDGE_TOP = 'top';
+const INITIAL_ROOTCLASSNAMES = 'oj-form-layout';
 const ROOTCLASSNAMES = 'oj-form-layout oj-formlayout-max-cols-';
 const NO_MIN_COLUMN_WIDTH = ' oj-form-layout-no-min-column-width';
 
@@ -146,7 +147,7 @@ class VCellGenerator extends Component {
         if (this.props.contentType === 'formLayout') {
             rootClassName += ' oj-formlayout-nested-formlayout';
         }
-        return (h("div", { class: rootClassName, style: wrapperStyle },
+        return (h("div", { class: rootClassName, style: wrapperStyle, key: props.cellKey },
             h(VLabeler, { labelText: this.props.labelText, labelEdge: this.props.labelEdge, labelWidth: this.props.labelWidth, colspan: this.props.colspan, totalColumns: this.props.totalColumns }, this.props.children)));
     }
     _getFullFlexItemWidth(colspan, columns) {
@@ -201,7 +202,7 @@ class VColumnFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent = (h(VCellGenerator, { totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType }, content));
+            rowContent = (h(VCellGenerator, { totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
             formContent.push(h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
         }
         const styling = this._getColumnStyling(columns);
@@ -248,53 +249,78 @@ class VRowFormGenerator extends Component {
         this.formDivRef = createRef();
         this._resizeListener = this._resizeHandler.bind(this);
         this.state = {
-            columns: this.props.columns
+            availableColumns: 0
         };
     }
     render(props) {
         const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
-        let rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
-        if (this.state.columns === 0) {
-            const emptyFormContent = this._getRowFormContent([]);
-            return (h("div", { class: rootClassNames, ref: this.formDivRef }, emptyFormContent));
-        }
-        else {
-            const formContent = this._getRowFormContent(this.props.formControls);
-            return (h("div", { class: rootClassNames, ref: this.formDivRef }, formContent));
-        }
+        const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
+        const formContent = this._getRowFormContent(this.props.formControls);
+        return (h("div", { class: rootClassNames, ref: this.formDivRef }, formContent));
     }
     componentDidMount() {
-        if (this.state.columns === 0) {
+        if (this._calculateColumns(0) === 0) {
             this.setState({
-                columns: this._calculateColumns(this.formDivRef.current)
+                availableColumns: this._calculateAvailableColumns(this.formDivRef.current)
             });
-            addResizeListener(this.formDivRef.current, this._resizeListener, 25);
+        }
+        addResizeListener(this.formDivRef.current, this._resizeListener, 25);
+    }
+    componentDidUpdate() {
+        if (this.state.availableColumns === 0 && this._calculateColumns(0) === 0) {
+            const form = this.formDivRef.current;
+            const rootClassNames = form.class;
+            form.class = INITIAL_ROOTCLASSNAMES;
+            const availCols = this._calculateAvailableColumns(form);
+            form.class = rootClassNames;
+            this.setState({
+                availableColumns: availCols
+            });
         }
     }
     componentWillUnmount() {
         removeResizeListener(this.formDivRef.current, this._resizeListener);
     }
     _resizeHandler() {
-        const newColumns = this._calculateColumns(this.formDivRef.current);
-        if (this.state.columns !== newColumns) {
-            this.setState({
-                columns: newColumns
-            });
+        if (this._calculateColumns(0) > 0) {
+            if (this.state.availableColumns > 0) {
+                this.setState({
+                    availableColumns: 0
+                });
+            }
+        }
+        else {
+            const form = this.formDivRef.current;
+            const rootClassNames = form.class;
+            form.class = INITIAL_ROOTCLASSNAMES;
+            const availCols = this._calculateAvailableColumns(form);
+            form.class = rootClassNames;
+            if (this.state.availableColumns !== availCols) {
+                this.setState({
+                    availableColumns: availCols
+                });
+            }
         }
     }
-    _calculateColumns(form) {
+    _calculateAvailableColumns(form) {
+        let availableCols = Math.max(this.props.maxColumns, 1);
+        let colWidth = parseFloat(window.getComputedStyle(form.querySelector('.oj-form')).columnWidth);
+        if (!isNaN(colWidth)) {
+            let totalWidth = this.formDivRef.current.getBoundingClientRect().width;
+            availableCols = Math.max(Math.floor(totalWidth / colWidth), 1);
+        }
+        return availableCols;
+    }
+    _calculateColumns(availableColumns) {
         let calculatedCols = Math.max(this.props.maxColumns, 1);
         const cols = this.props.columns;
         if (cols > 0) {
             calculatedCols = cols;
         }
-        else if (calculatedCols > 1) {
-            let colWidth = parseFloat(window.getComputedStyle(form.querySelector('.oj-form')).columnWidth);
-            if (!isNaN(colWidth)) {
-                let totalWidth = form.getBoundingClientRect().width;
-                let computedMaxCols = Math.max(Math.floor(totalWidth / colWidth), 1);
-                if (computedMaxCols < calculatedCols) {
-                    calculatedCols = computedMaxCols;
+        else {
+            if (calculatedCols > 1) {
+                if (availableColumns < calculatedCols) {
+                    calculatedCols = availableColumns;
                 }
             }
         }
@@ -303,7 +329,10 @@ class VRowFormGenerator extends Component {
     _getRowFormContent(childArray) {
         let formContent = [];
         let rowContent;
-        const cols = this.state.columns;
+        const cols = this._calculateColumns(this.state.availableColumns);
+        if (cols === 0) {
+            childArray = [];
+        }
         let cellCount = 0;
         let colspan;
         let totalCols;
@@ -342,7 +371,7 @@ class VRowFormGenerator extends Component {
                 }
                 labelEdge = this._themeDefault.labelEdge;
             }
-            rowContent.push(h(VCellGenerator, { colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType }, content));
+            rowContent.push(h(VCellGenerator, { colspan: colspan, totalColumns: totalCols, labelText: item.labelText, labelEdge: labelEdge, labelWidth: item.labelWidth, contentType: item.contentType, cellKey: item.key }, content));
             cellCount += colspan;
             if (cellCount % cols !== 0) {
                 this._addColumnGutter(rowContent);
@@ -360,7 +389,7 @@ class VRowFormGenerator extends Component {
         formContent.push(h("div", { class: 'oj-flex', "data-oj-internal": true }, rowContent));
     }
     _addPaddingCells(rowContent, count) {
-        const cols = this.state.columns;
+        const cols = this._calculateColumns(this.state.availableColumns) || this.props.maxColumns;
         const last = count % cols;
         if (rowContent && last > 0) {
             for (let i = last; i < cols; i++) {

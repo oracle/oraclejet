@@ -273,13 +273,7 @@ Translations._getBundle = function () {
   if (b) {
     return b;
   }
-
-  if (oj.__isAmdLoaderPresent()) {
-    var ojt = getConfigBundle();
-    oj.Assert.assert(ojt !== undefined, 'ojtranslations module must be defined');
-    return ojt;
-  }
-  return {};
+  return getConfigBundle();
 };
 
 const setBundle = Translations.setBundle;

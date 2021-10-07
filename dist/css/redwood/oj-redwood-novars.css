@@ -6,7 +6,7 @@
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v11.0.0"}' !important; }
+  font-family: '{"name":"redwood","targetPlatform":"all","behavior":"redwood","jetReleaseVersion":"v11.1.0"}' !important; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -7711,14 +7711,14 @@ html .oj-form-control {
   padding-right: .75rem; }
 
 /* https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width */
-oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly {
   white-space: nowrap;
   overflow-x: scroll;
   overflow-y: hidden;
   -ms-overflow-style: none;
   scrollbar-width: none; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly::-webkit-scrollbar {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly::-webkit-scrollbar {
   width: 0;
   height: 0; }
 
@@ -7947,16 +7947,18 @@ oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-fie
   background-color: transparent;
   height: 2.75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-textarea .oj-text-field-container,
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-select-multi .oj-text-field-container,
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-combobox-multi .oj-text-field-container {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-textarea .oj-text-field-container,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-select-multi .oj-text-field-container,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-combobox-multi .oj-text-field-container {
   height: auto; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-select-multi.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container,
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-combobox-multi.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-select-multi.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-combobox-multi.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-textarea.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container,
+.oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only:not(.oj-text-field-label-inside) .oj-text-field-container {
   min-height: 2.75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-textarea.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-textarea.oj-has-no-value:not(.oj-text-field-label-inside) .oj-text-field-container {
   min-height: 2.75rem; }
 
 .oj-text-field.oj-focus:not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
@@ -8052,7 +8054,7 @@ html[dir="rtl"] .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.
 .oj-text-field-label-inside.oj-text-field:not(.oj-read-only):not(.oj-has-no-value) .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
   right: .75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label {
   transition: none;
   transform: none;
   background-color: transparent;
@@ -8061,16 +8063,16 @@ oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-
   line-height: 1.3333;
   top: 0.5rem; }
 
-html:not([dir="rtl"]) oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
+html:not([dir="rtl"]) .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
   left: .75rem; }
 
-html[dir="rtl"] oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
+html[dir="rtl"] .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
   right: .75rem; }
 
-html:not([dir="rtl"]) oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
+html:not([dir="rtl"]) .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
   left: .75rem; }
 
-html[dir="rtl"] oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
+html[dir="rtl"] .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
   right: .75rem; }
 
 .oj-text-field-label-inside.oj-focus:not(.oj-read-only):not(.oj-warning):not(.oj-invalid) .oj-text-field-container .oj-label {
@@ -8138,10 +8140,10 @@ html[dir="rtl"] oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.o
   margin-inline-end: 0;
   margin-inline-start: .75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-start .oj-text-field-start-end-icon {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-start .oj-text-field-start-end-icon {
   margin-inline-start: .75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-end .oj-text-field-start-end-icon {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-end .oj-text-field-start-end-icon {
   margin-inline-end: .75rem; }
 
 .oj-text-field.oj-text-field-label-inside.oj-read-only .oj-text-field-start .oj-button {
@@ -10191,7 +10193,7 @@ oj-combobox:not(.oj-complete) {
   padding-right: 0;
   min-height: 1.25rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-combobox.oj-read-only .oj-combobox-choices {
+.oj-form-layout .oj-form.oj-enabled .oj-combobox.oj-read-only .oj-combobox-choices {
   padding-left: .75rem;
   padding-right: .75rem; }
 
@@ -10496,7 +10498,7 @@ oj-form-layout .oj-form.oj-enabled .oj-combobox.oj-read-only .oj-combobox-choice
   border-width: 0;
   padding: 0.8125rem .75rem 5px; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-combobox-choices {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-combobox-choices {
   padding: 0.8125rem .75rem 5px; }
 
 .oj-text-field-label-inside.oj-read-only .oj-combobox-choices {
@@ -11911,9 +11913,12 @@ html[dir="rtl"] .oj-drawer-reflow.oj-drawer-end.oj-drawer-opened {
 .oj-drawer-overlay {
   overflow-y: auto; }
 
+.oj-drawer-layout-surrogate {
+  position: relative;
+  z-index: 1000; }
+
 .oj-drawer-layout-surrogate .oj-drawer-overlay {
   position: absolute;
-  z-index: 1000;
   background: rgb(255, 255, 255);
   min-width: 320px;
   max-width: 90%; }
@@ -11937,25 +11942,27 @@ html[dir="rtl"] .oj-drawer-overlay.oj-drawer-end.oj-drawer-opened {
 oj-drawer-popup {
   display: none; }
 
-.oj-drawer-popup-surrogate.oj-component-overlay {
+.oj-drawer-popup-surrogate:not(.oj-component-overlay) {
+  position: relative; }
+
+.oj-drawer-popup-surrogate {
+  z-index: 1000; }
+
+.oj-drawer-popup-surrogate.oj-drawer-modal {
   z-index: 1050; }
+
+.oj-drawer-popup-surrogate.oj-drawer-modal.oj-focus-within {
+  z-index: 1051; }
 
 .oj-drawer-popup-surrogate oj-drawer-popup {
   position: absolute;
-  z-index: 1000;
   background: rgb(255, 255, 255);
   overflow-y: auto; }
-
-.oj-drawer-popup-surrogate oj-drawer-popup.oj-drawer-modal {
-  z-index: 1051; }
 
 .oj-drawer-popup-surrogate .oj-drawer-start,
 .oj-drawer-popup-surrogate .oj-drawer-end {
   max-width: 90%;
   min-width: 320px; }
-
-.oj-drawer-popup-surrogate .oj-drawer-bottom {
-  max-height: 90%; }
 
 html:not([dir="rtl"]) .oj-drawer-popup-surrogate .oj-drawer-start {
   box-shadow: 0.3rem 0 1.5rem rgba(00, 00, 00, 0.05); }
@@ -12161,12 +12168,24 @@ oj-dialog {
   border-radius: .375rem .375rem 0px 0px; }
 
 .oj-dialog-full {
+  min-width: 100vw;
+  max-width: 100vw;
+  min-height: 100vh;
+  max-height: 100vh;
   width: 100vw;
   height: 100vh;
-  max-width: 100vw;
-  min-width: 100vw;
-  max-height: 100vh;
   border-radius: 0px; }
+
+/* this media query is needed to make sure -webkit-fill-available gets applied
+     on Safari/iOS only. It returns incorrect values in Chrome. */
+@supports (-webkit-touch-callout: none) {
+  /* CSS specific to iOS devices */
+  .oj-dialog-sheet {
+    max-height: -webkit-fill-available; }
+  .oj-dialog-full {
+    min-height: -webkit-fill-available;
+    max-height: -webkit-fill-available;
+    height: -webkit-fill-available; } }
 
 .oj-dialog.oj-resizable {
   position: absolute; }
@@ -12623,7 +12642,7 @@ html[dir="rtl"] .oj-formlayout-inline-label .oj-label-required-icon, html[dir="r
   .oj-formlayout-inline-label > .oj-label {
     padding-left: 1.5rem; }
 
-oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputtext-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputpassword-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputnumber-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputdate-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputtime-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputdatetime-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-select-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-combobox-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-searchselect-label, oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-textarea-label,
+.oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputtext-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputpassword-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputnumber-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputdate-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputtime-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-inputdatetime-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-select-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-combobox-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-searchselect-label, .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label.oj-textarea-label,
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-inputtext-label,
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-inputpassword-label,
 oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only).oj-inputnumber-label,
@@ -12710,15 +12729,15 @@ oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-labe
 .oj-formlayout-max-cols-6.oj-formlayout-labels-inline:not(.oj-formlayout-full-width) {
   max-width: 225rem; }
 
-oj-form-layout > .oj-form {
+.oj-form-layout > .oj-form {
   padding-left: 0px;
   padding-right: 0px; }
 
-oj-form-layout > .oj-form > .oj-flex > .oj-flex-item > oj-form-layout > .oj-form {
+.oj-form-layout > .oj-form > .oj-flex > .oj-flex-item > .oj-form-layout > .oj-form {
   padding-left: 0px;
   padding-right: 0px; }
 
-oj-form-layout.oj-formlayout-form-across > .oj-form {
+.oj-form-layout.oj-formlayout-form-across > .oj-form {
   padding-left: 0px;
   padding-right: 0px;
   column-gap: 0px; }
@@ -12767,13 +12786,16 @@ oj-gantt:not(.oj-complete) {
   stroke-width: 1px; }
 
 /* Styling for vertical grid lines */
-.oj-gantt-vertical-gridline {
+.oj-gantt-major-vertical-gridline {
+  stroke: rgba(22, 21, 19, .1); }
+
+.oj-gantt-minor-vertical-gridline {
   stroke: rgba(22, 21, 19, .1);
-  stroke-dasharray: 5,5; }
+  stroke-dasharray: 4,4; }
 
 /* Styling for all rows */
 .oj-gantt-row {
-  fill: rgb(255, 255, 255);
+  fill: transparent;
   padding-top: 0.375rem;
   padding-bottom: 0.375rem; }
 
@@ -12791,15 +12813,19 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all tasks */
 .oj-gantt-task {
-  fill: rgb(36, 93, 99);
+  fill: rgb(95, 162, 186);
   filter: none;
   height: 1.75rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-  border-radius: 1px;
+  border-radius: 2px;
   shape-rendering: auto; }
+
+/* Opaque background behind all tasks */
+.oj-gantt-task-backdrop {
+  fill: #ffffff; }
 
 /* Styling for all tasks when hover */
 .oj-gantt-task.oj-hover {
@@ -12815,21 +12841,24 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all task bars */
 .oj-gantt-task-bar {
-  fill: rgb(36, 93, 99); }
+  fill: rgb(95, 162, 186);
+  stroke: rgba(22, 21, 19, 0.5);
+  stroke-width: 1px; }
 
-.oj-gantt-task-bar.oj-gantt-task-progress-container {
-  stroke: rgb(36, 93, 99);
-  fill-opacity: 0.15; }
+.oj-gantt-task-bar.oj-gantt-task-progress-container,
+.oj-gantt-task-summary.oj-gantt-task-progress-container {
+  fill-opacity: 0.2; }
 
 /* Styling for all milestone tasks */
 .oj-gantt-task-milestone {
-  fill: rgb(123, 117, 112);
-  stroke: rgb(255, 255, 255);
+  fill: rgba(255, 255, 255);
+  stroke: rgba(22, 21, 19, 0.5);
   stroke-width: 1px; }
 
 /* Styling for all summary tasks */
 .oj-gantt-task-summary {
-  fill: rgb(123, 117, 112);
+  fill: rgba(58, 54, 50);
+  stroke: rgba(22, 21, 19, 0.5);
   filter: none; }
 
 /* Styling related to interactivity */
@@ -12859,30 +12888,36 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for all task progress indicators */
 .oj-gantt-task-progress {
-  fill: rgb(36, 93, 99);
+  fill: rgb(95, 162, 186);
+  stroke: rgba(22, 21, 19, 0.5);
+  stroke-width: 1px;
   border-radius: 1px;
   shape-rendering: auto; }
 
+.oj-gantt-task-summary-progress {
+  fill: rgba(58, 54, 50); }
+
 /* Styling for all baseline */
 .oj-gantt-baseline {
-  fill: rgb(49, 45, 42);
+  fill: rgb(123, 117, 112);
   filter: none;
   border-radius: 1px;
   shape-rendering: auto; }
 
 /* Styling for all baseline bars */
 .oj-gantt-baseline-bar {
-  fill: rgb(49, 45, 42);
+  fill: rgb(123, 117, 112);
   height: 0.25rem;
   margin-top: 1px; }
 
 /* Styling for all milestone baseline */
 .oj-gantt-baseline-milestone {
-  fill: rgb(49, 45, 42); }
+  fill: rgb(123, 117, 112);
+  border-radius: 1px; }
 
 /* Styling for the major time axis */
 .oj-gantt-major-axis {
-  fill: rgb(255, 255, 255);
+  fill: transparent;
   stroke: rgba(22, 21, 19, .1);
   height: 2.25rem; }
 
@@ -12890,7 +12925,7 @@ oj-gantt:not(.oj-complete) {
 .oj-gantt-major-axis-label {
   fill: rgba(22, 21, 19, .65);
   font-size: 0.75rem;
-  font-weight: normal; }
+  font-weight: 600; }
 
 /* Styling for the major time axis separators */
 .oj-gantt-major-axis-separator {
@@ -12898,7 +12933,7 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis */
 .oj-gantt-minor-axis {
-  fill: rgb(255, 255, 255);
+  fill: transparent;
   stroke: rgba(22, 21, 19, .1);
   height: 2.25rem; }
 
@@ -12910,7 +12945,8 @@ oj-gantt:not(.oj-complete) {
 
 /* Styling for the minor time axis separators */
 .oj-gantt-minor-axis-separator {
-  stroke: rgba(22, 21, 19, .1); }
+  stroke: rgba(22, 21, 19, .1);
+  stroke-dasharray: 4,4; }
 
 /* Styling for reference object */
 .oj-gantt-reference-object-area {
@@ -17046,7 +17082,7 @@ oj-select:not(.oj-complete) {
   padding: 0;
   min-height: 1.25rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-choices {
+.oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-choices {
   padding: 0 .75rem 5px; }
 
 /* apply to the selected entries */
@@ -17420,20 +17456,20 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 .oj-text-field-label-inside.oj-read-only .oj-select-choices {
   padding: 0; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-choices {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-choices {
   padding: 0.8125rem .75rem 5px; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-chosen,
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-chosen,
 .oj-text-field-label-inside:not(.oj-read-only) .oj-select-chosen {
   padding-top: 0.8125rem;
   line-height: 2.4375rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-chosen,
+.oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-chosen,
 .oj-text-field-label-inside:not(.oj-read-only) .oj-select-chosen {
   padding-left: .75rem;
   padding-right: .75rem; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-chosen {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-chosen {
   min-height: 3.25rem; }
 
 .oj-text-field-label-inside .oj-select-choice.oj-hover,
@@ -18661,6 +18697,7 @@ oj-table:not(.oj-complete) {
   top: 0;
   bottom: 0; }
 
+.oj-table-scroll-vertical.oj-table-hide-vertical-scrollbar .oj-table-scroller,
 .oj-table-hide-vertical-scrollbar .oj-table-scroller {
   overflow-y: hidden; }
 
@@ -18989,7 +19026,9 @@ html[dir="rtl"] .oj-table-frozen-end.oj-table-frozen-edge {
 
 /* Styling for the column header drag indicator after a column. */
 .oj-table-column-header-cell.oj-table-column-header-drag-indicator-after,
-.oj-table-data-cell.oj-table-column-header-drag-indicator-after {
+.oj-table-data-cell.oj-table-column-header-drag-indicator-after,
+.oj-table-column-header-cell.oj-table-column-resize-indicator,
+.oj-table-data-cell.oj-table-column-resize-indicator {
   border-inline-end-style: solid;
   border-inline-end-color: rgb(95, 125, 79);
   border-inline-end-width: 2px; }
@@ -19782,6 +19821,14 @@ html[dir="rtl"]
   background-color: rgb(255, 255, 255);
   border-width: 0 1px 1px; }
 
+/* Styling for the resize dialog in mobile device. */
+.oj-table-resize-dialog-mobile {
+  width: 100vw;
+  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
+  border-radius: 0px; }
+
 /* Styling for the default sort icon */
 /* Styling for the sort ascending icon */
 /* Styling for the sort descending icon */
@@ -19793,8 +19840,8 @@ oj-text-area:not(.oj-complete) {
   font-size: 100%;
   margin: 0;
   overflow: auto;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  padding-top: calc(0.75rem - 1px);
+  padding-bottom: calc(0.75rem - 1px);
   line-height: 1.25;
   height: auto;
   resize: none; }
@@ -19804,7 +19851,7 @@ oj-text-area:not(.oj-complete) {
   padding-left: 0;
   padding-right: 0; }
 
-oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only .oj-textarea-input {
+.oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only .oj-textarea-input {
   padding: 0.5rem .75rem; }
 
 .oj-text-field.oj-read-only .oj-textarea-input:focus {
@@ -19833,8 +19880,14 @@ oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only .oj-textarea-input 
 .oj-textarea .oj-text-field-container {
   height: auto; }
 
-.oj-textarea .oj-text-field-middle {
-  min-height: 3.25rem; }
+.oj-textarea .oj-text-field-container {
+  min-height: 2.75rem; }
+
+.oj-textarea.oj-read-only .oj-text-field-container {
+  min-height: 0; }
+
+.oj-textarea.oj-text-field-label-inside .oj-text-field-container {
+  align-items: stretch; }
 
 .oj-text-field-label-inside .oj-textarea-input {
   padding: 0 .75rem;
@@ -19845,7 +19898,7 @@ oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only .oj-textarea-input 
 .oj-text-field-label-inside.oj-textarea.oj-read-only .oj-textarea-input {
   margin-top: 0; }
 
-oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-textarea-input {
+.oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-textarea-input {
   padding: 0 .75rem;
   margin-top: 1.49998rem; }
 
@@ -19959,10 +20012,14 @@ oj-timeline:not(.oj-complete) {
 
 .oj-timeline-item {
   background-color: rgb(255, 255, 255);
-  border-top-color: rgb(58, 54, 50); }
+  border-top-color: rgb(58, 54, 50);
+  padding-top: 16px;
+  border-top-left-radius: 6px; }
 
 .oj-timeline-item.oj-hover {
-  border-top-color: rgb(148, 179, 130); }
+  background-color: rgba(22, 21, 19, .04);
+  border-top-color: rgb(58, 54, 50);
+  stroke-width: 1px; }
 
 .oj-timeline-item.oj-selected {
   border-top-color: rgb(22, 21, 19); }
@@ -19973,26 +20030,29 @@ oj-timeline:not(.oj-complete) {
   line-height: 1.2;
   white-space: nowrap; }
 
+.oj-timeline-item-duration-event-overflow-bubble {
+  background-color: rgb(228, 225, 221); }
+
 .oj-timeline-item-title {
-  color: rgba(22, 21, 19, .65);
+  color: rgb(22, 21, 19);
   font-size: 0.859rem;
   line-height: 1.2;
   white-space: nowrap;
-  font-weight: bold; }
+  font-weight: 600; }
 
 .oj-timeline-major-axis-label {
-  color: rgba(22, 21, 19, .65);
+  color: rgb(22, 21, 19);
   font-size: 1rem;
   line-height: 1.25;
   white-space: nowrap;
-  font-weight: bold; }
+  font-weight: 600; }
 
 .oj-timeline-major-axis-separator {
   color: rgb(123, 117, 112); }
 
 .oj-timeline-minor-axis {
-  background-color: rgb(228, 225, 221);
-  border-top-color: rgb(212, 207, 202); }
+  background-color: rgb(245, 244, 242);
+  border-top-color: rgb(123, 117, 112); }
 
 .oj-timeline-minor-axis-label {
   color: rgb(22, 21, 19);
@@ -20001,7 +20061,7 @@ oj-timeline:not(.oj-complete) {
   white-space: nowrap; }
 
 .oj-timeline-minor-axis-separator {
-  color: rgb(123, 117, 112); }
+  color: rgb(245, 244, 242); }
 
 .oj-timeline-overview {
   background-color: rgb(212, 207, 202); }
@@ -20503,7 +20563,6 @@ oj-tree-view:focus {
   list-style-type: none;
   -webkit-user-select: none;
           user-select: none;
-  min-width: -webkit-fit-content;
   min-width: fit-content;
   min-width: -moz-fit-content; }
 
@@ -21630,7 +21689,7 @@ html[dir="rtl"] .oj-navigationlist:not(.oj-navigationlist-stack-icon-label):not(
     --oj-private-table-global-display-default:           list;
     --oj-private-table-global-display-list-horizontal-grid-visible-default:    disabled;
     --oj-private-table-global-add-animation:       '[{"effect":"slideIn","direction":"bottom"},"fadeIn"]';
-    --oj-private-table-global-remove-animation:    '[{"effect":"slideOut","direction":"top"},"fadeOut"]' ;
+    --oj-private-table-global-remove-animation:    '[{"effect":"slideOut","direction":"top"},"fadeOut"]';
     --oj-private-table-global-update-animation:    '{"effect":"fadeIn"}';
     --oj-private-table-global-load-indicator-default:       skeleton;
     --oj-private-table-global-enable-selector-default:       true; 

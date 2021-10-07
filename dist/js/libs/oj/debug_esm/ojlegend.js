@@ -473,7 +473,7 @@ var __oj_legend_section_metadata =
 * @ojsignature [{target: "Type", value: "K", for: "id"},
 *               {target: "Type", value: "Array.<oj.ojLegend.Item<K>>", for: "items", jsdocOverride: true},
 *               {target: "Type", value: "Array.<oj.ojLegend.Section<K>>", for: "sections", jsdocOverride: true},
-*               {target: "Type", value: "CSSStyleDeclaration", for: "titleStyle", jsdocOverride: true},
+*               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "titleStyle", jsdocOverride: true},
 *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
 */
 
@@ -500,8 +500,8 @@ var __oj_legend_section_metadata =
  * @property {"image"|"line"|"lineWithMarker"|"marker"} [symbolType="marker"] The type of legend symbol to display.
  * @property {string} text The legend item text.
  * @ojsignature [{target: "Type", value: "K", for: "id"},
- *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
- *               {target: "Type", value: "CSSStyleDeclaration", for: "markerSvgStyle", jsdocOverride: true},
+ *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
+ *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "markerSvgStyle", jsdocOverride: true},
  *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 
@@ -587,6 +587,11 @@ var __oj_legend_section_metadata =
   * @property {any} key The key of the current node
   * @property {Array} parentData  An array of data objects of the outermost to innermost parents of the node
   * @property {any} parentKey  The key of the parent node
+  * @ojsignature [{target:"Type", value:"<K = any, D = any>", for:"genericTypeParameters"},
+  * {target:"Type", value:"D", for:"data", jsdocOverride: true},
+  * {target:"Type", value:"K", for:"key", jsdocOverride: true},
+  * {target:"Type", value:"K", for:"parentKey", jsdocOverride: true},
+  * {target:"Type", value:"Array<D>", for:"parentData", jsdocOverride: true}]
   */
 
  /**
@@ -1119,7 +1124,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @instance
        * @type {Object=}
        * @default  {}
-       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">text-style</code> attribute specified:</caption>
        * &lt;oj-legend text-style='{"fontSize":"12px"}'>&lt;/oj-legend>
@@ -1674,7 +1679,7 @@ setDefaultOptions({
  * @ojshortdesc The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {Object=}
- * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
  */
 /**
  * The CSS style class to apply to the marker of the legend item symbol. This style class and <code> marker-svg-style </code> will override any other styling specified for the marker. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.
@@ -1695,7 +1700,7 @@ setDefaultOptions({
  * @ojshortdesc The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. See the Help documentation for more information.
  * @instance
  * @type {Object=}
- * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
  */
 /**
  * The shape of the marker. Only applies if symbolType is "marker" or "lineWithMarker". Can take the name of a built-in shape or the SVG path commands for a custom shape. Does not apply if a custom image is specified.
@@ -1812,7 +1817,7 @@ setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {Object=}
- * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
  * @default {}
  */
 /**

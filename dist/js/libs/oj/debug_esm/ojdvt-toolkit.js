@@ -17982,8 +17982,13 @@ EventManager.prototype._onContextMenuHelper = function (event, obj) {
   if (popupLaunched) event.preventDefault();
 
   // Process selection only for selectable objects so that generating context menu on empty area doesn't deselect ()
-  if (obj && obj.isSelectable && obj.isSelectable())
-    this.ProcessSelectionEventHelper(obj, event.ctrlKey);
+  if (obj && obj.isSelectable && obj.isSelectable()) {
+    // prevent deselection in mac ctrl + click
+    var skip = Agent.os === 'mac' && obj.isSelected();
+    if (!skip) {
+      this.ProcessSelectionEventHelper(obj, event.ctrlKey);
+    }
+  }
 };
 
 /**
@@ -20375,7 +20380,10 @@ Context.prototype.addSizingSvg = function () {
  */
 Context.prototype.removeSizingSvg = function () {
   if (this._sizingSvg) {
-    ToolkitUtils.removeAttrNullNS(this._root, 'style');
+    this._root.style.removeProperty('position');
+    this._root.style.removeProperty('left');
+    this._root.style.removeProperty('top');
+    this._root.style.removeProperty('padding');
     this.getContainer().removeChild(this._sizingSvg);
     this._sizingSvg = null;
   }

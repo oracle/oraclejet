@@ -112,7 +112,22 @@ import { warn } from 'ojs/ojlogger';
 
 /**
  * @typedef {Object} ArrayDataProvider.Options
- * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator to use for sort.
+ * @property {ArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator for custom sort.
+ * <p>
+ * Sort follows JavaScript's localeCompare <code>{numeric: true}</code>.
+ * Please check {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare#numeric_sorting|String.prototype.localeCompare()} for details.
+ * </p>
+ * <p>
+ * For numbers, we convert them into strings then compare them with localeCompare.
+ * If you want to sort floating point numbers correctly, sortComparator can be used to do a custom sort.
+ * </p>
+ * <p>
+ * For null and undefined values, we convert them into string which is 'null' and 'undefined'.
+ * The sorting behavior for undefined and null values will be changed in version 12.0.0.
+ * </p>
+ * <p>
+ * In version 12.0.0, null and undefined values will be considered as the largest values during sorting.
+ * </p>
  * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
  * This is used for cases where we would like display some indication that the data is already sorted.
  * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
@@ -139,6 +154,48 @@ import { warn } from 'ojs/ojlogger';
  *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
  * ]
+ * @ojtsexample <caption>Examples for sortComparator</caption>
+ * // Custom comparator for date
+ * let comparator = function (a, b) {
+ *    if (a === b) {
+ *      return 0;
+ *    }
+ *
+ *    var dateA = new Date(a).getTime();
+ *    var dateB = new Date(b).getTime();
+ *    return dateA > dateB ? 1 : -1;
+ * };
+ * // Then create an ArrayDataProvider object and set Date field to use the this comparator
+ * this.dataprovider = new ArrayDataProvider(JSON.parse(deptArray), {
+ *    keyAttributes: "DepartmentId",
+ *    sortComparators: { comparators: new Map().set("Date", comparator) },
+ * });
+ * @ojtsexample
+ * // Custom comparator for number
+ * let comparator = function (a, b) {
+ *    return a - b;
+ *  };
+ * // Then create an ArrayDataProvider object and set Date field to use the this comparator
+ * this.dataprovider = new ArrayDataProvider(JSON.parse(deptArray), {
+ *    keyAttributes: "DepartmentId",
+ *    sortComparators: { comparators: new Map().set("Date", comparator) },
+ * });
+ * @ojtsexample
+ * // Custom comparator for numnbers with null/undefined
+ * let comparator = function (a, b) {
+ *     if (a === null || a === undefined) {
+ *       return 1;
+ *     }
+ *     if (b === null || b === undefined) {
+ *       return -1;
+ *     }
+ *     return a - b;
+ *  };
+ * // Then create an ArrayDataProvider object and set Date field to use the this comparator
+ * this.dataprovider = new ArrayDataProvider(JSON.parse(deptArray), {
+ *    keyAttributes: "DepartmentId",
+ *    sortComparators: { comparators: new Map().set("Date", comparator) },
+ * });
  */
 
 /**
@@ -1065,8 +1122,8 @@ class ArrayDataProvider {
                 }
                 else {
                     let compareResult = 0;
-                    const strX = typeof xval === 'string' ? xval : xval.toString();
-                    const strY = typeof yval === 'string' ? yval : yval.toString();
+                    const strX = typeof xval === 'string' ? xval : new String(xval).toString();
+                    const strY = typeof yval === 'string' ? yval : new String(yval).toString();
                     if (direction === 'ascending') {
                         compareResult = strX.localeCompare(strY, undefined, {
                             numeric: true,

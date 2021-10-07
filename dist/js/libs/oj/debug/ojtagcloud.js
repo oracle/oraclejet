@@ -135,7 +135,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
    *               {target: "Type", value: "?(string | ((context: oj.ojTagCloud.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride:true}]
    */
   /**
    * @typedef {Object} oj.ojTagCloud.TooltipContext
@@ -417,7 +417,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @memberof! oj.ojTagCloudItem
    * @instance
    * @type {Object=}
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
    *
    * @example <caption>Initialize tag cloud item with the
@@ -1272,7 +1272,7 @@ var __oj_tag_cloud_item_metadata =
            * @instance
            * @type {Object=}
            * @default {}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */

@@ -583,7 +583,7 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
     renderMode: 'jet' | 'native';
     timePicker: {
         footerLayout: '' | 'now';
-        showOn?: 'focus' | 'image';
+        showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -765,7 +765,7 @@ export interface ojInputDateTimeSettableProperties extends ojInputDateSettablePr
     renderMode: 'jet' | 'native';
     timePicker: {
         footerLayout: '' | 'now';
-        showOn?: 'focus' | 'image';
+        showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -829,7 +829,7 @@ export interface ojInputTime extends inputBase<string, ojInputTimeSettableProper
     renderMode: 'jet' | 'native';
     timePicker: {
         footerLayout: '' | 'now';
-        showOn?: 'focus' | 'image';
+        showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;
@@ -999,7 +999,7 @@ export interface ojInputTimeSettableProperties extends inputBaseSettableProperti
     renderMode: 'jet' | 'native';
     timePicker: {
         footerLayout: '' | 'now';
-        showOn?: 'focus' | 'image';
+        showOn?: 'focus' | 'userFocus' | 'image';
         timeIncrement?: string;
     };
     validators: Array<Validator<string> | AsyncValidator<string>> | null;

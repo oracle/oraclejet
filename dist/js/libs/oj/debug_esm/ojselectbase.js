@@ -1232,6 +1232,22 @@ LovDropdown.prototype.updateLabel = function (ariaLabelId, ariaLabel) {
   }
 };
 
+LovDropdown.prototype.updateItemTextRendererFunc = function (itemTextRendererFunc) {
+  // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
+  // do a granular update if item-text changes instead of a general refresh
+  this._itemTextRendererFunc = itemTextRendererFunc;
+  if (!this._collectionTemplate &&
+      !this._itemTemplate &&
+      this._resultsElem) {
+    var listView = this._resultsElem[0];
+    // add busy state around the set so our unit tests know when the resulting render is done
+    var resolveBusyState = this._addBusyStateFunc('LovDropdown setting new default item renderer');
+    listView.setProperty('item.renderer', this._defaultItemRenderer.bind(this));
+    var busyContext = Context.getContext(listView).getBusyContext();
+    busyContext.whenReady().then(resolveBusyState, resolveBusyState);
+  }
+};
+
 /**
  * Configures the results by doing the following operations:
  *   1. hides/shows the dropdown based on the availability of the results
@@ -2176,7 +2192,7 @@ LovDropdown.prototype._handleCollectionFocusinOnce = function (data) {
  * @private
  */
 const LovMainField = function (options) {
-  // {className, ariaLabel, ariaControls, idSuffix,
+  // {className, ariaLabel, ariaControls, componentId,
   //  inputType, enabled, readOnly, placeholder, addBusyStateFunc,
   //  forceReadOnly, endContent, createOrUpdateReadonlyDivFunc}
   this._addBusyStateFunc = options.addBusyStateFunc;
@@ -2213,7 +2229,7 @@ LovMainField.prototype.getInputText = function () {
 
 LovMainField.prototype._createInnerDom = function (options) {
   var className = options.className;
-  var idSuffix = options.idSuffix;
+  var componentId = options.componentId;
   var inputType = options.inputType;
   var enabled = options.enabled;
   var readonly = options.readOnly;
@@ -2231,7 +2247,8 @@ LovMainField.prototype._createInnerDom = function (options) {
   textFieldContainer.appendChild(labelValueDiv); // @HTMLUpdateOK
 
   var input = cachedMainFieldInputElement || document.createElement('input');
-  input.setAttribute('id', className + '-input-' + idSuffix);
+  // use the same id convention as EditableValueUtils._initInputIdLabelForConnection
+  input.setAttribute('id', componentId + '|input');
   // JET-37990 - oj-select-single: autocomplete is not disabled in chrome browser
   // Chrome used to ignore "off" value, but as of Chrome 81 it works more reliably
   // (https://stackoverflow.com/questions/57367813/2019-chrome-76-approach-to-autocomplete-off)
@@ -2326,7 +2343,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    * Options that require a refresh when changed.
    * @private
    */
-  _OPTIONS_REQUIRING_REFRESH: new Set(['disabled', 'readOnly', 'placeholder', 'data', 'itemText']),
+  _OPTIONS_REQUIRING_REFRESH: new Set(['disabled', 'readOnly', 'placeholder', 'data']),
 
   options: {
     /**
@@ -2662,6 +2679,9 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    */
   _AfterCreate: function () {
     this._super();
+
+    this._initInputIdLabelForConnection(
+      this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
   },
 
   /**
@@ -2775,16 +2795,11 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   _refreshRequired: EditableValueUtils._refreshRequired,
 
   /**
-   * Draw a readonly div if needed. When readonly, this div is shown and
-   * the input has display:none on it through theming, and vice versa.
-   * We set the textContent in _SetDisplayValue() if readonly, and
-   * in this function.
-   * @param {HTMLElement} pass in the input element.
    * @memberof! oj.ojSelectBase
    * @instance
    * @private
    */
-  _createOrUpdateReadonlyDiv: EditableValueUtils._createOrUpdateReadonlyDiv,
+  _setTabIndex: EditableValueUtils._setTabIndex,
 
   /**
    * Called to find out if aria-required is unsupported.
@@ -2911,7 +2926,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       className: className,
       ariaLabel: OuterWrapper.getAttribute('aria-label'),
       ariaControls: OuterWrapper.getAttribute('aria-controls'),
-      idSuffix: idSuffix,
+      componentId: elemId,
       inputType: inputType,
       enabled: lovEnabled,
       readOnly: readonly,
@@ -2987,7 +3002,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       getTranslatedStringFunc: getTranslatedStringFunc,
       addBusyStateFunc: addBusyStateFunc,
       showMainFieldFunc: this._showMainField.bind(this),
-      setFilterFieldTextFunc: this._setFilterFieldText.bind(this),
+      setFilterFieldTextFunc: this._SetFilterFieldText.bind(this),
       setUiLoadingStateFunc: this._setUiLoadingState.bind(this),
       isValueForPlaceholderFunc: this._IsValueForPlaceholder.bind(this),
       isShowValueInFilterFieldFunc: this._IsShowValueInFilterField.bind(this)
@@ -2996,13 +3011,37 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
 
     // swap main field container for the element
     element
-      .attr('tabindex', '-1')
       .hide()
       .attr('aria-hidden', true);
 
+    // JET-46247 - Acc: described-by resets after changing the data provider
+    // if we're refreshing, restore aria-describedby on the input
+    if (cachedMainFieldInputElem) {
+      // set describedby on the element as aria-describedby
+      var describedBy = this.options.describedBy;
+      if (describedBy) {
+        this._describedByUpdated(null, describedBy);
+      }
+    }
+
     this._refreshRequired(options.required);
 
+    // JET-46247 - Acc: described-by resets after changing the data provider
+    // reconnect the input and label
+    this._initInputIdLabelForConnection(
+      this._GetContentElement()[0], OuterWrapper.id, this.options.labelledBy);
+
     this._updateLabel();
+
+    // JET-45967 - tabindex does not propagate for select-single
+    // transfer tabindex from hidden initnode input to appropriate inner DOM elements
+    this._setTabIndex(element[0], lovMainField.getInputElem());
+    if (readonly) {
+      var readonlyElem = this._getReadonlyDiv();
+      if (readonlyElem) {
+        this._setTabIndex(element[0], readonlyElem);
+      }
+    }
 
     // JET-32835 - SINGLESELECT'S INLINE MESSAGES IS SOMETIMES BELOW AND SOMETIMES ABOVE COMPONENT.
     // append pre-existing child nodes at the end of our internal DOM
@@ -3209,7 +3248,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     this._containerEventListeners = null;
 
     this.element
-      .removeAttr('aria-hidden tabindex')
+      .removeAttr('aria-hidden')
       .show();
 
     this._removeDataProviderEventListeners();
@@ -3322,6 +3361,17 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   /**
    * @memberof! oj.ojSelectBase
    * @instance
+   * @protected
+   */
+  _UpdateItemText: function () {
+    // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
+    // do a granular update if item-text changes instead of a general refresh
+    this._lovDropdown.updateItemTextRendererFunc(this._ItemTextRenderer.bind(this));
+  },
+
+  /**
+   * @memberof! oj.ojSelectBase
+   * @instance
    * @private
    */
   _initContainer: function (className, idSuffix, readonly) {
@@ -3392,9 +3442,9 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   /**
    * @memberof! oj.ojSelectBase
    * @instance
-   * @private
+   * @protected
    */
-  _setFilterFieldText: function (text) {
+  _SetFilterFieldText: function (text) {
     this._ignoreFilterFieldRawValueChanged = true;
 
     this._filterInputText.value = text;
@@ -3448,7 +3498,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       var mainInputElem = lovMainField.getInputElem();
       if (!preserveState) {
         var filterFieldText = this._IsShowValueInFilterField() ? mainInputElem.value : '';
-        this._setFilterFieldText(filterFieldText);
+        this._SetFilterFieldText(filterFieldText);
 
         LovUtils.copyAttribute(mainInputElem, 'aria-describedby', filterInputText, 'described-by');
       }
@@ -4203,7 +4253,7 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       templateContextComponentElement: this.OuterWrapper,
       getTranslatedStringFunc: getTranslatedStringFunc,
       addBusyStateFunc: addBusyStateFunc,
-      itemTextRendererFunc: this._itemTextRenderer.bind(this),
+      itemTextRendererFunc: this._ItemTextRenderer.bind(this),
       filterInputText: this._filterInputText,
       afterDropdownInitFunc: afterDropdownInitFunc,
       getThrottlePromiseFunc: this._GetThrottlePromise.bind(this),
@@ -4475,7 +4525,20 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
     // new change until after we're done processing the current change
     if (this._makingInternalValueChange) {
       this._queueValueChangeDeferredCallback(function () {
-        this._setOptions(options, flags);
+        // JET-46247 - Acc: described-by resets after changing the data provider
+        // don't re-set the same labelledBy again because it can affect whether the label
+        // actually gets read out by the screen reader (because it may change how the label is
+        // configured between the main and filter inputs)
+        var newOptions = Object.assign({}, options);
+        // eslint-disable-next-line no-prototype-builtins
+        if (newOptions.hasOwnProperty('labelledBy') &&
+            newOptions.labelledBy === this.options.labelledBy) {
+          delete newOptions.labelledBy;
+          if (Object.entries(newOptions).length === 0) {
+            return;
+          }
+        }
+        this._setOptions(newOptions, flags);
       }.bind(this));
 
       return;
@@ -4660,6 +4723,10 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
       // set labelled-by attr on our custom element after we've been initialized)
       // this.refresh();
       this._updateLabel();
+    } else if (key === 'itemText') {
+      // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
+      // do a granular update if item-text changes instead of a general refresh
+      this._UpdateItemText();
     }
   },
 
@@ -4756,6 +4823,22 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
   // hidden (display: none). Pass in an openOption override.
     var launcher = this._GetMessagingLauncherElement();
     this._OpenContextMenu(event, eventType, { launcher: launcher });
+  },
+
+  /**
+   * @protected
+   * @memberof! oj.ojSelectBase
+   * @instance
+   */
+  _NotifyMessagingStrategyQueueAction: function (promise) {
+    // JET-46567 - JAWS is reading out error message even after selecting correct value
+    // this will be called from InlineMessagingStrategy._queueAction before the
+    // timer to update messages is fired so that we can defer processing until after
+    // the DOM has been changed
+    this._messagingStrategyQueueActionPromise = promise;
+    promise.then(function () {
+      this._messagingStrategyQueueActionPromise = null;
+    }.bind(this));
   },
 
   /**
@@ -4863,9 +4946,9 @@ oj.__registerWidget('oj.ojSelectBase', $.oj.editableValue, {
    * Renders text representing a data item.
    * @memberof! oj.ojSelectBase
    * @instance
-   * @private
+   * @protected
    */
-  _itemTextRenderer: function (valueItem) {
+  _ItemTextRenderer: function (valueItem) {
     var formatted;
     if (valueItem && valueItem.data) {
       var itemText = this.options.itemText;

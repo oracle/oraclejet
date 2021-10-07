@@ -75,10 +75,20 @@ export declare type HasTypeParameters = ts.ClassLikeDeclarationBase | ts.Interfa
 export declare type PropsInfo = {
     propsName: string;
     propsType: ts.Type;
+    propsMappedTypes: Array<MappedTypeItem>;
     propsExtendGlobalPropsRef: ts.TypeReferenceType | null;
     propsTypeParams?: string;
     propsGenericsDeclaration?: ts.Declaration;
     propsObservedGlobalProps?: Array<string>;
+};
+export declare type MappedTypeItem = {
+    name: string;
+    params?: string;
+};
+export declare type MappedTypesInfo = {
+    mappedTypes: Array<MappedTypeItem>;
+    wrappedTypeName: string;
+    wrappedTypeNode?: ts.TypeNode;
 };
 export declare type IntersectionTypeNodeInfo = {
     observedProps?: Array<string>;
@@ -98,6 +108,8 @@ export declare type MetaUtilObj = {
     aliasToNamedExport: Record<string, string>;
     dynamicSlotsInUse: number;
     reservedGlobalProps?: Array<string>;
+    excludedTypes?: Set<string>;
+    excludedTypeAliases?: Set<string>;
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
 };

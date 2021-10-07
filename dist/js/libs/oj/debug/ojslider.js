@@ -1685,8 +1685,8 @@ var __oj_range_slider_metadata =
             this._styleFromInputTag = this.element[0].style.cssText;
           }
 
-          this._inputElementOriginalDisplay = this.element.css('display');
-          this.element.css('display', 'none');
+          this._inputElementOriginalDisplay = this.element[0].style.display;
+          this.element[0].style.display = 'none';
 
           if (this.OuterWrapper) {
             this._elementWrapped = $(this.OuterWrapper);
@@ -2385,7 +2385,7 @@ var __oj_range_slider_metadata =
       //
       _unwrapSlider: function () {
         DomUtils.unwrap(this.element, this._elementWrapped);
-        this.element.css('display', this._inputElementOriginalDisplay);
+        this.element[0].style.display = this._inputElementOriginalDisplay;
         this._RestoreAttributes(this.element);
       },
 

@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj, $, DomUtils, Logger, Context, ojconfig, ojtranslation, ThemeUtils, ojcomponentcore, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, ojkeyset, RegExpValidator) { 'use strict';
+define(['touchr', 'ojdnd', 'ojs/ojeditablevalue', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojpopup', 'ojs/ojdialog', 'ojs/ojbutton', 'ojs/ojdatasource-common', 'ojs/ojdataprovideradapter', 'ojs/ojlistdataproviderview', 'ojs/ojselector', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojdatacollection-common', 'ojs/ojanimation', 'ojs/ojdomscroller', 'ojs/ojcustomelement-utils', 'ojs/ojkeyset', 'ojs/ojvalidator-regexp'], function (touchr, ojdnd, ojeditablevalue, ojinputnumber, ojmenu, ojpopup, ojdialog, ojbutton, ojdatasourceCommon, ojdataprovideradapter, ListDataProviderView, ojselector, oj, $, DomUtils, Logger, Context, Config, ojtranslation, ThemeUtils, ojcomponentcore, DataCollectionUtils, ojanimation, DomScroller, ojcustomelementUtils, ojkeyset, RegExpValidator) { 'use strict';
 
   ListDataProviderView = ListDataProviderView && Object.prototype.hasOwnProperty.call(ListDataProviderView, 'default') ? ListDataProviderView['default'] : ListDataProviderView;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -438,6 +438,9 @@ var __oj_table_metadata =
         "labelAccSelectionAffordanceTop": {
           "type": "string"
         },
+        "labelColumnWidth": {
+          "type": "string"
+        },
         "labelDisableNonContiguousSelection": {
           "type": "string"
         },
@@ -448,6 +451,15 @@ var __oj_table_metadata =
           "type": "string"
         },
         "labelResize": {
+          "type": "string"
+        },
+        "labelResizeColumn": {
+          "type": "string"
+        },
+        "labelResizeColumnDialog": {
+          "type": "string"
+        },
+        "labelResizeDialogApply": {
           "type": "string"
         },
         "labelResizePopupCancel": {
@@ -3042,17 +3054,33 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._handleContextMenuResizePopup = function () {
-    var spinner = document.getElementById(
-      this._getTableId() + '_resize_popup_spinner');
-    var popup = this._getContextMenuResizePopup();
-    var columnIdx = parseInt(popup.getAttribute('data-oj-columnIdx'), 10);
-    var widthValue;
-    if (this._IsCustomElement()) {
-      widthValue = spinner.value;
-      popup.close();
+    let columnIdx;
+    let widthValue;
+    const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+    if (!isRedwood) {
+      let spinner = document.getElementById(
+        this._getTableId() + '_resize_popup_spinner');
+      let popup = this._getContextMenuResizePopup();
+      columnIdx = parseInt(popup.getAttribute('data-oj-columnIdx'), 10);
+      if (this._IsCustomElement()) {
+        widthValue = spinner.value;
+        popup.close();
+      } else {
+        widthValue = $(spinner).ojInputNumber('option', 'value');
+        $(popup).ojPopup('close');
+      }
     } else {
-      widthValue = $(spinner).ojInputNumber('option', 'value');
-      $(popup).ojPopup('close');
+      let columnWidthInput = document.getElementById(
+        this._getTableId() + '_resize_column_width_input');
+      let dialog = this._getContextMenuResizeDialog();
+      columnIdx = parseInt(dialog.getAttribute('data-oj-columnIdx'), 10);
+      if (this._IsCustomElement()) {
+        widthValue = columnWidthInput.value;
+        dialog.close();
+      } else {
+        widthValue = $(columnWidthInput).ojInputNumber('option', 'value');
+        $(dialog).ojDialog('close');
+      }
     }
     var clonedColumnsOption = [];
     var columnsCount = this.options.columns.length;
@@ -3126,9 +3154,6 @@ var __oj_table_metadata =
       item.children().first()
         .text(this.getTranslatedString('labelEnableNonContiguousSelection'));
     } else if (menuItemCommand === 'oj-table-resize') {
-      var popup = this._getContextMenuResizePopup();
-      popup.setAttribute('data-oj-columnIdx', columnIdx);
-
       var target = headerColumn || tableBodyCell;
       var columnWidth = this._getLayoutManager().getColumnWidthProperty(target);
 
@@ -3139,14 +3164,33 @@ var __oj_table_metadata =
         launcher = tableBodyCell;
       }
 
-      var spinner = document.getElementById(
-        this._getTableId() + '_resize_popup_spinner');
-      if (this._IsCustomElement()) {
-        spinner.value = Math.round(columnWidth);
-        popup.open(launcher);
+      const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+      if (!isRedwood) {
+        let popup = this._getContextMenuResizePopup();
+        popup.setAttribute('data-oj-columnIdx', columnIdx);
+
+        let spinner = document.getElementById(
+          this._getTableId() + '_resize_popup_spinner');
+        if (this._IsCustomElement()) {
+          spinner.value = Math.round(columnWidth);
+          popup.open(launcher);
+        } else {
+          $(spinner).ojInputNumber('option', 'value', Math.round(columnWidth));
+          $(popup).ojPopup('open', launcher);
+        }
       } else {
-        $(spinner).ojInputNumber('option', 'value', Math.round(columnWidth));
-        $(popup).ojPopup('open', launcher);
+        let dialog = this._getContextMenuResizeDialog();
+        dialog.setAttribute('data-oj-columnIdx', columnIdx);
+
+        let columnWidthInput = document.getElementById(
+          this._getTableId() + '_resize_column_width_input');
+        if (this._IsCustomElement()) {
+          columnWidthInput.value = Math.round(columnWidth);
+          dialog.open(launcher);
+        } else {
+          $(columnWidthInput).ojInputNumber('option', 'value', Math.round(columnWidth));
+          $(dialog).ojDialog('open', launcher);
+        }
       }
     }
   };
@@ -4537,7 +4581,7 @@ var __oj_table_metadata =
     this._queueTask(function () {
       var enginePromise;
       try {
-        enginePromise = ojconfig.__getTemplateEngine().then(function (engine) {
+        enginePromise = Config.__getTemplateEngine().then(function (engine) {
           this._templateEngine = engine;
         }.bind(this), function (err) {
           Logger.warn(err);
@@ -5447,8 +5491,6 @@ var __oj_table_metadata =
    */
   TableDndContext.prototype.handleColumnDrop = function (event) {
     if (this._isColumnReordering()) {
-      // clear selection state
-      this.component._clearSelectionState();
       return this.handleColumnReorderDrop(event);
     }
 
@@ -5515,7 +5557,9 @@ var __oj_table_metadata =
       this.component._rowsDragged.forEach(function (row) {
         row.classList.remove(TableDndContext._CSS_CLASSES._DRAG_SOURCE_OPAQUE);
         row.classList.remove('oj-table-row-drag-source-hide');
-      });
+        row.classList.add('oj-selected');
+        this.component._updateRowStateCellsClass(null, row, { selected: true });
+      }.bind(this));
     }
     this.component._removeDragOverIndicatorRow();
 
@@ -8806,6 +8850,7 @@ var __oj_table_metadata =
       this._resizeStartPageX = this._getPageX(event);
       this._minimumStartColWidth = this.getMinimumForcedOffsetWidth(this._resizeStartIndex);
       this._minimumEndColWidth = this.getMinimumForcedOffsetWidth(this._resizeEndIndex);
+      this._setResizeIndicator();
       event.preventDefault();
       if (isMouse) {
         this._setupMouseResizeListeners();
@@ -8869,6 +8914,7 @@ var __oj_table_metadata =
    * @private
    */
   TableStickyLayoutManager.prototype._handleResizeMouseUp = function (event) {
+    this._removeResizeIndicator();
     this._updateResizeColumnWidths(event, true);
     this._cleanupColumnResizing();
   };
@@ -8907,6 +8953,7 @@ var __oj_table_metadata =
   TableStickyLayoutManager.prototype.handleTouchEnd = function (event) {
     if (this._isColumnResizing) {
       event.preventDefault();
+      this._removeResizeIndicator();
       this._updateResizeColumnWidths(event, true);
       this._cleanupColumnResizing();
     }
@@ -8971,6 +9018,36 @@ var __oj_table_metadata =
         this._finishResize = null;
       }
     }
+  };
+
+  /**
+   * @private
+   */
+  TableStickyLayoutManager.prototype._setResizeIndicator = function () {
+    var visibleRowIdxArray = this._table._getVisibleRowIdxs();
+    var tableHeaderColumn = this._table._getTableHeaderColumn(this._resizeStartIndex);
+    if (tableHeaderColumn != null) {
+      tableHeaderColumn.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+    }
+    visibleRowIdxArray.forEach(function (rowIdx) {
+      var dataCell = this._table._getTableBodyCell(rowIdx, this._resizeStartIndex);
+      if (dataCell != null) {
+        dataCell.classList.add(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+      }
+    }.bind(this));
+  };
+
+  /**
+   * @private
+   */
+  TableStickyLayoutManager.prototype._removeResizeIndicator = function () {
+    var tableContainer = this._table._getTableContainer();
+    var columnCells = this._table._getTableElementsByClassName(tableContainer,
+      Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+
+    columnCells.forEach(function (columnCell) {
+      columnCell.classList.remove(Table.CSS_CLASSES._COLUMN_HEADER_DRAG_INDICATOR_AFTER_CLASS);
+    });
   };
 
   /**
@@ -10027,17 +10104,43 @@ var __oj_table_metadata =
       this._getRowSelectionMode() === Table._OPTION_SELECTION_MODES._MULTIPLE : false;
     if (!this._menuContainer) {
       if (this._GetDefaultContextMenu()) {
-        if (this._isTableSortable()) {
-          var sortMenu = this._createContextMenuItem('sort', this._IsCustomElement());
-          contextMenuNode.appendChild(sortMenu); // @HTMLUpdateOK
-        }
-        if (enableNonContiguousSelectionMenu) {
-          var nonContiguousSelectionMenu = this._createContextMenuItem('enableNonContiguousSelection', this._IsCustomElement());
-          contextMenuNode.appendChild(nonContiguousSelectionMenu); // @HTMLUpdateOK
-        }
-        if (this._isTableColumnsResizable()) {
-          var resizeMenu = this._createContextMenuItem('resize', this._IsCustomElement());
-          contextMenuNode.appendChild(resizeMenu); // @HTMLUpdateOK
+        const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+        if (!isRedwood) {
+          if (this._isTableSortable()) {
+            let sortMenu = this._createContextMenuItem('sort', this._IsCustomElement());
+            contextMenuNode.appendChild(sortMenu); // @HTMLUpdateOK
+          }
+          if (enableNonContiguousSelectionMenu) {
+            let nonContiguousSelectionMenu = this._createContextMenuItem('enableNonContiguousSelection', this._IsCustomElement());
+            contextMenuNode.appendChild(nonContiguousSelectionMenu); // @HTMLUpdateOK
+          }
+          if (this._isTableColumnsResizable()) {
+            let resizeMenu = this._createContextMenuItem('resize', this._IsCustomElement());
+            contextMenuNode.appendChild(resizeMenu); // @HTMLUpdateOK
+          }
+        } else {
+          if (this._isTableColumnsResizable()) {
+            let resizeMenu = this._createContextMenuItem('resize', this._IsCustomElement());
+            contextMenuNode.appendChild(resizeMenu); // @HTMLUpdateOK
+            if (this._isTableSortable()) {
+              let divider = document.createElement(this._IsCustomElement() ? 'oj-option' : 'li');
+              contextMenuNode.appendChild(divider); // @HTMLUpdateOK
+            }
+          }
+          if (this._isTableSortable()) {
+            let sortAscMenu = this._createContextMenuItem('sortAsc', this._IsCustomElement());
+            contextMenuNode.appendChild(sortAscMenu); // @HTMLUpdateOK
+            let sortDscMenu = this._createContextMenuItem('sortDsc', this._IsCustomElement());
+            contextMenuNode.appendChild(sortDscMenu); // @HTMLUpdateOK
+            if (enableNonContiguousSelectionMenu) {
+              let divider = document.createElement(this._IsCustomElement() ? 'oj-option' : 'li');
+              contextMenuNode.appendChild(divider); // @HTMLUpdateOK
+            }
+          }
+          if (enableNonContiguousSelectionMenu) {
+            let nonContiguousSelectionMenu = this._createContextMenuItem('enableNonContiguousSelection', this._IsCustomElement());
+            contextMenuNode.appendChild(nonContiguousSelectionMenu); // @HTMLUpdateOK
+          }
         }
         this._menuContainer = contextMenuNode;
         if (this._IsCustomElement()) {
@@ -10116,7 +10219,12 @@ var __oj_table_metadata =
       return this._createContextMenuListItem(command, useOjOption);
     } else if (command === 'resize') {
       // create the resize popup too
-      this._createContextMenuResizePopup(0);
+      const isRedwood = ThemeUtils.parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
+      if (!isRedwood) {
+        this._createContextMenuResizePopup(0);
+      } else {
+        this._createContextMenuResizeDialog(0);
+      }
       return this._createContextMenuListItem(command, useOjOption);
     }
     return null;
@@ -10157,7 +10265,7 @@ var __oj_table_metadata =
     } else if (command === 'disableNonContiguousSelection') {
       commandString = this.getTranslatedString('labelDisableNonContiguousSelection');
     } else if (command === 'resize') {
-      commandString = this.getTranslatedString('labelResize');
+      commandString = this.getTranslatedString('labelResizeColumn');
     }
 
     var textNode = document.createTextNode(commandString);
@@ -10175,6 +10283,7 @@ var __oj_table_metadata =
   };
 
   /**
+   * Resize popup for alta theme
    * Build the html for the resize popup and add it to the root node
    * @param {number} initialSize the initial size to put in the spinner
    * @private
@@ -10343,6 +10452,172 @@ var __oj_table_metadata =
       $(spinner).ojInputNumber('option', 'value', initialSize);
     }
     return popup;
+  };
+
+  /**
+   * Build the html for the resize dialog and add it to the root node
+   * @param {number} initialSize the initial size to put in the spinner
+   * @private
+   */
+  Table.prototype._createContextMenuResizeDialog = function (initialSize) {
+    // eslint-disable-next-line no-param-reassign
+    initialSize = Math.round(initialSize);
+    let tableContainer = this._getTableContainer();
+    let dialog = this._getContextMenuResizeDialog();
+    let tableId = this._getTableId();
+
+    if (this._IsCustomElement()) {
+      // create the base dialog
+      if (dialog == null) {
+        dialog = document.createElement('oj-dialog');
+        dialog.setAttribute('id', tableId + '_resize_dialog');
+        dialog.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
+        dialog.setAttribute('dialog-title',
+          this.getTranslatedString('labelResizeColumnDialog'));
+        tableContainer.appendChild(dialog); // @HTMLUpdateOK
+        let dialogBody = document.createElement('div');
+        dialogBody.setAttribute('slot', 'body');
+        let columnWidthInput = document.createElement('oj-input-number');
+        columnWidthInput.setAttribute('id', tableId + '_resize_column_width_input');
+        columnWidthInput.labelHint = this.getTranslatedString('labelColumnWidth');
+        columnWidthInput.min = 10;
+        columnWidthInput.step = 1;
+        columnWidthInput.value = initialSize;
+        columnWidthInput.displayOptions = {
+          messages: ['notewindow']
+        };
+        columnWidthInput.userAssistanceDensity = 'compact';
+        columnWidthInput.validators = [new RegExpValidator({
+          pattern: '^[1-9][0-9]*$',
+          messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
+        })];
+        dialogBody.appendChild(columnWidthInput);
+
+        let dialogFooter = document.createElement('div');
+        dialogFooter.setAttribute('slot', 'footer');
+
+        let dialogCancelButton = document.createElement('oj-button');
+        dialogCancelButton.setAttribute('id', tableId + '_resize_dialog_dialogcancel');
+        dialogCancelButton.textContent = this.getTranslatedString('labelResizePopupCancel');
+
+        let dialogApplyButton = document.createElement('oj-button');
+        dialogApplyButton.setAttribute('id', tableId + '_resize_dialog_dialogapply');
+        dialogApplyButton.chroming = 'callToAction';
+        dialogApplyButton.textContent = this.getTranslatedString('labelResizeDialogApply');
+
+        dialogFooter.appendChild(dialogCancelButton); // @HTMLUpdateOK
+        dialogFooter.appendChild(dialogApplyButton); // @HTMLUpdateOK
+
+        if (Config.getDeviceRenderMode() === 'phone') {
+          dialog.classList.add('oj-table-resize-dialog-mobile');
+          dialogApplyButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+          dialogCancelButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+          dialogFooter.classList.add('oj-sm-justify-content-center');
+        }
+
+        columnWidthInput.addEventListener('validChanged', function (event) {
+          if (event.detail.value === 'valid') {
+            dialogApplyButton.disabled = false;
+          } else {
+            dialogApplyButton.disabled = true;
+          }
+        });
+        dialog.appendChild(dialogBody); // @HTMLUpdateOK
+        dialog.appendChild(dialogFooter); // @HTMLUpdateOK
+
+        let cancelActionHandler = function () {
+          dialogApplyButton.disabled = false;
+          columnWidthInput.value = 0;
+          dialog.close();
+        };
+
+        dialogCancelButton.addEventListener('click', cancelActionHandler);
+        dialogApplyButton.addEventListener('click', this._handleContextMenuResizePopup.bind(this));
+
+        dialog.setAttribute('modality', 'modal');
+        this._cacheDomElement(tableId + '_resize_dialog', dialog);
+      } else {
+        let columnWidthInput = document.getElementById(tableId + '_resize_column_width_input');
+        columnWidthInput.value = initialSize;
+      }
+    } else if (dialog == null) {
+      // create the base popup
+      dialog = document.createElement(Table.DOM_ELEMENT._DIV); // @HTMLUpdateOK
+      dialog.setAttribute('id', tableId + '_resize_dialog');
+      dialog.setAttribute(Table._DATA_OJ_BINDING_PROVIDER, 'none'); // @HTMLUpdateOK
+      if (Config.getDeviceRenderMode() === 'phone') {
+        dialog.classList.add('oj-table-resize-dialog-mobile');
+      }
+      tableContainer.appendChild(dialog); // @HTMLUpdateOK
+      let dialogBody = document.createElement('div');
+      dialogBody.setAttribute('slot', 'body');
+      dialog.appendChild(dialogBody); // @HTMLUpdateOK
+
+      let columnWidthInput = document.createElement(Table.DOM_ELEMENT._INPUT); // @HTMLUpdateOK
+      columnWidthInput.setAttribute('id', tableId + '_resize_column_width_input');
+      let dialogCancelButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
+      dialogCancelButton.setAttribute('id', tableId + '_resize_dialog_dialogcancel');
+      let dialogApplyButton = document.createElement(Table.DOM_ELEMENT._BUTTON); // @HTMLUpdateOK
+      dialogApplyButton.setAttribute('id', tableId + '_resize_dialog_dialogapply');
+
+      let dialogFooter = document.createElement('div');
+      dialogFooter.setAttribute('slot', 'footer');
+      dialog.appendChild(dialogFooter); // @HTMLUpdateOK
+
+      dialogBody.appendChild(columnWidthInput); // @HTMLUpdateOK
+      dialogFooter.appendChild(dialogApplyButton); // @HTMLUpdateOK
+      dialogFooter.appendChild(dialogCancelButton); // @HTMLUpdateOK
+
+      $(dialogApplyButton).ojButton({
+        component: 'ojButton',
+        chroming: 'callToAction',
+        label: this.getTranslatedString('labelResizeDialogApply')
+      });
+      $(dialogCancelButton).ojButton({
+        component: 'ojButton',
+        label: this.getTranslatedString('labelResizePopupCancel')
+      });
+      let cancelActionHandler = function () {
+        $(dialogApplyButton).ojButton({ disabled: false });
+        $(columnWidthInput).ojInputNumber({ value: 0 });
+        $(dialog).ojDialog('close');
+      };
+      $(dialogApplyButton).on('click', this._handleContextMenuResizePopup.bind(this));
+      $(dialogCancelButton).on('click', cancelActionHandler);
+      $(columnWidthInput).ojInputNumber({
+        component: 'ojInputNumber',
+        labelHint: this.getTranslatedString('labelColumnWidth'),
+        min: 10,
+        step: 1,
+        value: initialSize,
+        displayOptions: {
+          messages: ['notewindow']
+        },
+        userAssistanceDensity: 'compact',
+        validators: [new RegExpValidator({
+          pattern: '^[1-9][0-9]*$',
+          messageDetail: this.getTranslatedString('msgColumnResizeWidthValidation')
+        })]
+      });
+      $(dialog).ojDialog({
+        dialogTitle: this.getTranslatedString('labelResizeColumnDialog'),
+        modality: 'modal'
+      });
+      if (Config.getDeviceRenderMode() === 'phone') {
+        dialog.classList.add('oj-table-resize-dialog-mobile');
+        dialogApplyButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+        dialogCancelButton.classList.add('oj-button-sm', 'oj-sm-6', 'oj-sm-margin-2x-horizontal');
+        dialogFooter.classList.add('oj-sm-justify-content-center');
+      }
+      $(columnWidthInput).on('change', function () {
+        $(dialogApplyButton).ojButton({ disabled: !$(columnWidthInput).ojInputNumber('validate') });
+      });
+      this._cacheDomElement(tableId + '_resize_dialog', dialog);
+    } else {
+      let columnWidthInput = document.getElementById(tableId + '_resize_column_width_input');
+      $(columnWidthInput).ojInputNumber('option', 'value', initialSize);
+    }
+    return dialog;
   };
 
   /**
@@ -10582,7 +10857,10 @@ var __oj_table_metadata =
    * @private
    */
   Table.prototype._createTableBodyRow = function () {
-    return document.createElement(Table.DOM_ELEMENT._TR); // @HTMLUpdateOK
+    var row = document.createElement(Table.DOM_ELEMENT._TR); // @HTMLUpdateOK
+    // need to ensure we wait for child busy states of deferred contents to clear properly
+    row._ojReportBusy = this._getTableBody();
+    return row;
   };
 
   /**
@@ -11021,7 +11299,9 @@ var __oj_table_metadata =
       if (isReorder) {
         this._rowsDragged.forEach(function (row) {
           row.classList.add('oj-table-row-drag-source-hide');
-        });
+          row.classList.remove('oj-selected');
+          this._updateRowStateCellsClass(null, row, { selected: false });
+        }.bind(this));
       }
     }
 
@@ -11065,6 +11345,19 @@ var __oj_table_metadata =
     }
 
     return this._getCachedDomElement(popupId);
+  };
+
+  /**
+   * @private
+   */
+  Table.prototype._getContextMenuResizeDialog = function () {
+    let dialogId = this._getTableId() + '_resize_dialog';
+    if (!this._isCachedDomElement(dialogId)) {
+      let dialog = document.getElementById(dialogId);
+      this._cacheDomElement(dialogId, dialog);
+    }
+
+    return this._getCachedDomElement(dialogId);
   };
 
   /**
@@ -11958,7 +12251,7 @@ var __oj_table_metadata =
           } else if (command === 'sortDsc') {
             commandString = this.getTranslatedString('labelSortDsc');
           } else if (command === 'resize') {
-            commandString = this.getTranslatedString('labelResize');
+            commandString = this.getTranslatedString('labelResizeColumn');
           }
           contextMenuLabel.contents().filter(function () {
             return this.nodeType === 3;
@@ -13057,6 +13350,7 @@ var __oj_table_metadata =
     _COLUMN_HEADER_DRAG_IMAGE: 'oj-table-column-header-cell-drag-image',
     _COLUMN_HEADER_RESIZING_CLASS: 'oj-table-column-header-resizing',
     _COLUMN_HEADER_RESIZE_INDICATOR_CLASS: 'oj-table-column-header-resize-indicator',
+    _COLUMN_RESIZE_INDICATOR_CLASS: 'oj-table-column-resize-indicator',
     _TABLE_BODY_CLASS: 'oj-table-body',
     _TABLE_BUFFER_ROW_CLASS: 'oj-table-body-scroll-buffer',
     _TABLE_LEGACY_WIDTH_BUFFER_ROW_CLASS: 'oj-table-legacy-width-buffer',
@@ -13542,10 +13836,10 @@ var __oj_table_metadata =
       var rowIdx = this._getElementRowIdx(eventTarget);
       if (this._isTableOwned(eventTarget) && this._getTableDndContext()._dragImage == null) {
         eventTarget.classList.add(Table.MARKER_STYLE_CLASSES._HOVER);
-        this._updateRowStateCellsClass(rowIdx, { hover: true });
+        this._updateRowStateCellsClass(rowIdx, null, { hover: true });
         this._handleMouseEnterSelection(event.target);
       } else {
-        this._updateRowStateCellsClass(rowIdx, { hover: false });
+        this._updateRowStateCellsClass(rowIdx, null, { hover: false });
         event.stopPropagation();
       }
     },
@@ -13558,9 +13852,9 @@ var __oj_table_metadata =
       var rowIdx = this._getElementRowIdx(eventTarget);
       if (this._isTableOwned(eventTarget)) {
         eventTarget.classList.remove(Table.MARKER_STYLE_CLASSES._HOVER);
-        this._updateRowStateCellsClass(rowIdx, { hover: false });
+        this._updateRowStateCellsClass(rowIdx, null, { hover: false });
       } else {
-        this._updateRowStateCellsClass(rowIdx, { hover: true });
+        this._updateRowStateCellsClass(rowIdx, null, { hover: true });
         event.stopPropagation();
       }
     },
@@ -14800,7 +15094,7 @@ var __oj_table_metadata =
       this._focusInHandler($(tableBodyRow));
       this._scrollRowIntoViewport(rowIdx);
       // apply focused style classes
-      this._updateRowStateCellsClass(rowIdx, { focused: true });
+      this._updateRowStateCellsClass(rowIdx, null, { focused: true });
       // clear any focused column header or footer
       this._clearFocusedHeaderColumn();
       this._clearFocusedFooterColumn();
@@ -14809,7 +15103,7 @@ var __oj_table_metadata =
     } else {
       this._focusOutHandler($(tableBodyRow));
       // update focus style for the cells
-      this._updateRowStateCellsClass(rowIdx, { focused: false });
+      this._updateRowStateCellsClass(rowIdx, null, { focused: false });
     }
     return true;
   };
@@ -15008,19 +15302,22 @@ var __oj_table_metadata =
 
   /**
    * Update the css class from all the cells in a row according to row state
-   * @param {number} rowIdx  row index
+   * @param {number|null} rowIdx  row index
+   * @param {Element|null} tableBodyRow  tr DOM element
    * @param {Object} state  row state
-   * @param {boolean} blur  true or false
    * @private
    */
-  Table.prototype._updateRowStateCellsClass = function (rowIdx, state) {
-    var tableBodyCells = this._getTableBodyCells(rowIdx);
+  Table.prototype._updateRowStateCellsClass = function (rowIdx, tableBodyRow, state) {
+    if (!tableBodyRow) {
+      // eslint-disable-next-line no-param-reassign
+      tableBodyRow = this._getTableBodyRow(rowIdx);
+    }
+    var tableBodyCells = this._getTableBodyCells(null, tableBodyRow);
     if (tableBodyCells.length === 0) {
       return;
     }
 
     if (this._isDefaultSelectorEnabled()) {
-      var tableBodyRow = this._getTableBodyRow(rowIdx);
       var selectorCell = this._getTableBodySelectorCell(tableBodyRow);
       tableBodyCells.unshift(selectorCell);
     }
@@ -17960,13 +18257,13 @@ var __oj_table_metadata =
 
     // if selection was set then we want to override the default style precedence
     if (selected) {
-      this._updateRowStateCellsClass(rowIdx, {
+      this._updateRowStateCellsClass(rowIdx, null, {
         hover: false,
         focused: false,
         selected: true
       });
     } else {
-      this._updateRowStateCellsClass(rowIdx, { selected: false });
+      this._updateRowStateCellsClass(rowIdx, null, { selected: false });
     }
   };
 
@@ -18324,6 +18621,19 @@ var __oj_table_metadata =
         } else {
           rowSelectedKeySet = rowSelectedKeySet.add([event.target.rowKey]);
         }
+        let table = this._getTable();
+        let headerSelectorElement =
+            table.getElementsByClassName(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS)[0];
+        if (headerSelectorElement) {
+          let tableBodyRows = this._getTableBodyRows();
+          let keySetSize = rowSelectedKeySet.values ? rowSelectedKeySet.values().size :
+            rowSelectedKeySet.deletedValues().size;
+          if (keySetSize !== 0 && tableBodyRows.length !== keySetSize) {
+            headerSelectorElement.indeterminate = true;
+          } else {
+            headerSelectorElement.indeterminate = false;
+          }
+        }
         this._setSelected({ row: rowSelectedKeySet, column: new ojkeyset.KeySetImpl() },
           false, true);
       }
@@ -18341,6 +18651,14 @@ var __oj_table_metadata =
       table.getElementsByClassName(Table.CSS_CLASSES._TABLE_HEADER_SELECTOR_CLASS);
     if (headerSelectorElements.length > 0) {
       headerSelectorElements[0].selectedKeys = selected;
+      let tableBodyRows = this._getTableBodyRows();
+      let keySetSize = selected.values ? selected.values().size :
+        selected.deletedValues().size;
+      if (keySetSize !== 0 && tableBodyRows.length !== keySetSize) {
+        headerSelectorElements[0].indeterminate = true;
+      } else {
+        headerSelectorElements[0].indeterminate = false;
+      }
     }
 
     let selectedSelectorCells = Array.from(table.getElementsByClassName(Table.CSS_CLASSES._TABLE_SELECTOR_CELL + ' ' +
@@ -19402,8 +19720,7 @@ var __oj_table_metadata =
 
     /**
      * Specifies the behavior when table needs to scroll to a position based on a row key.  This includes the case where 1) a value of
-     * scrollPosition attribute is specified with a key property, 2) Table scrolls to the selection anchor during initial fetch and after
-     * a refresh has occurred.
+     * scrollPosition attribute is specified with a key property, 2) Table scrolls to the selection anchor after a refresh has occurred.
      *
      * @ojshortdesc Specifies the behavior when Table needs to scroll to a position based on an item key.
      * @expose

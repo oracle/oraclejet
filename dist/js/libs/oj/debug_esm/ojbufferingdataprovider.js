@@ -9,7 +9,6 @@ import oj from 'ojs/ojcore-base';
 import { FilterFactory, DataProviderMutationEvent, DataProviderRefreshEvent } from 'ojs/ojdataprovider';
 import { GenericEvent, EventTargetMixin } from 'ojs/ojeventtarget';
 import ojMap from 'ojs/ojmap';
-import ojSet from 'ojs/ojset';
 import 'ojs/ojcomponentcore';
 
 /**
@@ -614,7 +613,7 @@ class BufferingDataProvider {
                 this._baseIterator = _baseIterator;
                 this._params = _params;
                 this.firstBaseKey = null;
-                this.mergedAddKeySet = new ojSet();
+                this.mergedAddKeySet = new Set();
                 this.mergedItemArray = [];
                 this.nextOffset = 0;
                 if (this._params == null) {
@@ -679,7 +678,7 @@ class BufferingDataProvider {
     }
     _fetchByKeysFromBuffer(params) {
         const results = new ojMap();
-        const unresolvedKeys = new ojSet();
+        const unresolvedKeys = new Set();
         params.keys.forEach((key) => {
             const editItem = this.editBuffer.getItem(key);
             if (editItem) {
@@ -788,7 +787,7 @@ class BufferingDataProvider {
                 else {
                     sortCriteria = params.sortCriteria;
                 }
-                this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new ojSet(), baseResults.done);
+                this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new Set(), baseResults.done);
                 let actualReturnSize = newItemArray.length;
                 for (const newItem of newItemArray) {
                     if (this._isItemRemoved(newItem.metadata.key)) {
@@ -826,7 +825,7 @@ class BufferingDataProvider {
     containsKeys(params) {
         const bufferResult = this._fetchByKeysFromBuffer(params);
         const unresolvedKeys = bufferResult.unresolvedKeys;
-        const results = new ojSet();
+        const results = new Set();
         bufferResult.results.forEach((value, key) => {
             results.add(key);
         });
@@ -974,7 +973,7 @@ class BufferingDataProvider {
         const detail = {
             add: {
                 data: [item.data],
-                keys: new ojSet().add(item.metadata.key),
+                keys: new Set().add(item.metadata.key),
                 metadata: [item.metadata],
                 addBeforeKeys: [addBeforeKey]
             }
@@ -1022,7 +1021,7 @@ class BufferingDataProvider {
         const detail = {
             remove: {
                 data: item.data ? [item.data] : null,
-                keys: new ojSet().add(item.metadata.key),
+                keys: new Set().add(item.metadata.key),
                 metadata: [item.metadata]
             }
         };
@@ -1035,7 +1034,7 @@ class BufferingDataProvider {
         const detail = {
             update: {
                 data: [item.data],
-                keys: new ojSet().add(item.metadata.key),
+                keys: new Set().add(item.metadata.key),
                 metadata: [item.metadata]
             }
         };
@@ -1062,10 +1061,10 @@ class BufferingDataProvider {
     _addEventDetail(detail, detailType, detailItem, detailAddBeforeKey) {
         if (detail[detailType] == null) {
             if (detailType === 'add') {
-                detail[detailType] = { data: [], keys: new ojSet(), metadata: [], addBeforeKeys: [] };
+                detail[detailType] = { data: [], keys: new Set(), metadata: [], addBeforeKeys: [] };
             }
             else {
-                detail[detailType] = { data: [], keys: new ojSet(), metadata: [] };
+                detail[detailType] = { data: [], keys: new Set(), metadata: [] };
             }
         }
         detail[detailType].keys.add(detailItem.metadata.key);
@@ -1077,7 +1076,7 @@ class BufferingDataProvider {
     }
     resetUnsubmittedItem(key) {
         const unsubmittedItems = this.editBuffer.getUnsubmittedItems();
-        const keySet = new ojSet();
+        const keySet = new Set();
         const editItemMap = new ojMap();
         const editItem = unsubmittedItems.get(key);
         if (editItem) {
@@ -1182,15 +1181,15 @@ class BufferingDataProvider {
     }
     _initDetails(details, newDetails, bEmpty) {
         if (details.add) {
-            newDetails.add = { keys: new ojSet() };
+            newDetails.add = { keys: new Set() };
             this._initDetail(details.add, newDetails.add, bEmpty, true);
         }
         if (details.remove) {
-            newDetails.remove = { keys: new ojSet() };
+            newDetails.remove = { keys: new Set() };
             this._initDetail(details.remove, newDetails.remove, bEmpty);
         }
         if (details.update) {
-            newDetails.update = { keys: new ojSet() };
+            newDetails.update = { keys: new Set() };
             this._initDetail(details.update, newDetails.update, bEmpty);
         }
     }
@@ -1259,7 +1258,7 @@ class BufferingDataProvider {
                             this.lastSortCriteria.length === 0) {
                             let removeDetail = newDetails.remove;
                             if (!removeDetail) {
-                                removeDetail = { keys: new ojSet(), data: [], metadata: [] };
+                                removeDetail = { keys: new Set(), data: [], metadata: [] };
                                 newDetails.remove = removeDetail;
                             }
                             const submittingItem = submittingItems.get(key);
@@ -1273,7 +1272,7 @@ class BufferingDataProvider {
                             newDetails.remove = removeDetail;
                             let addDetail = newDetails.add;
                             if (!addDetail) {
-                                addDetail = { keys: new ojSet(), data: [], metadata: [], addBeforeKeys: [] };
+                                addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
                                 newDetails.add = addDetail;
                             }
                             this._pushDetail(key, details.add, newDetails.add);
@@ -1308,7 +1307,7 @@ class BufferingDataProvider {
                             this.lastSortCriteria.length) {
                             let removeDetail = newDetails.remove;
                             if (!removeDetail) {
-                                removeDetail = { keys: new ojSet(), data: [], metadata: [] };
+                                removeDetail = { keys: new Set(), data: [], metadata: [] };
                                 newDetails.remove = removeDetail;
                             }
                             const submittingItem = submittingItems.get(key);
@@ -1321,7 +1320,7 @@ class BufferingDataProvider {
                             }
                             let addDetail = newDetails.add;
                             if (!addDetail) {
-                                addDetail = { keys: new ojSet(), data: [], metadata: [], addBeforeKeys: [] };
+                                addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
                                 newDetails.add = addDetail;
                             }
                             if (editItem) {
@@ -1349,7 +1348,7 @@ class BufferingDataProvider {
     }
     _handleRefreshEvent(event) {
         const unsubmittedItems = this.editBuffer.getUnsubmittedItems();
-        const keySet = new ojSet();
+        const keySet = new Set();
         unsubmittedItems.forEach((editItem) => {
             if (editItem.operation === 'remove' || editItem.operation === 'update') {
                 keySet.add(editItem.item.metadata.key);

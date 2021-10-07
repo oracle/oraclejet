@@ -15,9 +15,9 @@
   requirejs.config({
     // Path mappings for the logical module names
     paths: {
-      'ojs': 'libs/oj/v11.0.0/min@insertESLevelPath@',
-      'ojL10n': 'libs/oj/v11.0.0/ojL10n',
-      'ojtranslations': 'libs/oj/v11.0.0/resources',
+      'ojs': 'libs/oj/v11.1.0/min@insertESLevelPath@',
+      'ojL10n': 'libs/oj/v11.1.0/ojL10n',
+      'ojtranslations': 'libs/oj/v11.1.0/resources',
       
   'knockout': 'libs/knockout/knockout-3.5.1',
   'knockout-mapping': 'libs/knockout/knockout.mapping-latest',

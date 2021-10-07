@@ -1642,7 +1642,7 @@ var __oj_thematic_map_marker_metadata =
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -1815,7 +1815,7 @@ var __oj_thematic_map_marker_metadata =
              * @instance
              * @type {Object=}
              * @default  {}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              *
              * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
              *
@@ -1890,7 +1890,7 @@ var __oj_thematic_map_marker_metadata =
            * @instance
            * @type {Object=}
            * @default  {}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
@@ -3270,8 +3270,8 @@ var __oj_thematic_map_marker_metadata =
    * @property {string=}       svgClassName The CSS style class defining the style of the area.
    * @property {Object=}       svgStyle The CSS style object defining the style of the area. Only SVG CSS style properties are supported.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.AreaShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
    */
@@ -3297,7 +3297,7 @@ var __oj_thematic_map_marker_metadata =
    * @property {number=}       width The link width in pixels.
    * @ojsignature [{target: "Type", value: "K2", for: "endLocation.id"},
    *               {target: "Type", value: "K1", for: "id"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "K2", for: "startLocation.id"},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.LinkShortDescContext<K1,K2,D1>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K1,K2,D1=any>", for:"genericTypeParameters"}]
@@ -3336,8 +3336,8 @@ var __oj_thematic_map_marker_metadata =
    * @property {number=}       x The x coordinate of the marker transformed using the map projection, which can be null if location is set instead.
    * @property {number=}       y The y coordinate of the marker transformed using the map projection, which can be null if location is set instead.
    * @ojsignature [{target: "Type", value: "K3", for: "id"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojThematicMap.MarkerShortDescContext<K3,D3>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K3,D3=any>", for: "genericTypeParameters"}]
    */
@@ -3823,7 +3823,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof! oj.ojThematicMapArea
    * @instance
    * @type {object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default null
    *
    * @example <caption>Initialize the thematic map area with the
@@ -3910,7 +3910,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof! oj.ojThematicMapArea
    * @instance
    * @type {object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    *
    * @example <caption>Initialize the thematic map area with the
@@ -4158,7 +4158,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof! oj.ojThematicMapLink
    * @instance
    * @type {object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    *
    * @example <caption>Initialize the thematic map link with the
@@ -4355,7 +4355,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof! oj.ojThematicMapMarker
    * @instance
    * @type {object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default null
    *
    * @example <caption>Initialize the thematic map marker with the
@@ -4524,7 +4524,7 @@ var __oj_thematic_map_marker_metadata =
    * @memberof! oj.ojThematicMapMarker
    * @instance
    * @type {object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    *
    * @example <caption>Initialize the thematic map marker with the

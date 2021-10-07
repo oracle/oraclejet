@@ -1055,7 +1055,7 @@ var __oj_picto_chart_item_metadata =
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "<K>", for: "genericTypeParameters"},
    *               {target: "Type", value: "?(string | ((context: oj.ojPictoChart.ItemShortDescContext<K>) => string))", jsdocOverride: true, for: "shortDesc"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride:true}]
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride:true}]
    */
 
   /**
@@ -1516,7 +1516,7 @@ var __oj_picto_chart_item_metadata =
    * @memberof! oj.ojPictoChartItem
    * @instance
    * @type {Object=}
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
    *
    * @example <caption>Initialize the picto chart item with the

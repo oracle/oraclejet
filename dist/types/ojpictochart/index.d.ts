@@ -128,7 +128,7 @@ export namespace ojPictoChart {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemContext<K> = {
@@ -258,7 +258,7 @@ export interface ojPictoChartItem<K = any> extends dvtBaseComponent<ojPictoChart
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojPictoChartItemEventMap<K>>(type: T, listener: (this: HTMLElement, ev: ojPictoChartItemEventMap<K>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -340,7 +340,7 @@ export interface ojPictoChartItemSettableProperties<K = any> extends dvtBaseComp
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojPictoChartItemSettablePropertiesLenient<K = any> extends Partial<ojPictoChartItemSettableProperties<K>> {
     [key: string]: any;
@@ -417,7 +417,7 @@ export namespace PictoChartElement {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type ItemShortDescContext<K> = {

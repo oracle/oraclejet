@@ -18,7 +18,7 @@ import { KeySetImpl, KeySetUtils, AllKeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojselector';
 import 'ojdnd';
 import { CustomElementUtils, ElementUtils } from 'ojs/ojcustomelement-utils';
-import { areKeySetsEqual, disableAllFocusableElements, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isEnterKeyEvent, isLetterAKeyEvent } from 'ojs/ojdatacollection-common';
+import { areKeySetsEqual, disableAllFocusableElements, isArrowUpKeyEvent, isArrowDownKeyEvent, isSpaceBarKeyEvent, isFromDefaultSelector, isArrowLeftKeyEvent, isArrowRightKeyEvent, isEnterKeyEvent, isLetterAKeyEvent, getAddEventKeysResult } from 'ojs/ojdatacollection-common';
 import { getTranslatedString } from 'ojs/ojtranslation';
 
 class TreeviewSelectionManager {
@@ -4319,7 +4319,6 @@ class TreeviewSelectionManager {
         var data = addEvent.data;
         var metadata = addEvent.metadata;
         var keys = [];
-        var afterKeys;
         var parentKeys = addEvent.parentKeys;
         var indexes = addEvent.indexes;
         var i = 0;
@@ -4356,21 +4355,18 @@ class TreeviewSelectionManager {
             self._changeNodeToParent(parentItem);
           }
         });
-        // afterKeys is deprecated, but continue to support it until we can remove it.
-        // forEach can be called on both array and set.
-        var afterKeyIter = addEvent.addBeforeKeys ? addEvent.addBeforeKeys : addEvent.afterKeys;
-        if (afterKeyIter) {
-          afterKeys = [];
-          afterKeyIter.forEach(function (key) {
-            afterKeys.push(key);
-          });
-        }
-
+        const initialKeys = this._getAllTreeviewKeys();
+        const finalKeys = getAddEventKeysResult(initialKeys, addEvent, true);
         if (data != null && keys.length > 0 && data.length > 0 &&
           keys.length === data.length && (indexes == null || indexes.length === data.length)) {
           for (i = 0; i < data.length; i++) {
-            var index = (indexes == null) ? this._getIndex(afterKeys, i) + 1 : indexes[i];
             var parentKey = parentKeys[i];
+            var index = this._getInsertIndex(metadata[i].key, parentKey, finalKeys);
+            if (index === null) {
+              // cannot find index, skip this iteration
+              // eslint-disable-next-line no-continue
+              continue;
+            }
             var parentItem = this._getItemByKey(parentKey);
             var subtree;
             if (parentKey == null) {
@@ -4386,6 +4382,43 @@ class TreeviewSelectionManager {
             }
           }
         }
+      },
+      _getInsertIndex: function (key, parentKey, finalKeys) {
+        let parent;
+        if (!parentKey) {
+           parent = this.element[0];
+        } else {
+           parent = this._getItemByKey(parentKey);
+        }
+        // bad parent key or do not have parentKey yet
+        // potnetially parent added out of order real gross
+        if (!parent) {
+           return null;
+        }
+        let finalKeysIndex = finalKeys.indexOf(key);
+        if (finalKeysIndex === -1) {
+          return null;
+        }
+        let childItems = this._getChildItems(parent);
+        // assume insert at end
+        let index = childItems.length;
+        for (let i = 0; i < childItems.length; i++) {
+           let child = childItems[i];
+           let childKey = this._getKey(child);
+           if (finalKeys.indexOf(childKey) > finalKeysIndex) {
+             index = i;
+             break;
+           }
+        }
+        return index;
+     },
+      _getAllTreeviewKeys: function () {
+        const keys = [];
+        const items = this._getItems();
+        for (let i = 0; i < items.length; i++) {
+          keys.push(this._getKey(items[i]));
+        }
+        return keys;
       },
       handleModelChangeEvent: function (event) {
         var changeEvent = event.detail.update;

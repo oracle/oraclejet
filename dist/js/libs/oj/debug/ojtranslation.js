@@ -274,13 +274,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojconfig'], function (exports, oj, Co
     if (b) {
       return b;
     }
-
-    if (oj.__isAmdLoaderPresent()) {
-      var ojt = Config.getConfigBundle();
-      oj.Assert.assert(ojt !== undefined, 'ojtranslations module must be defined');
-      return ojt;
-    }
-    return {};
+    return Config.getConfigBundle();
   };
 
   const setBundle = Translations.setBundle;

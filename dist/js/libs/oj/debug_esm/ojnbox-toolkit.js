@@ -7478,6 +7478,13 @@ DvtNBoxDefaults.SKIN_ALTA = {
 };
 
 /**
+ * @override
+ */
+ DvtNBoxDefaults.prototype.getNoCloneObject = function() {
+  return {'data': true, 'nodes': true};
+};
+
+/**
  * Category rollover handler for NBox
  * @param {function} callback A function that responds to component events.
  * @param {object} callbackObj The object instance that the callback function is defined on.
@@ -9744,8 +9751,7 @@ NBox.prototype.getSanitizedOptions = function() {
   return JsonUtils.clone(this.getOptions(),
       function(key) {
         return key.indexOf('__') != 0;
-      }
-  );
+      }, this.Defaults.getNoCloneObject());
 };
 
 

@@ -73,7 +73,7 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters", "FetchByKeysCapability", "FetchByOffsetCapability", "FilterCapability",
- * "SortCapability", "DataProviderMutationEventDetail"]}
+ * "SortCapability", "DataProviderMutationEventDetail", "ItemMetadata"]}
  * @ojtsexample
  * // First create an options object with the minimum fields
  * const options = {
@@ -267,13 +267,17 @@ import { deepFreeze } from 'ojs/ojmetadatautils';
 /**
 * @typedef {Object} RESTDataProvider.FetchResponseTransformResult
 * @property {Array} data - fetched data
-* @property {Array=} keys - keys associated with fetched data
+* @property {Array=} keys - keys associated with fetched data. If keys is returned but not metadata,
+* the metadata will be generated from the keys
+* @property {Array=} metadata - metadata associated with fetched data. If metadata is returned
+* but not keys, the keys will be extracted from the metadata
 * @property {number=} totalSize - total number of rows available
 * @property {boolean=} hasMore - whether there are more rows available to be fetched
 * @ojsignature [
 *  {target: "Type", value: "<K, D>", for: "genericTypeParameters"},
 *  {target: "Type", value: "D[]", for: "data"},
-*  {target: "Type", value: "K[]", for: "keys"}
+*  {target: "Type", value: "K[]", for: "keys"},
+*  {target: "Type", value: "ItemMetadata<K>[]", for: "metadata"}
 * ]
 */
 
@@ -498,6 +502,7 @@ class RESTHelper {
             const transform = transforms[fetchType].response;
             let data;
             let keys;
+            let metadata;
             let hasMore;
             let totalSize;
             if (transform) {
@@ -505,12 +510,14 @@ class RESTHelper {
                 const transformResult = yield transform(transformOptions);
                 data = transformResult.data;
                 keys = transformResult.keys;
+                metadata = transformResult.metadata;
                 hasMore = transformResult.hasMore;
                 totalSize = transformResult.totalSize;
             }
             else if (body !== null && typeof body === 'object') {
                 data = body.data;
                 keys = body.keys;
+                metadata = body.metadata;
                 hasMore = body.hasMore;
                 totalSize = body.totalSize;
             }
@@ -520,6 +527,7 @@ class RESTHelper {
             return {
                 data,
                 keys,
+                metadata,
                 hasMore,
                 totalSize
             };
@@ -600,8 +608,8 @@ class RESTDataProvider {
             }
         };
     }
-    fetchFirst(params) {
-        return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), params, 0, this.options.iterationLimit));
+    fetchFirst(fetchParameters) {
+        return new this.AsyncIterable(new this.AsyncIterator(this, this._fetchFrom.bind(this), fetchParameters, 0, this.options.iterationLimit));
     }
     fetchByKeys(fetchParameters) {
         return __awaiter$1(this, void 0, void 0, function* () {
@@ -702,8 +710,15 @@ class RESTDataProvider {
                 }
             });
             const fetchResult = yield restHelper.fetch();
-            const { data, keys = this._generateKeysFromData(data), totalSize, hasMore } = fetchResult;
-            const metadata = keys.map((key) => ({ key }));
+            const { data, totalSize, hasMore } = fetchResult;
+            let metadata;
+            if (fetchResult.metadata) {
+                metadata = fetchResult.metadata.map((entry) => (Object.assign({}, entry)));
+            }
+            else {
+                const keys = fetchResult.keys || this._generateKeysFromData(data);
+                metadata = this._generateMetadataFromKeys(keys);
+            }
             const mergedSortCriteria = this._mergeSortCriteria(fetchParameters.sortCriteria);
             if (mergedSortCriteria) {
                 fetchParameters.sortCriteria = mergedSortCriteria;
@@ -729,7 +744,7 @@ class RESTDataProvider {
             const fetchListParameters = this._convertFetchByKeysToFetchListParameters(fetchParameters);
             const asyncIterator = this.fetchFirst(fetchListParameters)[Symbol.asyncIterator]();
             const fetchedData = [];
-            const fetchedDataKeys = [];
+            const fetchedDataMetadata = [];
             let done = false;
             while (!done) {
                 const fetchResult = yield asyncIterator.next();
@@ -737,24 +752,24 @@ class RESTDataProvider {
                 metadata.forEach((entry, index) => {
                     if (fetchParameters.keys.has(entry.key)) {
                         fetchedData.push(data[index]);
-                        fetchedDataKeys.push(entry.key);
+                        fetchedDataMetadata.push(entry);
                     }
                 });
-                if (fetchParameters.keys.size === fetchedDataKeys.length) {
+                if (fetchParameters.keys.size === fetchedDataMetadata.length) {
                     done = true;
                 }
                 else {
                     done = fetchResult.done;
                 }
             }
-            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataKeys);
+            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
         });
     }
     _fetchByKeysLookup(fetchParameters) {
         return __awaiter$1(this, void 0, void 0, function* () {
             const fetchPromises = [];
             const fetchedData = [];
-            const fetchedDataKeys = [];
+            const fetchedDataMetadata = [];
             for (let key of fetchParameters.keys) {
                 const restHelper = new RESTHelper({
                     fetchType: _FETCHBYKEYS,
@@ -768,11 +783,13 @@ class RESTDataProvider {
                 fetchResult.data.forEach((item) => {
                     fetchedData.push(item);
                 });
-                (fetchResult.keys || this._generateKeysFromData(fetchResult.data)).forEach((key) => {
-                    fetchedDataKeys.push(key);
+                const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
+                const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+                metadata.forEach((entry) => {
+                    fetchedDataMetadata.push(entry);
                 });
             });
-            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataKeys);
+            return this._createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata);
         });
     }
     _fetchByKeysBatchLookup(fetchParameters) {
@@ -784,7 +801,9 @@ class RESTDataProvider {
                 transforms: this.options.transforms
             });
             const fetchResult = yield restHelper.fetch();
-            return this._createFetchByKeysResults(fetchParameters, fetchResult.data, fetchResult.keys || this._generateKeysFromData(fetchResult.data));
+            const keys = fetchResult.keys || this._generateKeysFromData(fetchResult.data);
+            const metadata = fetchResult.metadata || this._generateMetadataFromKeys(keys);
+            return this._createFetchByKeysResults(fetchParameters, fetchResult.data, metadata);
         });
     }
     _fetchByOffsetRandomAccess(fetchParameters, offset) {
@@ -840,6 +859,9 @@ class RESTDataProvider {
             }
             return id;
         });
+    }
+    _generateMetadataFromKeys(keys) {
+        return keys.map((key) => ({ key }));
     }
     _getId(row) {
         let id;
@@ -905,12 +927,12 @@ class RESTDataProvider {
             attributes: fetchParameters.attributes
         };
     }
-    _createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataKeys) {
+    _createFetchByKeysResults(fetchParameters, fetchedData, fetchedDataMetadata) {
         const results = new Map();
         fetchedData.forEach((value, index) => {
             if (value) {
-                results.set(fetchedDataKeys[index], {
-                    metadata: { key: fetchedDataKeys[index] },
+                results.set(fetchedDataMetadata[index].key, {
+                    metadata: fetchedDataMetadata[index],
                     data: value
                 });
             }

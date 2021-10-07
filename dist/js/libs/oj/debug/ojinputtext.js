@@ -898,6 +898,7 @@ var __oj_text_area_metadata =
       _TEXT_FIELD_MAX_LENGTH_REMAINING_KEY: 'accessibleMaxLengthRemaining',
       _TEXT_FIELD_MAX_LENGTH_EXCEEDED_KEY: 'accessibleMaxLengthExceeded',
       _counterSpanEl: null,
+      _ariaLiveTimer: null,
 
       options:
       {
@@ -2601,8 +2602,21 @@ var __oj_text_area_metadata =
 
         // Update the aria live element if it exists and the new content is different
         if (hiddenAriaLiveEl) {
-          var politeDiv = hiddenAriaLiveEl.children[0];
-          politeDiv.textContent = newAriaLiveContent;
+          // Only update the aria-live div when the user has paused for more than
+          // 500 milliseconds. That way, we avoid queued up aria-live messages which
+          // would be annoying and not helpful. The 500ms was agreed upon in the
+          // accessibility review meeting.
+          // We're going to do this in a cancellable setTimeout and only update
+          // this when the timeout resolves.  If new aria live content is available
+          // before the timeout resolves, cancel the timeout and start a new setTimeout.
+          if (this._ariaLiveTimer) {
+            clearTimeout(this._ariaLiveTimer);
+          }
+          this._ariaLiveTimer = setTimeout(() => {
+            var politeDiv = hiddenAriaLiveEl.children[0];
+            politeDiv.textContent = newAriaLiveContent;
+            this._ariaLiveTimer = null;
+          }, 500); // wait 500 milliseconds before updating aria live polite div
         }
       },
 
@@ -4864,38 +4878,38 @@ var __oj_text_area_metadata =
         if (this._textAreaElementNotDisplayed() || this._lineHeight === undefined) {
           return;
         }
-        var maxRows = this.options.maxRows;
-        var textarea = this._GetContentElement()[0];
-        var rows = textarea.rows;
+        const maxRows = this.options.maxRows;
+        const textarea = this._GetContentElement()[0];
+        const rows = textarea.rows;
         textarea.style.height = 0;
-        var heightForRows = this._lineHeight * rows;
+        const paddingHeight = this._getStylingHeight(textarea, 'padding');
+        const heightForRows = this._lineHeight * rows + paddingHeight;
+        const scrollHeight = textarea.scrollHeight;
         var resizedHeight = 0;
         // if maxRows is -1 the textarea will grow or shrink to fit all the content.
         // it won't shrink any less than rows.
         if (maxRows === -1) {
           // we want to fit the entire scrollHeight, but we don't want
           // to shrink smaller than the height for rows.
-          if (textarea.scrollHeight < heightForRows) {
+          if (scrollHeight < heightForRows) {
             resizedHeight = heightForRows;
           } else {
-            resizedHeight = textarea.scrollHeight;
+            resizedHeight = scrollHeight;
           }
         } else if (maxRows > rows) {
           // if maxRows is positive and greater than rows, the textarea will grow to fit the content
           // up to maxrows, or shrink to fit the content and down to rows.
-          var heightForMaximumRows = this._lineHeight * maxRows;
-          if (textarea.scrollHeight > heightForMaximumRows) {
+          var heightForMaximumRows = this._lineHeight * maxRows + paddingHeight;
+          if (scrollHeight > heightForMaximumRows) {
             resizedHeight = heightForMaximumRows;
-          } else if (textarea.scrollHeight < heightForRows) {
+          } else if (scrollHeight < heightForRows) {
             resizedHeight = heightForRows;
           } else {
-            resizedHeight = textarea.scrollHeight;
+            resizedHeight = scrollHeight;
           }
         } else {
-          resizedHeight = this._lineHeight * rows;
+          resizedHeight = heightForRows;
         }
-        // adjust for the padding and border.
-        resizedHeight += this._getStylingHeight(textarea, 'paddingAndBorder');
         textarea.style.height = resizedHeight + 'px';
       },
 

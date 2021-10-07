@@ -204,7 +204,8 @@ var __oj_input_time_metadata =
           "type": "string",
           "enumValues": [
             "focus",
-            "image"
+            "image",
+            "userFocus"
           ],
           "value": "focus"
         },
@@ -443,7 +444,8 @@ var __oj_input_date_metadata =
           "type": "string",
           "enumValues": [
             "focus",
-            "image"
+            "image",
+            "userFocus"
           ],
           "value": "focus"
         },
@@ -847,7 +849,8 @@ var __oj_input_date_time_metadata =
           "type": "string",
           "enumValues": [
             "focus",
-            "image"
+            "image",
+            "userFocus"
           ],
           "value": "focus"
         },
@@ -1017,7 +1020,8 @@ var __oj_input_date_time_metadata =
           "type": "string",
           "enumValues": [
             "focus",
-            "image"
+            "image",
+            "userFocus"
           ],
           "value": "focus"
         },
@@ -1958,6 +1962,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
        * @type {string=}
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger calendar image is
        *   clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
+       *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
        * @ojvalue {string} 'image' when the trigger calendar image is clicked
        * @default "focus"
        * @ojsignature { target: "Type", value: "?string"}
@@ -2632,7 +2638,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     this._isMobile = false;
 
     // only case is when of showOn of focus and one hides the element [need to avoid showing]
-    this._ignoreShow = false;
+    this._ignoreDatePickerShow = false;
 
     // need this flag to keep track of native picker opened, there is no callback on native API
     //  to find out otherwise.
@@ -2832,6 +2838,30 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         this._attachTrigger();
         this._registerSwipeHandler();
       }
+    }
+
+    // We need to override focus on the component and the inner input element.
+    // calling focus on the component will call focus on the inner input element
+    // passing in true to indicate that we want to show the popup of showOn is set
+    // to 'focus'. If this isn't a custom element, we don't want to override the
+    // focus functions.
+    if (this._IsCustomElement()) {
+      let comp = this._getRootElement();
+      let inputElem = this.GetFocusElement();
+      comp.focus = function () {
+        inputElem.focus(true);
+      };
+
+      let proto = Object.getPrototypeOf(inputElem);
+      inputElem.focus = function (showDropDown) {
+        const showOn = this.options.datePicker.showOn;
+        if (showOn === 'focus') {
+          this._ignoreDatePickerShow = !showDropDown;
+        } else if (showOn === 'userFocus') {
+          this._ignoreDatePickerShow = true;
+        }
+        proto.focus.call(inputElem);
+      }.bind(this);
     }
 
     // attach active state change handlers
@@ -3283,17 +3313,20 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _onElementFocus: function () {
-    var showOn = this.options.datePicker.showOn;
-
     if (this._redirectFocusToInputContainer) {
       this._redirectFocusToInputContainer = false;
       this._inputContainer.focus();
-    } else if (showOn === 'focus') {
-        // pop-up date picker when focus placed on the input box
+    } else if (this._showOnIsFocusOrUserFocus()) {
       this.show();
     } else if (this._datepickerShowing()) {
       this._hide(this._ON_CLOSE_REASON_CLOSE);
     }
+  },
+
+  _showOnIsFocusOrUserFocus: function () {
+    var showOn = this.options.datePicker.showOn;
+
+    return showOn === 'focus' || showOn === 'userFocus';
   },
 
   /**
@@ -3306,17 +3339,16 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // prevents the mousedown, mouseup and click from being generated on modal glass
     // which will close the popup.
     event.preventDefault();
-    var showOn = this.options.datePicker.showOn;
 
     // If the focus is already on the text box and can't edit with keyboard
     // and show on is focus then reopen the picker.
-    if (showOn === 'focus') {
+    if (this._showOnIsFocusOrUserFocus()) {
       if (this._datepickerShowing()) {
-        this._ignoreShow = true;
+        this._ignoreDatePickerShow = true;
         this._hide(this._ON_CLOSE_REASON_CLOSE);
       } else {
         this._redirectFocusToInputContainer = true;
-        this._inputContainer.find('input').focus();
+        this._inputContainer.find('input')[0].focus(true);
       }
     }
   },
@@ -4186,20 +4218,28 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _attachHandlers: function () {
     var stepMonths = this._getStepMonths();
     var self = this;
-    var keyDownPrevent = function (evt) {
+    /**
+     * Determines the return value for the keydown event
+     * @param {Event} evt keydown event object
+     * @returns {boolean} false if event should be default prevented and
+     *                    propagation stopped, true otherwise.
+     * @ignore
+     */
+    var keyDownReturnValue = function (evt) {
       if (evt.type === 'keydown') {
         const kc = $.ui.keyCode;
         switch (evt.keyCode) {
           case kc.TAB:
-            // we need to simply allow the default action
+            // we need to simply allow the default behavior
             return true;
           case kc.ESCAPE:
-            // we need to allow default action when used
-            // as inline picker
-            if (self._isInLine) {
-              return true;
-            }
-            return false;
+            // we need to allow default behavior as ESC is used
+            // for dismissing popups.
+            // We need to close the dropdown on ESCAPE when datepicker
+            // is used in a popup.
+            // No need to check for isInline as _hide does that.
+            self._hide(self._ON_CLOSE_REASON_CLOSE);
+            return true;
           default:
             // default no-op
         }
@@ -4214,42 +4254,42 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
           if (self._isButtonActivated(evt)) {
             self._gotoPrev(stepMonths);
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         next: function (evt) {
           if (self._isButtonActivated(evt)) {
             self._gotoNext(stepMonths);
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         today: function (evt) {
           if (self._isButtonActivated(evt)) {
             self._gotoToday();
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         selectDay: function (evt) {
           if (self._isButtonActivated(evt)) {
             self._selectDay(+this.getAttribute('data-month'), +this.getAttribute('data-year'), this, evt);
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         selectMonth: function (evt) {
           if (self._isButtonActivated(evt)) {
             self._selectMonthYear(this, 'M');
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         selectYear: function (evt) {
           if (self._isButtonActivated(evt)) {
             self._selectMonthYear(this, 'Y');
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         calendarKey: function (evt) {
@@ -4270,7 +4310,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
               self._updateDatepicker(true, 'month');
             }
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         },
         /** @expose */
         selectYearHeader: function (evt) {
@@ -4283,7 +4323,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
               self._updateDatepicker(true, 'year');
             }
           }
-          return keyDownPrevent(evt);
+          return keyDownReturnValue(evt);
         }
       };
       $(this).bind(this.getAttribute('data-event'), handler[this.getAttribute('data-handler')]);
@@ -5769,11 +5809,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
   // eslint-disable-next-line no-unused-vars
   _onClose: function (reason) {
-    if (this._isMobile && this.options.datePicker.showOn === 'focus') {
+    const showOnIsFocusOrUserFocus = this._showOnIsFocusOrUserFocus();
+    if (this._isMobile && showOnIsFocusOrUserFocus) {
       this._inputContainer.focus();
     } else {
-      if (this.options.datePicker.showOn === 'focus') {
-        this._ignoreShow = true;
+      if (showOnIsFocusOrUserFocus) {
+        this._ignoreDatePickerShow = true;
       }
       this.element.focus();
     }
@@ -5806,9 +5847,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       return;
     }
 
-    if (this._ignoreShow) {
+    if (this._ignoreDatePickerShow) {
       // set within hide or elsewhere and focus is placed back on this.element
-      this._ignoreShow = false;
+      this._ignoreDatePickerShow = false;
       return;
     }
 
@@ -8550,6 +8591,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
        * @instance
        * @type {string=}
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
+       *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
        * @ojvalue {string} 'image' when the trigger clock image is clicked
        * @default "focus"
        */
@@ -8728,7 +8771,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       this._isMobile = false;
 
     // only case is when of showOn of focus and one hides the element [need to avoid showing]
-      this._ignoreShow = false;
+      this._ignoreTimePickerShow = false;
 
     // need this flag to keep track of native picker opened, there is no callback on native API
     //  to find out otherwise.
@@ -8888,6 +8931,30 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       } else {
         // active state handler, only in case time picker is independent
         bindActive(this);
+      }
+
+      // We need to override focus on the component and the inner input element.
+      // calling focus on the component will call focus on the inner input element
+      // passing in true to indicate that we want to show the popup of showOn is set
+      // to 'focus'.  If this isn't a custom element, we don't want to override the
+      // focus functions.
+      if (this._IsCustomElement()) {
+        let comp = this._getRootElement();
+        let inputElem = this.GetFocusElement();
+        comp.focus = function () {
+          inputElem.focus(true);
+        };
+
+        let proto = Object.getPrototypeOf(inputElem);
+        inputElem.focus = function (showDropDown) {
+          const showOn = this.options.timePicker.showOn;
+          if (showOn === 'focus') {
+            this._ignoreTimePickerShow = !showDropDown;
+          } else if (showOn === 'userFocus') {
+            this._ignoreTimePickerShow = true;
+          }
+          proto.focus.call(inputElem);
+        }.bind(this);
       }
 
       this._processReadOnlyKeyboardEdit();
@@ -9363,8 +9430,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    * @private
    */
     _onElementFocus: function () {
-      var showOn = this.options.timePicker.showOn;
-
       if (this._redirectFocusToInputContainer) {
         this._redirectFocusToInputContainer = false;
         if (!isPickerNative(this)) {
@@ -9372,8 +9437,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
         } else {
           this._inputContainer.focus();
         }
-      } else if (showOn === 'focus') {
-        // pop-up date picker when focus placed on the input box
+      } else if (this._showOnIsFocusOrUserFocus()) {
+        // pop-up time picker when focus placed on the input box, if supported
         if (this._isTimePickerSupported()) {
           this.show();
         }
@@ -9382,7 +9447,13 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       }
     },
 
-  /**
+    _showOnIsFocusOrUserFocus: function () {
+      var showOn = this.options.timePicker.showOn;
+
+      return showOn === 'focus' || showOn === 'userFocus';
+    },
+
+    /**
    * When input element is touched
    *
    * @ignore
@@ -9392,13 +9463,12 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       // prevents the mousedown, mouseup and click from being generated on modal glass
       // which will close the popup.
       event.preventDefault();
-      var showOn = this.options.timePicker.showOn;
 
     // If the focus is already on the text box and can't edit with keyboard
     // and show on is focus then reopen the picker.
-      if (showOn === 'focus') {
+      if (this._showOnIsFocusOrUserFocus()) {
         if (this._timepickerShowing()) {
-          this._ignoreShow = true;
+          this._ignoreTimePickerShow = true;
           this._hide(this._ON_CLOSE_REASON_CLOSE);
         } else {
           var inputActive = this.element[0] === document.activeElement;
@@ -9525,9 +9595,9 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
         return;
       }
 
-      if (this._ignoreShow) {
+      if (this._ignoreTimePickerShow) {
       // set within hide or elsewhere and focus is placed back on this.element
-        this._ignoreShow = false;
+        this._ignoreTimePickerShow = false;
         return;
       }
 
@@ -9683,16 +9753,17 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
      */
     // eslint-disable-next-line no-unused-vars
     _onClose: function (reason) {
-      if (this._isMobile && this.options.timePicker.showOn === 'focus') {
+      const showOnIsFocusOrUserFocus = this._showOnIsFocusOrUserFocus();
+      if (this._isMobile && showOnIsFocusOrUserFocus) {
         var inputContainer = this._isIndependentInput() ?
             this._inputContainer : this._datePickerComp.widget._inputContainer;
         inputContainer.focus();
       } else {
-        if (this.options.timePicker.showOn === 'focus') {
+        if (showOnIsFocusOrUserFocus) {
           if (!this._isIndependentInput()) {
-            this._datePickerComp.widget._ignoreShow = true;
+            this._datePickerComp.widget._ignoreDatePickerShow = true;
           } else {
-            this._ignoreShow = true;
+            this._ignoreTimePickerShow = true;
           }
         }
         this.element.focus();
@@ -11309,6 +11380,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
        * @instance
        * @type {string=}
        * @ojvalue {string} 'focus' when the element receives focus or when the trigger clock image is clicked. When the picker is closed, the field regains focus and is editable.
+       * @ojvalue {string} 'userFocus' when the element receives focus from a user action (such as tab key press)
+       *   or the calendar image is clicked.  Programmatic calls to .focus() do not show the picker.
        * @ojvalue {string} 'image' when the trigger clock image is clicked
        * @default "focus"
        */

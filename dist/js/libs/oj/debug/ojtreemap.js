@@ -973,7 +973,7 @@ var __oj_treemap_node_metadata =
            * @memberof! oj.ojTreemap
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
           labelStyle: undefined,
 
@@ -1212,7 +1212,7 @@ var __oj_treemap_node_metadata =
              * @memberof! oj.ojTreemap
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             labelStyle: undefined,
 
@@ -1832,9 +1832,9 @@ var __oj_treemap_node_metadata =
    * @property {number} value The value of the node, which determines the relative size of the node.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "Array.<oj.ojTreemap.Node<K>>=", for: "nodes"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "header.labelStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "header.labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojTreemap.NodeShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}] */
 
@@ -2139,7 +2139,7 @@ var __oj_treemap_node_metadata =
    * @memberof! oj.ojTreemapNode
    * @instance
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2206,7 +2206,7 @@ var __oj_treemap_node_metadata =
    * @memberof! oj.ojTreemapNode
    * @instance
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2291,7 +2291,7 @@ var __oj_treemap_node_metadata =
    * @memberof! oj.ojTreemapNode
    * @instance
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    */
   /**
    * Specifies whether isolate behavior is enabled on the node.
@@ -2327,7 +2327,6 @@ var __oj_treemap_node_metadata =
    * @ojstylevariableset oj-tree-map-node-css-set2
    * @ojdisplayname Selected
    * @ojstylevariable oj-treemap-node-header-bg-color-selected {description: "Treemap node header background color when selected", formats: ["color"], help: "#oj-tree-map-node-css-set2"}
-
    * @memberof! oj.ojTreemapNode
   */
   /**

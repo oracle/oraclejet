@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevaluator', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojvcomponent-template', 'ojs/ojcontext', 'ojs/ojdataproviderhandler'], function (exports, Logger, HtmlUtils, CspExpressionEvaluator, ojcustomelementUtils, preact, VComponentTemplate, Context, ojdataproviderhandler) { 'use strict';
+define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevaluator', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojvcomponent-template', 'ojs/ojcontext', 'ojs/ojdataproviderhandler', 'ojs/ojbindpropagation'], function (exports, Logger, HtmlUtils, CspExpressionEvaluator, ojcustomelementUtils, preact, VComponentTemplate, Context, ojdataproviderhandler, ojbindpropagation) { 'use strict';
 
     CspExpressionEvaluator = CspExpressionEvaluator && Object.prototype.hasOwnProperty.call(CspExpressionEvaluator, 'default') ? CspExpressionEvaluator['default'] : CspExpressionEvaluator;
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
@@ -88,6 +88,17 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
     const BINDING_PROVIDER = Symbol();
     const COMPONENT_ELEMENT = Symbol();
     const UNWRAP_EXTRAS = Symbol();
+    const BINDING_CONTEXT = Symbol();
+    const _DEFAULT_UNWRAP = function (target) {
+        return target;
+    };
+    const _PROVIDED_KEY = '$provided';
+    const _CONTEXT_PARAM = [
+        {
+            type: 1,
+            name: '$context'
+        }
+    ];
     class VTemplateEngine {
         constructor() {
             this._templateAstCache = new WeakMap();
@@ -107,12 +118,20 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                     ? (_a = ojcustomelementUtils.CustomElementUtils.getElementState(componentElement)) === null || _a === void 0 ? void 0 : _a.getBindingProvider()
                     : null;
             }
-            return this._execute({ [BINDING_PROVIDER]: bindingProvider, [COMPONENT_ELEMENT]: componentElement }, fragment, properties, mutationCallback);
+            return this._execute({
+                [BINDING_PROVIDER]: bindingProvider,
+                [COMPONENT_ELEMENT]: componentElement,
+                [BINDING_CONTEXT]: properties
+            }, fragment, properties, mutationCallback);
         }
         execute(componentElement, templateElement, properties, bindingProvider, mutationCallback) {
             const templateAlias = templateElement.getAttribute('data-oj-as');
-            const context = this._getContext(bindingProvider, componentElement, templateElement, properties, templateAlias);
-            return this._execute({ [BINDING_PROVIDER]: bindingProvider, [COMPONENT_ELEMENT]: componentElement }, templateElement, context, mutationCallback);
+            const context = this._getContext(bindingProvider, componentElement, templateElement, properties, null, templateAlias);
+            return this._execute({
+                [BINDING_PROVIDER]: bindingProvider,
+                [COMPONENT_ELEMENT]: componentElement,
+                [BINDING_CONTEXT]: context
+            }, templateElement, context, mutationCallback);
         }
         _execute(engineContext, templateElement, context, mutationCallback) {
             const ast = this._getAstViaCache(engineContext, templateElement);
@@ -135,14 +154,14 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             }
             return this._cspEvaluator.evaluate(ast, { $context: context, $h: preact.h, BindDom });
         }
-        _getContext(bindingProvider, componentElement, node, properties, templateAlias) {
+        _getContext(bindingProvider, componentElement, node, properties, alias, templateAlias) {
             if (bindingProvider) {
                 let bindingContext = bindingProvider.__ContextFor(node);
                 if (!bindingContext) {
                     Logger.info(`Binding context not found when processing template for element with id: ${componentElement.id}. Using binding context for element instead.`);
                     bindingContext = bindingProvider.__ContextFor(componentElement);
                 }
-                return bindingProvider.__ExtendBindingContext(bindingContext, properties, null, templateAlias, componentElement);
+                return bindingProvider.__ExtendBindingContext(bindingContext, properties, alias, templateAlias, componentElement);
             }
             const context = {
                 $current: properties
@@ -194,11 +213,86 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                         return this._createBindForEachExpressionNode(engineContext, node);
                     case 'oj-bind-dom':
                         return this._createBindDomExpressionNode(engineContext, node);
+                    case 'oj-bind-template-slot':
+                        return this._createBindTemplateNode(engineContext, node);
                     case 'oj-defer':
                         return this._createDeferNode(engineContext, node);
+                    case 'template':
+                        return this._createTemplateWithRenderCallback(engineContext, node);
                 }
             }
             return null;
+        }
+        _createBindTemplateNode(engineContext, node) {
+            const templateProps = {
+                type: 10,
+                properties: []
+            };
+            const slotName = node.getAttribute('name') || '';
+            templateProps.properties.push(this._getAttribute(engineContext, 'name', slotName));
+            const templateData = node.getAttribute('data');
+            if (templateData) {
+                templateProps.properties.push(this._getAttribute(engineContext, 'data', templateData));
+            }
+            const alias = node.getAttribute('as');
+            return this._createCallNodeWithContext((bindingContext, resolvedProps) => {
+                const dataProp = resolvedProps.data;
+                const nameProp = resolvedProps.name;
+                const slots = engineContext[BINDING_CONTEXT]['__oj_slots'];
+                const slotChildren = slots[nameProp];
+                let template = slotChildren && slotChildren[slotChildren.length - 1];
+                let isDefaultTemplate = false;
+                if (!template) {
+                    for (let child in node.childNodes) {
+                        if (node.childNodes[child].nodeName === 'TEMPLATE') {
+                            template = node.childNodes[child];
+                            isDefaultTemplate = true;
+                            break;
+                        }
+                    }
+                }
+                if (template) {
+                    const templateAst = this._getAstViaCache(engineContext, template);
+                    const templateAlias = template.getAttribute('data-oj-as');
+                    const templateCtx = this._getContext(engineContext[BINDING_PROVIDER], isDefaultTemplate
+                        ? engineContext[COMPONENT_ELEMENT]
+                        : engineContext[BINDING_CONTEXT]['__oj_composite'], template, dataProp, isDefaultTemplate ? alias : null, templateAlias);
+                    return this._cspEvaluator.evaluate(templateAst, {
+                        $context: templateCtx,
+                        $h: preact.h,
+                        BindDom
+                    });
+                }
+            }, [templateProps]);
+        }
+        _createTemplateWithRenderCallback(engineContext, node) {
+            const templateAlias = node.getAttribute('data-oj-as');
+            const getAstFromCacheFunc = this._getAstViaCache.bind(this);
+            const evaluator = this._cspEvaluator;
+            const renderProp = {
+                key: 'render',
+                value: {
+                    type: 3,
+                    value: (itemContext) => {
+                        const ctx = Object.assign({}, engineContext[BINDING_CONTEXT], {
+                            $current: itemContext
+                        });
+                        if (templateAlias)
+                            ctx[templateAlias] = itemContext;
+                        const engineContextForRenderProp = {
+                            [BINDING_CONTEXT]: ctx,
+                            [BINDING_PROVIDER]: engineContext[BINDING_PROVIDER],
+                            [COMPONENT_ELEMENT]: engineContext[COMPONENT_ELEMENT],
+                            [UNWRAP_EXTRAS]: engineContext[UNWRAP_EXTRAS]
+                        };
+                        const templateAst = getAstFromCacheFunc(engineContextForRenderProp, node);
+                        return evaluator.evaluate(templateAst, { $context: ctx, $h: preact.h });
+                    }
+                }
+            };
+            let props = this._getElementProps(engineContext, node);
+            props.push(renderProp);
+            return this._createHFunctionCallNode('template', [{ type: 10, properties: props }]);
         }
         _createDeferContent(engineContext, nodes, context) {
             const bindDomConfig = { view: nodes, data: context };
@@ -239,23 +333,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             ];
             let props = this._getElementProps(engineContext, node);
             props = props.concat(deferProps);
-            return {
-                type: 4,
-                callee: {
-                    type: 1,
-                    name: '$h'
-                },
-                arguments: [
-                    {
-                        type: 3,
-                        value: 'oj-defer'
-                    },
-                    {
-                        type: 10,
-                        properties: props
-                    }
-                ]
-            };
+            return this._createHFunctionCallNode('oj-defer', [{ type: 10, properties: props }]);
         }
         _createIfExpressionNode(engineContext, node) {
             if (!node.hasAttribute('test')) {
@@ -295,6 +373,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             const templateAlias = template.getAttribute('data-oj-as');
             const foreachEngineContext = {
                 [BINDING_PROVIDER]: engineContext[BINDING_PROVIDER],
+                [BINDING_CONTEXT]: engineContext[BINDING_CONTEXT],
                 [COMPONENT_ELEMENT]: engineContext[COMPONENT_ELEMENT],
                 [UNWRAP_EXTRAS]: (exp, value) => {
                     if (typeof value === 'function' &&
@@ -316,27 +395,98 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                 };
             });
         }
-        _createElementNode(engineContext, node, name, extraProps) {
+        _createElementNode(engineContext, node) {
             var props = this._getElementProps(engineContext, node);
-            props = extraProps ? props.concat(extraProps) : props;
-            return {
-                type: 4,
-                callee: {
-                    type: 1,
-                    name: '$h'
-                },
-                arguments: [
-                    {
-                        type: 3,
-                        value: name || node.tagName.toLowerCase()
-                    },
-                    {
-                        type: 10,
-                        properties: props
-                    },
-                    this._createAst(engineContext, Array.from(node.childNodes))
-                ]
+            const tagName = node.tagName;
+            const localName = tagName.toLowerCase();
+            const metadataProps = ojcustomelementUtils.CustomElementUtils.getPropertiesForElementTag(tagName);
+            return this._createHFunctionCallNode(localName, [
+                this._createPossiblyProvidedAndConsumedProperties(localName, engineContext, metadataProps, props),
+                this._createAst(engineContext, Array.from(node.childNodes))
+            ]);
+        }
+        _createPossiblyProvidedAndConsumedProperties(localTagName, engineContext, metadataProps, props) {
+            const propertyObjectNode = {
+                type: 10,
+                properties: props
             };
+            const provideConsumeMeta = ojbindpropagation.getPropagationMetadataViaCache(localTagName, metadataProps);
+            if (!provideConsumeMeta) {
+                return propertyObjectNode;
+            }
+            const specifiedProps = new Set();
+            props.reduce((acc, def) => acc.add(def.key), specifiedProps);
+            const consumingProps = [];
+            for (const [pName, meta] of provideConsumeMeta) {
+                const consumeMeta = meta[1];
+                if (consumeMeta) {
+                    if (!(specifiedProps.has(pName) ||
+                        specifiedProps.has(ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(pName).toUpperCase()))) {
+                        const unwrap = this._getUnwrapObservable(engineContext);
+                        consumingProps.push({
+                            key: pName,
+                            value: this._createCallNodeWithContext(($ctx) => { var _a, _b; return unwrap((_b = (_a = unwrap($ctx)) === null || _a === void 0 ? void 0 : _a[_PROVIDED_KEY]) === null || _b === void 0 ? void 0 : _b[consumeMeta.name]); })
+                        });
+                    }
+                }
+            }
+            const propertyObjNodeWithConsumers = consumingProps.length === 0
+                ? propertyObjectNode
+                : { type: 10, properties: propertyObjectNode.properties.concat(consumingProps) };
+            return this._createCallNodeWithContext(($ctx, resolvedProps) => {
+                let provided = {};
+                let hasProvided;
+                for (const [pName, [provideMeta]] of provideConsumeMeta) {
+                    if (provideMeta) {
+                        provideMeta.forEach((info) => {
+                            var _a;
+                            let propVal;
+                            let isSet = true;
+                            if (resolvedProps.hasOwnProperty(pName)) {
+                                propVal = resolvedProps[pName];
+                            }
+                            else {
+                                const attr = ojcustomelementUtils.AttributeUtils.propertyNameToAttribute(pName);
+                                const uppercaseAttr = attr.toUpperCase();
+                                if (resolvedProps.hasOwnProperty(uppercaseAttr)) {
+                                    propVal = resolvedProps[uppercaseAttr];
+                                    const type = (_a = metadataProps === null || metadataProps === void 0 ? void 0 : metadataProps[pName]) === null || _a === void 0 ? void 0 : _a.type;
+                                    if (type && propVal != null) {
+                                        propVal = ojcustomelementUtils.AttributeUtils.parseAttributeValue(localTagName, attr, propVal, type);
+                                    }
+                                }
+                                else {
+                                    isSet = false;
+                                }
+                            }
+                            const defaultKey = 'default';
+                            if (!isSet) {
+                                if (info.hasOwnProperty(defaultKey)) {
+                                    propVal = info[defaultKey];
+                                    isSet = true;
+                                }
+                            }
+                            else {
+                                const transform = info.transform;
+                                propVal =
+                                    transform && transform.hasOwnProperty(propVal) ? transform[propVal] : propVal;
+                            }
+                            if (isSet) {
+                                hasProvided = true;
+                                provided[info.name] = propVal;
+                            }
+                        });
+                    }
+                }
+                if (hasProvided) {
+                    const oldProvided = $ctx[_PROVIDED_KEY];
+                    if (oldProvided !== undefined) {
+                        provided = Object.assign({}, oldProvided, provided);
+                    }
+                    $ctx[_PROVIDED_KEY] = provided;
+                }
+                return resolvedProps;
+            }, [propertyObjNodeWithConsumers]);
         }
         _createBindDomExpressionNode(engineContext, node) {
             if (!node.hasAttribute('config')) {
@@ -354,23 +504,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
         _createComponentNode(engineContext, node, component, extraProps) {
             let props = this._getElementProps(engineContext, node);
             props = extraProps ? props.concat(extraProps) : props;
-            return {
-                type: 4,
-                callee: {
-                    type: 1,
-                    name: '$h'
-                },
-                arguments: [
-                    {
-                        type: 3,
-                        value: component
-                    },
-                    {
-                        type: 10,
-                        properties: props
-                    }
-                ]
-            };
+            return this._createHFunctionCallNode(component, [{ type: 10, properties: props }]);
         }
         _createPropertyNode(engineContext, key, value, postprocess) {
             return {
@@ -401,7 +535,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
         _getElementProps(engineContext, node) {
             let styleValue;
             const dotStyleValues = [];
-            const writebacks = [];
+            const dottedExpressions = [];
+            const writebacks = new Map();
             const listeners = new Map();
             const attrNodes = Array.prototype.reduce.call(node.attributes, (acc, attr) => {
                 let name = attr.name;
@@ -438,12 +573,33 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                         acc.push(this._createPropertyNode(engineContext, ojcustomelementUtils.AttributeUtils.getGlobalPropForAttr(name), value));
                     }
                     else {
-                        const hasDottedProps = name.indexOf('.') >= 0;
                         if (expValue.expr) {
-                            acc.push({
-                                key: hasDottedProps ? name : ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name),
-                                value: this._createExpressionEvaluator(engineContext, expValue.expr)
-                            });
+                            const propName = ojcustomelementUtils.AttributeUtils.attributeToPropertyName(name);
+                            if (propName.indexOf('.') >= 0) {
+                                dottedExpressions.push({ subProps: propName, expr: expValue.expr });
+                            }
+                            else {
+                                acc.push({
+                                    key: propName,
+                                    value: this._createExpressionEvaluator(engineContext, expValue.expr)
+                                });
+                            }
+                            if (!expValue.downstreamOnly) {
+                                let subProps = propName.split('.');
+                                const topProp = subProps.shift();
+                                let valuesArray = writebacks.get(topProp);
+                                if (valuesArray) {
+                                    let newValuesArray = [
+                                        ...valuesArray,
+                                        { expr: expValue.expr, subProps: subProps }
+                                    ];
+                                    valuesArray = newValuesArray;
+                                }
+                                else {
+                                    valuesArray = [{ expr: expValue.expr, subProps: subProps }];
+                                }
+                                writebacks.set(topProp, valuesArray);
+                            }
                         }
                         else {
                             acc.push({
@@ -451,9 +607,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                                 value: { type: 3, value: value }
                             });
                         }
-                    }
-                    if (!expValue.downstreamOnly) {
-                        writebacks.push({ name, value: expValue.expr });
                     }
                 }
                 return acc;
@@ -476,14 +629,17 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
                     }
                 });
             }
-            writebacks.forEach((writebackProp) => {
+            if (dottedExpressions.length > 0) {
+                this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions, attrNodes);
+            }
+            writebacks.forEach((valuesArray, name) => {
                 var _a;
-                const propName = `on${writebackProp.name}Changed`;
+                const propName = `on${name}Changed`;
                 const callbackPropExpr = listeners.get(propName);
                 if (callbackPropExpr) {
                     listeners.delete(propName);
                 }
-                attrNodes.push(this._createWritebackPropertyNode(engineContext, propName, writebackProp.value, (_a = ojcustomelementUtils.AttributeUtils.getExpressionInfo(callbackPropExpr)) === null || _a === void 0 ? void 0 : _a.expr));
+                attrNodes.push(this._createWritebackPropertyNode(engineContext, propName, valuesArray, (_a = ojcustomelementUtils.AttributeUtils.getExpressionInfo(callbackPropExpr)) === null || _a === void 0 ? void 0 : _a.expr));
             });
             listeners.forEach((value, name) => {
                 const info = ojcustomelementUtils.AttributeUtils.getExpressionInfo(value);
@@ -493,29 +649,65 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
             });
             return attrNodes;
         }
-        _createWritebackPropertyNode(engineContext, propName, propExpr, existingCallbackExpr) {
-            let propExprEvaluator;
+        _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions, attrNodes) {
+            const bp = engineContext[BINDING_PROVIDER];
+            const propExprEvaluators = [];
+            attrNodes.push({
+                key: 'ref',
+                value: this._createCallNodeWithContext((bindingContext) => {
+                    const resolvedSubPropValues = [];
+                    dottedExpressions.forEach((item, index) => {
+                        let propExprEvaluator = propExprEvaluators[index];
+                        if (!propExprEvaluator) {
+                            propExprEvaluator = this._cspEvaluator.createEvaluator(item.expr).evaluate;
+                            propExprEvaluators.push(propExprEvaluator);
+                        }
+                        const propValue = propExprEvaluator([bindingContext, bindingContext.$data]);
+                        const unwrappedValue = bp ? bp.__UnwrapObservable(propValue) : propValue;
+                        resolvedSubPropValues.push({ [item.subProps]: unwrappedValue });
+                    });
+                    return (refObj) => {
+                        if (refObj && refObj.setProperties) {
+                            const updatedProps = Object.assign({}, ...resolvedSubPropValues);
+                            refObj.setProperties(updatedProps);
+                        }
+                    };
+                })
+            });
+        }
+        _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {
+            const propExprEvaluators = [];
             let callbackExprEvaluator;
             return {
                 key: propName,
                 value: this._createCallNodeWithContext((bindingContext) => {
                     return (event) => {
-                        if (!propExprEvaluator) {
-                            propExprEvaluator = this._cspEvaluator.createEvaluator(propExpr).evaluate;
-                        }
-                        const value = propExprEvaluator([bindingContext, bindingContext.$data]);
-                        if (engineContext[BINDING_PROVIDER] &&
-                            engineContext[BINDING_PROVIDER].__IsObservable(value)) {
-                            value(event.detail.value);
-                        }
-                        else {
-                            const writerExpr = this._getPropertyWriterExpression(propExpr);
-                            if (writerExpr !== null) {
-                                const writerEvaluator = this._cspEvaluator.createEvaluator(writerExpr).evaluate;
-                                const func = this._getWriter(writerEvaluator([bindingContext.$data || {}, bindingContext]));
-                                func(event.detail.value);
+                        valuesArray.forEach((propItem, index) => {
+                            let newValue = event.detail.value;
+                            var subProps = propItem.subProps;
+                            var propExpr = propItem.expr;
+                            if (subProps.length > 0 && typeof newValue === 'object') {
+                                newValue = subProps.reduce((acc, cur) => acc[cur], newValue);
                             }
-                        }
+                            let propExprEvaluator = propExprEvaluators[index];
+                            if (!propExprEvaluator) {
+                                propExprEvaluator = this._cspEvaluator.createEvaluator(propExpr).evaluate;
+                                propExprEvaluators.push(propExprEvaluator);
+                            }
+                            const value = propExprEvaluator([bindingContext, bindingContext.$data]);
+                            if (engineContext[BINDING_PROVIDER] &&
+                                engineContext[BINDING_PROVIDER].__IsObservable(value)) {
+                                value(newValue);
+                            }
+                            else {
+                                const writerExpr = this._getPropertyWriterExpression(propExpr);
+                                if (writerExpr !== null) {
+                                    const writerEvaluator = this._cspEvaluator.createEvaluator(writerExpr).evaluate;
+                                    const func = this._getWriter(writerEvaluator([bindingContext.$data || {}, bindingContext]));
+                                    func(newValue);
+                                }
+                            }
+                        });
                         if (existingCallbackExpr && !callbackExprEvaluator) {
                             callbackExprEvaluator = this._cspEvaluator.createEvaluator(existingCallbackExpr)
                                 .evaluate;
@@ -556,29 +748,51 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojhtmlutils', 'ojs/ojcspexpressionevalua
         _createExpressionEvaluator(engineContext, exp, postprocess) {
             const delegateEvaluator = this._cspEvaluator.createEvaluator(exp).evaluate;
             return this._createCallNodeWithContext(($context) => {
-                const bp = engineContext[BINDING_PROVIDER];
-                const context = bp ? bp.__UnwrapObservable($context) : $context;
+                const unwrap = this._getUnwrapObservable(engineContext);
+                const context = unwrap($context);
                 const value = delegateEvaluator([context, context.$data]);
-                let unwrapped = bp ? bp.__UnwrapObservable(value) : value;
+                let unwrapped = unwrap(value);
                 if (engineContext[UNWRAP_EXTRAS]) {
                     unwrapped = engineContext[UNWRAP_EXTRAS](exp, unwrapped);
                 }
                 return postprocess ? postprocess(unwrapped) : unwrapped;
             });
         }
-        _createCallNodeWithContext(callback) {
+        _getUnwrapObservable(engineContext) {
+            const bp = engineContext[BINDING_PROVIDER];
+            return bp ? bp.__UnwrapObservable : _DEFAULT_UNWRAP;
+        }
+        _createCallNodeWithContext(callback, extaArgs) {
             return {
                 type: 4,
                 callee: {
                     type: 3,
                     value: callback
                 },
+                arguments: extaArgs ? _CONTEXT_PARAM.concat(extaArgs) : _CONTEXT_PARAM
+            };
+        }
+        _createHFunctionCallNode(elementName, extraArgs) {
+            return {
+                type: 4,
+                callee: {
+                    type: 1,
+                    name: '$h'
+                },
                 arguments: [
                     {
-                        type: 1,
-                        name: '$context'
-                    }
+                        type: 3,
+                        value: elementName
+                    },
+                    ...extraArgs
                 ]
+            };
+        }
+        _getAttribute(engineContext, key, value) {
+            const expr = ojcustomelementUtils.AttributeUtils.getExpressionInfo(value).expr;
+            return {
+                key: key,
+                value: expr ? this._createExpressionEvaluator(engineContext, expr) : { type: 3, value: value }
             };
         }
         _getWriter(evaluator) {

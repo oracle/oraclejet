@@ -2965,388 +2965,630 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
   };
 
   /**
-   * Custom jquery UI position collision rule that will first apply the "flip" rule and follow with "center" alignment.
-   * @ojtsignore
-   */
-  $.ui.position.flipcenter =
-  {
-    /**
-     * @param {{top: number, left: number}} position
-     * @param {{targetWidth: number,
-     *         targetHeight: number,
-     *         elemWidth: number,
-     *         elemHeight: number,
-     *         collisionPosition: {marginLeft: number, marginTop: number},
-     *         collisionWidth: number,
-     *         collisionHeight: number,
-     *         offset: Array.<number>,
-     *         my: Array.<string>,
-     *         at: Array.<string>,
-     *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-     *         elem: jQuery
-     *        }} data
-     * @returns {undefined}
-     */
-    left: function (position, data) {
-      // stash away the initial position calculated from the at alignment
-      var posLeft = position.left;
-
-      // call on the flip rule
-      $.ui.position.flip.left.call(this, position, data);
-
-      // These calcs were taken from the "fit" rule.
-      var within = data.within;
-      var withinOffset = within.isWindow ? within.scrollLeft : within.offset.left;
-      var outerWidth = within.width;
-      var collisionPosLeft = position.left - data.collisionPosition.marginLeft;
-      var overLeft = withinOffset - collisionPosLeft;
-      var overRight = (collisionPosLeft + data.collisionWidth) - outerWidth - withinOffset;
-
-      // if popup is not within, center align it
-      if (overLeft > 0 || overRight > 0) {
-        // find the center of the target element
-        if (data.at[0] === 'right') {
-          posLeft -= data.targetWidth / 2;
-        } else if (data.at[0] === 'left') {
-          posLeft += data.targetWidth / 2;
-        }
-
-        var isRTL = DomUtils.getReadingDirection() === 'rtl';
-        var dirFactor = isRTL ? -1 : 1;
-
-        // factor in half the width of the popup
-        posLeft -= dirFactor * (data.elemWidth / 2);
-
-        // Force the popup start to be within the viewport.
-        // This collision rule is only used by input components internally. The notewindow will auto dismiss when
-        // what it is aligned to is hidden in a scroll container.
-        // eslint-disable-next-line no-param-reassign
-        position.left = Math.max(0, posLeft);
-      }
-    },
-
-    /**
-     * @param {{top: number, left: number}} position
-     * @param {{targetWidth: number,
-     *         targetHeight: number,
-     *         elemWidth: number,
-     *         elemHeight: number,
-     *         collisionPosition: {marginLeft: number, marginTop: number},
-     *         collisionWidth: number,
-     *         collisionHeight: number,
-     *         offset: Array.<number>,
-     *         my: Array.<string>,
-     *         at: Array.<string>,
-     *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-     *         elem: jQuery
-     *        }} data
-     * @returns {undefined}
-     */
-    top: function (position, data) {
-      // stash away the initial position calculated from the at alignment
-      var posTop = position.top;
-
-      $.ui.position.flip.top.call(this, position, data);
-
-      // These calcs were taken from the "fit" rule.
-      var within = data.within;
-      var withinOffset = within.isWindow ? within.scrollTop : within.offset.top;
-      var outerHeight = data.within.height;
-      var collisionPosTop = position.top - data.collisionPosition.marginTop;
-      var overTop = withinOffset - collisionPosTop;
-      var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - withinOffset;
-
-      if (overTop > 0 || overBottom > 0) {
-        // find the center of the target element
-        if (data.at[1] === 'top') {
-          posTop += data.targetHeight / 2;
-        } else if (data.at[1] === 'bottom') {
-          posTop -= data.targetHeight / 2;
-        }
-
-        // factor in half the height of the popup
-        posTop += data.elemHeight / 2;
-
-        // Force the popup top to be within the viewport.
-        // This collision rule is only used by input components internally. The notewindow will auto dismiss when
-        // what it is aligned to is hidden in a scroll container.
-        // eslint-disable-next-line no-param-reassign
-        position.top = Math.max(0, posTop);
-      }
-    }
-  };
-
-  /**
-   * Forked the jquery UI "flip" position collision rule in version 1.11.4.
-   * The jquery version doesn't consider the best fit in terms of
-   * top/bottom. The rule favors top when there is no fit versus choosing the
-   * best fit, lesser of two evils. The new JET spin of this rule will pick
-   * the better fit versus favoring top when there is no fit.
+   * Forked version of jQueryUI.position() API with JET bug fixes.
    *
-   * Outside of making the code closure compiler friendly, there is only
-   * a single line difference.  It's noted with a bug number.
-   * @private
    */
-  var _origLeftFlipCollisionRule = $.ui.position.flip.left; // stash away the original left flip rule
-
-  /**
-   * @ojtsignore
-   */
-  $.ui.position.flip = {
-    left: _origLeftFlipCollisionRule.bind(null),
+  (function () {
     /**
-     * @param {{top: number, left: number}} position
-     * @param {{targetWidth: number,
-     *         targetHeight: number,
-     *         elemWidth: number,
-     *         elemHeight: number,
-     *         collisionPosition: {marginLeft: number, marginTop: number},
-     *         collisionWidth: number,
-     *         collisionHeight: number,
-     *         offset: Array.<number>,
-     *         my: Array.<string>,
-     *         at: Array.<string>,
-     *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-     *         elem: jQuery
-     *        }} data
-     * @returns {undefined}
+     * @ojtsignore
      */
-    top: function (position, data) {
-      var within = data.within;
-      var withinOffset = within.offset.top + within.scrollTop;
-      var outerHeight = within.height;
-      var offsetTop = within.isWindow ? within.scrollTop : within.offset.top;
-      var collisionPosTop = position.top - data.collisionPosition.marginTop;
-      var overTop = collisionPosTop - offsetTop;
-      var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - offsetTop;
-      var top = data.my[1] === 'top';
+    var cachedScrollbarWidth;
+    var max = Math.max;
+    var abs = Math.abs;
+    const rhorizontal = /left|center|right/;
+    const rvertical = /top|center|bottom/;
+    const roffset = /[+-]\d+(\.[\d]+)?%?/;
+    const rposition = /^\w+/;
+    const rpercent = /%$/;
+    var _position = $.fn.position;
 
-      var myOffset;
-      if (top) {
-        myOffset = -data.elemHeight;
-      } else if (data.my[1] === 'bottom') {
-        myOffset = data.elemHeight;
-      } else {
-        myOffset = 0;
+    var _origGetWithinInfo = $.position.getWithinInfo; // stash away the original getWithinInfo method
+
+    function getOffsets(offsets, width, height) {
+      return [
+        parseFloat(offsets[0]) * (rpercent.test(offsets[0]) ? width / 100 : 1),
+        parseFloat(offsets[1]) * (rpercent.test(offsets[1]) ? height / 100 : 1)
+      ];
+    }
+
+    function parseCss(element, property) {
+      return parseInt($.css(element, property), 10) || 0;
+    }
+
+    function getDimensions(elem) {
+      var raw = elem[0];
+      if (raw.nodeType === 9) {
+        return {
+          width: elem.width(),
+          height: elem.height(),
+          offset: { top: 0, left: 0 }
+        };
       }
+      if ($.isWindow(raw)) {
+        // JET-41302: jQuery's $(window).height() does not reflect changing window height
+        // for dynamic browser adress bar and toolbar behavior while scrolling.
+        // Need to use window.innerHeight on mobile.
+        var agentInfo = oj.AgentUtils.getAgentInfo();
+        var isMobile = (oj.AgentUtils.OS.ANDROID === agentInfo.os
+                     || oj.AgentUtils.OS.IOS === agentInfo.os);
+        return {
+          width: elem.width(),
+          height: (isMobile ? raw.innerHeight : elem.height()),
+          offset: { top: elem.scrollTop(), left: elem.scrollLeft() }
+        };
+      }
+      if (raw.preventDefault) {
+        return {
+          width: 0,
+          height: 0,
+          offset: { top: raw.pageY, left: raw.pageX }
+        };
+      }
+      return {
+        width: elem.outerWidth(),
+        height: elem.outerHeight(),
+        offset: elem.offset()
+      };
+    }
+
+    /**
+     * Forked jqueryUI $.position.scrollbarWidth() implementation.
+     *
+     * The original implementation in jqueryUI is not CSP compliant as
+     * it creates a div with inline style. Our implementation replaces
+     * the inline style definition with individual style property settings
+     * on a temporary div element.
+     *
+     * The fork also includes the $.position.getScrollInfo method which depends
+     * on $.position.scrollbarWidth via a local reference, so we cannot simply
+     * delegate to the original method, because it would use the old
+     * scrollbarWidth() version.
+     *
+     */
+    $.position = {
+
+      getWithinInfo: _origGetWithinInfo.bind(this),
+
+      scrollbarWidth: function () {
+        if (cachedScrollbarWidth !== undefined) {
+          return cachedScrollbarWidth;
+        }
+        var w1;
+        var w2;
+        var div = document.createElement('div');
+        div.style.display = 'block';
+        div.style.position = 'absolute';
+        div.style.width = '50px';
+        div.style.height = '50px';
+        div.style.overflow = 'hidden';
+        var innerDiv = document.createElement('div');
+        innerDiv.style.height = '100px';
+        innerDiv.style.width = 'auto';
+        div.appendChild(innerDiv); // @HTMLUpdateOK
+        $('body').append($(div)); // @HTMLUpdateOK
+        w1 = innerDiv.offsetWidth;
+        div.style.overflow = 'scroll';
+        w2 = innerDiv.offsetWidth;
+        if (w1 === w2) {
+          w2 = div.clientWidth;
+        }
+        $(div).remove();
+        cachedScrollbarWidth = w1 - w2;
+        return cachedScrollbarWidth;
+      },
+
+      getScrollInfo: function (within) {
+        var overflowX = within.isWindow || within.isDocument ? '' : within.element.css('overflow-x');
+        var overflowY = within.isWindow || within.isDocument ? '' : within.element.css('overflow-y');
+        var hasOverflowX = overflowX === 'scroll'
+          || (overflowX === 'auto' && within.width < within.element[0].scrollWidth);
+        var hasOverflowY = overflowY === 'scroll'
+          || (overflowY === 'auto' && within.height < within.element[0].scrollHeight);
+
+        return {
+          width: hasOverflowY ? $.position.scrollbarWidth() : 0,
+          height: hasOverflowX ? $.position.scrollbarWidth() : 0
+        };
+      }
+    };
+
+    $.fn.position = (function (options) {
+      if (!options || !options.of) {
+        return _position.apply(this, arguments);
+      }
+
+      // Make a copy, we don't want to modify arguments
+      options = $.extend({}, options);
 
       var atOffset;
-      if (data.at[1] === 'top') {
-        atOffset = data.targetHeight;
-      } else if (data.at[1] === 'bottom') {
-        atOffset = -data.targetHeight;
-      } else {
-        atOffset = 0;
+      var targetWidth;
+      var targetHeight;
+      var targetOffset;
+      var basePosition;
+      var dimensions;
+      var target = $(options.of);
+      var within = $.position.getWithinInfo(options.within);
+      var scrollInfo = $.position.getScrollInfo(within);
+      var collision = (options.collision || 'flip').split(' ');
+      var offsets = {};
+
+      dimensions = getDimensions(target);
+      if (target[0].preventDefault) {
+        // Force left top to allow flipping
+        options.at = 'left top';
+      }
+      targetWidth = dimensions.width;
+      targetHeight = dimensions.height;
+      targetOffset = dimensions.offset;
+
+      // Clone to reuse original targetOffset later
+      basePosition = $.extend({}, targetOffset);
+
+      // Force my and at to have valid horizontal and vertical positions
+      // if a value is missing or invalid, it will be converted to center
+      $.each(['my', 'at'], function () {
+      var pos = (options[this] || '').split(' ');
+      var horizontalOffset;
+      var verticalOffset;
+
+      if (pos.length === 1) {
+        pos = rhorizontal.test(pos[0]) ?
+            pos.concat(['center']) :
+            (rvertical.test(pos[0]) ?
+              ['center'].concat(pos) :
+              ['center', 'center']);
+        }
+        pos[0] = rhorizontal.test(pos[0]) ? pos[0] : 'center';
+        pos[1] = rvertical.test(pos[1]) ? pos[1] : 'center';
+
+        // Calculate offsets
+        horizontalOffset = roffset.exec(pos[0]);
+        verticalOffset = roffset.exec(pos[1]);
+        offsets[this] = [
+          horizontalOffset ? horizontalOffset[0] : 0,
+          verticalOffset ? verticalOffset[0] : 0
+        ];
+
+        // Reduce to just the positions without the offsets
+        options[this] = [
+          rposition.exec(pos[0])[0],
+          rposition.exec(pos[1])[0]
+        ];
+      });
+
+      // Normalize collision option
+      if (collision.length === 1) {
+        collision[1] = collision[0];
       }
 
-      var offset = -2 * data.offset[1];
-      var newOverBottom;
-      var newOverTop;
-      if (overTop < 0) {
-        newOverBottom = (position.top + myOffset + atOffset + offset + data.collisionHeight) -
-          outerHeight - withinOffset;
-        if (newOverBottom < 0 || newOverBottom < Math.abs(overTop)) {
-          //  - only flip up if there is more "over" on top than bottom
-          if (overBottom < 0 && overTop > overBottom) {
+      if (options.at[0] === 'right') {
+        basePosition.left += targetWidth;
+      } else if (options.at[0] === 'center') {
+        basePosition.left += targetWidth / 2;
+      }
+
+      if (options.at[1] === 'bottom') {
+        basePosition.top += targetHeight;
+      } else if (options.at[1] === 'center') {
+        basePosition.top += targetHeight / 2;
+      }
+
+      atOffset = getOffsets(offsets.at, targetWidth, targetHeight);
+      basePosition.left += atOffset[0];
+      basePosition.top += atOffset[1];
+
+      return this.each(function () {
+        var collisionPosition;
+        var using;
+        var elem = $(this);
+        var elemWidth = elem.outerWidth();
+        var elemHeight = elem.outerHeight();
+        var marginLeft = parseCss(this, 'marginLeft');
+        var marginTop = parseCss(this, 'marginTop');
+        var collisionWidth = elemWidth + marginLeft + parseCss(this, 'marginRight') +
+            scrollInfo.width;
+        var collisionHeight = elemHeight + marginTop + parseCss(this, 'marginBottom') +
+            scrollInfo.height;
+        var position = $.extend({}, basePosition);
+        var myOffset = getOffsets(offsets.my, elem.outerWidth(), elem.outerHeight());
+
+        if (options.my[0] === 'right') {
+          position.left -= elemWidth;
+        } else if (options.my[0] === 'center') {
+          position.left -= elemWidth / 2;
+        }
+
+        if (options.my[1] === 'bottom') {
+          position.top -= elemHeight;
+        } else if (options.my[1] === 'center') {
+          position.top -= elemHeight / 2;
+        }
+
+        position.left += myOffset[0];
+        position.top += myOffset[1];
+
+        collisionPosition = {
+          marginLeft: marginLeft,
+          marginTop: marginTop
+        };
+
+        $.each(['left', 'top'], function (i, dir) {
+          if ($.ui.position[collision[i]]) {
+            $.ui.position[collision[i]][dir](position, {
+              targetWidth: targetWidth,
+              targetHeight: targetHeight,
+              elemWidth: elemWidth,
+              elemHeight: elemHeight,
+              collisionPosition: collisionPosition,
+              collisionWidth: collisionWidth,
+              collisionHeight: collisionHeight,
+              offset: [atOffset[0] + myOffset[0], atOffset[1] + myOffset[1]],
+              my: options.my,
+              at: options.at,
+              within: within,
+              elem: elem
+            });
+          }
+        });
+
+        if (options.using) {
+          // Adds feedback as second argument to using callback, if present
+          using = function (props) {
+            var left = targetOffset.left - position.left;
+            var right = left + targetWidth - elemWidth;
+            var top = targetOffset.top - position.top;
+            var bottom = top + targetHeight - elemHeight;
+            var feedback = {
+                target: {
+                  element: target,
+                  left: targetOffset.left,
+                  top: targetOffset.top,
+                  width: targetWidth,
+                  height: targetHeight
+                },
+                element: {
+                  element: elem,
+                  left: position.left,
+                  top: position.top,
+                  width: elemWidth,
+                  height: elemHeight
+                },
+                horizontal: right < 0 ? 'left' : left > 0 ? 'right' : 'center',
+                vertical: bottom < 0 ? 'top' : top > 0 ? 'bottom' : 'middle'
+              };
+            if (targetWidth < elemWidth && Math.abs(left + right) < targetWidth) {
+              feedback.horizontal = 'center';
+            }
+            if (targetHeight < elemHeight && Math.abs(top + bottom) < targetHeight) {
+              feedback.vertical = 'middle';
+            }
+            if (max(abs(left), abs(right)) > max(abs(top), abs(bottom))) {
+              feedback.important = 'horizontal';
+            } else {
+              feedback.important = 'vertical';
+            }
+            options.using.call(this, props, feedback);
+          };
+        }
+
+        elem.offset($.extend(position, { using: using }));
+      });
+    });
+
+    /**
+     * Forked the jquery UI "flip" position collision rule in version 1.11.4.
+     * The jquery version doesn't consider the best fit in terms of
+     * top/bottom. The rule favors top when there is no fit versus choosing the
+     * best fit, lesser of two evils. The new JET spin of this rule will pick
+     * the better fit versus favoring top when there is no fit.
+     *
+     * Outside of making the code closure compiler friendly, there is only
+     * a single line difference.  It's noted with a bug number.
+     * @private
+     */
+    var _origLeftFlipCollisionRule = $.ui.position.flip.left; // stash away the original left flip rule
+
+    /**
+      * @ojtsignore
+      */
+    $.ui.position.flip = {
+      left: _origLeftFlipCollisionRule.bind(this),
+      /**
+        * @param {{top: number, left: number}} position
+        * @param {{targetWidth: number,
+        *         targetHeight: number,
+        *         elemWidth: number,
+        *         elemHeight: number,
+        *         collisionPosition: {marginLeft: number, marginTop: number},
+        *         collisionWidth: number,
+        *         collisionHeight: number,
+        *         offset: Array.<number>,
+        *         my: Array.<string>,
+        *         at: Array.<string>,
+        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+        *         elem: jQuery
+        *        }} data
+        * @returns {undefined}
+        */
+      top: function (position, data) {
+        var within = data.within;
+        var withinOffset = within.offset.top + within.scrollTop;
+        var outerHeight = within.height;
+        var offsetTop = within.isWindow ? within.scrollTop : within.offset.top;
+        var collisionPosTop = position.top - data.collisionPosition.marginTop;
+        var overTop = collisionPosTop - offsetTop;
+        var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - offsetTop;
+        var top = data.my[1] === 'top';
+
+        var myOffset;
+        if (top) {
+          myOffset = -data.elemHeight;
+        } else if (data.my[1] === 'bottom') {
+          myOffset = data.elemHeight;
+        } else {
+          myOffset = 0;
+        }
+
+        var atOffset;
+        if (data.at[1] === 'top') {
+          atOffset = data.targetHeight;
+        } else if (data.at[1] === 'bottom') {
+          atOffset = -data.targetHeight;
+        } else {
+          atOffset = 0;
+        }
+
+        var offset = -2 * data.offset[1];
+        var newOverBottom;
+        var newOverTop;
+        if (overTop < 0) {
+          newOverBottom = (position.top + myOffset + atOffset + offset + data.collisionHeight) -
+            outerHeight - withinOffset;
+          if (newOverBottom < 0 || newOverBottom < Math.abs(overTop)) {
+            //  - only flip up if there is more "over" on top than bottom
+            if (overBottom < 0 && overTop > overBottom) {
+              // eslint-disable-next-line no-param-reassign
+              position.top += myOffset + atOffset + offset;
+            }
+          }
+        } else if (overBottom > 0) {
+          newOverTop = (((position.top - data.collisionPosition.marginTop) +
+                          myOffset + atOffset + offset) -
+                        offsetTop);
+          if (newOverTop > 0 || Math.abs(newOverTop) < overBottom) {
             // eslint-disable-next-line no-param-reassign
             position.top += myOffset + atOffset + offset;
           }
         }
-      } else if (overBottom > 0) {
-        newOverTop = (((position.top - data.collisionPosition.marginTop) +
-                       myOffset + atOffset + offset) -
-                      offsetTop);
-        if (newOverTop > 0 || Math.abs(newOverTop) < overBottom) {
-          // eslint-disable-next-line no-param-reassign
-          position.top += myOffset + atOffset + offset;
-        }
       }
-    }
-  };
+    };
 
+    /**
+      * Forked the jquery UI "fit" position collision rule.
+      * The jquery version can return negative left and top positions. This
+      * is a problem because the page cannot be scrolled to negative
+      * coordinates and parts of the popup may not be accessible.
+      *
+      * Outside of making the code closure compiler friendly, the only
+      * difference is the test whether the returned position is negative.
+      * If so, it is set to 0 to make the popup "fit" in the page.
+      */
 
-  /**
-   * Forked the jquery UI "fit" position collision rule.
-   * The jquery version can return negative left and top positions. This
-   * is a problem because the page cannot be scrolled to negative
-   * coordinates and parts of the popup may not be accessible.
-   *
-   * Outside of making the code closure compiler friendly, the only
-   * difference is the test whether the returned position is negative.
-   * If so, it is set to 0 to make the popup "fit" in the page.
-   */
+    /**
+      * @ojtsignore
+      */
+    $.ui.position.fit = {
+      left: function (position, data) {
+        var within = data.within;
+        var withinOffset = within.isWindow ? within.scrollLeft : within.offset.left;
+        var outerWidth = within.width;
+        var collisionPosLeft = position.left - data.collisionPosition.marginLeft;
+        var overLeft = withinOffset - collisionPosLeft;
+        var overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset;
+        var newOverRight;
 
-  /**
-   * @ojtsignore
-   */
-   $.ui.position.fit = {
-    left: function (position, data) {
-      var within = data.within;
-      var withinOffset = within.isWindow ? within.scrollLeft : within.offset.left;
-      var outerWidth = within.width;
-      var collisionPosLeft = position.left - data.collisionPosition.marginLeft;
-      var overLeft = withinOffset - collisionPosLeft;
-      var overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset;
-      var newOverRight;
+        // Element is wider than within
+        if (data.collisionWidth > outerWidth) {
+          // Element is initially over the left side of within
+          if (overLeft > 0 && overRight <= 0) {
+            newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
+            position.left += overLeft - newOverRight;
 
-      // Element is wider than within
-      if (data.collisionWidth > outerWidth) {
-        // Element is initially over the left side of within
-        if (overLeft > 0 && overRight <= 0) {
-          newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
-          position.left += overLeft - newOverRight;
-
-        // Element is initially over right side of within
-        } else if (overRight > 0 && overLeft <= 0) {
-          position.left = withinOffset;
-
-        // Element is initially over both left and right sides of within
-        } else {
-          // eslint-disable-next-line no-lonely-if
-          if (overLeft > overRight) {
-            position.left = withinOffset + outerWidth - data.collisionWidth;
-          } else {
+          // Element is initially over right side of within
+          } else if (overRight > 0 && overLeft <= 0) {
             position.left = withinOffset;
-          }
-        }
 
-      // Too far left -> align with left edge
-      } else if (overLeft > 0) {
-        position.left += overLeft;
-
-      // Too far right -> align with right edge
-      } else if (overRight > 0) {
-        position.left -= overRight;
-
-      // Adjust based on position and margin
-      } else {
-        position.left = Math.max(position.left - collisionPosLeft, position.left);
-      }
-
-      // JET-43962: Do not allow left position to be < 0
-      if (position.left < 0) {
-        position.left = 0;
-      }
-    },
-
-    top: function (position, data) {
-      var within = data.within;
-      var withinOffset = within.isWindow ? within.scrollTop : within.offset.top;
-      var outerHeight = data.within.height;
-      var collisionPosTop = position.top - data.collisionPosition.marginTop;
-      var overTop = withinOffset - collisionPosTop;
-      var overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset;
-      var newOverBottom;
-
-      // Element is taller than within
-      if (data.collisionHeight > outerHeight) {
-        // Element is initially over the top of within
-        if (overTop > 0 && overBottom <= 0) {
-          newOverBottom = position.top + overTop + data.collisionHeight - outerHeight -
-            withinOffset;
-          position.top += overTop - newOverBottom;
-
-        // Element is initially over bottom of within
-        } else if (overBottom > 0 && overTop <= 0) {
-          position.top = withinOffset;
-
-        // Element is initially over both top and bottom of within
-        } else {
-          // eslint-disable-next-line no-lonely-if
-          if (overTop > overBottom) {
-            position.top = withinOffset + outerHeight - data.collisionHeight;
+          // Element is initially over both left and right sides of within
           } else {
-            position.top = withinOffset;
+            // eslint-disable-next-line no-lonely-if
+            if (overLeft > overRight) {
+              position.left = withinOffset + outerWidth - data.collisionWidth;
+            } else {
+              position.left = withinOffset;
+            }
           }
+
+        // Too far left -> align with left edge
+        } else if (overLeft > 0) {
+          position.left += overLeft;
+
+        // Too far right -> align with right edge
+        } else if (overRight > 0) {
+          position.left -= overRight;
+
+        // Adjust based on position and margin
+        } else {
+          position.left = Math.max(position.left - collisionPosLeft, position.left);
         }
 
-      // Too far up -> align with top
-      } else if (overTop > 0) {
-        position.top += overTop;
+        // JET-43962: Do not allow left position to be < 0
+        if (position.left < 0) {
+          position.left = 0;
+        }
+      },
 
-      // Too far down -> align with bottom edge
-      } else if (overBottom > 0) {
-        position.top -= overBottom;
+      top: function (position, data) {
+        var within = data.within;
+        var withinOffset = within.isWindow ? within.scrollTop : within.offset.top;
+        var outerHeight = data.within.height;
+        var collisionPosTop = position.top - data.collisionPosition.marginTop;
+        var overTop = withinOffset - collisionPosTop;
+        var overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset;
+        var newOverBottom;
 
-      // Adjust based on position and margin
-      } else {
-        position.top = Math.max(position.top - collisionPosTop, position.top);
+        // Element is taller than within
+        if (data.collisionHeight > outerHeight) {
+          // Element is initially over the top of within
+          if (overTop > 0 && overBottom <= 0) {
+            newOverBottom = position.top + overTop + data.collisionHeight - outerHeight -
+              withinOffset;
+            position.top += overTop - newOverBottom;
+
+          // Element is initially over bottom of within
+          } else if (overBottom > 0 && overTop <= 0) {
+            position.top = withinOffset;
+
+          // Element is initially over both top and bottom of within
+          } else {
+            // eslint-disable-next-line no-lonely-if
+            if (overTop > overBottom) {
+              position.top = withinOffset + outerHeight - data.collisionHeight;
+            } else {
+              position.top = withinOffset;
+            }
+          }
+
+        // Too far up -> align with top
+        } else if (overTop > 0) {
+          position.top += overTop;
+
+        // Too far down -> align with bottom edge
+        } else if (overBottom > 0) {
+          position.top -= overBottom;
+
+        // Adjust based on position and margin
+        } else {
+          position.top = Math.max(position.top - collisionPosTop, position.top);
+        }
+
+        // JET-43962: Do not allow top position to be < 0
+        if (position.top < 0) {
+          position.top = 0;
+        }
       }
+    };
 
-      // JET-43962: Do not allow top position to be < 0
-      if (position.top < 0) {
-        position.top = 0;
+    /**
+     * Custom jquery UI position collision rule that will first apply the "flip" rule and follow with "center" alignment.
+     * @ojtsignore
+     */
+    $.ui.position.flipcenter = {
+      /**
+        * @param {{top: number, left: number}} position
+        * @param {{targetWidth: number,
+        *         targetHeight: number,
+        *         elemWidth: number,
+        *         elemHeight: number,
+        *         collisionPosition: {marginLeft: number, marginTop: number},
+        *         collisionWidth: number,
+        *         collisionHeight: number,
+        *         offset: Array.<number>,
+        *         my: Array.<string>,
+        *         at: Array.<string>,
+        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+        *         elem: jQuery
+        *        }} data
+        * @returns {undefined}
+        */
+      left: function (position, data) {
+        // stash away the initial position calculated from the at alignment
+        var posLeft = position.left;
+
+        // call on the flip rule
+        $.ui.position.flip.left.call(this, position, data);
+
+        // These calcs were taken from the "fit" rule.
+        var within = data.within;
+        var withinOffset = within.isWindow ? within.scrollLeft : within.offset.left;
+        var outerWidth = within.width;
+        var collisionPosLeft = position.left - data.collisionPosition.marginLeft;
+        var overLeft = withinOffset - collisionPosLeft;
+        var overRight = (collisionPosLeft + data.collisionWidth) - outerWidth - withinOffset;
+
+        // if popup is not within, center align it
+        if (overLeft > 0 || overRight > 0) {
+          // find the center of the target element
+          if (data.at[0] === 'right') {
+            posLeft -= data.targetWidth / 2;
+          } else if (data.at[0] === 'left') {
+            posLeft += data.targetWidth / 2;
+          }
+
+          var isRTL = DomUtils.getReadingDirection() === 'rtl';
+          var dirFactor = isRTL ? -1 : 1;
+
+          // factor in half the width of the popup
+          posLeft -= dirFactor * (data.elemWidth / 2);
+
+          // Force the popup start to be within the viewport.
+          // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+          // what it is aligned to is hidden in a scroll container.
+          // eslint-disable-next-line no-param-reassign
+          position.left = Math.max(0, posLeft);
+        }
+      },
+
+      /**
+        * @param {{top: number, left: number}} position
+        * @param {{targetWidth: number,
+        *         targetHeight: number,
+        *         elemWidth: number,
+        *         elemHeight: number,
+        *         collisionPosition: {marginLeft: number, marginTop: number},
+        *         collisionWidth: number,
+        *         collisionHeight: number,
+        *         offset: Array.<number>,
+        *         my: Array.<string>,
+        *         at: Array.<string>,
+        *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
+        *         elem: jQuery
+        *        }} data
+        * @returns {undefined}
+        */
+      top: function (position, data) {
+        // stash away the initial position calculated from the at alignment
+        var posTop = position.top;
+
+        $.ui.position.flip.top.call(this, position, data);
+
+        // These calcs were taken from the "fit" rule.
+        var within = data.within;
+        var withinOffset = within.isWindow ? within.scrollTop : within.offset.top;
+        var outerHeight = data.within.height;
+        var collisionPosTop = position.top - data.collisionPosition.marginTop;
+        var overTop = withinOffset - collisionPosTop;
+        var overBottom = (collisionPosTop + data.collisionHeight) - outerHeight - withinOffset;
+
+        if (overTop > 0 || overBottom > 0) {
+          // find the center of the target element
+          if (data.at[1] === 'top') {
+            posTop += data.targetHeight / 2;
+          } else if (data.at[1] === 'bottom') {
+            posTop -= data.targetHeight / 2;
+          }
+
+          // factor in half the height of the popup
+          posTop += data.elemHeight / 2;
+
+          // Force the popup top to be within the viewport.
+          // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+          // what it is aligned to is hidden in a scroll container.
+          // eslint-disable-next-line no-param-reassign
+          position.top = Math.max(0, posTop);
+        }
       }
-    }
-  };
-
-  /**
-   * Forked jqueryUI $.position.scrollbarWidth() implementation.
-   *
-   * The original implementation in jqueryUI is not CSP compliant as
-   * it creates a div with inline style. Our implementation replaces
-   * the inline style definition with individual style property settings
-   * on a temporary div element.
-   *
-   * The fork also includes the $.position.getScrollInfo method which depends
-   * on $.position.scrollbarWidth via a local reference, so we cannot simply
-   * delegate to the original method, because it would use the old
-   * scrollbarWidth() version.
-   *
-   */
-
-  /**
-   * @ojtsignore
-   */
-  var _cachedScrollbarWidth;
-  var _origGetWithinInfo = $.position.getWithinInfo; // stash away the original getWithinInfo method
-
-  $.position = {
-
-    getWithinInfo: _origGetWithinInfo.bind(null),
-
-    scrollbarWidth: function () {
-      if (_cachedScrollbarWidth !== undefined) {
-        return _cachedScrollbarWidth;
-      }
-      var w1;
-      var w2;
-      var div = document.createElement('div');
-      div.style.display = 'block';
-      div.style.position = 'absolute';
-      div.style.width = '50px';
-      div.style.height = '50px';
-      div.style.overflow = 'hidden';
-      var innerDiv = document.createElement('div');
-      innerDiv.style.height = '100px';
-      innerDiv.style.width = 'auto';
-      div.appendChild(innerDiv); // @HTMLUpdateOK
-      $('body').append($(div)); // @HTMLUpdateOK
-      w1 = innerDiv.offsetWidth;
-      div.style.overflow = 'scroll';
-      w2 = innerDiv.offsetWidth;
-      if (w1 === w2) {
-        w2 = div.clientWidth;
-      }
-      $(div).remove();
-      _cachedScrollbarWidth = w1 - w2;
-      return _cachedScrollbarWidth;
-    },
-
-    getScrollInfo: function (within) {
-      var overflowX = within.isWindow || within.isDocument ? '' : within.element.css('overflow-x');
-      var overflowY = within.isWindow || within.isDocument ? '' : within.element.css('overflow-y');
-      var hasOverflowX = overflowX === 'scroll'
-        || (overflowX === 'auto' && within.width < within.element[0].scrollWidth);
-      var hasOverflowY = overflowY === 'scroll'
-        || (overflowY === 'auto' && within.height < within.element[0].scrollHeight);
-
-      return {
-        width: hasOverflowY ? $.position.scrollbarWidth() : 0,
-        height: hasOverflowX ? $.position.scrollbarWidth() : 0
-      };
-    }
-  };
+    };
+  }());
 
   /**
    * Utility for handling popup voice over messages sent to a aria live region.
@@ -3412,9 +3654,11 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojlo
       // This inconsistency happenes may be due to the container is not getting add to the DOM long enough before the contents are changed
       // After discuss with acc team, we decide to put a setTimeout here to resolve the issue. 20ms is the minimum delay time to make Chrome JAWS read out the content.
       // We will need to revisit if the bug is not resolved on user side.
+      // JET-46575: Update: the 20ms delay turned out to be too short in specific real-case scenarios. Increasing the delay to 250ms to give Chrome JAWS
+      // a chance to pick up the live region change.
       setTimeout(function () {
         $('<div>').text(message).appendTo(liveRegion); // @HTMLUpdateOK the "messsage" comes from a
-      }, 20);
+      }, 250);
       // translated string that can be overridden by
       // an option on the ojPopup.  The jquery "text"
       // function will escape script.

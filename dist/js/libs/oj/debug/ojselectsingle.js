@@ -210,6 +210,7 @@ var __oj_select_single_metadata =
   (function () {
     __oj_select_single_metadata.extension._WIDGET_NAME = 'ojSelectSingle';
     __oj_select_single_metadata.extension._INNER_ELEM = 'input';
+    __oj_select_single_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['tabindex'];
     __oj_select_single_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
     oj.CustomElementBridge.register('oj-select-single', {
       metadata:
@@ -745,9 +746,6 @@ var __oj_select_single_metadata =
     _AfterCreate: function () {
       this._super();
 
-      this._initInputIdLabelForConnection(
-        this._GetContentElement()[0], this.OuterWrapper.id, this.options.labelledBy);
-
       // need to apply the oj-focus marker selector for control of the floating label.
       var rootElement = this._getRootElement();
       this._focusable({
@@ -888,35 +886,58 @@ var __oj_select_single_metadata =
       /* if (!(old === LovUtils.getOptionValue(data)))*/
       var newValueItem = this._IsValueItemForPlaceholder(valueItem) ?
         this._defaultValueItemForPlaceholder : valueItem;
-      this._handleUserSelectedValueItem(newValueItem, event, context);
 
-      if (!event || event.type !== 'blur') {
-        // this._lovMainField.focusCursorEndInputElem();
-        var inputElem = this._lovMainField.getInputElem();
-        if (!this._fullScreenPopup) {
-          if (this._IsValueItemForPlaceholder(newValueItem)) {
-            inputElem.value = '';
+      var configureInputFieldsFunc = function () {
+        // JET-46874 - Select single busy state not cleared properly causing spectra test to fail
+        // don't try to do anything other than resolve the busy state if the component has been
+        // removed from the DOM
+        if (!this._bReleasedResources) {
+          if (!event || event.type !== 'blur') {
+            // this._lovMainField.focusCursorEndInputElem();
+            var inputElem = this._lovMainField.getInputElem();
+            if (!this._fullScreenPopup) {
+              if (this._IsValueItemForPlaceholder(newValueItem)) {
+                inputElem.value = '';
+              }
+              this._SetFilterFieldText(inputElem.value);
+              // JET-44746 - focus pulled back again after pressing Tab with DelayingDataProvider
+              // only show the filter field if the component should still have focus
+              if (!skipShowingFilterField) {
+                // show the filter field after selecting an item on desktop because we want the focus
+                // to go back to the main part of the component, and the user can tab out or reopen
+                // the dropdown or filter again
+                this._ShowFilterField();
+              }
+            } else {
+              // focus the input element after selecting an item on mobile because we want the focus
+              // to go back to the main part of the component, and the user can tab out or reopen the
+              // dropdown
+              inputElem.focus();
+            }
           }
-          this._setFilterFieldText(inputElem.value);
-          // JET-44746 - focus pulled back again after pressing Tab with DelayingDataProvider
-          // only show the filter field if the component should still have focus
-          if (!skipShowingFilterField) {
-            // show the filter field after selecting an item on desktop because we want the focus to
-            // go back to the main part of the component, and the user can tab out or reopen the
-            // dropdown or filter again
-            this._ShowFilterField();
-          }
-        } else {
-          // focus the input element after selecting an item on mobile because we want the focus to
-          // go back to the main part of the component, and the user can tab out or reopen the
-          // dropdown
-          inputElem.focus();
+
+          this._CloseDropdown();
         }
-      }
 
-      this._CloseDropdown();
+        resolveValueChangeFunc();
+      }.bind(this);
 
-      resolveValueChangeFunc();
+      var afterHandleFunc = function () {
+        // JET-46567 - JAWS is reading out error message even after selecting correct value
+        // wait until after the inline messages DOM has been updated before finishing processing
+        // so that when we change focus to the input element the screen reader will read out the
+        // new messages/invalid state instead of old state
+        if (this._messagingStrategyQueueActionPromise) {
+          this._messagingStrategyQueueActionPromise.then(
+            configureInputFieldsFunc, configureInputFieldsFunc);
+        } else {
+          configureInputFieldsFunc();
+        }
+      }.bind(this);
+
+      this._handleUserSelectedValueItem(newValueItem, event, context).then(
+        afterHandleFunc, afterHandleFunc
+      );
     },
 
     /**
@@ -968,16 +989,20 @@ var __oj_select_single_metadata =
           this._resolveFetchDataAndSelectPromise = null;
         }
       }.bind(this);
+
       if (ret instanceof Promise) {
-        ret.then(
+        return ret.then(
           afterSetValue,
           function () {
             afterSetValue(false);
           }
         );
-      } else {
-        afterSetValue(ret);
       }
+
+      var afterFunc = function () {
+        afterSetValue(ret);
+      };
+      return Promise.resolve().then(afterFunc, afterFunc);
     },
 
     /**
@@ -1302,7 +1327,7 @@ var __oj_select_single_metadata =
       var $inputElem = $(this._lovMainField.getInputElem());
       var text = null;
       if (valueItem && valueItem.data) {
-        var formatted = this._itemTextRenderer(valueItem);
+        var formatted = this._ItemTextRenderer(valueItem);
         var inputElemText = $inputElem.val();
         if (formatted !== undefined && inputElemText !== formatted) {
           text = formatted;
@@ -1328,9 +1353,24 @@ var __oj_select_single_metadata =
         if (((!this._fullScreenPopup && this._filterInputText.style.visibility !== 'hidden') ||
              (this._fullScreenPopup && this._abstractLovBase.isDropdownOpen())) &&
             !this._userHasTypedFilterText) {
-          this._setFilterFieldText(text);
+          this._SetFilterFieldText(text);
         }
       }
+    },
+
+    /**
+     * @memberof! oj.ojSelectSingle
+     * @instance
+     * @protected
+     * @override
+     */
+    _UpdateItemText: function () {
+      this._super();
+
+      // JET-45922 - timing issue with select-single: lov drop-down doesn't have element
+      // do a granular update if item-text changes instead of a general refresh
+      var currValueItem = this.options.valueItem;
+      this._updateInputElemValue(currValueItem);
     },
 
     // install default initSelection when applied to hidden input

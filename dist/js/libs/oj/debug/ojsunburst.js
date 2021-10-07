@@ -197,8 +197,8 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @property {number} value The value of the node, which determines the relative size of the node.
    * @ojsignature [{target: "Type", value: "K", for: "id"},
    *               {target: "Type", value: "Array.<oj.ojSunburst.Node<K>>=", for: "nodes"},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "labelStyle", jsdocOverride: true},
-   *               {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "labelStyle", jsdocOverride: true},
+   *               {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true},
    *               {target: "Type", value: "?(string | ((context: oj.ojSunburst.NodeShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
    *               {target: "Type", value: "<K,D=any>", for: "genericTypeParameters"}]
    */
@@ -531,7 +531,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @memberof! oj.ojSunburstNode
    * @instance
    * @type {Object=}
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    * @default {}
    */
   /**
@@ -607,7 +607,7 @@ define(['ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojdvt-base', 'o
    * @memberof! oj.ojSunburstNode
    * @instance
    * @type {Object=}
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
    */
   /**
    * Specifies whether to display the expand/collapse button on hover for a specific node. If the button is clicked, the expanded attribute is updated with the new array of node ids.
@@ -1687,7 +1687,7 @@ var __oj_sunburst_node_metadata =
           * @memberof! oj.ojSunburst
           * @instance
           * @type {Object=}
-          * @ojsignature [{target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}]
+          * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}]
           */
           labelStyle: undefined,
 

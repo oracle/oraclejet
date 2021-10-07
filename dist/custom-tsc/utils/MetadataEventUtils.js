@@ -62,6 +62,7 @@ function generateEventsMetadata(memberKey, propDeclaration, metaUtilObj) {
 exports.generateEventsMetadata = generateEventsMetadata;
 function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj) {
     var _a, _b;
+    const checker = metaUtilObj.typeChecker;
     const dt = MetaUtils.getDtMetadata(propDeclaration, metaUtilObj);
     const typeRefNode = typeNode;
     let cancelableDetail = null;
@@ -78,21 +79,33 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
     if ((typeRefNode === null || typeRefNode === void 0 ? void 0 : typeRefNode.typeArguments) && typeRefNode.typeArguments.length) {
         const detailNode = typeRefNode.typeArguments[0];
         if (detailNode.kind == ts.SyntaxKind.TypeReference) {
-            const typeObject = metaUtilObj.typeChecker.getTypeAtLocation(detailNode);
-            const declaration = ((_a = typeObject.aliasSymbol) === null || _a === void 0 ? void 0 : _a.getDeclarations()[0]) ||
-                ((_b = typeObject.symbol) === null || _b === void 0 ? void 0 : _b.getDeclarations()[0]);
-            if (ts.isTypeAliasDeclaration(declaration) ||
-                ts.isClassDeclaration(declaration)) {
-                const eventDetailType = declaration;
-                let eventDetailName = eventDetailType.name.getText();
-                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject);
+            const typeObject = checker.getTypeAtLocation(detailNode);
+            const mappedTypesInfo = MetaUtils.getMappedTypesInfo(typeObject, checker, false, detailNode);
+            if (mappedTypesInfo && mappedTypesInfo.wrappedTypeNode) {
+                const innerTypeObject = checker.getTypeAtLocation(mappedTypesInfo.wrappedTypeNode);
+                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject);
                 if (genericsInfo) {
                     dt["evnDetailTypeParamsDeclaration"] =
                         genericsInfo.genericsDeclaration;
-                    dt["evnDetailNameTypeParams"] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
+                    dt["evnDetailNameTypeParams"] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo.genericsTypeParams);
                 }
-                else {
-                    dt["evnDetailNameTypeParams"] = eventDetailName;
+            }
+            else {
+                const declaration = ((_a = typeObject.aliasSymbol) === null || _a === void 0 ? void 0 : _a.getDeclarations()[0]) ||
+                    ((_b = typeObject.symbol) === null || _b === void 0 ? void 0 : _b.getDeclarations()[0]);
+                if (ts.isTypeAliasDeclaration(declaration) ||
+                    ts.isClassDeclaration(declaration)) {
+                    const eventDetailType = declaration;
+                    let eventDetailName = eventDetailType.name.getText();
+                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject);
+                    if (genericsInfo) {
+                        dt["evnDetailTypeParamsDeclaration"] =
+                            genericsInfo.genericsDeclaration;
+                        dt["evnDetailNameTypeParams"] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
+                    }
+                    else {
+                        dt["evnDetailNameTypeParams"] = eventDetailName;
+                    }
                 }
             }
         }
@@ -107,17 +120,16 @@ exports.getDtMetadataForEvent = getDtMetadataForEvent;
 function getEventDetails(detailNode, metaUtilObj) {
     let details;
     if ((detailNode === null || detailNode === void 0 ? void 0 : detailNode.kind) !== ts.SyntaxKind.NullKeyword) {
-        const checker = metaUtilObj.typeChecker;
         let detailName;
         if (ts.isTypeReferenceNode(detailNode)) {
             detailName = TypeUtils.getTypeNameFromTypeReference(detailNode);
         }
-        MetaUtils.walkTypeNodeMembers(detailNode, checker, (value, key) => {
-            const propSignature = value.valueDeclaration;
+        MetaUtils.walkTypeNodeMembers(detailNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
+            const propSignature = symbol.valueDeclaration;
             if (!propSignature) {
                 return;
             }
-            const symbolType = checker.getTypeOfSymbolAtLocation(value, propSignature);
+            const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
             if (ts.isPropertySignature(propSignature) ||
                 ts.isPropertyDeclaration(propSignature)) {
                 const property = key.toString();
@@ -129,7 +141,7 @@ function getEventDetails(detailNode, metaUtilObj) {
                     if (eventDetailMetadata.type === "Array<object>") {
                         stack.push(key);
                     }
-                    const subprops = TypeUtils.getComplexPropertyMetadata(value, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
+                    const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
                     if (subprops) {
                         if (subprops.circRefDetected) {
                             details[property].type = TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);

@@ -1340,7 +1340,7 @@ var __oj_gantt_row_metadata =
  *    See <a href="#formats-section">Date and Time Formats</a> for more details on required string formats, and see type for more details.
  * @property {string=} shortDesc The description of this object.
  *    This is used for accessibility and also for customizing the tooltip text.
- * @ojsignature [{target: "Type", value: "?CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}]
+ * @ojsignature [{target: "Type", value: "?Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}]
  */
 /**
  * @typedef {Object} oj.ojGantt.Row
@@ -3249,7 +3249,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * @memberof! oj.ojGantt
          * @instance
          * @type {Object}
-         * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
          * @default {}
          */
         svgStyle: {},
@@ -3337,7 +3337,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            * @memberof! oj.ojGantt
            * @instance
            * @type {Object}
-           * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            */
           svgStyle: {}
@@ -3404,7 +3404,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            * @memberof! oj.ojGantt
            * @instance
            * @type {Object}
-           * @ojsignature {target: "Type", value: "?CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            */
           svgStyle: {}
@@ -4156,7 +4156,8 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         dependencyLineCustom: 'oj-gantt-dependency-line-custom',
         nodata: 'oj-gantt-no-data-message',
         hgridline: 'oj-gantt-horizontal-gridline',
-        vgridline: 'oj-gantt-vertical-gridline',
+        majorvgridline: 'oj-gantt-major-vertical-gridline',
+        minorvgridline: 'oj-gantt-minor-vertical-gridline',
         majorAxis: 'oj-gantt-major-axis',
         majorAxisTicks: 'oj-gantt-major-axis-separator',
         majorAxisLabels: 'oj-gantt-major-axis-label',
@@ -4168,8 +4169,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         task: 'oj-gantt-task',
         taskCustom: 'oj-gantt-task-custom',
         taskBar: 'oj-gantt-task-bar',
+        taskBackdrop: 'oj-gantt-task-backdrop',
         taskMilestone: 'oj-gantt-task-milestone',
         taskSummary: 'oj-gantt-task-summary',
+        taskSummaryProgress: 'oj-gantt-task-summary-progress',
         taskDragImage: 'oj-gantt-task-drag-image',
         taskResizeHandle: 'oj-gantt-task-resize-handle',
         baseline: 'oj-gantt-baseline',
@@ -4265,6 +4268,9 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
 
     // @inheritdoc
     _GetChildStyleClasses: function () {
+      // border-radius temporarily replaced with border-top-left-radius due to the same reason tracked by
+      // JET-44647: Border-color css styles not being picked up through style bridge in Firefox
+
       var styleClasses = this._super();
 
       // animation duration
@@ -4373,18 +4379,23 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         },
         {
           path: 'taskDefaults/borderRadius',
-          property: 'border-radius'
+          property: 'border-top-left-radius'
         }
       ];
 
       styleClasses['oj-gantt-task-progress'] = {
         path: 'taskDefaults/progress/borderRadius',
-        property: 'border-radius'
+        property: 'border-top-left-radius'
       };
 
       styleClasses['oj-gantt-baseline'] = {
         path: 'taskDefaults/baseline/borderRadius',
-        property: 'border-radius'
+        property: 'border-top-left-radius'
+      };
+
+      styleClasses['oj-gantt-baseline-milestone'] = {
+        path: '_resources/milestoneBaselineBorderRadius',
+        property: 'border-top-left-radius'
       };
 
       styleClasses['oj-gantt-baseline-bar'] = [
@@ -4413,9 +4424,8 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
 
       // expand/collapse icon images
       // Add images
-      var rtl = this._GetReadingDirection() === 'rtl';
-      resources.closed = `oj-fwk-icon oj-fwk-icon-arrow-${rtl ? 'w' : 'e'}`;
-      resources.open = `oj-fwk-icon oj-fwk-icon-arrow-${rtl ? 'sw' : 'se'}`;
+      resources.closed = 'oj-fwk-icon oj-fwk-icon-caret-end';
+      resources.open = 'oj-fwk-icon oj-fwk-icon-caret-s';
 
       // progress value converter for task tooltip
       resources.percentConverter = new IntlNumberConverter({ style: 'percent' });

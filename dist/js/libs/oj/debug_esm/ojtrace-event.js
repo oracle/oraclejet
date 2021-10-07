@@ -5,13 +5,14 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
+import { getTracerProvider } from 'ojs/ojtracer';
+
 function isTracerEnabled() {
     return typeof window !== 'undefined' && !!window.__JET_TRACER_ENABLED__;
 }
 function getTracer() {
-    var _a;
-    const tracer = window.GlobalTracer;
-    return (_a = tracer === null || tracer === void 0 ? void 0 : tracer.get) === null || _a === void 0 ? void 0 : _a.call(tracer);
+    const tracerProvider = getTracerProvider();
+    return tracerProvider.getTracer('JET');
 }
 function shouldTraceEvent(event) {
     const type = event === null || event === void 0 ? void 0 : event.type;
@@ -53,28 +54,19 @@ function traceDispatchEvent(dispatchEvent) {
         const target = this;
         const tracer = getTracer();
         if (isTracerEnabled() && tracer && shouldTraceEvent(event)) {
-            const trigger = {
-                type: getTraceType(event),
-                target
-            };
-            const options = {
-                operationName: 'componentEvent',
-                trigger
-            };
-            return tracer.span(options, (span) => {
-                let error;
+            const type = getTraceType(event);
+            const operationName = 'componentEvent';
+            return tracer.startActiveSpan(`${operationName} ${type}`, (span) => {
                 try {
+                    span.setAttribute('type', type);
+                    span.setAttribute('operationName', operationName);
                     return dispatchEvent.call(target, event);
                 }
                 catch (e) {
-                    error = e;
+                    span.setStatus({ code: 2, message: e.message });
                 }
                 finally {
-                    const finishOptions = {};
-                    if (error) {
-                        finishOptions.error = error;
-                    }
-                    span.finish(finishOptions);
+                    span.end();
                 }
             });
         }

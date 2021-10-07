@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-utils', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementUtils, KeySetImpl, Context, templateEngine, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
+define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', 'knockout', 'ojs/ojdomutils', 'jquery', 'ojs/ojcustomelement-utils', 'ojs/ojbindpropagation', 'ojs/ojkeysetimpl', 'ojs/ojcontext', 'ojs/ojtemplateengine', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils'], function (widget, BindingProviderImpl, oj$1, Logger, ko, DomUtils, $, ojcustomelementUtils, ojbindpropagation, KeySetImpl, Context, templateEngine, KnockoutTemplateUtils, ResponsiveKnockoutUtils) { 'use strict';
 
   BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -1055,10 +1055,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
    * @private
    */
   ComponentBinding.__getKnockoutVersion = function () {
-    if (oj$1.__isAmdLoaderPresent() && ko) {
-      return ko.version;
-    }
-    return '';
+    return ko.version;
   };
 
   /**
@@ -2546,11 +2543,10 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
     const _ATTRIBUTE_CHANGED = 'attribute-changed';
     const _CHANGE_SUFFIX = 'Changed';
-    const _bindingPropagationMetadataCache = Object.create(null);
 
     function _setupProvideAndConsumeMaps(element, metadataProps) {
       // A map of a property name to a record with the following structure:
-      // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Function}}>} (the 'set' key representing
+      // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Record<string, string>}}>} (the 'set' key representing
       // the setter for updating the value (the setter may be updating more than one observable if the value is being provided
       // under different names), the 'vars' key representing an array of records with a 'name' key
       // being the provided name, the 'obs' key being the associated observable, and the 'transform' key being an optional
@@ -2568,11 +2564,10 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
 
       const changeListeners = Object.create(null);
 
-      const provideConsumeMeta = _getProvideAndConsumeMetadataViaCache(element, metadataProps); // will return null if the component has no provide/consume metadata
+      const provideConsumeMeta = ojbindpropagation.getPropagationMetadataViaCache(element.localName, metadataProps); // will return null if the component has no provide/consume metadata
       if (provideConsumeMeta !== null) {
-        const propKeys = Object.keys(provideConsumeMeta);
-        propKeys.forEach((pName) => {
-          const [provideMeta, consumeMeta] = provideConsumeMeta[pName];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [pName, [provideMeta, consumeMeta]] of provideConsumeMeta) {
           if (provideMeta !== undefined) {
             // 1) populate the 'provide' map including collecting initial values for properties
             // whose attributes have literal values
@@ -2628,7 +2623,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
             }
             consume[pName] = name;
           }
-        });
+        }
       }
 
       function cleanup() {
@@ -2639,44 +2634,11 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       return { provide, consume, cleanup };
     }
 
-    function _getProvideAndConsumeMetadataViaCache(element, metadataProps) {
-      const elemName = element.localName;
-      let entry = _bindingPropagationMetadataCache[elemName];
-      if (entry !== undefined) {
-        return entry;
-      }
-      entry = null;
-      const propKeys = Object.keys(metadataProps);
-      propKeys.forEach((pName) => {
-        const meta = metadataProps[pName];
-        const provideMeta = _getOptionalChainResult(meta, ['binding', 'provide']);
-        const consumeMeta = _getOptionalChainResult(meta, ['binding', 'consume']);
-        if (provideMeta || consumeMeta) {
-          if (meta.properties) {
-            throw new Error('Propagating complex properties is not supported!');
-          }
-          entry = entry || Object.create(null);
-          entry[pName] = [provideMeta, consumeMeta];
-        }
-      });
-      _bindingPropagationMetadataCache[elemName] = entry;
-      return entry;
-    }
 
     function _setupChangeListenerForProvidedProperty(setter) {
       return (evt) => setter(evt.detail.value);
     }
 
-    // Implements functionality similar to optional chaining
-    function _getOptionalChainResult(obj, path) {
-      let res = obj;
-      return path.some((prop) => {
-        res = res[prop];
-        return res === null || res === undefined;
-      })
-        ? undefined
-        : res;
-    }
 
     function _getChildContext(bindingContext, provideMap) {
       let newContext = bindingContext;

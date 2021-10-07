@@ -24,13 +24,12 @@ declare global {
 
     interface DOMAttributes<Target extends EventTarget> {
       // Preact does not support onFocusIn/Out events so we must
-      // use the lowercase syntax and add in the type.  Once
+      // use the lowercase syntax and add in the types.  Once
       // a fix is available for this Preact issue:
       //
       // https://github.com/preactjs/preact/issues/3186
       //
-      // We should remove these entries.  We can also
-      // remove the import of oj-jsx-interfaces from metadataTypes.
+      // We should remove these entries.
       onfocusin?: preact.JSX.FocusEventHandler<Target>;
       onfocusout?: preact.JSX.FocusEventHandler<Target>;
     }

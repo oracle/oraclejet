@@ -80,9 +80,10 @@
       bottom: 0;
     }
 
+    .oj-table-scroll-vertical.oj-table-hide-vertical-scrollbar .oj-table-scroller,
     .oj-table-hide-vertical-scrollbar .oj-table-scroller {
-      overflow-y: hidden;
-    }
+    overflow-y: hidden;
+  }
 
     .oj-table-width-container {
       position: absolute;

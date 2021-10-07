@@ -292,9 +292,16 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojtrace-
       // to render the component, we no longer need to track early
       // property sets to avoid overriding data bound DOM attributes
       if (this._earlySets) {
+        const descriptor = ojcustomelementUtils.CustomElementUtils.getElementDescriptor(element.tagName);
+        const propertyMeta = this.GetMetadata(descriptor);
         while (this._earlySets.length) {
-          var setObj = this._earlySets.shift();
-          element.setProperty(setObj.property, setObj.value);
+          const setObj = this._earlySets.shift();
+          const updatedValue =
+            ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(
+              element,
+              propertyMeta.properties[setObj.property],
+              setObj.value);
+          element.setProperty(setObj.property, updatedValue);
         }
       }
     },

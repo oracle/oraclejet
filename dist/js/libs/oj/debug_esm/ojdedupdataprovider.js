@@ -42,7 +42,7 @@ import CachedIteratorResultsDataProvider from 'ojs/ojcachediteratorresultsdatapr
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters"]}
  * @ojtsmodule
- * @ignore
+ * @ojhidden
  */
 
 /**

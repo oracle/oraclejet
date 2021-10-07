@@ -171,7 +171,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                     portElement: Element;
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => ({
-                    svgStyle?: CSSStyleDeclaration;
+                    svgStyle?: Partial<CSSStyleDeclaration>;
                     svgClassName?: string;
                 } | null));
                 selector?: string;
@@ -364,10 +364,10 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
         linkDefaults?: {
             color?: string;
             endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         nodeDefaults?: {
@@ -385,10 +385,10 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
                 sourceHoverSelected?: string;
                 sourceSelected?: string;
                 svgClassName?: string;
-                svgStyle?: CSSStyleDeclaration;
+                svgStyle?: Partial<CSSStyleDeclaration>;
                 width?: number;
             };
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             showDisclosure?: 'off' | 'on';
         };
         promotedLink?: {
@@ -396,7 +396,7 @@ export interface ojDiagram<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 exten
             endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
     };
@@ -557,13 +557,13 @@ export namespace ojDiagram {
         endNode: K2;
         id?: K1;
         label?: string;
-        labelStyle?: CSSStyleDeclaration | null;
+        labelStyle?: Partial<CSSStyleDeclaration> | null;
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: LinkShortDescContext<K1, K2, D2>) => string));
         startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
         startNode: K2;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -629,17 +629,17 @@ export namespace ojDiagram {
             sourceHoverSelected?: string;
             sourceSelected?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         id?: K1;
         label?: string;
-        labelStyle?: CSSStyleDeclaration | null;
+        labelStyle?: Partial<CSSStyleDeclaration> | null;
         overview?: {
             icon?: {
                 shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
                 svgClassName?: string;
-                svgStyle?: CSSStyleDeclaration;
+                svgStyle?: Partial<CSSStyleDeclaration>;
             };
         };
         selectable?: 'auto' | 'off';
@@ -795,7 +795,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                     portElement: Element;
                     dataContext: ojDiagram.NodeItemContext<K1, D1>;
                 }) => ({
-                    svgStyle?: CSSStyleDeclaration;
+                    svgStyle?: Partial<CSSStyleDeclaration>;
                     svgClassName?: string;
                 } | null));
                 selector?: string;
@@ -988,10 +988,10 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
         linkDefaults?: {
             color?: string;
             endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         nodeDefaults?: {
@@ -1009,10 +1009,10 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
                 sourceHoverSelected?: string;
                 sourceSelected?: string;
                 svgClassName?: string;
-                svgStyle?: CSSStyleDeclaration;
+                svgStyle?: Partial<CSSStyleDeclaration>;
                 width?: number;
             };
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             showDisclosure?: 'off' | 'on';
         };
         promotedLink?: {
@@ -1020,7 +1020,7 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
             endConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             startConnectorType?: 'arrowOpen' | 'arrow' | 'arrowConcave' | 'circle' | 'rectangle' | 'rectangleRounded' | 'none';
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
     };
@@ -1068,13 +1068,13 @@ export interface ojDiagramLink<K1 = any, K2 = any, D2 = any> extends dvtBaseComp
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
-    labelStyle?: CSSStyleDeclaration | null;
+    labelStyle?: Partial<CSSStyleDeclaration> | null;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojDiagram.LinkShortDescContext<K1, K2, D2>) => string));
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
     addEventListener<T extends keyof ojDiagramLinkEventMap<K1, K2, D2>>(type: T, listener: (this: HTMLElement, ev: ojDiagramLinkEventMap<K1, K2, D2>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -1134,13 +1134,13 @@ export interface ojDiagramLinkSettableProperties<K1 = any, K2 = any, D2 = any> e
     endConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     endNode: any;
     label?: string;
-    labelStyle?: CSSStyleDeclaration | null;
+    labelStyle?: Partial<CSSStyleDeclaration> | null;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojDiagram.LinkShortDescContext<K1, K2, D2>) => string));
     startConnectorType?: 'arrow' | 'arrowConcave' | 'arrowOpen' | 'circle' | 'none' | 'rectangle' | 'rectangleRounded';
     startNode: any;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
 }
 export interface ojDiagramLinkSettablePropertiesLenient<K1 = any, K2 = any, D2 = any> extends Partial<ojDiagramLinkSettableProperties<K1, K2, D2>> {
@@ -1164,16 +1164,16 @@ export interface ojDiagramNode<K1 = any, D1 = any> extends dvtBaseComponent<ojDi
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
     label?: string;
-    labelStyle?: CSSStyleDeclaration | null;
+    labelStyle?: Partial<CSSStyleDeclaration> | null;
     overview?: {
         icon?: {
             shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
     };
     selectable?: 'auto' | 'off';
@@ -1237,16 +1237,16 @@ export interface ojDiagramNodeSettableProperties<K1 = any, D1 = any> extends dvt
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
     label?: string;
-    labelStyle?: CSSStyleDeclaration | null;
+    labelStyle?: Partial<CSSStyleDeclaration> | null;
     overview?: {
         icon?: {
             shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
         };
     };
     selectable?: 'auto' | 'off';
@@ -1399,17 +1399,17 @@ export namespace DiagramElement {
             sourceHoverSelected?: string;
             sourceSelected?: string;
             svgClassName?: string;
-            svgStyle?: CSSStyleDeclaration;
+            svgStyle?: Partial<CSSStyleDeclaration>;
             width?: number;
         };
         id?: K1;
         label?: string;
-        labelStyle?: CSSStyleDeclaration | null;
+        labelStyle?: Partial<CSSStyleDeclaration> | null;
         overview?: {
             icon?: {
                 shape?: 'inherit' | 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
                 svgClassName?: string;
-                svgStyle?: CSSStyleDeclaration;
+                svgStyle?: Partial<CSSStyleDeclaration>;
             };
         };
         selectable?: 'auto' | 'off';

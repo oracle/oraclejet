@@ -939,7 +939,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the label.
    * @memberof! oj.ojChart.PieCenter
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -1137,7 +1137,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {string} label The pieCenter label.
    * @property {number} totalValue The total of all values in the pie chart.
    * @property {Element} componentElement The chart element.
-   * @ojsignature [{target: "Type", value: "CSSStyleDeclaration=", for: "labelStyle", jsdocOverride: true}]
+   * @ojsignature [{target: "Type", value: "Partial<CSSStyleDeclaration>=", for: "labelStyle", jsdocOverride: true}]
    */
 
   /**
@@ -1302,6 +1302,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {number} index The zero-based index of the current item
    * @property {Object} data The data object for the current item
    * @property {any} key The key of the current item
+   * @ojsignature [{target:"Type", value:"<K = any,D = any>", for:"genericTypeParameters"},
+   * {target:"Type", value:"D", for:"data", jsdocOverride: true},
+   * {target:"Type", value:"K", for:"key", jsdocOverride: true}]
    */
 
    // Slots
@@ -2426,7 +2429,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the legend text.
    * @memberof! oj.ojChart.Legend
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2470,7 +2473,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the title.
    * @memberof! oj.ojChart.Legend
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2600,7 +2603,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS inline style to apply to the whisker stems.
    * @memberof! oj.ojChart.BoxPlotDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2621,7 +2624,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojtypedefmember
    * @memberof! oj.ojChart.BoxPlotDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -2650,7 +2653,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojtypedefmember
    * @memberof! oj.ojChart.BoxPlotDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
 
@@ -3011,7 +3014,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the data label. See the Help documentation for more information.
    * @memberof! oj.ojChart.StyleDefaults
    * @type {(Object|Array.<Object>)=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration|Array.<CSSStyleDeclaration>", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>|Array.<Partial<CSSStyleDeclaration>>", jsdocOverride: true}
    * @default null
    */
   /**
@@ -3035,7 +3038,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the stack label.
    * @memberof! oj.ojChart.StyleDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -3079,7 +3082,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the labels in the tooltip.
    * @memberof! oj.ojChart.StyleDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -3091,7 +3094,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @ojshortdesc The CSS style object defining the style of the values in the tooltip.
    * @memberof! oj.ojChart.StyleDefaults
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    */
   /**
@@ -3386,7 +3389,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {string=} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
    * @property {Object=} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute. Only SVG CSS style properties are supported.
    * @property {number=} value The value of the data item.
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}
    */
 
    // Slots
@@ -3457,7 +3460,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {Object=} svgStyle The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. Only SVG CSS style properties are supported.
    * @property {("area"|"line")=} type="line" The type of reference object being shown.
    * @property {number=} value The value of a reference line.
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", for: "svgStyle", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}
    */
 
   /**
@@ -3473,6 +3476,9 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {Object} data The data object for the current item.
    * @property {number} index The zero-based index of the current item.
    * @property {any} key The key of the current item.
+   * @ojsignature [{target:"Type", value:"<K = any,D = any>", for:"genericTypeParameters"},
+   * {target:"Type", value:"D", for:"data", jsdocOverride: true},
+   * {target:"Type", value:"K", for:"key", jsdocOverride: true}]
    */
 
   // METHOD TYPEDEFS
@@ -3663,7 +3669,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @memberof! oj.ojSparkChartItem
    * @instance
    * @type {Object=}
-   * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+   * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
    * @default {}
    *
    * @example <caption>Initialize the spark chart item with the
@@ -8361,7 +8367,7 @@ var __oj_spark_chart_item_metadata =
        * @memberof oj.ojSparkChart
        * @instance
        * @type {Object=}
-       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        *
        * @example <caption>Initialize the spark chart with the <code class="prettyprint">area-svg-style</code> attribute specified:</caption>
@@ -8407,7 +8413,7 @@ var __oj_spark_chart_item_metadata =
        * @memberof oj.ojSparkChart
        * @instance
        * @type {Object=}
-       * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
        * @default {}
        *
        * @example <caption>Initialize the spark chart with the <code class="prettyprint">svg-style</code> attribute specified:</caption>

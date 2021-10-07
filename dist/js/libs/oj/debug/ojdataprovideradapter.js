@@ -98,7 +98,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                         const itemKey = value[TableDataSourceAdapter._KEY];
                         const data = value[TableDataSourceAdapter._DATA];
                         const itemMetadata = new self.ItemMetadata(self, itemKey);
-                        self._extractMetaData(self.dataSource, i, itemMetadata);
+                        const index = value[TableDataSourceAdapter._INDEX];
+                        self._extractMetaData(self.dataSource, index, itemMetadata);
                         results.set(itemKey, new self.Item(self, itemMetadata, data));
                     }
                 }
@@ -128,7 +129,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                     resultsArray.push(new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]));
                 });
                 for (let i = 0; i < resultsArray.length; i++) {
-                    self._extractMetaData(self.dataSource, i, resultsArray[i][TableDataSourceAdapter._METADATA]);
+                    self._extractMetaData(self.dataSource, i + offset, resultsArray[i][TableDataSourceAdapter._METADATA]);
                 }
                 return new self.FetchByOffsetResults(self, params, resultsArray, done);
             });
@@ -298,7 +299,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                                     self._startIndex = 0;
                                 }
                                 for (let i = 0; i < resultMetadata.length; i++) {
-                                    self._extractMetaData(self.dataSource, i, resultMetadata[i]);
+                                    self._extractMetaData(self.dataSource, self._startIndex + i, resultMetadata[i]);
                                 }
                                 let done = false;
                                 self._startIndex = self._startIndex + result[TableDataSourceAdapter._DATA].length;
@@ -372,7 +373,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
                     return new self.ItemMetadata(self, value);
                 });
                 for (let i = 0; i < resultMetadata.length; i++) {
-                    self._extractMetaData(self.dataSource, i, resultMetadata[i]);
+                    let indexToExtract = self._startIndex != null ? self._startIndex + i : i;
+                    self._extractMetaData(self.dataSource, indexToExtract, resultMetadata[i]);
                 }
                 let done = false;
                 if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
@@ -538,6 +540,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
     TableDataSourceAdapter._CONTAINSPARAMETERS = 'containsParameters';
     TableDataSourceAdapter._RESULTS = 'results';
     TableDataSourceAdapter._FETCHTYPE = 'fetchType';
+    TableDataSourceAdapter._INDEX = 'index';
     ojeventtarget.EventTargetMixin.applyMixin(TableDataSourceAdapter);
     oj._registerLegacyNamespaceProp('TableDataSourceAdapter', TableDataSourceAdapter);
 

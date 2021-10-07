@@ -127,17 +127,16 @@ function getDtMetadataForSlot(propDeclaration, metaUtilObj) {
 }
 function getSlotData(detailNode, metaUtilObj) {
     let data = {};
-    const checker = metaUtilObj.typeChecker;
     let detailName;
     if (ts.isTypeReferenceNode(detailNode)) {
         detailName = TypeUtils.getTypeNameFromTypeReference(detailNode);
     }
-    MetaUtils.walkTypeNodeMembers(detailNode, checker, (value, key) => {
-        const propSignature = value.valueDeclaration;
+    MetaUtils.walkTypeNodeMembers(detailNode, metaUtilObj, (symbol, key, mappedTypeSymbol) => {
+        const propSignature = symbol.valueDeclaration;
         if (!propSignature) {
             return;
         }
-        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(value, propSignature);
+        const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
         if (ts.isPropertySignature(propSignature) ||
             ts.isPropertyDeclaration(propSignature)) {
             const property = key.toString();
@@ -149,7 +148,7 @@ function getSlotData(detailNode, metaUtilObj) {
                 if (slotDataMetadata.type === "Array<object>") {
                     stack.push(key);
                 }
-                const subprops = TypeUtils.getComplexPropertyMetadata(value, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
+                const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
                 if (subprops) {
                     if (subprops.circRefDetected) {
                         data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);

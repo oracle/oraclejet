@@ -269,7 +269,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger'], function (exports, oj, Lo
       ThemeUtils._rootCSSStyles = window.getComputedStyle(document.documentElement);
     }
     // remove inconsistent quotes
-    return ThemeUtils._rootCSSStyles.getPropertyValue(key).replace(/^['"\s]+|\s+|\\|(;\s?})+|['"]$/g, '');
+    return ThemeUtils._rootCSSStyles.getPropertyValue(key).replace(/^['"\s]+|\s+|\\|(;\s?})+|['"\s]$/g, '');
     });
   /**
    * Returns the css var values

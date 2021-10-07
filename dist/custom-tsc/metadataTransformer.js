@@ -138,6 +138,7 @@ function storeImportsInBuildOptions(vexportToAlias, aliasToVExport) {
     Object.assign(importMaps.exportToAlias, vexportToAlias);
     Object.assign(importMaps.aliasToExport, aliasToVExport);
 }
+const _EXCLUDED_NAMED_EXPORT_TYPES = ["ObservedGlobalProps"];
 function getNewMetaUtilObj(typeChecker, buildOptions, elementName, classInfo, namedExportToAlias, aliasToNamedExport) {
     if (!buildOptions["reservedGlobalProps"]) {
         const refExtendGlobalProps = classInfo.propsInfo
@@ -164,6 +165,19 @@ function getNewMetaUtilObj(typeChecker, buildOptions, elementName, classInfo, na
     if (buildOptions["reservedGlobalProps"]) {
         rtnObj.reservedGlobalProps = buildOptions["reservedGlobalProps"];
     }
+    _EXCLUDED_NAMED_EXPORT_TYPES.forEach((tName) => {
+        const tNameAlias = namedExportToAlias[tName];
+        if (tNameAlias) {
+            if (!rtnObj.excludedTypes) {
+                rtnObj.excludedTypes = new Set();
+            }
+            rtnObj.excludedTypes.add(tName);
+            if (!rtnObj.excludedTypeAliases) {
+                rtnObj.excludedTypeAliases = new Set();
+            }
+            rtnObj.excludedTypeAliases.add(tNameAlias);
+        }
+    });
     return rtnObj;
 }
 function generateReservedGlobalPropsList(EGPRef, checker) {

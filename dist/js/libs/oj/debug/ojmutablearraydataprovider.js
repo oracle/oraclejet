@@ -129,25 +129,82 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      */
 
     /**
-    * @typedef {Object} MutableArrayDataProvider.Options
-    * @property {MutableArrayDataProvider.SortComparators=} sortComparators - Optional sortComparators to use for sort.
-    * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
-    * This is used for cases where we would like display some indication that the data is already sorted.
-    * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
-    * This option is not used for cases where we want the MutableArrayDataProvider to apply a sort on initial fetch.
-    * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
-    * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
-    *                                                  of strings for multiple key attributes. Please note that the ids in MutableArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes MutableArrayDataProvider to use index as key and @value will cause MutableArrayDataProvider to
-    *                                                  use all attributes as key. @index is the default.
-    * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
-    * @ojsignature [
-    *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
-    *  {target: "Type", value: "MutableArrayDataProvider.SortComparators<D>", for: "sortComparators"},
-    *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
-    *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
-    *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
-    * ]
-    */
+     * @typedef {Object} MutableArrayDataProvider.Options
+     * @property {MutableArrayDataProvider.SortComparators=} sortComparators - Optional sortComparator for custom sort.
+     * <p>
+     * Sort follows JavaScript's localeCompare <code>{numeric: true}</code>.
+     * Please check {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare#numeric_sorting|String.prototype.localeCompare()} for details.
+     * </p>
+     * <p>
+     * For numbers, we convert them into strings then compare them with localeCompare.
+     * If you want to sort floating point numbers correctly, sortComparator can be used to do a custom sort.
+     * </p>
+     * <p>
+     * For null and undefined values, we convert them into string which is 'null' and 'undefined'.
+     * The sorting behavior for undefined and null values will be changed in version 12.0.0.
+     * </p>
+     * <p>
+     * In version 12.0.0, null and undefined values will be considered as the largest values during sorting.
+     * </p>
+     * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
+     * This is used for cases where we would like display some indication that the data is already sorted.
+     * For example, ojTable will display the column sort indicator for the corresponding column in either ascending or descending order upon initial render.
+     * This option is not used for cases where we want the MutableArrayDataProvider to apply a sort on initial fetch.
+     * For those cases, please wrap in a ListDataProviderView and set the sortCriteria property on it.
+     * @property {string=} keyAttributes - Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
+     *                                                  of strings for multiple key attributes. Please note that the ids in MutableArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes MutableArrayDataProvider to use index as key and @value will cause MutableArrayDataProvider to
+     *                                                  use all attributes as key. @index is the default.
+     * @property {string=} textFilterAttributes - Optionally specify which attributes the filter should be applied on when a TextFilter filterCriteria is specified. If this option is not specified then the filter will be applied to all attributes.
+     * @ojsignature [
+     *  {target: "Type", value: "<D>", for: "genericTypeParameters"},
+     *  {target: "Type", value: "MutableArrayDataProvider.SortComparators<D>", for: "sortComparators"},
+     *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
+     *  {target: "Type", value: "string | string[]", for: "keyAttributes"},
+     *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
+     * ]
+     * @ojtsexample <caption>Examples for sortComparator</caption>
+     * // Custom comparator for date
+     * let comparator = function (a, b) {
+     *    if (a === b) {
+     *      return 0;
+     *    }
+     *
+     *    var dateA = new Date(a).getTime();
+     *    var dateB = new Date(b).getTime();
+     *    return dateA > dateB ? 1 : -1;
+     * };
+     * // Then create an MutableArrayDataProvider object and set Date field to use the this comparator
+     * this.dataprovider = new MutableArrayDataProvider(JSON.parse(deptArray), {
+     *    keyAttributes: "DepartmentId",
+     *    sortComparators: { comparators: new Map().set("Date", comparator) },
+     * });
+     * @ojtsexample
+     * // Custom comparator for number
+     * let comparator = function (a, b) {
+     *    return a - b;
+     *  };
+     * // Then create an MutableArrayDataProvider object and set Date field to use the this comparator
+     * this.dataprovider = new MutableArrayDataProvider(JSON.parse(deptArray), {
+     *    keyAttributes: "DepartmentId",
+     *    sortComparators: { comparators: new Map().set("Date", comparator) },
+     * });
+     * @ojtsexample
+     * // Custom comparator for numnbers with null/undefined
+     * let comparator = function (a, b) {
+     *     if (a === null || a === undefined) {
+     *       return 1;
+     *     }
+     *     if (b === null || b === undefined) {
+     *       return -1;
+     *     }
+     *     return a - b;
+     *  };
+     * // Then create an MutableArrayDataProvider object and set Date field to use the this comparator
+     * this.dataprovider = new MutableArrayDataProvider(JSON.parse(deptArray), {
+     *    keyAttributes: "DepartmentId",
+     *    sortComparators: { comparators: new Map().set("Date", comparator) },
+     * });
+     */
 
     /**
      * @inheritdoc

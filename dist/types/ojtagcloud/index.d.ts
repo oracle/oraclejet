@@ -18,7 +18,7 @@ export interface ojTagCloud<K, D extends ojTagCloud.Item<K> | any> extends dvtBa
     styleDefaults?: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
         renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
@@ -98,7 +98,7 @@ export namespace ojTagCloud {
         label: string;
         shortDesc?: (string | ((context: ItemShortDescContext<K>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         url?: string;
         value: number;
     };
@@ -170,7 +170,7 @@ export interface ojTagCloudSettableProperties<K, D extends ojTagCloud.Item<K> | 
     styleDefaults?: {
         animationDuration?: number;
         hoverBehaviorDelay?: number;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     tooltip?: {
         renderer: ((context: ojTagCloud.TooltipContext<K>) => ({
@@ -209,7 +209,7 @@ export interface ojTagCloudItem<K = any> extends dvtBaseComponent<ojTagCloudItem
     label?: string;
     shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     url?: string;
     value?: number | null;
     addEventListener<T extends keyof ojTagCloudItemEventMap<K>>(type: T, listener: (this: HTMLElement, ev: ojTagCloudItemEventMap<K>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -254,7 +254,7 @@ export interface ojTagCloudItemSettableProperties<K = any> extends dvtBaseCompon
     label?: string;
     shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     url?: string;
     value?: number | null;
 }
@@ -305,7 +305,7 @@ export namespace TagCloudElement {
         label: string;
         shortDesc?: (string | ((context: ojTagCloud.ItemShortDescContext<K>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         url?: string;
         value: number;
     };

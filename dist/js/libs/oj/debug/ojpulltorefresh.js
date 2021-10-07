@@ -162,9 +162,6 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
           }
 
           checkTolerance = true;
-
-          // apply pull-to-refresh-action class to block children events in the panel element
-          panel[0].classList.add('oj-pulltorefresh-action');
         }
       })
       .on(type + 'move.pulltorefresh', function (event) {
@@ -180,6 +177,9 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
 
         // wrong direction
         if (height < 0) {
+          // remove pull-to-refresh-action class to block children events in the panel element
+          panel[0].classList.remove('oj-pulltorefresh-action');
+
           return;
         }
 
@@ -211,6 +211,10 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojdomutils
         }
 
         content.css('height', height);
+
+
+          // apply pull-to-refresh-action class to block children events in the panel element
+          panel[0].classList.add('oj-pulltorefresh-action');
 
         // fire pull event
         PullToRefreshUtils._fireEvent(event, 'pull', content, height);

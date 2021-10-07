@@ -877,11 +877,16 @@ function ojValidationGroup(context) {
     var widgetElem;
 
     var bridge = CustomElementUtils.getElementBridge(elem);
+    // if we do not have an element bridge, return true.
+    // this would be the case for a vdom component, for example.
+    if (!bridge) {
+      return true;
+    }
     var bridgeWidgetElem = bridge._WIDGET_ELEM;
     // bridgetWidgetElem is undefined for oj-validation-group
     // since it's not implemented using the widget code.
     // bridgetWidgetElem has a value for oj-input-text, oj-input-number, etc.,
-    // since they are implemented using the widget code.
+    // since they are implemented using the widget code. e.g., the input element.
     if (bridgeWidgetElem !== undefined) {
       widgetElem = __GetWidgetConstructor(bridgeWidgetElem);
     }

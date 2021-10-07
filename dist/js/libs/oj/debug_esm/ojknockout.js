@@ -15,6 +15,7 @@ import * as DomUtils from 'ojs/ojdomutils';
 import { setInKoCleanExternal, isTouchSupported } from 'ojs/ojdomutils';
 import $ from 'jquery';
 import { CustomElementUtils, AttributeUtils, JetElementError, ElementUtils } from 'ojs/ojcustomelement-utils';
+import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import Context from 'ojs/ojcontext';
 import templateEngine from 'ojs/ojtemplateengine';
@@ -1062,10 +1063,7 @@ ComponentBinding._deliverCreateDestroyEventToManagedProps = function (isCreate,
  * @private
  */
 ComponentBinding.__getKnockoutVersion = function () {
-  if (oj$1.__isAmdLoaderPresent() && ko) {
-    return version;
-  }
-  return '';
+  return version;
 };
 
 /**
@@ -2553,11 +2551,10 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
 
   const _ATTRIBUTE_CHANGED = 'attribute-changed';
   const _CHANGE_SUFFIX = 'Changed';
-  const _bindingPropagationMetadataCache = Object.create(null);
 
   function _setupProvideAndConsumeMaps(element, metadataProps) {
     // A map of a property name to a record with the following structure:
-    // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Function}}>} (the 'set' key representing
+    // {set: {Function}, vars: Array<{name: {String}, obs: {Function}, transform: {Record<string, string>}}>} (the 'set' key representing
     // the setter for updating the value (the setter may be updating more than one observable if the value is being provided
     // under different names), the 'vars' key representing an array of records with a 'name' key
     // being the provided name, the 'obs' key being the associated observable, and the 'transform' key being an optional
@@ -2575,11 +2572,10 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
 
     const changeListeners = Object.create(null);
 
-    const provideConsumeMeta = _getProvideAndConsumeMetadataViaCache(element, metadataProps); // will return null if the component has no provide/consume metadata
+    const provideConsumeMeta = getPropagationMetadataViaCache(element.localName, metadataProps); // will return null if the component has no provide/consume metadata
     if (provideConsumeMeta !== null) {
-      const propKeys = Object.keys(provideConsumeMeta);
-      propKeys.forEach((pName) => {
-        const [provideMeta, consumeMeta] = provideConsumeMeta[pName];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [pName, [provideMeta, consumeMeta]] of provideConsumeMeta) {
         if (provideMeta !== undefined) {
           // 1) populate the 'provide' map including collecting initial values for properties
           // whose attributes have literal values
@@ -2635,7 +2631,7 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
           }
           consume[pName] = name;
         }
-      });
+      }
     }
 
     function cleanup() {
@@ -2646,44 +2642,11 @@ oj._registerLegacyNamespaceProp('_KnockoutBindingProvider', _KnockoutBindingProv
     return { provide, consume, cleanup };
   }
 
-  function _getProvideAndConsumeMetadataViaCache(element, metadataProps) {
-    const elemName = element.localName;
-    let entry = _bindingPropagationMetadataCache[elemName];
-    if (entry !== undefined) {
-      return entry;
-    }
-    entry = null;
-    const propKeys = Object.keys(metadataProps);
-    propKeys.forEach((pName) => {
-      const meta = metadataProps[pName];
-      const provideMeta = _getOptionalChainResult(meta, ['binding', 'provide']);
-      const consumeMeta = _getOptionalChainResult(meta, ['binding', 'consume']);
-      if (provideMeta || consumeMeta) {
-        if (meta.properties) {
-          throw new Error('Propagating complex properties is not supported!');
-        }
-        entry = entry || Object.create(null);
-        entry[pName] = [provideMeta, consumeMeta];
-      }
-    });
-    _bindingPropagationMetadataCache[elemName] = entry;
-    return entry;
-  }
 
   function _setupChangeListenerForProvidedProperty(setter) {
     return (evt) => setter(evt.detail.value);
   }
 
-  // Implements functionality similar to optional chaining
-  function _getOptionalChainResult(obj, path) {
-    let res = obj;
-    return path.some((prop) => {
-      res = res[prop];
-      return res === null || res === undefined;
-    })
-      ? undefined
-      : res;
-  }
 
   function _getChildContext(bindingContext, provideMap) {
     let newContext = bindingContext;

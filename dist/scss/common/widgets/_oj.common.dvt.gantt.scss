@@ -59,11 +59,9 @@
     }
 
     /* Styling for vertical grid lines */
-    .oj-gantt-vertical-gridline
-    {
-
-        stroke: $dvtGanttVerticalGridlineColor;
-
+    .oj-gantt-major-vertical-gridline,
+    .oj-gantt-minor-vertical-gridline {
+      stroke: $dvtGanttVerticalGridlineColor;
       stroke-dasharray: 5,5;
     }
 

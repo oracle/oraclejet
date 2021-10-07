@@ -370,6 +370,13 @@ class SuppressNodeTreeDataProvider {
                         : true;
                 });
             }
+            else if (child.isEmpty() === 'unknown') {
+                return child.fetchByOffset({ offset: 0, size: 1 }).then((childResult) => {
+                    return childResult && childResult.results && childResult.results.length > 0
+                        ? false
+                        : true;
+                });
+            }
             else {
                 return Promise.resolve(false);
             }

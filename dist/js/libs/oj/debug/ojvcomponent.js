@@ -1332,6 +1332,11 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
             if (slot) {
                 this.parentElement.replaceChild(slot, this);
             }
+            const once = this[_ON_FIRST_INSERT];
+            if (once) {
+                once();
+                this[_ON_FIRST_INSERT] = null;
+            }
         }
         get parentNode() {
             const delegate = this[ojpreactPatch.OJ_SLOT];
@@ -1347,9 +1352,13 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
         }
     }
     customElements.define('oj-slot-replacer', SlotReplacerElement);
+    const _ON_FIRST_INSERT = Symbol();
     function _getReplacerRef(slotNode, handleSlotMount, handleSlotUnmount) {
         let _activeReplacer;
         let _count = 0;
+        const onInitialInsert = () => {
+            handleSlotMount(slotNode);
+        };
         return (replacerElem) => {
             if (replacerElem != null) {
                 _count++;
@@ -1359,9 +1368,14 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                 _activeReplacer = slotNode[ojpreactPatch.OJ_REPLACER] = replacerElem;
                 const parent = replacerElem.parentElement;
                 ojpreactPatch.patchSlotParent(parent);
-                parent.replaceChild(slotNode, replacerElem);
-                handleSlotMount(slotNode);
                 replacerElem[ojpreactPatch.OJ_SLOT] = slotNode;
+                if (replacerElem.isConnected) {
+                    parent.replaceChild(slotNode, replacerElem);
+                    onInitialInsert();
+                }
+                else {
+                    replacerElem[_ON_FIRST_INSERT] = onInitialInsert;
+                }
             }
             else {
                 _count--;
@@ -1495,6 +1509,9 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
     const _EMPTY_SET = new Set();
     const _LISTENERS = Symbol();
     const _CAPTURE_LISTENERS = Symbol();
+    const _SUBPROP = 'subproperty';
+    const _PROP_CHANGE = 'propChange';
+    const _ACTION = 'action';
     class IntrinsicElement {
         constructor(element, component, metadata, rootAttributes, rootProperties, defaultProps) {
             this.ref = preact.createRef();
@@ -1568,8 +1585,8 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                 this._element[name] = value;
             }
             else {
-                value = ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, value);
                 if (this._state.allowPropertySets()) {
+                    value = ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, value);
                     this._updatePropsAndQueueRenderAsNeeded(name, value, meta);
                 }
                 else {
@@ -1673,13 +1690,25 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                     updatedFrom
                 };
                 if (isSubprop) {
-                    detail['subproperty'] = {
+                    detail[_SUBPROP] = {
                         path: prop,
                         value,
                         previousValue
                     };
                 }
-                this._queueFireEventsTask(new CustomEvent(topProp + 'Changed', { detail }));
+                const type = topProp + 'Changed';
+                const collapseFunc = isSubprop
+                    ? null
+                    : (oldDef) => {
+                        if (oldDef.kind !== _PROP_CHANGE || oldDef.type !== type || oldDef.detail[_SUBPROP]) {
+                            return null;
+                        }
+                        const mergedDetail = Object.assign({}, detail, {
+                            previousValue: oldDef.detail.previousValue
+                        });
+                        return { type, detail: mergedDetail, collapse: collapseFunc, kind: _PROP_CHANGE };
+                    };
+                this._queueFireEventsTask({ type, detail, collapse: collapseFunc, kind: _PROP_CHANGE });
             }
             const oldProps = this._oldRootProps;
             if (oldProps && this._controlledProps.has(prop)) {
@@ -1691,12 +1720,8 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
             if (needRendering && !this._isRenderQueued) {
                 this._isRenderQueued = true;
                 window.queueMicrotask(() => {
-                    try {
-                        this._render();
-                    }
-                    finally {
-                        this._isRenderQueued = false;
-                    }
+                    this._isRenderQueued = false;
+                    this._render();
                 });
             }
         }
@@ -1738,14 +1763,25 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                 propsObj = propsObj[subprop];
             }
         }
-        _queueFireEventsTask(customEvent) {
-            this._eventQueue.push(customEvent);
+        _queueFireEventsTask(eventDef) {
+            let newDef = eventDef;
+            const collapseInfo = this._getEventCollapseInfo(eventDef, this._eventQueue);
+            if (collapseInfo) {
+                const [removeIndex, def] = collapseInfo;
+                this._eventQueue.splice(removeIndex, 1);
+                newDef = def;
+            }
+            this._eventQueue.push(newDef);
             if (!this._queuedEvents) {
                 this._queuedEvents = new Promise((resolve) => {
                     window.queueMicrotask(() => {
                         try {
                             while (this._eventQueue.length) {
-                                this._element.dispatchEvent(this._eventQueue.shift());
+                                const def = this._eventQueue.shift();
+                                const evt = def.kind === _PROP_CHANGE
+                                    ? new CustomEvent(def.type, { detail: def.detail })
+                                    : def.event;
+                                this._element.dispatchEvent(evt);
                             }
                         }
                         finally {
@@ -1756,6 +1792,19 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                 });
             }
             return this._queuedEvents;
+        }
+        _getEventCollapseInfo(newDef, queue) {
+            var _a;
+            if (newDef.kind !== _PROP_CHANGE) {
+                return null;
+            }
+            for (let i = 0; i < queue.length; i++) {
+                const combined = (_a = newDef.collapse) === null || _a === void 0 ? void 0 : _a.call(newDef, queue[i]);
+                if (combined) {
+                    return [i, combined];
+                }
+            }
+            return null;
         }
         _verifyConnectDisconnect(state) {
             if (this._verifyingState === ConnectionState.Unset) {
@@ -1823,9 +1872,12 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
             }
         }
         _playbackEarlyPropertySets() {
+            var _a;
             while (this._earlySets.length) {
                 const setObj = this._earlySets.shift();
-                this.setProperty(setObj.property, setObj.value);
+                const meta = MetadataUtils.getPropertyMetadata(setObj.property, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
+                const updatedValue = ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, setObj.value);
+                this.setProperty(setObj.property, updatedValue);
             }
         }
         _patchRootElement(newVNode) {
@@ -2024,7 +2076,7 @@ define(['require', 'exports', 'preact', 'ojs/ojmetadatautils', 'ojs/ojcustomelem
                     }
                     const eventDescriptor = { detail, bubbles: !!eventMeta.bubbles, cancelable };
                     const customEvent = new CustomEvent(event, eventDescriptor);
-                    const eventPromise = this._queueFireEventsTask(customEvent);
+                    const eventPromise = this._queueFireEventsTask({ event: customEvent, kind: _ACTION });
                     if (cancelable) {
                         return eventPromise.then(() => {
                             return customEvent.defaultPrevented

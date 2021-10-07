@@ -539,6 +539,7 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             fetchedData: null,
             labelIds: [],
             fetchedInitial: false,
+            fetching: false,
             loading: false,
             focusedSuggestionIndex: -1,
             activeDescendantId: null,
@@ -901,9 +902,18 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         const dropdown = state.dropdownOpen
             ? this._renderDropdown(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem)
             : null;
+        const ariaLiveRegion = this._dataProvider ? this._renderAriaLiveRegion(state) : null;
         return (h(Root, { id: id, ref: this._setRootElem, class: rootClasses, "aria-label": ariaLabel, onMouseDown: this._handleMousedown, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave },
+            ariaLiveRegion,
             textFieldContainer,
             dropdown));
+    }
+    _renderAriaLiveRegion(state) {
+        var _a;
+        const text = state.fetchedInitial && !state.fetching && ((_a = state.fetchedData) === null || _a === void 0 ? void 0 : _a.length) == 0
+            ? getTranslatedString('oj-ojInputSearch2.noSuggestionsFound')
+            : '\xa0';
+        return (h("div", { id: 'oj-listbox-live-' + this._uniqueId, class: 'oj-helper-hidden-accessible oj-listbox-liveregion', "aria-live": 'polite' }, text));
     }
     _renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
@@ -1038,6 +1048,7 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
                 filterDef: { text: searchText }
             });
         }
+        this._updateState({ fetching: true });
         if (!this._loadingTimer) {
             const timer = getTimer(this._showIndicatorDelay);
             timer.getPromise().then(function (pending) {
@@ -1152,6 +1163,7 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         if (this.state.loading) {
             this._updateState({ loading: false });
         }
+        this._updateState({ fetching: false });
     }
     static _formatItemText(suggestionItemText, suggestionItemContext) {
         var _a;

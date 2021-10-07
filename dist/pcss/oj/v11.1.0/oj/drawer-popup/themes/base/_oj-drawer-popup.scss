@@ -1,0 +1,72 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example drawer-popup/themes/redwood/oj-drawer-popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.drawerpopup") {
+  // Not shown unless rendered
+  oj-drawer-popup {
+    display: none;
+  }
+
+  .oj-drawer-popup-surrogate:not(.oj-component-overlay) {
+    position: relative; // To apply z-index
+  }
+
+  // Z-Order layer of the Modeless Drawer
+  .oj-drawer-popup-surrogate {
+    z-index: var(--oj-core-z-index-popup);
+  }
+
+  // Z-Order layer of the scrim (modal mode)
+  .oj-drawer-popup-surrogate.oj-drawer-modal {
+    z-index: var(--oj-core-z-index-dialog);
+  }
+
+  // Z-Order layer of the Modal Drawer
+  .oj-drawer-popup-surrogate.oj-drawer-modal.oj-focus-within {
+    // To render over scrim
+    z-index: calc(var(--oj-core-z-index-dialog) + 1);
+  }
+
+  // Popup reparented to PopupService layer
+  .oj-drawer-popup-surrogate oj-drawer-popup {
+    position: absolute;
+    background: var(--oj-drawer-overlay-bg-color);
+    overflow-y: auto;
+  }
+
+  // Size
+  // Start & End
+  .oj-drawer-popup-surrogate .oj-drawer-start,
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    max-width: 90%;
+    min-width: 320px;
+  }
+
+  // Dropped Shadow
+  .oj-drawer-popup-surrogate .oj-drawer-start {
+    @include oj-ltr() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    @include oj-ltr() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-bottom {
+    box-shadow: 0 -0.3rem 0.3rem 0 rgba(var(--oj-core-box-shadow-rgb),0.05);
+  }
+}

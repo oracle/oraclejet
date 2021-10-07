@@ -1411,7 +1411,7 @@ var __oj_diagram_link_metadata =
            * @instance
            * @type {(function(Object))=}
            * @default null
-           * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: CSSStyleDeclaration, svgClassName?: string} | null))", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: Partial<CSSStyleDeclaration>, svgClassName?: string} | null))", jsdocOverride: true}
            */
           /**
            * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
@@ -3014,7 +3014,7 @@ var __oj_diagram_link_metadata =
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              * @default {}
              */
             labelStyle: {},
@@ -3175,7 +3175,7 @@ var __oj_diagram_link_metadata =
                * @memberof! oj.ojDiagram
                * @instance
                * @type {Object=}
-               * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+               * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
                * @default {}
                */
               /**
@@ -3218,7 +3218,7 @@ var __oj_diagram_link_metadata =
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              * @default {}
              */
             /**
@@ -3252,7 +3252,7 @@ var __oj_diagram_link_metadata =
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              */
             labelStyle: {},
             /**
@@ -3318,7 +3318,7 @@ var __oj_diagram_link_metadata =
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              * @default {}
              */
             /**

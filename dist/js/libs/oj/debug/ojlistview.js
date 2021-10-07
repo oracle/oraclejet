@@ -1845,6 +1845,7 @@ var __oj_list_view_metadata =
       this.DestroyContentHandler(true);
       this._unregisterResizeListener(this.getListContainer());
       this._unregisterScrollHandler();
+      this.SetRootElementTabIndex();
       this._resetState();
     },
 
@@ -2181,8 +2182,8 @@ var __oj_list_view_metadata =
      * Called when application programmatically change the css style so that the ListView becomes visible
      */
     notifyShown: function () {
-      // make sure component is not destroyed
-      if (this.m_contentHandler != null) {
+      // make sure component is not destroyed and is not fetching
+      if (this.m_contentHandler != null && this.m_contentHandler.IsReady()) {
         // restore scroll position as needed since some browsers reset scroll position
         this.syncScrollPosition();
 
@@ -4925,14 +4926,22 @@ var __oj_list_view_metadata =
         this._setFocusoutBusyState();
         // set timeout to stay in editable/actionable mode if focus comes back into the listview
         this._focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
-          this._doBlur();
+          if (this.m_active == null || !this.m_active.elem.get(0).contains(document.activeElement)) {
+            this._doBlur();
+          }
           this._clearFocusoutBusyState();
         }.bind(this), 100);
 
         // event.relatedTarget would be null if focus out of page
         // the other check is to make sure the blur is not caused by shifting focus within listview
       } else if (!this._isFocusBlurTriggeredByDescendent(event) && !this.m_preActive) {
-        this._doBlur();
+        // when a blur is triggered by switching windows for example
+        // the activeElement remains the same, in such case, we don't want to
+        // change tabindex to ul as well otherwise when switched back to document
+        // the focus will get lost and assigned to body
+        if (this.m_active == null || !this.m_active.elem.get(0).contains(document.activeElement)) {
+          this._doBlur();
+        }
       }
     },
 
@@ -9704,8 +9713,8 @@ var __oj_list_view_metadata =
       },
       /**
        * Specifies the behavior when ListView needs to scroll to a position based on an item key.  This includes the case where 1) a value of
-       * scrollPosition attribute is specified with a key property, 2) ListView scrolls to the selection anchor during initial fetch and after
-       * a refresh has occurred.
+       * scrollPosition attribute is specified with a key property, 2) ListView scrolls to the selection anchor after a refresh has
+       occurred.
        *
        * @ojshortdesc Specifies the behavior when ListView needs to scroll to a position based on an item key.
        * @expose
@@ -10631,7 +10640,7 @@ var __oj_list_view_metadata =
      * @expose
      * @ojshortdesc Gets the IndexerModel which can be used with the ojIndexer.
      * @memberof oj.ojListView
-     * @ojdeprecated {since:"3.0.0", description:'Implements your own IndexerModel or use the <a href="oj.IndexerModelTreeDataSource.html">IndexerModelTreeDataSource</a> class instead.'}
+     * @ojdeprecated {since:"3.0.0", description:'Implements your own IndexerModel or use the <a href="IndexerModelTreeDataSource.html">IndexerModelTreeDataSource</a> class instead.'}
      * @instance
      * @return {Object} ListView's IndexerModel to be used with the ojIndexer
      */

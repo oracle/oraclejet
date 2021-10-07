@@ -17201,8 +17201,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
     if (obj && obj.isDrillable && obj.isDrillable()) {
       var id = obj.getId();
       if (obj instanceof DvtChartObjPeer) {
-        this.FireEvent(dvt.EventFactory.newChartDrillEvent(id.id != null ? id.id : id, obj.getSeries(), obj.getGroup(), 'item'));
+        // when clicked on line and area instead of marker, chart fires seriesDrill
+        if (obj.getGroupIndex() === -1) {
+          this.FireEvent(dvt.EventFactory.newChartDrillEvent(id, obj.getSeries(), null, 'series'));
+        } else {
+          this.FireEvent(dvt.EventFactory.newChartDrillEvent(id.id != null ? id.id : id, obj.getSeries(), obj.getGroup(), 'item'));
+        }
       } else if (obj instanceof DvtChartPieSlice) {
+        // chart does not use DvtChartObjPeer for pieslice
         var subType = id.series === '_dvtOther' ? 'multiSeries' : 'item';
         this.FireEvent(dvt.EventFactory.newChartDrillEvent(id.id, id.series, id.group, subType));
       }

@@ -1416,7 +1416,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          * @instance
          * @type {(function(Object))=}
          * @default null
-         * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: CSSStyleDeclaration, svgClassName?: string} | null))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: {portElement: Element, dataContext: oj.ojDiagram.NodeItemContext<K1,D1>}) => ({svgStyle?: Partial<CSSStyleDeclaration>, svgClassName?: string} | null))", jsdocOverride: true}
          */
         /**
          * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred.
@@ -3019,7 +3019,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            */
           labelStyle: {},
@@ -3180,7 +3180,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
              * @memberof! oj.ojDiagram
              * @instance
              * @type {Object=}
-             * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+             * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
              * @default {}
              */
             /**
@@ -3223,7 +3223,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            */
           /**
@@ -3257,7 +3257,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            */
           labelStyle: {},
           /**
@@ -3323,7 +3323,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
            * @memberof! oj.ojDiagram
            * @instance
            * @type {Object=}
-           * @ojsignature {target: "Type", value: "CSSStyleDeclaration", jsdocOverride: true}
+           * @ojsignature {target: "Type", value: "Partial<CSSStyleDeclaration>", jsdocOverride: true}
            * @default {}
            */
           /**

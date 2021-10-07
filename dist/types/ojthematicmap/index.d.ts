@@ -46,7 +46,7 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
         insert: SVGElement;
     } | void) | null;
     styleDefaults?: {
-        areaSvgStyle?: CSSStyleDeclaration;
+        areaSvgStyle?: Partial<CSSStyleDeclaration>;
         dataAreaDefaults?: {
             borderColor?: string;
             hoverColor?: string;
@@ -59,13 +59,13 @@ export interface ojThematicMap<K1, K2, K3, D1 extends ojThematicMap.Area<K1> | a
             borderWidth?: number;
             color?: string;
             height?: number;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             opacity?: number;
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             width?: number;
         };
         hoverBehaviorDelay?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         linkDefaults?: {
             color?: string;
             width?: number;
@@ -212,13 +212,13 @@ export namespace ojThematicMap {
         color?: string;
         id?: K;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         location: string;
         opacity?: number;
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: AreaShortDescContext<K, D>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type AreaShortDescContext<K1, D1> = {
@@ -265,7 +265,7 @@ export namespace ojThematicMap {
             y?: number;
         };
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -293,7 +293,7 @@ export namespace ojThematicMap {
         id?: K3;
         label?: string;
         labelPosition?: 'bottom' | 'center' | 'top';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         location?: string;
         opacity?: number;
         rotation?: number;
@@ -305,7 +305,7 @@ export namespace ojThematicMap {
         sourceHoverSelected?: string;
         sourceSelected?: string;
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value?: number;
         width?: number;
         x?: number;
@@ -452,7 +452,7 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
         insert: SVGElement;
     } | void) | null;
     styleDefaults?: {
-        areaSvgStyle?: CSSStyleDeclaration;
+        areaSvgStyle?: Partial<CSSStyleDeclaration>;
         dataAreaDefaults?: {
             borderColor?: string;
             hoverColor?: string;
@@ -465,13 +465,13 @@ export interface ojThematicMapSettableProperties<K1, K2, K3, D1 extends ojThemat
             borderWidth?: number;
             color?: string;
             height?: number;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             opacity?: number;
             shape?: 'circle' | 'diamond' | 'ellipse' | 'human' | 'plus' | 'rectangle' | 'square' | 'star' | 'triangleDown' | 'triangleUp' | string;
             width?: number;
         };
         hoverBehaviorDelay?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         linkDefaults?: {
             color?: string;
             width?: number;
@@ -518,13 +518,13 @@ export interface ojThematicMapArea<K1 = any, D1 = any> extends dvtBaseComponent<
     categories?: string[];
     color?: string;
     label?: string;
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     location: string;
     opacity?: number;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojThematicMapAreaEventMap<K1, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapAreaEventMap<K1, D1>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -572,13 +572,13 @@ export interface ojThematicMapAreaSettableProperties<K1 = any, D1 = any> extends
     categories?: string[];
     color?: string;
     label?: string;
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     location: string;
     opacity?: number;
     selectable?: 'auto' | 'off';
     shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K1, D1>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojThematicMapAreaSettablePropertiesLenient<K1 = any, D1 = any> extends Partial<ojThematicMapAreaSettableProperties<K1, D1>> {
     [key: string]: any;
@@ -601,7 +601,7 @@ export interface ojThematicMapLink<K1 = any, K2 = any, D1 = any> extends dvtBase
         y?: number;
     };
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
     addEventListener<T extends keyof ojThematicMapLinkEventMap<K1, K2, D1>>(type: T, listener: (this: HTMLElement, ev: ojThematicMapLinkEventMap<K1, K2, D1>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -661,7 +661,7 @@ export interface ojThematicMapLinkSettableProperties<K1 = any, K2 = any, D1 = an
         y?: number;
     };
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     width?: number;
 }
 export interface ojThematicMapLinkSettablePropertiesLenient<K1 = any, K2 = any, D1 = any> extends Partial<ojThematicMapLinkSettableProperties<K1, K2, D1>> {
@@ -676,7 +676,7 @@ export interface ojThematicMapMarker<K3 = any, D3 = any> extends dvtBaseComponen
     height?: number;
     label?: string;
     labelPosition?: 'bottom' | 'center' | 'top';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     location?: string;
     opacity?: number;
     rotation?: number;
@@ -688,7 +688,7 @@ export interface ojThematicMapMarker<K3 = any, D3 = any> extends dvtBaseComponen
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number;
     width?: number;
     x?: number | null;
@@ -790,7 +790,7 @@ export interface ojThematicMapMarkerSettableProperties<K3 = any, D3 = any> exten
     height?: number;
     label?: string;
     labelPosition?: 'bottom' | 'center' | 'top';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     location?: string;
     opacity?: number;
     rotation?: number;
@@ -802,7 +802,7 @@ export interface ojThematicMapMarkerSettableProperties<K3 = any, D3 = any> exten
     sourceHoverSelected?: string;
     sourceSelected?: string;
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value?: number;
     width?: number;
     x?: number | null;
@@ -916,13 +916,13 @@ export namespace ThematicMapElement {
         color?: string;
         id?: K;
         label?: string;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         location: string;
         opacity?: number;
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: ojThematicMap.AreaShortDescContext<K, D>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type AreaTemplateContext = {
@@ -951,7 +951,7 @@ export namespace ThematicMapElement {
             y?: number;
         };
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         width?: number;
     };
     // tslint:disable-next-line interface-over-type-literal

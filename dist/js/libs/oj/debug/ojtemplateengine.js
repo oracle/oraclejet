@@ -46,16 +46,12 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
         }
         static _renderNodes(vnode, row) {
             const parentStub = row.parentStub;
-            let reparentNodes;
+            let retrieveNodes = () => Array.from(parentStub.childNodes);
             if (row.nodes) {
-                const oldNodes = row.nodes;
-                reparentNodes = PreactTemplate._getInsertNodesFunction(oldNodes);
-                oldNodes.forEach((node) => {
-                    parentStub.appendChild(node);
-                });
+                retrieveNodes = PreactTemplate._getRetrieveNodesFunction(row.nodes);
             }
             preact.render(vnode, parentStub);
-            const nodes = Array.from(parentStub.childNodes);
+            const nodes = retrieveNodes();
             nodes.forEach((node) => {
                 var _a;
                 (_a = node.classList) === null || _a === void 0 ? void 0 : _a.add('oj-vdom-template-root');
@@ -64,7 +60,6 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
             });
             row.vnode = vnode;
             row.nodes = nodes;
-            reparentNodes === null || reparentNodes === void 0 ? void 0 : reparentNodes(nodes);
         }
         static clean(node) {
             const row = node[ROW];
@@ -85,6 +80,21 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
             const nextSibling = lastNode.nextSibling;
             return (nodes) => {
                 nodes.forEach((node) => parentNode.insertBefore(node, nextSibling));
+            };
+        }
+        static _getRetrieveNodesFunction(oldNodes) {
+            const firstNode = oldNodes[0];
+            const lastNode = oldNodes[oldNodes.length - 1];
+            const parentNode = firstNode.parentNode;
+            const previousSibling = firstNode.previousSibling;
+            const nextSibling = lastNode.nextSibling;
+            const firstNewNode = () => previousSibling ? previousSibling.nextSibling : parentNode.firstChild;
+            return () => {
+                const nodes = [];
+                for (let node = firstNewNode(); node !== nextSibling; node = node.nextSibling) {
+                    nodes.push(node);
+                }
+                return nodes;
             };
         }
         static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {

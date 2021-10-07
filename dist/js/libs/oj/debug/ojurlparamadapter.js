@@ -198,7 +198,7 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
      * for details.
      * @param {Array.<CoreRouter.Route>} routes The set of routes from which the
      * URL will be built.
-     * @return {string} The full URL representative of the given routes
+     * @return {string} The full URL representing of the given routes
      * @name getUrlForRoutes
      * @memberof UrlParamAdapter
      * @method
@@ -211,7 +211,7 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
       if (fullPath.indexOf('?') > -1) {
         fullPath = fullPath.substring(0, fullPath.indexOf('?'));
       }
-      return '?' + setRouterParamValue(fullPath);
+      return `${document.location.pathname}?${setRouterParamValue(fullPath)}`;
     };
 
   return UrlParamAdapter;

@@ -57,6 +57,9 @@
         "vbdt": {
           "type": "object",
           "properties" : {
+            "audits": {
+              "type": "string"
+            },
             "defaultColumns": {
               "type": "number",
               "multipleOf": 1.0,
@@ -112,6 +115,9 @@
         "catalog": {
           "type": "object",
           "properties": {
+            "audits": {
+              "type": "string"
+            },
             "category": {
               "type": "string"
             },
@@ -160,6 +166,10 @@
             },
             "version": {
               "$ref": "#/definitions/semverRangeDef"
+            },
+            "docUrl": {
+              "type": "string",
+              "format": "uri"
             }
           }
         }

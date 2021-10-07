@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerClassMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementInterfaceName = void 0;
+exports.updateRtExtensionMetadata = exports.pruneMetadata = exports.pruneCompilerMetadata = exports.updateCompilerClassMetadata = exports.updateCompilerPropsMetadata = exports.walkTypeNodeMembers = exports.walkTypeMembers = exports.isMappedType = exports.constructMappedTypeName = exports.isAliasToMappedType = exports.isPropsMappedType = exports.getMappedTypesInfo = exports.getIntersectionTypeNodeInfo = exports.getPropsInfo = exports.addMetadataToClassNode = exports.getDtMetadata = exports.getTypeParametersFromType = exports.getGenericTypeParameters = exports.stringToJS = exports.writebackCallbackToProperty = exports.tagNameToElementInterfaceName = void 0;
 const ts = __importStar(require("typescript"));
 const DecoratorUtils = __importStar(require("./DecoratorUtils"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
@@ -118,7 +118,8 @@ function getDtMetadata(objWithJsDoc, metaUtilObj) {
     let dt = {};
     let tags = ts.getJSDocTags(objWithJsDoc);
     tags.forEach((tag) => {
-        if (tag.tagName.getText() === _METADATA_TAG) {
+        if (!ts.isJSDocDeprecatedTag(tag) &&
+            tag.tagName.getText() === _METADATA_TAG) {
             let [mdKey, mdVal] = _getDtMetadataNameValue(tag, metaUtilObj);
             let isClassMetadata = ts.isClassDeclaration(objWithJsDoc);
             if (mdKey === "styleVariableSet") {
@@ -177,12 +178,11 @@ exports.addMetadataToClassNode = addMetadataToClassNode;
 function getPropsInfo(typeRef, vexportToAlias, checker) {
     var _a, _b, _c;
     let rtnInfo = null;
-    let rtnIsIntersectionType = false;
-    let rtnIsTypeLiteral = false;
-    let rtnIsObservedGlobalPropsOnly = false;
     let rtnObservedGlobalProps = [];
+    let rtnMappedTypes = [];
     let rtnTypeNode;
     let rtnEGPRef = null;
+    let isAliasToEGP = false;
     let propsTypeParamsNode;
     let propsTypeSubstituteName;
     let typeRefName = TypeUtils.getTypeNameFromTypeReference(typeRef);
@@ -192,6 +192,7 @@ function getPropsInfo(typeRef, vexportToAlias, checker) {
         propsTypeParamsNode = rtnTypeNode;
     }
     else {
+        isAliasToEGP = true;
         propsTypeParamsNode = typeRef;
         propsTypeSubstituteName = typeRefName;
         const typeRefType = checker.getTypeAtLocation(typeRef);
@@ -233,6 +234,8 @@ function getPropsInfo(typeRef, vexportToAlias, checker) {
     if (rtnTypeNode) {
         let intersectionInlinePropsInfo;
         let rtnIsInlineIntersectionType = false;
+        let rtnIsObservedGlobalPropsOnly = false;
+        let mappedTypeGenericsDeclaration;
         if (ts.isIntersectionTypeNode(rtnTypeNode)) {
             intersectionInlinePropsInfo = getIntersectionTypeNodeInfo(rtnTypeNode, vexportToAlias, true, checker);
             if (intersectionInlinePropsInfo.substituteTypeNode) {
@@ -247,6 +250,25 @@ function getPropsInfo(typeRef, vexportToAlias, checker) {
         }
         const rtnType = checker.getTypeAtLocation(rtnTypeNode);
         if (rtnType) {
+            const mappedTypesInfo = getMappedTypesInfo(rtnType, checker, true, rtnTypeNode);
+            if (mappedTypesInfo) {
+                rtnMappedTypes = mappedTypesInfo.mappedTypes;
+                rtnTypeNode = mappedTypesInfo.wrappedTypeNode;
+                if (!isAliasToEGP) {
+                    propsTypeParamsNode = rtnTypeNode;
+                }
+                mappedTypeGenericsDeclaration = TypeUtils.getNodeDeclaration(rtnTypeNode, checker);
+            }
+            else if (isAliasToMappedType(rtnType, rtnTypeNode)) {
+                const scopedTypeAliases = checker.getSymbolsInScope(rtnTypeNode, ts.SymbolFlags.TypeAlias);
+                const aliasMappedTypeName = TypeUtils.getTypeNameFromTypeReference(rtnTypeNode);
+                const aliasToMappedType = scopedTypeAliases.find((sym) => {
+                    return sym.getName() === aliasMappedTypeName;
+                });
+                if (aliasToMappedType) {
+                    mappedTypeGenericsDeclaration = aliasToMappedType.getDeclarations()[0];
+                }
+            }
             let rtnIsInlineTypeLiteral = ts.isTypeLiteralNode(rtnTypeNode);
             let rtnPropsName;
             if (rtnIsInlineIntersectionType) {
@@ -283,12 +305,18 @@ function getPropsInfo(typeRef, vexportToAlias, checker) {
             rtnInfo = {
                 propsType: rtnType,
                 propsName: rtnPropsName,
+                propsMappedTypes: rtnMappedTypes,
                 propsExtendGlobalPropsRef: rtnEGPRef,
             };
             if (!(rtnIsInlineIntersectionType || rtnIsObservedGlobalPropsOnly)) {
-                rtnInfo.propsGenericsDeclaration = !rtnIsInlineTypeLiteral
-                    ? TypeUtils.getTypeDeclaration(rtnType)
-                    : TypeUtils.getNodeDeclaration(propsTypeParamsNode, checker);
+                if (mappedTypeGenericsDeclaration) {
+                    rtnInfo.propsGenericsDeclaration = mappedTypeGenericsDeclaration;
+                }
+                else {
+                    rtnInfo.propsGenericsDeclaration = !rtnIsInlineTypeLiteral
+                        ? TypeUtils.getTypeDeclaration(rtnType)
+                        : TypeUtils.getNodeDeclaration(propsTypeParamsNode, checker);
+                }
                 if (propsTypeParamsNode.typeArguments) {
                     rtnInfo.propsTypeParams = getGenericTypeParameters(propsTypeParamsNode);
                 }
@@ -334,12 +362,138 @@ function getIntersectionTypeNodeInfo(intersectionTypeNode, vexportToAlias, isInl
     return rtnInfo;
 }
 exports.getIntersectionTypeNodeInfo = getIntersectionTypeNodeInfo;
-function walkTypeMembers(type, checker, callback) {
-    const getConstituentTypes = function (type, checker, mappedTypes) {
+const _MAPPED_TYPENAMES = new Set([
+    "Partial",
+    "Required",
+    "Readonly",
+    "Pick",
+    "Omit",
+]);
+function getMappedTypesInfo(outerType, checker, isPropsInfo, outerTypeNode) {
+    var _a;
+    let rtnInfo = null;
+    let mappedTypes = [];
+    let wrappedType = outerType;
+    let wrappedTypeNode = outerTypeNode;
+    while (wrappedType && isPropsInfo
+        ? isPropsMappedType(wrappedType, wrappedTypeNode)
+        : isMappedType(wrappedType)) {
+        const mappedTypeName = TypeUtils.getTypeNameFromType(wrappedType);
+        const mappedTypeArgs = wrappedType.aliasTypeArguments;
+        if (mappedTypeName && mappedTypeArgs) {
+            let params = mappedTypeArgs
+                .slice(1)
+                .map((t) => checker.typeToString(t))
+                .join(", ");
+            const mappedEntry = {
+                name: mappedTypeName,
+            };
+            if (params !== "") {
+                mappedEntry.params = params;
+            }
+            mappedTypes.push(mappedEntry);
+            if (wrappedTypeNode) {
+                wrappedTypeNode = (_a = wrappedTypeNode
+                    .typeArguments) === null || _a === void 0 ? void 0 : _a[0];
+                wrappedType = wrappedTypeNode
+                    ? checker.getTypeAtLocation(wrappedTypeNode)
+                    : null;
+            }
+            else {
+                wrappedType = mappedTypeArgs[0];
+            }
+        }
+        else {
+            break;
+        }
+    }
+    if (mappedTypes.length > 0 && wrappedType) {
+        rtnInfo = {
+            mappedTypes,
+            wrappedTypeName: TypeUtils.getTypeNameFromType(wrappedType),
+        };
+        if (wrappedTypeNode) {
+            rtnInfo.wrappedTypeNode = wrappedTypeNode;
+        }
+    }
+    return rtnInfo;
+}
+exports.getMappedTypesInfo = getMappedTypesInfo;
+function isPropsMappedType(type, typeNode) {
+    return (isMappedType(type) &&
+        _MAPPED_TYPENAMES.has(typeNode
+            ? TypeUtils.getTypeNameFromTypeReference(typeNode)
+            : TypeUtils.getTypeNameFromType(type)));
+}
+exports.isPropsMappedType = isPropsMappedType;
+function isAliasToMappedType(type, typeNode) {
+    return (isMappedType(type) &&
+        !_MAPPED_TYPENAMES.has(TypeUtils.getTypeNameFromTypeReference(typeNode)));
+}
+exports.isAliasToMappedType = isAliasToMappedType;
+function constructMappedTypeName(mappedTypesInfo, wrappedTypeGenerics) {
+    let rtnName = "";
+    let paramsStack = [];
+    let poppedParams;
+    const mappedTypesLast = mappedTypesInfo.mappedTypes.length - 1;
+    mappedTypesInfo.mappedTypes.forEach((mType, i) => {
+        rtnName += mType.name;
+        if (mType.params) {
+            paramsStack.push(mType.params);
+        }
+        else {
+            paramsStack.push(null);
+        }
+        rtnName += "<";
+        if (i === mappedTypesLast) {
+            rtnName += mappedTypesInfo.wrappedTypeName;
+            if (wrappedTypeGenerics) {
+                rtnName += wrappedTypeGenerics;
+            }
+            while (paramsStack.length > 0) {
+                if ((poppedParams = paramsStack.pop())) {
+                    rtnName += `, ${poppedParams}>`;
+                }
+                else {
+                    rtnName += ">";
+                }
+            }
+        }
+    });
+    return rtnName;
+}
+exports.constructMappedTypeName = constructMappedTypeName;
+function isMappedType(type) {
+    var _a;
+    let decl = (_a = type.symbol) === null || _a === void 0 ? void 0 : _a.declarations[0];
+    return decl && ts.isMappedTypeNode(decl);
+}
+exports.isMappedType = isMappedType;
+function walkTypeMembers(type, metaUtilObj, callback) {
+    const isExcludedType = function (type, metaUtilObj) {
+        var _a, _b, _c, _d;
+        let rtnValue = false;
+        const tname = (_a = type.aliasSymbol) === null || _a === void 0 ? void 0 : _a.name;
+        if (tname && ((_b = metaUtilObj.excludedTypes) === null || _b === void 0 ? void 0 : _b.has(tname))) {
+            rtnValue = true;
+        }
+        else {
+            const decl = (_c = type.aliasSymbol) === null || _c === void 0 ? void 0 : _c.declarations[0];
+            if (decl &&
+                ts.isTypeAliasDeclaration(decl) &&
+                ts.isTypeReferenceNode(decl.type) &&
+                ((_d = metaUtilObj.excludedTypeAliases) === null || _d === void 0 ? void 0 : _d.has(TypeUtils.getTypeNameFromTypeReference(decl.type)))) {
+                rtnValue = true;
+            }
+        }
+        return rtnValue;
+    };
+    const getConstituentTypes = function (type, metaUtilObj, typeMap) {
+        const checker = metaUtilObj.typeChecker;
         if (type.isIntersection()) {
             const intersectionTypes = type.types;
             for (let t of intersectionTypes) {
-                getConstituentTypes(t, checker, mappedTypes);
+                getConstituentTypes(t, metaUtilObj, typeMap);
             }
         }
         else {
@@ -351,47 +505,78 @@ function walkTypeMembers(type, checker, callback) {
                         for (let clause of heritageClauses) {
                             for (let typeRef of clause.types) {
                                 const inheritedTypeName = TypeUtils.getTypeNameFromTypeReference(typeRef);
-                                if (!mappedTypes[inheritedTypeName]) {
+                                if (!typeMap[inheritedTypeName]) {
                                     const typeRefType = checker.getTypeAtLocation(typeRef);
                                     if (typeRefType) {
-                                        getConstituentTypes(typeRefType, checker, mappedTypes);
+                                        getConstituentTypes(typeRefType, metaUtilObj, typeMap);
                                     }
                                 }
                             }
                         }
                     }
                 }
-                const typeName = TypeUtils.getTypeNameFromType(type);
-                if (!mappedTypes[typeName]) {
-                    mappedTypes[typeName] = type;
+                if (!isExcludedType(type, metaUtilObj)) {
+                    const typeName = isMappedType(type)
+                        ? checker.typeToString(type)
+                        : TypeUtils.getTypeNameFromType(type);
+                    if (!typeMap[typeName]) {
+                        typeMap[typeName] = type;
+                    }
                 }
             }
         }
     };
-    const processMembers = function (symbol, callback) {
-        const members = symbol === null || symbol === void 0 ? void 0 : symbol.members;
-        if (members) {
-            members.forEach((memberSymbol, memberKey) => {
-                callback(memberSymbol, memberKey);
-            });
+    const processMembers = function (type, checker, callback) {
+        var _a;
+        if (!isMappedType(type)) {
+            const members = (_a = type.getSymbol()) === null || _a === void 0 ? void 0 : _a.members;
+            if (members) {
+                members.forEach((memberSymbol, memberKey) => {
+                    callback(memberSymbol, memberKey);
+                });
+            }
+        }
+        else {
+            const propSymbols = checker.getPropertiesOfType(type);
+            if (propSymbols) {
+                const propCount = propSymbols.length;
+                const rootSymbols = propSymbols.map((sym) => {
+                    var _a;
+                    return (_a = checker.getRootSymbols(sym)) === null || _a === void 0 ? void 0 : _a[0];
+                });
+                for (let symbol, i = 0; i < propCount; i++) {
+                    if (rootSymbols[i]) {
+                        symbol = rootSymbols[i];
+                        callback(symbol, symbol.getEscapedName(), propSymbols[i]);
+                    }
+                    else {
+                        symbol = propSymbols[i];
+                        callback(symbol, symbol.getEscapedName());
+                    }
+                }
+            }
         }
     };
     let typeMap = {};
-    getConstituentTypes(type, checker, typeMap);
-    let typeKeys = Object.keys(typeMap);
+    getConstituentTypes(type, metaUtilObj, typeMap);
+    const typeKeys = Object.keys(typeMap);
+    const checker = metaUtilObj.typeChecker;
     for (let k of typeKeys) {
-        processMembers(typeMap[k].getSymbol(), callback);
+        processMembers(typeMap[k], checker, callback);
     }
 }
 exports.walkTypeMembers = walkTypeMembers;
-function walkTypeNodeMembers(typeNode, checker, callback) {
-    const typeAtLoc = checker.getTypeAtLocation(typeNode);
-    walkTypeMembers(typeAtLoc, checker, callback);
+function walkTypeNodeMembers(typeNode, metaUtilObj, callback) {
+    const typeAtLoc = metaUtilObj.typeChecker.getTypeAtLocation(typeNode);
+    walkTypeMembers(typeAtLoc, metaUtilObj, callback);
 }
 exports.walkTypeNodeMembers = walkTypeNodeMembers;
 function updateCompilerPropsMetadata(propsInfo, readOnlyProps, metaUtilObj) {
     if (propsInfo.propsTypeParams) {
         metaUtilObj.fullMetadata["propsTypeParams"] = propsInfo.propsTypeParams;
+    }
+    if (propsInfo.propsMappedTypes.length > 0) {
+        metaUtilObj.fullMetadata["propsMappedTypes"] = propsInfo.propsMappedTypes.slice();
     }
     let declaration = propsInfo.propsGenericsDeclaration;
     if (declaration &&
@@ -434,6 +619,7 @@ function pruneCompilerMetadata(metaUtilObj) {
     delete metaUtilObj.fullMetadata["classTypeParams"];
     delete metaUtilObj.fullMetadata["classTypeParamsDeclaration"];
     delete metaUtilObj.fullMetadata["propsTypeParams"];
+    delete metaUtilObj.fullMetadata["propsMappedTypes"];
     delete metaUtilObj.fullMetadata["propsClassTypeParamsDeclaration"];
     delete metaUtilObj.fullMetadata["propsClassTypeParams"];
     delete metaUtilObj.fullMetadata["propsTypeParamsAny"];

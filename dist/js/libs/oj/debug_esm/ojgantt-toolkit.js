@@ -190,7 +190,7 @@ DvtGanttStyleUtils._DEFAULT_ANIMATION_DURATION = 0.5; // seconds
  * @const
  * @private
  */
-DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 0;
+DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 6;
 
 /**
  * The length of the horizontal dependency portion coming in/out of a task.
@@ -218,7 +218,7 @@ DvtGanttStyleUtils._DEPENDENCY_TRIANGLE_MARKER_WIDTH = 6;
  * @const
  * @private
  */
-DvtGanttStyleUtils._DEPENDENCY_ANGLE_MARKER_HEIGHT = 14;
+DvtGanttStyleUtils._DEPENDENCY_ANGLE_MARKER_HEIGHT = 12;
 
 /**
  * The width of the dependency line angle marker.
@@ -537,10 +537,14 @@ DvtGanttStyleUtils.getDependencyLineTaskFlankLength = function()
 
 /**
  * Gets the radius for the arc used in the dependency line.
+ * @param {dvt.Context} context The rendering context.
  * @return {number} The radius for the arc used in the dependency line.
  */
-DvtGanttStyleUtils.getDependencyLineArcRadius = function()
+DvtGanttStyleUtils.getDependencyLineArcRadius = function(context)
 {
+  if (context.getThemeBehavior() === 'alta') {
+    return 0;
+  }
   return DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS;
 };
 
@@ -596,24 +600,6 @@ DvtGanttStyleUtils.getDependencyLineTriangleMarkerId = function()
 DvtGanttStyleUtils.getDependencyLineAngleMarkerId = function()
 {
   return DvtGanttStyleUtils._DEPENDENCY_ANGLE_MARKER_ID;
-};
-
-/**
- * Gets the width of the dependency line angle marker.
- * @return {number} The width of the dependency line triangle marker.
- */
-DvtGanttStyleUtils.getDependencyLineAngleMarkerWidth = function()
-{
-  return DvtGanttStyleUtils._DEPENDENCY_ANGLE_MARKER_WIDTH;
-};
-
-/**
- * Gets the height of the dependency line angle marker.
- * @return {number} The height of the dependency line triangle marker.
- */
-DvtGanttStyleUtils.getDependencyLineAngleMarkerHeight = function()
-{
-  return DvtGanttStyleUtils._DEPENDENCY_ANGLE_MARKER_HEIGHT;
 };
 
 /**
@@ -807,7 +793,7 @@ DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
   }
 
   if (typeof(size) === 'number') {
-    if (size <= 1) // assume to be ratio
+    if (size <= 1 && totalSize != null) // assume to be ratio
       return totalSize * size;
     else // assume to be absolute size in pixels
       return size;
@@ -1023,7 +1009,8 @@ DvtGanttDependencyNode._getTaskMiddle = function(taskNode)
 {
   var task = taskNode.getTask();
   var taskMainShape = task.getShape('main');
-  var availableShapeHeight = (task.isSummary('main')) ? taskNode.getLayoutObject()['height'] : taskMainShape.getFinalHeight();
+  var theme = taskNode.getGantt().getCtx().getThemeBehavior();
+  var availableShapeHeight = (task.isSummary('main') && theme === 'alta') ? taskNode.getLayoutObject()['height'] : taskMainShape.getFinalHeight();
   return DvtGanttDependencyNode._getTaskTop(taskNode) + taskMainShape.getFinalY() + Math.round(availableShapeHeight / 2);
 };
 
@@ -1184,6 +1171,7 @@ DvtGanttDependencyNode.prototype.render = function(container, bUpdateCustomConte
   this.setAriaRole('img');
 
   var gantt = this.getGantt();
+  var context = gantt.getCtx();
   var type = this.getValue('type');
   var predecessorNode = this.getPredecessorNode();
   var successorNode = this.getSuccessorNode();
@@ -1210,15 +1198,15 @@ DvtGanttDependencyNode.prototype.render = function(container, bUpdateCustomConte
     if (this._line != null)
     {
       // update dependency line
-      this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+      this._line.setCmds(DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type));
       var elem = this._line.getElem();
     }
     else
     {
-      var line = new Path(gantt.getCtx(), DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+      var line = new Path(context, DvtGanttDependencyNode._calcDepLine(context, predecessorNode, successorNode, type));
       // If arc radius > 0, then leave pixel hinting--otherwise they look weird and pixelated.
       // Otherwise, the lines are rectilinear, and should be crisp.
-      if (DvtGanttStyleUtils.getDependencyLineArcRadius() === 0)
+      if (DvtGanttStyleUtils.getDependencyLineArcRadius(context) === 0)
       {
         line.setPixelHinting(true);
       }
@@ -1427,7 +1415,8 @@ DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorN
 {
   // TODO: Right now, arc radius by default is 0, so no issues. If we later change the default arc radius to > 0,
   // we'll need to make sure the radius <= the amount we want to translate before and after drawing the arc to prevent weird artifacts.
-  var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
+  var gantt = predecessorNode.getGantt();
+  var r = DvtGanttStyleUtils.getDependencyLineArcRadius(gantt.getCtx());
   var taskFlankLength = DvtGanttStyleUtils.getDependencyLineTaskFlankLength();
 
   var endPoints = DvtGanttDependencyNode._getEndPoints(predecessorNode, successorNode, isTypeBeginFinish, isTypeEndFinish, false);
@@ -1436,7 +1425,7 @@ DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorN
   var y1 = endPoints.predecessorY;
   var y2 = endPoints.successorY;
 
-  var options = predecessorNode.getGantt().getOptions();
+  var options = gantt.getOptions();
   var dependencyLineGap = DvtGanttStyleUtils.getDependencyLineTaskGap(options);
   var y_intermediate = y2 >= y1 ? DvtGanttDependencyNode._getTaskBottom(predecessorNode) + dependencyLineGap : DvtGanttDependencyNode._getTaskTop(predecessorNode) - dependencyLineGap;
 
@@ -2185,6 +2174,7 @@ DvtGanttRowLabelContent.prototype.getAriaLabel = function()
  * @param {DvtGanttTask} task The corresponding task
  * @param {string} type The shape type. Can be one of:
  *        main - The main shape, e.g. bar or milestone shape
+ *        mainBackground - The background for the main shape
  *        mainSelect - The main selection shape
  *        mainHover - The main hover shape
  *        mainDragFeedback - The main drag feedback
@@ -2211,7 +2201,7 @@ Obj.createSubclass(DvtGanttTaskShape, Path);
  * The 'main' types, effect inclusive.
  * @type {array}
  */
-DvtGanttTaskShape.MAIN_TYPES = ['main', 'mainSelect', 'mainHover'];
+DvtGanttTaskShape.MAIN_TYPES = ['main', 'mainBackground', 'mainSelect', 'mainHover'];
 
 /**
  * The 'main' effect types.
@@ -2232,6 +2222,12 @@ DvtGanttTaskShape.BASELINE_TYPES = ['baseline', 'baselineSelect', 'baselineHover
 DvtGanttTaskShape.BASELINE_EFFECT_TYPES = ['baselineSelect', 'baselineHover'];
 
 /**
+ * The 'progress' types.
+ * @type {array}
+ */
+ DvtGanttTaskShape.PROGRESS_TYPES = ['progress', 'progressZero', 'progressFull'];
+
+/**
  * @param {dvt.Context} context
  * @param {number} x position
  * @param {number} y posiiton
@@ -2241,6 +2237,7 @@ DvtGanttTaskShape.BASELINE_EFFECT_TYPES = ['baselineSelect', 'baselineHover'];
  * @param {DvtGanttTask} task The corresponding task
  * @param {string} type The shape type. Can be one of:
  *        main - The main shape, e.g. bar or milestone shape
+ *        mainBackground - The background for the main shape
  *        mainSelect - The main selection shape
  *        mainHover - The main hover shape
  *        mainDragFeedback - The main drag feedback
@@ -2269,6 +2266,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
   this._renderState = 'add';
   this._typeCmdGeneratorMap = {
     'main': this._generateRepShapeCmd,
+    'mainBackground': this._generateRepShapeCmd,
     'mainSelect': this._generateRepShapeCmd,
     'mainHover': this._generateRepShapeCmd,
     'mainDragFeedback': this._generateRepShapeCmd,
@@ -2276,6 +2274,8 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
     'mainResizeHandleEnd': this._generateRectCmd,
     'mainResizeHandleDragFeedback': this._generateRectCmd,
     'progress': this._generateRectCmd,
+    'progressZero': this._generateRectCmd,
+    'progressFull': this._generateRectCmd,
     'baseline': this._generateRepShapeCmd,
     'baselineSelect': this._generateRepShapeCmd,
     'baselineHover': this._generateRepShapeCmd
@@ -2285,6 +2285,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
   DvtGanttTaskShape.superclass.Init.call(this, context, cmds, id);
 
   this.applyDefaultStyleClasses();
+  this._updateStrokeDashArray();
 
   switch (this._type)
   {
@@ -2296,6 +2297,8 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
       task.getGantt().getEventManager().associate(this, task.getContainer());
     case 'main':
     case 'progress':
+    case 'progressZero':
+    case 'progressFull':
     case 'baseline':
       this.setPixelHinting(true); // Render the with crispedge so that their outlines don't look blurry.
       break;
@@ -2325,7 +2328,7 @@ DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
     diamondMargin = margin * Math.sqrt(2);
     return this._generateDiamondCmd(x, y - diamondMargin, h + 2 * diamondMargin, r);
   }
-  else if (this._task.isSummary(this._type) && this._type === 'main') // current UX design, only main shape has a special summary shape; baseline shape and effects are always bars
+  else if (this._task.isSummary(this._type) && this._type === 'main')
   {
     return this._generateSummaryCmd(x, y, w, h, r);
   }
@@ -2366,7 +2369,7 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
 };
 
 /**
- * Generates the path command that draws a summary shape (bordered rect missing bottom side) with given dimensions and radius.
+ * Generates the path command that draws a summary shape.
  * In LTR, reference point is at the top left corner. Top right in RTL.
  * @param {number} x position
  * @param {number} y posiiton
@@ -2378,49 +2381,53 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
  */
 DvtGanttTaskShape.prototype._generateSummaryCmd = function(x, y, w, h, r)
 {
-  var isRTL = Agent.isRightToLeft(this._context);
+  if (this._context.getThemeBehavior() === 'alta') {
+    var isRTL = Agent.isRightToLeft(this._context);
 
-  // For our default 0px border radius case, skip the parsing and generate the path.
-  var thickness = DvtGanttStyleUtils.getSummaryThickness();
-  if (r === '0' || r === '0px')
-  {
+    // For our default 0px border radius case, skip the parsing and generate the path.
+    var thickness = DvtGanttStyleUtils.getSummaryThickness();
+    if (r === '0' || r === '0px')
+    {
+      if (w > 2 * thickness)
+      {
+        // In LTR, reference is at top left corner, top right in RTL
+        return PathUtils.moveTo(x, y + h) +
+              PathUtils.verticalLineTo(y) +
+              PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
+              PathUtils.verticalLineTo(y + h) +
+              PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
+              PathUtils.verticalLineTo(y + thickness) +
+              PathUtils.horizontalLineTo(isRTL ? x - thickness : x + thickness) +
+              PathUtils.verticalLineTo(y + h) +
+              PathUtils.closePath();
+      }
+      return this._generateRectCmd(x, y, w, h, r);
+    }
+
+    // Only support same radius for the top left and top right corners for summary tasks
+    var outerBr = Math.min(new CSSStyle({'border-radius': r}).getBorderRadius(), Math.min(w, h));
+    var innerBr = Math.max(outerBr - thickness, 0);
     if (w > 2 * thickness)
     {
       // In LTR, reference is at top left corner, top right in RTL
       return PathUtils.moveTo(x, y + h) +
-             PathUtils.verticalLineTo(y) +
-             PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
-             PathUtils.verticalLineTo(y + h) +
-             PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
-             PathUtils.verticalLineTo(y + thickness) +
-             PathUtils.horizontalLineTo(isRTL ? x - thickness : x + thickness) +
-             PathUtils.verticalLineTo(y + h) +
-             PathUtils.closePath();
+            PathUtils.verticalLineTo(y + outerBr) +
+            PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - outerBr : x + outerBr, y) +
+            PathUtils.horizontalLineTo(isRTL ? x - w + outerBr : x + w - outerBr) +
+            PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - w : x + w, y + outerBr) +
+            PathUtils.verticalLineTo(y + h) +
+            PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
+            PathUtils.verticalLineTo(y + thickness + innerBr) +
+            PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
+            PathUtils.horizontalLineTo(isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
+            PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
+            PathUtils.verticalLineTo(y + h) +
+            PathUtils.closePath();
     }
-    return this._generateRectCmd(x, y, w, h, r);
+    return PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
   }
-
-  // Only support same radius for the top left and top right corners for summary tasks
-  var outerBr = Math.min(new CSSStyle({'border-radius': r}).getBorderRadius(), Math.min(w, h));
-  var innerBr = Math.max(outerBr - thickness, 0);
-  if (w > 2 * thickness)
-  {
-    // In LTR, reference is at top left corner, top right in RTL
-    return PathUtils.moveTo(x, y + h) +
-           PathUtils.verticalLineTo(y + outerBr) +
-           PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - outerBr : x + outerBr, y) +
-           PathUtils.horizontalLineTo(isRTL ? x - w + outerBr : x + w - outerBr) +
-           PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - w : x + w, y + outerBr) +
-           PathUtils.verticalLineTo(y + h) +
-           PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
-           PathUtils.verticalLineTo(y + thickness + innerBr) +
-           PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
-           PathUtils.horizontalLineTo(isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
-           PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
-           PathUtils.verticalLineTo(y + h) +
-           PathUtils.closePath();
-  }
-  return PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
+  // New design is to render summary bars just like normal task bars (but with different colors).
+  return this._generateRectCmd(x, y, w, h, r);
 };
 
 /**
@@ -2466,9 +2473,12 @@ DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
 {
   var styleClass, milestoneDefaultClass, barDefaultClass, summaryDefaultClass, taskFillColor, style,
       gantt = this._task.getGantt(), taskDraggable = gantt.getEventManager().IsDragSupported('tasks');
-  if (this._type === 'progress')
+  if (DvtGanttTaskShape.PROGRESS_TYPES.indexOf(this._type) > -1)
   {
     styleClass = gantt.GetStyleClass('taskProgress');
+    if (this._task.isSummary('main')) {
+      styleClass += ' ' + gantt.GetStyleClass('taskSummaryProgress');
+    }
     if (taskDraggable)
     {
       styleClass += ' ' + gantt.GetStyleClass('draggable');
@@ -2485,20 +2495,21 @@ DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
     {
       styleClass += ' ' + milestoneDefaultClass;
     }
-    else if (this._task.isSummary(this._type))
-    {
-      styleClass += ' ' + summaryDefaultClass;
-    }
     else
     {
-      styleClass += ' ' + barDefaultClass;
+      styleClass += ' ' + (this._task.isSummary(this._type) ? summaryDefaultClass : barDefaultClass);
 
       if (this._type === 'main' && this._task.getProgressValue() != null) {
         styleClass += ' ' + gantt.GetStyleClass('taskUnprogress');
       }
     }
 
-    if (this._type === 'mainSelect')
+    if (this._type === 'mainBackground')
+    {
+      // Task colors may have opacity/alpha. Make tasks opaque by rendering a (white) background.
+      styleClass = gantt.GetStyleClass('taskBackdrop');
+    }
+    else if (this._type === 'mainSelect')
     {
       this.setStyle({'fill': 'none', 'filter': 'none'});
       styleClass += ' ' + gantt.GetStyleClass('selected');
@@ -2602,6 +2613,13 @@ DvtGanttTaskShape.prototype.getFillColor = function()
       if (fillOpacity !== 1 && !Number.isNaN(fillOpacity)) {
         computedFill = ColorUtils.getBrighter(computedFill, 1 - fillOpacity);
       }
+      if (this._task.getGantt().getCtx().getThemeBehavior() !== 'alta' && this._task.isMilestone(this._type)) {
+        // The fill is used for hover stroke color and tooltip border color.
+        // For 11.1.0 Redwood, white milestones should have dark hover/tooltip borders rather than white, so the
+        // milestone stroke color is used instead.
+        // The border color rules for tasks in general will be revisited by designers in 12.0.0
+        fill = computedStyle.stroke;
+      }
       fillColor = {'fill': fill, 'computedFill': computedFill, 'filter': filter};
     }
   }
@@ -2613,12 +2631,44 @@ DvtGanttTaskShape.prototype.getFillColor = function()
 };
 
 /**
+ * If applicable, update the shape's stroke dash array
+ * @private
+ */
+DvtGanttTaskShape.prototype._updateStrokeDashArray = function()
+{
+  if (DvtGanttTaskShape.PROGRESS_TYPES.indexOf(this._type) > -1) {
+    var isRTL = Agent.isRightToLeft(this._context);
+    var dashArray;
+
+    // Set stroke-dasharray so that only right border (or left in RTL) is visible, or no borders when width is 0
+    var r = DvtGanttStyleUtils.getSizeInPixels(this._r);
+    if (this._type === 'progressZero' || this._type === 'progressFull') {
+      dashArray = [0, this._w * 2 + this._h * 2];
+    } else if (!isRTL) {
+      dashArray = [0, this._w - r, this._h - r, this._w + this._h];
+    } else {
+      dashArray = [0, this._w + this._h + this._w - (2 * r), this._h - r, r];
+    }
+    this.getElem().setAttribute('stroke-dasharray', dashArray);
+  }
+};
+
+/**
  * Gets the shape type.
  * @return {string} The type.
  */
 DvtGanttTaskShape.prototype.getType = function()
 {
   return this._type;
+};
+
+/**
+ * Sets the shape type.
+ * @param {string} type The type.
+ */
+DvtGanttTaskShape.prototype.setType = function(type)
+{
+  this._type = type;
 };
 
 /**
@@ -2754,6 +2804,7 @@ DvtGanttTaskShape.prototype.setWidth = function(width)
   this._w = width;
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
+  this._updateStrokeDashArray();
 };
 
 /**
@@ -2796,6 +2847,7 @@ DvtGanttTaskShape.prototype.setHeight = function(height)
   this._h = height;
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
+  this._updateStrokeDashArray();
 };
 
 /**
@@ -2904,6 +2956,7 @@ DvtGanttTaskShape.prototype.setBorderRadius = function(r)
   this._r = r != null ? r : "0";
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
+  this._updateStrokeDashArray();
 };
 
 /**
@@ -2935,6 +2988,7 @@ DvtGanttTaskShape.prototype.setDimensions = function(x, y, w, h, r)
 
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
+  this._updateStrokeDashArray();
 };
 
 /**
@@ -5745,8 +5799,8 @@ DvtGanttTask.prototype.render = function(bUpdateCustomContent)
   this.renderBaseline(progressHeight);
   this.renderMain(progressHeight, bUpdateCustomContent);
   this.renderProgress(progressHeight);
-  if (this._container.getValue('type') === 'summary' && this._mainShape) {
-    // summary shapes should be on top of all non-custom content
+  if (this._container.getValue('type') === 'summary' && this._mainShape && this._gantt.getCtx().getThemeBehavior() === 'alta') {
+    // summary shapes should be on top of all non-custom content (in Alta only)
     this._container.addChild(this._mainShape);
   }
   if (this._mainCustomContent) {
@@ -5820,7 +5874,7 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
                 ? Math.max(this._container.getValue('height'), height) + DvtGanttStyleUtils.getMilestoneBaselineYOffset(options) - height
                 : this._container.getValue('height') + DvtGanttStyleUtils.getBaselineMarginTop(options);
       y = Math.max(0, (progressHeight - this._container.getValue('height')) / 2) + yOffset;
-      borderRadius = baselineProps['borderRadius'];
+      borderRadius = !isMilestone ? baselineProps['borderRadius'] : options._resources.milestoneBaselineBorderRadius;
 
       // element doesn't exist in DOM already
       if (this._baselineShape == null)
@@ -5918,12 +5972,16 @@ DvtGanttTask.prototype.renderMain = function(progressHeight, bUpdateCustomConten
       x = 0;
       y = Math.max(0, (progressHeight - taskHeight) / 2);
       width = Math.abs(mainDim['distance']);
-      // Summary task case, want the summary task shape to take on the full height
-      height = this.isSummary('main') ? this._container.getFinalHeight(true) : taskHeight;
+      // (Alta only) Summary task case, want the summary task shape to take on the full height
+      height = this.isSummary('main') && this._gantt.getCtx().getThemeBehavior() === 'alta' ? this._container.getFinalHeight(true) : taskHeight;
       borderRadius = this._container.getValue('borderRadius');
 
       if (this._mainShape == null) // element doesn't exist in DOM already
       {
+        if (this._gantt.getCtx().getThemeBehavior() !== 'alta') {
+          this._mainBackgroundShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'mainBackground');
+          this._container.addChild(this._mainBackgroundShape);
+        }
         this._mainShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, height, borderRadius, this, 'main');
         this._container.addChild(this._mainShape);
         this._mainShape.setRenderState('add');
@@ -6128,6 +6186,10 @@ DvtGanttTask.prototype.getMainWidth = function()
 DvtGanttTask.prototype.setMainWidth = function(width)
 {
   this._mainShape.setWidth(width);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setWidth(width);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setWidth(width);
@@ -6158,6 +6220,10 @@ DvtGanttTask.prototype.getMainHeight = function()
 DvtGanttTask.prototype.setMainHeight = function(height)
 {
   this._mainShape.setHeight(height);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setHeight(height);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setHeight(height);
@@ -6188,6 +6254,10 @@ DvtGanttTask.prototype.getMainX = function()
 DvtGanttTask.prototype.setMainX = function(x)
 {
   this._mainShape.setX(x);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setX(x);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setX(x);
@@ -6218,6 +6288,10 @@ DvtGanttTask.prototype.getMainY = function()
 DvtGanttTask.prototype.setMainY = function(y)
 {
   this._mainShape.setY(y);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setY(y);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setY(y);
@@ -6248,6 +6322,10 @@ DvtGanttTask.prototype.getMainBorderRadius = function()
 DvtGanttTask.prototype.setMainBorderRadius = function(r)
 {
   this._mainShape.setBorderRadius(r);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setBorderRadius(r);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setBorderRadius(r);
@@ -6273,6 +6351,10 @@ DvtGanttTask.prototype.setMainBorderRadius = function(r)
 DvtGanttTask.prototype.setMainDimensions = function(x, y, w, h, r)
 {
   this._mainShape.setDimensions(x, y, w, h, r);
+  if (this._mainBackgroundShape)
+  {
+    this._mainBackgroundShape.setDimensions(x, y, w, h, r);
+  }
   if (this._mainSelectShape)
   {
     this._mainSelectShape.setDimensions(x, y, w, h, r);
@@ -6304,13 +6386,23 @@ DvtGanttTask.prototype.removeMain = function()
 
       // Remove main shapes
       self.removeMainEffect('selected', false);
+      if (self._mainBackgroundShape) {
+        self._container.removeChild(self._mainBackgroundShape);
+        self._mainBackgroundShape = null;
+      }
       self._container.removeChild(self._mainShape);
       self._mainShape = null;
 
       // remove progress as well
       self.removeProgress();
     };
-    this._gantt.getAnimationManager().preAnimateTaskMainRemove(this._mainShape, this._mainSelectShape, this._mainHoverShape, this._mainCustomContent, onRemoveEnd);
+    this._gantt.getAnimationManager().preAnimateTaskMainRemove(
+      this._mainShape,
+      this._mainBackgroundShape,
+      this._mainSelectShape,
+      this._mainHoverShape,
+      this._mainCustomContent, onRemoveEnd
+    );
   }
 };
 
@@ -6339,7 +6431,7 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
       taskHeight = this._container.getValue('height'),
       progressValue = this.getProgressValue(),
       self = this, onRenderEnd, finalStates,
-      progressDim, x, y, width, height, borderRadius;
+      progressDim, x, y, width, height, borderRadius, type;
 
   if (progressValue !== null && this._mainShape && !this.isMilestone('main'))
   {
@@ -6349,14 +6441,22 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
     width = progressValue * this._mainShape.getFinalWidth();
     borderRadius = this._container.getValue('progress', 'borderRadius');
 
+    type = 'progress';
+    if (progressValue === 0) {
+      type = 'progressZero';
+    } else if (progressValue === 1) {
+      type = 'progressFull';
+    }
+
     if (this._progressShape == null) // element doesn't exist in DOM already
     {
-      this._progressShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, progressHeight, borderRadius, this, 'progress');
+      this._progressShape = new DvtGanttTaskShape(this._gantt.getCtx(), x, y, width, progressHeight, borderRadius, this, type);
       this._container.addChild(this._progressShape);
       this._progressShape.setRenderState('add');
     }
     else
     {
+      this._progressShape.setType(type);
       this._progressShape.setRenderState('exist');
     }
 
@@ -6605,7 +6705,9 @@ DvtGanttTaskLabel.prototype._placeLabel = function(effectiveLabelPosition)
   }
 
   // Determine y position
-  associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main')) ? this._container.getLayoutObject()['height'] : this._associatedShape.getFinalHeight();
+  associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main') && this._gantt.getCtx().getThemeBehavior() === 'alta')
+    ? this._container.getLayoutObject()['height']
+    : this._associatedShape.getFinalHeight();
   y = this._associatedShape.getFinalY() + ((associatedShapeHeight - labelDimensions.h) / 2);
   this.setFinalY(y);
 
@@ -10945,11 +11047,10 @@ DvtGanttDataLayoutManager.prototype._computeViewportRenderOperations = function 
       rowsAdd.push({ rowObj: rowObj, tasksAdd: tasksAdd, tasksUpdate: new Set(), tasksDelete: new Set(), updateRender: true });
     }, this);
     // Also, for old rows with row labels, restore them to DOM to show initial state (row axis DOM is cleared at this point)
-    // Note that this._animationInitialStateRowObjsDelete is empty if there are no labels, so no need to null check rowAxis
     var rowAxis = this._gantt.getRowAxis();
     for (var i = 0; i < this._animationInitialStateRowObjsDelete.length; i++) {
       var oldRowNodeWithLabel = this._animationInitialStateRowObjsDelete[i].node;
-      if (oldRowNodeWithLabel) {
+      if (oldRowNodeWithLabel && rowAxis) {
         var oldLabelContent = oldRowNodeWithLabel.getRowLabelContent();
         rowAxis.addChild(oldLabelContent.getDisplayable());
         if (this._gantt.isHorizontalGridlinesVisible()) {
@@ -11541,16 +11642,20 @@ DvtGanttAnimationManager.prototype.preAnimateTaskMain = function(task, finalStat
 /**
  * Prepares task main shape removal animation.
  * @param {DvtGanttTaskShape} mainShape
+ * @param {DvtGanttTaskShape} mainBackgroundShape
  * @param {DvtGanttTaskShape} selectShape
  * @param {DvtGanttTaskShape} hoverShape
  * @param {function} onEnd callback that finalizes rendering
  */
-DvtGanttAnimationManager.prototype.preAnimateTaskMainRemove = function(mainShape, selectShape, hoverShape, customContent, onEnd)
+DvtGanttAnimationManager.prototype.preAnimateTaskMainRemove = function(mainShape, mainBackgroundShape, selectShape, hoverShape, customContent, onEnd)
 {
   if (this._animationMode === 'dataChange')
   {
     // Fade out elements related to the main shape, finalize render at the end of animation
     this.fadeOutElemsDC.push(mainShape);
+    if (mainBackgroundShape) {
+      this.fadeOutElemsDC.push(mainBackgroundShape);
+    }
     if (selectShape)
     {
       this.fadeOutElemsDC.push(selectShape);
@@ -12458,7 +12563,7 @@ DvtGanttRowAxis.prototype.getBackgroundContainer = function()
 
 /**
  * Sets the background horizontal divider that lines up with the time axis.
- * @param {dvt.Line} backgroundDivider The background divider.
+ * @param {dvt.Line|undefined} backgroundDivider The background divider.
  */
 DvtGanttRowAxis.prototype.setBackgroundDivider = function(backgroundDivider)
 {
@@ -12467,7 +12572,7 @@ DvtGanttRowAxis.prototype.setBackgroundDivider = function(backgroundDivider)
 
 /**
  * Gets the background horizontal divider that lines up with the time axis.
- * @return {dvt.Line} The background divider.
+ * @return {dvt.Line|undefined} The background divider.
  */
 DvtGanttRowAxis.prototype.getBackgroundDivider = function()
 {
@@ -12495,9 +12600,11 @@ DvtGanttRowAxis.prototype.adjustPosition = function()
   backgroundCp.addRect(this.getTranslateX(), 0, width, this._gantt._backgroundHeight);
   this._backgroundContainer.setClipPath(backgroundCp);
 
-  var dividerY = this._gantt.getDatabodyStart() + this._gantt.getStartYOffset() + (this._gantt.getAxisPosition() !== 'top') * (this._gantt.getDatabodyHeight() + 1);
-  this._backgroundDivider.setY1(dividerY);
-  this._backgroundDivider.setY2(dividerY);
+  if (this._backgroundDivider) {
+    var dividerY = this._gantt.getDatabodyStart() + this._gantt.getStartYOffset() + (this._gantt.getAxisPosition() !== 'top') * (this._gantt.getDatabodyHeight() + 1);
+    this._backgroundDivider.setY1(dividerY);
+    this._backgroundDivider.setY2(dividerY);
+  }
 };
 
 /**
@@ -12905,6 +13012,7 @@ DvtGanttRenderer.renderRowAxis = function(gantt, container)
     // Render row axis background. Position is adjusted in rowAxis.adjustPosition()
     var rowAxisBackgroundContainer = rowAxis.getBackgroundContainer();
     rowAxisBackgroundContainer.removeChildren();
+    rowAxis.setBackgroundDivider();
 
     // row axis backgrond rect. extra 1px to hide border touching the gantt.
     var rowAxisBackground = new Rect(gantt.getCtx(), 0, 0, rowAxisWidth + 1, gantt._backgroundHeight);
@@ -12913,11 +13021,15 @@ DvtGanttRenderer.renderRowAxis = function(gantt, container)
     rowAxisBackgroundContainer.addChild(rowAxisBackground);
 
     // row axis background horizontal divider that lines up with the time axis.
-    var rowAxisHorizontalDivider = new Line(gantt.getCtx(), 0, 0, rowAxisWidth, 0);
-    rowAxisHorizontalDivider.setPixelHinting(true);
-    rowAxisHorizontalDivider.setClassName(gantt.GetStyleClass('hgridline'), true);
-    rowAxisBackgroundContainer.addChild(rowAxisHorizontalDivider);
-    rowAxis.setBackgroundDivider(rowAxisHorizontalDivider);
+    // Always shown in Alta regardless of whether horizontal gridlines are visible
+    // Only shown in Redwood if horizontal gridlines are visible
+    if (gantt.getCtx().getThemeBehavior() === 'alta' || gantt.isHorizontalGridlinesVisible()) {
+      var rowAxisHorizontalDivider = new Line(gantt.getCtx(), 0, 0, rowAxisWidth, 0);
+      rowAxisHorizontalDivider.setPixelHinting(true);
+      rowAxisHorizontalDivider.setClassName(gantt.GetStyleClass('hgridline'), true);
+      rowAxisBackgroundContainer.addChild(rowAxisHorizontalDivider);
+      rowAxis.setBackgroundDivider(rowAxisHorizontalDivider);
+    }
   }
   else
   {
@@ -13321,31 +13433,62 @@ DvtGanttRenderer._renderVerticalGridline = function(gantt, container)
       gantt.setVerticalGridlines(gridlines);
     }
 
-    var gridlineStyleClass = gantt.GetStyleClass('vgridline');
+    const ganttMinTime = gantt.getStartTime();
+    const ganttMaxTime = gantt.getEndTime();
+    const ganttWidth = gantt.getContentLength();
 
-    var timeAxis = gantt.getMajorAxis();
-    if (timeAxis == null || gantt.getOptions()['minorGridline'])
-      timeAxis = gantt.getMinorAxis();
+    // minor time axis required, major optional
+    const computeLineDates = function (minorTimeAxis, majorTimeAxis) {
+      const majorViewportDates = majorTimeAxis ? majorTimeAxis.getViewportDates(majorTimeAxis.getScale(), ganttMinTime, ganttMaxTime) : [];
+      const minorViewportDates = minorTimeAxis.getViewportDates(minorTimeAxis.getScale(), ganttMinTime, ganttMaxTime);
 
-    var context = gantt.getCtx();
-    var isRTL = Agent.isRightToLeft(context);
-    var ganttMinTime = gantt.getStartTime();
-    var ganttMaxTime = gantt.getEndTime();
-    var ganttWidth = gantt.getContentLength();
-    var viewportDates = timeAxis.getViewportDates(timeAxis.getScale(), ganttMinTime, ganttMaxTime);
-    for (var i = 0; i < viewportDates.length; i++)
-    {
-      var pos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, viewportDates[i].getTime(), ganttWidth);
-      if (isRTL) {
-        pos = ganttWidth - pos;
+      // Alta behavior is to only render major lines. If major not available, then render minor lines.
+      if (gantt.getCtx().getThemeBehavior() === 'alta') {
+        return {
+          major: majorViewportDates,
+          minor: !majorTimeAxis ? minorViewportDates : []
+        };
       }
 
-      var gridLine = new Line(gantt.getCtx(), pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
-      gridLine.setPixelHinting(true);
-      gridLine.setClassName(gridlineStyleClass, true);
+      // If major dates is a subset of minor dates, then the two grids line up. Don't render the minor dates at overlap (due to opacity, minor line would show through major line otherwise).
+      // Otherwise the major and minor axis do not "line up" (e.g. months and weeks scale together). Render minor lines only.
+      const majorViewportDatesSet = new Set(majorViewportDates.map(d => d.getTime()));
+      const minorViewportDatesSet = new Set(minorViewportDates.map(d => d.getTime()));
+      // only consider major dates that are in range (e.g. first and/or last ticks may be out of range)
+      const showMajorLines = majorViewportDates.filter(d => (d.getTime() > ganttMinTime && d.getTime() < ganttMaxTime) && !minorViewportDatesSet.has(d.getTime())).length === 0;
+      const finalMinorViewportDates = showMajorLines ? minorViewportDates.filter(d => !majorViewportDatesSet.has(d.getTime())) : minorViewportDates;
 
-      gridlines.addChild(gridLine);
-    }
+      return {
+        major: showMajorLines ? majorViewportDates : [],
+        minor: finalMinorViewportDates
+      };
+    };
+
+    const renderVLines = function (linesContainer, dates, styleClass) {
+      var context = gantt.getCtx();
+      var isRTL = Agent.isRightToLeft(context);
+
+      dates.forEach((d) => {
+        let pos = TimeAxisUtils.getDatePosition(ganttMinTime, ganttMaxTime, d.getTime(), ganttWidth);
+        if (isRTL) {
+          pos = ganttWidth - pos;
+        }
+
+        const gridLine = new Line(context, pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
+        gridLine.setPixelHinting(true);
+        gridLine.setClassName(styleClass, true);
+
+        linesContainer.addChild(gridLine);
+      });
+    };
+
+    const dateLines = computeLineDates(gantt.getMinorAxis(), gantt.getMajorAxis());
+
+    // Minor axis gridlines
+    renderVLines(gridlines, dateLines.minor, gantt.GetStyleClass('minorvgridline'));
+
+    // Major axis gridlines
+    renderVLines(gridlines, dateLines.major, gantt.GetStyleClass('majorvgridline'));
   }
 };
 
@@ -13765,8 +13908,41 @@ Gantt.prototype._bundleTimeAxisOptions = function(options, axis)
       retOptions['scale'] = axisOptions['scale'];
     if (axisOptions['converter'])
       retOptions['converter'] = axisOptions['converter'];
-    if (axisOptions['zoomOrder'])
-      retOptions['zoomOrder'] = axisOptions['zoomOrder'];
+
+    retOptions.zoomOrder = axisOptions.zoomOrder || [axisOptions.scale];
+    const isAlta = this.getCtx().getThemeBehavior() === 'alta';
+    // Default scales label position
+    if (isAlta) {
+      retOptions._scaleLabelPosition = {
+        seconds: 'center',
+        minutes: 'center',
+        hours: 'center',
+        days: 'center',
+        weeks: 'center',
+        months: 'center',
+        quarters: 'center',
+        years: 'center',
+      };
+    } else {
+      retOptions._scaleLabelPosition = {
+        seconds: 'start',
+        minutes: 'start',
+        hours: 'start',
+        days: axis === 'minorAxis' ? 'center' : 'start',
+        weeks: 'start',
+        months: 'start',
+        quarters: 'start',
+        years: 'start'
+      };
+    }
+    // Custom scales label position
+    retOptions.zoomOrder.forEach((scale) => {
+      if (scale && scale.name) {
+        const labelPosition = scale.labelPosition || 'auto';
+        const effectiveLabelPosition = labelPosition === 'auto' ? 'start' : labelPosition;
+        retOptions._scaleLabelPosition[scale.name] = effectiveLabelPosition;
+      }
+    });
   }
 
   var labelStyle;
@@ -13830,26 +14006,8 @@ Gantt.prototype.render = function(options, width, height)
   DvtGanttRenderer.renderRowAxis(this, this.getParent());
 
   var axisPosition = this.getAxisPosition();
-
-  var minor = options['minorAxis'];
-  if (minor)
-  {
-    var axisOptions = this._bundleTimeAxisOptions(this.Options, 'minorAxis');
-
-    if (this._minorAxis == null)
-    {
-      this._minorAxis = new TimeAxis(this.getCtx(), null, null);
-      if (axisPosition === 'top')
-        this._minorAxis.setBorderVisibility(false, false, true, false);
-      else
-        this._minorAxis.setBorderVisibility(true, false, false, false);
-      this._masterAxis = this._minorAxis;
-    }
-
-    // TimeComponent's TimeAxis._canvasSize should always be null on initial render
-    this._minorAxis.setCanvasSize(null);
-    var preferredLength = this._minorAxis.getPreferredLength(axisOptions, this._canvasLength);
-  }
+  var axisOptions;
+  var preferredLength;
 
   var major = options['majorAxis'];
   if (major)
@@ -13861,10 +14019,11 @@ Gantt.prototype.render = function(options, width, height)
       if (this._majorAxis == null)
       {
         this._majorAxis = new TimeAxis(this.getCtx(), null, null);
+        var showAxisInterfaceBorder = this.getCtx().getThemeBehavior() === 'alta';
         if (axisPosition === 'top')
-          this._majorAxis.setBorderVisibility(false, false, true, false);
+          this._majorAxis.setBorderVisibility(false, false, showAxisInterfaceBorder, false);
         else
-          this._majorAxis.setBorderVisibility(true, false, false, false);
+          this._majorAxis.setBorderVisibility(showAxisInterfaceBorder, false, false, false);
         this._slaveAxis = this._majorAxis;
       }
 
@@ -13881,6 +14040,27 @@ Gantt.prototype.render = function(options, width, height)
     }
     else // if there WAS a major axis, but rerender WITHOUT major axis, make sure to set it to null
       this._majorAxis = null;
+  }
+
+  var minor = options['minorAxis'];
+  if (minor)
+  {
+    axisOptions = this._bundleTimeAxisOptions(this.Options, 'minorAxis');
+    axisOptions._secondaryAxis = this._majorAxis;
+
+    if (this._minorAxis == null)
+    {
+      this._minorAxis = new TimeAxis(this.getCtx(), null, null);
+      if (axisPosition === 'top')
+        this._minorAxis.setBorderVisibility(false, false, true, false);
+      else
+        this._minorAxis.setBorderVisibility(true, false, false, false);
+      this._masterAxis = this._minorAxis;
+    }
+
+    // TimeComponent's TimeAxis._canvasSize should always be null on initial render
+    this._minorAxis.setCanvasSize(null);
+    preferredLength = this._minorAxis.getPreferredLength(axisOptions, this._canvasLength);
   }
 
   if (preferredLength)
@@ -14859,7 +15039,9 @@ Gantt.prototype.getAxesHeight = function()
  */
 Gantt.prototype.isRowAxisEnabled = function()
 {
-  return this._rowAxisRendered === 'on';
+  var axisOn = this._rowAxisRendered === 'on';
+  var hasRows = this.getRowLayoutObjs().length > 0;
+  return axisOn && hasRows;
 };
 
 /**

@@ -32,7 +32,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
     let readOnlyProps = [];
     let writebackProps = [];
     let propsName = propsInfo.propsName;
-    MetaUtils.walkTypeMembers(propsInfo.propsType, metaUtilObj.typeChecker, (memberSymbol, memberKey) => {
+    MetaUtils.walkTypeMembers(propsInfo.propsType, metaUtilObj, (memberSymbol, memberKey, mappedTypeSymbol) => {
         if (!TypeUtils.isGenericTypeParameter(memberSymbol)) {
             const propDeclaration = memberSymbol.valueDeclaration;
             const prop = memberKey;
@@ -47,8 +47,8 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
                     metaUtilObj.rtMetadata.properties = {};
                     metaUtilObj.fullMetadata.properties = {};
                 }
-                const rt = getMetadataForProperty(prop, memberSymbol, propDeclaration, propsName, MetaTypes.MetadataScope.RT, metaUtilObj);
-                const dt = getMetadataForProperty(prop, memberSymbol, propDeclaration, propsName, MetaTypes.MetadataScope.DT, metaUtilObj);
+                const rt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, propsName, MetaTypes.MetadataScope.RT, metaUtilObj);
+                const dt = getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, propsName, MetaTypes.MetadataScope.DT, metaUtilObj);
                 metaUtilObj.rtMetadata.properties[prop] = rt;
                 metaUtilObj.fullMetadata.properties[prop] = dt;
                 if (typeName === `${metaUtilObj.namedExportToAlias.ElementReadOnly}`) {
@@ -63,8 +63,7 @@ function generatePropertiesMetadata(propsInfo, metaUtilObj) {
 }
 exports.generatePropertiesMetadata = generatePropertiesMetadata;
 function checkReservedProps(propsInfo, metaUtilObj) {
-    const checker = metaUtilObj.typeChecker;
-    MetaUtils.walkTypeMembers(propsInfo.propsType, checker, (memberSymbol, memberKey) => {
+    MetaUtils.walkTypeMembers(propsInfo.propsType, metaUtilObj, (memberSymbol, memberKey, mappedTypeSymbol) => {
         var _a;
         if (TypeUtils.isGenericTypeParameter(memberSymbol)) {
             return;
@@ -125,7 +124,7 @@ function getWritebackPropName(prop, typeName, metaUtilObj) {
     }
     return null;
 }
-function getMetadataForProperty(prop, memberSymbol, propDeclaration, propsName, scope, metaUtilObj) {
+function getMetadataForProperty(prop, memberSymbol, propDeclaration, mappedTypeSymbol, propsName, scope, metaUtilObj) {
     let md;
     const metaObj = TypeUtils.getAllMetadataForDeclaration(propDeclaration, scope, metaUtilObj);
     let stack = [];
@@ -135,7 +134,8 @@ function getMetadataForProperty(prop, memberSymbol, propDeclaration, propsName, 
     const subprops = TypeUtils.getComplexPropertyMetadata(memberSymbol, metaObj.type, propsName, scope, stack, metaUtilObj);
     md = metaObj;
     if (scope == MetaTypes.MetadataScope.DT) {
-        md["optional"] = propDeclaration["questionToken"] ? true : false;
+        const propSym = mappedTypeSymbol !== null && mappedTypeSymbol !== void 0 ? mappedTypeSymbol : memberSymbol;
+        md["optional"] = propSym.flags & ts.SymbolFlags.Optional ? true : false;
     }
     if (subprops) {
         if (subprops.circRefDetected) {
@@ -182,11 +182,18 @@ function isDefaultProps(node) {
 }
 exports.isDefaultProps = isDefaultProps;
 function updateDefaultsFromDefaultProps(defaultProps, metaUtilObj) {
-    const fullPropsMeta = metaUtilObj.fullMetadata.properties;
+    var _a;
+    const fullPropsMeta = (_a = metaUtilObj.fullMetadata) === null || _a === void 0 ? void 0 : _a.properties;
     defaultProps.properties.forEach((prop) => {
         if (ts.isPropertyAssignment(prop)) {
-            const propertyName = prop.name.getText();
-            updateDefaultValue(fullPropsMeta[propertyName], propertyName, prop, metaUtilObj);
+            const propName = prop.name.getText();
+            const propMetadata = fullPropsMeta === null || fullPropsMeta === void 0 ? void 0 : fullPropsMeta[propName];
+            if (propMetadata) {
+                updateDefaultValue(propMetadata, propName, prop, metaUtilObj);
+            }
+            else {
+                reportInvalidDefaultPropsDefault(propName, metaUtilObj);
+            }
         }
     });
 }
@@ -218,4 +225,24 @@ function updateDefaultValue(md, propertyName, propDeclaration, metaUtilObj) {
             updateComplexPropertyValues(md.properties, value);
         }
     }
+}
+function reportInvalidDefaultPropsDefault(propName, metaUtilObj) {
+    var _a, _b;
+    const fullMeta = metaUtilObj.fullMetadata;
+    let errMsg;
+    if (propName === MetaTypes.DEFAULT_SLOT_PROP || ((_a = fullMeta.slots) === null || _a === void 0 ? void 0 : _a[propName])) {
+        return;
+    }
+    else {
+        if (propName.length > 2) {
+            const eventPropName = `${propName[2].toLowerCase()}${propName.substring(3)}`;
+            if ((_b = fullMeta.events) === null || _b === void 0 ? void 0 : _b[eventPropName]) {
+                errMsg = `The '${propName}' event handler cannot be initialized through defaultProps.`;
+            }
+        }
+        if (!errMsg) {
+            errMsg = `Unknown property '${propName}' cannot be initialized through defaultProps.`;
+        }
+    }
+    throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, errMsg);
 }

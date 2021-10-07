@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { error, info } from 'ojs/ojlogger';
+import { error, warn, info } from 'ojs/ojlogger';
 
 /**
  * Defines the oj namespace
@@ -37,12 +37,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '11.0.0',
+  version: '11.1.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2021-07-01_19-42-54',
+  revision: '2021-09-30_14-13-44',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -1875,8 +1875,11 @@ OjObject.compareValues = function (obj1, obj2) {
     if (Array.isArray(obj1)) {
       return OjObject._compareArrayValues(obj1, obj2);
     } else if (obj1.constructor === Object) {
+      // create new Set for cyclic detection. This may also be passed in from
+      // __innerEquals
+      const set = arguments[2] || new Set();
       // for now invoke innerEquals and in the future if there are issues then resolve them
-      return OjObject.__innerEquals(obj1, obj2);
+      return OjObject.__innerEquals(obj1, obj2, set);
     } else if (obj1.valueOf && typeof obj1.valueOf === 'function') {
       // test cases for Boolean, String, Number, Date
       // Note if some future JavaScript constructors
@@ -1966,10 +1969,18 @@ OjObject._compareArrayIdIndexObject = function (array1, array2) {
 };
 
 
-OjObject.__innerEquals = function (obj1, obj2) {
+OjObject.__innerEquals = function (obj1, obj2, set = new Set()) {
   if (obj1 === obj2) {
     return true;
   }
+
+  // Catch cyclic comparisons
+  if (set.has(obj1) || set.has(obj2)) {
+    warn('cyclic dependency detected', obj1, obj2);
+    return false;
+  }
+  set.add(obj1);
+  set.add(obj2);
 
   if (!(obj1 instanceof Object) || !(obj2 instanceof Object)) {
     return false;
@@ -1997,7 +2008,7 @@ OjObject.__innerEquals = function (obj1, obj2) {
           return false;
         }
 
-        if (!OjObject.compareValues(obj1[prop], obj2[prop])) {
+        if (!OjObject.compareValues(obj1[prop], obj2[prop], set)) {
           return false;
         }
       }
@@ -2040,16 +2051,6 @@ OjObject.isEmpty = function (object) {
   }
   return true;
 };
-
-/**
- * @private
- * @return  {boolean} true if AMD Loader (such as Require.js) is present,
- *                    false otherwise
- */
-const __isAmdLoaderPresent = function () {
-  return (typeof define === 'function' && define.amd);
-};
-oj._registerLegacyNamespaceProp('__isAmdLoaderPresent', __isAmdLoaderPresent);
 
 /**
  * @export

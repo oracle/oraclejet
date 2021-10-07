@@ -201,12 +201,7 @@ LocaleData.__getBundle = function () {
   if (b) {
     return b;
   }
-
-  if (oj.__isAmdLoaderPresent()) {
-    oj.Assert.assert(ojld !== undefined, 'LocaleElements module must be loaded');
-    return ojld;
-  }
-  return {};
+  return ojld;
 };
 
 /**

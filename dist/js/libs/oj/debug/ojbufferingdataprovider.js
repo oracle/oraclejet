@@ -5,11 +5,10 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, ojMap, ojSet, ojcomponentcore) { 'use strict';
+define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap', 'ojs/ojcomponentcore'], function (oj, ojdataprovider, ojeventtarget, ojMap, ojcomponentcore) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     ojMap = ojMap && Object.prototype.hasOwnProperty.call(ojMap, 'default') ? ojMap['default'] : ojMap;
-    ojSet = ojSet && Object.prototype.hasOwnProperty.call(ojSet, 'default') ? ojSet['default'] : ojSet;
 
     /**
      * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -613,7 +612,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     this._baseIterator = _baseIterator;
                     this._params = _params;
                     this.firstBaseKey = null;
-                    this.mergedAddKeySet = new ojSet();
+                    this.mergedAddKeySet = new Set();
                     this.mergedItemArray = [];
                     this.nextOffset = 0;
                     if (this._params == null) {
@@ -678,7 +677,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         _fetchByKeysFromBuffer(params) {
             const results = new ojMap();
-            const unresolvedKeys = new ojSet();
+            const unresolvedKeys = new Set();
             params.keys.forEach((key) => {
                 const editItem = this.editBuffer.getItem(key);
                 if (editItem) {
@@ -787,7 +786,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                     else {
                         sortCriteria = params.sortCriteria;
                     }
-                    this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new ojSet(), baseResults.done);
+                    this._mergeEdits(baseItemArray, newItemArray, params.filterCriterion, sortCriteria, params.offset === 0, new Set(), baseResults.done);
                     let actualReturnSize = newItemArray.length;
                     for (const newItem of newItemArray) {
                         if (this._isItemRemoved(newItem.metadata.key)) {
@@ -825,7 +824,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         containsKeys(params) {
             const bufferResult = this._fetchByKeysFromBuffer(params);
             const unresolvedKeys = bufferResult.unresolvedKeys;
-            const results = new ojSet();
+            const results = new Set();
             bufferResult.results.forEach((value, key) => {
                 results.add(key);
             });
@@ -973,7 +972,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const detail = {
                 add: {
                     data: [item.data],
-                    keys: new ojSet().add(item.metadata.key),
+                    keys: new Set().add(item.metadata.key),
                     metadata: [item.metadata],
                     addBeforeKeys: [addBeforeKey]
                 }
@@ -1021,7 +1020,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const detail = {
                 remove: {
                     data: item.data ? [item.data] : null,
-                    keys: new ojSet().add(item.metadata.key),
+                    keys: new Set().add(item.metadata.key),
                     metadata: [item.metadata]
                 }
             };
@@ -1034,7 +1033,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
             const detail = {
                 update: {
                     data: [item.data],
-                    keys: new ojSet().add(item.metadata.key),
+                    keys: new Set().add(item.metadata.key),
                     metadata: [item.metadata]
                 }
             };
@@ -1061,10 +1060,10 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         _addEventDetail(detail, detailType, detailItem, detailAddBeforeKey) {
             if (detail[detailType] == null) {
                 if (detailType === 'add') {
-                    detail[detailType] = { data: [], keys: new ojSet(), metadata: [], addBeforeKeys: [] };
+                    detail[detailType] = { data: [], keys: new Set(), metadata: [], addBeforeKeys: [] };
                 }
                 else {
-                    detail[detailType] = { data: [], keys: new ojSet(), metadata: [] };
+                    detail[detailType] = { data: [], keys: new Set(), metadata: [] };
                 }
             }
             detail[detailType].keys.add(detailItem.metadata.key);
@@ -1076,7 +1075,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         resetUnsubmittedItem(key) {
             const unsubmittedItems = this.editBuffer.getUnsubmittedItems();
-            const keySet = new ojSet();
+            const keySet = new Set();
             const editItemMap = new ojMap();
             const editItem = unsubmittedItems.get(key);
             if (editItem) {
@@ -1181,15 +1180,15 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         _initDetails(details, newDetails, bEmpty) {
             if (details.add) {
-                newDetails.add = { keys: new ojSet() };
+                newDetails.add = { keys: new Set() };
                 this._initDetail(details.add, newDetails.add, bEmpty, true);
             }
             if (details.remove) {
-                newDetails.remove = { keys: new ojSet() };
+                newDetails.remove = { keys: new Set() };
                 this._initDetail(details.remove, newDetails.remove, bEmpty);
             }
             if (details.update) {
-                newDetails.update = { keys: new ojSet() };
+                newDetails.update = { keys: new Set() };
                 this._initDetail(details.update, newDetails.update, bEmpty);
             }
         }
@@ -1258,7 +1257,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 this.lastSortCriteria.length === 0) {
                                 let removeDetail = newDetails.remove;
                                 if (!removeDetail) {
-                                    removeDetail = { keys: new ojSet(), data: [], metadata: [] };
+                                    removeDetail = { keys: new Set(), data: [], metadata: [] };
                                     newDetails.remove = removeDetail;
                                 }
                                 const submittingItem = submittingItems.get(key);
@@ -1272,7 +1271,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 newDetails.remove = removeDetail;
                                 let addDetail = newDetails.add;
                                 if (!addDetail) {
-                                    addDetail = { keys: new ojSet(), data: [], metadata: [], addBeforeKeys: [] };
+                                    addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
                                     newDetails.add = addDetail;
                                 }
                                 this._pushDetail(key, details.add, newDetails.add);
@@ -1307,7 +1306,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 this.lastSortCriteria.length) {
                                 let removeDetail = newDetails.remove;
                                 if (!removeDetail) {
-                                    removeDetail = { keys: new ojSet(), data: [], metadata: [] };
+                                    removeDetail = { keys: new Set(), data: [], metadata: [] };
                                     newDetails.remove = removeDetail;
                                 }
                                 const submittingItem = submittingItems.get(key);
@@ -1320,7 +1319,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                                 }
                                 let addDetail = newDetails.add;
                                 if (!addDetail) {
-                                    addDetail = { keys: new ojSet(), data: [], metadata: [], addBeforeKeys: [] };
+                                    addDetail = { keys: new Set(), data: [], metadata: [], addBeforeKeys: [] };
                                     newDetails.add = addDetail;
                                 }
                                 if (editItem) {
@@ -1348,7 +1347,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
         }
         _handleRefreshEvent(event) {
             const unsubmittedItems = this.editBuffer.getUnsubmittedItems();
-            const keySet = new ojSet();
+            const keySet = new Set();
             unsubmittedItems.forEach((editItem) => {
                 if (editItem.operation === 'remove' || editItem.operation === 'update') {
                     keySet.add(editItem.item.metadata.key);

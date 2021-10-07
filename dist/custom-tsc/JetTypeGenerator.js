@@ -189,6 +189,17 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
     const propsDataParam = (_c = metadata["propsTypeParams"]) !== null && _c !== void 0 ? _c : "";
     const propsClassDataParams = (_d = metadata["propsClassTypeParams"]) !== null && _d !== void 0 ? _d : "";
     const propsClassDataParamsDeclaration = (_e = metadata["propsClassTypeParamsDeclaration"]) !== null && _e !== void 0 ? _e : "";
+    const propsClassName = metadata["propsClassName"];
+    let propsMappedTypesClassName = "";
+    let propsReadonlyMappedTypesClassName = "";
+    if (metadata["propsMappedTypes"]) {
+        const mappedPropsInfo = {
+            mappedTypes: metadata["propsMappedTypes"],
+            wrappedTypeName: propsClassName,
+        };
+        propsMappedTypesClassName = MetaUtils.constructMappedTypeName(mappedPropsInfo, propsClassDataParams);
+        propsReadonlyMappedTypesClassName = MetaUtils.constructMappedTypeName(mappedPropsInfo, propsDataParam);
+    }
     const data = {
         classTypeParams: classDataParam,
         classTypeParamsDeclaration: classDataParamsDeclaration,
@@ -197,7 +208,9 @@ function getComponentTemplateData(metadata, buildOptions, customElementName, vco
         propsClassTypeParamsDeclaration: propsClassDataParamsDeclaration,
         propsTypeParams: propsDataParam,
         propsTypeParamsAny: (_f = metadata["propsTypeParamsAny"]) !== null && _f !== void 0 ? _f : "",
-        propsClassName: metadata["propsClassName"],
+        propsClassName: propsClassName,
+        propsMappedTypesClassName: propsMappedTypesClassName,
+        propsReadonlyMappedTypesClassName: propsReadonlyMappedTypesClassName,
         componentPropertyInterface: `${vcomponentClassName}IntrinsicProps`,
         customElementName: customElementName,
         vcomponentClassName: vcomponentClassName,

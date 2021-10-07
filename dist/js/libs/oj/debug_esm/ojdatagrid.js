@@ -14,7 +14,7 @@ import 'ojs/ojpopup';
 import oj$1 from 'ojs/ojcore-base';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
 import Context from 'ojs/ojcontext';
-import { isMobileTouchDevice, applyMergedInlineStyles, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { isMobileTouchDevice, applyMergedInlineStyles, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, getLogicalChildPopup, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { setScrollLeft, getCSSTimeUnitAsMillis, isTouchSupported, removeResizeListener, addResizeListener } from 'ojs/ojdomutils';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
@@ -17956,47 +17956,57 @@ DvtDataGrid.prototype._manageMoveCursor = function () {
  * Handles focus on the root and its children by setting focus class on the root
  * @param {Event} event
  */
-DvtDataGrid.prototype.handleRootFocus = function (event) {
+DvtDataGrid.prototype.handleRootFocus = function (event, isPopupFocusin) {
   this.m_utils.addCSSClassName(this.m_root, this.getMappedStyle('focus'));
   this._clearFocusoutTimeout();
   this._clearFocusoutBusyState();
   // if nothing is active, and came from the outside of the datagrid, activate first cell
-  if (!this.m_root.contains(document.activeElement) ||
-      (document.activeElement === this.m_root &&
-       this.m_root.tabIndex === 0) ||
-      (document.activeElement === this.m_databody &&
-       this.m_scrollbarFocus &&
-       this.m_root.tabIndex === 0)) {
-    this.m_externalFocus = true;
+  if (!isPopupFocusin) {
+    this._clearOpenPopupListeners();
+    if (!this.m_root.contains(document.activeElement) ||
+        (document.activeElement === this.m_root &&
+        this.m_root.tabIndex === 0) ||
+        (document.activeElement === this.m_databody &&
+        this.m_scrollbarFocus &&
+        this.m_root.tabIndex === 0)) {
+      this.m_externalFocus = true;
 
-    if (this._isCellEditable()) {
-      this._setAccInfoText('accessibleEditableMode');
-    } else if (this._isGridEditable()) {
-      this._setAccInfoText('accessibleNavigationMode');
-    }
-
-    var shouldNotScroll = false;
-    if (this.m_scrollbarFocus === true) {
-      this.m_shouldFocus = false;
-      this.m_scrollbarFocus = false;
-      shouldNotScroll = true;
-    }
-
-    if (this.m_active == null && !this._databodyEmpty()) {
-      var newCellIndex = this.createIndex(0, 0);
-
-      if (!shouldNotScroll) {
-        // make sure it's visible
-        this.scrollToIndex(newCellIndex);
+      if (this._isCellEditable()) {
+        this._setAccInfoText('accessibleEditableMode');
+      } else if (this._isGridEditable()) {
+        this._setAccInfoText('accessibleNavigationMode');
       }
 
-      // focus a cell, do not select it unless user actively selects something
-      this._setActiveByIndex(newCellIndex, event, null, null, shouldNotScroll);
-    } else if (this.m_active != null) {
-      this._highlightActive();
+      var shouldNotScroll = false;
+      if (this.m_scrollbarFocus === true) {
+        this.m_shouldFocus = false;
+        this.m_scrollbarFocus = false;
+        shouldNotScroll = true;
+      }
+
+      if (this.m_active == null && !this._databodyEmpty()) {
+        var newCellIndex = this.createIndex(0, 0);
+
+        if (!shouldNotScroll) {
+          // make sure it's visible
+          this.scrollToIndex(newCellIndex);
+        }
+        // focus a cell, do not select it unless user actively selects something
+        this._setActiveByIndex(newCellIndex, event, null, null, shouldNotScroll);
+      } else if (this.m_active != null) {
+        this._highlightActive();
+      }
     }
+    this.m_root.tabIndex = -1;
   }
-  this.m_root.tabIndex = -1;
+};
+
+DvtDataGrid.prototype._handlePopupFocusout = function (event) {
+  this.handleRootBlur(event, true);
+};
+
+DvtDataGrid.prototype._handlePopupFocusin = function (event) {
+  this.handleRootFocus(event, true);
 };
 
 /**
@@ -18004,22 +18014,40 @@ DvtDataGrid.prototype.handleRootFocus = function (event) {
  * @param {Event} event
  */
 // eslint-disable-next-line no-unused-vars
-DvtDataGrid.prototype.handleRootBlur = function (event) {
+DvtDataGrid.prototype.handleRootBlur = function (event, isPopupFocusout) {
   // There is no cross-browser way to tell if the whole grid is out of focus on blur today.
   // document.activeElement returns null in chrome and firefox on blur events.
   // relatedTarget doesn't return a value in firefox and IE though there a tickets to fix.
   // We could implement a non-timeout solution that exiting and re-entering
   // the grid via tab key would not read the summary text upon re-entry (initial would work)
   this._clearFocusoutTimeout();
+  if (!isPopupFocusout) {
+    // Components that open popups (such as ojSelect, ojCombobox, ojInputDate, etc.) will trigger
+    // focusout, but we don't want to change mode in those cases since the user is still editing.
+    this._clearOpenPopupListeners();
+    var openPopup = getLogicalChildPopup(this.m_root);
+    if (openPopup != null) {
+      // setup focus listeners on popup
+      this._openPopup = openPopup;
+      // eslint-disable-next-line no-param-reassign
+      isPopupFocusout = false;
+      this._handlePopupFocusinListener = this._handlePopupFocusin.bind(this);
+      this._handlePopupFocusoutListener = this._handlePopupFocusout.bind(this);
+      openPopup.addEventListener('focusin', this._handlePopupFocusinListener);
+      openPopup.addEventListener('focusout', this._handlePopupFocusoutListener);
+      return;
+    }
+  }
   this._setFocusoutBusyState();
-  setTimeout(function () { // @HTMLUpdateOK
-    if (!this.m_root.contains(document.activeElement)) {
+  this.m_focusoutTimeout = setTimeout(function () { // @HTMLUpdateOK
+    if (!this.m_root.contains(document.activeElement) ||
+      isPopupFocusout === true) {
       this.m_root.tabIndex = 0;
       var active = this._getActiveElement();
       if (active != null) {
         this._unsetAriaProperties(active);
         if (this._isEditOrEnter()) {
-          this._leaveEditing(event, active, false);
+          this._leaveEditing(event, active, false, false);
         }
       }
     }
@@ -18030,6 +18058,30 @@ DvtDataGrid.prototype.handleRootBlur = function (event) {
   if (this.m_moveRow == null) {
     this.m_utils.removeCSSClassName(this.m_root, this.getMappedStyle('focus'));
   }
+};
+
+DvtDataGrid.prototype._clearOpenPopupListeners = function () {
+  if (this._openPopup != null) {
+    this._openPopup.removeEventListener('focusin', this._handlePopupFocusinListener);
+    this._openPopup.removeEventListener('focusout', this._handlePopupFocusoutListener);
+    this._openPopup = null;
+  }
+  this._handlePopupFocusinListener = null;
+  this._handlePopupFocusoutListener = null;
+};
+
+/**
+ * @private
+ */
+DvtDataGrid.prototype._handlePopupFocusout = function (event) {
+  this.handleRootBlur(event, true);
+};
+
+/**
+ * @private
+ */
+DvtDataGrid.prototype._handlePopupFocusin = function (event) {
+  this.handleRootFocus(event, true);
 };
 
 DvtDataGrid.prototype._clearFocusoutTimeout = function () {
@@ -18817,9 +18869,11 @@ DvtDataGrid.prototype._handleCancelEdit = function (event, element) {
  * Leave editing
  * @param {Event} event the event triggering actionable mode
  * @param {Element|undefined|null} element
+ * @param {boolean} cancel
+ * @param {boolean} shouldFocus
  * @returns {boolean} false
  */
-DvtDataGrid.prototype._leaveEditing = function (event, element, cancel) {
+DvtDataGrid.prototype._leaveEditing = function (event, element, cancel, shouldFocus) {
   var details = {
     event: event,
     ui: {
@@ -18830,15 +18884,21 @@ DvtDataGrid.prototype._leaveEditing = function (event, element, cancel) {
   };
   if (!cancel) {
     disableAllFocusableElements(element);
+    if (shouldFocus === false) {
+      this.m_shouldFocus = shouldFocus;
+    }
     this._highlightActive();
   }
   var rerender = this.fireEvent('beforeEditEnd', details);
   if (rerender) {
     this.m_currentMode = 'navigation';
     disableAllFocusableElements(element);
-      this._highlightActive();
-      this._reRenderCell(element, 'navigation',
-                       this.getMappedStyle('cellEdit'), this.m_editableClone);
+    if (shouldFocus === false) {
+      this.m_shouldFocus = shouldFocus;
+    }
+    this._highlightActive();
+    this._reRenderCell(element, 'navigation',
+                      this.getMappedStyle('cellEdit'), this.m_editableClone);
   } else {
     rerender = false;
     this._scrollToActive(this.m_active);
@@ -24272,7 +24332,7 @@ DataGridProviderCellSet.prototype.getMetadata = function (indexes) {
     metadata: item.metadata,
     keys: {
       row: this.rowKeyMap.get(item.rowIndex),
-      column: this.rowKeyMap.get(item.columnIndex)
+      column: this.columnKeyMap.get(item.columnIndex)
     }
   };
 };

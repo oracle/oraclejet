@@ -573,6 +573,19 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
 
       processRootDateOptions('start');
       processRootDateOptions('end');
+
+      // Set label position.
+      const scale = this.options.scale;
+      if (scale) {
+        this.options._scaleLabelPosition = {};
+        if (scale.name) {
+          const labelPosition = scale.labelPosition || 'auto';
+          const effectiveLabelPosition = labelPosition === 'auto' ? 'center' : labelPosition;
+          this.options._scaleLabelPosition[scale.name] = effectiveLabelPosition;
+        } else {
+          this.options._scaleLabelPosition[scale] = 'center';
+        }
+      }
     },
 
     // @inheritdoc

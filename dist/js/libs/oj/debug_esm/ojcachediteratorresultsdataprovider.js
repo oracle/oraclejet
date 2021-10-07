@@ -42,7 +42,7 @@ import 'ojs/ojcomponentcore';
  * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
  * "FetchListResult","FetchListParameters"]}
  * @ojtsmodule
- * @ignore
+ * @ojhidden
  */
 
 /**

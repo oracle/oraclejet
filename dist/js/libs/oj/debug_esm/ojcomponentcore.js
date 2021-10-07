@@ -2259,12 +2259,12 @@ oj.CollectionUtils.copyInto(DefinitionalElementBridge.proto, {
     function set(value, bOuterSet) {
       // Properties can be set before the component is created. These early
       // sets are actually saved until after component creation and played back.
-      if (bOuterSet) {
-        // eslint-disable-next-line no-param-reassign
-        value =
-        CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
-      }
       if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
+        if (bOuterSet) {
+          // eslint-disable-next-line no-param-reassign
+          value =
+          CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+        }
         var previousValue = this._BRIDGE._PROPS[property];
         if (!ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
           // Skip validation for inner sets so we don't throw an error when updating readOnly writeable properties
@@ -2641,9 +2641,9 @@ oj.CollectionUtils.copyInto(CustomElementBridge.proto, {
         var bridge = CustomElementUtils.getElementBridge(this);
         // Properties can be set before the component is created. These early
         // sets are actually saved until after component creation and played back.
-        // eslint-disable-next-line no-param-reassign
-        value = CustomElementUtils.convertEmptyStringToUndefined(this, propertyMeta, value);
         if (!bridge.SaveEarlyPropertySet(this, property, value)) {
+          // eslint-disable-next-line no-param-reassign
+          value = CustomElementUtils.convertEmptyStringToUndefined(this, propertyMeta, value);
           if (propertyMeta._eventListener) {
             bridge.SetEventListenerProperty(this, property, value);
           } else if (!bridge._validateAndSetCopyProperty(this, property, value, propertyMeta)) {
@@ -3892,13 +3892,26 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           }
 
           for (i = 0, j = removeAttr.length; i < j; i++) {
-            element.removeAttr(removeAttr[i]);
+            // csp error to removeAttribute('style') (which element.removeAttr will do),
+            // so instead set it to null
+            if (removeAttr[i] === 'style') {
+              element[0].style = null;
+            } else {
+              element.removeAttr(removeAttr[i]);
+            }
           }
 
           var attributeKeys = Object.keys(attributes);
           for (i = 0; i < attributeKeys.length; i++) {
             var attribute = attributeKeys[i];
-            element.attr(attribute, attributes[attribute].attr); // @HTMLUpdateOK
+            var emptyStyle = attribute === 'style' && attributes[attribute].attr === '';
+            if (!emptyStyle) {
+              element.attr(attribute, attributes[attribute].attr); // @HTMLUpdateOK
+            } else {
+              // csp error to setAttribute('style', '') (which element.attr will do),
+              // so instead set it to null
+              element[0].style = null;
+            }
           }
         }
       });
@@ -6456,6 +6469,10 @@ $.fn.removeClass = function (value) {
     return this.each(function (j) {
       $(this).removeClass(value.call(this, j, getClass(this)));
     });
+  }
+
+  if (!arguments.length) {
+    return this.attr('class', '');
   }
 
   const iterableClasses = Array.isArray(value) ? value : CustomElementUtils.getClassSet(value);

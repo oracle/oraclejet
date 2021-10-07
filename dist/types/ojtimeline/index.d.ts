@@ -14,18 +14,18 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     orientation: 'vertical' | 'horizontal';
     overview: {
         rendered?: 'on' | 'off';
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     referenceObjects: ojTimeline.ReferenceObject[];
     selection: K[];
@@ -37,26 +37,26 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         item?: {
             backgroundColor?: string;
             borderColor?: string;
-            descriptionStyle?: CSSStyleDeclaration;
+            descriptionStyle?: Partial<CSSStyleDeclaration>;
             hoverBackgroundColor?: string;
             hoverBorderColor?: string;
             selectedBackgroundColor?: string;
             selectedBorderColor?: string;
-            titleStyle?: CSSStyleDeclaration;
+            titleStyle?: Partial<CSSStyleDeclaration>;
         };
         majorAxis?: {
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             separatorColor?: string;
         };
         minorAxis?: {
             backgroundColor?: string;
             borderColor?: string;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             separatorColor?: string;
         };
         overview?: {
             backgroundColor?: string;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             window?: {
                 backgroundColor?: string;
                 borderColor?: string;
@@ -68,8 +68,8 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         series?: {
             backgroundColor?: string;
             colors?: string[];
-            emptyTextStyle?: CSSStyleDeclaration;
-            labelStyle?: CSSStyleDeclaration;
+            emptyTextStyle?: Partial<CSSStyleDeclaration>;
+            labelStyle?: Partial<CSSStyleDeclaration>;
         };
     };
     tooltip: {
@@ -109,6 +109,7 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         };
     };
     viewportEnd: string;
+    viewportNavigationMode: 'continuous' | 'discrete';
     viewportStart: string;
     translations: {
         accessibleItemDesc?: string;
@@ -116,6 +117,8 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         accessibleItemStart?: string;
         accessibleItemTitle?: string;
         componentName?: string;
+        labelAccNavNextPage?: string;
+        labelAccNavPreviousPage?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelCountWithTotal?: string;
@@ -128,6 +131,7 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         labelSeries?: string;
         labelStart?: string;
         labelTitle?: string;
+        navArrowDisabledState?: string;
         stateCollapsed?: string;
         stateDrillable?: string;
         stateExpanded?: string;
@@ -138,6 +142,8 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         stateSelected?: string;
         stateUnselected?: string;
         stateVisible?: string;
+        tipArrowNextPage?: string;
+        tipArrowPreviousPage?: string;
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
     };
@@ -191,6 +197,8 @@ export namespace ojTimeline {
     // tslint:disable-next-line interface-over-type-literal
     type viewportEndChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportEnd"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type viewportNavigationModeChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportNavigationMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type viewportStartChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportStart"]>;
     //------------------------------------------------------------
     // Start: generated events for inherited properties
@@ -205,7 +213,7 @@ export namespace ojTimeline {
         seriesId: string;
         shortDesc?: (string | ((context: ItemShortDescContext<K, D>) => string));
         start: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         thumbnail?: string;
         title?: string;
     };
@@ -255,7 +263,7 @@ export namespace ojTimeline {
         itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
         items?: Array<SeriesItem<K>>;
         label?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesItem<K, D = any> = {
@@ -265,7 +273,7 @@ export namespace ojTimeline {
         id: K;
         shortDesc?: (string | ((context: ItemShortDescContext<K, D>) => string));
         start: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         thumbnail?: string;
         title?: string;
     };
@@ -308,6 +316,7 @@ export interface ojTimelineEventMap<K, D extends ojTimeline.DataItem | any> exte
     'tooltipChanged': JetElementCustomEvent<ojTimeline<K, D>["tooltip"]>;
     'valueFormatsChanged': JetElementCustomEvent<ojTimeline<K, D>["valueFormats"]>;
     'viewportEndChanged': JetElementCustomEvent<ojTimeline<K, D>["viewportEnd"]>;
+    'viewportNavigationModeChanged': JetElementCustomEvent<ojTimeline<K, D>["viewportNavigationMode"]>;
     'viewportStartChanged': JetElementCustomEvent<ojTimeline<K, D>["viewportStart"]>;
     'trackResizeChanged': JetElementCustomEvent<ojTimeline<K, D>["trackResize"]>;
 }
@@ -319,18 +328,18 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     minorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         zoomOrder?: Array<string | DvtTimeComponentScale>;
     };
     orientation: 'vertical' | 'horizontal';
     overview: {
         rendered?: 'on' | 'off';
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     referenceObjects: ojTimeline.ReferenceObject[];
     selection: K[];
@@ -342,26 +351,26 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         item?: {
             backgroundColor?: string;
             borderColor?: string;
-            descriptionStyle?: CSSStyleDeclaration;
+            descriptionStyle?: Partial<CSSStyleDeclaration>;
             hoverBackgroundColor?: string;
             hoverBorderColor?: string;
             selectedBackgroundColor?: string;
             selectedBorderColor?: string;
-            titleStyle?: CSSStyleDeclaration;
+            titleStyle?: Partial<CSSStyleDeclaration>;
         };
         majorAxis?: {
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             separatorColor?: string;
         };
         minorAxis?: {
             backgroundColor?: string;
             borderColor?: string;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             separatorColor?: string;
         };
         overview?: {
             backgroundColor?: string;
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             window?: {
                 backgroundColor?: string;
                 borderColor?: string;
@@ -373,8 +382,8 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         series?: {
             backgroundColor?: string;
             colors?: string[];
-            emptyTextStyle?: CSSStyleDeclaration;
-            labelStyle?: CSSStyleDeclaration;
+            emptyTextStyle?: Partial<CSSStyleDeclaration>;
+            labelStyle?: Partial<CSSStyleDeclaration>;
         };
     };
     tooltip: {
@@ -414,6 +423,7 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         };
     };
     viewportEnd: string;
+    viewportNavigationMode: 'continuous' | 'discrete';
     viewportStart: string;
     translations: {
         accessibleItemDesc?: string;
@@ -421,6 +431,8 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         accessibleItemStart?: string;
         accessibleItemTitle?: string;
         componentName?: string;
+        labelAccNavNextPage?: string;
+        labelAccNavPreviousPage?: string;
         labelAndValue?: string;
         labelClearSelection?: string;
         labelCountWithTotal?: string;
@@ -433,6 +445,7 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         labelSeries?: string;
         labelStart?: string;
         labelTitle?: string;
+        navArrowDisabledState?: string;
         stateCollapsed?: string;
         stateDrillable?: string;
         stateExpanded?: string;
@@ -443,6 +456,8 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         stateSelected?: string;
         stateUnselected?: string;
         stateVisible?: string;
+        tipArrowNextPage?: string;
+        tipArrowPreviousPage?: string;
         tooltipZoomIn?: string;
         tooltipZoomOut?: string;
     };
@@ -454,11 +469,12 @@ export interface ojTimelineItem<K = any, D = any> extends dvtTimeComponent<ojTim
     description?: string;
     durationFillColor?: string | null;
     end?: string;
+    itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
     label?: string;
     seriesId: string;
     shortDesc?: (string | ((context: ojTimeline.ItemShortDescContext<K, D>) => string));
     start: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thumbnail?: string;
     addEventListener<T extends keyof ojTimelineItemEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTimelineItemEventMap<K, D>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -477,6 +493,8 @@ export namespace ojTimelineItem {
     // tslint:disable-next-line interface-over-type-literal
     type endChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["end"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type itemTypeChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["itemType"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type labelChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
     type seriesIdChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["seriesId"]>;
@@ -493,6 +511,7 @@ export interface ojTimelineItemEventMap<K = any, D = any> extends dvtTimeCompone
     'descriptionChanged': JetElementCustomEvent<ojTimelineItem<K, D>["description"]>;
     'durationFillColorChanged': JetElementCustomEvent<ojTimelineItem<K, D>["durationFillColor"]>;
     'endChanged': JetElementCustomEvent<ojTimelineItem<K, D>["end"]>;
+    'itemTypeChanged': JetElementCustomEvent<ojTimelineItem<K, D>["itemType"]>;
     'labelChanged': JetElementCustomEvent<ojTimelineItem<K, D>["label"]>;
     'seriesIdChanged': JetElementCustomEvent<ojTimelineItem<K, D>["seriesId"]>;
     'shortDescChanged': JetElementCustomEvent<ojTimelineItem<K, D>["shortDesc"]>;
@@ -504,11 +523,12 @@ export interface ojTimelineItemSettableProperties<K = any, D = any> extends dvtT
     description?: string;
     durationFillColor?: string | null;
     end?: string;
+    itemType?: 'event' | 'duration-bar' | 'duration-event' | 'auto';
     label?: string;
     seriesId: string;
     shortDesc?: (string | ((context: ojTimeline.ItemShortDescContext<K, D>) => string));
     start: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     thumbnail?: string;
 }
 export interface ojTimelineItemSettablePropertiesLenient<K = any, D = any> extends Partial<ojTimelineItemSettableProperties<K, D>> {
@@ -518,7 +538,7 @@ export interface ojTimelineSeries extends JetElement<ojTimelineSeriesSettablePro
     emptyText?: string;
     itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
     label?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     addEventListener<T extends keyof ojTimelineSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojTimelineSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojTimelineSeriesSettableProperties>(property: T): ojTimelineSeries[T];
@@ -547,7 +567,7 @@ export interface ojTimelineSeriesSettableProperties extends JetSettablePropertie
     emptyText?: string;
     itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
     label?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
 }
 export interface ojTimelineSeriesSettablePropertiesLenient extends Partial<ojTimelineSeriesSettableProperties> {
     [key: string]: any;
@@ -596,6 +616,8 @@ export namespace TimelineElement {
     // tslint:disable-next-line interface-over-type-literal
     type viewportEndChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportEnd"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type viewportNavigationModeChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportNavigationMode"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type viewportStartChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["viewportStart"]>;
     //------------------------------------------------------------
     // Start: generated events for inherited properties
@@ -610,7 +632,7 @@ export namespace TimelineElement {
         seriesId: string;
         shortDesc?: (string | ((context: ojTimeline.ItemShortDescContext<K, D>) => string));
         start: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         thumbnail?: string;
         title?: string;
     };
@@ -633,7 +655,7 @@ export namespace TimelineElement {
         itemLayout?: 'auto' | 'bottomToTop' | 'topToBottom';
         items?: Array<ojTimeline.SeriesItem<K>>;
         label?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesTemplateContext = {
@@ -654,6 +676,8 @@ export namespace TimelineItemElement {
     type durationFillColorChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["durationFillColor"]>;
     // tslint:disable-next-line interface-over-type-literal
     type endChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemTypeChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["itemType"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelChanged<K = any, D = any> = JetElementCustomEvent<ojTimelineItem<K, D>["label"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -695,6 +719,7 @@ export interface TimelineIntrinsicProps extends Partial<Readonly<ojTimelineSetta
     ontooltipChanged?: (value: ojTimelineEventMap<any, any>['tooltipChanged']) => void;
     onvalueFormatsChanged?: (value: ojTimelineEventMap<any, any>['valueFormatsChanged']) => void;
     onviewportEndChanged?: (value: ojTimelineEventMap<any, any>['viewportEndChanged']) => void;
+    onviewportNavigationModeChanged?: (value: ojTimelineEventMap<any, any>['viewportNavigationModeChanged']) => void;
     onviewportStartChanged?: (value: ojTimelineEventMap<any, any>['viewportStartChanged']) => void;
     ontrackResizeChanged?: (value: ojTimelineEventMap<any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
@@ -703,6 +728,7 @@ export interface TimelineItemIntrinsicProps extends Partial<Readonly<ojTimelineI
     ondescriptionChanged?: (value: ojTimelineItemEventMap<any, any>['descriptionChanged']) => void;
     ondurationFillColorChanged?: (value: ojTimelineItemEventMap<any, any>['durationFillColorChanged']) => void;
     onendChanged?: (value: ojTimelineItemEventMap<any, any>['endChanged']) => void;
+    onitemTypeChanged?: (value: ojTimelineItemEventMap<any, any>['itemTypeChanged']) => void;
     onlabelChanged?: (value: ojTimelineItemEventMap<any, any>['labelChanged']) => void;
     onseriesIdChanged?: (value: ojTimelineItemEventMap<any, any>['seriesIdChanged']) => void;
     onshortDescChanged?: (value: ojTimelineItemEventMap<any, any>['shortDescChanged']) => void;

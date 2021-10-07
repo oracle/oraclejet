@@ -28,7 +28,7 @@ export interface ojSunburst<K, D extends ojSunburst.Node<K> | any> extends dvtBa
         labelDisplay?: 'horizontal' | 'rotated' | 'off' | 'auto';
         labelHalign?: 'inner' | 'outer' | 'center';
         labelMinLength?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         selectedInnerColor?: string;
         selectedOuterColor?: string;
         showDisclosure?: 'on' | 'off';
@@ -211,7 +211,7 @@ export namespace ojSunburst {
         label?: string;
         labelDisplay?: 'auto' | 'horizontal' | 'off' | 'rotated';
         labelHalign?: 'center' | 'inner' | 'outer';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         nodes?: Array<Node<K>>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
            'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle';
@@ -220,7 +220,7 @@ export namespace ojSunburst {
         shortDesc?: (string | ((context: NodeShortDescContext<K, D>) => string));
         showDisclosure?: 'inherit' | 'off' | 'on';
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -338,7 +338,7 @@ export interface ojSunburstSettableProperties<K, D extends ojSunburst.Node<K> | 
         labelDisplay?: 'horizontal' | 'rotated' | 'off' | 'auto';
         labelHalign?: 'inner' | 'outer' | 'center';
         labelMinLength?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         selectedInnerColor?: string;
         selectedOuterColor?: string;
         showDisclosure?: 'on' | 'off';
@@ -399,7 +399,7 @@ export interface ojSunburstNode<K = any, D = any> extends dvtBaseComponent<ojSun
     label?: string;
     labelDisplay?: 'horizontal' | 'rotated' | 'off' | 'auto';
     labelHalign?: 'inner' | 'outer' | 'center';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     radius?: number;
@@ -407,7 +407,7 @@ export interface ojSunburstNode<K = any, D = any> extends dvtBaseComponent<ojSun
     shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
     showDisclosure?: 'on' | 'off' | 'inherit';
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
     addEventListener<T extends keyof ojSunburstNodeEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojSunburstNodeEventMap<K, D>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -482,7 +482,7 @@ export interface ojSunburstNodeSettableProperties<K = any, D = any> extends dvtB
     label?: string;
     labelDisplay?: 'horizontal' | 'rotated' | 'off' | 'auto';
     labelHalign?: 'inner' | 'outer' | 'center';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     radius?: number;
@@ -490,7 +490,7 @@ export interface ojSunburstNodeSettableProperties<K = any, D = any> extends dvtB
     shortDesc?: (string | ((context: ojSunburst.NodeShortDescContext<K, D>) => string));
     showDisclosure?: 'on' | 'off' | 'inherit';
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
 }
 export interface ojSunburstNodeSettablePropertiesLenient<K = any, D = any> extends Partial<ojSunburstNodeSettableProperties<K, D>> {

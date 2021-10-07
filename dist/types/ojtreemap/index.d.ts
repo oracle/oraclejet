@@ -37,7 +37,7 @@ export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBase
             hoverOuterColor?: string;
             isolate?: 'off' | 'on';
             labelHalign?: 'center' | 'end' | 'start';
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             selectedBackgroundColor?: string;
             selectedInnerColor?: string;
             selectedOuterColor?: string;
@@ -47,7 +47,7 @@ export interface ojTreemap<K, D extends ojTreemap.Node<K> | any> extends dvtBase
         labelDisplay?: 'off' | 'node';
         labelHalign?: 'start' | 'end' | 'center';
         labelMinLength?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         labelValign?: 'top' | 'bottom' | 'center';
         selectedInnerColor?: string;
         selectedOuterColor?: string;
@@ -191,14 +191,14 @@ export namespace ojTreemap {
         header?: {
             isolate?: 'off' | 'on';
             labelHalign?: 'center' | 'end' | 'start';
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             useNodeColor?: 'off' | 'on';
         };
         id?: K;
         label?: string;
         labelDisplay?: 'node' | 'off';
         labelHalign?: 'center' | 'end' | 'start';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         labelValign?: 'bottom' | 'center' | 'top';
         nodes?: Array<Node<K>>;
         pattern?: 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' | 'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none' | 'smallChecker' | 'smallCrosshatch' |
@@ -206,7 +206,7 @@ export namespace ojTreemap {
         selectable?: 'auto' | 'off';
         shortDesc?: (string | ((context: NodeShortDescContext<K, D>) => string));
         svgClassName?: string;
-        svgStyle?: CSSStyleDeclaration;
+        svgStyle?: Partial<CSSStyleDeclaration>;
         value: number;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -323,7 +323,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
             hoverOuterColor?: string;
             isolate?: 'off' | 'on';
             labelHalign?: 'center' | 'end' | 'start';
-            labelStyle?: CSSStyleDeclaration;
+            labelStyle?: Partial<CSSStyleDeclaration>;
             selectedBackgroundColor?: string;
             selectedInnerColor?: string;
             selectedOuterColor?: string;
@@ -333,7 +333,7 @@ export interface ojTreemapSettableProperties<K, D extends ojTreemap.Node<K> | an
         labelDisplay?: 'off' | 'node';
         labelHalign?: 'start' | 'end' | 'center';
         labelMinLength?: number;
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         labelValign?: 'top' | 'bottom' | 'center';
         selectedInnerColor?: string;
         selectedOuterColor?: string;
@@ -387,20 +387,20 @@ export interface ojTreemapNode<K = any, D = any> extends dvtBaseComponent<ojTree
     header?: {
         isolate?: 'off' | 'on';
         labelHalign?: 'center' | 'end' | 'start';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         useNodeColor?: 'on' | 'off';
     };
     label?: string;
     labelDisplay?: 'off' | 'node';
     labelHalign?: 'start' | 'end' | 'center';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     labelValign?: 'top' | 'bottom' | 'center';
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     selectable?: 'off' | 'auto';
     shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
     addEventListener<T extends keyof ojTreemapNodeEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreemapNodeEventMap<K, D>[T]) => any, options?: (boolean |
        AddEventListenerOptions)): void;
@@ -471,20 +471,20 @@ export interface ojTreemapNodeSettableProperties<K = any, D = any> extends dvtBa
     header?: {
         isolate?: 'off' | 'on';
         labelHalign?: 'center' | 'end' | 'start';
-        labelStyle?: CSSStyleDeclaration;
+        labelStyle?: Partial<CSSStyleDeclaration>;
         useNodeColor?: 'on' | 'off';
     };
     label?: string;
     labelDisplay?: 'off' | 'node';
     labelHalign?: 'start' | 'end' | 'center';
-    labelStyle?: CSSStyleDeclaration;
+    labelStyle?: Partial<CSSStyleDeclaration>;
     labelValign?: 'top' | 'bottom' | 'center';
     pattern?: 'smallChecker' | 'smallCrosshatch' | 'smallDiagonalLeft' | 'smallDiagonalRight' | 'smallDiamond' | 'smallTriangle' | 'largeChecker' | 'largeCrosshatch' | 'largeDiagonalLeft' |
        'largeDiagonalRight' | 'largeDiamond' | 'largeTriangle' | 'none';
     selectable?: 'off' | 'auto';
     shortDesc?: (string | ((context: ojTreemap.NodeShortDescContext<K, D>) => string));
     svgClassName?: string;
-    svgStyle?: CSSStyleDeclaration;
+    svgStyle?: Partial<CSSStyleDeclaration>;
     value: number;
 }
 export interface ojTreemapNodeSettablePropertiesLenient<K = any, D = any> extends Partial<ojTreemapNodeSettableProperties<K, D>> {

@@ -3058,9 +3058,12 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
             var openOptionsPosition =
               oj.PositionUtils.normalizeHorizontalAlignment(menuOpenOptions.position, this.isRtl);
 
-            const verticalOffset =
+            if (!openOptionsPosition.of && openOptionsPosition.offset &&
+                openOptionsPosition.offset.x === 0 && openOptionsPosition.offset.y === 0) {
+              const verticalOffset =
               ThemeUtils.getCachedCSSVarValues(['--oj-private-core-global-dropdown-offset'])[0] || 0;
-            openOptionsPosition.offset = { x: 0, y: verticalOffset };
+              openOptionsPosition.offset = { x: 0, y: verticalOffset };
+            }
 
             // convert the position option back to JQuery format if custom element menu or submenu
             if (this._IsCustomElement()) {
@@ -3264,7 +3267,7 @@ define(['jquery', 'ojs/ojjquery-hammer', 'ojs/ojpopupcore', 'ojs/ojoption', 'ojs
         var isDropdown = this._isDropDown(this.options.openOptions.display);
         var hasSubmenu = elem.querySelectorAll('oj-menu').length;
         // Max height will apply will only certain condition
-        if (hasSubmenu || !isDropdown || elem.offsetHeight < window.innerHeight) {
+        if (hasSubmenu || !isDropdown || this.rootHeight < window.innerHeight) {
           return;
         }
         // Leave some space between menu and viewport edge

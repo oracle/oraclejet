@@ -51,6 +51,10 @@ class DataProviderContentHandler {
             this.dataProvider.removeEventListener('refresh', this.modelEventHandler);
         }
     }
+    renderNoData() {
+        this.setFetching(false);
+        return [];
+    }
     render(data) {
         return this.renderFetchedData(data);
     }

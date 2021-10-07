@@ -43,7 +43,7 @@ define(['ojs/ojcore-base', 'ojs/ojcachediteratorresultsdataprovider', 'ojs/ojded
      * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
      * "FetchListResult","FetchListParameters"]}
      * @ojtsmodule
-     * @ignore
+     * @ojhidden
      */
 
     /**

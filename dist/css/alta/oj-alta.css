@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v11.0.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"web","behavior":"alta","jetReleaseVersion":"v11.1.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -9184,6 +9184,7 @@ oj-table:not(.oj-complete) {
   top: 0;
   bottom: 0; }
 
+.oj-table-scroll-vertical.oj-table-hide-vertical-scrollbar .oj-table-scroller,
 .oj-table-hide-vertical-scrollbar .oj-table-scroller {
   overflow-y: hidden; }
 
@@ -13009,7 +13010,8 @@ oj-gantt:not(.oj-complete) {
   stroke-width: 1px; }
 
 /* Styling for vertical grid lines */
-.oj-gantt-vertical-gridline {
+.oj-gantt-major-vertical-gridline,
+.oj-gantt-minor-vertical-gridline {
   stroke: #c6c7c8;
   stroke-dasharray: 5,5; }
 
@@ -13698,7 +13700,8 @@ oj-timeline:not(.oj-complete) {
 
 .oj-timeline-item {
   background-color: white;
-  border-color: #8a8d8f; }
+  border-color: #8a8d8f;
+  padding-top: 5px; }
 
 .oj-timeline-item.oj-hover {
   border-color: #76b8e1; }

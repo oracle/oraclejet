@@ -51,7 +51,7 @@ export declare class DrawerLayout extends Component<ExtendGlobalProps<Props>, St
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void;
     componentDidMount(): void;
     componentWillUnmount(): void;
-    private afterUpdateCheck;
+    private handleComponentUpdate;
     private openDrawerIfNeeded;
     private edgeToStateOpenedName;
     private openOverlayDrawer;

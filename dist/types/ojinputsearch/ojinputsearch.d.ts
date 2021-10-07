@@ -29,6 +29,7 @@ declare type State<Key, Data> = {
     fetchedData: Array<CommonTypes.ItemContext<Key, Data>>;
     labelIds: Array<string>;
     fetchedInitial: boolean;
+    fetching: boolean;
     loading: boolean;
     focusedSuggestionIndex: number;
     activeDescendantId: string;
@@ -130,6 +131,7 @@ export declare class InputSearch<K, D> extends Component<ExtendGlobalProps<Props
     private _getMobileDropdownStyle;
     private _usingHandler;
     private _renderEnabled;
+    private _renderAriaLiveRegion;
     private _renderDesktopMainTextFieldContainer;
     private _renderMobileMainTextFieldContainer;
     private _renderMobileDropdownFilterField;
