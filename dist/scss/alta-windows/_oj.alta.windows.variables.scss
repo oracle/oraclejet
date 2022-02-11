@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.units";
 @import "../common/oj.common.palette";
@@ -794,6 +794,7 @@ $rowExpanderSpacerWidth:  2.25rem !default;
 $listViewCardMargin:     20px 20px 0 0 !default;
 $listViewHeaderFontSize: $header2FontSize !default;
 $listViewHeaderOpacity:  0.85 !default;
+$listViewGridlinesItemOptionDefault: hidden !default;
 
 // SELECTOR WIDTH
 //-----------------------------------------------------------------------------

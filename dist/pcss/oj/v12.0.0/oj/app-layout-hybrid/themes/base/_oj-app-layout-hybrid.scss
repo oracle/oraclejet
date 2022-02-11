@@ -1,0 +1,265 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example app-layout-hybrid/themes/redwood/oj-app-layout-hybrid.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("common.applayout.hybrid") {
+  // BODY CLASSES
+  /* Class used to suppress copy/paste and context menus for hybrid mobile apps */
+  .oj-hybrid:not(.oj-hybrid-show-context-menu) {
+    // suppress copy/paste and iOS mag lens
+    user-select: none;
+
+    // Turn off context menu popups
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  .oj-hybrid input,
+  .oj-hybrid textarea {
+    // allow text selection on input and text areas
+    user-select: text;
+  }
+
+  // PADDING
+  .oj-hybrid-padding {
+    padding: var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-padding-vertical {
+    padding-top: var(--oj-private-app-layout-hybrid-padding);
+    padding-bottom: var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-padding-horizontal {
+    padding-left: var(--oj-private-app-layout-hybrid-padding);
+    padding-right: var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-padding-top {
+    padding-top: var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-padding-bottom {
+    padding-bottom: var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-padding-start {
+    @include oj-ltr() {
+      padding-left: var(--oj-private-app-layout-hybrid-padding);
+    }
+    @include oj-rtl() {
+      padding-right: var(--oj-private-app-layout-hybrid-padding);
+    }
+  }
+  .oj-hybrid-padding-end {
+    @include oj-ltr() {
+      padding-right: var(--oj-private-app-layout-hybrid-padding);
+    }
+    @include oj-rtl() {
+      padding-left: var(--oj-private-app-layout-hybrid-padding);
+    }
+  }
+
+  // OFFCANVAS
+  .oj-hybrid-applayout-offcanvas {
+    width: var(--oj-private-app-layout-offcanvas-width);
+    max-width: var(--oj-private-app-layout-offcanvas-max-width);
+    background-color: var(--oj-private-app-layout-hybrid-offcanvas-bg-color);
+    color: var(--oj-core-neutral-contrast);
+    box-shadow: 3px 2px 7px unquote("rgba(var(--oj-core-box-shadow-rgb),0.5)");
+
+    box-sizing: border-box;
+  }
+
+  // iOS safe area padding/margin for offcanvas
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-offcanvas {
+    padding-top: 0px;
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+  }
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-offcanvas .oj-navigationlist-item-element {
+    @include oj-ltr() {
+      margin-left: 0px;
+      margin-left: constant(safe-area-inset-left);
+      margin-left: env(safe-area-inset-left);
+    }
+    @include oj-rtl() {
+      margin-right: 0px;
+      margin-right: constant(safe-area-inset-right);
+      margin-right: env(safe-area-inset-right);
+    }
+  }
+
+  // PAGE
+  .oj-hybrid-applayout-page {
+    min-height: 100vh;
+
+    background-color: var(--oj-body-bg-color);
+  }
+
+  // HEADER
+  .oj-hybrid-applayout-header {
+    @extend %oj-flex-bar-base;
+    @extend .oj-sm-align-items-center;
+
+    box-shadow: var(--oj-private-app-layout-hybrid-header-box-shadow);
+    border-bottom: var(--oj-private-app-layout-hybrid-header-border-bottom-width) solid
+      var(--oj-private-app-layout-hybrid-header-border-color);
+    background-color: var(--oj-private-app-layout-hybrid-header-bg-color);
+    padding: 0 var(--oj-private-app-layout-hybrid-padding) 0 var(--oj-private-app-layout-hybrid-padding);
+  }
+  .oj-hybrid-applayout-header::before {
+    // To workaround IE11 min-height and flex bug
+    content: "";
+    display: inline-block;
+
+    min-height: var(--oj-private-app-layout-hybrid-header-min-height);
+
+    visibility: hidden;
+  }
+  .oj-hybrid-applayout-header > .oj-flex-bar-start {
+    // add padding to the end side of the start box
+    @extend .oj-hybrid-padding-end;
+  }
+  .oj-hybrid-applayout-header-title {
+    font-weight: var(--oj-private-app-layout-hybrid-header-title-font-weight);
+    font-size: var(--oj-private-app-layout-hybrid-header-title-font-size);
+    color: var(--oj-private-app-layout-hybrid-header-title-text-color);
+
+    padding: 0;
+    margin: 0;
+  }
+  /* Use instead of oj-hybrid-applayout-header when a top fixed bar is present
+       so we can correctly style the header border */
+  .oj-hybrid-applayout-header-no-border {
+    @extend .oj-hybrid-applayout-header;
+    border-style: none;
+
+    box-shadow: none;
+  }
+  .oj-hybrid-applayout-header .oj-button,
+  .oj-hybrid-applayout-header .oj-button-button {
+    // for vertical alignment of header elements
+    margin-bottom: 0;
+  }
+  .oj-hybrid-applayout-header .oj-flex-bar-start > .oj-button:first-child {
+    // negative margins so we can align button image with content padding
+    @include oj-ltr() {
+      margin-left: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+    @include oj-rtl() {
+      margin-right: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+  }
+  .oj-hybrid-applayout-header .oj-flex-bar-end > .oj-button:last-child {
+    // negative margins so we can align button image with content padding
+    @include oj-ltr() {
+      margin-right: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+    @include oj-rtl() {
+      margin-left: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+  }
+  /* Class used to position the application header and title for iOS hybrid
+       applications where the status bar is overlaid in the WebView.
+       This class has no effect on other platforms. */
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-header {
+    // iOS safe area padding for header
+    padding-top: 20px;
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+
+    min-height: calc(var(--oj-private-app-layout-hybrid-header-min-height) + 20px);
+  }
+  // iOS safe area margin for header
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-header .oj-hybrid-applayout-header-title {
+    margin-top: 20px;
+    margin-top: constant(safe-area-inset-top);
+    margin-top: env(safe-area-inset-top);
+  }
+
+  // CONTENT
+  .oj-hybrid-applayout-content {
+    // marker class used for adding top and bottom margins
+  }
+  // iOS safe area padding for content
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-page .oj-hybrid-applayout-content {
+    padding-left: 0px;
+    padding-left: constant(safe-area-inset-left);
+    padding-left: env(safe-area-inset-left);
+    padding-right: 0px;
+    padding-right: constant(safe-area-inset-right);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  // FOOTER
+  .oj-hybrid-applayout-footer {
+    min-height: var(--oj-private-app-layout-hybrid-footer-min-height);
+    border-top: var(--oj-private-app-layout-hybrid-footer-border-top-width) solid var(--oj-private-app-layout-hybrid-footer-border-color);
+    background-color: var(--oj-private-app-layout-hybrid-footer-bg-color);
+  }
+  // FOOTER TOOLBAR
+  .oj-hybrid-applayout-toolbar-stretch {
+    @extend %oj-flex-bar-base;
+  }
+  .oj-hybrid-applayout-toolbar-stretch oj-button {
+    // Need to use display: flex on the <oj-button> so that the <button> inside stretches
+    display: flex;
+  }
+  .oj-hybrid-applayout-toolbar-stretch .oj-button,
+  .oj-hybrid-applayout-toolbar-stretch .oj-button-button {
+    flex: 1 1 auto;
+    // height: 100% isn't working, but explicitly setting to a px value works
+
+    min-height: var(--oj-private-app-layout-hybrid-footer-min-height);
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  // NAV BAR
+  .oj-hybrid-applayout-navbar-page,
+  .oj-hybrid-applayout-navbar-app {
+    background-color: var(--oj-private-app-layout-hybrid-header-bg-color);
+  }
+  .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-page,
+  .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-app {
+    box-shadow: var(--oj-private-app-layout-hybrid-header-box-shadow);
+    border-bottom: var(--oj-private-app-layout-hybrid-header-border-bottom-width) solid
+      var(--oj-private-app-layout-hybrid-header-border-color);
+  }
+  .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-page,
+  .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-app {
+    box-shadow: var(--oj-private-app-layout-hybrid-nav-bar-box-shadow);
+    border-top: var(--oj-private-app-layout-hybrid-footer-border-top-width) solid var(--oj-private-app-layout-hybrid-footer-border-color);
+  }
+  // iOS safe area padding for footer
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-applayout-fixed-bottom .oj-hybrid-applayout-footer,
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-page,
+  .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-app {
+    padding-bottom: 0px;
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  // BACK ARROW
+  .oj-hybrid-applayout-header-icon-back {
+    @extend .oj-fwk-icon-back;
+  }
+
+  // DEPRECATED
+  /* Deprecated. Use oj-hybrid-applayout-navbar-fixed-bottom or oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
+  .oj-hybrid-applayout-navbar {
+    @extend .oj-hybrid-applayout-navbar-fixed-bottom;
+  }
+  .oj-hybrid-applayout-navbar-fixed-top {
+    @extend .oj-applayout-fixed-top;
+    @extend .oj-hybrid-applayout-navbar-page;
+  }
+  .oj-hybrid-applayout-navbar-fixed-bottom {
+    @extend .oj-applayout-fixed-bottom;
+    @extend .oj-hybrid-applayout-navbar-app;
+  }
+  /* Deprecated. Use oj-hybrid-applayout-header or oj-hybrid-applayout-header-no-border to style the header instead. */
+  .oj-hybrid-applayout-navbar-non-fixed {
+  }
+}

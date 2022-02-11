@@ -1,14 +1,15 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { Root, customElement } from 'ojs/ojvcomponent';
+import { getUniqueId, Root, customElement } from 'ojs/ojvcomponent';
 import { Component, createRef, h } from 'preact';
 import $ from 'jquery';
 import { slideIn, slideOut } from 'ojs/ojanimation';
+import { addResizeListener, removeResizeListener } from 'ojs/ojdomutils';
 import 'ojs/ojcore-base';
 import 'ojs/ojpopup';
 import { DrawerConstants, DrawerUtils } from 'ojs/ojdrawerutils';
@@ -21,17 +22,21 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var DrawerPopup_1;
+const ojet = oj;
 const PopupService = oj.PopupService;
 const targetElement = window;
+const ZOrderUtils = oj.ZOrderUtils;
 let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
     constructor() {
         super(...arguments);
         this.state = {
             opened: this.props.opened,
-            selfClosed: false
+            id: getUniqueId(),
+            viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode()
         };
         this.rootRef = createRef();
         this.isShiftKeyActive = false;
+        this.drawerResizeHandler = null;
         this.handleKeyDown = (event) => {
             if (event.key === DrawerConstants.keys.ESC) {
                 this.selfClose();
@@ -81,6 +86,7 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                     return;
                 }
                 if (!isTargetWithin) {
+                    DrawerPopup_1.idsClosedWithAutoDismiss.push(this.state.id);
                     this.selfClose();
                 }
             }
@@ -99,22 +105,67 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
                 return zorderLayerItem.contains(target);
             });
         };
+        this.resizeHandler = () => {
+            const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
+            const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+            if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
+                this.setState({ viewportResolvedDisplayMode: nextViewportResolvedDisplayMode });
+            }
+        };
         this.handleSwipeAction = () => {
             this.selfClose();
         };
     }
+    static getDerivedStateFromProps(props, state) {
+        if (DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(state.id) > -1 && props.opened) {
+            return { opened: false };
+        }
+        if (props.opened !== state.opened) {
+            return { opened: props.opened };
+        }
+        return null;
+    }
     render(props) {
-        return (h(Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown }, props.children));
+        if (this.isDrawerOpened() ||
+            this.wasDrawerOpenedInPrevState() ||
+            this.isDrawerClosedWithAutoDismiss()) {
+            return (h(Root, { ref: this.rootRef, class: this.getPopupStyleClasses(this.props.edge), tabIndex: -1, role: this.props.role || 'dialog', onKeyDown: this.handleKeyDown },
+                h("div", { class: "oj-drawer-full-height" }, props.children)));
+        }
+        return h(Root, null);
+    }
+    isDrawerOpened() {
+        return this.state[DrawerConstants.stringOpened];
+    }
+    wasDrawerOpenedInPrevState() {
+        return this.openedPrevState;
+    }
+    isDrawerClosedWithAutoDismiss() {
+        return DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(this.state.id) > -1;
     }
     selfClose() {
         var _a, _b;
-        const updatedState = {};
-        updatedState.opened = false;
-        updatedState.selfClosed = true;
-        this.setState(updatedState);
         (_b = (_a = this.props).onOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
     }
-    renderDrawer(prevState) {
+    openOrCloseDrawer(prevState) {
+        if (this.isDrawerOpened() != prevState.opened) {
+            this.openedPrevState = this.isDrawerOpened();
+        }
+        const $drawerElement = $(this.rootRef.current);
+        const popupServiceInstance = PopupService.getInstance();
+        const popupServiceOptions = this.getPopupServiceOptions(prevState);
+        if (this.isDrawerOpened()) {
+            if ([ZOrderUtils.STATUS.CLOSE, ZOrderUtils.STATUS.UNKNOWN].indexOf(ZOrderUtils.getStatus($drawerElement) > -1)) {
+                popupServiceInstance.open(popupServiceOptions);
+            }
+        }
+        else {
+            if (ZOrderUtils.getStatus($drawerElement) === ZOrderUtils.STATUS.OPEN) {
+                popupServiceInstance.close(popupServiceOptions);
+            }
+        }
+    }
+    getPopupServiceOptions(prevState) {
         const edge = this.props.edge;
         const $drawerElement = $(this.rootRef.current);
         const PSOptions = {};
@@ -123,37 +174,100 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         PSOptions[PSoption.LAUNCHER] = $(document.activeElement);
         PSOptions[PSoption.MODALITY] = this.props.modality;
         PSOptions[PSoption.LAYER_SELECTORS] = this.getDrawerSurrogateLayerSelectors();
+        PSOptions[PSoption.LAYER_LEVEL] = PopupService.LAYER_LEVEL.TOP_LEVEL;
         PSOptions[PSoption.POSITION] = this.getDrawerPosition(edge);
         const PSEvent = PopupService.EVENT;
         PSOptions[PSoption.EVENTS] = {
             [PSEvent.POPUP_BEFORE_OPEN]: () => this.beforeOpenHandler(edge, PSOptions),
-            [PSEvent.POPUP_AFTER_OPEN]: () => this.handleFocus(prevState),
+            [PSEvent.POPUP_AFTER_OPEN]: () => this.afterOpenHandler(edge, prevState),
             [PSEvent.POPUP_BEFORE_CLOSE]: () => this.beforeCloseHandler(edge),
+            [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(prevState),
             [PSEvent.POPUP_AUTODISMISS]: (event) => this.autoDismissHandler(event),
             [PSEvent.POPUP_REFRESH]: () => {
                 $drawerElement.position(this.getDrawerPosition(edge));
             }
         };
-        const popupServiceInstance = PopupService.getInstance();
-        this.isDrawerOpened()
-            ? popupServiceInstance.open(PSOptions)
-            : popupServiceInstance.close(PSOptions);
+        return PSOptions;
     }
     beforeOpenHandler(edge, PSOptions) {
+        DrawerUtils.disableBodyOverflow();
         const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
         const position = PSOptions[PopupService.OPTION.POSITION];
-        if ([DrawerConstants.stringStart, DrawerConstants.stringEnd].indexOf(edge) > -1) {
-            this.rootRef.current.style.height = `${window.innerHeight}px`;
-        }
-        if (DrawerConstants.stringBottom === edge) {
-            this.rootRef.current.style.width = `${document.documentElement.clientWidth}px`;
-        }
         $drawerElement.show();
         $drawerElement.position(position);
-        return slideIn(this.rootRef.current, DrawerUtils.getAnimationOptions(DrawerConstants.stringOpen, edge));
+        const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+        const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
+        const animationPromise = slideIn(this.rootRef.current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideIn, edge));
+        animationPromise.then(resolveFunc);
+        return animationPromise;
+    }
+    afterOpenHandler(edge, prevState) {
+        DrawerUtils.enableBodyOverflow();
+        this.handleFocus(prevState);
+        const $drawerElement = $(this.rootRef.current);
+        const status = ZOrderUtils.getStatus($drawerElement);
+        if (this.drawerResizeHandler === null) {
+            this.drawerResizeHandler = this.drawerResizeCallback.bind(this, $drawerElement, edge);
+        }
+        addResizeListener(this.rootRef.current, this.drawerResizeHandler, 0, true);
+        if (status === ZOrderUtils.STATUS.OPEN && !this.isDrawerOpened()) {
+            const popupServiceInstance = PopupService.getInstance();
+            const popupServiceOptions = this.getPopupServiceOptions(prevState);
+            popupServiceInstance.close(popupServiceOptions);
+        }
+    }
+    drawerResizeCallback($drawerElement, edge) {
+        $drawerElement.position(this.getDrawerPosition(edge));
+    }
+    handleFocus(prevState) {
+        if (this.state.opened && prevState.opened !== this.state.opened) {
+            const autofocusItems = this.rootRef.current.querySelectorAll('[autofocus]');
+            const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
+            if (autofocusLength > 0) {
+                autofocusFirstItem.focus();
+                return;
+            }
+            const focusables = this.getFocusables();
+            let elementToFocus = this.rootRef.current;
+            if (focusables.length) {
+                for (let i = 0; i < focusables.length; i++) {
+                    if (focusables[i].disabled !== true) {
+                        elementToFocus = focusables[i];
+                        break;
+                    }
+                }
+            }
+            elementToFocus.focus();
+        }
     }
     beforeCloseHandler(edge) {
-        return slideOut(this.rootRef.current, DrawerUtils.getAnimationOptions(DrawerConstants.stringClose, edge));
+        DrawerUtils.disableBodyOverflow();
+        removeResizeListener(this.rootRef.current, this.drawerResizeHandler);
+        const busyContext = ojet.Context.getContext(this.rootRef.current).getBusyContext();
+        const resolveFunc = busyContext.addBusyState({ description: 'Animation in progress' });
+        const animationPromise = slideOut(this.rootRef.current, DrawerUtils.getAnimationOptions(DrawerConstants.stringSlideOut, edge));
+        animationPromise.then(resolveFunc);
+        return animationPromise;
+    }
+    afterCloseHandler(prevState) {
+        var _a, _b;
+        DrawerUtils.enableBodyOverflow();
+        const $drawerElement = $(this.rootRef.current);
+        const status = ZOrderUtils.getStatus($drawerElement);
+        if (this.isDrawerClosedWithAutoDismiss()) {
+            DrawerPopup_1.idsClosedWithAutoDismiss.splice(DrawerPopup_1.idsClosedWithAutoDismiss.indexOf(this.state.id), 1);
+            if (status === ZOrderUtils.STATUS.CLOSE && this.props.opened) {
+                (_b = (_a = this.props).onOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
+            }
+        }
+        if (status === ZOrderUtils.STATUS.CLOSE && this.isDrawerOpened()) {
+            const popupServiceInstance = PopupService.getInstance();
+            const popupServiceOptions = this.getPopupServiceOptions(prevState);
+            popupServiceInstance.open(popupServiceOptions);
+        }
+        else if (!this.wasDrawerOpenedInPrevState()) {
+            this.forceUpdate();
+        }
     }
     getDrawerSurrogateLayerSelectors() {
         let surrogateLayerStyles = DrawerConstants.DrawerPopupStyleSurrogate;
@@ -173,50 +287,42 @@ let DrawerPopup = DrawerPopup_1 = class DrawerPopup extends Component {
         };
         return oj.PositionUtils.normalizeHorizontalAlignment(position, DrawerUtils.isRTL());
     }
-    isDrawerOpened() {
-        return this.state['opened'];
-    }
     getPopupStyleClasses(edge) {
-        return DrawerUtils.getStyleClassesMapAsString(Object.assign({}, DrawerUtils.getCommonStyleClasses(edge, this.isDrawerOpened())));
-    }
-    static getDerivedStateFromProps(props, state) {
-        const derivedState = {};
-        if (state.selfClosed === false) {
-            if (props.opened !== state.opened) {
-                derivedState.opened = props.opened;
-            }
+        const customStyleClassMap = {};
+        if (this.getViewportResolvedDisplayMode() === DrawerConstants.stringFullOverlay) {
+            customStyleClassMap[DrawerConstants.styleDisplayMode(DrawerConstants.stringFullOverlay)] =
+                true;
         }
-        if (state.opened === false) {
-            derivedState.selfClosed = false;
-        }
-        return derivedState;
-    }
-    handleFocus(prevState) {
-        const focusables = this.getFocusables();
-        if (this.state.opened && prevState.opened !== this.state.opened) {
-            const autofocusItems = this.rootRef.current.querySelectorAll('[autofocus]');
-            const { length: autofocusLength, 0: autofocusFirstItem } = autofocusItems;
-            if (autofocusLength > 0) {
-                autofocusFirstItem.focus();
-                return;
-            }
-            const { length: focusableLength, 0: focusableFirstItem } = focusables;
-            const firstFocusableElem = focusableLength > 0 ? focusableFirstItem : this.rootRef.current;
-            firstFocusableElem.focus();
-        }
+        return DrawerUtils.getStyleClassesMapAsString(Object.assign(customStyleClassMap, DrawerUtils.getCommonStyleClasses(edge)));
     }
     componentDidUpdate(prevProps, prevState) {
         this.handleComponentUpdate(prevState);
     }
     componentDidMount() {
+        window.addEventListener(DrawerConstants.stringResize, () => {
+            this.resizeHandler();
+        });
+        this.openedPrevState = this.props.opened;
         if (DrawerPopup_1.defaultProps.opened != this.props.opened) {
             const stateCopy = Object.assign({}, this.state);
             stateCopy.opened = false;
             this.handleComponentUpdate(stateCopy);
         }
     }
+    componentWillUnmount() {
+        window.removeEventListener(DrawerConstants.stringResize, () => {
+            this.resizeHandler();
+        });
+    }
+    getViewportResolvedDisplayMode() {
+        const viewportWidth = DrawerUtils.getViewportWidth();
+        if (viewportWidth >= DrawerConstants.fullWidthDrawerChangeThreshold) {
+            return DrawerConstants.stringOverlay;
+        }
+        return DrawerConstants.stringFullOverlay;
+    }
     handleComponentUpdate(prevState) {
-        this.renderDrawer(prevState);
+        this.openOrCloseDrawer(prevState);
         if (this.isDrawerOpened() && this.props.closeGesture === 'swipe') {
             this.registerCloseWithSwipeListener();
         }
@@ -259,6 +365,7 @@ DrawerPopup.defaultProps = {
     opened: false,
     closeGesture: 'swipe'
 };
+DrawerPopup.idsClosedWithAutoDismiss = [];
 DrawerPopup.metadata = { "slots": { "": {} }, "properties": { "opened": { "type": "boolean", "writeback": true }, "edge": { "type": "string", "enumValues": ["start", "end", "bottom"] }, "modality": { "type": "string", "enumValues": ["modal", "modeless"] }, "autoDismiss": { "type": "string", "enumValues": ["focus-loss", "none"] }, "closeGesture": { "type": "string", "enumValues": ["swipe", "none"] } }, "extension": { "_WRITEBACK_PROPS": ["opened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
 DrawerPopup = DrawerPopup_1 = __decorate([
     customElement('oj-drawer-popup')

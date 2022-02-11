@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -343,7 +343,8 @@ var __oj_picto_chart_item_metadata =
  *               }
  *              ]
  *
- * @ojpropertylayout {propertyGroup: "common", items: ["columnCount", "rowCount", "layout", "layoutOrigin", "hoverBehavior", "animationOnDataChange", "animationOnDisplay", "style"]}
+ * @ojpropertylayout {propertyGroup: "common", items: ["columnCount", "rowCount", "layout", "layoutOrigin", "hoverBehavior", "animationOnDataChange", "animationOnDisplay",
+ * "style"]}
  * @ojpropertylayout {propertyGroup: "data", items: ["data"]}
  * @ojvbdefaultcolumns 6
  * @ojvbmincolumns 2
@@ -362,8 +363,7 @@ var __oj_picto_chart_item_metadata =
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-picto-chart
- *   items='[{"name": "Red", "shape": "human", "color": "#ed6647", "count": 3},
- *          {"name": "Blue", "shape": "circle", "color": "#267db3", "count": 17}]'>
+ *   data='[[dataProvider]]'>
  * &lt;/oj-picto-chart>
  * </code>
  * </pre>
@@ -502,7 +502,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       columnCount: null,
 
       /**
-       * The width of a column in pixels. The width of columns will be automatically computed if not specified.  Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.
+       * The width of a column in pixels. The width of columns will be automatically computed if not specified.  Setting this property in a fixed layout
+       * (when the element width and height are defined) may cause items to be truncated.
        * @expose
        * @name columnWidth
        * @ojshortdesc The width of a column in pixels. If unspecified, the column width will be automatically computed. See the Help documentation for more information.
@@ -515,7 +516,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       columnWidth: null,
       /**
        * The DataProvider for the picto chart. It should provide rows where each row corresponds to a single picto chart item.
-       * The DataProvider can either have an arbitrary data shape, in which case an <oj-picto-chart-item> element must be specified in the itemTemplate slot or it can have [oj.ojPictoChart.Item]{@link oj.ojPictoChart.Item} as its data shape, in which case no template is required.
+       * The DataProvider can either have an arbitrary data shape, in which case an <oj-picto-chart-item> element must be specified
+       * in the itemTemplate slot or it can have [oj.ojPictoChart.Item]{@link oj.ojPictoChart.Item} as its data shape, in which case no template is required.
        * @expose
        * @name data
        * @ojshortdesc Specifies the DataProvider for the picto chart. See the Help documentation for more information.
@@ -542,7 +544,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       data: null,
 
       /**
-       * Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item.
+       * Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event
+       * on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item.
        * @expose
        * @name drilling
        * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
@@ -582,7 +585,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       highlightedCategories: [],
 
       /**
-       * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+       * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the
+       * highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
        * @expose
        * @name highlightMatch
        * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
@@ -680,7 +684,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       rowCount: null,
 
       /**
-       * The height of a row in pixels. The height of rows will be automatically computed if not specified. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.
+       * The height of a row in pixels. The height of rows will be automatically computed if not specified. Setting this property in a fixed layout (when the element
+       *  width and height are defined) may cause items to be truncated.
        * @expose
        * @name rowHeight
        * @ojshortdesc The height of a row in pixels. If unspecified, the row height will be automatically computed. See the Help documentation for more information.
@@ -707,10 +712,13 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
       selection: [],
 
       /**
-       * <p>The type of selection behavior that is enabled on the picto chart. This attribute controls the number of selections that can be made via selection gestures at any given time.
+       * <p>The type of selection behavior that is enabled on the picto chart. This attribute controls the number of selections that can be made via selection gestures
+       * at any given time.
        *
-       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the picto chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
-       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the picto chart's selection styling will not be applied to any items specified by the <a href="#selection">selection</a> attribute.
+       * <p>If <code class="prettyprint">single</code> or <code class="prettyprint">multiple</code> is specified, selection gestures will be enabled, and the picto
+       * chart's selection styling will be applied to all items specified by the <a href="#selection">selection</a> attribute.
+       * If <code class="prettyprint">none</code> is specified, selection gestures will be disabled, and the picto chart's selection styling will not be applied to
+       * any items specified by the <a href="#selection">selection</a> attribute.
        *
        * <p>Changing the value of this attribute will not affect the value of the <a href="#selection">selection</a> attribute.
        *
@@ -742,12 +750,15 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
          * provided by the picto chart. The function should return an Object that contains only one of the two properties:
          * <ul>
          *   <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
-         *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display
+         *      tooltip, since this is a default behavior.
+         *   </li>
          * </ul>
          *
          * @expose
          * @name tooltip.renderer
-         * @ojshortdesc A function that returns a custom tooltip. The function takes a context argument, provided by the picto chart. See the Help documentation for more information.
+         * @ojshortdesc A function that returns a custom tooltip. The function takes a context argument, provided by the picto chart. See the Help documentation for more
+         * information.
          * @memberof! oj.ojPictoChart
          * @instance
          * @type {function(Object):Object|null}
@@ -773,7 +784,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
 
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return PictoChart.newInstance(context, callback, callbackObj);
+      return new PictoChart(context, callback, callbackObj);
     },
 
 
@@ -1037,17 +1048,23 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * @typedef {Object} oj.ojPictoChart.Item
  * @property {any=} id The item id. The item id should be set by the application if the DataProvider is not being used.
  * @property {string=} name The name of the item. Used for default tooltip and accessibility.
- * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string} [shape="rectangle"] The shape of the item. Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
+ * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string}[shape="rectangle"] The shape of the item. 
+ * Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. 
+ * Does not apply if custom image is specified.
  * @property {string=} color The color of the item. Does not apply if custom image is specified.
  * @property {string=} borderColor The border color of the item. Does not apply if custom image is specified.
  * @property {number=} borderWidth The border width of the item in pixels. Does not apply if custom image is specified.
  * @property {string=} source The URI of the custom image. If specified, it takes precedence over shape.
- * @property {string=} svgClassName The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
- * @property {Object=} svgStyle The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified. Only SVG CSS style properties are supported.
+ * @property {string=} svgClassName The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. 
+ * For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @property {Object=} svgStyle The inline style to apply to the item. The style class and inline style will override any other styling specified with other
+ * properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified. 
+ * Only SVG CSS style properties are supported.
  * @property {string=} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
  * @property {string=} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
  * @property {string=} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
- * @property {number=} count Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
+ * @property {number=} count Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported;
+ * however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
  * @property {number=} rowSpan The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.
  * @property {number=} columnSpan The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes.
  * @property {(string|function)=} shortDesc Short description string for accessibility users.
@@ -1113,10 +1130,13 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  // Slots
  /**
  *
- * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot content must be a single &lt;template> element.</p>
+ * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been
+ * specified with the data attribute. The slot content must be a single &lt;template> element.</p>
  * <p>When the template is executed for each item, it will have access to the picto chart's binding context and the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. 
+ *      (See [oj.ojPictoChart.ItemTemplateContext]{@link oj.ojPictoChart.ItemTemplateContext} or the table below for a list of properties available on $current)
+ *   </li>
  * </li>
  * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
  * </li>
@@ -1148,7 +1168,9 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * This slot takes precedence over the tooltip.renderer property if specified.
  * <p>When the template is executed, the component's binding context is extended with the following properties:</p>
  * <ul>
- *   <li>$current - an object that contains information for the current item. (See [oj.ojPictoChart.TooltipContext]{@link oj.ojPictoChart.TooltipContext} or the table below for a list of properties available on $current) </li>
+ *   <li>$current - an object that contains information for the current item. 
+ *      (See [oj.ojPictoChart.TooltipContext]{@link oj.ojPictoChart.TooltipContext} or the table below for a list of properties available on $current)
+ *   </li>
  * </ul>
  *
  *
@@ -1332,7 +1354,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
 /**
- * Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
+ * Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5
+ * should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
  * @expose
  * @name count
  * @ojshortdesc Specifies the number of times that the shape (or custom image) is drawn. See the Help documentation for more information.
@@ -1350,10 +1373,12 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
 /**
- * Whether drilling is enabled on the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.
+ * Whether drilling is enabled on the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled).
+ * To enable drilling for all items at once, use the drilling attribute in the top level.
  * @expose
  * @name drilling
- * @ojshortdesc Whether drilling is enabled on the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
+ * @ojshortdesc Whether drilling is enabled on the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection
+ * is enabled). See the Help documentation for more information.
  * @memberof! oj.ojPictoChartItem
  * @instance
  * @ojvalue {string} "inherit"
@@ -1406,10 +1431,12 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
  /**
- * The shape of the item. Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
+ * The shape of the item. Can take the name of a built-in shape or the SVG path commands for a custom shape. "None" will make the item transparent and can be used
+ * to create gaps. Does not apply if custom image is specified.
  * @expose
  * @name shape
- * @ojshortdesc The shape of the item. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. See the Help documentation for more information.
+ * @ojshortdesc The shape of the item. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. See the Help documentation
+ * for more information.
  * @memberof! oj.ojPictoChartItem
  * @instance
  * @type {("circle"|"diamond"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|"none"|string)=}
@@ -1509,7 +1536,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
 /**
- * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity,
+ * it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
  * Only SVG CSS style properties are supported.
  * @expose
  * @name svgStyle
@@ -1529,7 +1557,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  * &lt;/oj-picto-chart>
  */
 /**
- * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity,
+ * it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
  * @expose
  * @name svgClassName
  * @ojshortdesc The CSS style class to apply to the item. See the Help documentation for more information.

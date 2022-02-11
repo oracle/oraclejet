@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
@@ -3137,6 +3137,8 @@ $ratingGaugeColorChanged: #ed2c02 !default;
 $ratingGaugeColorUnselected: #c4ced7 !default;
 $ratingGaugeColorSelectedDisabled: $neutralColor8;
 $ratingGaugeColorUnselectedDisabled: $neutralColor5;
+$statusMeterGaugePlotAreaBorderColor: #d6dfe6;
+$statusMeterGaugePlotAreaColor: #e4e8ea;
 
 // background
 //----------------------------------

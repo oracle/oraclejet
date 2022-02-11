@@ -1,0 +1,400 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example gantt/themes/redwood/oj-gantt.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("common.gantt") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+      oj-gantt:not(.oj-complete) {
+        visibility: hidden;
+      }
+
+    /* Styling for the gantt widget */
+    .oj-gantt {
+      animation-duration: var(--oj-animation-duration-xlong);
+      user-select: none;
+      outline: none;
+      width:100%;
+      height:35rem;
+    }
+
+    /* Styling for the container (around time axis and databody) */
+    .oj-gantt-container {
+      fill: transparent;
+      // If stroke-width is 1px, then there is 0.5px border on each side of the edge, and because svg is
+      // not pixel aware, in cases where the edge is between two pixels (e.g. on resize), the 0.5px doesn't show up, and the
+      // entire stroke disappear. Fix is to double up the pixel so there there is always > 0.5px on each side of the edge
+      // and use a clippath in gantt to hide the inner half of the stroke to maintain stroke width.
+      stroke-width: 2px;
+    }
+
+    /* Styling for the empty text */
+    .oj-gantt-no-data-message {
+        fill: var(--oj-core-text-color-secondary);
+        font-size: var(--oj-dvt-label-font-size-md);
+    }
+
+
+    /* Styling for horizontal grid lines */
+    .oj-gantt-horizontal-gridline {
+      stroke: var(--oj-private-dvt-gridline-color);
+      stroke-width: 1px;
+    }
+
+    /* Styling for vertical grid lines */
+    .oj-gantt-major-vertical-gridline {
+      stroke: var(--oj-private-dvt-gridline-color);
+    }
+
+    .oj-gantt-minor-vertical-gridline {
+      stroke: var(--oj-private-dvt-gridline-color);
+      stroke-dasharray: 4,4;
+    }
+
+    /* Styling for all rows */
+    .oj-gantt-row {
+        fill: transparent;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* Styling for row focus highlight */
+    .oj-gantt-row.oj-focus-highlight {
+      stroke-width: 1px;
+      stroke-dasharray: 1 1;
+      stroke: var(--oj-core-focus-border-color);
+    }
+
+    /* Styling for selectd row  */
+    .oj-gantt-row.oj-selected {
+      fill: var(--oj-core-bg-color-selected);
+    }
+
+    /* Styling related to rows as drop targets */
+    .oj-gantt-row.oj-active-drop {
+        fill: var(--oj-core-drag-drop-color-1);
+    }
+
+    /* Styling for all row labels */
+    .oj-gantt-row-label {
+        fill: var(--oj-core-text-color-primary);
+        font-size: var(--oj-dvt-label-font-size-lg);
+        font-weight: normal;
+        padding-left: 1rem;
+        padding-right: 1rem;
+
+    }
+
+    /* Styling for all tasks */
+    .oj-gantt-task {
+        fill: var(--oj-private-gantt-task-bg-color);
+        filter: none;
+        height: 1.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    /* Opaque background behind all tasks */
+    .oj-gantt-task-backdrop {
+      // Tasks have fill with transparency. A white opaque background
+      // is needed behind the task to prevent canvas elements from showing through
+      // (e.g. gridlines)
+      fill: #ffffff;
+    }
+
+    /* Styling for all tasks when hover */
+    .oj-gantt-task.oj-hover {
+      fill: none;
+      stroke-width: 1px;
+      stroke: var(--oj-dvt-item-border-color-selected);
+    }
+
+    /* Styling for all tasks when focus */
+    .oj-gantt-task.oj-focus {
+      fill: none;
+      stroke-width: 1px;
+      stroke: var(--oj-dvt-item-border-color-selected);
+    }
+
+    /* Styling for all tasks when selected */
+    .oj-gantt-task.oj-selected {
+      fill: none;
+      stroke-width: 2px;
+      stroke: var(--oj-dvt-item-border-color-selected);
+    }
+
+    /* Styling for all task bars */
+    .oj-gantt-task-bar {
+        fill: var(--oj-private-gantt-task-bg-color);
+        stroke: var(--oj-private-gantt-task-border-color);
+        stroke-width: 1px;
+    }
+
+    .oj-gantt-task-bar.oj-gantt-task-progress-container,
+    .oj-gantt-task-summary.oj-gantt-task-progress-container {
+      fill-opacity: 0.2;
+    }
+
+    /* Styling for all milestone tasks */
+    .oj-gantt-task-milestone {
+        fill: var(--oj-private-gantt-task-milestone-bg-color);
+        stroke: var(--oj-private-gantt-task-milestone-border-color);
+        border-radius: 1px;
+        stroke-width: 1px;
+    }
+
+    /* Styling for all summary tasks */
+    .oj-gantt-task-summary {
+     
+        fill: var(--oj-private-gantt-task-summary-bg-color);
+        stroke: var(--oj-private-gantt-task-summary-border-color);
+        filter: none;
+
+    }
+
+    /* Styling related to interactivity */
+    .oj-gantt-task.oj-draggable,
+    .oj-gantt-task-label.oj-draggable,
+    .oj-gantt-task-progress.oj-draggable {
+      cursor: move;
+    }
+
+    .oj-gantt-task-drag-image {
+      fill: var(--oj-core-bg-color-hover);
+     
+        stroke: var(--oj-private-gantt-task-drag-image-border-color);
+    
+      stroke-width: 1px;
+      stroke-dasharray: 3,3;
+    }
+
+    .oj-gantt-task-resize-handle {
+      opacity: 0;
+    }
+
+    .oj-gantt-task-resize-handle.oj-draggable {
+      cursor: col-resize;
+    }
+
+    /* Styling for all task labels */
+    .oj-gantt-task-label {
+      color: var(--oj-private-gantt-task-label-color);
+      font-size: var(--oj-dvt-label-font-size-lg);
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
+    }
+
+
+    /* Styling for all task progress indicators */
+    .oj-gantt-task-progress {
+      fill: var(--oj-private-gantt-task-progress-bg-color);
+      stroke: var(--oj-private-gantt-task-progress-border-color);
+      stroke-width: 1px;
+      border-radius: 0px;
+    }
+
+    .oj-gantt-task-summary-progress {
+      fill: var(--oj-private-gantt-task-summary-progress-bg-color);
+    }
+
+    /* Styling for all task overtime bars */
+    .oj-gantt-task-overtime {
+      fill: var(--oj-private-gantt-task-overtime-bg-color);
+      stroke: var(--oj-private-gantt-task-border-color);
+      stroke-width: 1px;
+    }
+
+    /* Styling for all task downtime bars */
+    .oj-gantt-task-downtime {
+      fill: var(--oj-private-gantt-task-downtime-bg-color);
+      border-radius: 1px;
+      height: 0.25rem;
+    }
+
+    /* Styling for all task attribute bars */
+    .oj-gantt-task-attribute {
+      fill: var(--oj-private-gantt-task-attribute-bg-color);
+      stroke: var(--oj-private-gantt-task-border-color);
+      stroke-width: 1px;
+      height: 0.313rem;
+    }
+
+    /* Styling for all baseline */
+    .oj-gantt-baseline {
+      fill: var(--oj-private-gantt-baseline-bg-color);
+      filter: none;
+      border-radius: 1px;
+    }
+
+    /* Styling for all baseline bars */
+    .oj-gantt-baseline-bar {
+      fill: var(--oj-private-gantt-baseline-bg-color);
+      height: 0.25rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Styling for all milestone baseline */
+    .oj-gantt-baseline-milestone {
+      fill: var(--oj-private-gantt-baseline-milestone-bg-color);
+      border-radius: 1px;
+    }
+
+    /* Styling for "highlightDependencies" selection behavior */
+    .oj-gantt-databody-dim .oj-gantt-task:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-progress:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-baseline:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-attribute:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-overtime:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-downtime:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-label:not(.oj-gantt-task-highlight),
+    .oj-gantt-databody-dim .oj-gantt-task-custom:not(.oj-gantt-task-highlight) {
+      // tasks unrelated to selected task(s) are dimmed
+      opacity: 0.4;
+    }
+
+    /* Styling for the major time axis */
+    .oj-gantt-major-axis { 
+      fill: transparent;
+      stroke: var(--oj-private-dvt-gridline-color);
+      height: 1.5rem;
+    }
+
+    /* Styling for the major time axis labels */
+    .oj-gantt-major-axis-label {
+      fill: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-lg);
+      font-weight: 600;
+    }
+
+    /* Styling for the major time axis separators */
+    .oj-gantt-major-axis-separator {
+      stroke: var(--oj-private-dvt-gridline-color);
+    }
+
+    /* Styling for the minor time axis */
+    .oj-gantt-minor-axis {
+      fill: transparent;
+      stroke: var(--oj-private-dvt-gridline-color);
+      height: 1.5rem;
+    }
+
+    /* Styling for the minor time axis labels */
+    .oj-gantt-minor-axis-label {
+      fill: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-md);
+      font-weight: normal;
+    }
+
+      
+    /* Styling for the minor time axis separators */
+    .oj-gantt-minor-axis-separator {
+      stroke: var(--oj-private-dvt-gridline-color);
+      stroke-dasharray: 4,4;
+    }
+
+    /* Styling for reference object */
+    .oj-gantt-reference-object-area {
+      fill: var(--oj-dvt-reference-object-area-color);
+      shape-rendering: crispEdges;
+    }
+
+    .oj-gantt-reference-object-line {
+      stroke: var(--oj-dvt-reference-object-line-color);
+      shape-rendering: crispEdges;
+    }
+
+    .oj-gantt-reference-object-inner-line {
+      stroke: var(--oj-dvt-contrast-line-color);
+      shape-rendering: crispEdges;
+    }
+
+    /* Styling for time cursor */
+    .oj-gantt-time-cursor-line {
+      stroke: var(--oj-dvt-reference-object-line-color);
+      shape-rendering: crispEdges;
+      stroke-dasharray: 2,2;
+    }
+
+    .oj-gantt-time-cursor-inner-line {
+      stroke: var(--oj-dvt-contrast-line-color);
+      shape-rendering: crispEdges;
+      stroke-dasharray: 2,2;
+    }
+
+    /* Styling for all dependency lines */
+    .oj-gantt-dependency-line {
+      fill:none;
+    }
+
+    .oj-gantt-dependency-rectilinear-line {
+      stroke: var(--oj-private-gantt-dependency-rectilinear-line-color);
+      stroke-width: 2px;
+      marker-end: url('#ojGanttDependencyMarkerEndAngle');
+    }
+
+    .oj-gantt-dependency-straight-line {
+      stroke: var(--oj-private-gantt-dependency-straight-line-color);
+      stroke-width: 1px;
+    }
+
+    .oj-gantt-dependency-start-open-straight-line {
+      marker-start: url('#ojGanttDependencyMarkerOpenCircle');
+    }
+
+    .oj-gantt-dependency-start-closed-straight-line {
+      marker-start: url('#ojGanttDependencyMarkerClosedCircle');
+    }
+
+    .oj-gantt-dependency-end-open-straight-line {
+      marker-end: url('#ojGanttDependencyMarkerOpenCircle');
+    }
+
+    .oj-gantt-dependency-end-closed-straight-line {
+      marker-end: url('#ojGanttDependencyMarkerClosedCircle');
+    }
+
+    /* Styling for all dependency lines when focus */
+    .oj-gantt-dependency-line.oj-focus {
+      stroke-width:3;
+    }
+
+    /* Styling for all dependency line connectors */
+    .oj-gantt-dependency-line-connector {
+      stroke-width: 2px;
+    }
+
+    .oj-gantt-dependency-rectilinear-line-arrow-connector {
+      fill: none;
+      stroke: var(--oj-private-gantt-dependency-rectilinear-line-color);
+    }
+
+    .oj-gantt-dependency-straight-line-open-circle-connector {
+      fill: #ffffff;
+      stroke: var(--oj-private-gantt-dependency-straight-line-color);
+    }
+
+    .oj-gantt-dependency-straight-line-closed-circle-connector {
+      fill: var(--oj-private-gantt-dependency-straight-line-color);
+      stroke: none;
+    }
+
+    /* Styling for custom content containers */
+    .oj-gantt-task-custom svg,
+    .oj-gantt-dependency-line-custom svg {
+      // Apps always provide custom content wrapped inside a <svg> element in their template.
+      // However, non-root svgs are overflow hidden as per both the browser's user agent and dvt base style sheets.
+      // This has the effect of clipping all custom content's width and height by the width and height of the component's svg container.
+      // We never want this overflow hidden behavior in Gantt because the custom content's dimensions can be bigger than the component's width and height,
+      // e.g. the content's width can increase past the component's width during horizontal time-based zoom in.
+      overflow: visible;
+    }
+  }

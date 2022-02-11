@@ -70,10 +70,10 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
     if (typeName === `${metaUtilObj.namedExportToAlias.CancelableAction}`) {
         cancelableDetail = {
             accept: {
-                description: "This method can be called with an application-created Promise to cancel this event asynchronously.  The Promise should be resolved or rejected to accept or cancel the event, respectively.",
-                reftype: "(param: Promise<void>) => void",
-                type: "function",
-            },
+                description: 'This method can be called with an application-created Promise to cancel this event asynchronously.  The Promise should be resolved or rejected to accept or cancel the event, respectively.',
+                reftype: '(param: Promise<void>) => void',
+                type: 'function'
+            }
         };
     }
     if ((typeRefNode === null || typeRefNode === void 0 ? void 0 : typeRefNode.typeArguments) && typeRefNode.typeArguments.length) {
@@ -83,28 +83,24 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
             const mappedTypesInfo = MetaUtils.getMappedTypesInfo(typeObject, checker, false, detailNode);
             if (mappedTypesInfo && mappedTypesInfo.wrappedTypeNode) {
                 const innerTypeObject = checker.getTypeAtLocation(mappedTypesInfo.wrappedTypeNode);
-                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject);
+                const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(innerTypeObject, metaUtilObj);
                 if (genericsInfo) {
-                    dt["evnDetailTypeParamsDeclaration"] =
-                        genericsInfo.genericsDeclaration;
-                    dt["evnDetailNameTypeParams"] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo.genericsTypeParams);
+                    dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
+                    dt['evnDetailNameTypeParams'] = MetaUtils.constructMappedTypeName(mappedTypesInfo, genericsInfo.genericsTypeParams);
                 }
             }
             else {
-                const declaration = ((_a = typeObject.aliasSymbol) === null || _a === void 0 ? void 0 : _a.getDeclarations()[0]) ||
-                    ((_b = typeObject.symbol) === null || _b === void 0 ? void 0 : _b.getDeclarations()[0]);
-                if (ts.isTypeAliasDeclaration(declaration) ||
-                    ts.isClassDeclaration(declaration)) {
+                const declaration = ((_a = typeObject.aliasSymbol) === null || _a === void 0 ? void 0 : _a.getDeclarations()[0]) || ((_b = typeObject.symbol) === null || _b === void 0 ? void 0 : _b.getDeclarations()[0]);
+                if (ts.isTypeAliasDeclaration(declaration) || ts.isClassDeclaration(declaration)) {
                     const eventDetailType = declaration;
-                    let eventDetailName = eventDetailType.name.getText();
-                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject);
+                    const eventDetailName = eventDetailType.name.getText();
+                    const genericsInfo = TypeUtils.getGenericsAndTypeParametersFromType(typeObject, metaUtilObj);
                     if (genericsInfo) {
-                        dt["evnDetailTypeParamsDeclaration"] =
-                            genericsInfo.genericsDeclaration;
-                        dt["evnDetailNameTypeParams"] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
+                        dt['evnDetailTypeParamsDeclaration'] = genericsInfo.genericsDeclaration;
+                        dt['evnDetailNameTypeParams'] = `${eventDetailName}${genericsInfo.genericsTypeParams}`;
                     }
                     else {
-                        dt["evnDetailNameTypeParams"] = eventDetailName;
+                        dt['evnDetailNameTypeParams'] = eventDetailName;
                     }
                 }
             }
@@ -112,7 +108,7 @@ function getDtMetadataForEvent(propDeclaration, typeName, typeNode, metaUtilObj)
         detailObj = getEventDetails(detailNode, metaUtilObj);
     }
     if (detailObj || cancelableDetail) {
-        dt["detail"] = Object.assign({}, cancelableDetail, detailObj);
+        dt['detail'] = Object.assign({}, cancelableDetail, detailObj);
     }
     return dt;
 }
@@ -130,29 +126,29 @@ function getEventDetails(detailNode, metaUtilObj) {
                 return;
             }
             const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
-            if (ts.isPropertySignature(propSignature) ||
-                ts.isPropertyDeclaration(propSignature)) {
+            if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
                 const property = key.toString();
-                const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj);
+                const eventDetailMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj, MetaTypes.GETMD_FLAGS_NONE, symbol);
                 details = details || {};
                 details[property] = eventDetailMetadata;
                 if (TypeUtils.possibleComplexProperty(symbolType, eventDetailMetadata.type, MetaTypes.MetadataScope.DT)) {
                     let stack = [];
-                    if (eventDetailMetadata.type === "Array<object>") {
+                    if (eventDetailMetadata.type === 'Array<object>') {
                         stack.push(key);
                     }
                     const subprops = TypeUtils.getComplexPropertyMetadata(symbol, eventDetailMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
                     if (subprops) {
                         if (subprops.circRefDetected) {
-                            details[property].type = TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);
+                            details[property].type =
+                                TypeUtils.getSubstituteTypeForCircularReference(eventDetailMetadata);
                         }
-                        else if (eventDetailMetadata.type === "Array<object>") {
+                        else if (eventDetailMetadata.type === 'Array<object>') {
                             details[property].extension = {};
                             details[property].extension.vbdt = {};
                             details[property].extension.vbdt.itemProperties = subprops;
                         }
                         else {
-                            details[property].type = "object";
+                            details[property].type = 'object';
                             details[property].properties = subprops;
                         }
                     }
@@ -162,3 +158,4 @@ function getEventDetails(detailNode, metaUtilObj) {
     }
     return details;
 }
+//# sourceMappingURL=MetadataEventUtils.js.map

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.panel.scoped") {
+
+  
+  /* panel                      */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-panel-bg-color:                  var(--oj-core-bg-color-content); 
+  --oj-panel-border-color:              var(--oj-core-divider-color);
+}
+}

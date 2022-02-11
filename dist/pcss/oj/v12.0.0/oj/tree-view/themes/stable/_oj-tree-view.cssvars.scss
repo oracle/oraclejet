@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+
+@include module-include-once("stable.variables.treeview") {
+
+:root {
+  // tree view
+  // ----------------------------
+  --oj-tree-view-indent-width:                    1.5rem;
+  --oj-tree-view-row-height:                      2.5rem;
+  --oj-tree-view-text-color:                      var(--oj-core-text-color-primary);
+
+  --oj-private-tree-view-global-expand-animation:                     '{"effect":"expand"}';
+  --oj-private-tree-view-global-collapse-animation:                   '{"effect":"collapse"}';
+  --oj-private-tree-view-global-data-fadein-duration:         .15s;
+  --oj-private-tree-view-global-selection-affordance-default: selector;
+  --oj-private-tree-view-global-load-indicator-default:       skeleton;
+}
+}

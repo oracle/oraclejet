@@ -1,0 +1,89 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example input-number/themes/redwood/oj-input-number.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+
+@include module-include-once("common.inputnumber") {
+  /* inputnumber */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-number:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-inputnumber-wrapper {
+    width: 100%;
+    // do not allow the buttons to wrap to the next line
+    white-space: nowrap;
+    // use inline-flex properties. This will grow the input and the buttons will take up
+    // the remaining width
+    display: inline-flex;
+  }
+
+  /* Input field for inputnumber */
+  .oj-inputnumber-input {
+    // grow the input using the flex property
+    flex: 1;
+
+  @include oj-text-field-input-css-vars;
+  }
+
+  // Height is on an ancestor element, so set the the height to 100%
+  .oj-inputnumber .oj-inputnumber-wrapper {
+    height: 100%;
+  }
+
+  /* styling for inputNumber's buttonset/buttons */
+  // if there is space between input and buttons, then the buttons act like a buttonset
+  // if there isn't space, then it looks like the input and buttons are wrapped in a single border.
+
+  // hide buttons when in readonly mode
+  .oj-inputnumber.oj-read-only .oj-buttonset {
+    display: none;
+  }
+
+  // don't show button's built-in focus outline.
+  .oj-inputnumber-button.oj-button.oj-focus {
+    outline-style: none;
+  }
+
+  .oj-inputnumber:not(.oj-text-field-label-inside) .oj-buttonset {
+    // make the margin relative to the small button height, subtract 2px for any border 
+    @include oj-ltr() {
+      margin-right: calc((var(--oj-text-field-height) - var(--oj-button-sm-height) - 2px) / 2);
+    }
+    @include oj-rtl() {
+      margin-left: calc((var(--oj-text-field-height) - var(--oj-button-sm-height) - 2px) / 2);
+    }
+  }
+
+  .oj-inputnumber:not(.oj-text-field-label-inside) .oj-inputnumber-button {
+    min-width: var(--oj-button-sm-height);
+    width: var(--oj-button-sm-height);
+    height: var(--oj-button-sm-height);
+    line-height: var(--oj-button-sm-height);
+  }
+
+  .oj-text-field-label-inside.oj-inputnumber .oj-buttonset {
+    // make the margin relative to the button height, subtract 2px for any border
+    @include oj-ltr() {
+      margin-right: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height) - 2px) / 2);
+    }
+    @include oj-rtl() {
+      margin-left: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height) - 2px) / 2);
+    }
+  }
+
+  // if/when we put the input number buttons
+  // inside oj-text-field-end we can remove this
+  .oj-inputnumber .oj-buttonset-multi .oj-button {
+    margin-bottom: 0;
+  }
+}

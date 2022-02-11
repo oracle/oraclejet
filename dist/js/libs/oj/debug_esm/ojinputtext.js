@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1280,25 +1280,43 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        */
       readOnly: false,
       /**
-       * Whether the component is required or optional. When required is set to true, an implicit
-       * required validator is created using the RequiredValidator -
-       * <code class="prettyprint">new RequiredValidator()</code>.
-       *
-       * Translations specified using the <code class="prettyprint">translations.required</code> attribute
-       * and the label associated with the component, are passed through to the options parameter of the
-       * createValidator method.
-       *
        * <p>
-       * When <code class="prettyprint">required</code> property changes due to programmatic intervention,
-       * the component may clear messages and run validation, based on the current state it's in. </br>
+       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+       * This is the default.
+       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+       * </p>
+       * <p>
+       * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+       * If user-assistance-density is 'compact', it will show on the label as an icon.
+       * In the Alta theme the input's label will render a required icon.
+       * </p>
+       * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+       * it be changed.
+       * To override the required error message,
+       * use the <code class="prettyprint">translations.required</code> attribute.
+       * The component's label text is passed in as a token {label} and can be used in the message detail.
+       * </p>
+       * <p>When required is set to true, an implicit
+       * required validator is created, i.e.,
+       * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+       * validator to run during initial render, and its error is not shown to the user at this time;
+       * this is called deferred validation. The required validator also runs during normal validation;
+       * this is when the errors are shown to the user.
+       * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+       * </p>
+       * <p>
+       * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+       * the component may clear component messages and run validation, based on the current state it's in. </br>
        *
-       * <h4>Running Validation</h4>
+       * <h4>Running Validation when required property changes</h4>
        * <ul>
        * <li>if component is valid when required is set to true, then it runs deferred validation on
-       * the value property. This is to ensure errors are not flagged unnecessarily.
+       * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+       * shown to the user.
        * </li>
        * <li>if component is invalid and has deferred messages when required is set to false, then
-       * component messages are cleared but no deferred validation is run.
+       * component messages are cleared (messages-custom messages are not cleared)
+       * but no deferred validation is run because required is false.
        * </li>
        * <li>if component is invalid and currently showing invalid messages when required is set, then
        * component messages are cleared and normal validation is run using the current display value.
@@ -1313,26 +1331,12 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
        * </li>
        * </ul>
        *
-       * <h4>Clearing Messages</h4>
+       * <h4>Clearing Messages when required property changes</h4>
        * <ul>
-       * <li>Only messages created by the component are cleared.</li>
+       * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
        * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
        * </ul>
        *
-       * </p>
-       * <p>
-       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-       * This is the default.
-       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
-       * </p>
-       * <p>
-       * Additionally a required validator -
-       * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-       * An explicit required validator can be set by page authors using the validators attribute.
-       * </p>
-       * <p>
-       * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
-       * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
        * </p>
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">required</code> attribute:</caption>
@@ -1678,9 +1682,10 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       });
 
       if (this._IsCustomElement()) {
+        // Don't do this for datepicker and datetimepicker because those are
+        // divs not inputs, so make this overrideable.
         let labelledBy = this.options.labelledBy;
-        this._initInputIdLabelForConnection(
-          this._GetContentElement()[0], this.widget()[0].id, labelledBy);
+        this._initLabelledByForInputBase(labelledBy);
       }
       if (this._hasMaxLength()) {
         this._processLengthCounterAttr(this.options.length.counter);
@@ -1881,20 +1886,27 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     // eslint-disable-next-line no-unused-vars
     _setOption: function (key, value, flags) {
+      // save off old value before we update this.options in super
+      // so we can compare old with new option value.
+      const oldValue = this.options[key];
       var retVal = this._superApply(arguments);
-
-      if (key === 'disabled' || key === 'readOnly') {
-        this._processOptions(key, value);
-      } else if (key === 'pattern') {
-        this._defaultRegExpValidator.regexp =
+      switch (key) {
+        case 'disabled':
+        case 'readOnly':
+          this._processOptions(key, value);
+          break;
+        case 'pattern':
+          this._defaultRegExpValidator.regexp =
           this._getImplicitRegExpValidator();
         this._AfterSetOptionValidators();
-      } else if (key === 'labelledBy') {
-        let labelledBy = this.options.labelledBy;
-        if (labelledBy) {
-          var id = this._GetContentElement()[0].id;
-          this._labelledByUpdatedForInputComp(labelledBy, id);
+          break;
+        case 'labelledBy': {
+          // pass in old option value and new option value for labelledBy
+          this._setLabelledByForInputBase(oldValue, value);
+          break;
         }
+        default:
+          break;
       }
       return retVal;
     },
@@ -1945,6 +1957,38 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
      */
     _hasMaxLength: function () {
       return this.options.length && this.options.length.max && !isNaN(this.options.length.max);
+    },
+
+    /**
+     * Sets up the labelledBy changes when labelledBy option changes.
+     * This is overridden for the datepicker and datetimepicker since
+     * the way you link up label to the component is like the 'set' components.
+     * aria-labelledby.
+     *
+     * @protected
+     * @memberof oj.ojInputBase
+     * @instance
+     */
+    _setLabelledByForInputBase: function (oldValue, labelledBy) {
+      if (labelledBy) {
+        const id = this._GetContentElement()[0].id;
+        this._labelledByUpdatedForInputComp(labelledBy, id);
+      }
+    },
+
+    /**
+     * Initializes labelledBy.
+     * This is overridden for the datepicker and datetimepicker since
+     * the way you link up label to the component is like the 'set' components.
+     * aria-labelledby.
+     *
+     * @protected
+     * @memberof oj.ojInputBase
+     * @instance
+     */
+    _initLabelledByForInputBase: function (labelledBy) {
+      this._initInputIdLabelForConnection(
+        this._GetContentElement()[0], this.widget()[0].id, labelledBy);
     },
 
     /**

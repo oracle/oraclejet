@@ -1,4 +1,4 @@
-# Oracle JET version 11.1.0
+# Oracle JET version 12.0.0
 
 ## About Oracle JET
 Oracle JET is targeted at intermediate to advanced JavaScript developers working on client-side applications. It's a collection of open source JavaScript libraries along with a set of Oracle contributed JavaScript libraries that make it as simple and efficient as possible to build applications that consume and interact with Oracle products and services, especially Oracle Cloud services.
@@ -34,13 +34,13 @@ npm install -g @oracle/ojet-cli
 
 ojet create <app name>
 ```
-See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1110&id=homepage) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1200&id=homepage) for complete installation details, including prerequisites.
 
 ## Related GitHub Projects
 All related projects on GitHub are associated under the [oracle-jet topic](https://github.com/search?q=topic%3Aoracle-jet+org%3Aoracle&type=Repositories).
 
-## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet1110&id=homepage)
-Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1110&id=homepage) to help with Getting Started and many common issues.
+## [Documentation](http://www.oracle.com/pls/topic/lookup?ctx=jet1200&id=homepage)
+Oracle JET comes with a full [Developers Guide](http://www.oracle.com/pls/topic/lookup?ctx=jet1200&id=homepage) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/blob/master/CONTRIBUTING.md)
 Oracle JET is an open source project. Pull Requests are currently not being accepted. See 
@@ -48,5 +48,5 @@ Oracle JET is an open source project. Pull Requests are currently not being acce
 for details.
 
 ## [License](https://github.com/oracle/oraclejet/blob/master/LICENSE)
-Copyright (c) 2021 Oracle and/or its affiliates and released  under the 
+Copyright (c) 2022 Oracle and/or its affiliates and released  under the 
 [Universal Permissive License (UPL)](https://oss.oracle.com/licenses/upl/), Version 1.0

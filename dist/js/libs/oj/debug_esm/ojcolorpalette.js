@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -149,7 +149,7 @@ var __oj_color_palette_metadata =
       "readOnly": true
     },
     "value": {
-      "type": "object",
+      "type": "object|string",
       "writeback": true
     }
   },
@@ -198,7 +198,6 @@ var __oj_color_palette_metadata =
   //  ojColorPalette class names
   var OJCP_LIST_ITEM_ELEMENT = 'oj-listview-item-element';
   var OJCP_SELECTED = 'oj-selected';
-
   /* unused, kept for future use
      var OJCP_CONTAINER = "oj-colorpalette-container",
      var OJCP_GRID = "oj-colorpalette-grid",
@@ -535,7 +534,7 @@ var __oj_color_palette_metadata =
         /**
          * The current value of the palette element.
          * @member
-         * @type {Object}
+         * @type {Object|string}
          * @ojformat color
          * @default null
          * @ojshortdesc The current value of the palette element.
@@ -771,6 +770,8 @@ var __oj_color_palette_metadata =
               self._$LV.css(rtl ? 'padding-left' : 'padding-right', scrollbarWidth + 1);
             }
           }
+          // scroll to selected color
+          self._$LV.ojListView('scrollToItem', { key: self._palInitSelected });
           self._resolvePaletteBusyContext(); // component is ready to use
         });
       },
@@ -1572,6 +1573,7 @@ var __oj_color_palette_metadata =
         }
 
         if (setOption) {
+          this._$LV.ojListView('option', 'selection', this._palInitSelected);
           this._$LV.ojListView('option', 'data', this._palDataSource);
         }
       },
@@ -1699,9 +1701,9 @@ var __oj_color_palette_metadata =
 
         opt = opts.value;
         if (!(opt instanceof Color)) {
-          opt = null;
+          opt = Color.BLACK;
         }
-        this._value = (opt || Color.BLACK);
+        this._value = opt;
 
         opt = opts.palette;
         if (!$.isArray(opt)) {
@@ -1724,12 +1726,8 @@ var __oj_color_palette_metadata =
        * @private
        */
       _isTransparent: function (color) {
-        var r = color.getRed();
-        var g = color.getGreen();
-        var b = color.getBlue();
-        var a = color.getAlpha();
-
-        return (r === 0 && g === 0 && b === 0 && a === 0);
+        var rgba = color.getRGBA();
+        return (rgba.r === 0 && rgba.g === 0 && rgba.b === 0 && rgba.a === 0);
       },
 
       /**

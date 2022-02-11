@@ -1,0 +1,40 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../label/themes/redwood/_oj-label.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../button/themes/redwood/oj-button.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-input-number.cssvars.scss";
+
+// most of the styling in common file
+@import "../base/_oj-input-number.scss";
+
+  @include module-include-once("redwood.inputnumber") {
+
+    // icons
+    //------------------------------------------
+
+    .oj-inputnumber-up-icon {
+      @extend .oj-fwk-icon-caret-n;
+    }
+
+    .oj-inputnumber-down-icon {
+      @extend .oj-fwk-icon-caret-s;
+    }
+  }

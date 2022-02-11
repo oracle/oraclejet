@@ -1,0 +1,40 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../animation/themes/redwood/oj-animation.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../popup/themes/redwood/_oj-layer.scss"; // overlay class in this file
+@import "../../../resizable/themes/redwood/_oj-resizable.scss"; 
+@import "../../../button/themes/redwood/oj-button.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-dialog.servervars.scss";
+@import "_oj-dialog.cssvars.scss";
+// scoped cssvars override
+@import "_oj-dialog-scoped.cssvars.scss";
+@import "../base/_oj-dialog-ignore.scoped.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-dialog.scss";
+@import "_oj-dialog-ignore.scoped.cssvars.scss";
+
+@include module-include-once("redwood.dialog") {
+
+  // header texture strip
+  //------------------------------------------
+  .oj-dialog-header {
+    background-image: url('#{$imageDir}texture-dialog-144x20-opacity-08.png');
+    background-repeat: repeat-x;
+    background-size: auto 1.25rem;
+  }
+
+}

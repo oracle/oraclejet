@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@include module-include-once("stable.variables.animation") {
+
+:root {
+
+--oj-animation-duration-xshort:      0.1s;
+--oj-animation-duration-short:       0.15s;
+--oj-animation-duration-medium:      0.2s;
+--oj-animation-duration-long:        0.3s;
+--oj-animation-duration-xlong:       0.5s;
+
+--oj-animation-ease-in-out:          cubic-bezier(0.4, 0, 0.2, 1);
+--oj-animation-ease-out:             cubic-bezier(0, 0, 0.2, 1);
+--oj-animation-ease-in:              cubic-bezier(0.4, 0, 1, 1);
+
+--oj-animation-effect-ripple-bg-color: rgb(var(--oj-palette-neutral-rgb-160));
+
+--oj-animation-skeleton-bg-start-color:  rgba(var(--oj-palette-neutral-rgb-170), 0.05);
+--oj-animation-skeleton-bg-end-color: rgba(var(--oj-palette-neutral-rgb-170), 0.15);
+
+--oj-private-animation-global-card-entrance-delay-increment: 50;
+
+}
+
+}

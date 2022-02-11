@@ -1,0 +1,23 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+  @include module-include-once("redwood.variables.popup") {
+    :root {
+      --oj-popup-border-color:             var(--oj-core-divider-color);
+      --oj-popup-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0));
+      --oj-popup-border-radius:            var(--oj-core-border-radius-sm);
+      --oj-popup-box-shadow:               var(--oj-core-box-shadow-xs);
+      --oj-popup-padding:          0.5rem;
+    
+      --oj-popup-tail-height:             5px;
+      --oj-popup-tail-width:              10px;
+
+      --oj-private-popup-global-modality-default: "modeless";
+
+      --oj-private-popup-global-open-animation-default: '[{"effect":"zoomIn","transformOrigin":"#myPosition"},"fadeIn"]';
+      --oj-private-popup-global-close-animation-default: '[{"effect":"zoomOut","transformOrigin":"#myPosition"},"fadeOut"]';
+    }
+  }

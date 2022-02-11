@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../animation/themes/stable/_oj-animation.servervars.scss";
+
+
+// MESSAGE
+//-----------------------------------------------------------------------------
+// Variable to override the default auto-timeout attribute of individual message
+$privateMessageAutoTimeoutOptionDefault:                       4000 !default;
+
+// Variables to override the default animation of individual oj-message.
+$privateMessageGeneralOverlayOpenAnimation:                    (effect: "expand", duration: $privateAnimationDurationShort) !default;
+$privateMessageGeneralOverlayCloseAnimation:                   (effect: "collapse", duration: $privateAnimationDurationShort) !default;
+$privateMessageNotificationOverlayOpenAnimation:               (effect: "slideIn", duration: $privateAnimationDurationShort, direction: "top") !default;
+$privateMessageNotificationOverlayCloseAnimation:              (effect: "fadeOut", duration: $privateAnimationDurationShort, timingFunction: "linear") !default;
+// Variables to override the default animation of the form components' inline messaging
+$privateMessageComponentInlineOpenAnimation:                   (effect: "fadeIn", duration: "100ms", timingFunction: "linear") !default;
+$privateMessageComponentInlineCloseAnimation:                  (effect: "fadeOut", duration: "100ms", timingFunction: "linear") !default;
+
+
+// Variable to override the Message Summary Option Default:
+$privateFormControlMessageSummaryOptionDefault:                "none" !default;

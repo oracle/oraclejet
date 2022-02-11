@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -203,6 +203,7 @@ const DvtStyleProcessor = function (context) {
   this._fontVariantNumeric = null;
 };
 
+DvtStyleProcessor._FONT_WEIGHT = 'font-weight';
 DvtStyleProcessor.styleTypes = {
   TEXT: function (cssDiv) {
     var ignoreProperties = {};
@@ -213,7 +214,7 @@ DvtStyleProcessor.styleTypes = {
         ignoreProperties.color = true;
       } else if (cssDiv.hasClass('oj-treemap-node-header')) {
         // Ignored because the weight is automatically determined based on the layer of the header.
-        ignoreProperties['font-weight'] = true;
+        ignoreProperties[DvtStyleProcessor._FONT_WEIGHT] = true;
       }
     }
     return DvtStyleProcessor._buildTextCssPropertiesObject(cssDiv, ignoreProperties);
@@ -292,9 +293,9 @@ DvtStyleProcessor._buildTextCssPropertiesObject = function (cssDiv, ignoreProper
       !ignoreProperties['font-size']) {
     cssObj.fontSize = value;
   }
-  value = cssDiv.css('font-weight');
+  value = cssDiv.css(DvtStyleProcessor._FONT_WEIGHT);
   if (value && value !== DvtStyleProcessor._INHERITED_FONT_WEIGHT &&
-      !ignoreProperties['font-weight']) {
+      !ignoreProperties[DvtStyleProcessor._FONT_WEIGHT]) {
     cssObj.fontWeight = value;
   }
   value = cssDiv.css('color');
@@ -356,7 +357,7 @@ DvtStyleProcessor.prototype.processStyles =
       innerDummyDiv = $(document.createElement('div'));
       innerDummyDiv.css('font-size', DvtStyleProcessor._INHERITED_FONT_SIZE);
       innerDummyDiv.css('color', DvtStyleProcessor._INHERITED_FONT_COLOR);
-      innerDummyDiv.css('font-weight', DvtStyleProcessor._INHERITED_FONT_WEIGHT);
+      innerDummyDiv.css(DvtStyleProcessor._FONT_WEIGHT, DvtStyleProcessor._INHERITED_FONT_WEIGHT);
       innerDummyDiv.css('font-style', DvtStyleProcessor._INHERITED_FONT_STYLE);
       outerDummyDiv.append(innerDummyDiv); // @HTMLUpdateOK
     }
@@ -706,7 +707,7 @@ DataProviderHandler.prototype.fetchAllData = function (dataProvider, dataPropert
   var configs = this._configMap[dataProperty];
   this.clear(dataProperty, true);
 
-  var fetchedDataPromise = this._fetchCollection(dataProvider,
+  return this._fetchCollection(dataProvider,
     this._getDPPostProcessor(dataProvider, dataProperty, configs.expandedKeySet,
       configs.maxFetchDepth),
     dataProperty, null, 0, configs.maxFetchDepth).then(function (fetchedData) {
@@ -716,7 +717,6 @@ DataProviderHandler.prototype.fetchAllData = function (dataProvider, dataPropert
       }
       return fetchedData;
     }.bind(this));
-  return fetchedDataPromise;
 };
 
 /**
@@ -1653,6 +1653,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     // Create and cache the component instance
     this._component = this._CreateDvtComponent(this._context, this._HandleEvent, this);
+    this._component.setContextMenu(!!this._GetContextMenu());
     if (Agent.isEnvironmentTest()) {
       // Hook to ensure stable dvt-static test output
       var testId = this.element[0].getAttribute('data-oj-dvt-test-id');
@@ -2695,7 +2696,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   _getFetchDataHandler: function (dataProperty) {
     var resultPath = this._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
 
-    var fetchDataHandlerFunc = function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
+    return function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
       // Get new data
       var dataPromise = this._DataProviderHandler.fetchChildrenData(dataProperty, rootDataProvider,
         nodeKey, expandedKeySet);
@@ -2710,9 +2711,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           // eslint-disable-next-line no-param-reassign
           nodeData[resultPath] = childrenNodes;
         }
+        return childrenNodes;
       }.bind(this));
     }.bind(this);
-    return fetchDataHandlerFunc;
   },
 
   /**
@@ -2734,7 +2735,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       this._MakeReady();
     } else {
       // Cleanup
-      this._CleanAllTemplates();
+     this._CleanAllTemplates(isResize);
 
       // If flowing layout is supported, resize may happen during render, but we
       // don't want the resize listener to be triggered as it causes double render.
@@ -2898,7 +2899,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
       // template cleanup section - template name and cleanup function are passed through context
       if (context._templateName && context._templateCleanup) {
-        self._AddTemplate(context._templateName, context._templateCleanup);
+        self._AddTemplate(context);
       }
 
       // tooltip case: don't check 'insert' property, if 'preventDefault' is set to true
@@ -2965,7 +2966,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    */
   _GetTemplateRenderer: function (templateFunction, templateName) {
     var self = this;
-    var templateRenderer = function (context) {
+    return function (context) {
       // Create a dummy div
       var dummyDiv = document.createElement('div');
       dummyDiv.style.display = 'none';
@@ -2977,8 +2978,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       if (elem) {
         // Save a reference to cleanup function for the dummyDiv
         // for ko cleanup to prevent memory leaks
-        self._AddTemplate(templateName, function () {
-          $(dummyDiv).remove();
+        self._AddTemplate({
+          _templateName: templateName,
+          _templateCleanup: function () {
+            $(dummyDiv).remove();
+          }
         });
 
         dummyDiv.removeChild(elem);
@@ -2987,7 +2991,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       }
       return null;
     };
-    return templateRenderer;
   },
 
   /**
@@ -3003,7 +3006,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    */
   _GetTemplateDataRenderer: function (templateFunction, templateName) {
     var self = this;
-    var templateRenderer = function (context) {
+    return function (context) {
       // Create a dummy div
       var dummyDiv = document.createElement('div');
       dummyDiv.style.display = 'none';
@@ -3017,8 +3020,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       if (elem) {
         // Save a reference to cleanup function for the dummyDiv
         // for ko cleanup to prevent memory leaks
-        self._AddTemplate(templateName, function () {
-          $(dummyDiv).remove();
+        self._AddTemplate({
+          _templateName: templateName,
+          _templateCleanup: function () {
+            $(dummyDiv).remove();
+          }
         });
 
         // The dummy div can be removed for custom svg elements, but need to be
@@ -3032,7 +3038,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       }
       return null;
     };
-    return templateRenderer;
   },
 
   /**
@@ -3067,22 +3072,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     var templateEnginePromise = this._TemplateHandler.getTemplateEngine();
     templateEnginePromise.then(function (templateEngine) {
       var templateRenderer = function (context) {
-        var nodes = templateEngine.execute(this.element[0], templateElement,
-          context);
-        if (nodes && nodes.length > 0) {
-          Object.defineProperty(context, '_templateCleanup', {
-            value: function () {
-              nodes.forEach(function (node) { templateEngine.clean(node); });
-            },
-            enumerable: false
-          });
-          Object.defineProperty(context, '_templateName', {
-            value: templateName,
-            enumerable: false
-          });
-          return { insert: nodes };
-        }
-        return { preventDefault: true };
+        return this._TemplateRenderer(context, templateEngine, templateElement, templateName);
       }.bind(this);
       templateRenderer = this._WrapInlineTemplateRenderer(templateRenderer,
         templateName, optionPath);
@@ -3091,18 +3081,48 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     }.bind(this));
   },
 
-  /**
-   * Cleans all templates stored by the component
+/**
+   * Executes the inline template and returns the nodes from the template
+   * @param {Object} context
+   * @param {Object} templateEngine The template engine to be used to process templates
+   * @param {Element} templateElement The <template> element
+   * @param {string} templateName The name of the template
+   * @return {Object}
    * @protected
    * @memberof oj.dvtBaseComponent
    */
-  _CleanAllTemplates: function () {
+ _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
+    var nodes = templateEngine.execute(this.element[0], templateElement,
+      context);
+    if (nodes && nodes.length > 0) {
+      Object.defineProperty(context, '_templateCleanup', {
+        value: function () {
+          nodes.forEach(function (node) { templateEngine.clean(node); });
+        },
+        enumerable: false
+      });
+      Object.defineProperty(context, '_templateName', {
+        value: templateName,
+        enumerable: false
+      });
+      return { insert: nodes };
+    }
+    return { preventDefault: true };
+  },
+
+  /**
+   * Cleans all templates stored by the component
+   * @protected
+   * @param {Boolean} isResize true if this is a resize event
+   * @memberof oj.dvtBaseComponent
+   */
+  // eslint-disable-next-line no-unused-vars
+  _CleanAllTemplates: function (isResize) {
     var templateNames = Object.keys(this._templateMap);
     for (var i = 0; i < templateNames.length; i++) {
       var templateName = templateNames[i];
       this._CleanTemplate(templateName);
     }
-    this._templateMap = {};
   },
 
   /**
@@ -3123,16 +3143,16 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
   /**
    * Adds a cleanup function that should be used to cleanup a specific template.
-   * @param {string} templateName The name of the template to clean
-   * @param {Function} cleanupCallback A callback function to cleanup the template
+   * @param {Object} context
    * @protected
    * @memberof oj.dvtBaseComponent
    */
-  _AddTemplate: function (templateName, cleanupCallback) {
+  _AddTemplate: function (context) {
+    var templateName = context._templateName;
     if (!this._templateMap[templateName]) {
       this._templateMap[templateName] = [];
     }
-    this._templateMap[templateName].push(cleanupCallback);
+    this._templateMap[templateName].push(context._templateCleanup);
   },
 
 
@@ -3159,21 +3179,22 @@ oj._registerLegacyNamespaceProp('AttributeGroupHandler', AttributeGroupHandler);
  * @memberof oj.dvtBaseComponent
  * @private
  */
-const DvtAttributeUtils = {};
-// Consider a string with at least one digit a valid SVG path
-DvtAttributeUtils._SHAPE_REGEXP = /\d/;
-// Default shape types supported by DvtSimpleMarker
-DvtAttributeUtils._SHAPE_ENUMS = {
-  circle: true,
-  ellipse: true,
-  square: true,
-  rectangle: true,
-  diamond: true,
-  triangleUp: true,
-  triangleDown: true,
-  plus: true,
-  human: true,
-  star: true
+const DvtAttributeUtils = {
+  // Consider a string with at least one digit a valid SVG path
+  _SHAPE_REGEXP: /\d/,
+  // Default shape types supported by DvtSimpleMarker
+  _SHAPE_ENUMS: {
+    circle: true,
+    ellipse: true,
+    square: true,
+    rectangle: true,
+    diamond: true,
+    triangleUp: true,
+    triangleDown: true,
+    plus: true,
+    human: true,
+    star: true
+  }
 };
 /**
  * @ignore

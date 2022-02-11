@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+
+@include module-include-once("stable.variables.gantt") {
+
+:root {
+  
+    // gantt
+    // ----------------------------
+    --oj-private-gantt-dependency-rectilinear-line-color:        rgb(var(--oj-palette-neutral-rgb-100));
+    --oj-private-gantt-dependency-straight-line-color:           rgb(var(--oj-palette-neutral-rgb-190));
+
+    --oj-private-gantt-task-bg-color:                            rgb(36, 93, 99);
+    --oj-private-gantt-task-border-color:                        var(--oj-private-gantt-task-bg-color);
+    --oj-private-gantt-task-progress-bg-color:                   var(--oj-private-gantt-task-bg-color);
+    --oj-private-gantt-task-progress-border-color:               var(--oj-private-gantt-task-border-color);
+    --oj-private-gantt-task-downtime-bg-color:                   rgb(var(--oj-palette-neutral-rgb-170));
+    --oj-private-gantt-task-overtime-bg-color:                   rgba(var(--oj-palette-neutral-rgb-190), 0.16);
+    --oj-private-gantt-task-attribute-bg-color:                  rgb(251, 194, 106);
+    --oj-private-gantt-task-drag-image-border-color:             rgb(var(--oj-palette-neutral-rgb-180));
+    --oj-private-gantt-task-label-color:                         var(--oj-core-text-color-primary);
+
+    --oj-private-gantt-task-summary-bg-color:                    rgb(var(--oj-palette-neutral-rgb-100));
+    --oj-private-gantt-task-summary-border-color:                var(--oj-private-gantt-task-summary-bg-color);
+    --oj-private-gantt-task-summary-progress-bg-color:           var(--oj-private-gantt-task-summary-bg-color);
+
+    --oj-private-gantt-task-milestone-bg-color:                  rgb(var(--oj-palette-neutral-rgb-100));
+    --oj-private-gantt-task-milestone-border-color:              var(--oj-core-bg-color-content);
+    
+    --oj-private-gantt-baseline-bg-color:                        rgb(var(--oj-palette-neutral-rgb-170));
+    --oj-private-gantt-baseline-milestone-bg-color:              rgb(var(--oj-palette-neutral-rgb-170));
+}
+
+}

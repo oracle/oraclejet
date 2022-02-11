@@ -1,0 +1,352 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example theme/themes/redwood/oj-responsive.helpers.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//-------------------------------------------------------------------------------------------------
+// generate layout utility classes, usually these belong inside of media queries
+//
+//
+// $selectorPrefix:    name of class prefix to use, i.e. "oj-sm" will generate
+//                     .oj-sm-hide, .oj-sm-float-end, etc.
+// $generateHide:         generate hide classes like .oj-sm-hide
+// $generateTextAlignEnd: generate text align end classes like .oj-sm-text-align-end
+// $generateFloatStart:   generate float end classes like .oj-sm-float-end
+// $generateFloatEnd:     generate float start classes like .oj-sm-float-start
+//-------------------------------------------------------------------------------------------------
+@mixin oj-layout-helpers-responsive($selectorPrefix, $generateSpacing: true) {
+  .#{$selectorPrefix}-hide {
+    display: none !important;
+  }
+
+  @if $generateSpacing {
+    .#{$selectorPrefix}-margin-0 {
+      margin: 0 !important;}
+
+    .#{$selectorPrefix}-margin-0-horizontal {
+      margin-inline-start: 0 !important;
+      margin-inline-end: 0 !important;
+    }
+
+    .#{$selectorPrefix}-margin-0-vertical {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important; 
+    }
+
+    .#{$selectorPrefix}-margin-0-top {
+     margin-top: 0 !important; 
+    }
+        
+    .#{$selectorPrefix}-margin-0-bottom {
+      margin-bottom: 0 !important;
+    }
+
+    .#{$selectorPrefix}-margin-0-start {
+      margin-inline-start: 0 !important;
+    }
+
+    .#{$selectorPrefix}-margin-0-end {
+      margin-inline-end: 0 !important;
+    }
+
+    .#{$selectorPrefix}-padding-0 {
+      padding: 0 !important;}
+
+    .#{$selectorPrefix}-padding-0-horizontal {
+      padding-inline-start: 0 !important;;
+      padding-inline-end: 0 !important;;
+    }
+
+    .#{$selectorPrefix}-padding-0-vertical {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    .#{$selectorPrefix}-padding-0-top {
+      padding-top: 0 !important;
+    }
+
+    .#{$selectorPrefix}-padding-0-bottom {
+      padding-bottom: 0 !important;  
+    }
+
+    .#{$selectorPrefix}-padding-0-start {
+      padding-inline-start: 0 !important;
+    }
+    .#{$selectorPrefix}-padding-0-end {
+      padding-inline-end: 0 !important;
+    }
+
+    @for $i from 1 through 12 {
+      $spacing: var(--oj-core-spacing-#{$i}x);
+
+      .#{$selectorPrefix}-margin-#{$i}x {
+       margin: $spacing !important;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-horizontal {
+         margin-inline-start : $spacing !important;
+         margin-inline-end   : $spacing !important; }
+
+      .#{$selectorPrefix}-margin-#{$i}x-vertical {
+        margin-top: $spacing !important;
+        margin-bottom: $spacing !important;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-top {
+        margin-top: $spacing !important;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-bottom {
+        margin-bottom: $spacing !important;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-start {
+        margin-inline-start : $spacing !important;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-end {
+        margin-inline-end : $spacing !important;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x {
+         padding: $spacing !important;
+        }
+
+      .#{$selectorPrefix}-padding-#{$i}x-horizontal {
+        padding-inline-start: $spacing !important;
+        padding-inline-end: $spacing !important;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-vertical {
+        padding-top: $spacing !important;
+        padding-bottom: $spacing !important; 
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-top {
+        padding-top: $spacing !important; 
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-bottom {
+        padding-bottom: $spacing !important; 
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-start {
+        padding-inline-start: $spacing !important; 
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-end {
+        padding-inline-end: $spacing !important;
+      }
+    }
+  }
+
+  .#{$selectorPrefix}-width-1\/2 {
+    width: 50% !important;
+  }
+
+  .#{$selectorPrefix}-width-1\/3 {
+    width: 33.333333% !important;
+  }
+
+  .#{$selectorPrefix}-width-2\/3 {
+    width: 66.666667% !important;
+  }
+
+  .#{$selectorPrefix}-width-1\/4 {
+    width: 25% !important;
+  }
+
+  .#{$selectorPrefix}-width-3\/4 {
+    width: 75% !important;
+  }
+
+  .#{$selectorPrefix}-width-1\/5 {
+    width: 20% !important;
+  }
+
+  .#{$selectorPrefix}-width-2\/5 {
+    width: 40% !important;
+  }
+
+  .#{$selectorPrefix}-width-3\/5 {
+    width: 60% !important;
+  }
+
+  .#{$selectorPrefix}-width-4\/5 {
+    width: 80% !important;
+  }
+
+  .#{$selectorPrefix}-width-full {
+    width: 100% !important;
+  }
+
+  .#{$selectorPrefix}-text-align-end {
+    text-align: right !important;
+    html[dir="rtl"] & {
+      text-align: left !important;
+    }
+  }
+
+  .#{$selectorPrefix}-float-end {
+    float: right !important;
+    html[dir="rtl"] & {
+      float: left !important;
+    }
+  }
+
+  .#{$selectorPrefix}-float-start {
+    float: left !important;
+    html[dir="rtl"] & {
+      float: right !important;
+    }
+  }
+}
+
+@mixin oj-media-query-as-text($selector, $query) {
+  #{$selector} {
+    @if $query and $query != none {
+      font-family: "/#{$query}/";
+    } @else {
+      font-family: "/null/";
+    }
+  }
+}
+
+@include module-include-once("common.responsivehelper") {
+  // UP
+  @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+    @media #{$responsiveQuerySmallUp} {
+      @include oj-layout-helpers-responsive("oj-sm");
+    }
+  }
+
+  @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+    @media #{$responsiveQueryMediumUp} {
+      @include oj-layout-helpers-responsive("oj-md");
+    }
+  }
+
+  @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+    @media #{$responsiveQueryLargeUp} {
+      @include oj-layout-helpers-responsive("oj-lg");
+    }
+  }
+
+  @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+    @media #{$responsiveQueryXlargeUp} {
+      @include oj-layout-helpers-responsive("oj-xl");
+    }
+  }
+
+  @if $privateResponsiveQueryXXlargeUp and $privateResponsiveQueryXXlargeUp != none {
+    @media #{$privateResponsiveQueryXXlargeUp} {
+      @include oj-layout-helpers-responsive("oj-xxl");
+    }
+  }
+
+  @if $responsiveQueryMediumDown and $responsiveQueryMediumDown != none {
+    @media #{$responsiveQueryMediumDown} {
+      @include oj-layout-helpers-responsive($selectorPrefix: "oj-md-down", $generateSpacing: false);
+    }
+  }
+
+  @if $responsiveQueryLargeDown and $responsiveQueryLargeDown != none {
+    @media #{$responsiveQueryLargeDown} {
+      @include oj-layout-helpers-responsive($selectorPrefix: "oj-lg-down", $generateSpacing: false);
+    }
+  }
+
+  @if $privateResponsiveQueryXlargeDown and $privateResponsiveQueryXlargeDown != none {
+    @media #{$privateResponsiveQueryXlargeDown} {
+      @include oj-layout-helpers-responsive($selectorPrefix: "oj-xl-down", $generateSpacing: false);
+    }
+  }
+
+  //ONLY
+
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      /* small only screen layout helpers */
+      @include oj-layout-helpers-responsive("oj-sm-only");
+    }
+  }
+
+  @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+    @media #{$responsiveQueryMediumOnly} {
+      /* medium only screen layout helpers */
+      @include oj-layout-helpers-responsive("oj-md-only");
+    }
+  }
+
+  @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+    @media #{$responsiveQueryLargeOnly} {
+      /* large only screen layout helpers */
+      @include oj-layout-helpers-responsive("oj-lg-only");
+    }
+  }
+
+  @if $privateResponsiveQueryXlargeOnly and $privateResponsiveQueryXlargeOnly != none {
+    @media #{$privateResponsiveQueryXlargeOnly} {
+      /* large only screen layout helpers */
+      @include oj-layout-helpers-responsive("oj-xl-only");
+    }
+  }
+
+  // PRINT
+  @if $privateResponsiveQueryPrint and $privateResponsiveQueryPrint != none {
+    @media #{$privateResponsiveQueryPrint} {
+      /* print layout helpers */
+      @include oj-layout-helpers-responsive("oj-print");
+    }
+  }
+
+  /**
+     * This idea/code is from zurb foundation, thanks zurb!
+     *
+     * In the jet sass files there are variables for
+     * responsive screen sizes, these look something like
+     *    $screenSmallRange:  0, 767px !default;
+     *    $screenMediumRange: 768px, 1023px !default;
+     *    $screenLargeRange:  1024px, 1280px !default;
+     *    $screenXlargeRange: 1281px, null !default;
+     *
+     * These variables in turn are used to generate responsive media queries in variables like
+     * $responsiveQuerySmallUp, $responsiveQueryMediumUp, etc.
+     *
+     * we send down these media queries as the font family in classes
+     * that look something like this:
+     *
+     * .oj-mq-md {
+     *    font-family: "/screen and (min-width: 768px)/";
+     * }
+     *
+     * This function applies the class and then reads the font family off a dom
+     * element to get the media query string
+     *
+     * example usage:
+     *   var md_media_query = oj.ResponsiveUtils._getMediaQueryFromClass('oj-mq-md');
+     */
+
+  @include oj-media-query-as-text($selector: ".oj-mq-sm-up", $query: $responsiveQuerySmallUp);
+  @include oj-media-query-as-text($selector: ".oj-mq-md-up", $query: $responsiveQueryMediumUp);
+  @include oj-media-query-as-text($selector: ".oj-mq-lg-up", $query: $responsiveQueryLargeUp);
+  @include oj-media-query-as-text($selector: ".oj-mq-xl-up", $query: $responsiveQueryXlargeUp);
+  @include oj-media-query-as-text($selector: ".oj-mq-xxl-up", $query: $privateResponsiveQueryXXlargeUp);
+
+  @include oj-media-query-as-text($selector: ".oj-mq-sm-only", $query: $responsiveQuerySmallOnly);
+  @include oj-media-query-as-text($selector: ".oj-mq-md-only", $query: $responsiveQueryMediumOnly);
+  @include oj-media-query-as-text($selector: ".oj-mq-lg-only", $query: $responsiveQueryLargeOnly);
+  @include oj-media-query-as-text($selector: ".oj-mq-xl-only", $query: $privateResponsiveQueryXlargeOnly);
+
+  @include oj-media-query-as-text($selector: ".oj-mq-md-down", $query: $responsiveQueryMediumDown);
+  @include oj-media-query-as-text($selector: ".oj-mq-lg-down", $query: $responsiveQueryLargeDown);
+  @include oj-media-query-as-text($selector: ".oj-mq-xl-down", $query: $privateResponsiveQueryXlargeDown);
+
+  .oj-mq-high-resolution {
+    font-family: "/(-webkit-min-device-pixel-ratio: #{$privateHighResolutionDevicePixelRatio}), (min-resolution: #{$privateHighResolutionDevicePixelRatio*96}dpi), (min-resolution: #{$privateHighResolutionDevicePixelRatio}dppx)/";
+  }
+}

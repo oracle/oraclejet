@@ -1,0 +1,53 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../animation/themes/redwood/oj-animation.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../panel/themes/redwood/_oj-panel.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection-ignore.scoped.cssvars.scss";
+
+
+// ----- end dependencies ---------
+
+@import "_oj-list-view.cssvars.scss";
+@import "_oj-list-view-ignore.scoped.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-list-view.scss";
+
+  @include module-include-once("redwood.listview") {
+
+        /* Styling for the expand icon */
+        .oj-listview-expand-icon{
+          @extend .oj-fwk-icon-caret-s;
+        }
+        
+        /* Styling for the collapse icon */
+        .oj-listview-collapse-icon {
+           @extend .oj-fwk-icon-caret-end;
+        }
+
+        /* Styling for the affordance icon */
+        .oj-listview-drag-handle {
+            @extend .oj-fwk-icon;
+            @extend .oj-fwk-icon-drag;
+            background-image: none;            
+        }
+
+        /* Styling for the drill down icon */
+        .oj-listview-drill-icon {
+          @extend .oj-fwk-icon;
+          @extend .oj-fwk-icon-caret-end;
+        }
+
+  }

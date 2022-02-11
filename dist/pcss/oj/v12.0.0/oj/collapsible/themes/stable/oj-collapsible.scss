@@ -1,0 +1,48 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-collapsible.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-collapsible.scss";
+
+  @include module-include-once("stable.collapsible") {
+
+    .oj-collapsible-header .oj-collapsible-header-icon {
+      /*
+       * For a basic collapsible (not in an accordion)
+       * the closed font icon has some whitespace on the left side,
+       * use a negative margin to move over the icon
+       */
+      @include oj-ltr() {
+        margin: 0 0 0 -8px;
+      }
+      @include oj-rtl() {
+        margin: 0 -8px 0 0;
+      }
+    }
+
+    .oj-collapsible-close-icon {
+      @extend .oj-fwk-icon-caret-end;
+    }
+
+    .oj-collapsible-open-icon {
+      @extend  .oj-fwk-icon-caret-s;
+    }
+  }

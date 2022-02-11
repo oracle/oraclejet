@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, ojcomponentcore, ojkeyset, ojcustomelementUtils, DataProviderFactory, ListDataProviderView, TreeDataProviderView, TimerUtils) { 'use strict';
+define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 'ojs/ojlistview', 'ojs/ojhighlighttext', 'ojs/ojcore-base', 'jquery', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojdataprovider', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojkeyset', 'ojs/ojcustomelement-utils', 'ojs/ojdataproviderfactory', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview', 'ojs/ojtimerutils'], function (exports, ojeditablevalue, ojpopupcore, ojinputtext, ojlistview, ojhighlighttext, oj, $, DomUtils, Logger, Config, ThemeUtils, FocusUtils, ojdataprovider, Context, ojcomponentcore, ojkeyset, ojcustomelementUtils, ojdataproviderfactory, ListDataProviderView, TreeDataProviderView, TimerUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -785,6 +785,18 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
 
     // LovUtils
     killEvent: function (event) {
+      event.preventDefault();
+    },
+
+    // LovUtils
+    killEventWithAncestorExceptions: function (selectors, event) {
+      // Do nothing, if the target has one of the ancestor selectors
+      const target = $(event.target);
+      if (selectors.some((selector) => target.closest(selector) !== 0)) {
+        return;
+      }
+      // Only prevent default if the event target is not a descendent
+      // of the element with the provided selector
       event.preventDefault();
     },
 
@@ -2412,7 +2424,7 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * mySelect.required = true;
        *
        * @name required
-       * @ojshortdesc Specifies whether a value is required.
+       * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
        * @expose
        * @access public
        * @instance
@@ -2422,53 +2434,64 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
        * @see #translations
        */
       /**
-       * Whether the Select is required or optional. When required is set to true, an implicit
-       * required validator is created using the RequiredValidator -
-       * <code class="prettyprint">new RequiredValidator()</code>.
-       *
-       * Translations specified using the <code class="prettyprint">translations.required</code> attribute
-       * and the label associated with the Select, are passed through to the options parameter of the
-       * createValidator method.
-       *
-       * <p>
-       * When <code class="prettyprint">required</code> property changes due to programmatic  intervention,
-       * the Select may clear messages and run validation, based on the current state it's in. </br>
-       *
-       * <h4>Running Validation</h4>
-       * <ul>
-       * <li>if element is valid when required is set to true, then it runs deferred validation on
-       * the value. This is to ensure errors are not flagged unnecessarily.
-       * </li>
-       * <li>if element is invalid and has deferred messages when required is set to false, then
-       * element messages are cleared but no deferred validation is run.
-       * </li>
-       * <li>if element is invalid and currently showing invalid messages when required is set, then
-       * element messages are cleared and normal validation is run using the current display value.
-       * <ul>
-       *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-       *   property is not updated and the error is shown.
-       *   </li>
-       *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-       *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-       *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
-       * </ul>
-       * </li>
-       * </ul>
-       *
-       * <h4>Clearing Messages</h4>
-       * <ul>
-       * <li>Only messages created by the element are cleared.</li>
-       * <li><code class="prettyprint">messages-custom</code> attribute is not cleared.</li>
-       * </ul>
-       *
-       * </p>
-       *
-       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-       * This is the default.
-       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user and the
-       * input's label will render a required icon. A required validator -
-       * {@link oj.RequiredValidator} - is implicitly used.
-       *
+         * <p>
+         * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+         * This is the default.
+         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+         * </p>
+         * <p>
+         * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+         * If user-assistance-density is 'compact', it will show on the label as an icon.
+         * In the Alta theme the input's label will render a required icon.
+         * </p>
+         * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+         * it be changed.
+         * To override the required error message,
+         * use the <code class="prettyprint">translations.required</code> attribute.
+         * The component's label text is passed in as a token {label} and can be used in the message detail.
+         * </p>
+         * <p>When required is set to true, an implicit
+         * required validator is created, i.e.,
+         * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+         * validator to run during initial render, and its error is not shown to the user at this time;
+         * this is called deferred validation. The required validator also runs during normal validation;
+         * this is when the errors are shown to the user.
+         * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+         * </p>
+         * <p>
+         * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+         * the component may clear component messages and run validation, based on the current state it's in. </br>
+         *
+         * <h4>Running Validation when required property changes</h4>
+         * <ul>
+         * <li>if component is valid when required is set to true, then it runs deferred validation on
+         * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+         * shown to the user.
+         * </li>
+         * <li>if component is invalid and has deferred messages when required is set to false, then
+         * component messages are cleared (messages-custom messages are not cleared)
+         * but no deferred validation is run because required is false.
+         * </li>
+         * <li>if component is invalid and currently showing invalid messages when required is set, then
+         * component messages are cleared and normal validation is run using the current display value.
+         * <ul>
+         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+         *   property is not updated and the error is shown.
+         *   </li>
+         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+         *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+         *   event on the component to clear custom errors.</li>
+         * </ul>
+         * </li>
+         * </ul>
+         *
+         * <h4>Clearing Messages when required property changes</h4>
+         * <ul>
+         * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+         * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+         * </ul>
+         *
+         * </p>
        * @expose
        * @access public
        * @instance
@@ -3396,7 +3419,9 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       $elem.on('change', '.' + className + '-input', LovUtils.stopEventPropagation);
 
       this._containerEventListeners = {
-        click: LovUtils.killEvent,
+        // JET-48083 - clicking help-hints.source link does nothing
+        // Do not kill events originating from user-assistance-container
+        click: LovUtils.killEventWithAncestorExceptions.bind(null, ['.oj-user-assistance-inline-container']),
         // keyup: function (event) {
         //   if (event.keyCode === 10 || event.keyCode === 13) {
         //     $elem.removeClass('oj-focus');
@@ -4189,11 +4214,20 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
       filterInputText.addEventListener('blur', function (event) {
         $elem.removeClass('oj-focus');
         if (!this._fullScreenPopup) {
-          // don't hide the filter field if tabbing into the dropdown or clicking on an empty area
-          // of the dropdown
-          if ((!event.relatedTarget ||
-               !DomUtils.isAncestor(this._lovDropdown.getElement(), event.relatedTarget)) &&
-              !this._mousedownOnDropdown) {
+          // don't hide the filter field if:
+          // * tabbing into the dropdown, or
+          // * clicking on an empty area of the dropdown, or
+          // * JET-47185 - Acc: SelectSingle loses focus if we switch to other windows - Potential
+          //   Keyboard trap in a dialog
+          //   Alt+Tabbing to other application windows, in which case the document.activeElement
+          //   will still be in the filter field
+          var focusInDropdown = event.relatedTarget &&
+            DomUtils.isAncestor(this._lovDropdown.getElement(), event.relatedTarget);
+          var focusInFilterField = document.activeElement &&
+            DomUtils.isAncestor(filterInputText, document.activeElement);
+          if (!focusInDropdown &&
+              !this._mousedownOnDropdown &&
+              !focusInFilterField) {
             this._showMainField();
           }
         }
@@ -4653,6 +4687,14 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
     _setOption: function (key, value, flags) {
       var abstractLovBase = this._abstractLovBase;
 
+      if (key === this._GetValueItemPropertyName()) {
+        // JET-44210 - throw an error when a value-item is set externally that contains the key
+        // but not the data
+        if (!this._IsValueItemForPlaceholder(value) && value.data == null) {
+          throw new Error('Select Single: value-item contains key but no data');
+        }
+      }
+
       this._super(key, value, flags);
 
       var processSetOptions;
@@ -4870,8 +4912,11 @@ define(['exports', 'ojs/ojeditablevalue', 'ojs/ojpopupcore', 'ojs/ojinputtext', 
         }
 
         // Wrap the data provider in the CachingDataProvider first
-        wrapper = DataProviderFactory.getEnhancedDataProvider(wrapper,
-          { capabilities: { fetchCapability: { caching: 'visitedByCurrentIterator' } } });
+        wrapper = ojdataproviderfactory.getEnhancedDataProvider(wrapper, {
+          fetchFirst: { caching: 'visitedByCurrentIterator' },
+          // dedup: { type: 'iterator' },
+          eventFiltering: { type: 'iterator' }
+        });
 
         wrapper = new FilteringDataProviderView(wrapper);
         // save the data provider or wrapper

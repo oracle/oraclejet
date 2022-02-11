@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -20,13 +20,15 @@ import { IntlConverterUtils, OraI18nUtils } from 'ojs/ojconverterutils-i18n';
 import DateTimeRangeValidator from 'ojs/ojvalidator-datetimerange';
 import DateRestrictionValidator from 'ojs/ojvalidator-daterestriction';
 import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
-import { _getCalendarData, getFirstDayOfWeek, getDayNames, getMonthNames, __getBundle } from 'ojs/ojlocaledata';
+import { getFirstDayOfWeek, getDayNames, getMonthNames, __getBundle } from 'ojs/ojlocaledata';
 import { info, warn, error, warning } from 'ojs/ojlogger';
 import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import Context from 'ojs/ojcontext';
 import FocusUtils from 'ojs/ojfocusutils';
 import { makeFocusable, isTouchSupported } from 'ojs/ojdomutils';
 import { getDeviceRenderMode } from 'ojs/ojconfig';
+import LabeledByUtils from 'ojs/ojlabelledbyutils';
+import { getDateTimePreferences } from 'ojs/ojconverter-preferences';
 
 (function () {
   var bindingMeta = {
@@ -1136,6 +1138,9 @@ var __oj_input_date_time_metadata =
             }
           }
         },
+        "time": {
+          "type": "string"
+        },
         "tooltipCalendar": {
           "type": "string"
         },
@@ -1382,6 +1387,14 @@ function _getMetaData(dayMetaData, position, params) {
  * @ignore
  */
  function _getDateDefaultConverter() {
+  // if user preferences dateStyle short exists, use those for the default converter.
+  // The user preferences, including timezone,
+  // get merged in within the IntlDateTimeConverter wrapped code when dateStyle is short.
+  const userPref = getDateTimePreferences();
+  // userPref?.dateStyle?.short doesn't compile
+  if (userPref && ((userPref.dateStyle && userPref.dateStyle.short))) {
+    return new IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
+  }
   return new IntlDateTimeConverter({ day: '2-digit', month: '2-digit', year: _yearFormat });
 }
 
@@ -2170,8 +2183,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojextension {_COPY_TO_INNER_ELEM: true}
      */
     /**
-     * The maximum selectable date, in ISO string format. When set to null, there is no maximum.
-     * min and max must be in the same ISO string format as value (local,
+     * The maximum selectable date, in ISO string format. For ojDatePicker, this should not contain
+     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
+     * is no maximum. min and max must be in the same ISO string format as value (local,
      * zulu, or offset).
      *
      * @expose
@@ -2193,8 +2207,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * myInputDate.max = '2018-09-25';
      */
     /**
-     * The maximum selectable date, in ISO string format. When set to null, there is no maximum.
-     * min and max must be in the same ISO string format as value (local,
+     * The maximum selectable date, in ISO string format. For ojInputDate, this should not contain
+     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
+     * is no maximum. min and max must be in the same ISO string format as value (local,
+
      * zulu, or offset).
      *
      * @expose
@@ -2217,8 +2233,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     max: undefined,
 
     /**
-     * The minimum selectable date, in ISO string format. When set to null, there is no minimum.
-     * min and max must be in the same ISO string format as value (local,
+     * The minium selectable date, in ISO string format. For ojDatePicker, this should not contain
+     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
+     * is no minimum. min and max must be in the same ISO string format as value (local,
      * zulu, or offset).
      *
      * @expose
@@ -2240,8 +2257,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * myInputDate.min = '2014-08-25';
      */
     /**
-     * The minimum selectable date, in ISO string format. When set to null, there is no minimum.
-     * min and max must be in the same ISO string format as value (local,
+     * The minimum selectable date, in ISO string format. For ojInputDate, this should not contain
+     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
+     * is no minimum. min and max must be in the same ISO string format as value (local,
      * zulu, or offset).
      *
      * @expose
@@ -2598,13 +2616,27 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      */
     /**
      * The value of the InputDate element which must be an ISOString.
+     * <p> The value should be a local date (no time) ISOString
+     * like '2021-03-14'. If value is zulu to begin with, then the timezone specified
+     * on the converter, if there is one, or the local timezone of the browser is used to figure out the day.
+     * Once the user interacts with the component, the time portion is lost
+     * and the value becomes a local date, no longer a zulu datetime.
+     * </p>
+     * <p>
+     * For clarity and simplicity, supply the local date for initial rendering.
+     * If needed, use IntlConverterUtils.dateToLocalIsoDateString to convert a Date to
+     * a local iso string that contains only the date to set as the initial value.
+     * IntlConverterUtils.dateToLocalIsoDateString(new Date(2014, 1, 1)));
+
+     * If a time is provided in the ISOString value, a warning will be issued.
+     * </p>
      *
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-input-date value='2014-09-10' /&gt;
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> property specified programmatically
-     * using oj.IntlConverterUtils.dateToLocalIso :</caption>
-     * myInputDate.value = oj.IntlConverterUtils.dateToLocalIso(new Date());<br/>
+     * using oj.IntlConverterUtils.dateToLocalIsoDateString :</caption>
+     * myInputDate.value = oj.IntlConverterUtils.dateToLocalIsoDateString(new Date());<br/>
      * @example <caption>Get or set the <code class="prettyprint">value</code> property, after initialization:</caption>
      * // Getter: returns Today's date in ISOString
      * myInputDate.value;
@@ -2793,7 +2825,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _ComponentCreate: function () {
     // verify that the options are set correctly. If they are not an error is thrown
     // and the component will not render.
-    IntlConverterUtils._verifyValueMinMax(this.options.value, this.options.min, this.options.max);
+    IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
+                                                this.options.min,
+                                                this.options.max);
 
     // Create all the default converters we need first
     this._CreateConverters();
@@ -2832,6 +2866,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       this._dpDiv.css('display', 'block');
 
       this._registerSwipeHandler();
+
+      // For this to be accessible, the root dom element needs role/aria-labelledby.
+      const rootDomElem = this.widget();
+      rootDomElem[0].setAttribute('role', 'group');
+      this._labelledByUpdatedForSet(rootDomElem[0].id, null,
+      this.options.labelledBy, rootDomElem);
     } else {
       this._processReadOnlyKeyboardEdit();
       if (this.options.readOnly !== true) {
@@ -2994,7 +3034,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         // eslint-disable-next-line no-param-reassign
         value = null;
       }
-      IntlConverterUtils._verifyValueMinMax(this.options.value, this.options.min, this.options.max);
+      IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
+                                                  this.options.min,
+                                                  this.options.max);
 
       retVal = this._super(key, value, flags);
       this._setCurrentDate(value);
@@ -3026,7 +3068,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (key === 'disabled') {
       this._disableEnable(value);
     } else if (key === 'max' || key === 'min') {
-      IntlConverterUtils._verifyValueMinMax(this.options.value, this.options.min, this.options.max);
+      IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
+                                                  this.options.min,
+                                                  this.options.max);
       // since validators are immutable, they will contain min + max as local values. B/c of this will need to recreate
       this._setValidatorOption('dateTimeRange',
         this._createDateTimeRangeValidator(this._GetConverter()));
@@ -3107,6 +3151,49 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
   _AppendInputHelperParent: function () {
     return this._triggerNode;
+  },
+
+  /**
+   * Sets up the labelledBy changes when labelledBy option changes.
+   * This is overridden for the datepicker and datetimepicker since
+   * the way you link up label to the component is like the 'set' components.
+   * aria-labelledby.
+   *
+   * @protected
+   * @override
+   * @memberof oj.ojInputDate
+   * @instance
+   */
+   _setLabelledByForInputBase: function (oldValue, labelledBy) {
+    if (!this._isInLine) {
+      this._super(oldValue, labelledBy);
+    } else {
+      const rootDomElem = this.widget();
+      this._labelledByUpdatedForSet(rootDomElem[0].id, oldValue,
+        labelledBy, rootDomElem);
+    }
+  },
+
+  /**
+   * Sets up the labelledBy links on iniit.
+   * This is overridden for the datepicker and datetimepicker since
+   * the way you link up label to the component is like the 'set' components.
+   * aria-labelledby.
+   *
+   * @protected
+   * @override
+   * @memberof oj.ojInputDate
+   * @instance
+   */
+   _initLabelledByForInputBase: function (labelledBy) {
+    if (!this._isInLine) {
+      this._super(labelledBy);
+    } else {
+      // TODO: What about readonly?
+      const rootDomElem = this.widget();
+      this._labelledByUpdatedForSet(rootDomElem[0].id, null,
+        labelledBy, rootDomElem);
+    }
   },
 
   /**
@@ -4569,7 +4656,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       var minDraw = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
 
       // tech shouldn't this error out? [previous existing jquery logic so keep, maybe a reason]
-      if (maxDateParams && converter.compareISODates(maxDateIso, minDateIso) < 0) {
+      if (maxDateParams && IntlConverterUtils._compareISODates(maxDateIso, minDateIso) < 0) {
         warn(`min property is greater than max property, and should be fixed.
          For now min is set to equal max.`);
         minDraw = new Date(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
@@ -4589,7 +4676,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
                              maxDateParams.date);
 
       // tech shouldn't this error out? [previous existing jquery logic so keep, maybe a reason]
-      if (minDateParams && converter.compareISODates(maxDateIso, minDateIso) < 0) {
+      if (minDateParams && IntlConverterUtils._compareISODates(maxDateIso, minDateIso) < 0) {
         warn(`max property is less than min property, and should be fixed.
         For now max is set to equal min.`);
         maxDraw = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
@@ -5118,17 +5205,22 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     html += footerLayout;
     return { html: html, dayOverId: dayOverId };
   },
+
   /**
-   * Retrieves whether month is displayed prior to year
+   * Retrieves whether month is displayed prior to year. This function is
+   * deprecated in LocaleData.js so we need to duplicate it here.
    * @return {boolean} whether month is prior to year
    * @method isMonthPriorToYear
    * @private
    */
   _isMonthPriorToYear: function () {
-    var longDateFormat = _getCalendarData().dateFormats.long.toUpperCase();
-    var monthIndex = longDateFormat.indexOf('M');
-    var yearIndex = longDateFormat.indexOf('Y');
-
+    var options = { dateStyle: 'long' };
+    var locale = oj.Config.getLocale();
+    var d = new Date();
+    var intlFormatter = new Intl.DateTimeFormat(locale, options);
+    var parts = intlFormatter.formatToParts(d);
+    var monthIndex = parts.findIndex(obj => obj.type === 'month');
+    var yearIndex = parts.findIndex(obj => obj.type === 'year');
     return monthIndex < yearIndex;
   },
 
@@ -5994,6 +6086,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
     return valueParams;
   },
+
+  /**
+   * @memberof oj.ojInputDate
+   * @instance
+   * @private
+  */
+   _labelledByUpdatedForSet: LabeledByUtils._labelledByUpdatedForSet,
 
   /**
    * Shows the HTML datepicker
@@ -6986,7 +7085,7 @@ function TimePickerModel(properties) {
 
   defineProperties();
   defineMethods();
-  setProperties(properties);
+  setProperties();
 
   function defineProperties() {
     _settingProps = true;
@@ -7209,11 +7308,7 @@ function TimePickerModel(properties) {
             grouped = 'hoursMeridiem';
           } else {
             divisor = gcd(_increment, HOURS12);
-            if (divisor === _increment) {
-              grouped = 'all';
-            } else {
-              grouped = 'all';
-            }
+            grouped = 'all';
           }
         }
 
@@ -7587,7 +7682,7 @@ function createWheel(model, isNumber, classList) {
   var _momentum;
   var _isMeridian = !isNumber && classList === 'oj-timepicker-meridian';
 
-  createDom(classList);
+  createDom();
   var $wheel = $(_wheel);
 
   defineMethods();
@@ -7693,7 +7788,8 @@ function createWheel(model, isNumber, classList) {
       }
     }
 
-    _wheel.setAttribute('aria-valuenow', _model.getText(0));
+    // Set the current value on the wheel for accessibility
+    _updateAriaValue(_model.getText(0));
   }
 
   function refresh() {
@@ -7714,7 +7810,19 @@ function createWheel(model, isNumber, classList) {
     }
 
     // Set the current value on the wheel for accessibility
-    _wheel.setAttribute('aria-valuenow', _model.getText(0));
+    _updateAriaValue(_model.getText(0));
+  }
+
+  function _updateAriaValue(value) {
+    // If the value is non-numeric, use aria-valuetext and remove aria-valuenow
+    // otherwise use aria-valuenow and remove aria-valuetext
+    if (isNaN(value)) {
+      _wheel.removeAttribute('aria-valuenow');
+      _wheel.setAttribute('aria-valuetext', value);
+    } else {
+      _wheel.removeAttribute('aria-valuetext');
+      _wheel.setAttribute('aria-valuenow', value);
+    }
   }
 
   function keydownHandler(event) {
@@ -8076,6 +8184,12 @@ function _getTimePickerConverter(converter, addOpts) {
  * @ignore
  */
  function _getTimeDefaultConverter() {
+  // if user preference pattern exists for timeStyle short, use those for the default converter
+  // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
+  const userPref = getDateTimePreferences();
+  if (userPref && userPref.timeStyle && userPref.timeStyle.short) {
+    return new IntlDateTimeConverter({ formatType: 'time', timeFormat: 'short' });
+  }
   return new IntlDateTimeConverter({ hour: '2-digit', minute: '2-digit' });
 }
 
@@ -8710,6 +8824,11 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
 
     /**
      * The value of the InputTime which must be an ISOString.
+     * <p>
+     * If the converter's timeZone option is
+     * not set and the value is a zulu or offset (not local) ISOString,
+     * the timeZone will default to the user's system's timeZone.
+     * </p>
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-input-time value='T10:30:00.000'&gt;&lt;/oj-input-time&gt;
@@ -9309,14 +9428,15 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
     },
 
   /**
-   * Invoke super only if it is standlone or if it is part of ojInputDateTime and ojInputDateTime is inline
+   * Invoke super only if it is standlone or if it is part of ojInputDateTime and ojInputDateTime is inline.
+   * And only if the timepicker is supported, which it isn't in Redwood
    *
    * @ignore
    * @protected
    * @override
    */
     _AppendInputHelper: function () {
-      if (this._isIndependentInput()) {
+      if (this._isIndependentInput() && this._isTimePickerSupported()) {
         this._superApply(arguments);
       }
     },
@@ -9393,7 +9513,9 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
     _CreateContainerWrapper: function () {
       this._inputContainer = $(this._superApply(arguments));
       this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
-      this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
+      if (this._isTimePickerSupported()) {
+        this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
+      }
       return this._inputContainer[0];
     },
 
@@ -9831,7 +9953,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           // if the operation is an enter key in the input field (not in the picker), the newValue is not just time, it is date+time. So we
           // need to deal differently
           var converter;
-          var timeSwitcherConverter = this._GetDefaultConverter();
           var datePickerCompWidget = this._datePickerComp.widget;
           if (event && event.target &&
               event.target === this.element[0] &&
@@ -9860,7 +9981,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           var isoDateString = converterUtils._copyTimeOver(isoValue, dateTimeValue);
           var parsedNewValue = converter.parse(isoDateString);
 
-          if (parsedNewValue && timeSwitcherConverter.compareISODates(dateTimeValue,
+          if (parsedNewValue && IntlConverterUtils._compareISODates(dateTimeValue,
             parsedNewValue) === 0) {
             // need to kick out if _SetValue happened due to Blur w/o changing of value
             return false;
@@ -10181,9 +10302,10 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    * @private
    */
     _getAmPmStrings: function () {
-      var converter = new IntlDateTimeConverter({ pattern: 'a' });
-      return [converter.format('2016-01-01T01:00:00'),
-        converter.format('2016-01-01T13:00:00')];
+      var converter = new IntlDateTimeConverter({ pattern: 'hh:a' });
+      var am = converter.format('2016-01-01T01:00:00').split(':');
+      var pm = converter.format('2016-01-01T15:00:00').split(':');
+      return [am[1], pm[1]];
     },
 
   /**
@@ -10785,6 +10907,16 @@ var _sDefaultDateTimeConverter;
  * @ignore
  */
 function _getDateTimeDefaultConverter() {
+  // if user preferences exist, use those for the default converter
+  const userPref = getDateTimePreferences();
+  // User preference needs both dateStyle and timeStyle short set for
+  // use in the datetime component.
+  // The user preferences, including timezone, get merged in within the IntlDateTimeConverter wrapped code.
+  if (userPref && (userPref.dateStyle && userPref.dateStyle.short &&
+    userPref.timeStyle && userPref.timeStyle.short)) {
+    return new IntlDateTimeConverter(
+      { formatType: 'datetime', dateFormat: 'short', timeFormat: 'short' });
+  }
   return new IntlDateTimeConverter({
     day: '2-digit',
     month: '2-digit',
@@ -11603,7 +11735,12 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      * @ojeventgroup common
      */
     /**
-     * The value of the InputDateTime element which should be an ISOString
+     * The value of the InputDateTime element which should be an ISOString.
+     * <p>
+     * If the converter's timeZone option is
+     * not set and the value is a zulu or offset (not local) ISOString,
+     * the timeZone will default to the user's system's timeZone.
+     * </p>
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">value</code> attribute:</caption>
      * &lt;oj-input-date-time value='2014-09-10T13:30:00.000'&gt;&lt;/oj-input-date-time&gt;
@@ -11858,8 +11995,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     if (this._isInLine) {
       // Since DatePicker never intended to have timepicker associated to it
       // need to have an input element that is tied to the time selector
-
-      var input = $("<input type='text'>");
+      var translatedTime = this.getTranslatedString('time');
+      const inputHTML = `<input type='text' aria-label=${translatedTime}>`;
+      var input = $(inputHTML);
       input.insertAfter(this.element); // @HTMLUpdateOK
 
       // Now need to reset this._timePickerElement to the newly created input element
@@ -11977,17 +12115,21 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
   // eslint-disable-next-line no-unused-vars
   _setOption: function (key, value, flags) {
     var retVal = this._superApply(arguments);
-
-    if (key === 'value') {
-      // if goes through model does it needs to update or should be only used by selection + keydown
-      var optionsValue = this._formatValueWithTimeConverter(this.options.value);
-      this._previousValue = optionsValue;
-    } else if (key === 'readOnly') {
-      if (!this._isInLine && !value && this._switcherDiv == null) {
-        this._createSwitcherDiv();
-        this._setupSwitcherButtons();
-        this._createTimePicker();
-      }
+    switch (key) {
+      case 'value':
+        // if goes through model does it needs to update or should be only used by selection + keydown
+        var optionsValue = this._formatValueWithTimeConverter(this.options.value);
+        this._previousValue = optionsValue;
+        break;
+      case 'readOnly':
+        if (!this._isInLine && !value && this._switcherDiv == null) {
+          this._createSwitcherDiv();
+          this._setupSwitcherButtons();
+          this._createTimePicker();
+        }
+        break;
+      default:
+        break;
     }
 
     if (this._timePicker) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,6 +9,7 @@ import oj from 'ojs/ojcore-base';
 import $ from 'jquery';
 import ArrayDataProvider from 'ojs/ojarraydataprovider';
 import { EventTargetMixin } from 'ojs/ojeventtarget';
+import { warn } from 'ojs/ojlogger';
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -31,22 +32,25 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *            For nodes that cannot have children, the "children" property should not be set.
  *            For nodes that can but don't have children, the "children" property should be set to an empty array.<br><br>
  *            Data can be passed as a regular array or a Knockout observableArray.  If a Knockout observableArray is
- *            used, any mutation must be performed with observableArray methods.  The events described below will be dispatched to the ArrayTreeDataProvider
- *            with the appropriate event payload.<br><br>
- *            Filtering is supported and, by default, applied only on leaf nodes. Empty tree nodes are not collapsed. The filtering on leaf nodes only works
- *            by combining the passed in filter definition with an OR expression of the "children" property to determine if a node is a tree or leaf.
+ *            used, any mutation must be performed with observableArray methods.<br/><br/>
+ *            ArrayTreeDataProvider subscribes to all changes of Knockout observableArrays including root and any children observableArrays.<br/><br/>
+ *            The events described below will be dispatched to the ArrayTreeDataProvider with the appropriate event payload.<br><br>
+ *            Filtering is supported and, by default, applied only on leaf nodes. Empty tree nodes are not collapsed.
+ *            The filtering on leaf nodes only works by combining the passed in filter definition with an OR expression
+ *            of the "children" property to determine if a node is a tree or leaf.
  *
  * <h3 id="events-section">
- *   Events
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
+ * Events
+ * <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
  * </h3>
- * Consumers can add event listeners to listen for the following event types and respond to data change.
+ * <p>Consumers can add event listeners to listen for the following event types and respond to data change.
  * Event listeners should be added to the root-level ArrayTreeDataProvider created by the application. The root-level ArrayTreeDataProvider receives events for the entire tree.
  * Child-level ArrayTreeDataProvider returned by getChildDataProvider does not receive events.
+ * </p>
  * <h4 id="event:mutate" class="name">
- *   mutate
+ * mutate
  * </h4>
- * This event is fired when items have been added or removed from the data.
+ * This event is fired when items are added to, removed from, or updated in an observableArray.  The event is the observableArray specific.
  * <p>
  * Event payload is found under <code class="prettyprint">event.detail</code>, which implements the {@link DataProviderMutationEventDetail} interface.
  * </p>
@@ -54,20 +58,166 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  * <h4 id="event:refresh" class="name">
  *   refresh
  * </h4>
- * This event is fired when the data has been refreshed and components need to re-fetch the data.
  * <p>
- * This event contains no additional event payload.
+ * This event with no payload is fired when the data has been refreshed and components need to re-fetch the data.
+ * In this case, the re-fetch is from the root.
+ * </p>
+ * <p>This event with payload 'keys' is fired when updated nodes include any changes in their children.  The 'keys' is
+ * the set of keys of the nodes with changes in their children, and components need to re-fetch the sub-tree of 'keys'.
+ * In this case, the re-fetch should be from each key.
+ * </p>
+ * <p>
+ * Event payload is found under <code class="prettyprint">event.detail</code>,
+ * which implements the {@link DataProviderRefreshEventDetail} interface.
  * </p>
  *
- * <i>Example of consumer listening for the "mutate" event type:</i>
- * <pre class="prettyprint"><code>var listener = function(event) {
+ * <i>Example of a tree structured data:</i>
+ * <pre class="prettyprint"><code>
+ * // initiate a nested observable array
+ * const obData = ko.observableArray([
+ *   {title:"News", id:"news"},
+ *   {title:"Blogs", id:"blogs", "children": ko.observableArray([
+ *     {title:"Today", id:"today"},
+ *     {title:"Yesterday", id:"yesterday"},
+ *     {title:"Archive", id:"archive"}
+ *   ])}
+ * ]);
+ * </code></pre>
+ *
+ * <p>With the data above, the following are actions on an observableArray and events expected.
+ * </p>
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th width='15%'>Action</th>
+ *       <th width='30%'>Data Mutation</th>
+ *       <th width='20%'>Example</th>
+ *       <th width='20%'>Code</th>
+ *       <th width='15%'>Expected Events</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>add a node as a sibling</kbd></td>
+ *       <td>Action is an 'add' on the observableArray containing the node.    This action has no impact to the parent node.</td>
+ *       <td>Add sibling 'Links' to root level</td>
+ *       <td>obData.push({title: "Links", id: "links"});</td>
+ *       <td>'mutate' with 'add' for node</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>remove a node</kbd></td>
+ *       <td>Action is a 'remove' on the observableArray containing the node.  This action has no impact to the parent node.</td>
+ *       <td>Remove node 'Links'</td>
+ *       <td>obData.splice(2,1);</td>
+ *       <td>'mutate' with 'remove' for node</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>add a child to a leaf node </kbd></td>
+       <td>The node doesn't have any children (null or undefined),
+  action is an 'update' on the observableArray containting the node
+  which replaces the node with a new node of the same value plus the child under it.</td>
+ *       <td>Add a child under 'News'</td>
+ *       <td>const newNode = obData.slice(0,1);<br/>
+newNode["children"] = new ko.observableArray([{title: "Child1", id: "child1"}]);<br/>
+obData.splice(0, 1, newNode);</td>
+ *       <td>'mutate' with 'update' for parent<br/>
+'refresh' with 'keys' for parent</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Add a child to a non-leaf node </kbd></td>
+ *       <td>The node already has children (including []) which is an observableArray,
+ action is actually 'add a sibling to a node' where the node is one of the chidren node</td>
+ *       <td>Add another child under 'News'</td>
+ *       <td>obData()[0].children.push({title: "Child2", id: "child2"});</td>
+ *       <td>'mutate' with 'add' for child</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Update a node without children changes</kbd></td>
+ *       <td>Action is an 'update' on the observableArray containg the node.</td>
+ *       <td>Update node 'News' to 'OldNews'</td>
+ *       <td>obData.splice(0,1,{title: "OldNews", id: "news"});</td>
+ *       <td>'mutate' with 'update' for node</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Update a node with children changes</kbd></td>
+ *       <td>Action is an 'update' on the observableArray containg the node. Refer to the above 'Add a child to a node' as an example.
+ The children changes could be any changes in the chidren of the node.</td>
+ *       <td></td>
+ *       <td></td>
+ *       <td>'mutate' with 'update' for parent<br/>
+'refresh' with 'keys' for parent</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Reorder or move a node</kbd></td>
+ *       <td>Action is a 'remove' on the original observableArray containging the node, and an 'add a child to a leaf node'
+ if new parent is a leaf node, or 'Add a child to a non-leaf node' if the new parent is a non-leaf node.</td>
+ *       <td>Move node 'Today' from 'Blogs' to 'News'</td>
+ *       <td>const moveNode = obData()[1].children.splice(0,1);<br/>
+obData()[0].children.push(moveNode);</td>
+ *       <td>'mutate' with 'remove' for node <br/>
+'mutate' with 'add' for node</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * <br/>
+ *
+ <i>Example of consumer listening for the events:</i>
+ * <pre class="prettyprint"><code>
+ * dataProvider.addEventListener("mutate", handleMutate);
+ * dataProvider.addEventListener("refresh", handleRefresh);
+ *
+ * const handleMutate = function(event) {
  *   if (event.detail.remove) {
- *     var removeDetail = event.detail.remove;
+ *     const removeDetail = event.detail.remove;
  *     // Handle removed items
  *   }
  * };
- * dataProvider.addEventListener("mutate", listener);
+ *
+ * const handleRefresh = function(event) {
+ *   const detail=event.detail;
+ *   if (detail && detail.keys) {
+ *     event.detail.keys.forEach ((key) => {
+ *       // refresh children for key
+ *     });
+ *   }
+ *   else {
+ *     // refresh children for root
+ *   }
+ * }
  * </code></pre>
+ *
+ * <i>Example of when 'mutate' or 'feresh' event will be fired:</i>
+ * <pre class="prettyprint"><code>
+ * // initiate a nested observable array
+ * const obData = ko.observableArray([
+ *   {title:"News", id:"news"},
+ *   {title:"Blogs", id:"blogs", "children": ko.observableArray([
+ *     {title:"Today", id:"today"},
+ *     {title:"Yesterday", id:"yesterday"},
+ *     {title:"Archive", id:"archive"}
+ *   ])}
+ * ]);
+ *
+ * // add a new node to children of 'Blogs' by adding directly to the observableArray obData()[1].children.
+ * // 'mutate' event with add will be fired on observableArray obData()[1].children.
+ * const newNode = {title: 'Future', id: 'future'};
+ * obData()[1].children.push(newNode);
+ *
+ * // add a new node to children of 'Blogs' by updating the node 'Blogs' of the observableArray obData with updated children.
+ * // 'mutate' event with update will be fired on observableArray obData.
+ * // 'refresh' event with 'keys' as 'blogs' will be fired since the children of 'blogs' is changed.
+ * const newBlogsNode = {title:"Blogs", id:"blogs", "children": ko.observableArray([
+ *     {title:"Today", id:"today"},
+ *     {title:"Yesterday", id:"yesterday"},
+ *     {title:"Archive", id:"archive"},
+ *     newNode
+ *   ])};
+ * obData.splice(1, 1, newBlogsNode);
+ * </code></pre>
+ *
+ * <p>Observe that these two ways of mutating data result to the same final data.  The observableArray methods apply to different observableArray
+ * results to differnt events fired.
+ * </p>
  *
  * @param {(Array|function():Array)} data data supported by the components
  *                                      <p>This can be either an Array, or a Knockout observableArray.</p>
@@ -87,7 +237,7 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  * @ojtsmodule
  * @example
  * // First initialize the tree data.  This can be defined locally or read from file.
- * var treeData = [
+ * const treeData = [
  *                  {"attr": {"id": "dir1", "title": "Directory 1"},
  *                   "children": [
  *                     {"attr": {"id": "subdir1", "title": "Subdirectory 1"},
@@ -107,7 +257,7 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *                ];
  *
  * // Then create an ArrayTreeDataProvider object with the array
- * var dataprovider = new ArrayTreeDataProvider(treeData, {keyAttributes: 'attr.id'});
+ * const dataprovider = new ArrayTreeDataProvider(treeData, {keyAttributes: 'attr.id'});
  */
 
 /**
@@ -141,7 +291,7 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *  {target: "Type", value: "Array<SortCriterion<D>>", for: "implicitSort"},
  *  {target: "Type", value: "string | Array<string>", for: "keyAttributes"},
  *  {target: "Type", value: "string[]", for: "textFilterAttributes"},
- *  {target: "Type", value: "'sibling' | 'global'", for: "keyAttributesScope"},
+ *  {target: "Type", value: "'siblings' | 'global'", for: "keyAttributesScope"},
  *  {target: "Type", value: "string", for: "childrenAttribute"},
  * ]
  */
@@ -291,6 +441,10 @@ class ArrayTreeDataProvider {
         this._mapArrayToSequenceNum = new Map();
         this._mapKoArrayToSubscriptions = new Map();
         this._mapKeyToParentNodePath = new Map();
+        this._childrenAttr =
+            this.options && this.options['childrenAttribute']
+                ? this.options['childrenAttribute']
+                : 'children';
         if (_rootDataProvider == null) {
             this._parentNodePath = [];
             this._processTreeArray(treeData, []);
@@ -372,10 +526,7 @@ class ArrayTreeDataProvider {
         return Promise.resolve({ fetchParameters: params, results });
     }
     _getChildren(node) {
-        const childrenAttr = this.options && this.options['childrenAttribute']
-            ? this.options['childrenAttribute']
-            : 'children';
-        return this._getVal(node, childrenAttr, true);
+        return this._getVal(node, this._childrenAttr, true);
     }
     _getRootDataProvider() {
         if (this._rootDataProvider) {
@@ -392,6 +543,7 @@ class ArrayTreeDataProvider {
             throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
         }
         let mutationEvent = null;
+        let refreshEvent = null;
         const subscriptions = new Array(2);
         subscriptions[0] = treeData['subscribe']((changes) => {
             let i, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
@@ -400,6 +552,7 @@ class ArrayTreeDataProvider {
             let operationUpdateEventDetail = null;
             let operationAddEventDetail = null;
             let operationRemoveEventDetail = null;
+            const refreshKeySet = new Set();
             const removeDuplicate = [];
             for (i = 0; i < changes.length; i++) {
                 index = changes[i].index;
@@ -422,6 +575,9 @@ class ArrayTreeDataProvider {
                                 else {
                                     removeDuplicate.push(j);
                                     updatedIndexes.push(i);
+                                }
+                                if (!this._compareChildren(changes[i].value, changes[j].value)) {
+                                    refreshKeySet.add(iKey);
                                 }
                             }
                         }
@@ -533,15 +689,25 @@ class ArrayTreeDataProvider {
                     metadata: updateMetadataArray
                 };
             }
-            mutationEvent = new oj.DataProviderMutationEvent({
-                add: operationAddEventDetail,
-                remove: operationRemoveEventDetail,
-                update: operationUpdateEventDetail
-            });
+            if (operationAddEventDetail || operationRemoveEventDetail || operationUpdateEventDetail) {
+                mutationEvent = new oj.DataProviderMutationEvent({
+                    add: operationAddEventDetail,
+                    remove: operationRemoveEventDetail,
+                    update: operationUpdateEventDetail
+                });
+            }
+            if (refreshKeySet.size) {
+                refreshEvent = new oj.DataProviderRefreshEvent({ keys: refreshKeySet });
+            }
         }, null, 'arrayChange');
         subscriptions[1] = treeData['subscribe']((changes) => {
-            if (mutationEvent) {
-                this.dispatchEvent(mutationEvent);
+            if (mutationEvent || refreshEvent) {
+                if (mutationEvent) {
+                    this.dispatchEvent(mutationEvent);
+                }
+                if (refreshEvent) {
+                    this.dispatchEvent(refreshEvent);
+                }
             }
             else {
                 this._flushMaps();
@@ -549,6 +715,7 @@ class ArrayTreeDataProvider {
                 this.dispatchEvent(new oj.DataProviderRefreshEvent());
             }
             mutationEvent = null;
+            refreshEvent = null;
         }, null, 'change');
         this._mapKoArrayToSubscriptions.set(treeData, subscriptions);
     }
@@ -674,6 +841,9 @@ class ArrayTreeDataProvider {
         return val[attr];
     }
     _getAllVals(val) {
+        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+            return val;
+        }
         return Object.keys(val).map((key) => {
             return this._getVal(val, key);
         });
@@ -691,7 +861,11 @@ class ArrayTreeDataProvider {
     }
     _setMapEntry(key, node) {
         const rootDataProvider = this._getRootDataProvider();
-        rootDataProvider._mapKeyToNode.set(JSON.stringify(key), node);
+        const keyCopy = JSON.stringify(key);
+        if (rootDataProvider._mapKeyToNode.has(keyCopy)) {
+            warn(`Duplicate key ${keyCopy} found in ArrayTreeDataProvider.  Keys must be unique when keyAttributes ${this.options.keyAttributes} is specified`);
+        }
+        rootDataProvider._mapKeyToNode.set(keyCopy, node);
         rootDataProvider._mapNodeToKey.set(node, key);
     }
     _deleteMapEntry(key, node) {
@@ -715,11 +889,8 @@ class ArrayTreeDataProvider {
     }
     _getLeafNodeFilter(filter) {
         const attributeFilter = filter;
-        const childrenAttr = this.options && this.options['childrenAttribute']
-            ? this.options['childrenAttribute']
-            : 'children';
-        const childrenNull = { op: '$ne', attribute: childrenAttr, value: null };
-        const childrenUndefined = { op: '$ne', attribute: childrenAttr, value: undefined };
+        const childrenNull = { op: '$ne', attribute: this._childrenAttr, value: null };
+        const childrenUndefined = { op: '$ne', attribute: this._childrenAttr, value: undefined };
         const excludeParentNodeFilter = { op: '$and', criteria: [childrenNull, childrenUndefined] };
         return { op: '$or', criteria: [attributeFilter, excludeParentNodeFilter] };
     }
@@ -748,6 +919,30 @@ class ArrayTreeDataProvider {
         }
         metadata = this._getNodeMetadata(this._getNodeForKey(treeKey));
         return metadata;
+    }
+    _compareChildren(node1, node2) {
+        let bSame = true;
+        const nodeChildren1 = node1[this._childrenAttr];
+        const nodeChildren2 = node2[this._childrenAttr];
+        const children1 = typeof nodeChildren1 === 'function' ? nodeChildren1() : nodeChildren1;
+        const children2 = typeof nodeChildren2 === 'function' ? nodeChildren2() : nodeChildren2;
+        if ((!children1 && children2) || (children1 && !children2)) {
+            bSame = false;
+        }
+        else if (children1 && children2) {
+            if (children1.length !== children2.length) {
+                bSame = false;
+            }
+            else {
+                for (let i = 0; i < children1.length; i++) {
+                    if (!oj.Object.compareValues(children1[i], children2[i])) {
+                        bSame = false;
+                        break;
+                    }
+                }
+            }
+        }
+        return bSame;
     }
 }
 EventTargetMixin.applyMixin(ArrayTreeDataProvider);

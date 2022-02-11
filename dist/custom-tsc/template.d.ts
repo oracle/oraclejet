@@ -1,4 +1,4 @@
-import * as _ from "underscore";
+import * as _ from 'underscore';
 export declare class Template {
     path: string;
     cache: Record<string, any>;

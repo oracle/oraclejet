@@ -1,0 +1,102 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.rating-gauge") {
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-rating-gauge:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-rating-gauge {
+    display: block;
+  }
+
+  .oj-rating-gauge-fit {
+    width: 7.5rem;
+    height: 1.5625rem;
+  }
+
+  .oj-rating-gauge-shape-lg {
+    width: var(--oj-rating-gauge-lg-size);
+    height: var(--oj-rating-gauge-lg-size);
+  }
+
+  .oj-rating-gauge-shape-md {
+    width: var(--oj-rating-gauge-md-size);
+    height: var(--oj-rating-gauge-md-size);
+  }
+
+  .oj-rating-gauge-shape-sm {
+    width: var(--oj-rating-gauge-sm-size);
+    height: var(--oj-rating-gauge-sm-size);
+  }
+
+  .oj-rating-gauge-selected {
+    fill: var(--oj-rating-gauge-color-selected);
+    stroke: var(--oj-rating-gauge-border-color-selected);
+  }
+
+  .oj-rating-gauge-unselected {
+    fill: var(--oj-rating-gauge-color-unselected);
+    stroke: var(--oj-rating-gauge-border-color-unselected);
+  }
+
+  .oj-rating-gauge-changed {
+    fill: var(--oj-rating-gauge-color-changed);
+    stroke: var(--oj-rating-gauge-border-color-changed);
+  }
+
+  .oj-rating-gauge-hover {
+    fill: var(--oj-rating-gauge-color-hover);
+    stroke: var(--oj-rating-gauge-border-color-hover);
+  }
+
+  .oj-rating-gauge-selected-disabled {
+    fill: var(--oj-rating-gauge-color-selected-disabled);
+    stroke: transparent;
+  }
+
+  .oj-rating-gauge-unselected-disabled {
+    fill: var(--oj-rating-gauge-color-unselected-disabled);
+    stroke: transparent;
+  }
+
+  .oj-rating-gauge-selected.oj-rating-gauge-readonly {
+    fill: var(--oj-rating-gauge-color-selected-readonly);
+    stroke: var(--oj-rating-gauge-border-color-selected-readonly);
+  }
+
+  .oj-rating-gauge-unselected.oj-rating-gauge-readonly {
+    fill: var(--oj-rating-gauge-color-unselected-readonly);
+    stroke: var(--oj-rating-gauge-border-color-unselected-readonly);
+  }
+
+  .oj-hicontrast .oj-rating-gauge-selected-disabled {
+    fill: transparent;
+    stroke: currentColor;
+    stroke-width: 1px;
+    stroke-dasharray: 3 1;
+  }
+  .oj-hicontrast .oj-rating-gauge-unselected-disabled {
+    fill: transparent;
+    stroke: currentColor;
+    stroke-width: 1px;
+    stroke-dasharray: 1 3;
+  }
+
+  .oj-hicontrast .oj-rating-gauge-selected {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
+  .oj-hicontrast .oj-rating-gauge-unselected {
+    fill: transparent;
+    stroke: currentColor;
+  }
+
+  .oj-ratinggauge.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+}

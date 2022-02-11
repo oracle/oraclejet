@@ -1,0 +1,54 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.formlayout") {
+
+:root {
+  // form layout
+  // ------------------------
+
+  // divider between rows
+  --oj-form-layout-divider-width:                         0;
+  --oj-form-layout-divider-margin:                        0;
+  
+
+  // These variables are used to set the column-width/column-gap properties
+  // in .oj-form-cols and .oj-form-cols-labels-inline.
+  // These classes use css multi column layout, see:
+  // http://dev.w3.org/csswg/css-multicol/
+  --oj-form-layout-start-edge-column-min-width:          22rem;
+  --oj-form-layout-start-edge-column-max-width:          37.5rem;
+  --oj-form-layout-column-min-width:                      18rem;
+  --oj-form-layout-column-max-width:                      28rem;
+  
+  // The left/right margin is the space before the first column and after the last column of an oj-form-layout
+  --oj-form-layout-horizontal-margin:                     0px;
+  // The gutter is the space between columns of an oj-form-layout
+  --oj-form-layout-column-gutter:                         1.5rem;
+
+  // In a form layout this is the space expected between
+  // form controls in different rows
+  // todo: probably need to change this, think we are calculating off this in sass
+  --oj-form-layout-margin-bottom:                         .875rem;
+
+  // in a form layout when the labels are inline what is the
+  // default label alignment
+  --oj-form-layout-start-edge-label-text-align: end;
+
+  // in a form layout when the labels are inline what is the
+  // default field alignment
+  --oj-form-layout-start-edge-value-text-align: start;
+
+  // gutter (padding) between the inline label and the control
+  --oj-form-layout-start-edge-label-to-value-padding: 1.5rem;    
+  
+  // top aligned labels
+  //    by default labels are dislplay: block and therefore
+  //    render on top of the field. This variable controls
+  //    the vertical spacing between labels and fields
+  --oj-form-layout-top-edge-label-to-value-padding: 0.5rem;
+
+}
+
+}

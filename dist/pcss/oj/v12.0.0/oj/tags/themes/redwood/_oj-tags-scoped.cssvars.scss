@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.tags.scoped") {
+  
+  /* tags                       */
+  /* -------------------------- */
+// please do not change this classes grouping order
+.oj-contrast-marker,
+.oj-color-invert {
+  --oj-link-text-color:                 rgb(var(--oj-palette-brand-rgb-50));
+  --oj-link-text-color-active:          var(--oj-link-text-color);
+  --oj-link-text-color-visited:         var(--oj-link-text-color);
+  
+  --oj-heading-text-color:               var(--oj-core-text-color-primary);
+}
+
+:root.oj-scale-sm {
+  --oj-html-font-size:   .75em;
+}
+
+:root.oj-scale-md {
+  --oj-html-font-size:   .875em;
+}
+
+}

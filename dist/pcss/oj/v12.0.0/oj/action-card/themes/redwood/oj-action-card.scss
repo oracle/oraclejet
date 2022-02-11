@@ -1,0 +1,13 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+@import "_oj-action-card.cssvars.scss";
+@import "../base/_oj-action-card.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";

@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.dialog.ignored.scoped") {
+
+.oj-private-scale-lg {
+
+    --oj-dialog-border-radius:          6px;
+
+    --oj-dialog-cancel-icon-margin-top: -24px;
+    --oj-dialog-cancel-icon-margin-end: -24px;
+
+    --oj-dialog-header-padding:         32px 32px 12px;
+    --oj-dialog-body-padding:           0 32px 16px 32px;
+    --oj-dialog-footer-padding:         16px 32px 32px 32px;
+
+    --oj-dialog-title-font-size:        20px;
+    --oj-dialog-title-line-height:      1.4;     
+    --oj-dialog-title-font-weight:      900;
+  
+    }
+
+}

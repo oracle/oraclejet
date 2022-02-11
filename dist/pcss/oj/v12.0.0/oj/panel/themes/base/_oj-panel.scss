@@ -1,0 +1,163 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example panel/themes/redwood/oj-panel.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.panel") {
+  .oj-panel {
+    border: 1px solid var(--oj-panel-border-color);
+    background-color: var(--oj-panel-bg-color);
+    border-radius: var(--oj-panel-border-radius);
+    padding: var(--oj-panel-padding);
+
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .oj-panel.oj-panel-border-radius-0 {
+    border-radius: 0;
+  }
+
+  html[dir="ltr"] .oj-panel.oj-panel-border-radius-0-bottom-start {
+    border-bottom-left-radius: 0;
+  }
+
+  html:not([dir="ltr"]) .oj-panel.oj-panel-border-radius-0-bottom-start {
+    border-bottom-right-radius: 0;
+  }
+
+  html[dir="ltr"] .oj-panel.oj-panel-border-radius-0-bottom-end {
+    border-bottom-right-radius: 0;
+  }
+
+  html:not([dir="ltr"]) .oj-panel.oj-panel-border-radius-0-bottom-end {
+    border-bottom-left-radius: 0;
+  }
+  
+  html[dir="ltr"] .oj-panel.oj-panel-border-radius-0-top-start {
+    border-top-left-radius: 0;
+  }
+
+  html:not([dir="ltr"]) .oj-panel.oj-panel-border-radius-0-top-start {
+      border-top-right-radius: 0;
+  }
+
+  html[dir="ltr"] .oj-panel.oj-panel-border-radius-0-top-end {
+    border-top-right-radius: 0;
+  }
+
+  html:not([dir="ltr"]) .oj-panel.oj-panel-border-radius-0-top-end {
+    border-top-left-radius: 0;
+  }
+
+  .oj-panel.oj-selected {
+    border-color: var(--oj-core-border-color-selected) !important;
+  }
+
+  .oj-hicontrast .oj-panel.oj-selected {
+    border-width: 3px;
+  }
+  .oj-panel-shadow-xs {
+    box-shadow: var(--oj-core-box-shadow-xs) !important;
+  }
+
+  .oj-panel-shadow-sm {
+    box-shadow: var(--oj-core-box-shadow-sm) !important;
+  }
+
+  .oj-panel-shadow-md {
+    box-shadow: var(--oj-core-box-shadow-md) !important;
+  }
+
+  .oj-panel-shadow-lg {
+    box-shadow: var(--oj-core-box-shadow-lg) !important;
+  }
+
+  .oj-panel-shadow-xl {
+    box-shadow: var(--oj-core-box-shadow-xl) !important;
+  }
+
+  //this should be applied to the drag handle of a draggable panel
+  .oj-panel-drag-handle {
+    text-align: center;
+    vertical-align: middle;
+    cursor: move;
+    height: 20px;
+    line-height: 20px;
+
+    margin-top: calc(0px - var(--oj-panel-padding));
+    margin-left: calc(0px - var(--oj-panel-padding));
+    margin-right: calc(0px - var(--oj-panel-padding));
+  }
+
+  //these should be applied to the button used to resize or remove
+  //a panel, for example in a masonry layout tile
+  //(need to specify oj-button here so that this selector is more
+  //specific than oj-button and will override margin-bottom)
+  .oj-panel-resize-button,
+  .oj-panel-remove-button,
+  .oj-panel-resize-button.oj-button,
+  .oj-panel-remove-button.oj-button {
+    position: absolute;
+    margin-bottom: 0;
+    overflow: hidden;
+
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+  .oj-panel-resize-button {
+    bottom: 0;
+  }
+  .oj-panel-remove-button {
+    top: 0;
+  }
+
+  .oj-panel-padding {
+    padding: var(--oj-panel-padding) !important;
+  }
+
+  //this should be applied to the icon in the drag handle of a draggable panel
+  .oj-panel-drag-icon {
+    @extend .oj-fwk-icon-drag;
+    @extend .oj-fwk-icon;
+  }
+
+  //this should be applied to the icon in the expand button of a
+  //resizable panel
+  .oj-panel-expand-icon {
+    @extend .oj-fwk-icon-maximize;
+    @extend .oj-fwk-icon;
+  }
+
+  //this should be applied to the icon in the collapse button of a
+  //resizable panel
+  .oj-panel-collapse-icon {
+    @extend .oj-fwk-icon-minimize;
+    @extend .oj-fwk-icon;
+  }
+
+  //this should be applied to the icon in the remove button of a
+  //removable panel
+  .oj-panel-remove-icon {
+    @extend .oj-fwk-icon-cross;
+    @extend .oj-fwk-icon;
+  }
+
+  //need to specify .oj-end here to make these selectors more specific
+  //than ojButton selectors in order to override margins
+  .oj-panel-resize-button .oj-panel-expand-icon.oj-end,
+  .oj-panel-resize-button .oj-panel-collapse-icon.oj-end,
+  .oj-panel-remove-button .oj-panel-remove-icon.oj-end {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

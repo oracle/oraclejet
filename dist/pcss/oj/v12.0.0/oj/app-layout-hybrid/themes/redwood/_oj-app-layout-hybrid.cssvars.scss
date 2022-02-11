@@ -1,0 +1,31 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+@import "../../../app-layout/themes/redwood/_oj-app-layout.cssvars.scss";
+
+@include module-include-once("redwood.variables.applayout.hybrid") {
+:root {
+  // app layout hybrid
+  --oj-private-app-layout-hybrid-offcanvas-bg-color:         rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-private-app-layout-hybrid-padding:                    1rem;
+
+  --oj-private-app-layout-hybrid-header-min-height:          56px;
+  --oj-private-app-layout-hybrid-header-bg-color:            rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-private-app-layout-hybrid-header-border-color:        var(--oj-core-divider-color); 
+  --oj-private-app-layout-hybrid-header-border-bottom-width: 1px;
+  --oj-private-app-layout-hybrid-header-title-text-color:    var(--oj-core-text-color-primary);
+  --oj-private-app-layout-hybrid-header-title-font-weight:   500;
+  --oj-private-app-layout-hybrid-header-title-font-size:     var(--oj-typography-body-xl-font-size);
+  --oj-private-app-layout-hybrid-header-box-shadow:          none;
+
+  --oj-private-app-layout-hybrid-footer-min-height:          48px;
+  --oj-private-app-layout-hybrid-footer-bg-color:            var(--oj-private-app-layout-hybrid-header-bg-color);
+  --oj-private-app-layout-hybrid-footer-border-color:        var(--oj-private-app-layout-hybrid-header-border-color); 
+  --oj-private-app-layout-hybrid-footer-border-top-width:    1px;
+  --oj-private-app-layout-hybrid-nav-bar-box-shadow:         none;
+}
+}

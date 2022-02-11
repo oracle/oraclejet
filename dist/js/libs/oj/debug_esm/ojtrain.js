@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -426,8 +426,10 @@ var __oj_train_metadata =
          * @event
          * @memberof oj.ojTrain
          * @instance
-         * @property {string} toStep The step that is about to be deselected.
-         * @property {string} fromStep The step that is about to be selected.
+         * @property {Object} fromStep The step that is about to be deselected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "fromStep", jsdocOverride:true}
+         * @property {Object} toStep The step that is about to be selected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "toStep", jsdocOverride:true}
          */
         beforeDeselect: null,
 
@@ -439,8 +441,10 @@ var __oj_train_metadata =
          * @event
          * @memberof oj.ojTrain
          * @instance
-         * @property {string} toStep The step that is about to be deselected.
-         * @property {string} fromStep The step that is about to be selected.
+         * @property {Object} fromStep The step that is deselected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "fromStep", jsdocOverride:true}
+         * @property {Object} toStep The step that is selected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "toStep", jsdocOverride:true}
          *
          */
         deselect: null,
@@ -454,8 +458,10 @@ var __oj_train_metadata =
          * @event
          * @memberof oj.ojTrain
          * @instance
-         * @property {string} toStep The step that is about to be deselected.
-         * @property {string} fromStep The step that is about to be selected.
+         * @property {Object} fromStep The step that is about to be deselected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "fromStep", jsdocOverride:true}
+         * @property {Object} toStep The step that is about to be selected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "toStep", jsdocOverride:true}
          *
          */
         beforeSelect: null,
@@ -467,8 +473,10 @@ var __oj_train_metadata =
          * @event
          * @memberof oj.ojTrain
          * @instance
-         * @property {string} toStep The step that is about to be deselected.
-         * @property {string} fromStep The step that is about to be selected.
+         * @property {Object} fromStep The step that is deselected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "fromStep", jsdocOverride:true}
+         * @property {Object} toStep The step that is selected.
+         * @ojsignature { target: "Type",value: "oj.ojTrain.Step",for: "toStep", jsdocOverride:true}
          *
          */
         select: null
@@ -878,6 +886,7 @@ var __oj_train_metadata =
             label.addClass('oj-visited');
           } else if (disabled) {
             label.addClass('oj-disabled');
+            label.attr('aria-disabled', 'true');
           }
           if (!disabled) {
             label.attr('href', '#');
@@ -1218,7 +1227,7 @@ var __oj_train_metadata =
 
       /**
        * Fire option change event for selectedStep on click or keyboard action
-       * @param {string} event
+       * @param {Object} event Original event
        * @memberof oj.ojTrain
        * @return {void}
        * @private
@@ -1232,6 +1241,8 @@ var __oj_train_metadata =
             this._setFocus(newSelectedStep);
           }
         }
+        // JET-47535: stop propagating the original event
+        event.stopPropagation();
       },
 
       /**

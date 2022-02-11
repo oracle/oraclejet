@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -36,11 +36,11 @@ module.exports = {
       // path mappings go here
       'knockout': path.resolve(__dirname, './web/js/libs/knockout/knockout-3.5.1.debug'),
       'jquery': path.resolve(__dirname, './web/js/libs/jquery/jquery-3.6.0'),
-      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.12.1'),
+      'jqueryui-amd': path.resolve(__dirname, './web/js/libs/jquery/jqueryui-amd-1.13.0'),
       'hammerjs': path.resolve(__dirname, './web/js/libs/hammer/hammer-2.0.8'),
       'ojdnd': path.resolve(__dirname, './web/js/libs/dnd-polyfill/dnd-polyfill-1.0.2'),
-      'ojs': path.resolve(__dirname, './web/js/libs/oj/v11.1.0/debug'),
-      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v11.1.0/resources'),
+      'ojs': path.resolve(__dirname, './web/js/libs/oj/v12.0.0/debug'),
+      'ojtranslations': path.resolve(__dirname, './web/js/libs/oj/v12.0.0/resources'),
       'signals': path.resolve(__dirname, './web/js/libs/js-signals/signals'),
       'touchr': path.resolve(__dirname, './web/js/libs/touchr/touchr'),
       'appController': path.resolve(__dirname, './web/js/appController')
@@ -79,7 +79,7 @@ module.exports = {
           }
         },
         // Point this setting to the root folder for the associated JET distribution (could be a CDN). Used by the oj.Config.getResourceUri() call
-        baseResourceUrl: "./web/js/libs/oj/v11.1.0"
+        baseResourceUrl: "./web/js/libs/oj/v12.0.0"
       }
     )
 

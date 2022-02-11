@@ -1,0 +1,134 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.palette") {
+:root {
+// color ramps
+--oj-palette-danger-rgb-10:    255, 248, 247;
+--oj-palette-danger-rgb-20:    255, 241, 239;
+--oj-palette-danger-rgb-30:    255, 235, 232;
+--oj-palette-danger-rgb-40:    255, 217, 211;
+--oj-palette-danger-rgb-50:    255, 193, 184;
+--oj-palette-danger-rgb-60:    255, 157, 144;
+--oj-palette-danger-rgb-70:    255, 134, 117;
+--oj-palette-danger-rgb-80:    254, 104, 84;
+--oj-palette-danger-rgb-90:    236, 79, 58;
+--oj-palette-danger-rgb-100:   214, 59, 37;
+--oj-palette-danger-rgb-110:   195, 53, 34;
+--oj-palette-danger-rgb-120:   179, 49, 31;
+--oj-palette-danger-rgb-130:   170, 34, 34;
+--oj-palette-danger-rgb-140:   143, 39, 25;
+--oj-palette-danger-rgb-150:   124, 34, 22;
+--oj-palette-danger-rgb-160:   102, 28, 18;
+--oj-palette-danger-rgb-170:   86, 24, 15;
+
+--oj-palette-warning-rgb-10:   254, 249, 242;
+--oj-palette-warning-rgb-20:   253, 242, 229;
+--oj-palette-warning-rgb-30:   252, 237, 220;
+--oj-palette-warning-rgb-40:   249, 221, 188;
+--oj-palette-warning-rgb-50:   246, 199, 146;
+--oj-palette-warning-rgb-60:   240, 169, 87;
+--oj-palette-warning-rgb-70:   235, 150, 50;
+--oj-palette-warning-rgb-80:   225, 128, 18;
+--oj-palette-warning-rgb-90:   198, 113, 14;
+--oj-palette-warning-rgb-100:  172, 99, 12;
+--oj-palette-warning-rgb-110:  156, 89, 11;
+--oj-palette-warning-rgb-120:  143, 82, 10;
+--oj-palette-warning-rgb-130:  129, 73, 9;
+--oj-palette-warning-rgb-140:  114, 65, 8;
+--oj-palette-warning-rgb-150:  99, 56, 7;
+--oj-palette-warning-rgb-160:  81, 47, 6;
+--oj-palette-warning-rgb-170:  69, 39, 5;
+
+--oj-palette-success-rgb-10:   244, 252, 235;
+--oj-palette-success-rgb-20:   235, 248, 222;
+--oj-palette-success-rgb-30:   228, 245, 211;
+--oj-palette-success-rgb-40:   207, 235, 179;
+--oj-palette-success-rgb-50:   177, 221, 136;
+--oj-palette-success-rgb-60:   138, 201, 79;
+--oj-palette-success-rgb-70:   125, 186, 69;
+--oj-palette-success-rgb-80:   111, 169, 57;
+--oj-palette-success-rgb-90:   94, 148, 43;
+--oj-palette-success-rgb-100:  80, 130, 35;
+--oj-palette-success-rgb-110:  73, 118, 32;
+--oj-palette-success-rgb-120:  67, 107, 29;
+--oj-palette-success-rgb-130:  60, 96, 26;
+--oj-palette-success-rgb-140:  53, 86, 23;
+--oj-palette-success-rgb-150:  46, 73, 20;
+--oj-palette-success-rgb-160:  38, 61, 16;
+--oj-palette-success-rgb-170:  31, 51, 14;
+
+--oj-palette-info-rgb-10:      246, 250, 252;
+--oj-palette-info-rgb-20:      237, 246, 249;
+--oj-palette-info-rgb-30:      228, 241, 247;
+--oj-palette-info-rgb-40:      208, 229, 238;
+--oj-palette-info-rgb-50:      180, 213, 225;
+--oj-palette-info-rgb-60:      143, 191, 208;
+--oj-palette-info-rgb-70:      121, 177, 198;
+--oj-palette-info-rgb-80:      95, 162, 186;
+--oj-palette-info-rgb-90:      65, 144, 172;
+--oj-palette-info-rgb-100:     34, 126, 158;
+--oj-palette-info-rgb-110:     14, 114, 151;
+--oj-palette-info-rgb-120:     0, 104, 140;
+--oj-palette-info-rgb-130:     2, 94, 126;
+--oj-palette-info-rgb-140:     4, 83, 111;
+--oj-palette-info-rgb-150:     6, 72, 95;
+--oj-palette-info-rgb-160:     6, 60, 78;
+--oj-palette-info-rgb-170:     5, 50, 66;
+
+--oj-palette-brand-rgb-10:     246, 250, 253;
+--oj-palette-brand-rgb-20:     236, 245, 251;
+--oj-palette-brand-rgb-30:     228, 241, 249;
+--oj-palette-brand-rgb-40:     206, 229, 244;
+--oj-palette-brand-rgb-50:     175, 213, 237;
+--oj-palette-brand-rgb-60:     131, 190, 228;
+--oj-palette-brand-rgb-70:     105, 177, 222;
+--oj-palette-brand-rgb-80:     75, 161, 215;
+--oj-palette-brand-rgb-90:     36, 141, 206;
+--oj-palette-brand-rgb-100:    2, 120, 195;
+--oj-palette-brand-rgb-110:    2, 110, 177;
+--oj-palette-brand-rgb-120:    2, 101, 163;
+--oj-palette-brand-rgb-130:    1, 91, 146;
+--oj-palette-brand-rgb-140:    1, 80, 130;
+--oj-palette-brand-rgb-150:    1, 70, 113;
+--oj-palette-brand-rgb-160:    1, 58, 93;
+--oj-palette-brand-rgb-170:    1, 48, 78;
+
+--oj-palette-neutral-rgb-0:    254, 254, 254;
+--oj-palette-neutral-rgb-10:   249, 249, 249;
+--oj-palette-neutral-rgb-20:   244, 244, 244;
+--oj-palette-neutral-rgb-30:   239, 239, 239;
+--oj-palette-neutral-rgb-40:   226, 226, 226;
+--oj-palette-neutral-rgb-50:   207, 207, 207;
+--oj-palette-neutral-rgb-60:   184, 184, 184;
+--oj-palette-neutral-rgb-70:   169, 169, 169;
+--oj-palette-neutral-rgb-80:   153, 153, 153;
+--oj-palette-neutral-rgb-90:   134, 134, 134;
+--oj-palette-neutral-rgb-100:  117, 117, 117;
+--oj-palette-neutral-rgb-110:  105, 105, 105;
+--oj-palette-neutral-rgb-120:  97, 97, 97;
+--oj-palette-neutral-rgb-130:  87, 87, 87;
+--oj-palette-neutral-rgb-140:  76, 76, 76;
+--oj-palette-neutral-rgb-150:  67, 67, 67;
+--oj-palette-neutral-rgb-160:  54, 54, 54;
+--oj-palette-neutral-rgb-170:  45, 45, 45;
+--oj-palette-neutral-rgb-180:  31, 31, 31;
+--oj-palette-neutral-rgb-190:  22, 22, 22;
+--oj-palette-neutral-rgb-200:  00, 00, 00;
+
+
+--oj-palette-dvt-rgb-1:      36, 93, 99;
+--oj-palette-dvt-rgb-2:      222, 127, 17;
+--oj-palette-dvt-rgb-3:      95, 185, 181;
+--oj-palette-dvt-rgb-4:      78, 65, 55;
+--oj-palette-dvt-rgb-5:      160, 201, 139;
+--oj-palette-dvt-rgb-6:      180, 114, 130;
+--oj-palette-dvt-rgb-7:      131, 64, 30;
+--oj-palette-dvt-rgb-8:      158, 127, 204;
+--oj-palette-dvt-rgb-9:      251, 194, 106;
+--oj-palette-dvt-rgb-10:     88, 49, 110;
+--oj-palette-dvt-rgb-11:     95, 162, 186;
+--oj-palette-dvt-rgb-12:     49, 122, 69;
+    }
+}

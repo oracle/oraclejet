@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -8,8 +8,15 @@
 
 import './oj-requirejs-plugins';
 export namespace oj {
-    let _sDefaultNumberConverter: any;
+    let checkVisibility: any;
+    let disableAllFocusableElements: any;
+    let disableElement: any;
+    let enableAllFocusableElements: any;
     let fromCollapsible: any;
+    let getFocusableElementsInNode: any;
+    let getLogicalChildPopup: any;
+    let isActionableElement: any;
+    let removeAriaReadonly: any;
     let revision: string;
     let toCollapsible: any;
     let version: string;

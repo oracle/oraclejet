@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -189,8 +189,8 @@ DateTimeRangeValidator.prototype.validate = function (value) {
   }
 
   var processValidation = function (converter) {
-    // verify value, min, and max are of the same type.
-    // logs warning if they are not.
+    // verify value, min, and max are of the same type and not mixed with date/time and time only.
+    // throws an error if they are not
     converterUtils._verifyValueMinMax(value, min, max);
     if (min) {
       min = converterUtils._minMaxIsoString(min, value);
@@ -204,25 +204,25 @@ DateTimeRangeValidator.prototype.validate = function (value) {
 
     if (min !== null && max !== null) {
       // range
-      if ((converter.compareISODates(value, min) >= 0 &&
-           converter.compareISODates(value, max) <= 0) ||
-          converter.compareISODates(min, max) > 0) {
+      if ((converterUtils._compareISODates(value, min) >= 0 &&
+          converterUtils._compareISODates(value, max) <= 0) ||
+          converterUtils._compareISODates(min, max) > 0) {
         return value;
       }
     } else if (min !== null) {
       // only min
-      if (converter.compareISODates(value, min) >= 0) {
+      if (converterUtils._compareISODates(value, min) >= 0) {
         return value;
       }
-    } else if (max === null || converter.compareISODates(value, max) <= 0) {
+    } else if (max === null || converterUtils._compareISODates(value, max) <= 0) {
       // max only
       return value;
     }
     throw new Error();
   };
 
-  var generateValidationError = function (valStr, converter) {
-    if (max !== null && converter.compareISODates(value, max) > 0) {
+  var generateValidationError = function (valStr) {
+    if (max !== null && IntlConverterUtils._compareISODates(value, max) > 0) {
       params = { value: valStr, max: maxStr };
       summary = messageSummaryRangeOverflow ||
         translations.getTranslatedString('oj-validator.range.' + self._translationKey +
@@ -232,7 +232,8 @@ DateTimeRangeValidator.prototype.validate = function (value) {
         translations.getTranslatedString('oj-validator.range.' + self._translationKey +
                                          '.messageDetail.rangeOverflow',
                                          params);
-    } else if (min !== null && converter.compareISODates(value, min) < 0) {
+    } else if (min !== null &&
+      IntlConverterUtils._compareISODates(value, min) < 0) {
       params = { value: valStr, min: minStr };
       summary = messageSummaryRangeUnderflow ||
         translations.getTranslatedString('oj-validator.range.' + self._translationKey +
@@ -250,7 +251,7 @@ DateTimeRangeValidator.prototype.validate = function (value) {
     processValidation(this._converter);
   } catch (e) {
     var valStr = value ? this._converter.format(value) : value;
-    var error = generateValidationError(valStr, this._converter);
+    var error = generateValidationError(valStr);
     throw new ValidatorError(error[0], error[1]);
   }
 };

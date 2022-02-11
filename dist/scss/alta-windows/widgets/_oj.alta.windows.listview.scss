@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -57,7 +57,6 @@
         ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected,  
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
-            background-size: 0 0;
 
               border-top: 4px solid $collectionCellBgColor;
 

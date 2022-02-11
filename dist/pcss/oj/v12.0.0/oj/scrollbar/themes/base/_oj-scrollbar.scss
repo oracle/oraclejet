@@ -1,0 +1,76 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example scrollbar/themes/redwood/oj-scrollbar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("common.scrollbar") {
+  .oj-agent-os-windows *,
+  html.oj-agent-os-windows {
+      /* FF 68+ */
+    scrollbar-width: thin;
+    scrollbar-color: transparent;
+  }
+
+  .oj-agent-os-windows :hover {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-hover) transparent;
+  }
+
+  .oj-agent-os-windows ::-webkit-scrollbar {
+      width: 8px;
+    height:8px;
+  }
+
+  .oj-agent-os-windows ::-webkit-scrollbar-track {
+      background-color: transparent;
+  }
+
+  .oj-agent-os-windows ::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    border-radius: var(--oj-core-border-radius-md);
+  }
+
+  .oj-agent-os-windows :hover::-webkit-scrollbar-track {
+      background-color: rgba(var(--oj-palette-neutral-rgb-170), .15);
+  }
+
+  .oj-agent-os-windows :hover::-webkit-scrollbar-thumb {
+      background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+
+  .oj-agent-os-windows ::-webkit-scrollbar-button {
+      display: none;
+  }
+
+  .oj-agent-os-windows ::-webkit-scrollbar-corner {
+      background-color: transparent;
+  }
+
+  .oj-agent-os-windows .oj-scrollbar-force,
+  .oj-agent-os-windows body {
+    /* FF 68+ */
+    scrollbar-color: var(--oj-scrollbar-thumb-color-hover)  var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-agent-os-windows .oj-scrollbar-force::-webkit-scrollbar-track,
+  .oj-agent-os-windows body::-webkit-scrollbar-track {
+    background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-agent-os-windows .oj-scrollbar-force::-webkit-scrollbar-thumb,
+  .oj-agent-os-windows body::-webkit-scrollbar-thumb {
+    background-color: var(--oj-scrollbar-thumb-color-hover)
+  }
+
+  .oj-agent-os-windows .oj-scrollbar-force::-webkit-scrollbar-corner,
+  .oj-agent-os-windows body::-webkit-scrollbar-corner {
+    background-color: var(--oj-scrollbar-track-color-force);
+  }
+
+  .oj-agent-os-windows .oj-scrollbar-force:hover::-webkit-scrollbar-thumb {
+    background-color: var(--oj-scrollbar-thumb-color-hover);
+  }
+}

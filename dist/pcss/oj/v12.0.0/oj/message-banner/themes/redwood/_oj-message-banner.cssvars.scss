@@ -1,0 +1,23 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.message-banner") {
+
+  :root {
+    --oj-private-message-banner-background-color:         var(--oj-core-info-secondary-3);
+
+    --oj-private-message-banner-start-icon-color:         var(--oj-core-info-3);
+    --oj-private-message-banner-start-icon-size:          1rem;
+
+    --oj-private-message-banner-summary-text-color:       var(--oj-core-info-3);
+    --oj-private-message-banner-summary-text-weight:      var(--oj-typography-subheading-xs-font-weight);
+    --oj-private-message-banner-summary-text-size:        var(--oj-typography-subheading-xs-font-size);
+    --oj-private-message-banner-summary-line-height:      1.25rem;
+
+    // Global option defaults
+    --oj-private-message-banner-global-enter-animation:   '[{ "effect": "expand", "duration": "0.25s", "direction": "height" }]';
+    --oj-private-message-banner-global-exit-animation:    '[{ "effect": "collapse", "duration": "0.25s", "direction": "height" }]';
+  }
+
+}

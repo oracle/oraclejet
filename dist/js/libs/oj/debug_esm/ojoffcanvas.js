@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1641,6 +1641,11 @@ OffcanvasUtils._close = function (selector, animation) {
   var veto = false;
   var promise = new Promise(function (resolve, reject) {
     if (OffcanvasUtils._isOpen(drawer)) {
+      // if offcanvas not present, we are done
+      if (offcanvas == null) {
+        resolve(true);
+      }
+
       if (selector !== offcanvas[OffcanvasUtils.SELECTOR_KEY]) {
         resolve(true);
       }
@@ -1950,7 +1955,10 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
   mOptions = {
     recognizers: [
        [Pan, { direction: DIRECTION_HORIZONTAL }]
-    ] };
+    ],
+    // ensure native gesture like pinch zoom work properly
+    touchAction: 'auto'
+   };
 
   // workaround for Hammer with iOS 13 issue, see: https://github.com/hammerjs/hammer.js/issues/1237
   var agent = oj.AgentUtils.getAgentInfo();
@@ -1993,6 +2001,8 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
           break;
         default:
       }
+
+      event.preventDefault();
 
       if (direction === null) {
         return;
@@ -2070,6 +2080,7 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
         // stop bubbling
       event.stopPropagation();
+      event.preventDefault();
     })
     .on('panend', function (event) {
         // don't do anything if start is vetoed
@@ -2128,6 +2139,7 @@ OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
         // restore item position
       wrapper.addClass(OffcanvasUtils.TRANSITION_SELECTOR);
       OffcanvasUtils._setTranslationX(wrapper, 'start', '0px');
+      event.preventDefault();
     });
 };
 

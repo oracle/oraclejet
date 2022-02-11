@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -116,10 +116,153 @@ var trimLeft = /^\s+/;
     this._g = rgb.g;
     this._b = rgb.b;
     this._a = Math.round(100 * rgb.a) / 100;
+     Object.defineProperty(this, 'rgba',
+                          { writable: false,
+                            // eslint-disable-next-line max-len
+                          value: { r: rgb.r, g: rgb.g, b: rgb.b, a: Math.round(100 * rgb.a) / 100 } });
+    Object.defineProperty(this, 'hsla',
+                          { writable: false, value: rgbaToHsla(this.rgba) });
+    Object.defineProperty(this, 'hsva',
+                          { writable: false, value: rgbaToHsva(this.rgba) });
+  }
+   /**
+   * Returns the red channel value of the color                            arise when a color is defined using the "hsl" format.)
+   * @return {Color.RGBA} The RGBA value in the range [0,255].
+   * @memberof Color
+   * @instance
+   * @export
+   */
+    Color.prototype.getRGBA = function () {
+      return this.rgba;
+    };
+ /**
+    * Returns the red channel value of the color                            arise when a color is defined using the "hsl" format.)
+    * @return {Color.HSLA} The HSLA value in the range [0,255].
+    * @memberof Color
+    * @instance
+    * @export
+    */
+  Color.prototype.getHSLA = function () {
+    return this.hsla;
+  };
+
+
+  /**
+    * Returns the red channel value of the color                            arise when a color is defined using the "hsl" format.)
+    * @return {Color.HSVA} The HSLA value in the range [0,255].
+    * @memberof Color
+    * @instance
+    * @export
+    */
+   Color.prototype.getHSVA = function () {
+     return this.hsva;
+   };
+
+
+   /**
+   * Converts an RGB color value to HSL.
+   * Handle bounds/percentage checking to conform to CSS color spec, and returns
+   * an object containg the h,s,l values.
+   * <http://www.w3.org/TR/css3-color/>
+   * Assumes:  r, g, b in [0, 255] or [0, 1]
+   * @param {Object} co color object in rgba format
+   * @returns {Object} Object with properties h, s, l, in [0, 1].
+   * @memberof Color
+   * @private
+   */
+  function rgbaToHsla(co) {
+    // eslint-disable-next-line no-param-reassign
+    let r = bound01(co.r, 255) * 255;
+    // eslint-disable-next-line no-param-reassign
+    let g = bound01(co.g, 255) * 255;
+    // eslint-disable-next-line no-param-reassign
+    let b = bound01(co.b, 255) * 255;
+    // eslint-disable-next-line no-param-reassign
+    let a = boundAlpha(co.a);
+    var max = mathMax(r, g, b);
+    var min = mathMin(r, g, b);
+    var h;
+    var s;
+    var l = (max + min) / 2;
+
+    if (max === min) {
+      // eslint-disable-next-line no-multi-assign
+      h = s = 0; // achromatic
+    } else {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+        default:
+      }
+      h /= 6;
+    }
+
+    return { h: h, s: s, l: l, a: a };
+  }
+
+
+   /**
+   * Converts an RGB color value to HSV.
+   * Handle bounds/percentage checking to conform to CSS color spec, and returns
+   * an object containg the r,g,b values.
+   * <http://www.w3.org/TR/css3-color/>
+   * Assumes:  r, g, b,a in [0, 255] or [0, 1]
+   * @returns {Object} Object with properties r, g, and b, in [0, 255].
+   * @memberof Color
+   * @private
+   */
+    function rgbaToHsva(co) {
+      let h = 0;
+      let rabs = co.r / 255;
+      let gabs = co.g / 255;
+      let babs = co.b / 255;
+      let s = 0;
+      let v = Math.max(rabs, gabs, babs);
+      let diff = v - Math.min(rabs, gabs, babs);
+      let diffc = c => (v - c) / 6 / diff + 1 / 2;
+
+
+      if (diff === 0) {
+          h = 0;
+          s = 0;
+      } else {
+          s = diff / v;
+          let rr = diffc(rabs);
+          let gg = diffc(gabs);
+          let bb = diffc(babs);
+
+
+          if (rabs === v) {
+              h = bb - gg;
+          } else if (gabs === v) {
+              h = (1 / 3) + rr - bb;
+          } else if (babs === v) {
+              h = (2 / 3) + gg - rr;
+          }
+          if (h < 0) {
+              h += 1;
+          } else if (h > 1) {
+              h -= 1;
+          }
+      }
+      return {
+          h: bound01(h, 360) * 6,
+          s: bound01(s, 100),
+          v: bound01(v, 100),
+          a: boundAlpha(co.a)
+      };
+    }
+
+
+   /**
   }
 
   /**
    * Returns the red channel value of the color.
+   * @ojdeprecated {since: '12.0.0', description: 'Use the getRGBA,getHSLA,getHSVA method instead for fetching color value in different format.'}
    * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
    *                               Set to true to return the possible fractional value.
    *                               (Fractional values for the red, green, or blue channels can
@@ -136,6 +279,7 @@ var trimLeft = /^\s+/;
 
   /**
    * Returns the green channel value of the color.
+   * @ojdeprecated {since: '12.0.0', description: 'Use the getRGBA,getHSLA,getHSVA method instead for fetching color value in different format.'}
    * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
    *                               Set to true to return the possible fractional value.
    *                               (Fractional values for the red, green, or blue channels can
@@ -152,6 +296,7 @@ var trimLeft = /^\s+/;
 
   /**
    * Returns the blue channel value of the color.
+   * @ojdeprecated {since: '12.0.0', description: 'Use the getRGBA,getHSLA,getHSVA method instead for fetching color value in different format.'}
    * @param {boolean=} doNotRound  Omit or set to false to return an integer value.
    *                               Set to true to return the possible fractional value.
    *                               (Fractional values for the red, green, or blue channels can
@@ -168,6 +313,7 @@ var trimLeft = /^\s+/;
 
   /**
    * Returns the alpha channel of the color.
+   * @ojdeprecated {since: '12.0.0', description: 'Use the getRGBA,getHSLA,getHSVA method instead for fetching color value in different format.'}
    * @return {number} The alpha channel value contained in [0,1].
    * @memberof Color
    * @instance

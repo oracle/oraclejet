@@ -1,0 +1,75 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example indexer/themes/redwood/oj-indexer.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@include module-include-once("common.indexer") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-indexer:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  /* Styling for the indexer widget container */
+  .oj-indexer {
+    display: flex;
+    align-items: center;
+
+    width: 1.5rem;
+  }
+
+  /* Styling to remove focus ring border on indexer */
+  .oj-indexer ul:focus {
+    outline: none;
+  }
+
+  /* styling for the indexer root element */
+  .oj-indexer ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* styling on each item */
+  .oj-indexer li {
+    text-align: center;
+
+    height: 1rem;
+    width: 1.5rem;
+    color: var(--oj-indexer-text-color);
+    text-decoration: none;
+    font-weight: normal;
+    font-size: var(--oj-indexer-font-size);
+    line-height: 1rem;
+
+    vertical-align: middle;
+  }
+
+  /* styling on each item that does not have a corresponding group header */
+  .oj-indexer li.oj-disabled {
+    color: var(--oj-core-text-color-disabled);
+  }
+
+  /* styling on hovered item */
+  .oj-indexer li:hover {
+    text-decoration: none;
+  }
+
+  /* styling on focused item */
+  .oj-indexer.oj-focus-ancestor li.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+  }
+
+  /* styling on each item when indexer is abbreviated */
+  .oj-indexer.oj-indexer-abbr li {
+    height: 1rem;
+  }
+
+  /* styling for the ellipsis between two characters */
+  .oj-indexer-ellipsis:after {
+    content: "\25CF";
+  }
+}

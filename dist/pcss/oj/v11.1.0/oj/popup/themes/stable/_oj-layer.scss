@@ -1,7 +1,0 @@
-@import "../../../utilities/_oj.utilities.modules.scss";
-
-// todo: try to get rid of this and just include base ../base/_oj-layer.scss from popup, dialog etc. 
-
-// this is for shared classes, for example a modal overlay class that 
-// more than one component might use
-@import "../base/_oj-layer.scss"; 

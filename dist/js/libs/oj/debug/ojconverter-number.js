@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -556,7 +556,6 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var mainNodeKey =
       __ConverterUtilsI18n.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
       var lang = _getBCP47Lang(mainNodeKey);
-      numberSettings.plurals = localeElements.supplemental.plurals;
       numberSettings.lang = lang;
       numberSettings.pat = pat;
       numberSettings.minusSign =
@@ -713,7 +712,7 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       scale += numberSettings.unit;
       var lang = numberSettings.lang;
       // get plural rule: one, many, etc..
-      var plural = numberSettings.plurals[lang](count);
+      var plural = new Intl.PluralRules(lang).select(count);
       // plural -> 'unitPattern-count-one' or 'unitPattern-count-many'
       plural = 'unitPattern-count-' + plural;
       // format the number
@@ -783,8 +782,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
       var zeros;
       if (typeVal[1] !== null) {
         var lang = numberSettings.lang;
-        var plural =
-            numberSettings.plurals[lang](Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]]));
+        var plural = new Intl.PluralRules(lang).select(
+                     Math.floor(absVal / _decimalTypeValuesMap[typeVal[0]]));
         decimalFormatType = '' + typeVal[1] + '-count-' + plural;
         decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
         if (decimalFormatType === undefined) {
@@ -1577,7 +1576,8 @@ define(['exports', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojlocaledat
                   numberSettings.currencyDisplay === 'symbol') {
                 c = symbol;
               } else if (numberSettings.currencyDisplay === 'code') {
-                c = code;
+                // Currency code need to be followed by a space character
+                c = code + ' ';
               } else {
                 c = name;
                 // eslint-disable-next-line no-param-reassign

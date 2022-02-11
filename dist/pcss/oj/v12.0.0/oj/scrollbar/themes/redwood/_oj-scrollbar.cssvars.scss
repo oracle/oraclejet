@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+
+:root {
+  
+  // default
+  
+
+  // hover
+  --oj-scrollbar-thumb-color-hover:rgba(var(--oj-palette-neutral-rgb-170), .15);
+
+  // colors when you need to force a scrollbar
+  --oj-scrollbar-track-color-force:   rgba(var(--oj-palette-neutral-rgb-170), .05);
+
+}

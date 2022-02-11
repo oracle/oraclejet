@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the 
@@ -26,9 +26,24 @@
       display: block;
     }
 
-    .oj-ledgauge {
+    .oj-ledgauge-fit {
       width:40px;
       height:40px;
+    }
+
+    .oj-ledgauge-lg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .oj-ledgauge-md {
+      width: 28px;
+      height: 28px;
+    }
+
+    .oj-ledgauge-sm {
+      width: 24px;
+      height: 24px;
     }
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
@@ -100,17 +115,17 @@
 
     }
 
-    .oj-rating-gauge-shape-large {
+    .oj-rating-gauge-shape-lg {
       width: 36px;
       height: 36px;
     }
 
-    .oj-rating-gauge-shape-medium {
+    .oj-rating-gauge-shape-md {
       width: 20px;
       height: 20px;
     }
 
-    .oj-rating-gauge-shape-small {
+    .oj-rating-gauge-shape-sm {
       width: 16px;
       height: 16px;
     }
@@ -145,5 +160,57 @@
       stroke: $ratingGaugeBorderColorUnselectedDisabled;
     }
 
+    .oj-statusmeter-gauge-plotarea {
+      border-color: $statusMeterGaugePlotAreaBorderColor;
+      color: $statusMeterGaugePlotAreaColor;
+    }
+
+    .oj-statusmetergauge-horizontal-fit {
+      width: 220px;
+      height: 25px; }
+    
+    .oj-statusmetergauge-vertical-fit {
+      width: 25px;
+      height: 220px; }
+    
+    .oj-statusmetergauge-circular-fit {
+      width: 6rem;
+      height: 6rem; }
+    
+    .oj-statusmetergauge-horizontal-sm {
+      width: 100%;
+      height: 6px; }
+    
+    .oj-statusmetergauge-horizontal-md {
+      width: 100%;
+      height: 10px; }
+    
+    .oj-statusmetergauge-horizontal-lg {
+      width: 100%;
+      height: 14px; }
+    
+    .oj-statusmetergauge-vertical-sm {
+      height: 100%;
+      width: 6px; }
+    
+    .oj-statusmetergauge-vertical-md {
+      height: 100%;
+      width: 10px; }
+    
+    .oj-statusmetergauge-vertical-lg {
+      height: 100%;
+      width: 14px; }
+    
+    .oj-statusmetergauge-circular-sm {
+      width: 56px;
+      height: 56px; }
+    
+    .oj-statusmetergauge-circular-md {
+      width: 96px;
+      height: 96px; }
+    
+    .oj-statusmetergauge-circular-lg {
+      width: 196px;
+      height: 196px; }
   }
 }

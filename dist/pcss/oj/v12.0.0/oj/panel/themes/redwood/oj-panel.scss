@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+  
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-panel.cssvars.scss";
+// definitions in the common panel file
+@import "../base/_oj-panel.scss"; 
+// scoped cssvars override
+@import "_oj-panel-scoped.cssvars.scss";
+@import "../base/_oj-panel-ignore.scoped.cssvars.scss";

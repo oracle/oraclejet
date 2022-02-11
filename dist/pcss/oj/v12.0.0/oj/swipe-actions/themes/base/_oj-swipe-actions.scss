@@ -1,0 +1,125 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example swipe-actions/themes/redwood/oj-swipe-actions.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// ----- start dependencies ---------
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.swipeactions") {
+  /* Applied to offcanvas when it is in open state  */
+  .oj-swipetoreveal.oj-offcanvas-start.oj-offcanvas-open,
+  .oj-swipetoreveal.oj-offcanvas-end.oj-offcanvas-open {
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* Applied to action items */
+  .oj-swipetoreveal-action {
+    flex: 1;
+    max-width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    height: 100%;
+    overflow: hidden;
+    color: var(--oj-core-brand-contrast);
+    transition: max-width var(--oj-animation-duration-long) var(--oj-animation-ease-in-out);
+    background-color: var(--oj-core-brand-2);
+    min-width: 4rem;
+    font-size: var(--oj-core-icon-size-lg);
+  }
+
+  /*
+     * Applied to action items that should be hidden when full trigger occurs
+     */
+  .oj-swipetoreveal .oj-swipetoreveal-hide-when-full {
+    max-width: 0;
+  }
+
+  /* Styling for the swipeactions root element */
+  .oj-swipeactions {
+    display: block;
+  }
+
+  /* Styling to remove focus ring border on focusable elements */
+  .oj-swipeactions:focus {
+    outline: none;
+  }
+
+  /* Styling for the neutral action item. */
+  .oj-swipeactions-neutral {
+    background-color: var(--oj-core-neutral-1);
+    color: var(--oj-core-neutral-contrast);
+  }
+
+  /* Styling for the attention action item. */
+  .oj-swipeactions-attention {
+    background-color: var(--oj-core-warning-1);
+    color: var(--oj-core-warning-contrast);
+  }
+
+  /* Styling for the danger action item. */
+  .oj-swipeactions-danger {
+    background-color: var(--oj-core-danger-1);
+    color: var(--oj-core-danger-contrast);
+  }
+
+  /* Styling for the text within action item. */
+  .oj-swipeactions-action-text {
+    font-size: initial;
+  }
+
+  /* Styling for the text within action item when icon is present. */
+  [slot="startIcon"] + .oj-swipeactions-action-text {
+    padding-top: 0.5rem;
+  }
+
+  /* Styling for the panel of an action item. */
+  .oj-swipeactions-action-panel {
+    height: 100%;
+  }
+
+  /* styling on focused action item. */
+  .oj-swipeactions-action-panel.oj-focus-highlight {
+    outline: 1px dotted var(--oj-core-neutral-contrast);
+    outline-offset: -2px;
+  }
+
+  /* Styling for the listview item when it is the container of the swipeactions root element. */
+  .oj-listview-item.oj-swipeactions-container {
+    padding: 0;
+  }
+
+  /* Styling for the accessible link that displays the swipe actions when activate. */
+  .oj-swipeactions-accessible-link {
+    position: absolute;
+    top: calc(100% - 20px);
+  }
+
+  /* Styling for the accessible link that closes the swipe actions when activate. */
+  .oj-swipeactions-hide-actions-link {
+    position: absolute;
+    right: 0px;
+  }
+
+  /* Styling for the content of the accessible link that closes the swipe actions. */
+  .oj-swipeactions-hide-actions-link:after {
+    content: "[X]";
+  }
+
+  /* Adding some margin to prevent icon from being too close to edges */
+  .oj-swipeactions-action-panel .oj-flex-bar-start { 
+    padding-left: 8px;
+    padding-right: 8px; 
+  }
+
+  /* Adding some margin to prevent icon from being too close to edges */
+  .oj-swipeactions-action-panel .oj-flex-bar-end { 
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}

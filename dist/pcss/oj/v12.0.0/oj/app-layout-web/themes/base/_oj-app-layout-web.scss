@@ -1,0 +1,351 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example app-layout-web/themes/redwood/oj-app-layout-web.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@mixin oj-web-padding($selectorPrefix) {
+  .#{$selectorPrefix}-web-padding-horizontal {
+    padding-left: var(--oj-private-app-layout-web-padding);
+    padding-right: var(--oj-private-app-layout-web-padding);
+  }
+
+  .#{$selectorPrefix}-web-padding-start {
+    @include oj-ltr() {
+      padding-left: var(--oj-private-app-layout-web-padding);
+    }
+    @include oj-rtl() {
+      padding-right: var(--oj-private-app-layout-web-padding);
+    }
+  }
+  .#{$selectorPrefix}-web-padding-end {
+    @include oj-ltr() {
+      padding-right: var(--oj-private-app-layout-web-padding);
+    }
+    @include oj-rtl() {
+      padding-left: var(--oj-private-app-layout-web-padding);
+    }
+  }
+
+  .#{$selectorPrefix}-web-padding-top,
+  .#{$selectorPrefix}-web-padding-vertical {
+    padding-top: calc(var(--oj-private-app-layout-web-padding) / 2);
+  }
+
+  .#{$selectorPrefix}-web-padding-bottom,
+  .#{$selectorPrefix}-web-padding-vertical {
+    padding-bottom: calc(var(--oj-private-app-layout-web-padding) / 2);
+  }
+}
+@include module-include-once("common.applayout.web") {
+  // BODY CLASSES
+  .oj-web-applayout-body {
+    // We want scrollbars to always be present on the page so header doesn't jump for desktop so always set overflow-y: scroll.
+    overflow-y: scroll;
+  }
+
+  // OFFCANVAS
+  .oj-web-applayout-offcanvas {
+    width: var(--oj-private-app-layout-offcanvas-width);
+    max-width: var(--oj-private-app-layout-offcanvas-max-width);
+    background-color: var(--oj-private-app-layout-web-offcanvas-bg-color);
+    color: var(--oj-core-neutral-contrast);
+  }
+  .oj-web-applayout-offcanvas-icon {
+    @extend .oj-fwk-icon;
+    @extend .oj-fwk-icon-hamburger;
+    font-size: 24px;
+  }
+
+  // PAGE LAYOUT
+  .oj-web-applayout-page {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100vh;
+  }
+  // Match IE11+
+  @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    .oj-web-applayout-page {
+      // IE11 doesn't support min-height: 100vh with flex column layout, but Edge does.
+      height: 100vh;
+      min-height: 0;
+    }
+  }
+  // Special case Edge
+  _:-ms-lang(x),
+  _:-webkit-full-screen .oj-web-applayout-page {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  // The following classes adhere to the max app content width
+  .oj-web-applayout-max-width {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+
+    max-width: var(--oj-private-app-layout-max-width);
+
+    box-sizing: border-box;
+  }
+  // The following classes have flex none so they are sized correctly in the
+  // page layout
+  .oj-web-applayout-header,
+  .oj-web-applayout-footer,
+  .oj-web-applayout-navbar,
+  .oj-web-applayout-header + .oj-progress-bar-embedded {
+    flex: 0 0 auto;
+  }
+
+  // HEADER
+  .oj-web-applayout-header {
+    // need to bump up the z-index so that colored panels under the header
+    // don't hide the shadow.
+    z-index: 1;
+
+    background-color: var(--oj-private-app-layout-web-header-bg-color);
+    box-shadow: var(--oj-private-app-layout-web-header-box-shadow);
+  }
+  // Add padding between the start and title containers
+  // Add padding to bar-start instead of title because the web pattern sometimes hides bar-start
+  .oj-web-applayout-header .oj-flex-bar-start {
+    @include oj-ltr() {
+      padding-right: 10px;
+    }
+    @include oj-rtl() {
+      padding-left: -10px;
+    }
+  }
+
+  .oj-web-applayout-header {
+    border-bottom: 1px solid var(--oj-private-app-layout-web-header-border-color);
+  }
+  .oj-web-applayout-header .oj-button,
+  .oj-web-applayout-header .oj-button-button {
+    // for vertical alignment of header elements
+    margin-bottom: 0;
+  }
+  .oj-web-applayout-header > div:first-child {
+    box-sizing: border-box;
+  }
+  .oj-web-applayout-header > div:first-child::before {
+    // To workaround IE11 min-height and flex bug
+    content: "";
+    display: inline-block;
+
+    min-height: var(--oj-private-app-layout-web-header-min-height);
+
+    visibility: hidden;
+  }
+  .oj-web-applayout-header > div,
+  .oj-web-applayout-footer > div {
+    padding-left: var(--oj-private-app-layout-web-padding);
+    padding-right: var(--oj-private-app-layout-web-padding);
+  }
+  .oj-web-applayout-header .oj-flex-bar-start > .oj-button:first-child {
+    // negative margins so we can align button image with content padding
+    @include oj-ltr() {
+      margin-left: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+    @include oj-rtl() {
+      margin-right: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+  }
+  .oj-web-applayout-header .oj-flex-bar-start > .oj-button.oj-button-lg:first-child {
+    // negative margins so we can align button image with content padding
+    @include oj-ltr() {
+      margin-left: calc((var(--oj-button-lg-height) - var(--oj-button-lg-icon-size)) / -2);
+    }
+    @include oj-rtl() {
+      margin-right: calc((var(--oj-button-lg-height) - var(--oj-button-lg-icon-size)) / -2);
+    }
+  }
+  .oj-web-applayout-header .oj-flex-bar-end > .oj-button:last-child,
+  .oj-web-applayout-header .oj-flex-bar-end > .oj-toolbar:last-child {
+    // negative margins so we can align button image with content padding
+    @include oj-ltr() {
+      margin-right: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+    @include oj-rtl() {
+      margin-left: calc((var(--oj-button-height) - var(--oj-button-icon-size)) / -2);
+    }
+  }
+  .oj-web-applayout-header-title {
+    font-size: var(--oj-private-app-layout-web-header-title-font-size);
+    font-weight: var(--oj-private-app-layout-web-header-title-font-weight);
+    color: var(--oj-private-app-layout-web-header-title-text-color);
+
+    font-weight: normal;
+    // Because we baseline algin the logo and application name we can't easily
+    // vertically center aligned them to other elements like an offcanvas toggle
+    // button so we discount the height of the text by setting line-height to 0
+    line-height: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  // NAV BAR
+  .oj-web-applayout-navbar .oj-navigationlist-icon-only {
+    padding-bottom: 3px;
+  }
+
+  // CONTENT
+
+  // default of small
+  @include oj-web-padding("oj-sm");
+
+  @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+        @include oj-web-padding("oj-sm-only");
+      }
+    }
+
+    @media #{$responsiveQueryMediumUp} {
+      @include oj-web-padding("oj-md");
+    }
+  }
+
+  @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media #{$responsiveQueryMediumOnly} {
+        @include oj-web-padding("oj-md-only");
+      }
+    }
+
+    @if $responsiveQueryMediumDown and $responsiveQueryMediumDown != none {
+      @media #{$responsiveQueryMediumDown} {
+        @include oj-web-padding("oj-md-down");
+      }
+    }
+
+    @media #{$responsiveQueryLargeUp} {
+      @include oj-web-padding("oj-lg");
+    }
+  }
+
+  @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+    @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+      @media #{$responsiveQueryLargeOnly} {
+        @include oj-web-padding("oj-lg-only");
+      }
+    }
+
+    @if $responsiveQueryLargeDown and $responsiveQueryLargeDown != none {
+      @media #{$responsiveQueryLargeDown} {
+        @include oj-web-padding("oj-lg-down");
+      }
+    }
+
+    @media #{$responsiveQueryXlargeUp} {
+      @include oj-web-padding("oj-xl");
+    }
+
+    @if $privateResponsiveQueryXXlargeUp and $privateResponsiveQueryXXlargeUp != none {
+      @if $privateResponsiveQueryXlargeOnly and $privateResponsiveQueryXlargeOnly != none {
+        @media #{$privateResponsiveQueryXlargeOnly} {
+          @include oj-web-padding("oj-xl-only");
+        }
+      }
+
+      @if $privateResponsiveQueryXlargeDown and $privateResponsiveQueryXlargeDown != none {
+        @media #{$privateResponsiveQueryXlargeDown} {
+          @include oj-web-padding("oj-xl-down");
+        }
+      }
+
+      @media #{$privateResponsiveQueryXXlargeUp} {
+        @include oj-web-padding("oj-xxl");
+      }
+    }
+  }
+
+  .oj-web-padding {
+    @extend .oj-sm-web-padding-vertical;
+    @extend .oj-sm-web-padding-horizontal;
+  }
+
+  .oj-web-applayout-content-nopad {
+    flex: 1 0 auto;
+  }
+
+  .oj-web-applayout-content {
+    @extend .oj-web-applayout-content-nopad;
+    @extend .oj-sm-web-padding-vertical;
+
+    padding-left: calc(var(--oj-private-app-layout-web-padding) - (2 * var(--oj-core-spacing-1x)));
+    padding-right: calc(var(--oj-private-app-layout-web-padding) - (2 * var(--oj-core-spacing-1x)));
+  }
+
+  // FOOTER
+  .oj-web-applayout-footer {
+    min-height: var(--oj-private-app-layout-web-footer-min-height);
+    border-top: 1px solid var(--oj-private-app-layout-web-footer-border-color);
+    background-color: var(--oj-private-app-layout-web-footer-bg-color);
+
+    box-sizing: border-box;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .oj-web-applayout-footer-item {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    flex: 0 1 auto;
+  }
+  // TODO media query
+  // For phone
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      .oj-web-applayout-footer-item {
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  }
+  .oj-web-applayout-footer ul {
+    margin: 0;
+    @include oj-ltr() {
+      padding-left: 0;
+    }
+    @include oj-rtl() {
+      padding-right: 0;
+    }
+  }
+  .oj-web-applayout-footer li {
+    list-style: none;
+    display: inline-block;
+    @include oj-ltr() {
+      margin-right: 10px;
+      margin-left: 0;
+      padding-right: 10px;
+
+      border-right: 1px solid var(--oj-private-app-layout-web-footer-border-color);
+    }
+    @include oj-rtl() {
+      margin-left: 5px;
+      margin-right: 0;
+      padding-left: 5px;
+
+      border-left: 1px solid var(--oj-private-app-layout-web-footer-border-color);
+    }
+  }
+  .oj-web-applayout-footer li:last-child {
+    @include oj-ltr() {
+      margin-right: 0;
+      padding-right: 0;
+      border-right: none;
+    }
+    @include oj-rtl() {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: none;
+    }
+  }
+}

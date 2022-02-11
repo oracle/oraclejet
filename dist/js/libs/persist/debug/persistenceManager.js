@@ -408,7 +408,7 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
       // save off the browser fetch and XHR only in browser context.
       // also add listeners for browser online
       // Don't do it for Service Workers
-      if (_isSafari() &&
+      if (_needsRequestReplaced() &&
         !persistenceManager._browserRequestConstructor &&
         !persistenceManager._persistenceRequestConstructor) {
         logger.log("Offline Persistence Toolkit PersistenceManager: Replacing Safari Browser APIs");
@@ -423,7 +423,7 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
           writable: false
         });
         self['Request'] = persistenceManager._persistenceRequestConstructor;
-        if (!_isBrowserContext() && 
+        if (!_isBrowserContext() &&
           !persistenceManager._browserFetchFunc) {
           // replace serviceWorker's fetch with this wrapper to unwrap safari request in sw
           Object.defineProperty(persistenceManager, '_browserFetchFunc', {
@@ -760,10 +760,7 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
               if (!(self._init.body instanceof FormData)) {
                 return self._browserRequest.arrayBuffer();
               } else {
-                return _formDataToString(self._init.body, self._boundary).then(function (formDataText) {
-                  var formDataArrayBuffer = _strToArrayBuffer(formDataText);
-                  return formDataArrayBuffer;
-                })
+                return _formDataToArrayBuffer(self._init.body, self._boundary)
               }
             }
             return self._browserRequest.arrayBuffer();
@@ -948,22 +945,43 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
       };
     }
 
-    function _isSafari() {
-      // using the same isSafari() check as VB
-      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      // hybrid apps do not use "safari" in its userAgent on ios
-      var isiOS =  /\((iPad|iPhone)/i.test(navigator.userAgent);
-      return (isSafari || isiOS);
+    function _needsRequestReplaced() {
+      // check if it is a safari userAgent and capturing the version
+      // this check covers desktops and new versions of ipads
+      // user agent is different for older ipads and all iphones
+      var isSafari = navigator.userAgent.match(/^(?:(?!chrome|android|iphone|ipad).)*\/([0-9\.]*) safari.*$/i);
+      // if there is a match, there is a value otherwise its null
+      if (isSafari) {
+        var test = isSafari[1].split('.')
+        // Check if safari at least v14.1 since this is when the version with formdata is updated.
+        if (test[0] >14) {
+          return false;
+        } else if (test[0] == 14 && test[1] != 0) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        // iOS webkit engine is bundled with the iphone OS version
+        // ALL browsers on iOS devices are webkit based
+        // ie if broken in safari, will be broken in chrome on iOS device
+        var isiOS = navigator.userAgent.match(/(?:iPad|iPhone).*?os ([0-9\_]*)/i);
+        // check for iOS version, request + formdata support added in iOS 14_3 + based on browserstack
+        if (isiOS) {
+          var test = isiOS[1].split('_')
+          if (test[0] >14) {
+            return false;
+          } else if (test[0] == 14 && test[1] >= 3) {
+            return false;
+          }else {
+            return true;
+          }
+        }
+      }
+      return false;
     };
 
-    function _strToArrayBuffer(str) {
-      // this function is used exclusively on Safari to match functionality
-      // of Chrome since ArrayBuffer for FormData since it is not supported
-      // arrayBuffer on Chrome uses utf-8 encoding
-      var enc = new TextEncoder();
-      return enc.encode(str).buffer;
-    }
-    function _formDataToPromise(value, key, boundary) {
+    function _formDataToPromiseString(value, key, boundary) {
       return new Promise(function (resolve, reject) {
         var entryText;
         var itemType = value.constructor.name;
@@ -1026,7 +1044,7 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
         // are converted to promise which return string versions of the entry
         // the promise.all then concatinates the strings together.
         formData.forEach(function (value, key) {
-          promiseArray.push(_formDataToPromise(value, key, boundary));
+          promiseArray.push(_formDataToPromiseString(value, key, boundary));
         })
         Promise.all(promiseArray).then(function (entryText) {
           entryText.forEach(function (entry) {
@@ -1034,6 +1052,81 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
           })
           formDataText += "--";
           resolve(formDataText);
+        }).catch(function (err) {
+          reject(err);
+        })
+      })
+    }
+
+    function _concatBuffers(arrayOfBuffers){
+      // helper function to join arraybuffers together
+      var result = new Uint8Array(0);
+      arrayOfBuffers.forEach(function(arrayBuffer){
+        var tmp = new Uint8Array(result.byteLength + arrayBuffer.byteLength);
+        tmp.set(new Uint8Array(result), 0);
+        tmp.set(new Uint8Array(arrayBuffer), result.byteLength);
+        result = tmp;
+      })
+      return result.buffer;
+    }
+    function _formDataToPromiseArryBuffer(value, key, boundary) {
+      return new Promise(function (resolve, reject) {
+        var enc = new TextEncoder();
+        var endingBuffer =  enc.encode('\r\n' +boundary).buffer; // endingBuffer does not change
+        var itemType = value.constructor.name;
+        switch (itemType) {
+          case "File":
+            // File objects must be encoded using FileReader API since on
+            // Safari blobs are basically stubs with no conversion operations
+            var reader = new FileReader();
+            reader.onload = function (evt) {
+              var startingBuffer = enc.encode('\r\n' + 'Content-Disposition: form-data; name="' + key.toString() + '"; filename="' + value.name +'"\r\n' +'Content-Type: ' + value.type +'\r\n\r\n').buffer;
+              var fileBuffer = evt.target.result;
+              var result = _concatBuffers([startingBuffer,fileBuffer,endingBuffer]);
+              resolve(result)
+            };
+            reader.onerror = function () {
+              reader.abort();
+              reject(new DOMException("Problem parsing input file."));
+            };
+            reader.readAsArrayBuffer(value);
+            break;
+          case "String":
+            var startingBuffer = enc.encode('\r\n' + 'Content-Disposition: form-data; name="' + key + '"\r\n\r\n').buffer;
+            var stringBuffer = enc.encode(value).buffer;
+            var result = _concatBuffers([startingBuffer,stringBuffer,endingBuffer]);
+            resolve(result);
+            break;
+          default:
+            // If a user appends their own objects into the formData
+            // using formData.set("key",{value:value}) , when it is transformed
+            // into text, it results in the object appearing as [object Object]
+            var startingBuffer = enc.encode('\r\n' + 'Content-Disposition: form-data; name="' + key.toString() + '"\r\n\r\n').buffer;
+            var stringBuffer = enc.encode(value.toString()).buffer;
+            var result = _concatBuffers([startingBuffer,stringBuffer,endingBuffer]);
+            resolve(result);
+            break;
+        }
+      })
+    }
+    function _formDataToArrayBuffer(formData, boundary) {
+      return new Promise(function (resolve, reject) {
+        var promiseArray = [];
+        var enc = new TextEncoder()
+        var formDataArrayBuffer = enc.encode(boundary).buffer;
+        var finalString = enc.encode('--').buffer;
+        // since fileReader is a promise based API, all formData entriesÍ
+        // are converted to promise which return arrayBuffer versions of the entry
+        // the promise.all then concatinates the strings together.
+        formData.forEach(function (value, key) {
+          promiseArray.push(_formDataToPromiseArryBuffer(value, key, boundary));
+        })
+        Promise.all(promiseArray).then(function (entryBuffer) {
+          entryBuffer.forEach(function (entry) {
+            formDataArrayBuffer = _concatBuffers([formDataArrayBuffer,entry]);
+          })
+          var formDataArrayBufferFinal = _concatBuffers([formDataArrayBuffer,finalString]);
+          resolve(formDataArrayBufferFinal);
         }).catch(function (err) {
           reject(err);
         })

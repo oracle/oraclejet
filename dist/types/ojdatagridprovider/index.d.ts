@@ -19,8 +19,13 @@ export interface DataGridProviderAddOperationEventDetail {
     version: number;
 }
 export class DataGridProviderRefreshEvent extends Event {
+    detail: DataGridProviderRefreshOperationEventDetail | null;
     type: 'refresh';
     constructor();
+}
+export interface DataGridProviderRefreshOperationEventDetail {
+    disregardAfterColumnOffset: number | null;
+    disregardAfterRowOffset: number | null;
 }
 export class DataGridProviderRemoveEvent extends Event {
     detail: DataGridProviderRemoveOperationEventDetail;
@@ -99,7 +104,12 @@ export interface GridHeaderItem<D> {
     extent: number;
     index: number;
     level: number;
-    metadata: object;
+    metadata: GridHeaderMetadata;
+}
+export interface GridHeaderMetadata {
+    expanded?: 'expanded' | 'collapsed';
+    sortDirection?: 'ascending' | 'descending' | 'unsorted';
+    treeDepth?: number;
 }
 export interface GridItem<D> {
     data: D;

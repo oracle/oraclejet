@@ -1,0 +1,32 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example app-layout/themes/redwood/oj-app-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.applayout") {
+  // POSITIONING CLASSES
+  .oj-applayout-fixed-top,
+  .oj-applayout-fixed-bottom {
+    position: fixed;
+    width: 100%;
+    box-sizing: border-box;
+
+    z-index: var(--oj-private-core-z-index-fixed);
+  }
+  .oj-applayout-fixed-top {
+    top: 0;
+  }
+  .oj-applayout-fixed-bottom {
+    bottom: 0;
+  }
+
+  // Marker class used with the fixed positioning classes to adjust content paddings
+  // to prvent overlap
+  .oj-applayout-content {
+  }
+}

@@ -1,0 +1,85 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../animation/themes/redwood/oj-animation.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.variables.switch") {
+
+:root {
+
+  // switch
+  // ------------------------------
+
+  --oj-switch-track-height:                         1.25rem;
+  --oj-switch-track-width:                          2.25rem;
+  --oj-switch-track-border-radius:                  var(--oj-core-border-radius-lg);
+
+  --oj-switch-thumb-to-track-horizontal-margin:     0.0625rem;
+  
+
+  // off
+  --oj-switch-track-bg-color:                       rgb(var(--oj-palette-neutral-rgb-90));
+  --oj-switch-track-border-color:                   transparent;
+  --oj-switch-thumb-bg-color:                       rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-switch-thumb-border-color:                   rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-switch-thumb-height:                         calc(var(--oj-switch-track-height) - 0.25rem);
+  --oj-switch-thumb-width:                          var(--oj-switch-thumb-height);
+  --oj-switch-thumb-border-radius:                  var(--oj-core-border-radius-md);
+  --oj-switch-thumb-box-shadow:                     0px 0.125rem 0.25rem 0px rgba(var(--oj-core-box-shadow-rgb),.1);
+  // on
+  --oj-switch-track-bg-color-selected:              rgb(var(--oj-palette-brand-rgb-100));
+  --oj-switch-track-border-color-selected:          rgb(var(--oj-palette-brand-rgb-100));
+  --oj-switch-thumb-bg-color-selected:              rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-switch-thumb-border-color-selected:          rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-switch-thumb-box-shadow-selected:            var(--oj-switch-thumb-box-shadow);
+
+  // off hover
+  --oj-switch-track-bg-color-hover:                 rgba(var(--oj-palette-neutral-rgb-170),.6);
+  --oj-switch-track-border-color-hover:             transparent;
+  --oj-switch-thumb-bg-color-hover:                 rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-border-color-hover:             rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-box-shadow-hover:               none;
+
+  // on hover
+  --oj-switch-track-bg-color-selected-hover:        rgb(var(--oj-palette-brand-rgb-110));
+  --oj-switch-track-border-color-selected-hover:    rgb(var(--oj-palette-brand-rgb-110));
+  --oj-switch-thumb-bg-color-selected-hover:        rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-border-color-selected-hover:    rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-box-shadow-selected-hover:      none;
+
+  // off active
+  --oj-switch-track-bg-color-active:                rgba(var(--oj-palette-neutral-rgb-170), 0.68);
+  --oj-switch-track-border-color-active:            transparent;
+  --oj-switch-thumb-bg-color-active:                rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-border-color-active:            rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-box-shadow-active:              none;
+  --oj-switch-thumb-width-active:                   var(--oj-switch-thumb-width);
+
+  // on active
+  --oj-switch-track-bg-color-selected-active:       rgb(var(--oj-palette-brand-rgb-120));
+  --oj-switch-track-border-color-selected-active:   rgb(var(--oj-palette-brand-rgb-120));
+  --oj-switch-thumb-bg-color-selected-active:       rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-border-color-selected-active:   rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-switch-thumb-box-shadow-selected-active:     none;
+
+  // disabled off
+  --oj-switch-track-bg-color-disabled:              var(--oj-core-color-disabled-2);
+  --oj-switch-track-border-color-disabled:          transparent;
+  --oj-switch-thumb-bg-color-disabled:              rgba(var(--oj-palette-neutral-rgb-10), .8);
+  --oj-switch-thumb-border-color-disabled:          transparent;
+
+  // disabled on
+  --oj-switch-track-bg-color-selected-disabled:     var(--oj-core-color-disabled-2);
+  --oj-switch-track-border-color-selected-disabled: transparent;
+  --oj-switch-thumb-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-10), .8);
+  --oj-switch-thumb-border-color-selected-disabled: transparent;
+
+
+}
+
+}

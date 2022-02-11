@@ -1,0 +1,12 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+  @include module-include-once("stable.variables.toolbar") {
+
+:root {
+  --oj-toolbar-button-margin:.5rem;
+  --oj-toolbar-borderless-button-margin:.125rem;
+  --oj-toolbar-separator-margin:.5rem; 
+  --oj-private-toolbar-global-chroming-default:borderless;
+}
+}

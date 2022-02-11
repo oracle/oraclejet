@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,16 +13,33 @@ import { info } from 'ojs/ojlogger';
 import { CACHED_BINDING_PROVIDER, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import { render } from 'preact';
 import oj from 'ojs/ojcore-base';
+import Context from 'ojs/ojcontext';
 
 const ROW = Symbol('row');
 class PreactTemplate {
     static executeVDomTemplate(templateElement, context) {
+        const busyContext = Context.getContext(templateElement).getBusyContext();
+        const customThrottle = (callback, timeout) => {
+            let timeoutInstance;
+            return () => {
+                if (!timeoutInstance) {
+                    const busyStateResolve = busyContext.addBusyState({
+                        description: 'pending changes for the template element'
+                    });
+                    timeoutInstance = setTimeout(() => {
+                        timeoutInstance = undefined;
+                        callback();
+                        busyStateResolve();
+                    }, timeout);
+                }
+            };
+        };
         const computedVNode = pureComputed({
             read: () => {
                 return templateElement.render(context.$current);
             }
         })
-            .extend({ rateLimit: 0 });
+            .extend({ rateLimit: { timeout: 0, method: customThrottle } });
         const vNode = computedVNode();
         PreactTemplate._extendTemplate(templateElement, PreactTemplate._ROW_CACHE_FACTORY, (renderer) => {
             templateElement._cachedRows.forEach((rowItem) => {
@@ -56,8 +73,9 @@ class PreactTemplate {
         render(vnode, parentStub);
         const nodes = retrieveNodes();
         nodes.forEach((node) => {
-            var _a;
-            (_a = node.classList) === null || _a === void 0 ? void 0 : _a.add('oj-vdom-template-root');
+            if (node.setAttribute) {
+                node.setAttribute('data-oj-vdom-template-root', '');
+            }
             node[ROW] = row;
             node[CACHED_BINDING_PROVIDER] = 'preact';
         });
@@ -236,11 +254,11 @@ const JetTemplateEngine = function () {
   this.clean = function (node) {
     // Search for nodes created with VDom methods and let PreactTemplate clean them.
     let vdomTemplateRoots =
-      node && node.getElementsByClassName
-        ? Array.from(node.getElementsByClassName('oj-vdom-template-root'))
+      node && node.querySelectorAll
+        ? Array.from(node.querySelectorAll('[data-oj-vdom-template-root=""]'))
         : [];
-    // Add the node itself to the array if it has the oj-vdom-template-root class
-    if (node && node.matches && node.matches('.oj-vdom-template-root')) {
+    // Add the node itself to the array if it has the data-oj-vdom-template-root attribute
+    if (node && node.hasAttribute && node.hasAttribute('data-oj-vdom-template-root')) {
       vdomTemplateRoots.push(node);
     }
     vdomTemplateRoots.forEach((root) => {

@@ -1,3 +1,3 @@
 export function getDescriptiveText(element: HTMLElement): string;
-export function getTracerProvider(): object;
-export function setTracerProvider(provider: object): any;
+export function getTracerProvider(): unknown;
+export function setTracerProvider(provider: unknown): any;

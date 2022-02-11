@@ -1,14 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore';
 import { warn } from 'ojs/ojlogger';
-import { CustomElementUtils, AttributeUtils, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
-import { traceDispatchEvent } from 'ojs/ojtrace-event';
+import { CustomElementUtils, AttributeUtils, transformPreactValue, ElementUtils, JetElementError } from 'ojs/ojcustomelement-utils';
 import { getPropertyMetadata, getFlattenedAttributes, checkEnumValues } from 'ojs/ojmetadatautils';
 import { whenDocumentReady } from 'ojs/ojbootstrap';
 import oj$1 from 'ojs/ojcore-base';
@@ -30,8 +29,6 @@ BaseCustomElementBridge.proto =
   getClass: function (descriptor) {
     var proto = Object.create(HTMLElement.prototype);
     this.InitializePrototype(proto);
-
-    proto.dispatchEvent = traceDispatchEvent(HTMLElement.prototype.dispatchEvent);
 
     var metadata = this.GetMetadata(descriptor);
     // Enumerate metadata to define the prototype properties, methods, and events
@@ -300,7 +297,7 @@ BaseCustomElementBridge.proto =
       while (this._earlySets.length) {
         const setObj = this._earlySets.shift();
         const updatedValue =
-          CustomElementUtils.convertEmptyStringToUndefined(
+          transformPreactValue(
             element,
             propertyMeta.properties[setObj.property],
             setObj.value);

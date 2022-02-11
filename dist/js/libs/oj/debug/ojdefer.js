@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -41,6 +41,7 @@ define(['ojs/ojkoshared', 'knockout', 'ojs/ojcore-base'], function (BindingProvi
       // _shown is set if subtreeShown was called before bound. Therefore, if _shown was set
       // we can directly call ko.applyBindingsToDescendants() without waiting for subtreeShown
       // because it was already called.
+
       if (!element._shown) {
         // this _activateSubtree function will be called from the element's
         // _activate API.
@@ -64,11 +65,7 @@ define(['ojs/ojkoshared', 'knockout', 'ojs/ojcore-base'], function (BindingProvi
     }
   };
 
-  const DeferElement = {};
-  oj._registerLegacyNamespaceProp('DeferElement', DeferElement);
-
-  (function () {
-    /**
+  /**
      *
      * @since 4.0.0
      * @ojcomponent oj.ojDefer
@@ -96,59 +93,47 @@ define(['ojs/ojkoshared', 'knockout', 'ojs/ojcore-base'], function (BindingProvi
      * 'hiding' components that is nested within another 'hiding' component. That
      * limitation will be removed in the future.
      */
-    DeferElement.register = function () {
-      var deferElementProto = Object.create(HTMLElement.prototype);
-      // define a non-public _activate API which will only be called
-      // by subtreeAttach
-      Object.defineProperties(deferElementProto, {
-        _activate: {
-          value: function () {
-            if (!this._activateSubtree) {
-              // if the _activateSubtree function is not there then
-              // that means we have not been bound yet. Set a flag to activate when bound
-              Object.defineProperty(this, '_shown', {
-                configurable: false,
-                value: true
-              });
-            } else {
-              // if we have stashed away children, put them back, apply binding and remove the property
-              this._activateSubtree(this);
-              delete this._activateSubtree;
-            }
-          },
-          writable: false
-        },
-        // A non-public property will be defined as a function by
-        // either ko.bindingHandlers or VTemplateEngine. The function will attach
-        // saved child nodes to oj-defer element and apply bindings if necessary.
-        // The property will be deleted by the caller after a single use.
-        _activateSubtree: {
-          value: null,
-          writable: true,
-          configurable: true
-        }
-      });
-      var constructorFunc = function () {
-        const reflect = window.Reflect;
-        let ret;
-        /* istanbul ignore else: window.Reflect available everywhere except on IE11 */
-        if (typeof reflect !== 'undefined') {
-          ret = reflect.construct(HTMLElement, [], this.constructor);
-        } else {
-          ret = HTMLElement.call(this);
-        }
-        return ret;
-      };
-      Object.defineProperty(deferElementProto, 'constructor', {
-        value: constructorFunc,
-        writable: true,
-        configurable: true
-      });
-      constructorFunc.prototype = deferElementProto;
-      Object.setPrototypeOf(constructorFunc, HTMLElement);
-      customElements.define('oj-defer', constructorFunc);
-    };
-    DeferElement.register();
-  }());
+
+  class DeferElement extends HTMLElement {
+    constructor() {
+      super();
+      // Define internal properties for the _shown and _activateSubtree class properties.
+      this._activateSubtreeInternal = null;
+      this._shownInternal = false;
+    }
+
+    // Add getter for _shown. We don't need setter since we don't want external code to modify it.
+    // The property is used as a flag in activating elements when binding.
+    get _shown() {
+      return this._shownInternal;
+    }
+    // Add getter and setter for _activateSubtree, since we expect the external code to set the value.
+    // _activateSubtree is a non-public property that will be defined as a function by either ko.bindingHandlers
+    // or VTemplateEngine. The function will attach saved child nodes to oj-defer element and apply bindings
+    // if necessary. The property will be deleted by the caller after a single use.
+    get _activateSubtree() {
+      return this._activateSubtreeInternal;
+    }
+    set _activateSubtree(value) {
+      this._activateSubtreeInternal = value;
+    }
+    // Define the class method that would be used by JET and only be called
+    // by subtreeAttach
+    _activate() {
+      if (!this._activateSubtree) {
+       // if the _activateSubtree function is not there then that means we have
+       // not been bound yet. Therefore, this internal property sets _shown to true
+       // as a flag to activate when bound.
+        this._shownInternal = true;
+      } else {
+        // if we have stashed away children, put them back, apply binding and then
+        // set the internal property to null.
+        this._activateSubtree(this);
+        this._activateSubtreeInternal = null;
+      }
+    }
+  }
+  customElements.define('oj-defer', DeferElement);
+  oj._registerLegacyNamespaceProp('DeferElement', DeferElement);
 
 });

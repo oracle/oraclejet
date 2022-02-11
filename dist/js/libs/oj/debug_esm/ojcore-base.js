@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -37,12 +37,12 @@ const oj = {
    * @global
    * @member {string} version JET version numberr
    */
-  version: '11.1.0',
+  version: '12.0.0',
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  revision: '2021-09-30_14-13-44',
+  revision: '2022-02-03_18-00-07',
 
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate

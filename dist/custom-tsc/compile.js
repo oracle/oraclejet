@@ -26,30 +26,20 @@ const ts = __importStar(require("typescript"));
 const metadataTransformer_1 = __importDefault(require("./metadataTransformer"));
 const decoratorTransformer_1 = __importDefault(require("./decoratorTransformer"));
 const JetTypeGenerator_1 = require("./JetTypeGenerator");
-const COMPILER_OPTIONS = {
-    experimentalDecorators: true,
-    failOnTypeErrors: true,
-    jsx: "react",
-    jsxFactory: "h",
-    module: "commonjs",
-    moduleResolution: "node",
-    noEmitOnError: false,
-    stripInternal: true,
-    target: "es6",
-};
-function compile({ files, compilerOptions, buildOptions, }) {
-    const { options: _compilerOptions } = ts.convertCompilerOptionsFromJson(Object.assign(Object.assign({}, COMPILER_OPTIONS), compilerOptions), ".");
+function compile({ tsconfigJson, buildOptions }) {
+    const parsedJsonConfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, '.');
+    const parsedTsconfigJson = {
+        compilerOptions: parsedJsonConfig.options,
+        files: parsedJsonConfig.fileNames
+    };
     const _buildOptions = Object.assign({}, buildOptions);
-    const compilerHost = ts.createCompilerHost(_compilerOptions);
-    const program = ts.createProgram(files, _compilerOptions, compilerHost);
+    const compilerHost = ts.createCompilerHost(parsedTsconfigJson.compilerOptions);
+    const program = ts.createProgram(parsedTsconfigJson.files, parsedTsconfigJson.compilerOptions, compilerHost);
     compilerHost.writeFile = JetTypeGenerator_1.getTypeGenerator(_buildOptions);
     let emitResult;
     const errors = [];
     const EmitOptions = {
-        before: [
-            metadataTransformer_1.default(program, _buildOptions),
-            decoratorTransformer_1.default(_buildOptions),
-        ],
+        before: [metadataTransformer_1.default(program, _buildOptions), decoratorTransformer_1.default(_buildOptions)]
     };
     if (_buildOptions.isolationMode) {
         program.getSourceFiles().forEach((sf) => {
@@ -68,15 +58,16 @@ function compile({ files, compilerOptions, buildOptions, }) {
         }
         catch (error) {
             errors.push(error);
-            return { errors };
+            return { errors, parsedTsconfigJson };
         }
     }
     handleDiagnosticMessages(program, emitResult, errors);
-    if (errors.length == 0 && _compilerOptions.declaration) {
+    if (errors.length == 0 && parsedTsconfigJson.compilerOptions.declaration) {
         JetTypeGenerator_1.assembleTypes(buildOptions);
     }
     return {
         errors,
+        parsedTsconfigJson
     };
 }
 exports.default = compile;
@@ -84,19 +75,16 @@ function parseDiagnostic(diagnostic) {
     let result;
     if (diagnostic.file) {
         const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-        result = `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`;
+        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+        result = `${diagnostic.file.fileName}:${line + 1}:${character + 1} - ${message}`;
     }
     else {
-        result = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+        result = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
     }
     return result;
 }
 function handleDiagnosticMessages(program, emitResult, errors) {
-    const diagnostics = [
-        ...ts.getPreEmitDiagnostics(program),
-        ...emitResult.diagnostics,
-    ];
+    const diagnostics = [...ts.getPreEmitDiagnostics(program), ...emitResult.diagnostics];
     diagnostics.forEach((diagnostic) => {
         const errorMessage = parseDiagnostic(diagnostic);
         if (errors.indexOf(errorMessage) === -1) {
@@ -104,3 +92,4 @@ function handleDiagnosticMessages(program, emitResult, errors) {
         }
     });
 }
+//# sourceMappingURL=compile.js.map

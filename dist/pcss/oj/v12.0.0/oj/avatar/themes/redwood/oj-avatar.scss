@@ -1,0 +1,71 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+// ----- end dependencies ---------
+
+@import "_oj-avatar.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-avatar.scss";
+
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "_oj-avatar-scoped.cssvars.scss"; 
+@import "_oj-avatar-ignore.scoped.cssvars.scss";
+
+@include module-include-once("redwood.avatar") {
+
+  .oj-avatar-background {
+    content: '';
+    background-size: 12.25rem 12.25rem;
+    width: 100%;
+    height: 100%;
+    background-image: url('#{$imageDir}avatar-pattern1.png');
+  }
+
+  .oj-avatar-bg-orange .oj-avatar-background,
+  .oj-avatar-bg-red .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern2.png');
+  }
+
+  .oj-avatar-bg-green .oj-avatar-background,
+  .oj-avatar-bg-forest .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern3.png');
+  }
+
+  .oj-avatar-bg-teal .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern4.png');
+  }
+
+  .oj-avatar-bg-blue .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern5.png');
+  }
+
+  .oj-avatar-bg-slate .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern6.png');
+  }
+
+  .oj-avatar-bg-pink .oj-avatar-background,
+  .oj-avatar-bg-mauve .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern7.png');
+  }
+
+  .oj-avatar-bg-purple .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern8.png');
+  }
+
+  .oj-avatar-bg-lilac .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern9.png');
+  }
+
+  .oj-avatar-bg-gray .oj-avatar-background {
+    background-image: url('#{$imageDir}avatar-pattern10.png');
+  }
+}

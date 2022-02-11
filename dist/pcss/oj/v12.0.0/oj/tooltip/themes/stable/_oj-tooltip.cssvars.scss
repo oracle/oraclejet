@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+
+@include module-include-once("stable.variables.tooltip") {
+
+:root {
+    // tooltip
+    // ----------------------------
+    --oj-tooltip-text-color:    rgb(var(--oj-palette-neutral-rgb-0));
+    --oj-tooltip-bg-color:      rgb(var(--oj-palette-neutral-rgb-170));
+    --oj-tooltip-font-size:     var(--oj-typography-body-xs-font-size);
+    --oj-tooltip-line-height:   var(--oj-typography-body-xs-line-height);
+    --oj-tooltip-padding:       var(--oj-core-spacing-2x);
+    --oj-tooltip-border-radius: var(--oj-core-border-radius-md);
+    --oj-tooltip-border-color:  rgb(var(--oj-palette-neutral-rgb-170));
+}
+
+}

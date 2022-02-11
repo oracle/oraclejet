@@ -39,7 +39,7 @@ function localRequire() {
           module;
     }
 
-    return this._resolvedModule;  
+    return this._resolvedModule;
   }
 
   function _resolveDeps(deps) {
@@ -256,7 +256,7 @@ define('dragImage',[],function() {
       var stylePosition = element.style.position;
       var styleTop = element.style.top;
 
-      // If the element is not attached to the DOM, attach it temporarily so 
+      // If the element is not attached to the DOM, attach it temporarily so
       // that we can get the offset size.
       if (!attached) {
         element.style.position = "fixed";
@@ -275,7 +275,7 @@ define('dragImage',[],function() {
       imageElem.style.zIndex = _findMaxChildZIndex(document.body) + 1;
 
       // Hide the drag image initially to avoid flicker.  dragController
-      // will move and show it at the right position on the first drag. 
+      // will move and show it at the right position on the first drag.
       imageElem.style.visibility = "hidden";
 
       if (!attached) {
@@ -367,13 +367,13 @@ define('eventDispatcher',[],function() {
     // MouseEvent to be set.
     // Creating drag event as MouseEvent doesn't work on mobile platforms. The
     // event is never dispatched.
-    // iOS 8 doesn't allow the pageX and pageY properties, which are supposed to 
+    // iOS 8 doesn't allow the pageX and pageY properties, which are supposed to
     // be read-only, to be set on UIEvent.
     //
     // We create Event instead and set the missing properties ourselves.
     //
     // Using document.createEvent to create the event works on all platforms
-    // for now, but it's being deprecated.  IE 11 and iOS 8 doesn't support the 
+    // for now, but it's being deprecated.  IE 11 and iOS 8 doesn't support the
     // newer Event constructor pattern yet, so we use it only if available.
     //
     var event;
@@ -381,7 +381,7 @@ define('eventDispatcher',[],function() {
     if (window.Event && typeof window.Event === 'function') {
       var eventInit = {'bubbles': _EVENT_PROPS[type].bubbles,
                        'cancelable': _EVENT_PROPS[type].cancelable};
-      event = new window.Event(type, eventInit); 
+      event = new window.Event(type, eventInit);
     } else {
       event = document.createEvent("Event");
       event.initEvent(
@@ -396,7 +396,7 @@ define('eventDispatcher',[],function() {
 
     // Add missing MouseEvent properties to the event
     _setMouseEventProps(event, props);
-    
+
     // Add missing MouseEvent method to the event
     event.getModifierState = function(keyArg) {
       return _getModifierStateFromProps(keyArg, props);
@@ -425,7 +425,7 @@ define('eventDispatcher',[],function() {
 
     return false;
   }
-  
+
   function _toNumber(prop) {
     return prop ? prop : 0;
   }
@@ -570,12 +570,12 @@ define('autoScroller',[],function() {
     if (elem.nodeType === 1) {
       var computedStyle = window.getComputedStyle(elem, null);
 
-      return ((computedStyle.overflow === "auto" || 
+      return ((computedStyle.overflow === "auto" ||
                computedStyle.overflow === "scroll") &&
               (elem.scrollWidth > elem.clientWidth ||
                elem.scrollHeight > elem.clientHeight));
     }
-    
+
     return false;
   }
 
@@ -667,7 +667,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
      *                  the following values:
      *                  'started' - The drag has been started by the polyfill.
      *                  'canceled' - The drag was canceled.
-     *                  The property is undefined when the drag was neither 
+     *                  The property is undefined when the drag was neither
      *                  canceled nor started by the polyfill.
      *        dataTrasnfer: the DataTransfer for this drag
      */
@@ -681,7 +681,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
 
       // Always set 'dataTransfer' property on the return object,
       // because caller needs DataTransfer even if polyfill isn't handling the drag.
-      return _isDragStarted(dataTransfer, dragStartedCallback) ? 
+      return _isDragStarted(dataTransfer, dragStartedCallback) ?
         _dragStarted(dataTransfer, dragSource, inputProps) :
         {"dataTransfer": dataTransfer};
     }
@@ -918,7 +918,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
 
     function _updateCursor(overElem) {
       var newCursor;
-      
+
       if (_currentDragOp === "none") {
         newCursor = "not-allowed";
       } else if (_currentDragOp === "copy") {
@@ -938,7 +938,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
     }
 
     function _changeElementCursor(element, newCursor) {
-      if (element.style.cursor !== newCursor) {
+      if (element && element.style.cursor !== newCursor) {
         if (element._dndSavedCursor === undefined) {
           element._dndSavedCursor = element.style.cursor;
         }
@@ -1069,7 +1069,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
     function _handleDndEvent(event) {
       var target = event.target;
       var relatedTarget = event.relatedTarget;
-      // replicate input props, note that dnd events inherits from MouseEvent 
+      // replicate input props, note that dnd events inherits from MouseEvent
       var inputProps = EventDispatcher.getMouseEventProps(event);
 
       switch(event.type) {
@@ -1077,20 +1077,20 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
           if (_dragImage) {
             _dragImage.show(true);
           }
-          _fireEvent("drag", target, inputProps, _dataTransfer);      
+          _fireEvent("drag", target, inputProps, _dataTransfer);
           break;
         case "dragenter":
-          _fireEvent("dragenter", target, inputProps, _dataTransfer, relatedTarget);      
+          _fireEvent("dragenter", target, inputProps, _dataTransfer, relatedTarget);
           break;
         case "dragleave":
-          _fireEvent("dragleave", target, inputProps, _dataTransfer, relatedTarget);      
+          _fireEvent("dragleave", target, inputProps, _dataTransfer, relatedTarget);
           break;
         case "dragover":
           var x = _dragImageOffset.x > 0 ? inputProps.clientX - TOUCH_IMAGE_LEFT_OFFSET : inputProps.clientX + TOUCH_IMAGE_RIGHT_OFFSET;
           var y = inputProps.clientY;
           _dragImage.move(x, y);
 
-          var canceled = _fireEvent("dragover", target, inputProps, _dataTransfer);      
+          var canceled = _fireEvent("dragover", target, inputProps, _dataTransfer);
           _updateCurrentDragOp(canceled);
           if (canceled) {
             event.preventDefault();
@@ -1115,7 +1115,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
           }
           break;
       }
-    }    
+    }
 
     this.start = _start;
     this.drag = _drag;
@@ -1246,7 +1246,7 @@ define('glassPane',['./eventDispatcher'], function(EventDispatcher) {
     function _handleGlassMouseEnter(event) {
       // If the mouse pointer has re-entered the document body, check the mouse
       // button.  If it's no longer down, cancel the drag.
-      // This check used to be in mousemove listener, but IE sometimes doesn't 
+      // This check used to be in mousemove listener, but IE sometimes doesn't
       // set event.buttons correctly if the element underneath the pointer
       // changes, causing the drag to be cancelled incorrectly.
       if (event.target === document.body && event.buttons !== _initButtons) {
@@ -1337,7 +1337,7 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
         rootElement.addEventListener("dragend", _handleDndEvent, true);
         rootElement.addEventListener("dragenter", _handleDndEvent, true);
         rootElement.addEventListener("dragleave", _handleDndEvent, true);
-        rootElement.addEventListener("drop", _handleDndEvent, true);  
+        rootElement.addEventListener("drop", _handleDndEvent, true);
         rootElement.addEventListener('pointerdown', _handlePointerDown, true);
       }
     }
@@ -1359,8 +1359,8 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
     /**
      * Keep track of the pointer type that triggers the dnd
      */
-    function _handlePointerDown(event) {      
-      _pointerType = event.pointerType;      
+    function _handlePointerDown(event) {
+      _pointerType = event.pointerType;
     }
 
     // Capture listener for drag start events.  Our strategy is this:
@@ -1451,9 +1451,9 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
       var data = dataTransfer.getData(format);
       if (data) {
         event.dataTransfer.setData(format, data);
-      }    
+      }
     }
-    
+
     function _startDrag(event, dragProps, inputProps) {
       // Let the browser know that the polyfill is handling
       // the drag by canceling the native event.
@@ -1496,7 +1496,7 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
 
     function _endCallback(inputProps, cancel) {
       _teardownEventListeners();
-      
+
       if (cancel) {
         controller.cancel(inputProps);
       } else {
@@ -1531,10 +1531,10 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
      * events are immediately cancelled when the element is draggable.
      *
      * The strategy that we decided to use is to listen for the native dnd event
-     * and enhance them to add advance datatransfer support (drag image support 
+     * and enhance them to add advance datatransfer support (drag image support
      * in a later release).
      */
-    function _handleTouchDragStart(event) {      
+    function _handleTouchDragStart(event) {
       // bail if the event is a pseudo event created by the controller
       if (event.__isPseudo) {
         return;
@@ -1542,17 +1542,17 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
 
       // we'll be firing our own dragstart event
       event.stopPropagation();
-      
+
       var elem = event.target;
-      
+
       // Find the first draggable ancestor element of the touch target
       while (elem && !elem.draggable) {
         elem = elem.parentNode;
       }
-      
+
       if (elem) {
         _dragSource = elem;
-      
+
         var inputProps = EventDispatcher.getMouseEventProps(event);
         var status = controller.start(_dragSource, null, inputProps);
         if (status.dragState !== "started") {
@@ -1560,7 +1560,7 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
           event.preventDefault();
           _dragSource = null;
         }
-      }      
+      }
     }
 
     // for the rest of dnd event we will just delegate to the controller to fire
@@ -1570,16 +1570,16 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
       if (event.__isPseudo) {
         return;
       }
-      
+
       // bail if dragstart did not succeed
       if (!_dragSource) {
         return;
       }
 
       // we'll be firing our own event
-      event.stopPropagation();  
-  
-      controller.handleDndEvent(event);    
+      event.stopPropagation();
+
+      controller.handleDndEvent(event);
 
       // reset _dragSource when done
       if (event.type === "dragend") {
@@ -1606,7 +1606,7 @@ define('touchDragDriver',['./args'], function(Args) {
 
     function _install() {
       rootElement.addEventListener("touchstart", _handleRootTouchStart, { passive: true, capture: true });
-      // This empty, non-passive listener is registered on the ancestor element to support 
+      // This empty, non-passive listener is registered on the ancestor element to support
       // preventDefault() calls made later by "touchmove" listeners added to the draggable element.
       // We didn't notice any scroll performance issues having the empty listener on the root element.
       rootElement.addEventListener("touchmove", _handleRootTouchMove, { passive: false, capture: true });
@@ -1639,8 +1639,8 @@ define('touchDragDriver',['./args'], function(Args) {
 
     function _handleRootTouchMove() {
       // On iOS, if there is no pre-existing touchmove listener in the ancestor
-      // chain when touchstart happens on an element, adding a touchmove 
-      // listener afterwards and calling event.preventDefault has no effect and 
+      // chain when touchstart happens on an element, adding a touchmove
+      // listener afterwards and calling event.preventDefault has no effect and
       // still allow the document to scroll.
       //
       // Register a no-op touchmove listener to work around this problem.
@@ -1742,7 +1742,7 @@ define('touchDragDriver',['./args'], function(Args) {
   return TouchDragDriver;
 });
 
-define('bootstrap',['./dragController', './desktopDragDriver', './touchDragDriver'], 
+define('bootstrap',['./dragController', './desktopDragDriver', './touchDragDriver'],
        function(DragController, DesktopDragDriver, TouchDragDriver) {
   'use strict';
 
@@ -1790,7 +1790,7 @@ define('bootstrap',['./dragController', './desktopDragDriver', './touchDragDrive
   function _isInitialized() {
     return _drivers.length > 0;
   }
-  
+
   return {
     init: _init,
     destroy: _destroy

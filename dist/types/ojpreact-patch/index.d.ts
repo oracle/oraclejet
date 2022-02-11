@@ -1,1 +1,1 @@
-export { OJ_POPUP, OJ_SLOT, OJ_REPLACER, patchSlotParent, patchPopupParent } from './patch';
+export { OJ_POPUP, OJ_SLOT_REMOVE, patchSlotParent, patchPopupParent } from './patch';

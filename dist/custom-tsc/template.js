@@ -30,11 +30,11 @@ class Template {
         this.settings = {
             evaluate: /<\?js([\s\S]+?)\?>/g,
             interpolate: /<\?js=([\s\S]+?)\?>/g,
-            escape: /<\?js~([\s\S]+?)\?>/g,
+            escape: /<\?js~([\s\S]+?)\?>/g
         };
     }
     load(file) {
-        return _.template(fs.readFileSync(file, "utf8"), this.settings);
+        return _.template(fs.readFileSync(file, 'utf8'), this.settings);
     }
     partial(file, data) {
         file = path.resolve(this.path, file);
@@ -49,3 +49,4 @@ class Template {
     }
 }
 exports.Template = Template;
+//# sourceMappingURL=template.js.map

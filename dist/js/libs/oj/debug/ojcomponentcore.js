@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1037,6 +1037,29 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
     }
     newAttributeValue = tokens.join(' ').trim();
     elem.setAttribute(attr, newAttributeValue); // @HTMLUpdateOK
+  };
+
+  /**
+   * @memberof oj.MessagingStrategy
+   * @param {Element} containerRoot
+   * @instance
+   * @private
+   */
+   MessagingStrategy.prototype.RemoveDescribedByFromElement = function (elem, id) {
+    const attr = 'described-by';
+    const currentAttributeValue = elem.getAttribute(attr);
+
+    // space deliminated string.
+    let tokens = currentAttributeValue ? currentAttributeValue.split(/\s+/) : [];
+
+    // remove id if it is already there
+    const filteredArray = tokens.filter(token => token !== id);
+    let newValue = filteredArray.join(' ').trim();
+      if (newValue) {
+        elem.setAttribute(attr, newValue); // @HTMLUpdateOK
+      } else {
+        elem.removeAttribute(attr);
+      }
   };
 
   /**
@@ -2250,8 +2273,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
         if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
           if (bOuterSet) {
             // eslint-disable-next-line no-param-reassign
-            value =
-            ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+            value = ojcustomelementUtils.transformPreactValue(this._ELEMENT, propertyMeta, value);
           }
           var previousValue = this._BRIDGE._PROPS[property];
           if (!ojcustomelementUtils.ElementUtils.comparePropertyValues(propertyMeta, value, previousValue)) {
@@ -2631,7 +2653,7 @@ define(['exports', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-am
           // sets are actually saved until after component creation and played back.
           if (!bridge.SaveEarlyPropertySet(this, property, value)) {
             // eslint-disable-next-line no-param-reassign
-            value = ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(this, propertyMeta, value);
+            value = ojcustomelementUtils.transformPreactValue(this, propertyMeta, value);
             if (propertyMeta._eventListener) {
               bridge.SetEventListenerProperty(this, property, value);
             } else if (!bridge._validateAndSetCopyProperty(this, property, value, propertyMeta)) {

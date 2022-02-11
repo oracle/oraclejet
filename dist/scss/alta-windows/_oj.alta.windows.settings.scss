@@ -2506,7 +2506,7 @@
 //) !default;
 //
 //// gridlines option defaulting
-//$listViewGridlinesItemOptionDefault: visible !default;
+//$listViewGridlinesItemOptionDefault: hidden !default;
 //$listViewGridlinesTopOptionDefault: visible !default;
 //$listViewGridlinesBottomOptionDefault: visible !default;
 //// load indicator
@@ -3135,6 +3135,8 @@
 //$ratingGaugeColorUnselected: #c4ced7 !default;
 //$ratingGaugeColorSelectedDisabled: $neutralColor8;
 //$ratingGaugeColorUnselectedDisabled: $neutralColor5;
+//$statusMeterGaugePlotAreaBorderColor: #d6dfe6;
+//$statusMeterGaugePlotAreaColor: #e4e8ea;
 //
 //// background
 ////----------------------------------

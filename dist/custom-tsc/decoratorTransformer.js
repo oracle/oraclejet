@@ -21,11 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ts = __importStar(require("typescript"));
 const DecoratorUtils_1 = require("./utils/DecoratorUtils");
-const _DT_DECORATORS = new Set([
-    "method",
-    "consumedBindings",
-    "providedBindings",
-]);
+const _DT_DECORATORS = new Set(['method', 'consumedBindings', 'providedBindings']);
 function decoratorTransformer(buildOptions) {
     function visitor(ctx, sf) {
         var _a;
@@ -34,7 +30,7 @@ function decoratorTransformer(buildOptions) {
                 return node;
             };
         }
-        if (buildOptions["debug"])
+        if (buildOptions['debug'])
             console.log(`${sf.fileName}: processing decorators...`);
         const aliasToExport = (_a = buildOptions.importMaps) === null || _a === void 0 ? void 0 : _a.aliasToExport;
         const visitor = (node) => {
@@ -43,8 +39,7 @@ function decoratorTransformer(buildOptions) {
                 if (updatedDecorators.length === 0) {
                     updatedDecorators = undefined;
                 }
-                if (!updatedDecorators ||
-                    updatedDecorators.length < node.decorators.length) {
+                if (!updatedDecorators || updatedDecorators.length < node.decorators.length) {
                     if (ts.isClassDeclaration(node)) {
                         node = ts.factory.updateClassDeclaration(node, updatedDecorators, node.modifiers, node.name, node.typeParameters, node.heritageClauses, node.members);
                     }
@@ -68,3 +63,4 @@ function removeDtDecorators(node, aliasToExport) {
         return !_DT_DECORATORS.has(decoratorName);
     });
 }
+//# sourceMappingURL=decoratorTransformer.js.map

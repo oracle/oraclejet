@@ -15,6 +15,9 @@ export interface AttributeFilterCapability {
     ordering?: object;
 }
 export interface AttributeFilterDef<D> {
+    collationOptions?: {
+        sensitivity?: 'base' | 'accent' | 'case' | 'variant';
+    };
     op: AttributeFilterDef.AttributeOperator;
     value: any;
 }
@@ -124,6 +127,7 @@ export interface DataProviderOperationEventDetail<K, D> {
     indexes?: number[];
     keys: Set<K>;
     metadata?: Array<ItemMetadata<K>>;
+    transient?: boolean;
 }
 export class DataProviderRefreshEvent<K> {
     AT_TARGET: number;
@@ -155,6 +159,7 @@ export class DataProviderRefreshEvent<K> {
 }
 export interface DataProviderRefreshEventDetail<K> {
     disregardAfterKey?: K;
+    keys?: K;
 }
 export interface DedupCapability {
     type: 'global' | 'none' | 'iterator';
@@ -215,11 +220,13 @@ export interface FetchFirstCapability {
     attributeFilter?: AttributeFilterCapability;
     caching?: 'all' | 'none' | 'visitedByCurrentIterator';
     iterationSpeed: 'immediate' | 'delayed';
+    totalFilteredRowCount?: 'exact' | 'none';
 }
 export interface FetchListParameters<D> {
     attributes?: Array<string | FetchAttribute>;
     clientId?: symbol;
     filterCriterion?: DataFilter.Filter<D>;
+    includeFilteredRowCount?: 'enabled' | 'disabled';
     size?: number;
     sortCriteria?: Array<SortCriterion<D>>;
 }
@@ -227,9 +234,13 @@ export interface FetchListResult<K, D> {
     data: D[];
     fetchParameters: FetchListParameters<D>;
     metadata: Array<ItemMetadata<K>>;
+    totalFilteredRowCount?: number;
 }
 export interface FilterCapability {
     attributeExpression?: AttributeFilterDef.AttributeExpression[];
+    collationOptions?: {
+        sensitivity?: Array<'base' | 'accent' | 'case' | 'variant'>;
+    };
     operators?: Array<AttributeFilterDef.AttributeOperator | CompoundFilterDef.CompoundOperator>;
     textFilter?: any;
 }
@@ -259,8 +270,13 @@ export namespace ItemMessage {
     type SEVERITY_TYPE = 'confirmation' | 'info' | 'warning' | 'error' | 'fatal';
 }
 export interface ItemMetadata<K> {
+    indexFromParent?: number;
+    isLeaf?: boolean;
     key: K;
     message?: ItemMessage;
+    parentKey?: K;
+    suggestion?: SuggestionMetadata;
+    treeDepth?: number;
 }
 export interface ItemWithOptionalData<K, D> {
     data?: D;
@@ -272,6 +288,9 @@ export interface SortCapability {
 export interface SortCriterion<D> {
     attribute: keyof D;
     direction: string;
+}
+// tslint:disable-next-line no-unnecessary-class
+export interface SuggestionMetadata {
 }
 // tslint:disable-next-line no-unnecessary-class
 export interface TextFilter<D> extends TextFilterDef, BaseDataFilter<D> {

@@ -186,7 +186,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["deprecated", "unsupported"]
+                "enum": ["deprecated", "getterOnly", "unsupported"]
               },
               "since": {
                 "$ref": "#/definitions/semverExactDef"
@@ -655,6 +655,9 @@
             },
             "status": {
               "$ref": "#/definitions/statusDef"
+            },
+            "visible": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false

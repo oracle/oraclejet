@@ -1,0 +1,336 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example buttonset/themes/redwood/oj-buttonset.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../button/themes/base/_oj-button.scss";
+
+@include module-include-once("common.buttonset") {
+  /* buttonset */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  // Note: It is intentional that the oj-radioset and oj-checkboxset below do not have the '.' before it.
+  // This selector matches the custom element name, not a class name.
+  oj-buttonset-one:not(.oj-complete),
+  oj-buttonset-many:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-buttonset {
+    font-size: var(--oj-button-font-size);
+  }
+
+  /* oj-buttonset-multi is present iff it's a multi-button buttonset, which is the only kind of buttonset to which 
+       buttonset styling should be applied.  When a single button is wrapped in a buttonset (typically for use with 
+       the "checked" option), that's an implementation detail; users still see it as a standalone button, so it 
+       should be themed as such. */
+  .oj-buttonset-multi {
+    display: inline-flex; // so buttonset shows in same row as rest of containing toolbar, unlike display:flex
+    align-items: center;
+    white-space: nowrap; // so buttonset's buttons are all in one line
+  }
+
+  // Button widths
+  //----------------------------------
+
+  // Applying oj-buttonset-width-equal will force buttonset buttons' widths to be equal, overriding any theming defaults
+  // app can set oj-buttonset-width-equal on buttonset or on an ancestor such as toolbar or document
+  .oj-buttonset-width-equal .oj-buttonset-multi .oj-button,
+  .oj-buttonset-width-equal.oj-buttonset-multi .oj-button {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  // Apply the default width setting to equal-width buttonsets. Apps can override this rule as needed.
+  .oj-buttonset-width-equal .oj-buttonset-multi,
+  .oj-buttonset-width-equal.oj-buttonset-multi {
+    width: 100%;
+  }
+
+  // Applying oj-buttonset-width-auto will force buttonset buttons' widths to be determined by the total width of their icons/label contents, overriding any theming defaults
+  // app can set oj-buttonset-width-auto on buttonset or on an ancestor such as toolbar or document
+  .oj-buttonset-width-auto .oj-buttonset-multi .oj-button,
+  .oj-buttonset-width-auto.oj-buttonset-multi .oj-button {
+    flex: auto;
+  }
+
+  // In themes with default auto-width buttonsets, allow buttons to grow/shrink according to app-specified width
+  .oj-buttonset-multi .oj-button {
+    justify-content: center;
+    overflow: hidden;
+    flex: auto;
+  }
+
+  // In cases where neither oj-buttonset-width style is set, the default is applied (varies by chroming & theme)
+
+  .oj-buttonset-multi.oj-button-full-chrome {
+    &:not(.oj-buttonset-width-auto) {
+      &:not(.oj-buttonset-width-equal) {
+        & .oj-button {
+          flex: auto;
+        }
+        width: initial;
+      }
+    }
+  }
+
+  .oj-buttonset-multi.oj-button-half-chrome {
+    &:not(.oj-buttonset-width-auto) {
+      &:not(.oj-buttonset-width-equal) {
+        & .oj-button {
+          flex: auto;
+        }
+        width: initial;
+      }
+    }
+  }
+
+  .oj-buttonset-multi.oj-button-outlined-chrome {
+    &:not(.oj-buttonset-width-auto) {
+      &:not(.oj-buttonset-width-equal) {
+        & .oj-button {
+          flex: auto;
+        }
+        width: initial;
+      }
+    }
+  }
+
+  // Buttonset spacing
+  //----------------------------------
+
+  /* Due to limitations in CSS syntax, the buttonset rules that depend on the chroming level check whether 
+       the buttonset itself has .oj-button-XXX-chrome.  This is why we put those classes on the buttonset itself.*/
+
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button,
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button {
+    border-radius: 0;
+
+    border-right-width: 0; // collapse borders between buttons.  We restore the last button's right border below.
+    // don't override .oj-button's margin-bottom which properly spaces
+    // buttons that wrap to the next line
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  // Borderless chromed buttonset buttons should have normal button spacing between them (3px in size 12 font), as if they're not in a buttonset at all.
+  .oj-buttonset-multi.oj-button-half-chrome .oj-button {
+    margin-left: 0;
+    margin-right: 0.25em; // equals 3px in size 12 font
+  }
+
+  // Remove hardcoded 4px right margin from last element of borderless-chrome buttonset
+  .oj-buttonset-multi.oj-button-half-chrome .oj-buttonset-last {
+    margin-right: 0;
+  }
+
+  // Border radius
+  //----------------------------------
+
+  /* .oj-buttonset-first is applied to the first button of the buttonset. */
+  .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first,
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
+    html:not([dir="rtl"]) & {
+      border-top-left-radius: var(--oj-button-border-radius);
+      border-bottom-left-radius: var(--oj-button-border-radius);
+    }
+
+    html[dir="rtl"] & {
+      border-right-width: 1px; // restore the last button's right border
+      border-top-right-radius: var(--oj-button-border-radius);
+      border-bottom-right-radius: var(--oj-button-border-radius);
+    }
+  }
+
+  /* .oj-buttonset-last is applied to the last button of the buttonset. */
+  .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last,
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
+    html:not([dir="rtl"]) & {
+      border-right-width: 1px;
+      border-top-right-radius: var(--oj-button-border-radius);
+      border-bottom-right-radius: var(--oj-button-border-radius);
+    }
+
+    html[dir="rtl"] & {
+      border-top-left-radius: var(--oj-button-border-radius);
+      border-bottom-left-radius: var(--oj-button-border-radius);
+    }
+  }
+
+  // Internal borders
+  //----------------------------------
+
+  // The shared border *between* the buttons of solid-chrome and outlined buttonsets is the
+  // right button's left border.  The left button has no right border.
+
+  // This shared border can be a different color than when not in a buttonset,
+  // depending on the state of the button owning the border (the right button).
+
+  // solid-chrome ---
+
+  // LTR solid-chrome and (default, focus-only, hover, or disabled)
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-default,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-hover,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color);
+    }
+  }
+
+  // RTL solid-chrome and (default, focus-only, hover, or disabled)
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-default,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-hover,
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color);
+    }
+  }
+
+  // LTR solid-chrome active
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-active {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-active);
+    }
+  }
+
+  // RTL solid-chrome active
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-active {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-active);
+    }
+  }
+
+  // LTR solid-chrome selected (affects selectedHovered too)
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-selected {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-selected);
+    }
+  }
+
+  // RTL solid-chrome selected (affects selectedHovered too)
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-selected {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-selected);
+    }
+  }
+
+  // LTR solid-chrome selectedDisabled
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-selected.oj-disabled {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-selected-disabled);
+    }
+  }
+
+  // RTL solid-chrome selectedDisabled
+  .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-selected.oj-disabled {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-private-buttonset-solid-chrome-internal-border-color-selected-disabled);
+    }
+  }
+
+  // outlined ---
+
+  // LTR outlined and (default, focus-only)
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-default,
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color);
+    }
+  }
+
+  // RTL outlined and (default, focus-only)
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-default,
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color);
+    }
+  }
+
+  // LTR outlined hover
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-hover {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color);
+    }
+  }
+
+  // RTL outlined hover
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-hover {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color);
+    }
+  }
+
+  // LTR outlined disabled
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-button-solid-chrome-border-color-disabled);
+    }
+  }
+
+  // RTL outlined disabled
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-button-solid-chrome-border-color-disabled);
+    }
+  }
+
+  // LTR outlined active
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-active {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-active);
+    }
+  }
+
+  // RTL outlined active
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-active {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-active);
+    }
+  }
+
+  // LTR outlined selected (affects selectedHovered too)
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-selected {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-selected);
+    }
+  }
+
+  // RTL outlined selected (affects selectedHovered too)
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-selected {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-selected);
+    }
+  }
+
+  // LTR outlined selectedDisabled
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-selected.oj-disabled {
+    html:not([dir="rtl"]) & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-selected-disabled);
+    }
+  }
+
+  // RTL outlined selectedDisabled
+  .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-selected.oj-disabled {
+    html[dir="rtl"] & {
+      border-left-color: var(--oj-buttonset-outlined-chrome-internal-border-color-selected-disabled);
+    }
+  }
+
+  // outlined non selected disabled buttonset
+  .oj-buttonset .oj-button-toggle.oj-disabled.oj-button-outlined-chrome:not(.oj-selected),  
+    .oj-buttonset .oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) .oj-button-button {
+    border-color: var(--oj-button-outlined-chrome-border-color-disabled);
+  }
+
+  .oj-buttonset .oj-button-toggle.oj-active.oj-button-outlined-chrome {    
+    background-color: var(--oj-button-outlined-chrome-bg-color-active);
+  }
+
+}

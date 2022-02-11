@@ -1,0 +1,37 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example legend/themes/redwood/oj-legend.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.legend") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-legend:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-legend {
+    display: block;
+  }
+
+  .oj-legend {
+    font-size: var(--oj-dvt-label-font-size-sm);
+    color: var(--oj-core-text-color-primary);
+    user-select: none;
+  }
+
+  .oj-legend-section-title {
+    font-size: var(--oj-dvt-label-font-size-sm);
+    font-weight: 600;
+    color: var(--oj-core-text-color-primary);
+  }
+
+  .oj-legend-hover {
+    fill: var(--oj-button-borderless-chrome-bg-color-hover);
+    border-radius: 4px;
+  }
+}

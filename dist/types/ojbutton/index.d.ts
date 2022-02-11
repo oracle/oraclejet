@@ -4,7 +4,7 @@ import { baseComponent, baseComponentEventMap, baseComponentSettableProperties, 
 export interface ojButton<SP extends ojButtonSettableProperties = ojButtonSettableProperties> extends baseComponent<SP> {
     chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     label: string | null;
     addEventListener<T extends keyof ojButtonEventMap<SP>>(type: T, listener: (this: HTMLElement, ev: ojButtonEventMap<SP>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -38,7 +38,7 @@ export interface ojButtonEventMap<SP extends ojButtonSettableProperties = ojButt
 export interface ojButtonSettableProperties extends baseComponentSettableProperties {
     chroming: 'solid' | 'outlined' | 'borderless' | 'callToAction' | 'danger' | 'full' | 'half';
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     label: string | null;
 }
 export interface ojButtonSettablePropertiesLenient extends Partial<ojButtonSettableProperties> {
@@ -68,7 +68,7 @@ export interface ojButtonsetMany extends ojButtonset<ojButtonsetManySettableProp
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any[] | null;
@@ -109,7 +109,7 @@ export interface ojButtonsetManySettableProperties extends ojButtonsetSettablePr
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any[] | null;
@@ -121,7 +121,7 @@ export interface ojButtonsetOne extends ojButtonset<ojButtonsetOneSettableProper
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any;
@@ -162,7 +162,7 @@ export interface ojButtonsetOneSettableProperties extends ojButtonsetSettablePro
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     describedBy: string | null;
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     focusManagement: 'oneTabstop' | 'none';
     labelledBy: string | null;
     value: any;
@@ -173,7 +173,7 @@ export interface ojButtonsetOneSettablePropertiesLenient extends Partial<ojButto
 export interface ojMenuButton extends ojButton<ojMenuButtonSettableProperties> {
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
     addEventListener<T extends keyof ojMenuButtonEventMap>(type: T, listener: (this: HTMLElement, ev: ojMenuButtonEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojMenuButtonSettableProperties>(property: T): ojMenuButton[T];
@@ -212,7 +212,7 @@ export interface ojMenuButtonEventMap extends ojButtonEventMap<ojMenuButtonSetta
 export interface ojMenuButtonSettableProperties extends ojButtonSettableProperties {
     chroming: 'solid' | 'outlined' | 'borderless' | 'full' | 'half';
     disabled: boolean;
-    display: 'all' | 'icons';
+    display: 'all' | 'icons' | 'label';
 }
 export interface ojMenuButtonSettablePropertiesLenient extends Partial<ojMenuButtonSettableProperties> {
     [key: string]: any;

@@ -1,0 +1,334 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example menu/themes/redwood/oj-menu.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.menu") {
+  /* menu */
+  /* --------------------------------------------------------------- */
+
+  oj-menu {
+    display: none;
+  }
+
+  // defines the stacking context for the menu
+  .oj-menu-layer {
+    @extend .oj-component-layer;
+
+    z-index: var(--oj-core-z-index-popup);
+  }
+
+  // top-level menu (component root node) and all submenus
+  .oj-menu {
+    @extend .oj-component-popup;
+    list-style: none;
+    padding: var(--oj-core-spacing-2x) 0; //have not given left/right padding as it will not show hoverover
+    min-width: 8.75rem;
+    color: var(--oj-core-text-color-primary);
+   
+    background: var(--oj-popup-bg-color);
+    font-size: var(--oj-typography-body-md-font-size);
+
+    margin: 0;
+    display: inline-block;
+    white-space: nowrap;
+
+    // prevent iOS from applying tap-highlight-color that's darker than the "pressed" color in the spec
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  // top-level menu (component root node) when displayed as a dropdown
+  .oj-menu-dropdown {
+    border: 1px solid var(--oj-popup-border-color);
+    border-radius: var(--oj-core-border-radius-md);
+    box-shadow: var(--oj-core-dropdown-box-shadow);
+  }
+
+  // top-level menu (component root node) when displayed as a sheet
+  .oj-menu-sheet {
+    border: 0;
+
+    border-radius: 6px 6px 0 0;
+    width: calc(100% - (2 * var(--oj-menu-sheet-margin-horizontal)));
+  }
+
+  .oj-menu:focus {
+    outline: none; // suppress native focus ring, e.g. desktop Chrome's blue outline
+  }
+
+  // submenus but not top-level menu
+  .oj-menu.oj-menu-submenu {
+    position: absolute;
+  }
+
+  .oj-menu-item {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: list-item;
+  }
+
+  // Horizontal divider between groups of menu items
+  .oj-menu-divider {
+    margin: var(--oj-menu-divider-margin);
+
+    height: 0;
+    font-size: 0;
+    line-height: 0;
+    border-style: solid;
+    display: list-item;
+    border-width: 1px 0 0 0;
+    border-color: var(--oj-core-divider-color);
+  }
+
+  // > and (space) select the same anchors
+  .oj-menu-item > a {
+    padding: 0 var(--oj-menu-text-to-edge-padding);
+    // relative positioning so that the absolutely positioned submenu icons are
+    // positioned relative to the <a>
+    position: relative;
+    text-decoration: none;
+
+    // WebKit bug 151657, an a11y platform bug with Apple's VoiceOver in iOS 8 and iOS 9, affects
+    // JET Menu, as noted in JET Bug 21164454.  To workaround the Apple platform bug, we can't use
+    // flex display for menu items when the menu parent container is absolutely positioned.
+    // Use display block instead until Apple fixes this bug:
+    // display: flex;
+    display: block;
+
+    font-weight: normal;
+    box-sizing: border-box;
+  }
+
+  .oj-menu-item > a {
+    height: var(--oj-collection-list-row-height);
+    line-height: var(--oj-collection-list-row-height);
+    color: var(--oj-menu-item-text-color);
+    border-top-width: 1px;
+    border-top-color: transparent;
+    border-top-style: solid;
+  }
+
+  // vertical align for text and icon to be aligned
+  .oj-menu-item > a > span {
+    vertical-align: top;
+  }
+
+  // last menu item
+  .oj-menu-item:last-child > a {
+    border-bottom-width: 1px;
+    border-bottom-color: transparent;
+    border-bottom-style: solid;
+  }
+
+  // "Cancel" menu item
+  .oj-menu-item-cancel > a {
+    font-weight: normal;
+  }
+
+  /* For each menu and submenu, either oj-menu-icons or oj-menu-text-only is applied to the menu, depending on whether at
+       least one menu item in the menu (excluding its "Cancel" menu item and submenus) has an icon (not submenu icon).
+       These classes facilitate (say) leaving space for a column of icons iff at least one item has an icon, and doing so
+       for each menu/submenu independently. */
+
+  // need > rather than (space) to avoid matching the items of a submenu without icons whose ancestor menu has icons
+
+  a.oj-menu-option-start-icon  {
+    html:not([dir="rtl"]) & {
+      padding-left: calc(var(--oj-menu-icon-to-edge-padding) + var(--oj-menu-icon-size) + var(--oj-menu-text-to-start-icon-padding));
+    }
+    html[dir="rtl"] & {
+      padding-right: calc(var(--oj-menu-icon-to-edge-padding) + var(--oj-menu-icon-size) + var(--oj-menu-text-to-start-icon-padding));
+    }
+  }
+
+  a.oj-menu-option-end-icon {
+    html:not([dir="rtl"]) & {
+      padding-right: calc(var(--oj-menu-icon-to-edge-padding) + var(--oj-menu-icon-size) + var(--oj-menu-text-to-end-icon-padding));
+    }
+    html[dir="rtl"] & {
+      padding-left: calc(var(--oj-menu-icon-to-edge-padding) + var(--oj-menu-icon-size) + var(--oj-menu-text-to-end-icon-padding));
+    }
+  }
+
+  a.oj-menu-option-text-only  {
+    // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector
+    // .oj-menu-item > a (see above), so we also can't use justify-content.
+    // Use text-align instead to horizontally align text until Apple fixes their VoiceOver bug.
+    // While this workaround remains necessary, the only non-null values supported for this variable are
+    // "flex-start" and "center", which we map to their text-align equivalents null and "center" below.
+    // justify-content: $menuTextOnlyJustifyContent;
+    
+    text-align: initial;
+  }
+  // If the Cancel menu item is present, then either show an icon in its icon span, or hide
+  // its icon span, depending on whether at least one other item in the menu has an icon.
+  // Cancel items and their icons only appear in sheet menus, which never have submenus,
+  // so can use space operator rather than a long chain of > operators.
+  .oj-menu-option-start-icon .oj-menu-cancel-icon {
+    @extend .oj-fwk-icon-cross02;
+  }
+
+  .oj-menu-option-text-only .oj-menu-cancel-icon {
+    display: none;
+  }
+
+  // need > rather than (space) to avoid selecting (suppressing the border of) menu items having
+  // an ancestor menu item that follows a group divider
+  .oj-menu-divider + .oj-menu-item > a {
+    // In themes with borders between every menu item, don't put one immediately after a group divider
+    border-top-width: 0;
+  }
+
+  .oj-menu-item:not(.oj-focus-highlight) > a:focus {
+    outline: none;
+  }
+
+  // The oj-focus-highlight class applies focus styling that may not be desirable
+  // when the focus results from pointer interaction (touch or mouse), but which is
+  // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+  // example keyboard or initial page load.
+  // See also the $focusHighlightPolicy variable, which controls when this
+  // class is set.  That variable affects multiple components, not just Menu.
+  .oj-menu-item.oj-focus-highlight > a {
+    outline: dotted 1px var(--oj-core-text-color-primary);
+    outline-offset: 1px;
+  }
+
+  // use > rather than (space) so that themers wanting to theme focus and focus-ancestor separately
+  // don't have to contend with the fact that, whenever a submenu item is focused, our
+  // "oj-focus-ancestor a" selector unintentionally selects the ".oj-focus > a" element too.
+  .oj-menu-item:not(.oj-disabled).oj-focus > a,
+  .oj-menu-item:not(.oj-disabled).oj-focus-ancestor > a {
+    background: var(--oj-core-bg-color-hover);
+  }
+
+  // border before and after a focused (or focus-ancestor) item in menu
+  .oj-menu-item.oj-focus > a,
+  .oj-menu-item.oj-focus-ancestor > a,
+  .oj-menu-item.oj-focus + .oj-menu-item > a,
+  .oj-menu-item.oj-focus-ancestor + .oj-menu-item > a {
+    border-top-color: transparent;
+  }
+
+  // when the last menu item is focused, it needs a bottom border in themes that put borders on menu items,
+  // and that have a space between that menu item and the bottom of the menu
+  .oj-menu-item:last-child.oj-focus > a,
+  .oj-menu-item:last-child.oj-focus-ancestor > a {
+    border-bottom-color: transparent;
+  }
+
+  // disabled menu items can't have open submenus, so > and (space) are equivalent
+  .oj-menu.oj-disabled .oj-menu-item > a,
+  .oj-menu-item.oj-disabled > a {
+    cursor: default;
+  }
+
+  // disabled menu items can't have open submenus, so > and (space) are equivalent
+  .oj-disabled .oj-menu-item > a,
+  .oj-menu-item.oj-disabled > a {
+    color: var(--oj-core-text-color-disabled);
+  }
+
+  /* menu item icons (not submenu icons) */
+
+  .oj-menu-item-icon,
+  .oj-menu-item-end-icon {
+    color: var(--oj-menu-icon-color);
+    // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector
+    // .oj-menu-item > a (see above), so we also can't use align-self.
+    // Use transform instead to vertically center icon until Apple fixes their VoiceOver bug.
+    // align-self: center;
+    position: absolute;
+    height: var(--oj-menu-icon-size);
+    line-height: var(--oj-collection-list-row-height) !important;
+  }
+
+  .oj-menu-item-icon {
+    html:not([dir="rtl"]) & {
+      margin-left: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
+      margin-right: var(--oj-menu-text-to-start-icon-padding);
+    }
+    html[dir="rtl"] & {
+      margin-right: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
+      margin-left: var(--oj-menu-text-to-start-icon-padding);
+    }
+  }
+
+  .oj-menu-item-end-icon {
+    html:not([dir="rtl"]) & {
+      right: 0;
+      margin-right: var(--oj-menu-text-to-start-icon-padding);
+      margin-left: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
+    }
+    html[dir="rtl"] & {
+      left: 0;
+      margin-left: var(--oj-menu-text-to-start-icon-padding);
+      margin-right: calc(0px - var(--oj-menu-icon-size) - var(--oj-menu-text-to-start-icon-padding));
+    }
+  }
+
+  // menu item icons (not submenu icons)
+  // Need extra specificity to overcome sizes in the icons themselves, e.g. iOS/Android want to
+  // show 16px icons at 24px.
+  .oj-menu-item .oj-menu-item-icon,
+  .oj-menu-item .oj-menu-item-end-icon {
+    font-size: var(--oj-menu-icon-size);
+  }
+
+  .oj-menu.oj-disabled .oj-menu-item-icon,
+  .oj-menu.oj-disabled .oj-menu-item-end-icon,
+  .oj-menu-item.oj-disabled .oj-menu-item-icon,
+  .oj-menu-item.oj-disabled .oj-menu-submenu-icon,
+  .oj-menu-item.oj-disabled .oj-menu-item-end-icon {
+    color: var(--oj-private-icon-color-disabled);
+  }
+
+  .oj-menu-submenu-icon {
+    @extend .oj-fwk-icon-arrow03-end;
+    html:not([dir="rtl"]) & {
+      right: var(--oj-menu-icon-to-edge-padding);
+    }
+    html[dir="rtl"] & {
+      left: var(--oj-menu-icon-to-edge-padding);
+    }
+    color: var(--oj-menu-icon-color);
+
+    position: absolute;
+    line-height: var(--oj-collection-list-row-height);
+    height: var(--oj-menu-icon-size);
+  }
+
+  // Applied to context menu launcher on devices that support touch.  Not for launcher of other popup menus, or menu itself.
+  // See comments in baseComponent for details.
+  .oj-menu-context-menu-launcher {
+    // Prevent native context menu / callout from appearing in Mobile Safari.  Apparently needed only for links, whose native CM has "Open in New Tab", etc.
+    // Per v1.1.0 Release Notes, WebKit bug 136685 breaks this in iOS8.1-8.2, but 7, 8.3, and Android Chrome are fine.  webkit.org/show_bug.cgi?id=136685
+    -webkit-touch-callout: none;
+
+    // In Mobile Safari and Android Chrome, prevents press-hold from selecting the text and showing the selection handles and (in Safari) the Copy/Define callout.
+    // Per v1.1.0 Release Notes, in iOS7 only, this doesn't work well: the selection UI just appears for a neighboring region instead.  Not even setting the style
+    // on the document helps, as the style seems not to inherit.  iOS8 and Android Chrome are fine.
+
+    user-select: none;
+  }
+
+  // High Contrast
+  //--------------------------------------------
+  .oj-hicontrast .oj-menu-item.oj-focus > a,
+  .oj-hicontrast .oj-menu-item.oj-focus-ancestor > a {
+    outline: dotted 3px;
+  }
+
+  .oj-hicontrast .oj-menu-item.oj-focus.oj-disabled > a {
+    outline: dotted 1px;
+  }
+  .oj-hicontrast .oj-menu-item.oj-disabled > a {
+    border: dotted 1px;
+  }
+}

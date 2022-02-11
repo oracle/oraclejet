@@ -1,0 +1,102 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example drawer-popup/themes/redwood/oj-drawer-popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.drawerpopup") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-drawer-popup:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-drawer-full-height {
+    height: 100%;
+  }
+
+  .oj-drawer-disable-body-overflow {
+    overflow: hidden !important;
+  }
+
+  .oj-drawer-popup-surrogate:not(.oj-component-overlay) {
+    position: relative; // To apply z-index
+  }
+
+  // Z-Order layer of the Modeless Drawer
+  .oj-drawer-popup-surrogate {
+    z-index: var(--oj-core-z-index-popup);
+  }
+
+  // Z-Order layer of the scrim (modal mode)
+  .oj-drawer-popup-surrogate.oj-drawer-modal {
+    z-index: var(--oj-core-z-index-dialog);
+  }
+
+  // Z-Order layer of the Modal Drawer
+  .oj-drawer-popup-surrogate.oj-drawer-modal.oj-focus-within {
+    // To render over scrim
+    z-index: calc(var(--oj-core-z-index-dialog) + 1);
+  }
+
+  // Popup reparented to PopupService layer
+  .oj-drawer-popup-surrogate oj-drawer-popup {
+    position: absolute;
+    background: var(--oj-drawer-overlay-bg-color);
+    overflow-y: auto;
+  }
+
+  // Size
+  // Start & End
+  .oj-drawer-popup-surrogate .oj-drawer-start,
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    height: 100vh;
+    max-height: 100vh;
+    max-width: 90vw;
+    min-width: 320px;
+  }
+
+  // Full-width on small screens
+  .oj-drawer-popup-surrogate .oj-drawer-full-overlay {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  // Bottom
+  .oj-drawer-popup-surrogate .oj-drawer-bottom {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 90vh;
+  }
+
+  // Full-height on small screens
+  .oj-drawer-popup-surrogate .oj-drawer-bottom.oj-drawer-full-overlay {
+    max-height: 100vh;
+  }
+
+  // Dropped Shadow
+  .oj-drawer-popup-surrogate .oj-drawer-start {
+    @include oj-ltr() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-end {
+    @include oj-ltr() {
+      box-shadow: -0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+    @include oj-rtl() {
+      box-shadow: 0.3rem 0 1.5rem rgba(var(--oj-core-box-shadow-rgb),0.05);
+    }
+  }
+  .oj-drawer-popup-surrogate .oj-drawer-bottom {
+    box-shadow: 0 -0.3rem 0.3rem 0 rgba(var(--oj-core-box-shadow-rgb),0.05);
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -320,7 +320,7 @@ class PagingDataProviderView {
                 this._clientId = _clientId;
             }
             ['next']() {
-                let result = this._nextFunc(this._params, this._clientId);
+                const result = this._nextFunc(this._params, this._clientId);
                 return Promise.resolve(result);
             }
         };
@@ -495,6 +495,8 @@ class PagingDataProviderView {
                 else {
                     return new this.ContainsKeysResults(this, params, keys);
                 }
+            }).catch((reject) => {
+                return Promise.reject(reject);
             });
         });
     }
@@ -516,6 +518,8 @@ class PagingDataProviderView {
                         }
                     });
                     return new this.FetchByKeysResults(this, params, mappedResultMap);
+                }).catch((reject) => {
+                    return Promise.reject(reject);
                 });
             }
             else {
@@ -669,7 +673,7 @@ class PagingDataProviderView {
                     this._skipCriteriaCheck = true;
                     this.dispatchEvent(new CustomEvent(this._PAGE, { detail: payload }));
                     this._updateTotalSize();
-                    let resultParams = results['fetchParameters'];
+                    const resultParams = results['fetchParameters'];
                     if (data.length < resultParams.size) {
                         this._currentParams = new this.FetchByOffsetParameters(this, resultParams['offset'], data.length, resultParams['sortCriteria'], resultParams['filterCriterion']);
                     }
@@ -1003,11 +1007,12 @@ class PagingDataProviderView {
             this._currentIsDone = null;
             this._currentResults = null;
             this._currentParams = null;
+            this._dataResolveFunc(false);
             return Promise.reject(reject);
         });
     }
     _cleanFetchParams(params) {
-        let newOffset = params.offset;
+        const newOffset = params.offset;
         if (newOffset >= this._offset + this._pageSize || newOffset < this._offset) {
             return new this.FetchByOffsetParameters(this, newOffset, 0, params.sortCriteria, params.filterCriterion);
         }

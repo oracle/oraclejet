@@ -1,0 +1,145 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example timeline/themes/redwood/oj-timeline.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("common.timeline") {
+
+    // border-color temporarily replaced with border-top-color due to 
+    // JET-44647: Border-color css styles not being picked up through style bridge in Firefox
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    oj-timeline:not(.oj-complete) {
+      visibility: hidden;
+    }
+
+    .oj-timeline {
+      outline:none;
+      //border-color: var(--oj-private-timeline-border-color);
+      border-top-color: var(--oj-private-timeline-border-color);
+      user-select: none;
+      width:100%;
+      height:35rem;
+    }
+
+    .oj-timeline-item {
+      background-color: var(--oj-private-timeline-item-bg-color);
+      //border-color: var(--oj-private-timeline-item-border-color);
+      border-top-color: var(--oj-private-timeline-item-border-color);
+      padding-top: var(--oj-private-timeline-item-padding);
+      border-top-left-radius: var(--oj-private-timeline-item-border-radius);
+    }
+
+    .oj-timeline-item.oj-hover {
+      background-color: var(--oj-core-bg-color-hover);
+      //border-color: var(--oj-private-timeline-item-border-color-hover);
+      border-top-color: var(--oj-private-timeline-item-border-color-hover);
+      stroke-width: 1px;
+    }
+
+    .oj-timeline-item.oj-selected {
+      //border-color: var(--oj-dvt-item-border-color-selected);
+      border-top-color: var(--oj-dvt-item-border-color-selected);
+    }
+
+    .oj-timeline-item-description {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-typography-body-sm-font-size);
+      white-space:nowrap;
+    }
+
+    .oj-timeline-item-duration-event-overflow-bubble {
+      background-color: var(--oj-private-timeline-item-duration-event-overflow-bg-color);
+    }
+
+    .oj-timeline-item-title {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-typography-body-sm-font-size);
+      white-space:nowrap;
+      font-weight: 600;
+    }
+
+    .oj-timeline-major-axis-label {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-lg);
+      white-space:nowrap;
+      font-weight:600;
+    }
+
+    .oj-timeline-major-axis-separator {
+      color: var(--oj-private-dvt-gridline-color);
+    }
+
+    .oj-timeline-minor-axis {
+      background-color: var(--oj-private-timeline-minor-axis-bg-color);
+      //border-color: var(--oj-private-timeline-minor-axis-border-color);
+      border-top-color: var(--oj-private-timeline-minor-axis-border-color);
+    }
+
+    .oj-timeline-minor-axis-label {
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-md);
+      white-space:nowrap;
+    }
+
+    .oj-timeline-minor-axis-separator {
+      color: var(--oj-private-timeline-minor-axis-separator-color);
+      stroke-dasharray: 3,3;
+    }
+
+    .oj-timeline-overview {
+      background-color: var(--oj-dvt-overview-bg-color);
+    }
+
+    .oj-timeline-overview-label {
+      color: var(--oj-core-text-color-secondary);
+      font-size: var(--oj-dvt-label-font-size-md);
+      white-space:nowrap;
+      font-weight:bold;
+    }
+
+    .oj-timeline-overview-window {
+      background-color: var(--oj-dvt-overview-window-bg-color);
+      //border-color: var(--oj-dvt-overview-window-border-color);
+      border-top-color: var(--oj-dvt-overview-window-border-color);
+    }
+
+    .oj-timeline-reference-object {
+      color: var(--oj-private-timeline-reference-object-color);
+    }
+
+    .oj-timeline-series {
+      background-color: var(--oj-private-timeline-series-bg-color);
+    }
+
+    .oj-timeline-series-label {
+      color: var(--oj-heading-text-color);
+      font-size: var(--oj-dvt-label-font-size-lg);
+      white-space:nowrap;
+      font-weight:bold;
+    }
+
+    .oj-timeline-series-empty-text {
+      color: var(--oj-core-text-color-secondary);
+      font-size: var(--oj-dvt-label-font-size-md);
+      white-space:nowrap;
+    }
+
+    .oj-timeline-item-bubble {
+      font-size: var(--oj-typography-body-sm-font-size);
+    }
+
+    .oj-timeline-resize-handle-start.oj-draggable,
+    .oj-timeline-resize-handle-end.oj-draggable {
+      cursor: col-resize;
+    }
+
+    .oj-timeline-move-outline {
+      stroke-width: 1px;
+    }
+  }

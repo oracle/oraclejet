@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -185,7 +185,7 @@
 
     .oj-dialog-content > p:last-child {
        margin-bottom: 0;
-     }
+    }
 
     .oj-dialog-content {
        overflow: auto;
@@ -194,15 +194,19 @@
        -webkit-overflow-scrolling: touch;
        // configure the dialog content to grow and shrink on resize
        flex: 1 1 auto;
-     }
+    }
 
+    .oj-dialog-body-wrapper {
+      height: 100%;
+    }
+  
     .oj-dialog-body { 
       position: relative; 
       overflow: auto;   
       box-sizing: border-box;
 
-        padding: $dialogBodyPadding;
-        text-align: $dialogBodyTextAlign;
+      padding: $dialogBodyPadding;
+      text-align: $dialogBodyTextAlign;
 
     }
 

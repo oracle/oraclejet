@@ -1,0 +1,68 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../dvt/themes/redwood/_oj-dvt.scss"; 
+@import "../../../dialog/themes/redwood/oj-dialog.scss"; 
+// import avatar
+@import "../../../avatar/themes/redwood/oj-avatar.scss"; 
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+
+@import "_oj-n-box.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-n-box.scss"; 
+
+.oj-nbox-node-initials-neutral {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern1.png');
+}
+
+.oj-nbox-node-initials-red,
+.oj-nbox-node-initials-orange {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern2.png');
+}
+
+.oj-nbox-node-initials-forest,
+.oj-nbox-node-initials-green {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern3.png');
+}
+
+.oj-nbox-node-initials-teal {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern4.png');
+}
+
+.oj-nbox-node-initials-blue {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern5.png');
+}
+
+
+.oj-nbox-node-initials-slate {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern6.png');
+}
+
+
+.oj-nbox-node-initials-mauve,
+.oj-nbox-node-initials-pink {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern7.png');
+}
+
+.oj-nbox-node-initials-purple {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern8.png');
+}
+
+ 
+.oj-nbox-node-initials-lilac {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern9.png');
+}
+
+ 
+.oj-nbox-node-initials-gray {
+  background-image: url('#{$imageDir}../../redwood/images/avatar-pattern10.png');
+}

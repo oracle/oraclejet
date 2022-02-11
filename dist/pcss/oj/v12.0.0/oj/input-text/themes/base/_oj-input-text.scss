@@ -1,0 +1,164 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example input-text/themes/redwood/oj-input-text.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+//@import "../../button/themes/redwood/common/_oj-button.cssvars.scss";
+
+@include module-include-once("common.inputtext") {
+  // this file includes classes for ojInputText, ojInputPassword, and ojTextarea,
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-text:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-password:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // clear icon styles
+  .oj-inputtext .oj-inputtext-clear-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--oj-text-field-height);
+    width: 25px;
+    text-decoration: none;
+    cursor: var(--oj-core-cursor-clickable);
+  }
+
+  // override background color set in a:active (mobile)
+  a.oj-inputtext-clear-icon-btn:active {
+    background-color: transparent;
+  }
+
+  .oj-inputtext-clear-icon {
+    @extend .oj-fwk-icon-cross02;
+    color: inherit;
+  }
+
+  .oj-inputpassword-show-password-icon {
+    @extend .oj-fwk-icon-view;
+  }
+
+  .oj-inputpassword-hide-password-icon {
+    @extend .oj-fwk-icon-view-hide;
+  }
+
+  // No focus ring
+  .oj-inputtext .oj-inputtext-clear-icon-btn:focus {
+    outline: none;
+  }
+
+  // if clear-icon="conditional", we make it visible on focus or hover
+  .oj-inputtext.oj-focus
+    .oj-text-field-container.oj-inputtext-clearicon-conditional:not(.oj-form-control-empty-clearicon)
+    .oj-inputtext-clear-icon-btn,
+  .oj-inputtext.oj-hover
+    .oj-text-field-container.oj-inputtext-clearicon-conditional:not(.oj-form-control-empty-clearicon)
+    .oj-inputtext-clear-icon-btn {
+    visibility: visible;
+  }
+
+  // hide the icon conditionally
+  .oj-inputtext .oj-text-field-container.oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+    visibility: hidden;
+  }
+
+  .oj-text-field-counter .oj-inputtext-counter-el {
+    position: relative;
+    bottom: -5px;
+    @include oj-ltr() {
+      right: 5px;
+    }
+    @include oj-rtl() {
+      left: 5px;
+    }
+  }
+
+  .oj-inputtext .oj-text-field-counter {
+    visibility: hidden;
+  }
+
+  .oj-inputtext.oj-focus .oj-text-field-counter {
+    visibility: visible;
+  }
+
+  // general css input styles between the components
+  .oj-inputtext-input,
+  .oj-inputpassword-input,
+  .oj-textarea-input {
+     // TODO, We need to think about getting rid of this mixin and move the relevant style to
+    // container
+    @include oj-text-field-input-css-vars();
+  }
+
+  // When size is provided, set width to auto to allow proper sizing
+  .oj-inputtext-input[size],
+  .oj-inputpassword-input[size],
+  .oj-textarea-input[size] {
+    width: auto;
+  }
+
+  // specific css for inputtext-input + inputpassword-input
+  .oj-inputtext-input,
+  .oj-inputpassword-input {
+    // Remove the margin in Firefox and Safari.
+    margin: 0;
+  }
+
+  // show an outline on focus for accessibility.
+  // usually we would suppress this focus ring on mouse click using
+  // :not(.oj-focus-highlight), but it would be unlikely a user clicks
+  // on a readonly field with his mouse so for coding simplicity sake,
+  // we are not suppressing the focus ring on mouse click.
+  .oj-inputpassword.oj-read-only .oj-text-field-input:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+  }
+
+  // for regular readonly for password, we want to use an input type=password so that we don't
+  // show the password in plain text like what would happen if it was in a div.
+  // we want no special padding
+  // then we need to override these for the mixed mode when it is readonly in an enabled form-layout.
+  // in that case it needs to align with enabled fields.
+  .oj-inputpassword.oj-read-only .oj-text-field-input {
+    padding: 0;
+  }
+
+  // When we have a 100% readonly form we have padding: 0 on the input.
+  // We need to override this to add back padding for mixed mode.
+  // this padding is needed for start/top labels in mixed mode.
+  // We have a more specific selector for padding needed for inside labels in mixed mode.
+  .oj-form-layout .oj-form.oj-enabled .oj-inputpassword.oj-read-only .oj-text-field-input {
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+  }
+
+  // padding needed for inside labels in mixed mode.
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-inputpassword.oj-read-only .oj-text-field-input {
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 0;
+  }
+
+  // The min height helps when input password is in readonly mode inside a mixed form. without this css, the inside label is not aligned correctly.
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-inputpassword.oj-read-only .oj-text-field-middle {
+    min-height: var(--oj-text-field-inside-edge-height);
+  }
+
+  // in 100% readonly mode we want fields tighter.
+  .oj-inputpassword.oj-read-only.oj-text-field-label-inside .oj-text-field-input {
+    min-height: calc(var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size));
+  }
+
+  // We want to allow readonly text styling to be overridden from the root dom.
+  .oj-inputpassword.oj-read-only .oj-text-field-input {
+    font-weight: inherit;
+    line-height: inherit;
+  }
+}

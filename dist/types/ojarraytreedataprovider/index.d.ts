@@ -24,7 +24,7 @@ declare namespace ArrayTreeDataProvider {
         childrenAttribute?: string;
         implicitSort?: Array<SortCriterion<D>>;
         keyAttributes?: string | string[];
-        keyAttributesScope?: 'sibling' | 'global';
+        keyAttributesScope?: 'siblings' | 'global';
         sortComparators?: ArrayDataProvider.SortComparators<D>;
         textFilterAttributes?: string[];
     };

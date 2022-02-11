@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../message/themes/redwood/_oj-message.cssvars.scss";
+
+  @include module-include-once("redwood.variables.messages") {
+
+    :root {
+      // Messages
+      // ---------------------------
+      
+      --oj-private-messages-general-overlay-width:             60vw;
+      --oj-private-messages-general-overlay-max-width:         1536px;
+      --oj-private-messages-general-overlay-min-width:         614px;
+      --oj-private-messages-general-overlay-border-width:      0;
+      --oj-private-messages-general-overlay-border-color:      initial;
+      --oj-private-messages-general-overlay-border-radius:     var(--oj-core-border-radius-sm);
+      --oj-private-messages-general-overlay-box-shadow:        none;
+
+      --oj-private-messages-notification-overlay-width:          auto;
+      --oj-private-messages-notification-overlay-min-width:      307px;
+      --oj-private-messages-notification-overlay-max-width:      600px;
+      --oj-private-messages-notification-overlay-border-width:   0;
+      --oj-private-messages-notification-overlay-border-color:   initial;
+      --oj-private-messages-notification-overlay-border-radius:  initial;
+      --oj-private-messages-notification-overlay-box-shadow:     initial;
+    }
+  }

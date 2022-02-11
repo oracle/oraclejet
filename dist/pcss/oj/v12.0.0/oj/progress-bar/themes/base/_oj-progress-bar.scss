@@ -1,0 +1,137 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example progress-bar/themes/redwood/oj-progress-bar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.progress-bar") {
+  /* progress */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-progress-bar:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-progress-bar {
+    display: block;
+  }
+
+  .oj-progress-bar {
+    height: var(--oj-progress-bar-height);
+    border-radius: var(--oj-progress-bar-border-radius);
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .oj-progress-bar-track {
+    margin: 0;
+    box-sizing: border-box;
+    height: 100%;
+    background-color: var(--oj-progress-bar-track-bg-color);
+  }
+
+  .oj-progress-bar-value {
+    margin: 0;
+    box-sizing: border-box;
+    height: 100%;
+    background-color: var(--oj-progress-bar-value-bg-color);
+  }
+
+  .oj-progress-bar-embedded {
+    width: 100%;
+    border-style: none;
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  .oj-progress-bar-indeterminate {
+    width: 25%;
+    border-radius: var(--oj-progress-bar-border-radius);
+    height: var(--oj-progress-bar-height);
+    background-color: var(--oj-progress-bar-value-bg-color);
+    position: relative;
+    @include oj-ltr() {
+      -webkit-animation: progressBar 2s infinite;
+      animation: progressBar 2s linear infinite;
+    }
+    @include oj-rtl() {
+      -webkit-animation: progressBarRTL 2s infinite;
+      animation: progressBarRTL 2s linear infinite;
+    }
+  }
+
+  @-webkit-keyframes progressBar {
+    0% {
+      left: -35%;
+      right: 100%;
+    }
+    60% {
+      left: 100%;
+      right: -90%;
+    }
+    100% {
+      left: 100%;
+      right: -90%;
+    }
+  }
+
+  @keyframes progressBar {
+    0% {
+      left: -35%;
+      right: 100%;
+    }
+    60% {
+      left: 100%;
+      right: -90%;
+    }
+    100% {
+      left: 100%;
+      right: -90%;
+    }
+  }
+
+  @-webkit-keyframes progressBarRTL {
+    0% {
+      left: 100%;
+      right: -35%;
+    }
+    60% {
+      left: -90%;
+      right: 100%;
+    }
+    100% {
+      left: -90%;
+      right: 100%;
+    }
+  }
+
+  @keyframes progressBarRTL {
+    0% {
+      left: 100%;
+      right: -35%;
+    }
+    60% {
+      left: -90%;
+      right: 100%;
+    }
+    100% {
+      left: -90%;
+      right: 100%;
+    }
+  }
+
+  .oj-progress-bar-embedded,
+  .oj-progress-bar-embedded .oj-progress-bar-overlay {
+    border-radius: 0px;
+  }
+
+  // Add border for high contrast mode where the background color can't be seen
+  .oj-hicontrast .oj-progress-bar-value {
+    border: 1px dashed var(--oj-core-focus-border-color);
+  }
+}

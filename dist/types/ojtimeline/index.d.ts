@@ -10,7 +10,16 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
     data?: (DataProvider<K, D>);
+    dnd: {
+        move?: {
+            items?: 'disabled' | 'enabled';
+        };
+    };
     end: string;
+    itemDefaults: {
+        feelers?: 'off' | 'on';
+        resizable?: 'disabled' | 'enabled';
+    };
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
@@ -117,6 +126,19 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         accessibleItemStart?: string;
         accessibleItemTitle?: string;
         componentName?: string;
+        itemMoveCancelled?: string;
+        itemMoveFinalized?: string;
+        itemMoveInitiated?: string;
+        itemMoveInitiatedInstruction?: string;
+        itemMoveSelectionInfo?: string;
+        itemResizeCancelled?: string;
+        itemResizeEndHandle?: string;
+        itemResizeEndInitiated?: string;
+        itemResizeFinalized?: string;
+        itemResizeInitiatedInstruction?: string;
+        itemResizeSelectionInfo?: string;
+        itemResizeStartHandle?: string;
+        itemResizeStartInitiated?: string;
         labelAccNavNextPage?: string;
         labelAccNavPreviousPage?: string;
         labelAndValue?: string;
@@ -127,7 +149,9 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
         labelDescription?: string;
         labelEnd?: string;
         labelInvalidData?: string;
+        labelMoveBy?: string;
         labelNoData?: string;
+        labelResizeBy?: string;
         labelSeries?: string;
         labelStart?: string;
         labelTitle?: string;
@@ -157,6 +181,35 @@ export interface ojTimeline<K, D extends ojTimeline.DataItem | any> extends dvtT
     getContextByNode(node: Element): ojTimeline.NodeContext | null;
 }
 export namespace ojTimeline {
+    interface ojMove<K, D> extends CustomEvent<{
+        end: string;
+        itemContexts: Array<{
+            itemType: string;
+            data: SeriesItem<K>;
+            seriesData: Series<K>;
+            itemData: D | null;
+            color: string;
+        }>;
+        start: string;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize<K, D> extends CustomEvent<{
+        end: string;
+        itemContexts: Array<{
+            itemType: string;
+            data: SeriesItem<K>;
+            seriesData: Series<K>;
+            itemData: D | null;
+            color: string;
+        }>;
+        start: string;
+        typeDetail: string;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
     interface ojViewportChange extends CustomEvent<{
         minorAxisScale: string;
         viewportEnd: string;
@@ -171,7 +224,11 @@ export namespace ojTimeline {
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["data"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type endChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemDefaultsChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["itemDefaults"]>;
     // tslint:disable-next-line interface-over-type-literal
     type majorAxisChanged<K, D extends DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["majorAxis"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -220,6 +277,7 @@ export namespace ojTimeline {
     // tslint:disable-next-line interface-over-type-literal
     type itemBubbleTemplateContext<K, D> = {
         data: SeriesItem<K>;
+        durationWidth: number;
         itemData: D;
         previousState: {
             focused: boolean;
@@ -254,6 +312,7 @@ export namespace ojTimeline {
     };
     // tslint:disable-next-line interface-over-type-literal
     type ReferenceObject = {
+        label?: string;
         value?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -271,6 +330,7 @@ export namespace ojTimeline {
         durationFillColor?: string;
         end?: string;
         id: K;
+        itemType?: string;
         shortDesc?: (string | ((context: ItemShortDescContext<K, D>) => string));
         start: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
@@ -299,11 +359,15 @@ export namespace ojTimeline {
     };
 }
 export interface ojTimelineEventMap<K, D extends ojTimeline.DataItem | any> extends dvtTimeComponentEventMap<ojTimelineSettableProperties<K, D>> {
+    'ojMove': ojTimeline.ojMove<K, D>;
+    'ojResize': ojTimeline.ojResize<K, D>;
     'ojViewportChange': ojTimeline.ojViewportChange;
     'animationOnDataChangeChanged': JetElementCustomEvent<ojTimeline<K, D>["animationOnDataChange"]>;
     'animationOnDisplayChanged': JetElementCustomEvent<ojTimeline<K, D>["animationOnDisplay"]>;
     'dataChanged': JetElementCustomEvent<ojTimeline<K, D>["data"]>;
+    'dndChanged': JetElementCustomEvent<ojTimeline<K, D>["dnd"]>;
     'endChanged': JetElementCustomEvent<ojTimeline<K, D>["end"]>;
+    'itemDefaultsChanged': JetElementCustomEvent<ojTimeline<K, D>["itemDefaults"]>;
     'majorAxisChanged': JetElementCustomEvent<ojTimeline<K, D>["majorAxis"]>;
     'minorAxisChanged': JetElementCustomEvent<ojTimeline<K, D>["minorAxis"]>;
     'orientationChanged': JetElementCustomEvent<ojTimeline<K, D>["orientation"]>;
@@ -324,7 +388,16 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
     animationOnDataChange: 'auto' | 'none';
     animationOnDisplay: 'auto' | 'none';
     data?: (DataProvider<K, D>);
+    dnd: {
+        move?: {
+            items?: 'disabled' | 'enabled';
+        };
+    };
     end: string;
+    itemDefaults: {
+        feelers?: 'off' | 'on';
+        resizable?: 'disabled' | 'enabled';
+    };
     majorAxis: {
         converter?: (ojTimeAxis.Converters | Converter<string>);
         scale?: (string | DvtTimeComponentScale);
@@ -431,6 +504,19 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         accessibleItemStart?: string;
         accessibleItemTitle?: string;
         componentName?: string;
+        itemMoveCancelled?: string;
+        itemMoveFinalized?: string;
+        itemMoveInitiated?: string;
+        itemMoveInitiatedInstruction?: string;
+        itemMoveSelectionInfo?: string;
+        itemResizeCancelled?: string;
+        itemResizeEndHandle?: string;
+        itemResizeEndInitiated?: string;
+        itemResizeFinalized?: string;
+        itemResizeInitiatedInstruction?: string;
+        itemResizeSelectionInfo?: string;
+        itemResizeStartHandle?: string;
+        itemResizeStartInitiated?: string;
         labelAccNavNextPage?: string;
         labelAccNavPreviousPage?: string;
         labelAndValue?: string;
@@ -441,7 +527,9 @@ export interface ojTimelineSettableProperties<K, D extends ojTimeline.DataItem |
         labelDescription?: string;
         labelEnd?: string;
         labelInvalidData?: string;
+        labelMoveBy?: string;
         labelNoData?: string;
+        labelResizeBy?: string;
         labelSeries?: string;
         labelStart?: string;
         labelTitle?: string;
@@ -576,6 +664,35 @@ export type TimelineElement<K, D extends ojTimeline.DataItem | any> = ojTimeline
 export type TimelineItemElement<K = any, D = any> = ojTimelineItem<K, D>;
 export type TimelineSeriesElement = ojTimelineSeries;
 export namespace TimelineElement {
+    interface ojMove<K, D> extends CustomEvent<{
+        end: string;
+        itemContexts: Array<{
+            itemType: string;
+            data: ojTimeline.SeriesItem<K>;
+            seriesData: ojTimeline.Series<K>;
+            itemData: D | null;
+            color: string;
+        }>;
+        start: string;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojResize<K, D> extends CustomEvent<{
+        end: string;
+        itemContexts: Array<{
+            itemType: string;
+            data: ojTimeline.SeriesItem<K>;
+            seriesData: ojTimeline.Series<K>;
+            itemData: D | null;
+            color: string;
+        }>;
+        start: string;
+        typeDetail: string;
+        value: string;
+        [propName: string]: any;
+    }> {
+    }
     interface ojViewportChange extends CustomEvent<{
         minorAxisScale: string;
         viewportEnd: string;
@@ -590,7 +707,11 @@ export namespace TimelineElement {
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["data"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type dndChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["dnd"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type endChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["end"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type itemDefaultsChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["itemDefaults"]>;
     // tslint:disable-next-line interface-over-type-literal
     type majorAxisChanged<K, D extends ojTimeline.DataItem | any> = JetElementCustomEvent<ojTimeline<K, D>["majorAxis"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -702,11 +823,15 @@ export namespace TimelineSeriesElement {
     type svgStyleChanged = JetElementCustomEvent<ojTimelineSeries["svgStyle"]>;
 }
 export interface TimelineIntrinsicProps extends Partial<Readonly<ojTimelineSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    onojMove?: (value: ojTimelineEventMap<any, any>['ojMove']) => void;
+    onojResize?: (value: ojTimelineEventMap<any, any>['ojResize']) => void;
     onojViewportChange?: (value: ojTimelineEventMap<any, any>['ojViewportChange']) => void;
     onanimationOnDataChangeChanged?: (value: ojTimelineEventMap<any, any>['animationOnDataChangeChanged']) => void;
     onanimationOnDisplayChanged?: (value: ojTimelineEventMap<any, any>['animationOnDisplayChanged']) => void;
     ondataChanged?: (value: ojTimelineEventMap<any, any>['dataChanged']) => void;
+    ondndChanged?: (value: ojTimelineEventMap<any, any>['dndChanged']) => void;
     onendChanged?: (value: ojTimelineEventMap<any, any>['endChanged']) => void;
+    onitemDefaultsChanged?: (value: ojTimelineEventMap<any, any>['itemDefaultsChanged']) => void;
     onmajorAxisChanged?: (value: ojTimelineEventMap<any, any>['majorAxisChanged']) => void;
     onminorAxisChanged?: (value: ojTimelineEventMap<any, any>['minorAxisChanged']) => void;
     onorientationChanged?: (value: ojTimelineEventMap<any, any>['orientationChanged']) => void;

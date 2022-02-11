@@ -1,0 +1,96 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example refresher/themes/redwood/oj-refresher.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.refresher") {
+  /*
+     * applied to the refresh panel
+     */
+  .oj-pulltorefresh-panel {
+    overflow: hidden;
+  }
+
+  /*
+     * applied to the content inside the pull to refresh panel
+     */
+  .oj-pulltorefresh-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: var(--oj-refresher-bg-color);
+  }
+
+  // pull action class to block pointer events on children elements
+  .oj-pulltorefresh-action {
+    pointer-events: none;
+  }
+
+  /*
+     * applied animation when the height of the panel changes (during release)
+     */
+  .oj-pulltorefresh-transition {
+    transition: height var(--oj-animation-duration-long);
+    transition-timing-function: var(--oj-animation-ease-in-out);
+  }
+
+  /*
+     * applied to the primary text inside the pull to refresh panel
+     */
+  .oj-pulltorefresh-primary-text {
+    color: var(--oj-core-text-color-primary);
+
+    text-align: center;
+    margin: 0 0 10px 0;
+  }
+
+  /*
+     * applied to the secondary text inside the pull to refresh panel
+     */
+  .oj-pulltorefresh-secondary-text {
+    color: var(--oj-core-text-color-secondary);
+    font-size: var(--oj-typography-body-sm-font-size);
+    line-height: var(--oj-typography-body-sm-line-height);
+
+    text-align: center;
+    margin: 0 0 20px 0;
+  }
+
+  /*
+     * applied to the container of the refresh icon inside the pull to refresh panel
+     */
+  .oj-pulltorefresh-icon-container {
+    margin: 20px 0 20px 0;
+  }
+
+  /*
+     * applied to the refresh icon inside the pull to refresh panel
+     */
+  .oj-pulltorefresh-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  // option defaults
+  //----------------------------------
+  $refresherDefaultOptions: ();
+
+  @if ($ojprivateRefresherLoadingIconOptionDefault) {
+    $refresherDefaultOptions: map-merge(
+      $refresherDefaultOptions,
+      (
+        loadingIcon: $ojprivateRefresherLoadingIconOptionDefault
+      )
+    );
+  }
+
+  .oj-refresher-option-defaults {
+    font-family: oj-json($refresherDefaultOptions) !important;
+  }
+}

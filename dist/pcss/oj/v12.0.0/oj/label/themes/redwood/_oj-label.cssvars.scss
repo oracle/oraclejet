@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("redwood.variables.label") {
+
+:root {
+  
+    // form control label
+    // ------------------------
+    --oj-label-font-size:     var(--oj-typography-body-sm-font-size); 
+    --oj-label-font-weight:   600;
+    --oj-label-line-height:   var(--oj-typography-body-sm-line-height);
+    
+    --oj-label-color:         var(--oj-core-text-color-primary); 
+
+    --oj-label-color-disabled:              var(--oj-core-text-color-disabled);
+    --oj-label-inside-edge-font-size:       var(--oj-typography-body-xs-font-size);
+    --oj-label-inside-edge-font-weight:     600;
+    --oj-label-inside-edge-line-height:     var(--oj-typography-body-xs-line-height);
+    --oj-label-inside-edge-position-top:    0.5rem;
+    --oj-label-inside-edge-color: var(--oj-core-text-color-secondary);
+
+    --oj-label-required-icon-color: rgb(var(--oj-palette-brand-rgb-110));
+    --oj-label-required-char-font-size:  0.9rem;
+}
+}

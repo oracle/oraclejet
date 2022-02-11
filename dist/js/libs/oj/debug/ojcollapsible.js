@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -113,6 +113,40 @@ var __oj_collapsible_metadata =
    *
    * <p>In the unusual case that the directionality (LTR or RTL) changes post-init, the collapsible must be <code class="prettyprint">refresh()</code>ed.
    *
+   * <h3 id="data-attributes-section">
+   *   Custom Data Attributes
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#data-attributes-section"></a>
+   * </h3>
+   *
+   * <p>Collapsible supports the following custom data attributes.
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Name</th>
+   *       <th>Description</th>
+   *       <th>Example</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td><kbd>data-oj-clickthrough</kbd></td>
+   *       <td><p>Specify on any element inside the header where you want to control whether Collapsible should toggle disclosure by
+   *           an event originating from the element or one of its descendants.</p>
+   *           <p>For example, if you specify this attribute with a value of "disabled" on a button inside the header, then Collapsible
+   *           will not trigger disclosure when user clicks on the button.</p>
+   *       </td>
+   *       <td>
+   *         <pre class="prettyprint"><code>&lt;oj-collapsible>
+   *   &lt;div slot="header">
+   *     &lt;h3>Header 3&lt;/h3>
+   *     &lt;oj-button data-oj-clickthrough="disabled">&lt;/oj-button
+   *   &lt;/div>
+   *   &lt;p>Content&lt;/p>
+   * &lt;/oj-collapsible></code></pre>
+   *       </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    */
   //-----------------------------------------------------
   //                   Slots
@@ -209,6 +243,7 @@ var __oj_collapsible_metadata =
   * @ojstyleclass oj-clickthrough-disabled
   * @ojdisplayname Prevent Clickthrough
   * @ojstyleselector oj-collapsible *
+  * @ojdeprecated {since: '12.0.0', description: 'Specify data-oj-clickthrough attribute with value disabled instead.'}
   * @memberof oj.ojCollapsible
   * @ojtsexample
   * &lt;oj-collapsible id="collapsibleId">
@@ -882,6 +917,12 @@ var __oj_collapsible_metadata =
           //  - click on button in header slot propagates to collapse/expand action
           var target = $(event.target);
           for (; target.length && target[0] !== this.header[0]; target = target.parent()) {
+            if (target.attr('data-oj-clickthrough') === 'disabled') {
+              return;
+            }
+            /**
+             * @deprecated since 12.0.0, use data-oj-clickthrough="disabled" attribute instead
+             */
             if (target.hasClass('oj-clickthrough-disabled')) {
               return;
             }

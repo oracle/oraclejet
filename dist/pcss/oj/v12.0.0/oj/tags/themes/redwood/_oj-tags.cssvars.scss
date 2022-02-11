@@ -1,0 +1,65 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@include module-include-once("redwood.variables.tags") {
+
+
+:root {
+
+  
+  // html
+  // --------------------------
+  --oj-html-font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --oj-html-font-size:   1em;
+
+  // body
+  // --------------------------
+  --oj-body-bg-color:                   rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-current-bg-color: ;
+  
+
+  // header
+  // --------------------------
+  --oj-heading-text-color:                       var(--oj-core-text-color-primary);
+  --oj-heading-margin-bottom:                   1rem;
+  --oj-heading-margin-top:                      1rem;
+  --oj-subheading-margin-top:                   0;
+  --oj-subheading-margin-bottom:                0.75rem;
+  // paragraph
+  // --------------------------
+  --oj-paragraph-margin-bottom:                1rem;
+
+  // list
+  // --------------------------
+  --oj-list-margin-top:                   0.5rem;
+  --oj-list-nested-padding-start:         2.5rem;
+  --oj-list-item-line-height:             1.5;
+
+  --oj-list-unordered-style-type:         square;
+  
+  // link
+  // --------------------------
+
+  // links
+  --oj-link-text-decoration:              none;
+  --oj-link-text-decoration-hover:        underline;
+
+  --oj-link-text-color:                 rgb(var(--oj-palette-info-rgb-120));
+  --oj-link-text-color-active:          var(--oj-link-text-color);
+  --oj-link-text-color-visited:         var(--oj-link-text-color);
+  
+
+  // links with class oj-link-embedded added
+  --oj-link-embedded-text-decoration:              none;
+  --oj-link-embedded-text-decoration-hover:        none;
+  --oj-link-embedded-border-bottom-width:          1px;
+  --oj-link-embedded-border-bottom-width-hover:    0px;
+
+
+}
+}

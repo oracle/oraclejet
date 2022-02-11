@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,10 +10,11 @@ import { getTemplateContent } from 'ojs/ojhtmlutils';
 import CspExpressionEvaluator from 'ojs/ojcspexpressionevaluator';
 import { CustomElementUtils, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import { Component, h, Fragment, render } from 'preact';
-import { executeFragment as executeFragment$1 } from 'ojs/ojvcomponent-template';
 import Context from 'ojs/ojcontext';
 import { withDataProvider } from 'ojs/ojdataproviderhandler';
 import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
+import { getExpressionEvaluator } from 'ojs/ojconfig';
+import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 
 class Props {
 }
@@ -45,8 +46,8 @@ class BindDom extends Component {
         }
     }
     render() {
-        return (h(Fragment, null, this.state.view && this.state.data
-            ? executeFragment$1(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
+        return (h(Fragment, null, this.state.view && this.props.executeFragment
+            ? this.props.executeFragment(null, this.state.view, this.state.data, this.forceUpdate.bind(this), this.props.bindingProvider)
             : null));
     }
 }
@@ -106,8 +107,9 @@ const _CONTEXT_PARAM = [
 ];
 class VTemplateEngine {
     constructor() {
+        var _a;
         this._templateAstCache = new WeakMap();
-        this._cspEvaluator = new CspExpressionEvaluator();
+        this._cspEvaluator = (_a = getExpressionEvaluator()) !== null && _a !== void 0 ? _a : new CspExpressionEvaluator();
     }
     static cleanupTemplateCache(templateElement) {
         if (templateElement && templateElement['_cachedRows']) {
@@ -303,7 +305,8 @@ class VTemplateEngine {
         const bindDomConfig = { view: nodes, data: context };
         const bindDomProps = {
             config: Promise.resolve(bindDomConfig),
-            bindingProvider: engineContext[BINDING_PROVIDER]
+            bindingProvider: engineContext[BINDING_PROVIDER],
+            executeFragment: this.executeFragment.bind(this)
         };
         return h(BindDom, bindDomProps);
     }
@@ -503,6 +506,10 @@ class VTemplateEngine {
             {
                 key: 'bindingProvider',
                 value: { type: 3, value: engineContext[BINDING_PROVIDER] }
+            },
+            {
+                key: 'executeFragment',
+                value: { type: 3, value: this.executeFragment.bind(this) }
             }
         ]);
     }
@@ -580,17 +587,21 @@ class VTemplateEngine {
                 else {
                     if (expValue.expr) {
                         const propName = AttributeUtils.attributeToPropertyName(name);
-                        if (propName.indexOf('.') >= 0) {
-                            dottedExpressions.push({ subProps: propName, expr: expValue.expr });
-                        }
-                        else {
-                            acc.push({
-                                key: propName,
-                                value: this._createExpressionEvaluator(engineContext, expValue.expr)
-                            });
+                        const propNamePath = propName.split('.');
+                        const propMeta = getPropertyMetadata(propNamePath[0], CustomElementUtils.getPropertiesForElementTag(node.tagName));
+                        if (!(propMeta === null || propMeta === void 0 ? void 0 : propMeta.readOnly)) {
+                            if (propNamePath.length > 1) {
+                                dottedExpressions.push({ subProps: propName, expr: expValue.expr });
+                            }
+                            else {
+                                acc.push({
+                                    key: propName,
+                                    value: this._createExpressionEvaluator(engineContext, expValue.expr)
+                                });
+                            }
                         }
                         if (!expValue.downstreamOnly) {
-                            let subProps = propName.split('.');
+                            let subProps = propNamePath;
                             const topProp = subProps.shift();
                             let valuesArray = writebacks.get(topProp);
                             if (valuesArray) {
@@ -635,7 +646,7 @@ class VTemplateEngine {
             });
         }
         if (dottedExpressions.length > 0) {
-            this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions, attrNodes);
+            attrNodes.push(this._createRefPropertyNodeForNestedProps(engineContext, dottedExpressions));
         }
         writebacks.forEach((valuesArray, name) => {
             var _a;
@@ -654,31 +665,28 @@ class VTemplateEngine {
         });
         return attrNodes;
     }
-    _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions, attrNodes) {
-        const bp = engineContext[BINDING_PROVIDER];
-        const propExprEvaluators = [];
-        attrNodes.push({
+    _createRefPropertyNodeForNestedProps(engineContext, dottedExpressions) {
+        const dottedPropObjectNodes = dottedExpressions.map(({ subProps, expr }) => ({
+            type: 10,
+            properties: [{ key: subProps, value: this._createExpressionEvaluator(engineContext, expr) }]
+        }));
+        const dottedPropsArrayNode = {
+            type: 9,
+            elements: dottedPropObjectNodes
+        };
+        const cb = VTemplateEngine._nestedPropsRefCallback;
+        return {
             key: 'ref',
-            value: this._createCallNodeWithContext((bindingContext) => {
-                const resolvedSubPropValues = [];
-                dottedExpressions.forEach((item, index) => {
-                    let propExprEvaluator = propExprEvaluators[index];
-                    if (!propExprEvaluator) {
-                        propExprEvaluator = this._cspEvaluator.createEvaluator(item.expr).evaluate;
-                        propExprEvaluators.push(propExprEvaluator);
-                    }
-                    const propValue = propExprEvaluator([bindingContext, bindingContext.$data]);
-                    const unwrappedValue = bp ? bp.__UnwrapObservable(propValue) : propValue;
-                    resolvedSubPropValues.push({ [item.subProps]: unwrappedValue });
-                });
-                return (refObj) => {
-                    if (refObj && refObj.setProperties) {
-                        const updatedProps = Object.assign({}, ...resolvedSubPropValues);
-                        refObj.setProperties(updatedProps);
-                    }
-                };
-            })
-        });
+            value: this._createCallNodeWithContext(Function.prototype.bind.bind(cb), [
+                dottedPropsArrayNode
+            ])
+        };
+    }
+    static _nestedPropsRefCallback(resolvedSubPropValues, refObj) {
+        if (refObj && refObj.setProperties) {
+            const updatedProps = Object.assign({}, ...resolvedSubPropValues);
+            refObj.setProperties(updatedProps);
+        }
     }
     _createWritebackPropertyNode(engineContext, propName, valuesArray, existingCallbackExpr) {
         const propExprEvaluators = [];
@@ -714,8 +722,8 @@ class VTemplateEngine {
                         }
                     });
                     if (existingCallbackExpr && !callbackExprEvaluator) {
-                        callbackExprEvaluator = this._cspEvaluator.createEvaluator(existingCallbackExpr)
-                            .evaluate;
+                        callbackExprEvaluator =
+                            this._cspEvaluator.createEvaluator(existingCallbackExpr).evaluate;
                     }
                     const existingCallback = callbackExprEvaluator
                         ? callbackExprEvaluator([bindingContext, bindingContext.$data])

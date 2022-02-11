@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,9 +11,9 @@ import 'ojs/ojcustomelement';
 import { DataProviderContentHandler, IteratingDataProviderContentHandler } from 'ojs/ojdataproviderscroller';
 import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
-import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import { parseJSONFromFontFamily, getCachedCSSVarValues } from 'ojs/ojthemeutils';
 import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter } from 'ojs/ojcomponentcore';
-import { enableAllFocusableElements, isElementInScrollerBounds, disableAllFocusableElements, getLogicalChildPopup, isElementOrAncestorFocusable, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { enableAllFocusableElements, isMobileTouchDevice, isElementInScrollerBounds, disableAllFocusableElements, isElementOrAncestorFocusable, isEventClickthroughDisabled, handleActionablePrevTab, handleActionableTab, getFocusableElementsInNode, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { fadeIn, startAnimation } from 'ojs/ojanimation';
 import { info, error, warn } from 'ojs/ojlogger';
 import { KeySet, KeySetImpl, KeySetUtils } from 'ojs/ojkeyset';
@@ -21,6 +21,7 @@ import KeyMap from 'ojs/ojmap';
 import { unwrap, removeResizeListener, addResizeListener, getCSSTimeUnitAsMillis, setScrollLeft, isTouchSupported, isMetaKeyPressed } from 'ojs/ojdomutils';
 import 'ojs/ojdataprovideradapter';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
+import { getLogicalChildPopup } from 'ojs/ojkeyboardfocus-utils';
 import { ListViewIndexerModel } from 'ojs/ojindexer';
 
 (function () {
@@ -1196,7 +1197,10 @@ TreeDataProviderContentHandler.prototype.afterRenderItem =
     item = $(item);
 
     if (context.leaf === false) {
-      item.children().wrapAll('<div></div>'); // @HTMLUpdateOK
+      // check if group item already present
+      if (item.get(0).querySelector('.' + groupItemStyleClass) == null) {
+        item.children().wrapAll('<div></div>'); // @HTMLUpdateOK
+      }
 
       // collapsed by default
       if (item.hasClass(focusedStyleClass)) {
@@ -1216,12 +1220,12 @@ TreeDataProviderContentHandler.prototype.afterRenderItem =
         .addClass(groupItemStyleClass);
 
       // add the expand icon
-      if (this.m_widget.isExpandable()) {
+      if (this.m_widget.isExpandable() &&
+        !(item.hasClass('oj-expanded') || item.hasClass('oj-collapsed'))) {
         item.addClass('oj-collapsed');
 
         var icon = document.createElement('a');
-        $(icon).attr('href', '#')
-          .attr('aria-labelledby', content.get(0).id)
+        $(icon).attr('aria-labelledby', content.get(0).id)
           .addClass('oj-component-icon oj-clickable-icon-nocontext')
           .addClass(collapseClass);
 
@@ -1238,21 +1242,24 @@ TreeDataProviderContentHandler.prototype.afterRenderItem =
       }
 
       // the yet to be expand group element
-      var groupItem = document.createElement('ul');
-      var role;
-      if (this.shouldUseGridRole()) {
-        if (this.isCardLayout()) {
-          role = 'row';
+      // check if group already present
+      if (item.get(0).querySelector('.' + groupStyleClass) == null) {
+        var groupItem = document.createElement('ul');
+        var role;
+        if (this.shouldUseGridRole()) {
+          if (this.isCardLayout()) {
+            role = 'row';
+          } else {
+            role = 'presentation';
+          }
         } else {
-          role = 'presentation';
+          role = 'group';
         }
-      } else {
-        role = 'group';
+        $(groupItem).addClass(groupStyleClass)
+          .addClass(groupCollapseStyleClass)
+          .attr('role', role);
+        item.append(groupItem); // @HTMLUpdateOK
       }
-      $(groupItem).addClass(groupStyleClass)
-        .addClass(groupCollapseStyleClass)
-        .attr('role', role);
-      item.append(groupItem); // @HTMLUpdateOK
     } else if (context.leaf === true) {
       item.addClass(itemStyleClass);
 
@@ -1406,13 +1413,73 @@ TreeDataProviderContentHandler.prototype.afterRenderItemForInsertEvent =
 /**
  * @protected
  */
-TreeDataProviderContentHandler.prototype.removeItem = function (elem) {
+TreeDataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
   var key = elem.key;
   if (key) {
     this.m_childDataProviders.delete(key);
   }
-  TreeDataProviderContentHandler.superclass.removeItem.call(this, elem);
+  TreeDataProviderContentHandler.superclass.removeItem.call(this, elem, isReinsert);
 };
+
+/**
+ * @private
+ */
+TreeDataProviderContentHandler.prototype._isExpandedGroupItem = function (item) {
+  var drillMode = this.m_widget.GetOption('drillMode');
+  return (drillMode === 'none' || item.classList.contains('oj-expanded'));
+};
+
+/**
+ * @private
+ */
+TreeDataProviderContentHandler.prototype._replaceGroupItemCallback = function (item, context,
+  isCustomizeItem, restoreFocus) {
+    // callback to widget
+    if (!this.shouldUseGridRole()) {
+      this.afterRenderItem(item, context, isCustomizeItem, restoreFocus);
+    } else {
+      this.m_widget.itemRenderComplete(item, context);
+    }
+  };
+
+/**
+ * @private
+ */
+TreeDataProviderContentHandler.prototype._replaceGroupItem = function (item, index, data, metadata,
+  templateEngine, restoreFocus) {
+    var groupItemStyleClass = this.m_widget.getGroupItemStyleClass(false);
+    var groupItem = item.querySelector('.' + groupItemStyleClass);
+    var shouldUseGridRole = this.shouldUseGridRole();
+    if (groupItem) {
+      var cellNode = shouldUseGridRole ? groupItem.firstElementChild : groupItem;
+      var contentNode = cellNode.lastElementChild;
+      if (contentNode) {
+        // explicit clean when inline template is used
+        if (templateEngine) {
+          templateEngine.clean(groupItem);
+        }
+        cellNode.removeChild(contentNode);
+
+        // now actually replace the item
+        var parentElement = item.parentNode;
+        var position = $(parentElement).children().index(item);
+        var tagName = this.GetChildElementTagName();
+        this._addOrReplaceItem(item, position, parentElement, index, data, metadata,
+          templateEngine, this._replaceGroupItemCallback.bind(this), restoreFocus, null,
+          function (nodes) {
+            for (var i = 0; i < nodes.length; i++) {
+              // only NavList supports <li> in group node
+              if (nodes[i].tagName === tagName && !shouldUseGridRole) {
+                groupItem.innerHTML = nodes[i].innerHTML; // @HTMLUpdateOK
+                return true;
+              }
+              cellNode.appendChild(nodes[i]); // @HTMLUpdateOK
+            }
+            return false;
+          });
+      }
+    }
+  };
 
 /**
  * @protected
@@ -1423,9 +1490,47 @@ TreeDataProviderContentHandler.prototype.replaceItem =
     if (key) {
       this.m_childDataProviders.delete(key);
     }
-    TreeDataProviderContentHandler.superclass.replaceItem.call(this, item, index, data, metadata,
-      templateEngine, callback, restoreFocus);
+
+    if (!metadata.leaf && this._isExpandedGroupItem(item)) {
+      this._replaceGroupItem(item, index, data, metadata, templateEngine, restoreFocus);
+    } else {
+      TreeDataProviderContentHandler.superclass.replaceItem.call(this, item, index, data, metadata,
+        templateEngine, callback, restoreFocus);
+    }
   };
+
+
+/**
+ * Handles granular branch refresh
+ * @private
+ */
+TreeDataProviderContentHandler.prototype._handleChildRefresh = function (keys) {
+  var templateEngine = this.getTemplateEngine();
+  var groupStyleClass = this.m_widget.getGroupStyleClass();
+  var groupItemStyleClass = this.m_widget.getGroupItemStyleClass();
+
+  keys.forEach(function (key) {
+    var elem = this.FindElementByKey(key);
+    if (elem != null && this._isExpandedGroupItem(elem)) {
+      var group = elem.querySelector('.' + groupStyleClass);
+      var groupItem = elem.querySelector('.' + groupItemStyleClass);
+      if (group != null && groupItem != null) {
+        if (templateEngine != null) {
+          templateEngine.clean(group);
+        }
+        group.innerHTML = ''; // @HTMLUpdateOK
+
+        this.m_childDataProviders.delete(key);
+        // reset aria-expanded so children gets re-populated
+        var ariaExpandedNode = groupItem.querySelector('[aria-expanded]');
+        if (ariaExpandedNode) {
+          ariaExpandedNode.setAttribute('aria-expanded', 'false'); // @HTMLUpdateOK
+        }
+        this.m_widget.itemRenderComplete(elem, { key: key, data: null });
+      }
+    }
+  }.bind(this));
+};
 
 /**
  * @protected
@@ -1439,6 +1544,12 @@ TreeDataProviderContentHandler.prototype.handleModelRefreshEvent = function (eve
   // since we don't know when the results are coming back in
   if (!this.IsReady()) {
     this._pushToEventQueue({ type: event.type, event: event });
+    return;
+  }
+
+  // granular branch refresh
+  if (event.detail && event.detail.keys) {
+    this._handleChildRefresh(event.detail.keys);
     return;
   }
 
@@ -1987,9 +2098,9 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    * Invoked before refresh, including DataProviderRefresh event
    */
   resetFocusBeforeRefresh: function () {
+    this.m_active = null;
+    this.SetRootElementTabIndex();
     if (this.element[0].contains(document.activeElement)) {
-      this.m_active = null;
-      this.SetRootElementTabIndex();
       this.element[0].focus();
     }
   },
@@ -2029,7 +2140,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     }
 
     var data = this.GetOption('data');
-    if (!oj.DataProviderFeatureChecker.isDataProvider(data)) {
+    if (data == null || !oj.DataProviderFeatureChecker.isDataProvider(data)) {
       return true;
     } else if (data.getCapability) {
       var capability = data.getCapability('fetchFirst');
@@ -3052,10 +3163,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
     container.append(accInfo); // @HTMLUpdateOK
     this.m_accInfo = accInfo;
 
-    // touch specific instruction text for screen reader for reordering
-    if (this._isTouchSupport() && this.m_dndContext != null) {
-      container.append(this._buildAccInstructionText()); // @HTMLUpdateOK
-    }
+    this._buildFocusCaptureDiv(container[0]);
   },
 
   /**
@@ -3097,17 +3205,20 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   },
 
   /**
-   * Build the accessible instruction text for touch devices
-   * @return {jQuery} the root of the acc info div
+   * Build a non-keyboard accessible div used to capture manual focus from JAWS.
    * @private
    */
-  _buildAccInstructionText: function () {
-    var root = $(document.createElement('div'));
-    root.addClass('oj-helper-hidden-accessible')
-      .attr({ id: this._createSubId('instr') });
-    root.text(this.ojContext.getTranslatedString('accessibleReorderTouchInstructionText'));
-
-    return root;
+  _buildFocusCaptureDiv: function (container) {
+    if (!isMobileTouchDevice()) {
+      var elem = document.createElement('div');
+      elem.setAttribute('tabindex', '-1');
+      elem.classList.add('oj-helper-hidden-accessible');
+      elem.innerHTML = '&nbsp'; // @HTMLUpdateOK
+      container.insertBefore(elem, this.element[0]); // @HTMLUpdateOK
+      elem.addEventListener('focus', () => {
+        this.element[0].focus();
+      });
+    }
   },
 
   /**
@@ -3467,8 +3578,9 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    * Called by content handler once the content of an item is removed triggered by an remove event
    * @param {Element} elem the item element
    * @param {boolean} restoreFocus true if focus should be restore, false otherwise
+   * @param {boolean} isReinsert true if the item is going to be re-insert in the same event
    */
-  itemRemoveComplete: function (elem, restoreFocus) {
+  itemRemoveComplete: function (elem, restoreFocus, isReinsert) {
     var currentItemUpdated = false;
 
     // if it's the current focus item, try to focus on the next/prev item.  If there are none, then focus on the root element
@@ -3476,17 +3588,38 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
       // make sure we exit actionable mode, otherwise focus will be lost
       this._setActionableMode(false, true);
 
-      var next = elem.nextElementSibling;
-      if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
-        next = elem.previousElementSibling;
-        if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
+      // do not change currentItem if the item is going to be inserted in the same event
+      if (!isReinsert) {
+        let next = null;
+        let items = this._getItemsCache().toArray();
+        items = items.filter(item => !item.classList.contains('oj-skipfocus'));
+        const elemIndex = items.findIndex(item => elem.contains(item));
+        if (elemIndex === -1) {
           this.SetOption('currentItem', null);
+        } else {
+          // when the next element is from the other group, we set the next element
+          // to the last element of current group if there is one
+          const elemGroup = elem.closest('ul.oj-listview-group');
+          const nextElem = items[elemIndex + 1];
+          const prevElem = items[elemIndex - 1];
+          if (elemGroup && nextElem && prevElem && nextElem.closest('ul') !== elemGroup &&
+              prevElem.closest('ul') === elemGroup) {
+            next = prevElem;
+          } else {
+            next = nextElem;
+            if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
+              next = prevElem;
+              if (next == null || !$(next).hasClass(this.getItemElementStyleClass())) {
+                this.SetOption('currentItem', null);
+              }
+            }
+          }
         }
-      }
 
-      if (next != null && $(next).hasClass(this.getItemElementStyleClass())) {
-        this.SetCurrentItem($(next), null, !restoreFocus);
-        currentItemUpdated = true;
+        if (next != null && $(next).hasClass(this.getItemElementStyleClass())) {
+          this.SetCurrentItem($(next), null, !restoreFocus);
+          currentItemUpdated = true;
+        }
       }
     }
 
@@ -5517,11 +5650,25 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    */
   _scrollToVisible: function (elem) {
     var offset = 0;
-    var top = elem.offsetTop;
-    var height = elem.offsetHeight;
+    var top;
+    var height;
     var container = this.getListContainer()[0];
     var containerScrollTop = container.scrollTop;
     var containerHeight = container.offsetHeight;
+
+    if (elem.classList.contains(this.getItemStyleClass())) {
+      top = elem.offsetTop;
+      height = elem.offsetHeight;
+    } else if (elem.children.length > 0) {
+      var groupItemContainer = elem.children[0];
+      if (groupItemContainer.classList.contains(this.getGroupItemStyleClass())) {
+        top = groupItemContainer.offsetTop;
+        height = groupItemContainer.offsetHeight;
+      }
+    }
+    if (isNaN(top) || isNaN(height)) {
+      return;
+    }
 
     // if there's sticky header, make sure the elem is not behind it
     if (this.m_groupItemToPin != null) {
@@ -5734,7 +5881,8 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         return true;
       }).map(function (index, elem) {
         var parentElement = elem.parentElement;
-        if (parentElement && parentElement.classList.contains('oj-animate-add')) {
+        if (parentElement && (parentElement.classList.contains('oj-animate-add') ||
+          parentElement.classList.contains('oj-listview-temp-item'))) {
           return parentElement;
         }
         return elem;
@@ -6192,19 +6340,13 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   /**
    * Determine the only focusable element inside an item, if the item does not have any or have
    * more than one focusable element, then just return the item.
+   * (Update) Note this method now always returns item since we do not want to change the role of
+   * the content specified by application.
    * @param {jQuery} item the list item
    * @return {jQuery} see above for what's get returned
    * @private
    */
   getSingleFocusableElement: function (item) {
-    var selector = 'a, input, select, textarea, button';
-    var childElements = item.children(selector);
-
-    if (childElements.length === 1 && // check for only one focusbale child
-      childElements.first().find(selector).length === 0) {
-      // check to ensure no nested focusable elements.
-      return childElements.first();
-    }
     return item;
   },
 
@@ -6694,7 +6836,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         this._augmentSelectionAndFocus(item, event);
       }
     } else {
-      processed = this.SelectAndFocus(item, event);
+      processed = this.SelectAndFocus(item, event, ctrlKey);
     }
 
     return processed;
@@ -6717,7 +6859,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
         this._augmentSelectionAndFocus(item, event);
       }
     } else {
-      processed = this.SelectAndFocus(item, event);
+      processed = this.SelectAndFocus(item, event, true);
     }
 
     return processed;
@@ -6754,9 +6896,10 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
    * Select and focus is an asynchronus call
    * @param {jQuery} item the item clicked on
    * @param {Event} event the click event
+   * @param {isToggle=} isToggle true if this is a toggle selection event
    * @protected
    */
-  SelectAndFocus: function (item, event) {
+  SelectAndFocus: function (item, event, isToggle) {
     var key = this.GetKey(item[0]);
     var selected = this.GetOption('selected');
     var exists = selected.has(key);
@@ -6766,10 +6909,12 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
       return false;
     }
 
+    var isRedwood = parseJSONFromFontFamily('oj-theme-json').behavior === 'redwood';
     // if it's already selected, deselect it and update options
-    this._clearSelection(exists);
-
-    if (!exists) {
+    if (exists && (isToggle || !isRedwood)) {
+      this._clearSelection(true);
+    } else {
+      this._clearSelection(false);
       // add the elem to selection
       this._augmentSelectionAndFocus(item, event, selected.clear());
     }
@@ -7259,6 +7404,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   _expand: function (event) {
     var item = this.FindItem(event.target);
     if (item != null && item.length > 0) {
+      this.SetCurrentItem(item, event);
       this.ExpandItem(item, event, true, null, true, true, true);
     }
   },
@@ -7519,6 +7665,7 @@ const _ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.proto
   _collapse: function (event) {
     var item = this.FindItem(event.target);
     if (item != null && item.length > 0) {
+      this.SetCurrentItem(item, event);
       this.CollapseItem(item, event, true, null, true, true);
     }
   },
@@ -8954,9 +9101,9 @@ oj._registerLegacyNamespaceProp('_ojListView', _ojListView);
  * allow users to perform the functionality with the appropriate keystroke.  You can find examples of how this can be done in the cookbook demos.</p>
  *
  * <p>Developers must exercise caution when using item.focusable to disable navigation to certain items, since doing so will prevent user from interacting with these items,
- * as well as preventing the screen reader from reading the content of these items.  Applications must ensure there are alternative ways to access information for these items.</p>
+ * as well as preventing the screen reader from reading the content of these items.  Applications must ensure there are alternative ways to access information of these items.</p>
  *
- * <p>Note that ListView uses the grid role and follows the <a href="https://www.w3.org/TR/wai-aria-practices/examples/grid/LayoutGrids.html">Layout Grid</a> design as outlined in the <a href="https://www.w3.org/TR/wai-aria-practices/#grid">grid design pattern</a>.</p>
+ * <p>Note that ListView uses the grid role and follows the <a href="https://www.w3.org/TR/wai-aria-practices/examples/grid/LayoutGrids.html">Layout Grid</a> design as outlined in the <a href="https://www.w3.org/TR/wai-aria-practices/#grid">grid design pattern</a></p>.
  *
  *
  * <h3 id="perf-section">
@@ -9366,7 +9513,8 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      */
     display: 'list',
     /**
-     * Enable drag and drop functionality.<br><br>
+     * Enable drag and drop functionality.
+     * Note the ojlistviewdnd module must be imported in order to use the dnd functionality.<br><br>
      * JET provides support for HTML5 Drag and Drop events.  Please refer to {@link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop third party documentation}
      * on HTML5 Drag and Drop to learn how to use it.
      *
@@ -9409,6 +9557,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
        * @memberof! oj.ojListView
        * @instance
        * @type {Object}
+       * @ojsignature { target: "Type", value: "?"}
        */
       reorder: {
         /**
@@ -9705,8 +9854,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
     },
     /**
      * Specifies the behavior when ListView needs to scroll to a position based on an item key.  This includes the case where 1) a value of
-     * scrollPosition attribute is specified with a key property, 2) ListView scrolls to the selection anchor after a refresh has
-     occurred.
+     * scrollPosition attribute is specified with a key property, 2) ListView scrolls to the selection anchor after a refresh has occurred.
      *
      * @ojshortdesc Specifies the behavior when ListView needs to scroll to a position based on an item key.
      * @expose
@@ -10718,6 +10866,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
    * @ojshortdesc The noData slot is used to specify the content to render when the list is empty.
    * @ojmaxitems 1
    * @memberof oj.ojListView
+   * @ojtemplateslotprops {}
    *
    * @example <caption>Initialize the ListView with a noData slot specified:</caption>
    * &lt;oj-list-view>
@@ -10993,16 +11142,20 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  * @property {boolean} reorder true if the drop was a reorder in the same listview, false otherwise
  */
 /**
- * @typedef {Object} oj.ojListView.ItemTemplateContext
- * @property {Element} componentElement The &lt;oj-list-view> custom element
- * @property {any} data The data for the current item being rendered
- * @property {Item<K, D>} item The current item being rendered
- * @property {number} index The zero-based index of the current item during initial rendering.  Note the index is not updated in response to item additions and removals.
- * @property {any} key The key of the current item being rendered
- * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
- * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
- * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
- * @ojsignature [{target:"Type", value:"<K = any ,D = any>", for:"genericTypeParameters"}]
+ @typedef {Object} oj.ojListView.ItemTemplateContext
+ @property {Element} componentElement The &lt;oj-list-view> custom element
+ @property {Object} data The data for the current item being rendered
+ @property {Object} item The current item being rendered
+ @property {number} index The zero-based index of the current item during initial rendering. Note the index is not updated in response to item additions and removals.
+ @property {string} key The key of the current item being rendered
+ @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
+ @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
+ @property {string} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+ @ojsignature [{target:"Type", value:"<K = any,D = any>", for:"genericTypeParameters"},
+ {target:"Type", value:"D", for:"data", jsdocOverride: true},
+ {target: "Type", value:"Item<K, D>", for:"item", jsdocOverride: true},
+ {target:"Type", value:"K", for:"key", jsdocOverride: true},
+{target:"Type", value:"K", for:"parentkey", jsdocOverride: true}]
  */
 
 /**

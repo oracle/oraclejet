@@ -1,0 +1,203 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@include module-include-once("redwood.variables.button") {
+
+:root {
+
+  // button
+  // --------------------------
+  --oj-button-border-radius:        var(--oj-core-border-radius-md);
+  
+
+  --oj-button-font-weight:          600;
+
+  --oj-button-height:                2.75rem;
+  --oj-button-sm-height:             2.25rem;
+  --oj-button-lg-height:             3.25rem;
+
+
+  --oj-button-font-size:              var(--oj-typography-body-sm-font-size);
+  --oj-button-sm-font-size:           var(--oj-typography-body-sm-font-size);
+  --oj-button-lg-font-size:           var(--oj-typography-body-sm-font-size);
+
+  // button padding
+  --oj-button-text-to-edge-padding:      1rem;
+  --oj-button-sm-text-to-edge-padding:   1rem;
+  --oj-button-lg-text-to-edge-padding:   1.5rem;
+
+  --oj-button-icon-to-text-padding:       .625rem;
+  --oj-button-sm-icon-to-text-padding:    .5rem;
+  --oj-button-lg-icon-to-text-padding:    1rem;
+
+  --oj-button-icon-to-edge-padding:       .625rem;
+  --oj-button-sm-icon-to-edge-padding:    .5rem;
+  --oj-button-lg-icon-to-edge-padding:    1rem;
+
+  
+
+  // solid enabled
+  --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-190),.08);
+  --oj-button-solid-chrome-border-color:                  transparent;
+  --oj-button-solid-chrome-text-color:                    var(--oj-core-text-color-primary);
+
+
+  // solid hover
+  --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-190),.12);
+  --oj-button-solid-chrome-border-color-hover:            transparent;
+  --oj-button-solid-chrome-text-color-hover:              var(--oj-core-text-color-primary);
+ 
+  
+  // solid active
+  --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-190),.16);
+  --oj-button-solid-chrome-border-color-active:           transparent;
+  --oj-button-solid-chrome-text-color-active:             var(--oj-core-text-color-primary);
+  
+
+
+  // solid disabled
+  --oj-button-solid-chrome-bg-color-disabled:             var(--oj-core-color-disabled-1);
+  --oj-button-solid-chrome-border-color-disabled:         transparent;
+  --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled); 
+
+
+  // solid selected
+  --oj-button-solid-chrome-bg-color-selected:             var(--oj-button-solid-chrome-bg-color);
+  --oj-button-solid-chrome-border-color-selected:         var(--oj-button-solid-chrome-border-color);
+  --oj-button-solid-chrome-text-color-selected:           var(--oj-button-solid-chrome-text-color);
+
+
+  // solid selected hover
+  --oj-button-solid-chrome-bg-color-selected-hover:       var(--oj-button-solid-chrome-bg-color-active);
+  --oj-button-solid-chrome-border-color-selected-hover:   var(--oj-button-solid-chrome-border-color-active);
+  --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-button-solid-chrome-text-color-active);
+
+
+  // solid selected disabled
+  --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-100), .3);
+  --oj-button-solid-chrome-border-color-selected-disabled: transparent;
+  --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+
+
+  // ghost button
+  --oj-private-button-ghost-chrome-text-color:             var(--oj-core-text-color-primary);
+  --oj-private-button-ghost-chrome-text-color-hover:       var(--oj-core-text-color-primary);
+  --oj-private-button-ghost-chrome-text-color-active:      var(--oj-core-text-color-primary);
+
+
+
+  // borderless-chrome enabled
+  --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary);
+  
+
+  // borderless chrome hover
+  --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-hover:    transparent;
+  --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+
+
+  // borderless chrome-active
+  --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-borderless-chrome-border-color-active:   transparent;
+  --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary);
+ 
+
+
+  // borderless chrome disabled
+  --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+  
+
+  // borderless-chrome-selected
+  --oj-button-borderless-chrome-bg-color-selected:     transparent;
+  --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+
+
+  // borderless chrome selected hover
+  --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+
+
+  // borderless chrome selected disabled
+  --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-borderless-chrome-border-color-selected-disabled: var(--oj-core-color-disabled-2);
+  --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+
+
+  //outlined enabled
+  --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary);
+  --oj-button-outlined-chrome-bg-color:              transparent;
+
+
+  // outlined hover
+  --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+  
+
+  // outlined active
+  --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary);
+ 
+
+
+  // outlined disabled
+  --oj-button-outlined-chrome-border-color-disabled: var(--oj-core-text-color-disabled);
+  --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+  --oj-button-outlined-chrome-bg-color-disabled:     transparent;
+ 
+
+
+  // outlined selected
+  --oj-button-outlined-chrome-bg-color-selected:     transparent;
+  --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+ 
+
+  // outlined selected hover
+  --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-190), .5);
+  --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+  
+  // outlined selected disabled
+  --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled);
+  --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+ 
+
+    // cta enabled
+  --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-button-call-to-action-chrome-border-color:                  transparent;
+  --oj-button-call-to-action-chrome-text-color:                    var(--oj-core-neutral-contrast);
+  
+  
+  // cta hover
+  --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-button-call-to-action-chrome-border-color-hover:            transparent;
+  --oj-button-call-to-action-chrome-text-color-hover:              var(--oj-core-neutral-contrast);
+ 
+  
+ 
+
+  // cta active
+  --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-neutral-rgb-150));
+  --oj-button-call-to-action-chrome-border-color-active:           transparent;
+  --oj-button-call-to-action-chrome-text-color-active:             var(--oj-core-neutral-contrast);
+  
+  
+  // icon sizes for all types of buttons 
+  --oj-button-icon-size:         var(--oj-core-icon-size-lg);
+  --oj-button-sm-icon-size:      1.25rem;
+  --oj-button-lg-icon-size:      var(--oj-core-icon-size-lg);
+
+  // global chroming default
+  --oj-private-button-global-chroming-default:   outlined;
+}
+}

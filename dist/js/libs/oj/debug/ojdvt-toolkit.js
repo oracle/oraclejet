@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1648,14 +1648,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @param {number}  ry  Optional y-axis radius of the ellipse used to round off the cornders of the rectangle.
    */
   ClipPath.prototype.addRect = function (x, y, w, h, rx, ry) {
-    var obj = {};
-    obj.type = ClipPath.RECT;
-    obj.x = x;
-    obj.y = y;
-    obj.w = w;
-    obj.h = h;
-    obj.rx = rx;
-    obj.ry = ry;
+    var obj = {
+      type: ClipPath.RECT,
+      x: x,
+      y: y,
+      w: w,
+      h: h,
+      rx: rx,
+      ry: ry
+    };
     this._regions.push(obj);
   };
 
@@ -1666,11 +1667,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @param {number}  r   The radius of the circle.
    */
   ClipPath.prototype.addCircle = function (cx, cy, r) {
-    var obj = {};
-    obj.type = ClipPath.CIRCLE;
-    obj.cx = cx;
-    obj.cy = cy;
-    obj.r = r;
+    var obj = {
+      type: ClipPath.CIRCLE,
+      cx: cx,
+      cy: cy,
+      r: r
+    };
     this._regions.push(obj);
   };
 
@@ -1679,9 +1681,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @param {string}  points  The points that make up the polygon.
    */
   ClipPath.prototype.addPolygon = function (points) {
-    var obj = {};
-    obj.type = ClipPath.POLYGON;
-    obj.points = points;
+    var obj = {
+      type: ClipPath.POLYGON,
+      points: points
+    };
     this._regions.push(obj);
   };
 
@@ -1690,9 +1693,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @param {string}  d  Path data.
    */
   ClipPath.prototype.addPath = function (d) {
-    var obj = {};
-    obj.type = ClipPath.PATH;
-    obj.d = d;
+    var obj = {
+      type: ClipPath.PATH,
+      d: d
+    };
     this._regions.push(obj);
   };
 
@@ -2444,7 +2448,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    */
   ColorUtils.getColorFromName = function (name) {
     if (!ColorUtils._names) {
-      var ar = [];
+      var ar = {};
       ar['aliceblue'] = '#f0f8ff';
       ar['antiquewhite'] = '#faEbd7';
       ar['aqua'] = '#00ffff';
@@ -2626,6 +2630,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     }
 
     var x1 = clr.indexOf('(');
+    var ar;
     if (x1 < 0) {
       ar = [];
       //: parse channels for different # formats
@@ -2645,7 +2650,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       chval = ar[chan];
     } else {
       //  rgb() or rgba() format
-      var ar = clr.substring(x1 + 1).match(/[^,|)]+/gm);
+      ar = clr.substring(x1 + 1).match(/[^,|)]+/gm);
 
       if (ar.length === 3 && chan === ColorUtils._ALPHA) {
         chval = 1;
@@ -2998,10 +3003,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         bRGBA = true;
       }
     } else {
-      var bRGBA = s.substr(0, 5) === ColorUtils._RGBA;
+      bRGBA = s.substr(0, 5) === ColorUtils._RGBA;
       var x1 = s.indexOf('(');
       var x2 = s.indexOf(')');
-      var ar = s.substring(x1 + 1, x2).split(',');
+      ar = s.substring(x1 + 1, x2).split(',');
 
       if (!bRGBA && chan === ColorUtils._ALPHA) {
         ar.push(chval);
@@ -3065,7 +3070,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (max == r) h = (g - b) / diff + (g < b ? 6 : 0);
       else if (max == g) h = (b - r) / diff + 2;
       else if (max == b) h = (r - g) / diff + 4;
-
+      else h = 0;
       h /= 6;
     }
 
@@ -4759,6 +4764,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var halfW;
     var halfH;
     var elem;
+    const STROKE_OPACITY = 'stroke-opacity';
+    const STROKE_WIDTH = 'stroke-width';
+    const FILL_OPACITY = 'fill-opacity';
 
     var pattern = patternFill.getPattern();
     var sColor = patternFill.getColor();
@@ -4787,10 +4795,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'rect');
 
       ToolkitUtils.setAttrNullNS(elem, 'stroke', backgroundColor);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', backgroundAlpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, backgroundAlpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'fill', backgroundColor);
-      ToolkitUtils.setAttrNullNS(elem, 'fill-opacity', backgroundAlpha);
+      ToolkitUtils.setAttrNullNS(elem, FILL_OPACITY, backgroundAlpha);
 
       ToolkitUtils.setAttrNullNS(elem, 'x', 0);
       ToolkitUtils.setAttrNullNS(elem, 'y', 0);
@@ -4803,8 +4811,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (pattern === PatternFill.SM_DIAG_UP_LT || pattern === PatternFill.LG_DIAG_UP_LT) {
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'path');
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'stroke-linecap', 'square');
 
       ToolkitUtils.setAttrNullNS(
@@ -4820,8 +4828,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     } else if (pattern === PatternFill.SM_DIAG_UP_RT || pattern === PatternFill.LG_DIAG_UP_RT) {
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'path');
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'stroke-linecap', 'square');
 
       ToolkitUtils.setAttrNullNS(
@@ -4839,10 +4847,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // DOM element instead of two)
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'path');
 
-      //  g.lineStyle((bSmall? 1 : 2), color) ;
+
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
 
       ToolkitUtils.setAttrNullNS(
         elem,
@@ -4860,10 +4868,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'path');
 
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'fill', color);
-      ToolkitUtils.setAttrNullNS(elem, 'fill-opacity', alpha);
+      ToolkitUtils.setAttrNullNS(elem, FILL_OPACITY, alpha);
 
       ToolkitUtils.setAttrNullNS(
         elem,
@@ -4906,10 +4914,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'polygon');
 
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'fill', color);
-      ToolkitUtils.setAttrNullNS(elem, 'fill-opacity', alpha);
+      ToolkitUtils.setAttrNullNS(elem, FILL_OPACITY, alpha);
 
       ToolkitUtils.setAttrNullNS(
         elem,
@@ -4925,10 +4933,10 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       elem = document.createElementNS(ToolkitUtils.SVG_NS, 'polygon');
 
       ToolkitUtils.setAttrNullNS(elem, 'stroke', color);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-opacity', alpha);
-      ToolkitUtils.setAttrNullNS(elem, 'stroke-width', 1);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_OPACITY, alpha);
+      ToolkitUtils.setAttrNullNS(elem, STROKE_WIDTH, 1);
       ToolkitUtils.setAttrNullNS(elem, 'fill', color);
-      ToolkitUtils.setAttrNullNS(elem, 'fill-opacity', alpha);
+      ToolkitUtils.setAttrNullNS(elem, FILL_OPACITY, alpha);
 
       ToolkitUtils.setAttrNullNS(
         elem,
@@ -5245,6 +5253,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var dy = shadow._dy;
     var stdDeviation = shadow._stdDeviation;
     var floodColor = shadow._floodColor;
+    const FLOOD_COLOR = 'flood-color';
 
     //:
     //if we have a boundsRect, increase the size of the filter so
@@ -5312,7 +5321,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       ToolkitUtils.setAttrNullNS(dropShadow, 'dx', dx);
       ToolkitUtils.setAttrNullNS(dropShadow, 'dy', dy);
       ToolkitUtils.setAttrNullNS(dropShadow, 'stdDeviation', stdDeviation);
-      ToolkitUtils.setAttrNullNS(dropShadow, 'flood-color', floodColor);
+      ToolkitUtils.setAttrNullNS(dropShadow, FLOOD_COLOR, floodColor);
       ToolkitUtils.appendChildElem(filt, dropShadow);
     } else {
       /*
@@ -5341,12 +5350,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         // ["rgba/hsla", "r/h", "g/s", "b/l", "a", ""]
         ToolkitUtils.setAttrNullNS(
           flood,
-          'flood-color',
+          FLOOD_COLOR,
           `${colorTokens[0].substr(0, 3)}(${colorTokens[1]},${colorTokens[2]},${colorTokens[3]})`
         );
         ToolkitUtils.setAttrNullNS(flood, 'flood-opacity', colorTokens[4]);
       } else {
-        ToolkitUtils.setAttrNullNS(flood, 'flood-color', floodColor);
+        ToolkitUtils.setAttrNullNS(flood, FLOOD_COLOR, floodColor);
       }
 
       var composite = SvgShapeUtils.createElement('feComposite');
@@ -5778,6 +5787,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   KeyboardEvent.LEFT_ARROW = 37;
   /** Right arrow key **/
   KeyboardEvent.RIGHT_ARROW = 39;
+  /** F2 - used to navigate inside the item **/
+  KeyboardEvent.F2 = 113;
   /** Open bracket key **/
   KeyboardEvent.OPEN_BRACKET = 219;
   /** Close bracket key **/
@@ -5843,7 +5854,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (keyCode == KeyboardEvent.WEBKIT_PLUS && event.shiftKey) return true;
       else return false;
     }
-    return false;
   };
 
   /**
@@ -5863,7 +5873,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (keyCode == KeyboardEvent.WEBKIT_PLUS && !event.shiftKey) return true;
       else return false;
     }
-    return false;
   };
 
   /**
@@ -5885,7 +5894,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (keyCode == KeyboardEvent.WEBKIT_MINUS && !event.shiftKey) return true;
       else return false;
     }
-    return false;
   };
 
   /**
@@ -5905,7 +5913,6 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (keyCode == KeyboardEvent.WEBKIT_MINUS && event.shiftKey) return true;
       else return false;
     }
-    return false;
   };
 
   /**
@@ -8255,33 +8262,41 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       this._manageDefinitions(this._stroke, stroke);
 
       this._stroke = stroke;
+      const STROKE_OPACITY = 'stroke-opacity';
+      const STROKE_DASHARRAY = 'stroke-dasharray';
+      const STROKE_DASHOFFSET = 'stroke-dashoffset';
+      const STROKE_LINEJOIN = 'stroke-linejoin';
+      const STROKE_LINECAP = 'stroke-linecap';
+      const STROKE_MITERLIMIT = 'stroke-miterlimit';
+      const STROKE = 'stroke';
+      const STROKE_WIDTH = 'stroke-width';
 
       if (!stroke) {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-opacity');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-width');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-dasharray');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-dashoffset');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-linejoin');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-linecap');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-miterlimit');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_OPACITY);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_WIDTH);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_DASHARRAY);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_DASHOFFSET);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_LINEJOIN);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_LINECAP);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_MITERLIMIT);
         return;
       }
 
       //  Stroke color/alpha
       var strokeObj = ColorUtils.fixColorForPlatform(stroke.getColor(), stroke.getAlpha());
       if (strokeObj && strokeObj.color) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke', strokeObj.color);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE, strokeObj.color);
         if (strokeObj.alpha != null) {
-          ToolkitUtils.setAttrNullNS(this._elem, 'stroke-opacity', strokeObj.alpha, 1);
+          ToolkitUtils.setAttrNullNS(this._elem, STROKE_OPACITY, strokeObj.alpha, 1);
         }
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke');
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-opacity');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE);
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_OPACITY);
       }
 
       //  Width defaults to 1 if not set
-      ToolkitUtils.setAttrNullNS(this._elem, 'stroke-width', stroke.getWidth(), 1);
+      ToolkitUtils.setAttrNullNS(this._elem, STROKE_WIDTH, stroke.getWidth(), 1);
 
       if (stroke.isFixedWidth()) {
         ToolkitUtils.setAttrNullNS(this._elem, 'vector-effect', 'non-scaling-stroke');
@@ -8289,31 +8304,31 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
       var dashProps = stroke.getDashProps();
       if (dashProps && dashProps.dashArray) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke-dasharray', dashProps.dashArray);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE_DASHARRAY, dashProps.dashArray);
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-dasharray');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_DASHARRAY);
       }
       if (dashProps && dashProps.dashOffset) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke-dashoffset', dashProps.dashOffset);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE_DASHOFFSET, dashProps.dashOffset);
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-dashoffset');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_DASHOFFSET);
       }
 
       var lineProps = stroke.getLineProps();
       if (lineProps && lineProps.lineJoin) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke-linejoin', lineProps.lineJoin);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE_LINEJOIN, lineProps.lineJoin);
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-linejoin');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_LINEJOIN);
       }
       if (lineProps && lineProps.lineCap) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke-linecap', lineProps.lineCap);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE_LINECAP, lineProps.lineCap);
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-linecap');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_LINECAP);
       }
       if (lineProps && lineProps.miterLimit) {
-        ToolkitUtils.setAttrNullNS(this._elem, 'stroke-miterlimit', lineProps.miterLimit);
+        ToolkitUtils.setAttrNullNS(this._elem, STROKE_MITERLIMIT, lineProps.miterLimit);
       } else {
-        ToolkitUtils.removeAttrNullNS(this._elem, 'stroke-miterlimit');
+        ToolkitUtils.removeAttrNullNS(this._elem, STROKE_MITERLIMIT);
       }
     },
 
@@ -8391,6 +8406,23 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     }
 
     return dim;
+  };
+
+
+  /**
+   * Returns the dimensions of an element by calling getBBox.
+   * @return {Rectangle}
+   */
+   DisplayableUtils.getSvgDimensions = function (elem) {
+    try {
+      var bbox = elem.getBBox();
+    } catch (e) {
+      return null;
+    }
+    //don't return bbox directly because we don't want calling code
+    //to depend on platform-specific API, so instead turn it into
+    //a Rectangle
+    return new Rectangle(bbox.x, bbox.y, bbox.width, bbox.height);
   };
 
   /*
@@ -8888,7 +8920,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           }
         }
       }
-    } else if (!cp && this.ClipPathId) {
+    } else if (this.ClipPathId) {
       this._context.decreaseGlobalDefReference(this.ClipPathId);
       this.ClipPathId = null;
       ToolkitUtils.removeAttrNullNS(this.getOuterElem(), 'clip-path');
@@ -8925,7 +8957,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           }
         }
       }
-    } else if (!mask && this.MaskId) {
+    } else if (this.MaskId) {
       this._context.decreaseGlobalDefReference(this.MaskId);
       this.MaskId = null;
       ToolkitUtils.removeAttrNullNS(this.getOuterElem(), 'mask');
@@ -8963,15 +8995,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @return {Rectangle}
    */
   Displayable.prototype.GetSvgDimensions = function () {
-    try {
-      var bbox = this.getElem().getBBox();
-    } catch (e) {
-      return null;
-    }
-    //don't return bbox directly because we don't want calling code
-    //to depend on platform-specific API, so instead turn it into
-    //a Rectangle
-    return new Rectangle(bbox.x, bbox.y, bbox.width, bbox.height);
+    return DisplayableUtils.getSvgDimensions(this.getElem());
   };
 
   /**
@@ -9404,17 +9428,26 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var hasStates = states && states.length > 0;
 
     if (shortDesc) {
-      if (typeof shortDesc === "function") {
-        desc.push(shortDesc(context()));
-      } else {
-        desc.push(shortDesc);
-      }
+      desc.push(Displayable.resolveShortDesc(shortDesc, context));
     }
     if (hasStates) {
       desc.push(states.join(AriaUtils.ARIA_LABEL_STATE_DELIMITER));
     }
 
     return desc.join(AriaUtils.ARIA_LABEL_DESC_DELIMITER);
+  };
+
+  /**
+   * Resolves the shortDesc
+   * @param {String|function} shortDesc  The short description for a data object
+   * @param {function} context shortDesc Function that returns the context object
+   * @return {String}
+   */
+   Displayable.resolveShortDesc = function (shortDesc, context) {
+    if (typeof shortDesc === "function") {
+      return shortDesc(context());
+    }
+    return shortDesc;
   };
 
   Object.assign(Displayable.prototype, _DRAW_EFFECT);
@@ -9431,8 +9464,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @class
    * @constructor
    */
-  const Container = function (context, id, shapeContainer) {
-    this.Init(context, 'g', id, shapeContainer);
+  const Container = function (context, type, id, shapeContainer) {
+    this.Init(context, type, id, shapeContainer);
   };
 
   Obj.createSubclass(Container, Displayable);
@@ -9634,7 +9667,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var idx = this._findChild(obj);
 
     if (idx > 0) {
-      o = this._arList[--idx];
+      o = this._arList[idx-1];
     }
 
     return o;
@@ -9834,11 +9867,37 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     }
   };
 
+  /**
+   * @override
+   */
+  Container.prototype.getDimensions = function (targetCoordinateSpace) {
+    if (!Agent.isEnvironmentTest() || this.getNumChildren() === 0 || !this.CanOptimizeDimensions()) {
+      return Container.superclass.getDimensions.call(this, targetCoordinateSpace);
+    }
+
+    let localDims = this._getDimensionsHelper((child) => child.getDimensions(this));
+    if (this._bShapeContainer) {
+      const selfDims = DisplayableUtils.getSvgDimensions(this._elem);
+      localDims = localDims.getUnion(selfDims);
+    }
+    return this.ConvertCoordSpaceRect(localDims, targetCoordinateSpace);
+  };
+
+  Container.prototype.CanOptimizeDimensions = function() {
+    return true;
+  };
+
   //:
   /**
    * @override
    */
   Container.prototype.getDimensionsWithStroke = function () {
+    //get dims in coordinate space of this container, because we're
+    //processing whole subtree of children under this container
+    return this._getDimensionsHelper((child) => child.GetDimensionsWithStroke(this));
+  };
+
+  Container.prototype._getDimensionsHelper = function(childVisitor) {
     //a pure container has no shape of its own, so calculate the
     //dims for all child shapes in the subtree rooted at this container
     //build an initial array of all direct children of this container
@@ -9853,9 +9912,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     while (ar.length > 0) {
       //remove the first object from the array
       var child = ar.shift();
-      //get dims in coordinate space of this container, because we're
-      //processing whole subtree of children under this container
-      var dims = child.GetDimensionsWithStroke(this);
+      var dims = childVisitor(child);
       if (dims) {
         if (!totalDims) {
           totalDims = dims;
@@ -9867,8 +9924,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       if (!child.includeChildSubtree || child.includeChildSubtree()) {
         //add any children of current object to end of array
         numChildren = child.getNumChildren();
-        for (var i = 0; i < numChildren; i++) {
-          ar.push(child.getChildAt(i));
+        for (var j = 0; j < numChildren; j++) {
+          ar.push(child.getChildAt(j));
         }
       }
     }
@@ -10625,8 +10682,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @class
    *  @constructor
    */
-  const Shape = function () {
+  const Shape = function (context, type, id) {
     // This class should never be instantiated directly
+    this.Init(context, type, id);
   };
 
   //  Allow shapes to become 'containers' themselves.  Note: this does not
@@ -10901,6 +10959,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @override
    */
   Shape.prototype.setSelected = function (selected) {
+    const OJ_SELECTED = 'oj-selected';
     if (this.IsSelected == selected) return;
 
     if (!this._isOriginalStrokeSet) {
@@ -10916,8 +10975,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       this.UpdateSelectionEffect();
 
       if (this._feedbackClassName) {
-        this.addClassName('oj-selected');
-        this.InnerShape.addClassName('oj-selected');
+        this.addClassName(OJ_SELECTED);
+        this.InnerShape.addClassName(OJ_SELECTED);
       }
       else if (this.isHoverEffectShown()) {
         this.CreateSelectedHoverStrokes();
@@ -10929,8 +10988,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       }
     } else {
       if (this._feedbackClassName) {
-        this.removeClassName('oj-selected');
-        this.InnerShape.removeClassName('oj-selected');
+        this.removeClassName(OJ_SELECTED);
+        this.InnerShape.removeClassName(OJ_SELECTED);
       }
       if (this.IsShowingHoverEffect) {
         if (!this._feedbackClassName) {
@@ -11690,6 +11749,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   /** @const */
   OutputText.H_ALIGN_RIGHT = 'right';
 
+  OutputText.TEXT_ANCHOR = 'text-anchor';
+
   // Vertical Alignments
   /** @const */
   OutputText.V_ALIGN_TOP = TextUtils.V_ALIGN_TOP;
@@ -11860,6 +11921,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       return isRTL
         ? 0
         : -1 * TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle());
+    return 0;
   };
 
   /**
@@ -11933,6 +11995,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * Aligns the left side of the text to the x coordinate. Note: This does not always correspond to what the browser
    * considers a "start" alignment, as we work around issues in rtl locales to provide a consistent API.
    */
+
   OutputText.prototype.alignLeft = function () {
     // No change in value, return
     if (this._horizAlign == OutputText.H_ALIGN_LEFT) return;
@@ -11945,7 +12008,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
       // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
       var bAdjust = this._needsTextAnchorAdjustment();
-      ToolkitUtils.setAttrNullNS(this.getElem(), 'text-anchor', bAdjust ? 'end' : 'start', 'start');
+      ToolkitUtils.setAttrNullNS(this.getElem(), OutputText.TEXT_ANCHOR, bAdjust ? 'end' : 'start', 'start');
     }
   };
 
@@ -11960,7 +12023,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
     if (Agent.browser === 'ie' || Agent.browser === 'edge') this.setX(this._x);
     // readjust x position. IE text-anchor attribute is buggy.
-    else ToolkitUtils.setAttrNullNS(this.getElem(), 'text-anchor', 'middle', 'start');
+    else ToolkitUtils.setAttrNullNS(this.getElem(), OutputText.TEXT_ANCHOR, 'middle', 'start');
   };
 
   /**
@@ -11979,7 +12042,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
       // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
       var bAdjust = this._needsTextAnchorAdjustment();
-      ToolkitUtils.setAttrNullNS(this.getElem(), 'text-anchor', bAdjust ? 'start' : 'end', 'start');
+      ToolkitUtils.setAttrNullNS(this.getElem(), OutputText.TEXT_ANCHOR, bAdjust ? 'start' : 'end', 'start');
     }
   };
 
@@ -12106,10 +12169,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           ToolkitUtils.setAttrNullNS(elem, 'fill-opacity', fillObj['alpha'], 1);
       }
 
-      val = style.getStyle('font-family');
+      const FONT_FAMILY = 'font-family';
+      val = style.getStyle(FONT_FAMILY);
       if (val && !this.getCtx().isDefaultFontFamily(val))
-        ToolkitUtils.setAttrNullNS(elem, 'font-family', val);
-      else ToolkitUtils.removeAttrNullNS(elem, 'font-family');
+        ToolkitUtils.setAttrNullNS(elem, FONT_FAMILY, val);
+      else ToolkitUtils.removeAttrNullNS(elem, FONT_FAMILY);
 
       val = style.getStyle('font-size');
       if (val && val != this.getCtx().getDefaultFontSize()) {
@@ -12126,10 +12190,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         ToolkitUtils.setAttrNullNS(elem, 'font-style', val);
       }
 
-      val = style.getStyle('font-weight');
+      const FONT_WEIGHT = 'font-weight';
+      val = style.getStyle(FONT_WEIGHT);
       if (val && val != this.getCtx().getDefaultFontWeight())
-        ToolkitUtils.setAttrNullNS(elem, 'font-weight', val);
-      else ToolkitUtils.removeAttrNullNS(elem, 'font-weight');
+        ToolkitUtils.setAttrNullNS(elem, FONT_WEIGHT, val);
+      else ToolkitUtils.removeAttrNullNS(elem, FONT_WEIGHT);
 
       //NOTE: svg does not recognize css "text-align" attribute,
       //call alignCenter, alignLeft, alignRight... if needed.
@@ -13094,6 +13159,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // For an svg custom tooltip, the context is the new svg context for the svg document overlay.
     tooltip.innerHTML = ''; // @HTMLUpdateOK
     var context = this._context.createContext(tooltip, 'DvtCustomTooltip');
+    context.removeSizingSvg();
     this._storedContexts[this._domElementId] = context;
   };
 
@@ -14919,6 +14985,45 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   };
 
   /**
+   * @param {array} itemContexts
+   * @param {string} value
+   * @param {string} start
+   * @param {string} end
+   * @return {object}
+   **/
+   EventFactory.newTimelineMoveEvent = function (
+    itemContexts,
+    value,
+    start,
+    end
+  ) {
+    var ret = EventFactory.newEvent('move');
+    ret['itemContexts'] = itemContexts;
+    ret['value'] = value;
+    ret['start'] = start;
+    ret['end'] = end;
+    return ret;
+  };
+
+  /**
+   * @param {array} itemContexts
+   * @param {string} value
+   * @param {string} start
+   * @param {string} end
+   * @param {string} type
+   * @return {object}
+   **/
+  EventFactory.newTimelineResizeEvent = function (itemContexts, value, start, end, type) {
+    var ret = EventFactory.newEvent('resize');
+    ret['itemContexts'] = itemContexts;
+    ret['value'] = value;
+    ret['start'] = start;
+    ret['end'] = end;
+    ret['typeDetail'] = type;
+    return ret;
+  };
+
+  /**
    * @param {number} viewportStart The start value of the viewport.
    * @param {number} viewportEnd The end value of the viewport.
    * @param {string} minorAxisScale The scale value of the minor axis.
@@ -15709,6 +15814,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
   MultilineText.prototype.setMaxLines = function (maxLines) {
     // Ignore values of 0 or less
     if (maxLines > 0) return this.SetProperty('maxLines', maxLines);
+    return null;
   };
 
   /**
@@ -15874,8 +15980,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       ) {
         var range = lineHeight * (lineCount - 1);
         adjustment = lineHeight * i - range / 2;
-      } else if (this._vertAlign == MultilineText.V_ALIGN_BOTTOM)
+      } else if (this._vertAlign == MultilineText.V_ALIGN_BOTTOM){
         adjustment = -lineHeight * (lineCount - i - 1);
+      }
 
       entry.setY(yCoord + adjustment);
     }
@@ -15972,9 +16079,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         // String doesn't fit at all, remove from parent and return
         this.getParent().removeChild(this);
         return false;
-      } else if (!this._textInstance.isTruncated())
-        // No truncation needed, text fits in one line.
+      } else if (!this._textInstance.isTruncated()){ // No truncation needed, text fits in one line.
         return true;
+      }
       else if (!this.isWrapEnabled()) { // Accept text that fits partially and turn on truncated flag
         this._bTruncated = true;
         return true;
@@ -16010,11 +16117,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     // 1. Wrap only on new line characters. Each line truncates according to maxWidth parameter.
     // 2. Wrap between words as needed. Number of lines is dictated by the maxHeight parameter.
     //    The final line will truncate if we have used all the given space
+    var currentLine;
     if (this._preserveNewLine) {
       var atLeastOneLineFits = false;
       var previousLine = null;
       for (var i = 0; i < this._preservedLines.length; i++) {
-        var currentLine = this._preservedLines[i];
+        currentLine = this._preservedLines[i];
 
         // Consider text truncated and return if we still have a line, but not enough availHeight
         if (availHeight < lineSpace + lineHeight) {
@@ -16040,7 +16148,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       }
       return atLeastOneLineFits;
     } else {
-      var currentLine = this._textInstance;
+      currentLine = this._textInstance;
       var currentString = null;
       var lastTruncatedLine = null;
       var lastTruncatedString = null;
@@ -16185,7 +16293,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {boolean} wrapEnabled
    */
   MultilineText.prototype.setWrapEnabled = function (wrapEnabled) {
-    if (wrapEnabled == false) {
+    if (!wrapEnabled) {
       if (this._textInstance.getParent() != this) this.addChild(this._textInstance);
 
       if (!this._textInstance.getTextString()) this._textInstance.setTextString(this.getTextString());
@@ -16201,7 +16309,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @return {boolean}
    */
   MultilineText.prototype.isWrapEnabled = function () {
-    return this._noWrap == false;
+    return !this._noWrap;
   };
 
   //// Functions added so that MultilineText can be used in the same instances as OutputText
@@ -16346,16 +16454,22 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
   /**
    * Base class for JSON components.
+   * @param {dvt.Context} context The rendering context.
+   * @param {string} callback The function that should be called to dispatch component events.
+   * @param {object} callbackObj The optional object instance on which the callback function is defined.
    * @class
    * @constructor
    * @extends {Container}
    */
-  const BaseComponent = function () {
+  const BaseComponent = function (context, callback, callbackObj, doNotInit) {
     // Components should implement newInstance factory methods instead of exposing contructors.
+    // TODO: Replace doNotInit when fixing JET-48705; called from DvtChart and DvtChartDataChange
+    if (!doNotInit) {
+      this.Init(context, callback, callbackObj);
+    }
   };
 
   Obj.createSubclass(BaseComponent, Container);
-
   /**
    * Initializes the component.
    * @param {dvt.Context} context The rendering context.
@@ -16714,6 +16828,22 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       text.setAriaProperty('hidden', null);
     }
     return text;
+  };
+
+  /**
+   * Specifies whether there is a context menu defined on the component
+   * @param {boolean} hasMenu
+   */
+   BaseComponent.prototype.setContextMenu = function (hasMenu) {
+    this._hasContextMenu = hasMenu;
+  };
+
+  /**
+   * Returns whether the component has a context menu
+   * @return {boolean}
+   */
+   BaseComponent.prototype.hasContextMenu = function () {
+    return this._hasContextMenu;
   };
 
   /**
@@ -17274,7 +17404,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @constructor
    */
   const EventManager = function (context, callback, callbackObj, component) {
-    this.Init(context, callback, callbackObj);
+    this.Init(context, callback, callbackObj, component);
   };
 
   Obj.createSubclass(EventManager, Obj);
@@ -18594,12 +18724,14 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
   /**
    * @param {dvt.Obj} dlo The logical object to process selection on
+   * @param {boolean} onlySelect Only perform a selection event, not a deselection event
    * @private
    */
-  EventManager.prototype._processTouchSelection = function (dlo) {
+  EventManager.prototype._processTouchSelection = function (dlo, onlySelect) {
     var bSelectionChanged = false;
     var selectionHandler = this.getSelectionHandler(dlo);
-    if (selectionHandler && dlo && dlo.isSelectable && dlo.isSelectable()) {
+    // If onlySelect is true and object already selected, don't process selection
+    if (selectionHandler && dlo && dlo.isSelectable && dlo.isSelectable() && !(onlySelect && dlo.isSelected())) {
       // Process click immediately
       bSelectionChanged = selectionHandler.processClick(dlo, true);
       // If the selection has changed, fire an event
@@ -19362,7 +19494,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     var touchX = touch.pageX;
     var touchY = touch.pageY;
 
-    this._processTouchSelection(obj);
+    this._processTouchSelection(obj, this._component ? this._component.hasContextMenu() : null);
 
     this._processActionPopup(targetObj, new Point(touchX, touchY));
   };
@@ -23634,7 +23766,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       inDirection,
       minScale,
       duration,
-      0.3 * fadeOut.getDuration() + delay
+      0.3 + delay //add fadeOut.getDuration() after it is implemented e.g 0.3 * fadeOut.getDuration() + delay
     );
 
     DvtCombinedAnimScaleFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
@@ -25209,6 +25341,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
       ToolkitUtils.setAttrNullNS(hollowMarker, 'width', this.getX2() - this.getX1());
       ToolkitUtils.setAttrNullNS(hollowMarker, 'height', height);
       var color = stroke.getColor();
+      const STROKE_OPACITY = 'stroke-opacity';
       if (color) {
         var alpha = stroke.getAlpha();
         // Workaround for Safari where versions < 5.1 draw rgba values as black
@@ -25218,13 +25351,13 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
           if (alpha != null)
             ToolkitUtils.setAttrNullNS(
               hollowMarker,
-              'stroke-opacity',
+              STROKE_OPACITY,
               ColorUtils.getAlpha(color) * alpha
             );
-          else ToolkitUtils.setAttrNullNS(hollowMarker, 'stroke-opacity', ColorUtils.getAlpha(color));
+          else ToolkitUtils.setAttrNullNS(hollowMarker, STROKE_OPACITY, ColorUtils.getAlpha(color));
         } else {
           ToolkitUtils.setAttrNullNS(hollowMarker, 'stroke', color);
-          if (alpha != null) ToolkitUtils.setAttrNullNS(hollowMarker, 'stroke-opacity', alpha);
+          if (alpha != null) ToolkitUtils.setAttrNullNS(hollowMarker, STROKE_OPACITY, alpha);
         }
       }
       ToolkitUtils.setAttrNullNS(hollowMarker, 'fill', '#ffffff');
@@ -26625,7 +26758,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     if (hollow) {
       this._imageContainer = this._elem.parentNode;
       this._imageContainer.removeChild(this._elem);
-    } else if (!hollow && this._imageContainer) this._imageContainer.appendChild(this._elem);
+    } else if (this._imageContainer) this._imageContainer.appendChild(this._elem);
   };
 
   /**
@@ -26729,8 +26862,12 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @class
    * @constructor
    */
-  const Polygon = function (context, arPoints, id) {
-    this.Init(context, arPoints, id);
+  const Polygon = function (context, arPoints, id, doNotInit) {
+    // Temp soln to prevent super from DvtChartBar to call init when doNotRender is true
+    // TODO:: JET-48705: make more permanent fix when Polygon is changed to es6 class
+    if (!doNotInit) {
+      this.Init(context, arPoints, id);
+    }
   };
 
   Obj.createSubclass(Polygon, DvtPolygonalShape);
@@ -27454,12 +27591,14 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
   /**
    * Base class for JSON component defaults.
+   * @param {object} defaultsMap A map of the skin names to the JSON of defaults.
+   * @param {dvt.Context} context The rendering context.
    * @class
    * @constructor
    * @extends {dvt.Obj}
    */
-  const BaseComponentDefaults = function () {
-    this.Init();
+  const BaseComponentDefaults = function (defaultsMap, context) {
+    this.Init(defaultsMap, context);
   };
 
   Obj.createSubclass(BaseComponentDefaults, Obj);
@@ -27622,7 +27761,7 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @return {number} The animation duration.
    */
   BaseComponentDefaults.prototype.getAnimationDuration = function (options) {
-    return options['styleDefaults'] ? options['styleDefaults']['animationDuration'] : null;
+    return options['styleDefaults'] && options['styleDefaults']['animationDuration'] ? options['styleDefaults']['animationDuration'] : options['animationDuration'] ? options['animationDuration']: null;
   };
 
   /**
@@ -29227,9 +29366,15 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    *  @param {Object} dvtComponent
    *  @constructor
    */
-  const Automation = function (dvtComponent) {};
+  const Automation = function (dvtComponent) {
+    this.Init(dvtComponent);
+  };
 
   Obj.createSubclass(Automation, Obj);
+
+  Automation.prototype.Init = function (dvtComponent) {
+    this._comp = dvtComponent;
+  };
 
   /**
    * @const

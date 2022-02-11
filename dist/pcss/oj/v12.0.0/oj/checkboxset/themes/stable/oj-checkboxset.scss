@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../label/themes/stable/_oj-label.cssvars.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+
+@import "_oj-checkboxset.cssvars.scss";
+
+@import "../../../radio-checkbox/themes/stable/_oj-radiocheckbox.servervars.scss";
+// checkboxset and radioset are defined in one file
+@import "../../../radioset/themes/stable/oj-radioset.scss";

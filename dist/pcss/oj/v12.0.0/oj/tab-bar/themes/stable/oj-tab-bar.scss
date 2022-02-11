@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../animation/themes/stable/oj-animation.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../button/themes/stable/oj-button.scss";
+@import "../../../menu/themes/stable/oj-menu.scss";
+
+@import "_oj-tab-bar.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-tab-bar.scss";
+// scoped cssvars override
+@import "_oj-tab-bar-scoped.cssvars.scss";
+
+@include module-include-once("stable.tabbar") {
+    
+    .oj-tabbar-overflow-item-icon {
+       @extend .oj-fwk-icon-dots-vertical;
+    }
+}

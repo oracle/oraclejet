@@ -1,0 +1,43 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example icon-circle/themes/redwood/oj-icon-circle.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+
+// include dependencies
+@include module-include-once("common.icon") {
+  .oj-icon-circle {
+    border-radius: 50%;
+    border: 0px solid transparent;
+    box-sizing: border-box;
+    display: inline-block;
+  }
+
+  .oj-icon-circle-inner {
+    border-radius: 50%;
+    color: var(--oj-avatar-text-color);
+    background-color: var(--oj-avatar-bg-color);
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    background-size: 175px 175px;
+    position: relative;
+  }
+
+  
+  /*Don't need to specify medium size since it is the default*/
+  .oj-icon-circle-inner {
+    height: var(--oj-avatar-size);
+    width: var(--oj-avatar-size);
+    font-size: 2rem;
+  }
+
+  
+}

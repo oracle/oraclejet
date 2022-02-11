@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.palette.scoped") {
+  
+  /* palette                    */
+  /* -------------------------- */
+.oj-contrast-marker,
+.oj-color-invert {
+  
+  --oj-palette-brand-rgb-10:     254, 249, 233;
+  --oj-palette-brand-rgb-20:     253, 244, 223;
+  --oj-palette-brand-rgb-30:     252, 239, 203;
+  --oj-palette-brand-rgb-40:     247, 224, 161;
+  --oj-palette-brand-rgb-50:     240, 204, 113;
+  --oj-palette-brand-rgb-60:     213, 179, 100;
+  --oj-palette-brand-rgb-70:     199, 165, 93;
+  --oj-palette-brand-rgb-80:     179, 149, 84;
+  --oj-palette-brand-rgb-90:     157, 130, 73;
+  --oj-palette-brand-rgb-100:    137, 114, 63;
+  --oj-palette-brand-rgb-110:    113, 94, 52;
+  --oj-palette-brand-rgb-120:    113, 94, 52;
+  --oj-palette-brand-rgb-130:    102, 85, 47;
+  --oj-palette-brand-rgb-140:    91, 74, 41;
+  --oj-palette-brand-rgb-150:    79, 66, 36;
+  --oj-palette-brand-rgb-160:    64, 54, 29;
+  --oj-palette-brand-rgb-170:    55, 44, 24;
+}
+}

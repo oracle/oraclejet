@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -720,11 +720,7 @@ var __oj_legend_section_metadata =
    * <code>
    * &lt;oj-legend
    *  orientation='vertical'
-   *  sections='[{"items": [
-   *              {"text": "Database"},
-   *              {"text": "Middleware"},
-   *              {"text": "Application"}
-   *            ]}]'
+   *  data='[[dataProvider]]'
    * >
    * &lt;/oj-legend>
    * </code>
@@ -746,6 +742,7 @@ var __oj_legend_section_metadata =
    *
    * {@ojinclude "name":"rtl"}
    */
+
   oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
     {
       widgetEventPrefix: 'oj',
@@ -1177,7 +1174,7 @@ var __oj_legend_section_metadata =
 
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
-        return ojlegendToolkit.Legend.newInstance(context, callback, callbackObj);
+        return new ojlegendToolkit.Legend(context, callback, callbackObj);
       },
 
 
@@ -1401,14 +1398,12 @@ var __oj_legend_section_metadata =
         if (ret) {
           // Support for getSection(sectionIndex)
           ret.getSection = function (sectionIndex) {
-            var section = ret.sections ? ret.sections[sectionIndex] : null;
-            return section;
+            return ret.sections ? ret.sections[sectionIndex] : null;
           };
 
           // Support for getSection(itemIndex)
           ret.getItem = function (itemIndex) {
-            var item = ret.items ? ret.items[itemIndex] : null;
-            return item;
+            return ret.items ? ret.items[itemIndex] : null;
           };
         }
         return ret;

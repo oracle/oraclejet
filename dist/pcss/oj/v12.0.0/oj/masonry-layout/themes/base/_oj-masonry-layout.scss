@@ -1,0 +1,131 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example masonry-layout/themes/redwood/oj-masonry-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.masonrylayout") {
+  /* masonrylayout */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-masonry-layout:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-masonry-layout {
+    display: block;
+  }
+
+  //applied to the root element
+  .oj-masonrylayout {
+    //specify min size so that it's always greater than 0 and the component
+    //can get notified of resizes
+    min-height: 1px;
+    min-width: 1px;
+    position: relative;
+  }
+
+  /* masonry tile */
+
+  .oj-masonrylayout-tile {
+    box-sizing: border-box;
+    position: absolute;
+  }
+
+  .oj-masonrylayout .oj-masonrylayout-tile {
+    position: absolute;
+  }
+
+  .oj-masonrylayout-tile.oj-drop {
+    background-color: var(--oj-core-drag-drop-color-1);
+    border: 1px solid var(--oj-core-drag-drop-color-2);
+
+    opacity: 0.75;
+  }
+  .oj-masonrylayout-tile.oj-drag {
+    opacity: 0.75;
+  }
+
+  //transition start state applied before tile is inserted
+  .oj-masonrylayout-tile-transition-show-from {
+    opacity: 0;
+  }
+
+  //generate the default tile size classes
+
+  @include oj-masonrylayout-tile-sizes(
+    $baseTileWidth: var(--oj-masonry-layout-tile-width),
+    $baseTileHeight: var(--oj-masonry-layout-tile-height),
+    $margin: calc(var(--oj-panel-gutter) / 2)
+  );
+
+  // animation defaults
+  $masonryLayoutAnimationDefaults: ();
+
+  @if ($privateMasonryLayoutInsertAnimation) {
+    $masonryLayoutAnimationDefaults: map-merge(
+      $masonryLayoutAnimationDefaults,
+      (
+        insert: $privateMasonryLayoutInsertAnimation
+      )
+    );
+  }
+
+  @if ($privateMasonryLayoutRemoveAnimation) {
+    $masonryLayoutAnimationDefaults: map-merge(
+      $masonryLayoutAnimationDefaults,
+      (
+        remove: $privateMasonryLayoutRemoveAnimation
+      )
+    );
+  }
+
+  @if ($privateMasonryLayoutMoveAnimation) {
+    $masonryLayoutAnimationDefaults: map-merge(
+      $masonryLayoutAnimationDefaults,
+      (
+        move: $privateMasonryLayoutMoveAnimation
+      )
+    );
+  }
+
+  @if ($privateMasonryLayoutResizeAnimation) {
+    $masonryLayoutAnimationDefaults: map-merge(
+      $masonryLayoutAnimationDefaults,
+      (
+        resize: $privateMasonryLayoutResizeAnimation
+      )
+    );
+  }
+
+  @if ($privateMasonryLayoutReorderAnimation) {
+    $masonryLayoutAnimationDefaults: map-merge(
+      $masonryLayoutAnimationDefaults,
+      (
+        reorder: $privateMasonryLayoutReorderAnimation
+      )
+    );
+  }
+
+  // option defaults
+  $masonryLayoutDefaultOptions: ();
+
+  @if ($masonryLayoutAnimationDefaults) {
+    $masonryLayoutDefaultOptions: map-merge(
+      $masonryLayoutDefaultOptions,
+      (
+        animation: $masonryLayoutAnimationDefaults
+      )
+    );
+  }
+
+  // component default options selector
+  .oj-masonrylayout-option-defaults {
+    font-family: oj-json-from-map($masonryLayoutDefaultOptions) !important;
+  }
+}

@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
+@import "../../../panel/themes/stable/_oj-panel.cssvars.scss";
+// todo: seems odd this is relying on list box
+@import "../../../list-box/themes/stable/_oj-list-box.cssvars.scss";
+@import "../../../messages/themes/stable/_oj-messages.cssvars.scss";
+
+  @include module-include-once("stable.variables.datetimepicker") {
+
+:root {
+
+
+  // TODO: Break this up into separate files: date-time-picker, date-picker, time-picker, etc.
+
+
+
+  // datepicker
+  // --------------------------
+  
+  --oj-date-picker-cell-font-size:               var(--oj-typography-body-sm-font-size);
+  --oj-date-picker-cell-border-color-today:      rgb(var(--oj-palette-neutral-rgb-160));
+
+
+}
+
+}

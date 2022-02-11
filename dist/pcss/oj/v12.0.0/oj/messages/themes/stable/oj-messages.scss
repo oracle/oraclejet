@@ -1,0 +1,95 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../popup/themes/stable/oj-popup.scss";
+@import "../../../message/themes/stable/oj-message.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-messages.servervars.scss";
+@import "_oj-messages.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-messages.scss";
+
+  @include module-include-once("stable.messages") {
+    
+    //INDIVIDUAL MESSAGE OVERRIDES
+    //////////////////////////////
+    
+    .oj-messages-inline .oj-message-header {
+      padding: 1rem 0.5rem 0.5rem 1rem;
+ 
+      @include oj-rtl {
+        padding: 1rem 1rem 0.5rem 0.5rem;
+      }
+    }
+
+    .oj-messages-inline .oj-message-no-detail .oj-message-header {
+      padding: 1rem 0.5rem 1rem 1rem;
+ 
+      @include oj-rtl {
+        padding: 1rem 1rem 1rem 0.5rem;
+      }
+    }
+    
+    .oj-messages-inline .oj-message-container:not(.oj-message-no-detail) .oj-message-body {
+      padding: 0 3rem 1rem 2.5rem;
+ 
+      @include oj-rtl {
+        padding: 0 2.5rem 1rem 3rem;
+      }
+    }
+
+    .oj-messages-inline .oj-message-container.oj-message-no-icon:not(.oj-message-no-detail) .oj-message-body {
+      padding: 0 3rem 1rem 1rem;
+ 
+      @include oj-rtl {
+        padding: 0 1rem 1rem 3rem;
+      }
+    }
+
+    /* These are stable values being hard-coded. Create vars for these if needed. */
+    .oj-messages-general .oj-message-header,
+    .oj-messages-notification .oj-message-header {
+      padding: 0.5rem 1rem 0 1rem;
+    }
+
+    .oj-messages-general .oj-message-container.oj-message-no-icon.oj-message-no-detail .oj-message-header,
+    .oj-messages-notification .oj-message-container.oj-message-no-icon.oj-message-no-detail .oj-message-header {
+      padding: 1rem;
+    }
+
+    .oj-messages-general .oj-message-container.oj-message-no-detail:not(.oj-message-no-icon) .oj-message-header,
+    .oj-messages-notification .oj-message-container.oj-message-no-detail:not(.oj-message-no-icon) .oj-message-header {
+      padding: 0.5rem 1rem;
+    }
+    
+    /* These are stable values being hard-coded. Create vars for these if needed. */
+    .oj-messages-general .oj-message-body,
+    .oj-messages-notification .oj-message-body {
+      padding: 0 3.75rem 1rem 2.5rem;
+ 
+      @include oj-rtl {
+        padding: 0 2.5rem 1rem 3.75rem;
+      }
+    }
+
+    .oj-messages-general .oj-message-container.oj-message-no-detail:not(.oj-message-no-icon) .oj-message-body,
+    .oj-messages-notification .oj-message-container.oj-message-no-detail:not(.oj-message-no-icon) .oj-message-body {
+      padding: 0;
+    }
+
+    .oj-messages-general .oj-message-container.oj-message-no-icon.oj-message-no-detail .oj-message-body,
+    .oj-messages-notification .oj-message-container.oj-message-no-icon.oj-message-no-detail .oj-message-body {
+      padding: 0;
+    }
+
+  }

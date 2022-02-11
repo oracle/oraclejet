@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2218,7 +2218,7 @@ var __oj_row_expander_metadata =
    * @since 1.0.0
    *
    * @ojrole button
-   * @ojshortdesc Enable hierarchical data to be displayed in a JET Table and JET DataGrid.
+   * @ojshortdesc Enable hierarchical data to be displayed in a JET Table.
    * @ojsignature [{
    *                target: "Type",
    *                value: "class ojRowExpander<K, D> extends baseComponent<ojRowExpanderSettableProperties<K,D>>",
@@ -2495,8 +2495,10 @@ var __oj_row_expander_metadata =
           this.component = ojcomponentcore.__GetWidgetConstructor(widgetElem)('instance');
         }
         this.datasource = context.datasource;
-        if (this._isDataProvider()) {
+
+        if (!this._subscribed && this._isDataProvider()) {
           this._subscribeToDataProvider();
+          this._subscribed = true;
         }
 
         // root hidden so subtract 1
@@ -2518,42 +2520,9 @@ var __oj_row_expander_metadata =
         this._addIndentation();
         this._addIcon();
         this._setIconStateClass();
-
-        // listen for key down event from host component
-        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-        this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
-
-        if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
-          this.toucharea.addEventListener('touchend', this._touchEndListener.bind(this));
-          this.toucharea.addEventListener('click', this._clickListener.bind(this));
-          this.element[0].addEventListener('keypress', this._keyPressListener.bind(this));
-
-          // listens for expand and collapse event from flattened datasource
-          // this could be due to user clicks, keyboard shortcuts or programmatically
-          this.handleExpandCallback = this._handleExpandEvent.bind(this);
-          this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
-
-          if (!this._isDataProvider()) {
-            // addEventListener not supported on datasource
-            this.datasource.on('expand', this.handleExpandCallback, this);
-            this.datasource.on('collapse', this.handleCollapseCallback, this);
-          }
-
-          // if expanded option is explicitly specified, make sure it's in sync with current state
-          this._initExpanded();
-        } else if (this.iconState === 'leaf') {
+        if (this.iconState === 'leaf') {
           // we'll still need to handle ctrl+alt+5 for leaf node
           this.icon.setAttribute('tabindex', -1);
-        }
-
-        // listen for active key change event from host component
-        this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-
-        // These on methods need to stay jquery because were relying on jquery additions in the call
-        if (this.component._IsCustomElement()) {
-          $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        } else {
-          $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
         }
       },
       /**
@@ -2729,7 +2698,52 @@ var __oj_row_expander_metadata =
         this.element.empty();
         this._initContent();
       },
+      /**
+       * Sets up resources after creation
+       * @protected
+       * @override
+       * @memberof oj.ojRowExpander
+       */
+      _SetupResources: function () {
+        this._super();
+        this._setupResources();
+      },
+      /**
+       * Releases resources after creation
+       * @protected
+       * @override
+       * @memberof oj.ojRowExpander
+       */
+      _ReleaseResources: function () {
+        this._super();
+        this._releaseResources();
+      },
+      /**
+       * Releases resources after creation
+       * @private
+       * @memberof oj.ojRowExpander
+       */
+      _releaseResources: function () {
+        this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
+        this.toucharea.removeEventListener('touchend', this._touchEndListener);
+        this.toucharea.removeEventListener('click', this._clickListener);
+        this.element[0].removeEventListener('keypress', this._keyPressListener);
 
+        if (this.component._IsCustomElement()) {
+          $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+        } else {
+          $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        }
+
+        // unregister expand/collapse events
+        if (this._isDataProvider()) {
+          this._subscribed = false;
+          this._dataProviderSubscription.unsubscribe();
+        } else {
+          this.datasource.off('expand', this.handleExpandCallback, this);
+          this.datasource.off('collapse', this.handleCollapseCallback, this);
+        }
+      },
       /**
        * destroy the row expander
        *
@@ -2744,29 +2758,54 @@ var __oj_row_expander_metadata =
        */
       _destroy: function () {
         // unregister keydown and active key change handlers
-        this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
-        this.toucharea.removeEventListener('touchend', this._touchEndListener);
-        this.toucharea.removeEventListener('click', this._clickListener);
-        this.element[0].removeEventListener('keypress', this._keyPressListener);
-
-        if (this.component._IsCustomElement()) {
-          $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        } else {
-          $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        }
-
-        // unregister expand/collapse events
-        if (this._isDataProvider()) {
-          this._dataProviderSubscription.unsubscribe();
-        } else {
-          this.datasource.off('expand', this.handleExpandCallback, this);
-          this.datasource.off('collapse', this.handleCollapseCallback, this);
-        }
-
+        this._super();
+        this._releaseResources();
         this.element[0].classList.remove(this.classNames.root);
         this.element.empty();
       },
+      /**
+      * @memberof oj.ojRowExpander
+      * @private
+      */
+      _setupResources: function () {
+        if (!this._subscribed && this._isDataProvider()) {
+          this._subscribeToDataProvider();
+          this._subscribed = true;
+        }
 
+        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
+        this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
+        if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
+          this.toucharea.addEventListener('touchend', this._touchEndListener.bind(this));
+          this.toucharea.addEventListener('click', this._clickListener.bind(this));
+          this.element[0].addEventListener('keypress', this._keyPressListener.bind(this));
+
+          // listens for expand and collapse event from flattened datasource
+          // this could be due to user clicks, keyboard shortcuts or programmatically
+          this.handleExpandCallback = this._handleExpandEvent.bind(this);
+          this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
+
+          if (!this._isDataProvider()) {
+            // addEventListener not supported on datasource
+            this.datasource.on('expand', this.handleExpandCallback, this);
+            this.datasource.on('collapse', this.handleCollapseCallback, this);
+          }
+        }
+        // listen for active key change event from host component
+        this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
+
+        // These on methods need to stay jquery because were relying on jquery additions in the call
+        if (this.component._IsCustomElement()) {
+          $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+        } else {
+          $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        }
+
+        if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
+          // if expanded option is explicitly specified, make sure it's in sync with current state
+          this._initExpanded();
+        }
+      },
       _subscribeToDataProvider: function () {
         var self = this;
         var observable = this._getFlattenedDataProvider().getExpandedObservable();
@@ -2801,7 +2840,6 @@ var __oj_row_expander_metadata =
           }
         });
       },
-
       /**
        * Expand the current row expander
        * @return {boolean} true if the expand is processed, false if it's a no op.
@@ -2820,7 +2858,6 @@ var __oj_row_expander_metadata =
         }
         return false;
       },
-
       /**
        * Collapse the current row expander
        * @return {boolean} true if the collapse is processed, false if it's a no op.
@@ -2839,7 +2876,6 @@ var __oj_row_expander_metadata =
         }
         return false;
       },
-
       /**
        * Sets a single option value
        * @param {Object} key the option key
@@ -2866,7 +2902,6 @@ var __oj_row_expander_metadata =
           this.refresh();
         }
       },
-
       /**
        * Add the indentation spacers to the row
        * @private
@@ -2886,7 +2921,6 @@ var __oj_row_expander_metadata =
           }
         }
       },
-
       /**
        * Append appropriate spacer based on depth to the row expander
        * @param {number} depth the depth
@@ -2894,11 +2928,10 @@ var __oj_row_expander_metadata =
        */
       _appendSpacer: function (depth) {
         var spacer = document.createElement('span');
-            spacer.classList.add(this.classNames.indent);
-            spacer.classList.add(this.classNames['depth' + depth]);
+        spacer.classList.add(this.classNames.indent);
+        spacer.classList.add(this.classNames['depth' + depth]);
         this.element[0].appendChild(spacer); // @HTMLUpdateOK
       },
-
       /**
        * Add an icon to the row expander with appropriate class names for a clickable icon.
        * @private
@@ -2915,7 +2948,7 @@ var __oj_row_expander_metadata =
         this.icon.classList.add(this.classNames.icon);
         this.icon.classList.add(this.classNames.clickable);
         this.icon.setAttribute('aria-label',
-                this.getTranslatedString('accessibleLevelDescription', { level: this.depth }));
+          this.getTranslatedString('accessibleLevelDescription', { level: this.depth }));
         this.toucharea.appendChild(this.icon); // @HTMLUpdateOK
         iconSpacer.appendChild(this.toucharea); // @HTMLUpdateOK
         this.element[0].appendChild(iconSpacer); // @HTMLUpdateOK
@@ -2926,7 +2959,6 @@ var __oj_row_expander_metadata =
           applyHighlight: true
         });
       },
-
       /**
        * Add a class name on the icon
        * @private
@@ -2935,7 +2967,6 @@ var __oj_row_expander_metadata =
       _addIconClass: function (classKey) {
         this.icon.classList.add(this.classNames[classKey]);
       },
-
       /**
        * Remove a class name on the icon
        * @private
@@ -2944,7 +2975,6 @@ var __oj_row_expander_metadata =
       _removeIconClass: function (classKey) {
         this.icon.classList.remove(this.classNames[classKey]);
       },
-
       /**
        * Set the icon class to the the iconState property
        * @private
@@ -2972,7 +3002,6 @@ var __oj_row_expander_metadata =
             break;
         }
       },
-
       /**
        * Removes the icon class of the iconState property
        * @private
@@ -2998,7 +3027,6 @@ var __oj_row_expander_metadata =
             break;
         }
       },
-
       /**
        * Handles active key change event from host component (ojDataGrid or ojTable)
        * @param {Event} event
@@ -3056,8 +3084,8 @@ var __oj_row_expander_metadata =
        */
       _handleKeyDownEvent: function (event) {
         var targetContext =
-            ojcomponentcore.__GetWidgetConstructor(this.component.element[0])('getContextByNode',
-                                                                                event.target);
+          ojcomponentcore.__GetWidgetConstructor(this.component.element[0])('getContextByNode',
+            event.target);
         var rowKey;
         if (targetContext == null) {
           var currentRow = this.component.options.currentRow;
@@ -3098,7 +3126,7 @@ var __oj_row_expander_metadata =
                       ancestorInfo.push({
                         key: ancestors[i],
                         label: this.getTranslatedString('accessibleLevelDescription',
-                                                        { level: i + 1 })
+                          { level: i + 1 })
                       });
                     }
                   }
@@ -3119,7 +3147,6 @@ var __oj_row_expander_metadata =
           }
         }
       },
-
       /**
        * Put row expander in a loading state.  This is called during expand/collapse.
        * @private
@@ -3129,7 +3156,6 @@ var __oj_row_expander_metadata =
         this.iconState = 'loading';
         this._setIconStateClass();
       },
-
       /**
        * Handle an expand event coming from the datasource,
        * update the icon and the aria-expand property
@@ -3155,7 +3181,6 @@ var __oj_row_expander_metadata =
           }
         }
       },
-
       /**
        * Handle a collapse event coming from the datasource,
        * update the icon and the aria-expand property
@@ -3181,7 +3206,6 @@ var __oj_row_expander_metadata =
           }
         }
       },
-
       /**
        * Update the expanded option
        * @param {boolean} expanded
@@ -3189,9 +3213,8 @@ var __oj_row_expander_metadata =
        */
       _updateExpandedState: function (expanded) {
         this.option('expanded', expanded,
-                    { changed: true, _context: { internalSet: true, writeback: true } });
+          { changed: true, _context: { internalSet: true, writeback: true } });
       },
-
       /**
        * Update context state
        * @param {string} newState
@@ -3241,7 +3264,6 @@ var __oj_row_expander_metadata =
           }
         }
       },
-
       /**
        * Sets the icon's aria-expanded property to the boolean passed in
        * @param {boolean|null} bool true if expanded false if not
@@ -3250,7 +3272,6 @@ var __oj_row_expander_metadata =
       _ariaExpanded: function (bool) {
         this.icon.setAttribute('aria-expanded', bool);
       },
-
       // @inheritdoc
       getNodeBySubId: function (locator) {
         if (locator == null) {
@@ -3259,13 +3280,12 @@ var __oj_row_expander_metadata =
 
         var subId = locator.subId;
         if ((subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') &&
-            this.icon != null) {
+          this.icon != null) {
           return this.icon;
         }
         // Non-null locators have to be handled by the component subclasses
         return null;
       },
-
       // @inheritdoc
       getSubIdByNode: function (node) {
         if (node === this.icon) {
@@ -3273,7 +3293,6 @@ var __oj_row_expander_metadata =
         }
         return null;
       },
-
       _NotifyAttached: function () {
         this._super();
         this.icon.setAttribute('aria-labelledby', this._getLabelledBy());

@@ -1062,6 +1062,27 @@ export interface ojDiagramSettableProperties<K1, K2, D1 extends ojDiagram.Node<K
 export interface ojDiagramSettablePropertiesLenient<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> extends Partial<ojDiagramSettableProperties<K1, K2, D1, D2>> {
     [key: string]: any;
 }
+export interface ojDiagramChildContent {
+    addEventListener<T extends keyof ojDiagramChildContentEventMap>(type: T, listener: (this: HTMLElement, ev: ojDiagramChildContentEventMap[T]) => any, options?: (boolean |
+       AddEventListenerOptions)): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
+    getProperty<T extends keyof ojDiagramChildContentSettableProperties>(property: T): ojDiagramChildContent[T];
+    getProperty(property: string): any;
+    setProperty<T extends keyof ojDiagramChildContentSettableProperties>(property: T, value: ojDiagramChildContentSettableProperties[T]): void;
+    setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojDiagramChildContentSettableProperties>): void;
+    setProperties(properties: ojDiagramChildContentSettablePropertiesLenient): void;
+}
+// These interfaces are empty but required to keep the event chain intact. Avoid lint-rule
+// tslint:disable-next-line no-empty-interface
+export interface ojDiagramChildContentEventMap extends HTMLElementEventMap {
+}
+// These interfaces are empty but required to keep the component chain intact. Avoid lint-rule
+// tslint:disable-next-line no-empty-interface
+export interface ojDiagramChildContentSettableProperties extends JetSettableProperties {
+}
+export interface ojDiagramChildContentSettablePropertiesLenient extends Partial<ojDiagramChildContentSettableProperties> {
+    [key: string]: any;
+}
 export interface ojDiagramLink<K1 = any, K2 = any, D2 = any> extends dvtBaseComponent<ojDiagramLinkSettableProperties<K1, K2, D2>> {
     categories?: string[];
     color?: string;
@@ -1257,6 +1278,7 @@ export interface ojDiagramNodeSettablePropertiesLenient<K1 = any, D1 = any> exte
     [key: string]: any;
 }
 export type DiagramElement<K1, K2, D1 extends ojDiagram.Node<K1> | any, D2 extends ojDiagram.Link<K2, K1> | any> = ojDiagram<K1, K2, D1, D2>;
+export type DiagramChildContentElement = ojDiagramChildContent;
 export type DiagramLinkElement<K1 = any, K2 = any, D2 = any> = ojDiagramLink<K1, K2, D2>;
 export type DiagramNodeElement<K1 = any, D1 = any> = ojDiagramNode<K1, D1>;
 export namespace DiagramElement {
@@ -1555,6 +1577,9 @@ export interface DiagramIntrinsicProps extends Partial<Readonly<ojDiagramSettabl
     ontrackResizeChanged?: (value: ojDiagramEventMap<any, any, any, any>['trackResizeChanged']) => void;
     children?: ComponentChildren;
 }
+export interface DiagramChildContentIntrinsicProps extends Partial<Readonly<ojDiagramChildContentSettableProperties>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
+    children?: ComponentChildren;
+}
 export interface DiagramLinkIntrinsicProps extends Partial<Readonly<ojDiagramLinkSettableProperties<any, any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     oncategoriesChanged?: (value: ojDiagramLinkEventMap<any, any, any>['categoriesChanged']) => void;
     oncolorChanged?: (value: ojDiagramLinkEventMap<any, any, any>['colorChanged']) => void;
@@ -1587,6 +1612,7 @@ declare global {
     namespace preact.JSX {
         interface IntrinsicElements {
             "oj-diagram": DiagramIntrinsicProps;
+            "oj-diagram-child-content": DiagramChildContentIntrinsicProps;
             "oj-diagram-link": DiagramLinkIntrinsicProps;
             "oj-diagram-node": DiagramNodeIntrinsicProps;
         }

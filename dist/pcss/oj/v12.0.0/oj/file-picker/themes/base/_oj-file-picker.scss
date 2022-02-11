@@ -1,0 +1,99 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example file-picker/themes/redwood/oj-file-picker.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.filepicker") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-file-picker:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-filepicker {
+    display: inline-block;
+  }
+
+  .oj-filepicker-no-trigger.oj-filepicker {
+    max-width: 400px;
+    width: 100%;
+    display: block;
+  }
+
+  .oj-filepicker-container {
+    height: 100%;
+  }
+
+  .oj-filepicker-disabled,
+  .oj-filepicker-dropzone {
+    justify-content: space-between;
+
+    // vertically center containing items
+    align-items: center;
+    box-sizing: border-box;
+    border-radius: var(--oj-file-picker-border-radius);
+    padding: 1.5rem;
+    border-style: dashed;
+    border-width: var(--oj-file-picker-border-width);
+    height: 100%;
+  }
+
+  .oj-filepicker-disabled {
+    background-color: var(--oj-core-color-disabled-1);
+    border-color: transparent;
+  }
+  .oj-filepicker-dropzone {
+    background-color: var(--oj-core-bg-color-content);
+    border-color: var(--oj-file-picker-border-color);
+  }
+  .oj-filepicker-dropzone.oj-invalid-drop {
+    border-color: var(--oj-core-danger-1);
+  }
+
+  .oj-filepicker-dropzone:active {
+    background-color: var(--oj-core-bg-color-active);
+  }
+
+  .oj-filepicker-dropzone.oj-valid-drop {
+    background-color: var(--oj-core-bg-color-hover);
+  }
+
+  .oj-filepicker-dropzone:hover:not(.oj-filepicker-disabled) {
+    background-color: var(--oj-core-bg-color-hover);
+    cursor: pointer;
+  }
+
+  /* 
+     * Suppress focus ring
+     */
+  .oj-filepicker-dropzone:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  .oj-filepicker-dropzone:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-filepicker-text {
+    font-size: var(--oj-typography-body-xl-font-size);
+    font-weight: bold;
+    color: var(--oj-core-text-color-primary);
+    margin-bottom: 6px;
+  }
+
+  .oj-filepicker-secondary-text {
+    font-size: var(--oj-typography-body-sm-font-size);
+    line-height: var(--oj-typography-body-sm-line-height);
+    color: var(--oj-core-text-color-secondary);
+  }
+
+  .oj-filepicker-disabled .oj-filepicker-text,
+  .oj-filepicker-disabled .oj-filepicker-secondary-text {
+    color: var(--oj-core-text-color-disabled);
+  }
+}

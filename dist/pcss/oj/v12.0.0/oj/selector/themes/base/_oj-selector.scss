@@ -1,0 +1,86 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example selector/themes/redwood/oj-selector.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.selector") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-selector:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // enabled un selected icon
+  .oj-selector:active .oj-selector-wrapper:not(.oj-selected):not(.oj-indeterminate),
+  .oj-selector .oj-selector-wrapper:not(.oj-selected):not(.oj-indeterminate),
+  .oj-selector:hover .oj-selector-wrapper:not(.oj-selected):not(.oj-indeterminate) {
+    @extend .oj-fwk-icon-checkbox-off !optional;
+    color: var(--oj-radio-checkbox-input-color-unselected);
+  }
+  
+  // enabled selected icon
+  .oj-selector .oj-selector-wrapper.oj-selected,
+  .oj-selector:active .oj-selector-wrapper.oj-selected,
+  .oj-selector:hover .oj-selector-wrapper.oj-selected {
+    @extend .oj-fwk-icon-checkbox-on !optional;
+    color: var(--oj-radio-checkbox-input-color-selected);
+  }
+
+  // enabled indeterminate icon
+  .oj-selector:hover .oj-selector-wrapper.oj-indeterminate,
+  .oj-selector .oj-selector-wrapper.oj-indeterminate,
+  .oj-selector:active .oj-selector-wrapper.oj-indeterminate {
+    @extend .oj-fwk-icon-checkbox-mixed !optional;
+    color: var(--oj-radio-checkbox-input-color-unselected);
+  }
+
+  // transition animation
+  .oj-selector:active .oj-selector-wrapper:not(.oj-selected):not(.oj-indeterminate)::before,
+  .oj-selector:active .oj-selector-wrapper.oj-selected::before,
+  .oj-selector:active .oj-selector-wrapper.oj-indeterminate::before {
+    transform: var(--oj-radio-checkbox-input-transform-active);
+    transition: transform 0.15s var(--oj-animation-ease-in-out);
+  }
+  
+  // turn off the focus when using the mouse
+  .oj-selector .oj-selector-wrapper:focus-within:not(.oj-focus-highlight) {
+    outline: none;
+  }
+
+  .oj-selector .oj-selector-wrapper:focus-within {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  .oj-selector {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .oj-selector .oj-selector-wrapper {
+    display: inline-block;
+    white-space: normal;
+    line-height: 1;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .oj-selector .oj-selector-wrapper .oj-selectorbox {
+    width: 2.75rem;
+    height: 2.75rem;
+    opacity: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}

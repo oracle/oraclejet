@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -80,7 +80,7 @@ let Selector = class Selector extends Component {
                 : getTranslatedString('oj-ojSelector.checkboxAriaLabelUnselected'));
         return (h(Root, { class: 'oj-selector' },
             h("span", { class: spanClass },
-                h("input", { type: 'checkbox', class: 'oj-selectorbox oj-clickthrough-disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }))));
+                h("input", { type: 'checkbox', class: 'oj-selectorbox', "data-oj-clickthrough": 'disabled', "aria-label": ariaLabel, "aria-labelledby": ariaLabelledby, checked: isSelected, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onClick: this._checkboxListener }))));
     }
     _isSelected(rowKey) {
         const { selectedKeys, selectionMode } = this.props;

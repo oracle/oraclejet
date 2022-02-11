@@ -23,18 +23,18 @@ js/libs/jquery/jqueryui-amd-1.12.1/position.js                                MI
 js/libs/jquery/jqueryui-amd-1.12.1/sortable.js                                MIT
 js/libs/jquery/jqueryui-amd-1.12.1/widget.js                                  MIT
 js/libs/knockout/knockout-3.5.1.js                                            MIT
-js/libs/knockout/knockout-mapping-latest.js                                   MIT
-js/libs/oj/v11.1.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
-js/libs/oj/v11.1.0/min/ojexpparser.js (expparser.js)                    MIT
-js/libs/oj/v11.1.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
-js/libs/oj/v11.1.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
-js/libs/oj/v11.1.0/min/ojtree.js (jsTree.js)                            MIT
-js/libs/oj/v11.1.0/ojL10n.js (requireJS i18n)                           MIT
+js/libs/oj/v12.0.0/min/ojcspexpressionevaluator.js (cspexpressionevaluator.js)   MIT
+js/libs/oj/v12.0.0/min/ojexpparser.js (expparser.js)                    MIT
+js/libs/oj/v12.0.0/min/ojknockout.js (knockout-fast-foreach.js)         MIT
+js/libs/oj/v12.0.0/min/ojmessagebanner.js (Ramda)                       MIT
+js/libs/oj/v12.0.0/min/ojselectcombobox.js (Select2.js)                 Apache 2.0
+js/libs/oj/v12.0.0/min/ojtree.js (jsTree.js)                            MIT
+js/libs/oj/v12.0.0/ojL10n.js (requireJS i18n)                           MIT
 js/libs/proj4js/dist/proj4.js                                                 Proj4js
 js/libs/require/require.js                                                    MIT
 js/libs/require/text.js                                                       MIT
 js/libs/require-css/css.min.js (require-css)                                  MIT
-scss/oj/v11.1.0/3rdparty/normalize/normalize.scss                       MIT
+scss/oj/v12.0.0/3rdparty/normalize/normalize.scss                       MIT
 js/libs/touchr/touchr.js                                                      MIT
 js/libs/preact/dist/preact.umd.js                                             MIT
 
@@ -84,7 +84,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- 
+
 
 
 
@@ -217,7 +217,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. 
+THE SOFTWARE.
 
 
 jsTree 1.0-rc3   http://jstree.com/
@@ -238,7 +238,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. 
+THE SOFTWARE.
 
 
 select2.js
@@ -332,7 +332,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-RequireJS text 2.0.15 
+RequireJS text 2.0.15
 http://github.com/requirejs/text
 Copyright jQuery Foundation and other contributors, https://jquery.org/
 
@@ -402,7 +402,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-Preact - v10.5.13
+Preact - v10.5.15
 
 The MIT License (MIT)
 Copyright (c) 2015-present Jason Miller
@@ -424,6 +424,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+Ramda v0.27.1
+https://github.com/ramda/ramda
+
+The MIT License (MIT)
+
+Copyright (c) 2013-2020 Scott Sauyet and Michael Hurley
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 
 ========================= Apache-2.0 =========================
@@ -687,4 +713,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

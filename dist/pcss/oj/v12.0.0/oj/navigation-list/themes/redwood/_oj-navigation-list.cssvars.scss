@@ -1,0 +1,66 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../toolbar/themes/redwood/_oj-toolbar.cssvars.scss";
+@import "../../../tree-view/themes/redwood/_oj-tree-view.cssvars.scss";
+@import "../../../menu/themes/redwood/_oj-menu.cssvars.scss";
+
+  @include module-include-once("redwood.variables.navigationlist") {
+
+:root {
+  // nav list
+  // ----------------------------
+  --oj-navigation-list-font-size:                          var(--oj-typography-body-md-font-size);
+  --oj-navigation-list-icon-size:                          var(--oj-core-icon-size-lg);
+  --oj-navigation-list-font-weight:                        600;
+  --oj-navigation-list-icon-margin:                        0;
+  
+  --oj-navigation-list-sliding-heading-font-size:          var(--oj-typography-subheading-xs-font-size);
+  --oj-navigation-list-sliding-heading-font-weight:        var(--oj-typography-subheading-xs-font-weight);
+  --oj-navigation-list-sliding-heading-line-height:        var(--oj-typography-subheading-xs-line-height);
+
+  --oj-navigation-list-icon-to-text-padding:               0.5rem;
+
+  --oj-navigation-list-item-min-height:                    3rem;
+  
+  --oj-navigation-list-item-margin:                        2rem;
+  
+  --oj-private-navigation-list-item-border-width:          3px;
+
+  --oj-navigation-list-item-padding:                       0;
+  
+
+  // default
+  --oj-navigation-list-item-label-color:               var(--oj-core-text-color-secondary);
+  
+  // hover
+  --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary);
+  --oj-navigation-list-item-bg-color-hover:                    transparent;
+  --oj-private-navigation-list-item-border-color-hover:        transparent;
+
+  // selected
+  --oj-navigation-list-item-bg-color-selected:                 transparent;
+  --oj-navigation-list-item-border-color-selected:             rgb(var(--oj-palette-brand-rgb-110));
+  --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary);
+
+  //---------------Animations-------------------
+  --oj-private-navigation-list-global-horizontal-add-animation-default: '[{"effect":"expand","direction":"width"},"fadeIn"]';
+  --oj-private-navigation-list-global-horizontal-remove-animation-default: '[{"effect":"collapse","direction":"width","persist":"all"},"fadeOut"]';
+  --oj-private-navigation-list-global-add-animation-default: '[{"effect":"expand"},"fadeIn"]';
+  --oj-private-navigation-list-global-remove-animation-default: '[{"effect":"collapse"},"fadeOut"]';
+  --oj-private-navigation-list-global-update-animation-default: '{"effect":"fadeIn"}';
+  --oj-private-navigation-list-global-expand-animation-default: '{"effect":"expand"}';
+  --oj-private-navigation-list-global-collapse-animation-default: '{"effect":"collapse"}';
+  // $privateAnimationDurationMedium hardcoded
+  --oj-private-navigation-list-global-slider-expand-animation-default: '{"effect":"slideIn","direction":"start","duration":"0.4s"}';
+  --oj-private-navigation-list-global-slider-collapse-animation-default: '{"effect":"slideIn","direction":"end","duration":"0.4s"}';
+  --oj-private-navigation-list-global-pointer-up-animation-default: '{"effect":"ripple"}';
+  //------Options----------------
+  --oj-private-navigation-list-global-hierarchy-menu-threshold-default: -1;
+
+}
+
+}

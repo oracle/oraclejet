@@ -1,0 +1,129 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example toolbar/themes/redwood/oj-toolbar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@include module-include-once("common.toolbar") {
+  /* toolbar*/
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-toolbar:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-toolbar {
+    // Buttonset having display inline-flex introduces strange white spaces above and below when placed in toolbar
+    // Change toolbar to have flex display to fix this
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.25em 0; //as per spec padding is only needed on top and bottom
+    border-style: solid;
+    border-color: var(--oj-core-divider-color);
+    border-width: 0;
+  }
+
+  // override button margins
+  .oj-toolbar .oj-button {
+    margin-bottom: 0; //override hardcoded 4px in ojbutton
+  }
+
+  .oj-toolbar > .oj-button:not(:first-child),
+  .oj-toolbar > .oj-buttonset:not(:first-child) {
+    
+      margin-inline-start: var(--oj-toolbar-button-margin);
+  }
+
+  .oj-toolbar > .oj-button:not(:last-child),
+  .oj-toolbar > .oj-buttonset:not(:last-child) {
+   
+    margin-inline-end: var(--oj-toolbar-button-margin);
+    
+  }
+
+  .oj-toolbar .oj-button:not(:first-child).oj-button-half-chrome,
+  .oj-toolbar .oj-buttonset:not(:first-child).oj-button-half-chrome {
+  
+      margin-inline-start: var(--oj-toolbar-borderless-button-margin);
+   }
+
+  .oj-toolbar .oj-button:not(:last-child).oj-button-half-chrome,
+  .oj-toolbar .oj-buttonset:not(:last-child).oj-button-half-chrome {
+   
+    margin-inline-end : var(--oj-toolbar-borderless-button-margin);
+    
+  }
+
+  /* Apps can apply this class to a span to get a toolbar separator.  
+     * To make it accessible, the span should also have 
+     * role="separator" aria-orientation="vertical".
+     * Separators should be placed around any buttonsets in the toolbar, and 
+     * anywhere else in the toolbar that a separator is desirable.
+     */
+  .oj-toolbar-separator {
+    border-left: solid 1px var(--oj-core-divider-color);
+    height: 1.833em; // spec says 22px
+    display: inline-block;
+    vertical-align: middle;
+
+    // margin-left for the separator.
+    // Has to be margin, not padding, since the border is the separator.
+
+    margin: 0 var(--oj-toolbar-separator-margin);
+  }
+
+  /* To layout multiple toolbars, an element with .oj-toolbars can contain 1 or more elements 
+       each having .oj-toolbar-row, which can each contain 1 or more JET Toolbars 
+       (which have the oj-toolbar class). */
+
+  .oj-toolbars {
+    border-style: solid;
+    border-color: var(--oj-core-divider-color);
+  }
+
+  .oj-toolbar-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  // when a toolbar is inside a toolbar row the toolbar row will do the chroming, if any
+  .oj-toolbar-row .oj-toolbar {
+    display: flex;
+    border: 0;
+  }
+
+  // inside a toolbar row put a vertical separator (border) between two adjacent toolbars
+  .oj-toolbar-row .oj-toolbar + .oj-toolbar {
+    border-radius: 0;
+    border-inline-start-color:var(--oj-core-divider-color);
+    border-inline-start-width: 1px;
+    border-inline-start-style:   solid;
+    // Since the "toolbar divider" is a 1px border of second toolbar container,
+    // the margin-left is the spacing on the left side of the divider,
+    // and the padding-left is the spacing on the right side of the divider.
+    margin-inline-start: 0.5em; // 6px as per spec
+    padding-inline-start: 0.5em; // 6px as per spec
+   }
+
+  // put a horizontal separator between two toolbar rows
+  .oj-toolbar-row + .oj-toolbar-row {
+    border-top: 1px solid var(--oj-core-divider-color);
+  }
+
+  /* Apps can apply this class if a top toolbar border is desired */
+  .oj-toolbar-top-border {
+    border-top-width: 1px;
+    border-radius: 0;
+  }
+
+  /* Apps can apply this class if a bottom toolbar border is desired */
+  .oj-toolbar-bottom-border {
+    border-bottom-width: 1px;
+    border-radius: 0;
+  }
+}

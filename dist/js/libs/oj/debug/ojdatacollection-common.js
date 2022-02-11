@@ -1,13 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exports, $, oj, DomUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojkeyboardfocus-utils'], function (exports, oj, DomUtils, Logger, ojkeyboardfocusUtils) { 'use strict';
 
-  $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
 
   /**
@@ -51,32 +50,16 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @private
    */
   DataCollectionUtils.getFocusableElementsInNode = function (node, skipVisibilityCheck) {
-    var inputElems = [];
+    return ojkeyboardfocusUtils.getFocusableElementsInNode(node, skipVisibilityCheck);
+  };
 
-    // a nodes without href are not focusable
-    var agentInfo = oj.AgentUtils.getAgentInfo();
-    var check = true;
-    if (oj.AgentUtils.BROWSER.IE === agentInfo.browser) {
-      if (node.parentNode == null) {
-        check = false;
-      }
-    }
-    if (check) {
-      var nodes = node.querySelectorAll(DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY);
-      var nodeCount = nodes.length;
-      // in IE, each 'option' after 'select' elem will be counted as an input element(and cause duplicate input elems returned)
-      // this will cause problem with TAB/Shift-TAB (recognizing whether to go to next cell or to tab within the current cell
-      for (var i = 0; i < nodeCount; i++) {
-        var elem = nodes[i];
-        if (!elem.disabled && (skipVisibilityCheck || elem.style.display !== 'none')) {
-          var tabIndex = parseInt(elem.getAttribute(DataCollectionUtils._TAB_INDEX), 10);
-          if (isNaN(tabIndex) || tabIndex >= 0) {
-            inputElems.push(elem);
-          }
-        }
-      }
-    }
-    return inputElems;
+  /**
+   * Check if the specified element is visible
+   * @param {Element} element
+   * @private
+   */
+  DataCollectionUtils.checkVisibility = function (element) {
+    return ojkeyboardfocusUtils.checkVisibility(element);
   };
 
   /**
@@ -85,10 +68,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @private
    */
   DataCollectionUtils.disableElement = function (element) {
-    var tabIndex = parseInt(element.getAttribute(DataCollectionUtils._TAB_INDEX), 10);
-    // store the tabindex as an attribute
-    element.setAttribute(DataCollectionUtils._DATA_OJ_TABMOD, tabIndex); // @HTMLUpdateOK
-    element.setAttribute(DataCollectionUtils._TAB_INDEX, -1); // @HTMLUpdateOK
+    ojkeyboardfocusUtils.disableElement(element);
   };
 
   /**
@@ -96,22 +76,16 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @param {Element} element
    * @param {boolean=} skipVisibilityCheck
    * @param {boolean=} excludeActiveElement
+   * @param {boolean=} includeReadonly
    * @return {Element[]} An array of the disabled elements
    * @private
    */
   DataCollectionUtils.disableAllFocusableElements = function (element, skipVisibilityCheck,
-    excludeActiveElement) {
-    var disabledElems = [];
-    // make all focusable elements non-focusable, since we want to manage tab stops
-    var focusElems = DataCollectionUtils.getFocusableElementsInNode(element, skipVisibilityCheck);
-    for (var i = 0; i < focusElems.length; i++) {
-      if (!excludeActiveElement || focusElems[i] !== document.activeElement) {
-        DataCollectionUtils.disableElement(focusElems[i]);
-        disabledElems.push(focusElems[i]);
-      }
-    }
-    return disabledElems;
+    excludeActiveElement, includeReadonly) {
+      return ojkeyboardfocusUtils.disableAllFocusableElements(element, skipVisibilityCheck, excludeActiveElement,
+                                         includeReadonly);
   };
+
   /**
    * Enable all focusable elements within the specified element that were previously disabled
    * @param {Element} element
@@ -119,19 +93,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @private
    */
   DataCollectionUtils.enableAllFocusableElements = function (element) {
-    // make all non-focusable elements focusable again
-    var focusElems = element.querySelectorAll('[' + DataCollectionUtils._DATA_OJ_TABMOD + ']');
-    for (var i = 0; i < focusElems.length; i++) {
-      var tabIndex = parseInt(focusElems[i].getAttribute(DataCollectionUtils._DATA_OJ_TABMOD), 10);
-      focusElems[i].removeAttribute(DataCollectionUtils._DATA_OJ_TABMOD);
-      // restore tabIndex as needed
-      if (isNaN(tabIndex)) {
-        focusElems[i].removeAttribute(DataCollectionUtils._TAB_INDEX);
-      } else {
-        focusElems[i].setAttribute(DataCollectionUtils._TAB_INDEX, tabIndex); // @HTMLUpdateOK
-      }
-    }
-    return focusElems;
+    return ojkeyboardfocusUtils.enableAllFocusableElements(element);
   };
 
   /**
@@ -727,22 +689,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
    * @return the logical popup element if one has been launched from within the component, null otherwise.
    */
   DataCollectionUtils.getLogicalChildPopup = function (componentElement) {
-    var popups = oj.ZOrderUtils.findOpenPopups();
-    for (var i = 0; i < popups.length; i++) {
-      // Get the launcher of the popup.
-      // popups[i] is just a wrapper with the real popup as its child.
-      var popupElem = popups[i].firstElementChild;
-      var launcher = DomUtils.getLogicalParent($(popupElem));
-
-      // Check if the component contains the launcher
-      if (launcher != null && $(componentElement).has(launcher.get(0)).length > 0) {
-        // only return the popup if the child popup is currently open
-        if (oj.ZOrderUtils.getStatus(popupElem) === oj.ZOrderUtils.STATUS.OPEN) {
-          return popupElem;
-        }
-      }
-    }
-    return null;
+    return ojkeyboardfocusUtils.getLogicalChildPopup(componentElement);
   };
 
   /**
@@ -765,6 +712,65 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
     return (bounds.top >= top && bounds.bottom <= bottom);
   };
 
+  /**
+   * Helper method to complete data and metadata if either is missing from an event.
+   * @param {Object} dataProvider
+   * @param {Event} eventDetail event detail from dataprovider mutation event.
+   */
+  DataCollectionUtils.getEventDetail = function (dataProvider, eventDetail) {
+    // need to verify keys if we have a DataProvider that supports non-iteration 'fetchByKeys'
+    return new Promise((resolve) => {
+      if (eventDetail.data && eventDetail.metadata) {
+        resolve(eventDetail);
+      } else {
+        const capability = dataProvider.getCapability('fetchByKeys');
+        if (capability && capability.implementation === 'lookup') {
+          dataProvider
+            .fetchByKeys({ keys: new Set(eventDetail.keys), scope: 'global' })
+            .then((fetchByKeysResult) => {
+              eventDetail.data = [];
+              eventDetail.metadata = [];
+              eventDetail.keys.forEach((key) => {
+                const fetchByKeysValue = fetchByKeysResult.results.get(key);
+                eventDetail.data.push(fetchByKeysValue.data);
+                eventDetail.metadata.push(fetchByKeysValue.metadata);
+              });
+              resolve(eventDetail);
+            }, (reason) => {
+              // something bad happened, return null.
+              Logger.error('Error fetching event detail due to fetchByKeys: ' + reason);
+              resolve(null);
+            });
+        } else {
+          // cant validate due to capability, return null
+          Logger.error('Error fetching event detail due to fetchByKeys: capability');
+          resolve(null);
+        }
+      }
+    });
+  };
+
+  /**
+   * Check for SDP-specific internal flag - not a public API
+   */
+  DataCollectionUtils.isIterateAfterDoneNotAllowed = function (dataProvider) {
+    if (dataProvider && dataProvider.getCapability) {
+      var capability = dataProvider.getCapability('fetchFirst');
+      if (capability && capability.iterateAfterDone === 'notAllowed') {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Whether browser supports requestIdleCallback
+   */
+  DataCollectionUtils.isRequestIdleCallbackSupported = function () {
+    return window.requestIdleCallback != null && window.cancelIdleCallback != null &&
+      window.IdleDeadline != null;
+  };
+
   const applyMergedInlineStyles = DataCollectionUtils.applyMergedInlineStyles;
   const applyStyleObj = DataCollectionUtils.applyStyleObj;
   const areKeySetsEqual = DataCollectionUtils.areKeySetsEqual;
@@ -778,6 +784,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
   const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
   const isElementOrAncestorFocusable = DataCollectionUtils.isElementOrAncestorFocusable;
+  const isIterateAfterDoneNotAllowed = DataCollectionUtils.isIterateAfterDoneNotAllowed;
   const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
   const getLogicalChildPopup = DataCollectionUtils.getLogicalChildPopup;
   const getNoJQFocusHandlers = DataCollectionUtils.getNoJQFocusHandlers;
@@ -804,6 +811,8 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   const CHECKVIEWPORT_THRESHOLD = DataCollectionUtils.CHECKVIEWPORT_THRESHOLD;
   const calculateOffsetTop = DataCollectionUtils.calculateOffsetTop;
   const isElementInScrollerBounds = DataCollectionUtils.isElementInScrollerBounds;
+  const getEventDetail = DataCollectionUtils.getEventDetail;
+  const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
 
   exports.CHECKVIEWPORT_THRESHOLD = CHECKVIEWPORT_THRESHOLD;
   exports.KEYBOARD_KEYS = KEYBOARD_KEYS;
@@ -819,6 +828,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   exports.enableAllFocusableElements = enableAllFocusableElements;
   exports.getAddEventKeysResult = getAddEventKeysResult;
   exports.getDefaultScrollBarWidth = getDefaultScrollBarWidth;
+  exports.getEventDetail = getEventDetail;
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
   exports.getFocusableElementsIncludingDisabled = getFocusableElementsIncludingDisabled;
   exports.getLogicalChildPopup = getLogicalChildPopup;
@@ -839,9 +849,11 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojdomutils'], function (exp
   exports.isF2KeyEvent = isF2KeyEvent;
   exports.isFromDefaultSelector = isFromDefaultSelector;
   exports.isHomeKeyEvent = isHomeKeyEvent;
+  exports.isIterateAfterDoneNotAllowed = isIterateAfterDoneNotAllowed;
   exports.isLetterAKeyEvent = isLetterAKeyEvent;
   exports.isMobileTouchDevice = isMobileTouchDevice;
   exports.isNumberFiveKeyEvent = isNumberFiveKeyEvent;
+  exports.isRequestIdleCallbackSupported = isRequestIdleCallbackSupported;
   exports.isSpaceBarKeyEvent = isSpaceBarKeyEvent;
   exports.isTabKeyEvent = isTabKeyEvent;
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -79,7 +79,7 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'ojs/ojdomutils', 'ojs/ojdataco
                 classString += ' oj-focus-highlight';
             }
             const tabIndex = (_a = props.tabIndex) !== null && _a !== void 0 ? _a : 0;
-            return (preact.h(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: 'button', onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onMouseMove: this._handleMove, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
+            return (preact.h(ojvcomponent.Root, Object.assign({ tabIndex: tabIndex, class: classString, role: 'button', onKeyUp: this._handleKeyup, onMouseUp: this._handleUpEnd, onKeyDown: this._handleKeydown, onMouseDown: this._handleStart, onTouchStart: this._handleStart, onTouchEnd: this._handleUpEnd, onTouchCancel: this._handleTouchcancel, onTouchMove: this._handleMove, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout }, {
                 onojAction: this._handleOjAction
             }, { ref: this._rootRef }), this.props.children));
         }

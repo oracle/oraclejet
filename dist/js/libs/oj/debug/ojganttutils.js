@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -84,7 +84,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojthemeutils'], function (exports, oj
     var GANTT_CLASS = 'oj-gantt';
     var DVT_BASE_CLASS = 'oj-dvtbase';
     var TIMEAXIS_DEFAULT_INTERVAL_HEIGHT = 21; // from DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_HEIGHT
-    var TIMEAXIS_DEFAULT_INTERVAL_PADDING = 2; // from DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING
+    var TIMEAXIS_DEFAULT_INTERVAL_PADDING = 4; // from DvtTimeAxisStyleUtils.DEFAULT_INTERVAL_PADDING
     var BORDER_WIDTH = 1;
 
     var dummyParent = document.createElement('div');

@@ -17,7 +17,7 @@ declare class ListItemLayoutProps {
     navigation?: Slot;
 }
 export declare class ListItemLayout extends Component<ExtendGlobalProps<ListItemLayoutProps>> {
-    private _hasContent;
+    private readonly _hasContent;
     private _getWrappedSlotContent;
     private _getWrappedSlotContentWithClickThroughDisabled;
     render(props: ExtendGlobalProps<ListItemLayoutProps>): h.JSX.Element;

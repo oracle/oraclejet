@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -10,8 +10,8 @@ import $ from 'jquery';
 import Context from 'ojs/ojcontext';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { fadeOut, fadeIn } from 'ojs/ojanimation';
-import { log, error, info } from 'ojs/ojlogger';
-import { calculateOffsetTop, getDefaultScrollBarWidth, isElementInScrollerBounds } from 'ojs/ojdatacollection-common';
+import { log, info, error } from 'ojs/ojlogger';
+import { isRequestIdleCallbackSupported, calculateOffsetTop, getDefaultScrollBarWidth, isElementInScrollerBounds, isIterateAfterDoneNotAllowed } from 'ojs/ojdatacollection-common';
 import DomScroller from 'ojs/ojdomscroller';
 import KeySet from 'ojs/ojset';
 import KeyMap from 'ojs/ojmap';
@@ -144,7 +144,8 @@ DataProviderContentHandler.prototype.GetKey = function (element) {
 };
 
 DataProviderContentHandler.prototype.FindElementByKey = function (key) {
-  var children = $(this.m_root).find('.' + this.m_widget.getItemElementStyleClass());
+  // the later selector is for cards that are in the process of insert animation
+  var children = this.m_root.querySelectorAll('.' + this.m_widget.getItemElementStyleClass() + ', .oj-listview-temp-item.oj-listview-card-animated');
   for (var i = 0; i < children.length; i++) {
     var elem = children[i];
     // use == for the string number compare case
@@ -326,7 +327,7 @@ DataProviderContentHandler.prototype.replaceItem =
  */
 DataProviderContentHandler.prototype._addOrReplaceItem =
   function (item, position, parentElement, index, data, metadata, templateEngine, callback,
-    restoreFocus, itemMetaData) {
+    restoreFocus, itemMetaData, replaceChildCallback) {
     if (callback == null) {
       // eslint-disable-next-line no-param-reassign
       callback = this.afterRenderItem.bind(this);
@@ -360,14 +361,18 @@ DataProviderContentHandler.prototype._addOrReplaceItem =
       var bindingContext = this.GetBindingContext(context);
       var as = this.m_widget.getAs ? this.m_widget.getAs() : null;
       var nodes = templateEngine.execute(componentElement, templateElement, bindingContext, as);
-      var tagName = this.GetChildElementTagName();
-      for (var i = 0; i < nodes.length; i++) {
-        if (nodes[i].tagName === tagName) {
-          parentElement.replaceChild(nodes[i], item);
-          isCustomizeItem = true;
-          break;
-        } else {
-          item.appendChild(nodes[i]);
+      if (replaceChildCallback) {
+        isCustomizeItem = replaceChildCallback(nodes);
+      } else {
+        var tagName = this.GetChildElementTagName();
+        for (var i = 0; i < nodes.length; i++) {
+          if (nodes[i].tagName === tagName) {
+            parentElement.replaceChild(nodes[i], item);
+            isCustomizeItem = true;
+            break;
+          } else {
+            item.appendChild(nodes[i]);
+          }
         }
       }
     } else {
@@ -439,7 +444,14 @@ DataProviderContentHandler.prototype.afterRenderItem = function (item, context) 
 
   // if there's only one element inside the item and it is focusable, set
   // the role on it instead
-  var elem = this.m_widget.getSingleFocusableElement($item);
+  var groupItemStyleClass = this.m_widget.getGroupItemStyleClass();
+  var elem;
+  // in the case where group item is already present
+  if (item.firstElementChild && item.firstElementChild.classList.contains(groupItemStyleClass)) {
+    elem = this.m_widget.getSingleFocusableElement($(item.firstElementChild));
+  } else {
+    elem = this.m_widget.getSingleFocusableElement($item);
+  }
 
   if (this.shouldUseGridRole()) {
     if (context.leaf != null && !context.leaf) {
@@ -560,20 +572,22 @@ DataProviderContentHandler.prototype._processEventQueue = function () {
   var event;
 
   if (this.m_eventQueue != null && this.m_eventQueue.length > 0) {
-    // see if we can find a refresh event
+    // see if we can find a refresh event (without keys field which means it's a full refresh)
     for (var i = 0; i < this.m_eventQueue.length; i++) {
-      event = this.m_eventQueue[i];
-      if (event.type === 'refresh') {
-        this.handleModelRefreshEvent(event.event);
+      event = this.m_eventQueue[i].event;
+      if (event.type === 'refresh' && (event.detail == null || event.detail.keys == null)) {
+        this.handleModelRefreshEvent(event);
         // we are done
         return;
       }
     }
 
     // we'll just need to handle one event at a time since processEventQueue will be triggered whenever an event is done processing
-    event = this.m_eventQueue.shift();
+    event = this.m_eventQueue.shift().event;
     if (event.type === 'mutate') {
-      this.handleModelMutateEvent(event.event);
+      this.handleModelMutateEvent(event);
+    } else if (event.type === 'refresh' && event.detail && event.detail.keys) {
+      this.handleModelRefreshEvent(event);
     }
   }
 };
@@ -833,7 +847,8 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
 
   var promises = [];
   keys.forEach(function (key) {
-    if (!keysToAdd.has(key)) {
+    var isKeyToAdd = keysToAdd.has(key);
+    if (!isKeyToAdd) {
       keysToRemove.push(key);
     }
 
@@ -846,7 +861,7 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
       if (elem.parentNode.classList.contains('oj-listview-temp-item')) {
         elem = elem.parentNode;
       }
-      promises.push(self.removeItem(elem));
+      promises.push(self.removeItem(elem, isKeyToAdd));
       self.signalTaskEnd(); // signal removeItem end
     } else {
       log('handleModelRemoveEvent: cannot find item with key ' + key);
@@ -899,9 +914,10 @@ DataProviderContentHandler.prototype.handleModelRemoveEvent = function (event) {
 /**
  * Remove a single item element
  * @param {jQuery|Element} elem the element to remove
+ * @param {boolean} isReinsert if the item to remove is to be re-insert in the same event
  * @protected
  */
-DataProviderContentHandler.prototype.removeItem = function (elem) {
+DataProviderContentHandler.prototype.removeItem = function (elem, isReinsert) {
   var self = this;
   var action = 'remove';
 
@@ -928,7 +944,7 @@ DataProviderContentHandler.prototype.removeItem = function (elem) {
 
   // now hide it
   promise.then(function () {
-    self.handleRemoveTransitionEnd(elem, restoreFocus);
+    self.handleRemoveTransitionEnd(elem, restoreFocus, isReinsert);
     if (self.m_widget) {
       self.m_widget.enableResizeListener();
     }
@@ -947,10 +963,11 @@ DataProviderContentHandler.prototype.removeItem = function (elem) {
  * Handles when remove item animation transition ends
  * @param {Element|jQuery} elem
  * @param {boolean} restoreFocus
+ * @param {boolean} isReinsert
  * @protected
  */
 DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
-  function (elem, restoreFocus) {
+  function (elem, restoreFocus, isReinsert) {
     // this could have been called after listview is destroyed
     if (this.m_widget == null) {
       this.signalTaskEnd();
@@ -966,7 +983,8 @@ DataProviderContentHandler.prototype.handleRemoveTransitionEnd =
     }
 
     // invoke hook before actually removing the item
-    var currentItemUpdated = this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus);
+    var currentItemUpdated = this.m_widget.itemRemoveComplete($elem.get(0), restoreFocus,
+      isReinsert);
 
     // template engine should have already been loaded
     var templateEngine = this.getTemplateEngine();
@@ -1387,7 +1405,7 @@ IteratingDataProviderContentHandler.prototype.Destroy = function (completelyDest
  */
 IteratingDataProviderContentHandler.prototype._cancelIdleCallback = function () {
   if (this.m_idleCallback != null) {
-    if (!window.requestIdleCallback || !window.cancelIdleCallback) {
+    if (!isRequestIdleCallbackSupported()) {
       window.cancelAnimationFrame(this.m_idleCallback);
     } else {
       window.cancelIdleCallback(this.m_idleCallback);
@@ -1998,7 +2016,7 @@ IteratingDataProviderContentHandler.prototype.afterRenderItem =
  */
 IteratingDataProviderContentHandler.prototype._handleScrollerMaxRowCount = function () {
   // TODO: use resource bundle
-  error('max count reached');
+  info('ScrollPolicyOptions max count has been reached.');
 };
 
 /**
@@ -2042,8 +2060,10 @@ IteratingDataProviderContentHandler.prototype._prepareRootElement = function () 
  * @private
  */
 IteratingDataProviderContentHandler.prototype._setFetching = function (fetching) {
-  var root = this.m_superRoot == null ? this.m_root : this.m_superRoot;
-  root.setAttribute('aria-busy', fetching);
+  if (this.shouldUseGridRole()) {
+    var root = this.m_superRoot == null ? this.m_root : this.m_superRoot;
+    root.setAttribute('aria-busy', fetching);
+  }
   this.m_fetching = fetching;
 };
 
@@ -2239,7 +2259,7 @@ IteratingDataProviderContentHandler.prototype._renderItemsWhenIdle =
     }
 
     // IE/legacy Edge/Safari do not support requestIdleCallback, use requestAnimationFrame as fall back
-    if (!window.requestIdleCallback || !window.cancelIdleCallback) {
+    if (!isRequestIdleCallbackSupported()) {
       this.m_idleCallback = window.requestAnimationFrame(function () {
         var fragment = document.createDocumentFragment();
         var oneData = data.shift();
@@ -2598,27 +2618,14 @@ IteratingDataProviderContentHandler.prototype.GetReferenceNode = function (paren
 };
 
 /**
- * @private
- */
-IteratingDataProviderContentHandler.prototype._isIterateAfterDoneNotAllowed = function () {
-  var dataProvider = this.getDataProvider();
-  if (dataProvider && dataProvider.getCapability) {
-    var capability = dataProvider.getCapability('fetchFirst');
-    if (capability && capability.iterateAfterDone === 'notAllowed') {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
  * Gets the maximum index for insert event
  * @private
  */
 IteratingDataProviderContentHandler.prototype._getMaxIndexForInsert = function () {
   var max = Number.MAX_VALUE;
   // temporary solution for SDP
-  if (this._isIterateAfterDoneNotAllowed() && !this.hasMoreToFetch()) {
+  if (isIterateAfterDoneNotAllowed(this.getDataProvider()) &&
+      !this.hasMoreToFetch()) {
     return max;
   }
 
@@ -2666,7 +2673,8 @@ IteratingDataProviderContentHandler.prototype.addItemsForModelInsert =
           index = isBeforeKeys ? index : index + 1;
         } else if (this._isLoadMoreOnScroll()) {
           // if append to the end
-          if (!this._isIterateAfterDoneNotAllowed() || this.hasMoreToFetch()) {
+          if (!isIterateAfterDoneNotAllowed(this.getDataProvider()) ||
+              this.hasMoreToFetch()) {
             index = max;
           }
         }
@@ -2900,8 +2908,10 @@ IteratingDataProviderContentHandler.prototype.disableAllTabbableElements = funct
   busyContext.whenReady().then(function () {
     if (self.m_root != null) {
       var children = self.m_root.children;
-      for (var i = lastItemIndex; i < children.length; i++) {
-        self.m_widget.disableAllTabbableElements(children[i]);
+      for (var i = 0; i < lastItemIndex; i++) {
+        if (children[i]) {
+          self.m_widget.disableAllTabbableElements(children[i]);
+        }
       }
     }
   });

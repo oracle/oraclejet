@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../popup/themes/stable/_oj-layer.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-slider.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-slider.scss"; 
+
+  @include module-include-once("stable.slider") {
+
+ }

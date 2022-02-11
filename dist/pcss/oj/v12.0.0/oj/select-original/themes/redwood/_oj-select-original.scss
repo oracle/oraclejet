@@ -1,0 +1,80 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../list-box/themes/redwood/_oj-list-box.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-select-original.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-select-original.scss";
+
+  @include module-include-once("redwood.select.original") {
+    // In Android, the HTML select has fixed padding before the text.
+    // Need to override $formControlPaddingHorizontal to avoid double padding
+    // or select won't align with other form controls
+    .oj-select-select {
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }    
+    }
+    
+    .oj-select-selected-choice > .oj-component-icon{
+      font-size:1rem;
+    }
+
+    .oj-select .oj-select-multiple-open-icon {
+      display:none;
+    }
+
+    .oj-select .oj-select-select::-ms-expand {
+      display:none;
+    }
+
+    .oj-select-select {
+      -moz-appearance:none;
+    }
+
+    // We want the placeholder style on the select for themes where we render
+    // triggers + dropdowns (iOS and Android), but not for themes where we
+    // render a menulist (Alta and Windows).  (In the latter case, only the
+    // placeholder option is styled).
+    .oj-select-select.oj-select-default[multiple] {
+     
+        color: var(--oj-text-field-placeholder-color);
+        font-style: var(--oj-text-field-placeholder-font-style);      
+
+
+    }
+    // android oj-select-many has a native select element with no icon, so doesn't need the padding-right here.
+    .oj-form-control-text-align-right oj-select-many.oj-select .oj-select-select,
+    oj-select-many.oj-form-control-text-align-right.oj-select .oj-select-select {
+      @include oj-ltr() {
+        padding-right: 0px;
+      }
+    }
+    .oj-form-control-text-align-end oj-select-many.oj-select .oj-select-select,
+    oj-select-many.oj-form-control-text-align-end.oj-select .oj-select-select {
+      @include oj-ltr() {
+        padding-right: 0px;
+      }
+      @include oj-rtl() {
+        padding-left: 0px;
+      }
+    }
+  }

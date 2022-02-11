@@ -1,16 +1,32 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { h, options, createRef, render, cloneElement, Fragment } from 'preact';
+import 'preact/compat';
+import { options, h, createRef, render, Component, cloneElement, Fragment } from 'preact';
+import { toSymbolizedValue, CustomElementUtils, JetElementError, AttributeUtils, transformPreactValue, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
 import { getPropertyMetadata, checkEnumValues, getFlattenedAttributes, deepFreeze } from 'ojs/ojmetadatautils';
-import { JetElementError, CustomElementUtils, AttributeUtils, ElementUtils, CHILD_BINDING_PROVIDER, ElementState } from 'ojs/ojcustomelement-utils';
 import oj from 'ojs/ojcore-base';
-import { OJ_SLOT, OJ_REPLACER, patchSlotParent } from 'ojs/ojpreact-patch';
-import { traceDispatchEvent } from 'ojs/ojtrace-event';
+import { OJ_SLOT_REMOVE, patchSlotParent } from 'ojs/ojpreact-patch';
+
+const injectSymbols = (props, property) => {
+    if (Object.prototype.hasOwnProperty.call(props, property)) {
+        props[property] = toSymbolizedValue(props[property]);
+    }
+};
+const oldVNodeHook = options.vnode;
+options.vnode = (vnode) => {
+    const type = vnode.type;
+    if (typeof type === 'string' && CustomElementUtils.isElementRegistered(type)) {
+        const props = vnode.props;
+        injectSymbols(props, 'value');
+        injectSymbols(props, 'checked');
+    }
+    oldVNodeHook === null || oldVNodeHook === void 0 ? void 0 : oldVNodeHook(vnode);
+};
 
 /**
  * Class decorator for VComponent custom elements. Takes the tag name
@@ -491,7 +507,7 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  * }
  * </code></pre>
  * <p>
- *   Can be converted into a writeback by adding a second property named
+ *   Can be converted into a writeback property by adding a second property named
  *   "onValueChanged":
  * </p>
  * <pre class="prettyprint"><code>import { customElement, ExtendGlobalProps, PropertyChanged } from "ojs/ojvcomponent";
@@ -541,7 +557,7 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  *   component itself.  These are known as
  *   <a href="CustomElementOverview.html#ce-properties-readonlywriteback-section">
  *   read-only writeback properties</a>.
- *   See the <a href="#ElementReadOnly">ElementReadOnly<a> type for info on how
+ *   See the <a href="#ReadOnlyPropertyChanged">ReadOnlyPropertyChanged<a> type for info on how
  *   to configure these properties.
  * </p>
  * <h3 id="observed">
@@ -848,6 +864,51 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  *   example of such a property.
  * </p>
  * <p>
+ *   The ReadOnlyPropertyChanged type is used to identify callback properties that
+ *   notify VComponent consumers of read-only writeback property mutations.
+ *   Read-only writeback property callbacks must adhere to the naming convention of
+ *   "on&lt;PropertyName&gt;Changed", where "PropertyName" is the name of the
+ *   writeback property with the first character converted to upper case.
+ * </p>
+ * <p>
+ *   Note that, unlike normal writeback properties that are declared by pairing
+ *   a normal property declaration with a companion callback property, a read-only
+ *   writeback property is declared solely by its callback property.
+ * </p>
+ * <p>
+ *   Declarations for both forms of writeback properties can be seen below:
+ * </p>
+ * <pre class="prettyprint"><code>type Props = {
+ *
+ *   // The following two fields establish a writeback property
+ *   // named 'value'
+ *   value?: string;
+ *   onValueChanged?: PropertyChanged&lt;string&gt;
+ *
+ *   // The following field establishes a read-only writeback property
+ *   // named 'rawValue'
+ *   onRawValueChanged?: ReadOnlyPropertyChanged&lt;string&gt;
+ * }
+ * </code></pre>
+ * @typedef {Object} ReadOnlyPropertyChanged
+ * @ojexports
+ * @memberof ojvcomponent
+ */
+
+/**
+ * <p>
+ *   By default, writeback property mutations can be driven either by the
+ *   component, typically in response to some user interaction, or by the
+ *   consumer of the component.  In some cases, writeback properties are
+ *   exclusively mutated by the component itself.  Writeback properties
+ *   that cannot be mutated by the consumer are known as
+ *   <a href="CustomElementOverview.html#ce-properties-readonlywriteback-section">
+ *   read-only writeback properties</a>.  The
+ *   <a href="oj.ojInputText.html">&lt;oj-input-text&gt;</a>'s
+ *   <a href="oj.ojInputText.html#rawValue">rawValue</a> property is an
+ *   example of such a property.
+ * </p>
+ * <p>
  *   Read-only writeback properties are declared in a similar manner to
  *   <a href="#writeback">plain old writeback properties</a>, with one important
  *   difference: the ElementReadOnly utility type is used as a marker to
@@ -870,6 +931,7 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  * @typedef {Object} ElementReadOnly
  * @ojexports
  * @memberof ojvcomponent
+ * @ojdeprecated {since: '12.0.0', description: 'Use the ReadOnlyPropertyChanged type instead.'}
  * @ojsignature [{target:"Type", value:"<T>", for:"genericTypeParameters"},
  *               {target: "Type", value: "T"}]
 
@@ -1081,7 +1143,7 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  *   The PropertyChanged type is used to identify callback properties that
  *   notify VComponent consumers of writeback property mutations.
  *   Writeback property callbacks must adhere to the naming convention of
- *   "on<PropertyName>Changed", where "PropertyName" is the name of the
+ *   "on&lt;PropertyName&gt;Changed", where "PropertyName" is the name of the
  *   writeback property with the first character converted to upper case:
  * </p>
  * <pre class="prettyprint"><code>type Props = {
@@ -1089,7 +1151,7 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  *   value?: string;
  *
  *   // This is the corresponding property changed callback
- *   onValueChanged?: PropertyChanged<string>
+ *   onValueChanged?: PropertyChanged&lt;string&gt;;
  * }
  * </code></pre>
  * <p>
@@ -1230,6 +1292,57 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
 
 /**
  * <p>
+ *   Class-based VComponents use the <a href="#customElement">&#64;customElement</a> decorator
+ *   to specify the VComponent's custom element tag name (also known as its full name) and to register the
+ *   the custom element with the JET framework.  However, Function-based VComponents cannot utilize this
+ *   approach because decorators are only supported for classes and their constituent fields.
+ * </p>
+ * <p>
+ *   JET provides an alternate mechanism for registering a functional VComponent and specifying its
+ *   custom element tag name. The registerCustomElement method accepts two arguments:  the custom element
+ *   tag name to be associated with the VComponent, and a reference to the Preact functional component that
+ *   supplies the VComponent implementation.  It returns a higher-order VComponent that is registered with the
+ *   framework using the specified custom element tag name. 
+ * </p>
+ * <p>
+ *   There are some other considerations to keep in mind when implementing functional VComponents:
+ *   <ul>
+ *    <li>Function-based VComponents will typically use an anonymous function to implement their Preact functional
+ *        component, and expose the returned higher-order VComponent as their public API.</li>
+ *    <li>The registration call ensures that the returned higher-order VComponent extends the Preact functional
+ *        component's custom properties with the required global HTML attributes defined by <a href="#GlobalProps">GlobalProps</a>.</li>
+ *    <li>Default custom property values are specified using destructuring assignment syntax in the function implementation.</li>
+ *  </ul>
+ * <p>
+ *   Here is an example:
+ * </p>
+ * <pre class="prettyprint"><code>import { h } from 'preact';
+ * import { registerCustomElement } from 'ojs/ojvcomponent';
+ *
+ * export type Props = Readonly<{
+ *   message?: string;
+ * }>;
+ *
+ * export const DemoFunctionalVComp = registerCustomElement(
+ *   'oj-demo-functional-vcomp',
+ *   ({ message='This is a functional VComponent!' }: Props) => {
+ *     return &lt;div&gt;{message}&lt;/div&gt;;
+ *   }
+ * );
+ * </code></pre>
+ *
+ * @function registerCustomElement
+ * @param {string} tagName The custom element tag name for the registered functional VComponent.
+ * @param {function} functionalComponent The Preact functional component that supplies the VComponent implementation.
+ * @returns {VComponent} Higher-order VComponnent that wraps the Preact functional component.
+ *
+ * @memberof ojvcomponent
+ * @expose
+ * @ojexports
+ */
+ 
+/**
+ * <p>
  *   Root is a Preact component that can be used to wrap the
  *   VComponent's child content.  This component should only be used
  *   for cases where the VComponent needs to control how
@@ -1247,6 +1360,83 @@ import { traceDispatchEvent } from 'ojs/ojtrace-event';
  * @expose
  * @ojexports
  */
+
+let _slotIdCount = 0;
+let _originalCreateElement;
+const _ACTIVE_SLOTS = new Map();
+const _OJ_SLOT_ID = Symbol();
+const _OJ_SLOT_PREFIX = '@oj_s';
+function convertToVNode(hostElement, node, commitQueue, handleSlotMount, handleSlotUnmount) {
+    const key = _getSlotKey(node);
+    const ref = _getRef(hostElement, handleSlotMount, handleSlotUnmount, commitQueue);
+    return h(() => {
+        _registerSlot(key, node);
+        commitQueue.add(() => _unregisterSlot(key));
+        return h(key, { ref, key });
+    }, null);
+}
+function _registerSlot(id, node) {
+    if (_ACTIVE_SLOTS.size === 0) {
+        _patchCreateElement();
+    }
+    _ACTIVE_SLOTS.set(id, node);
+}
+function _unregisterSlot(id) {
+    _ACTIVE_SLOTS.delete(id);
+    if (_ACTIVE_SLOTS.size === 0) {
+        _restoreCreateElement();
+    }
+}
+function _getSlotKey(node) {
+    let key = node[_OJ_SLOT_ID];
+    if (key === undefined) {
+        key = _OJ_SLOT_PREFIX + _slotIdCount++;
+        node[_OJ_SLOT_ID] = key;
+    }
+    return key;
+}
+function _getRef(hostElement, handleSlotMount, handleSlotUnmount, commitQueue) {
+    let _count = 0;
+    let slotNode;
+    const slotRemoveHandler = () => {
+        if (_count === 0) {
+            slotNode.remove();
+            commitQueue.add(() => {
+                if (_count === 0)
+                    handleSlotUnmount(slotNode);
+            });
+        }
+    };
+    return (node) => {
+        if (node != null) {
+            _count++;
+            slotNode = node;
+            slotNode[OJ_SLOT_REMOVE] = slotRemoveHandler;
+            const parent = node.parentElement;
+            patchSlotParent(parent);
+            handleSlotMount(node);
+        }
+        else {
+            _count--;
+            if (_count < 0) {
+                throw new JetElementError(hostElement, 'Slot replacer count underflow');
+            }
+        }
+    };
+}
+function _patchCreateElement() {
+    _originalCreateElement = document.createElement;
+    document.createElement = _createElementOverride;
+}
+function _restoreCreateElement() {
+    document.createElement = _originalCreateElement;
+}
+function _createElementOverride(tagName, opts) {
+    if (tagName.startsWith(_OJ_SLOT_PREFIX)) {
+        return _ACTIVE_SLOTS.get(tagName);
+    }
+    return _originalCreateElement.call(document, tagName, opts);
+}
 
 class Parking {
     parkNode(node) {
@@ -1304,75 +1494,6 @@ class Parking {
     }
 }
 const ParkingLot = new Parking();
-
-function convertToVNode(node, slot, index, handleSlotMount, handleSlotUnmount) {
-    const key = `_${slot}_${index}_`;
-    const ref = _getReplacerRef(node, handleSlotMount, handleSlotUnmount);
-    return h(() => h('oj-slot-replacer', { ref, key }), null);
-}
-class SlotReplacerElement extends HTMLElement {
-    connectedCallback() {
-        const slot = this[OJ_SLOT];
-        if (slot) {
-            this.parentElement.replaceChild(slot, this);
-        }
-        const once = this[_ON_FIRST_INSERT];
-        if (once) {
-            once();
-            this[_ON_FIRST_INSERT] = null;
-        }
-    }
-    get parentNode() {
-        const delegate = this[OJ_SLOT];
-        return !delegate || ParkingLot.isParked(delegate) ? null : delegate.parentNode;
-    }
-    get nextSibling() {
-        const delegate = this[OJ_SLOT];
-        if (!delegate || ParkingLot.isParked(delegate)) {
-            return null;
-        }
-        const siblingToSlot = delegate.nextSibling;
-        return (siblingToSlot === null || siblingToSlot === void 0 ? void 0 : siblingToSlot[OJ_REPLACER]) || siblingToSlot;
-    }
-}
-customElements.define('oj-slot-replacer', SlotReplacerElement);
-const _ON_FIRST_INSERT = Symbol();
-function _getReplacerRef(slotNode, handleSlotMount, handleSlotUnmount) {
-    let _activeReplacer;
-    let _count = 0;
-    const onInitialInsert = () => {
-        handleSlotMount(slotNode);
-    };
-    return (replacerElem) => {
-        if (replacerElem != null) {
-            _count++;
-            if (_activeReplacer) {
-                _activeReplacer[OJ_SLOT] = null;
-            }
-            _activeReplacer = slotNode[OJ_REPLACER] = replacerElem;
-            const parent = replacerElem.parentElement;
-            patchSlotParent(parent);
-            replacerElem[OJ_SLOT] = slotNode;
-            if (replacerElem.isConnected) {
-                parent.replaceChild(slotNode, replacerElem);
-                onInitialInsert();
-            }
-            else {
-                replacerElem[_ON_FIRST_INSERT] = onInitialInsert;
-            }
-        }
-        else {
-            _count--;
-            if (_count < 0) {
-                throw new JetElementError(this, 'Slot replacer count underflow');
-            }
-            if (_count === 0) {
-                slotNode.remove();
-                handleSlotUnmount(slotNode);
-            }
-        }
-    };
-}
 
 const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
 function diffProps(dom, newProps, oldProps, isSvg, hydrate, setPropertyOverrides) {
@@ -1488,8 +1609,22 @@ function eventProxyCapture(e) {
     this._listeners[e.type + true](options.event ? options.event(e) : e);
 }
 
+class ExecuteOnCommit {
+    constructor() {
+        this._queue = [];
+    }
+    add(cb) {
+        this._queue.push(cb);
+    }
+    flush() {
+        this._queue.forEach((cb) => cb());
+        this._queue = [];
+    }
+}
+
 const ELEMENT_REF = Symbol();
 const ROOT_VNODE_PATCH = Symbol();
+const EXECUTE_ON_COMMIT = Symbol();
 const _EMPTY_SET = new Set();
 const _LISTENERS = Symbol();
 const _CAPTURE_LISTENERS = Symbol();
@@ -1505,6 +1640,7 @@ class IntrinsicElement {
         this._earlySets = [];
         this._eventQueue = [];
         this._isRenderQueued = false;
+        this._executeOnCommit = new ExecuteOnCommit();
         this._state = CustomElementUtils.getElementState(element);
         this._element = element;
         this._metadata = metadata;
@@ -1570,7 +1706,7 @@ class IntrinsicElement {
         }
         else {
             if (this._state.allowPropertySets()) {
-                value = CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, value);
+                value = transformPreactValue(this._element, meta, value);
                 this._updatePropsAndQueueRenderAsNeeded(name, value, meta);
             }
             else {
@@ -1618,9 +1754,11 @@ class IntrinsicElement {
             }
             this._playbackEarlyPropertySets();
         }
-        this._vdom = h(this._component, this._props, null);
-        this._vdom.props[ELEMENT_REF] = this._element;
-        this._vdom.props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
+        this._vdom = h(this._component, this._props);
+        const props = this._vdom.props;
+        props[ELEMENT_REF] = this._element;
+        props[ROOT_VNODE_PATCH] = this._rootPatchCallback;
+        props[EXECUTE_ON_COMMIT] = this._executeOnCommit;
         this._isPatching = true;
         render(this._vdom, this._element);
         this._isPatching = false;
@@ -1860,7 +1998,7 @@ class IntrinsicElement {
         while (this._earlySets.length) {
             const setObj = this._earlySets.shift();
             const meta = getPropertyMetadata(setObj.property, (_a = this._metadata) === null || _a === void 0 ? void 0 : _a.properties);
-            const updatedValue = CustomElementUtils.convertEmptyStringToUndefined(this._element, meta, setObj.value);
+            const updatedValue = transformPreactValue(this._element, meta, setObj.value);
             this.setProperty(setObj.property, updatedValue);
         }
     }
@@ -1922,6 +2060,15 @@ class IntrinsicElement {
             }
             else {
                 dom.removeEventListener(name, proxy, useCapture);
+            }
+            return true;
+        }
+        else if (name === 'role') {
+            if (value) {
+                dom.setAttribute(name, value);
+            }
+            else {
+                dom.removeAttribute(name);
             }
             return true;
         }
@@ -1998,7 +2145,7 @@ class IntrinsicElement {
             }
         }
         else {
-            const vnodes = slotNodes.map((node, index) => convertToVNode(node, slotName, index, IntrinsicElement._handleSlotMount, this._handleSlotUnmount.bind(this)));
+            const vnodes = slotNodes.map((node, index) => convertToVNode(this._element, node, this._executeOnCommit, this._handleSlotMount.bind(this), this._handleSlotUnmount.bind(this)));
             propContainer[propName] = vnodes;
         }
     }
@@ -2034,9 +2181,16 @@ class IntrinsicElement {
             ParkingLot.parkNode(node);
         }
     }
-    static _handleSlotMount(node) {
-        if (oj.Components) {
-            oj.Components.subtreeShown(node);
+    _handleSlotMount(node) {
+        var _a;
+        const handleMount = (_a = oj.Components) === null || _a === void 0 ? void 0 : _a.subtreeShown;
+        if (handleMount) {
+            if (node.isConnected) {
+                handleMount(node);
+            }
+            else {
+                this._executeOnCommit.add(() => handleMount(node));
+            }
         }
     }
     static _eventProxy(e) {
@@ -2106,12 +2260,7 @@ class ValueBasedElement {
 }
 const valueBasedElement = new ValueBasedElement();
 
-const dispatchEventWrapper = traceDispatchEvent(HTMLElement.prototype.dispatchEvent);
 class HTMLJetElement extends HTMLElement {
-    constructor() {
-        super(...arguments);
-        this.dispatchEvent = dispatchEventWrapper;
-    }
     static get observedAttributes() {
         let observed = [];
         if (this.metadata.properties) {
@@ -2268,7 +2417,6 @@ const Root = () => {
     throw new Error('The Root component should only be used as the top-level return from a VComponent render function.  It will be rewritten by VComponent code so Preact will never actually render it unless it appears in an invalid location.');
 };
 
-const _CLASSNAME = 'className';
 const _CLASS = 'class';
 function customElement(tagName) {
     return function (constructor) {
@@ -2277,8 +2425,25 @@ function customElement(tagName) {
         const observedProps = ((_a = metadata === null || metadata === void 0 ? void 0 : metadata.extension) === null || _a === void 0 ? void 0 : _a['_OBSERVED_GLOBAL_PROPS']) || [];
         const observedAttrs = observedProps.map((prop) => AttributeUtils.getGlobalAttrForProp(prop));
         overrideRender(tagName, constructor, metadata, new Set(observedProps));
+        overrideCommitMethods(constructor);
         registerElement(tagName, metadata, constructor, observedProps, observedAttrs);
     };
+}
+function registerCustomElement(tagName, fcomp) {
+    class VCompWrapper extends Component {
+        render() {
+            return fcomp(arguments[0]);
+        }
+    }
+    VCompWrapper.displayName = arguments[2];
+    if (arguments.length >= 4) {
+        VCompWrapper.metadata = arguments[3];
+        if (arguments.length >= 5) {
+            VCompWrapper.defaultProps = arguments[4];
+        }
+    }
+    customElement(tagName)(VCompWrapper);
+    return VCompWrapper;
 }
 function registerElement(tagName, metadata, constructor, observedProps, observedAttrs) {
     class HTMLPreactElement extends HTMLJetElement {
@@ -2342,11 +2507,10 @@ function overrideRender(tagName, constructor, metadata, observedPropsSet) {
             if (props.style && vdomProps['style']) {
                 vdomProps['style'] = Object.assign({}, props.style, vdomProps['style']);
             }
-            const componentClass = props[_CLASSNAME] || props[_CLASS];
+            const componentClass = props[_CLASS];
             if (componentClass) {
-                const targetProp = _CLASSNAME in vdomProps ? _CLASSNAME : _CLASS;
-                const nodeClass = vdomProps[targetProp] || '';
-                vdomProps[targetProp] = `${componentClass} ${nodeClass}`;
+                const nodeClass = vdomProps[_CLASS] || '';
+                vdomProps[_CLASS] = `${componentClass} ${nodeClass}`;
             }
             vdomProps['data-oj-jsx'] = '';
             Object.keys(props).forEach((prop) => {
@@ -2361,6 +2525,25 @@ function overrideRender(tagName, constructor, metadata, observedPropsSet) {
         props[ROOT_VNODE_PATCH](vdom);
         return h(Fragment, {}, vdom.props.children);
     };
+}
+function overrideCommitMethods(constructor) {
+    const proto = constructor.prototype;
+    const originalMounted = proto.componentDidMount;
+    const originalUpdated = proto.componentDidUpdate;
+    proto.componentDidMount = function () {
+        _flushExecuteOnCommitQueue.call(this);
+        originalMounted === null || originalMounted === void 0 ? void 0 : originalMounted.call(this);
+    };
+    proto.componentDidUpdate = function (...args) {
+        _flushExecuteOnCommitQueue.call(this);
+        originalUpdated === null || originalUpdated === void 0 ? void 0 : originalUpdated.apply(this, args);
+    };
+}
+function _flushExecuteOnCommitQueue() {
+    const queue = this.props[EXECUTE_ON_COMMIT];
+    if (queue) {
+        queue.flush();
+    }
 }
 function addPropGetterSetters(proto, properties) {
     if (!properties)
@@ -2426,4 +2609,4 @@ function method(target, propertyKey, descriptor) { }
 
 const getUniqueId = ElementUtils.getUniqueId.bind(null, null);
 
-export { Root, customElement, getUniqueId, method };
+export { Root, customElement, getUniqueId, method, registerCustomElement };

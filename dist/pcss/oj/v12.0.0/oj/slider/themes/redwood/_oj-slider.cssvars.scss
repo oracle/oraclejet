@@ -1,0 +1,44 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+  @include module-include-once("redwood.variables.slider") {
+
+:root {
+
+
+
+  // slider
+  // ---------------------------
+  --oj-slider-thumb-width:                 1.25rem;
+  --oj-slider-thumb-height:                1.25rem;
+  --oj-slider-thumb-border-radius:         var(--oj-core-border-radius-lg);
+  --oj-slider-thumb-border-width:          2px;
+  
+  --oj-slider-thumb-bg-color:              rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-slider-thumb-border-color:          rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-slider-thumb-box-shadow:            none;
+  --oj-slider-thumb-bg-color-hover:        rgb(var(--oj-palette-neutral-rgb-30));
+  --oj-slider-thumb-box-shadow-hover:      none;
+  --oj-slider-thumb-bg-color-active:       rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-slider-thumb-border-color-active:   rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-slider-thumb-box-shadow-active:     none;
+  --oj-slider-thumb-scale-active:          1;
+  --oj-slider-thumb-bg-color-disabled:     rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-slider-thumb-border-color-disabled: var(--oj-core-text-color-disabled);
+
+  --oj-slider-track-thickness:             2px;
+  --oj-slider-track-bg-color:              rgba(var(--oj-palette-neutral-rgb-170), 0.15);
+  --oj-slider-value-bg-color:              rgb(var(--oj-palette-neutral-rgb-180));
+  --oj-slider-track-bg-color-disabled:     var(--oj-core-color-disabled-2);
+  --oj-slider-value-bg-color-disabled:     var(--oj-core-text-color-disabled);
+
+
+  
+}
+
+}

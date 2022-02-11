@@ -1,0 +1,23 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import dependencies
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+  @include module-include-once("redwood.variables.filepicker") {
+:root {
+
+  // file picker
+ 
+  --oj-file-picker-border-color:              rgba(var(--oj-palette-neutral-rgb-190), 0.65);
+  --oj-file-picker-border-width:              1px;
+  --oj-file-picker-border-radius:             var(--oj-core-border-radius-xl);
+
+  
+}
+
+}

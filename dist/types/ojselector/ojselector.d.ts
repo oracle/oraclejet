@@ -19,9 +19,9 @@ export declare class Selector<K> extends Component<ExtendGlobalProps<Props<K>>, 
     constructor(props: ExtendGlobalProps<Props<K>>);
     static defaultProps: Props<any>;
     render(props: ExtendGlobalProps<Props<K>>, state: Readonly<State>): h.JSX.Element;
-    private _handleFocusin;
-    private _handleFocusout;
-    private _checkboxListener;
+    private readonly _handleFocusin;
+    private readonly _handleFocusout;
+    private readonly _checkboxListener;
     private _isSelected;
 }
 // Custom Element interfaces

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -119,7 +119,10 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
         var parentElement = this.element[0];
         var pathValues = this._super(dataProperty, data, templateEngine, isTreeData,
           parentKey, isRoot, updateChildren);
-        if (seriesConfig && dataProperty === seriesConfig.dataProperty && !isTreeData) {
+        if (dataProperty === 'rowData') {
+          // Gantt will handle it
+          results = pathValues;
+        } else if (seriesConfig && dataProperty === seriesConfig.dataProperty && !isTreeData) {
           var seriesArray = []; // The final series array
           var seriesObj;
 
@@ -222,5 +225,16 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
      */
     _GetDataProviderSeriesConfig: function () {
       return {};
+    },
+
+    _GetComponentNoClonePaths: function () {
+      var noClonePaths = this._super();
+      noClonePaths._resources = {
+        converter: true,
+        defaultDateConverter: true,
+        defaultDateTimeConverter: true
+      };
+
+      return noClonePaths;
     }
   });

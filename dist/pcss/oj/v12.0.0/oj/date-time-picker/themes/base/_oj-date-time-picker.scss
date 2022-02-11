@@ -1,0 +1,834 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example date-time-picker/themes/redwood/oj-date-time-picker.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// todo: this should probably be broken up into smaller files
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+
+@include module-include-once("common.datetimepicker") {
+  //TODO: Should this be moved to individual component files?
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-time:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-date:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-input-date-time:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-date-picker:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-calendar:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  //we still need these styles on inline components as they are not text fields
+  // also we need to not display:none input when it is apart of the inline datetime picker.
+  .oj-inputdatetime-inline,
+  .oj-inputdatetime-inline .oj-inputdatetime-time-only.oj-text-field.oj-read-only .oj-text-field-input.oj-inputdatetime-input {
+    display: inline-block;
+  }
+
+  .oj-inputdatetime-inline .oj-inputdatetime-time-only .oj-messaging-inline-container {
+    display: none;
+  }
+
+  //added to inner container for oj-date-picker and oj-date-time-picker, since div need to restrict the size due to
+  //messaging
+  .oj-datepicker-inline {
+    /* use a width of 100% and then max and min width so that when
+         there's less room for the form control it can automatically
+         get smaller instead of overflowing its boundaries */
+    max-width: calc(22.5rem + 2px); // need to account for the border
+    width: 100%;
+  }
+
+  //Trigger contains the calendar-icon + time-icon
+  .oj-inputdatetime-input-trigger {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    border-style: solid;
+    border-color: var(--oj-text-field-border-color);
+    background-color: transparent;
+
+    height: var(--oj-text-field-height);
+
+    line-height: var(--oj-text-field-height);
+
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    // normally removing an outline can cause accessibility issues, however
+    // on an input the cursor blinks so an outline is not required for
+    // accessibility. As of 6-11-14 only chrome is putting
+    // an outline on inputs anyway
+    outline: 0;
+  }
+
+  @if ($privateInputDateTimeKeyboardEditOptionDefault == disabled) {
+    .oj-inputdatetime:not(.oj-read-only):not(.oj-inputdatetime-inline).oj-focus-highlight {
+      outline: dotted 1px var(--oj-core-focus-border-color);
+      outline-offset: 1px;
+    }
+  }
+
+  // Styling for loading converters; we show a spinner
+  .oj-inputdatetime-date-only.oj-loading .oj-datepicker-popup {
+    background-color: var(--oj-animation-skeleton-bg-end-color);
+    background-size: 200% 200%;
+    animation-name: SkeletonAnimation;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-duration: 1.5s;
+  }
+
+  // Hide when is of read-only
+  .oj-inputdatetime.oj-read-only .oj-inputdatetime-input-trigger {
+    display: none;
+  }
+
+  .oj-inputdatetime-calendar-clock-icon,
+  .oj-inputdatetime-calendar-icon,
+  .oj-inputdatetime-time-icon {
+    cursor: pointer;
+    padding: 0 0.3125rem;
+    vertical-align: middle;
+    line-height: inherit;
+  }
+  .oj-inputdatetime-calendar-icon {
+    @extend .oj-fwk-icon-calendar;
+  }
+
+  .oj-inputdatetime-calendar-clock-icon {
+    @extend .oj-fwk-icon-calendar-clock;
+  }
+
+  .oj-inputdatetime-calendar-clock-icon.oj-disabled,
+  .oj-inputdatetime-calendar-icon.oj-disabled,
+  .oj-inputdatetime-time-icon.oj-disabled {
+    cursor: default;
+  }
+
+  .oj-inputdatetime-time-icon {
+    @extend .oj-fwk-icon-clock;
+  }
+
+  .oj-datepicker-prev-icon {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret-w;
+    }
+
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret-e;
+    }
+  }
+
+  .oj-datepicker-next-icon {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret-e;
+    }
+
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret-w;
+    }
+  }
+
+  //**************************
+  // PICKER
+  //**************************
+  .oj-datepicker-popup.oj-popup{
+    box-shadow: var(--oj-core-dropdown-box-shadow);
+  } 
+
+  //'oj-datepicker-popup' is the class for the root of the ojPopup that
+  //  contains the calendar. Remove the padding around the popup.
+  .oj-datepicker-popup .oj-popup-content {
+    padding: 0;
+  }
+
+  /* Class for the root node that contains the floating calendar */
+  .oj-datepicker-content {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    @include oj-rtl() {
+      direction: rtl;
+    }
+  }
+
+  .oj-datepicker-header {
+    margin: 0.75rem;
+    color: var(--oj-heading-text-color);
+    position: relative;
+    background: none;
+    border: 0;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    min-height: var(--oj-button-height);
+  }
+
+  .oj-datepicker-group-first .oj-datepicker-header {
+    justify-content: flex-start;
+  }
+
+  .oj-datepicker-group-last .oj-datepicker-header {
+    justify-content: flex-end;
+  }
+
+  .oj-datepicker-group-middle .oj-datepicker-header {
+    justify-content: center;
+  }
+
+  .oj-datepicker-prev-icon,
+  .oj-datepicker-next-icon {
+    line-height: var(--oj-button-height);
+    width: var(--oj-button-height);
+    border-radius: var(--oj-button-border-radius);
+    color: var(--oj-button-borderless-chrome-text-color);
+  }
+
+  .oj-datepicker-prev-icon:not(.oj-disabled).oj-hover,
+  .oj-datepicker-next-icon:not(.oj-disabled).oj-hover {
+    color: var(--oj-button-borderless-chrome-text-color-hover);
+    background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+    border-color: var(--oj-button-borderless-chrome-border-color-hover);
+  }
+
+  .oj-datepicker-header a.oj-datepicker-prev-icon.oj-active,
+  .oj-datepicker-header a.oj-datepicker-next-icon.oj-active {
+    color: var(--oj-button-borderless-chrome-text-color-active);
+    background-color: var(--oj-button-borderless-chrome-bg-color-active);
+    border-color: var(--oj-button-borderless-chrome-border-color-active);
+  }
+
+  //positioned absolutely so need to include it. Thought about making code change, but it is rather impactful
+  .oj-datepicker-prev-icon {
+    @include oj-ltr() {
+      left: 2px;
+    }
+    @include oj-rtl() {
+      right: 2px;
+    }
+  }
+  .oj-datepicker-next-icon {
+    order: 3;
+    @include oj-ltr() {
+      right: 2px;
+    }
+    @include oj-rtl() {
+      left: 2px;
+    }
+  }
+
+  .oj-datepicker-title {
+    //decreased the margin slightly for chrome on mac
+    margin: auto 2.2em;
+    text-align: center;
+  }
+
+  .oj-datepicker-title select {
+    font-size: var(--oj-typography-body-md-font-size);
+    line-height: var(--oj-typography-body-md-line-height);
+    margin: 1px 0;
+    background-color: inherit;
+    color: inherit;
+  }
+
+  .oj-datepicker-header a.oj-enabled {
+    text-decoration: none;
+    color: var(--oj-core-text-color-primary);
+  }
+
+  .oj-datepicker-buttonpane a.oj-enabled {
+    text-decoration: none;
+    color: var(--oj-link-text-color);
+  }
+
+  .oj-datepicker-buttonpane a.oj-enabled.oj-hover {
+    color: var(--oj-link-text-color);
+  }
+
+  .oj-datepicker-buttonpane a.oj-enabled.oj-active {
+    color: var(--oj-link-text-color);
+  }
+
+  .oj-datepicker-month-year {
+    width: 100%;
+  }
+
+  .oj-datepicker-month {
+    margin-right: 0.3125rem;
+  }
+
+  .oj-datepicker-header a.oj-enabled:not(.oj-disabled) {
+    cursor: pointer;
+  }
+
+  .oj-datepicker-month,
+  .oj-datepicker-year {
+    font-size: var(--oj-typography-body-lg-font-size);
+    width: 48%;
+    min-width: 0;
+  }
+
+  .oj-datepicker-calendar {
+    border-collapse: collapse;
+    margin: 0 0.75rem 0.75rem;
+    outline: 0 none;
+  }
+
+  .oj-datepicker-calendar th,
+  .oj-datepicker-calendar td {
+    border: 0;
+    text-align: center;
+  }
+
+  .oj-datepicker-calendar th {
+    padding: 0 0 0.25rem;
+    color: var(--oj-core-text-color-secondary);
+    text-transform: uppercase;
+    font-size: var(--oj-typography-body-2xs-font-size);
+    line-height: var(--oj-typography-body-2xs-line-height);
+  }
+
+  .oj-datepicker-calendar td {
+    padding: 0;
+    font-size: var(--oj-date-picker-cell-font-size);
+    width: calc((22.5rem - 2 * 0.75rem) / 7);
+    height: 3rem;
+  }
+
+  .oj-datepicker-calendar td span,
+  .oj-datepicker-calendar td a {
+    display: flex;
+    padding: 0;
+    border-radius: .25rem;
+    box-sizing: border-box;
+    width: 2.25rem;
+    height: 2.25rem;
+    max-width: 2.25rem;
+    max-height: 2.25rem;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+  .oj-datepicker-calendar.oj-datepicker-weekdisplay td {
+    width: calc((22.5rem - 2 * 0.75rem) / 8);
+  }
+
+  .oj-datepicker-calendar.oj-datepicker-weekdisplay td a {
+    height: calc((22.5rem - 2 * 0.75rem) / 8);
+  }
+
+  .oj-datepicker-calendar.oj-datepicker-monthview,
+  .oj-datepicker-calendar.oj-datepicker-yearview {
+    height: calc(
+      5 * 3rem + (var(--oj-typography-body-xs-line-height) * var(--oj-typography-body-xs-font-size)) +
+        0.25rem
+    );
+  }
+
+  .oj-datepicker-calendar.oj-datepicker-monthview td,
+  .oj-datepicker-calendar.oj-datepicker-yearview td {
+    width: calc((22.5rem - 2 * 0.75rem) / 4);
+  }
+
+  .oj-datepicker-calendar.oj-datepicker-monthview td span,
+  .oj-datepicker-calendar.oj-datepicker-monthview td a,
+  .oj-datepicker-calendar.oj-datepicker-yearview td span,
+  .oj-datepicker-calendar.oj-datepicker-yearview td a {
+    width: 3.25rem;
+    height: 1.75rem;
+    max-width: 3.25rem;
+    max-height: 1.75rem;
+    line-height: calc(1.75rem - 0.25rem);
+    white-space: nowrap;
+  }
+
+  .oj-datepicker-calendar td a:focus {
+    outline: none;
+  }
+
+  .oj-datepicker-calendar td a.oj-enabled {
+    border: 2px solid transparent;
+    color: var(--oj-core-text-color-primary);
+    text-decoration: none;
+  }
+  .oj-datepicker-calendar td.oj-datepicker-today a.oj-hover,
+  .oj-datepicker-calendar td a.oj-hover {
+    background-color: var(--oj-core-bg-color-hover);
+  }
+  .oj-datepicker-calendar td.oj-datepicker-today a.oj-selected,
+  .oj-datepicker-calendar td a.oj-selected {
+    font-weight: bold;
+    background: var(--oj-core-brand-2);
+    color: var(--oj-core-brand-contrast);
+  }
+
+  .oj-datepicker-calendar td.oj-disabled span {
+    color: var(--oj-core-text-color-disabled);
+  }
+  .oj-datepicker-calendar td.oj-datepicker-other-month a.oj-enabled {
+    color: var(--oj-core-text-color-secondary);
+    opacity: .7;
+  }
+
+  //Today
+  .oj-datepicker-calendar td.oj-datepicker-today a {
+    background-color: transparent;
+    border: 2px solid var(--oj-date-picker-cell-border-color-today);
+    border-radius: 50%;
+  }
+
+  .oj-datepicker-buttonpane {
+    box-sizing: border-box;
+    height: var(--oj-button-height);
+    line-height: var(--oj-button-height);
+    font-size: var(--oj-button-font-size);
+    font-weight: var(--oj-button-font-weight);
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+    @include oj-rtl() {
+      clear: right;
+    }
+  }
+  .oj-datepicker-buttonpane a {
+    width: auto;
+    overflow: visible;
+  }
+
+  //request from UX is that we center the button if there is only a single one
+  .oj-datepicker-buttonpane .oj-datepicker-single-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* with multiple calendars, need to override the width */
+  .oj-datepicker-content.oj-datepicker-multi {
+    width: auto;
+  }
+  .oj-datepicker-group {
+    box-sizing: border-box;
+  }
+  .oj-datepicker-multi .oj-datepicker-group {
+    float: left;
+    html[dir="rtl"] & {
+      float: right;
+    }
+  }
+  .oj-datepicker-multi-2 .oj-datepicker-group {
+    width: 50%;
+  }
+  .oj-datepicker-multi-3 .oj-datepicker-group {
+    width: 33.3%;
+  }
+  .oj-datepicker-multi-4 .oj-datepicker-group {
+    width: 25%;
+  }
+  .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header,
+  .oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
+    border-inline-start-width: 0;
+  }
+  .oj-datepicker-multi .oj-datepicker-buttonpane {
+    clear: left;
+  }
+  .oj-datepicker-row-break {
+    clear: both;
+    width: 100%;
+    font-size: 0;
+  }
+
+  .oj-datepicker-unselectable {
+    opacity: 0.35;
+  }
+
+  //CSS when one navigates over the days
+  .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over a,
+  .oj-datepicker-calendar.oj-focus-highlight td.oj-datepicker-days-cell-over span {
+    border: 2px solid var(--oj-core-border-color-selected);
+  }
+
+  //CSS for the week columns
+  .oj-datepicker-week-col {
+    color: var(--oj-label-color);
+    width: calc((22.5rem - 2 * 0.75rem) / 8);
+  }
+  th.oj-datepicker-week-col,
+  td.oj-datepicker-week-col {
+    border-inline-end-width: 1px;
+    border-inline-end-style: solid;
+    border-inline-end-color: var(--oj-core-divider-color);
+  }
+
+  //CSS to be applied when of inline, so to allow separation with the time picker
+  .oj-datepicker-inline {
+    margin-bottom: 0.375rem;
+  }
+
+  // datepicker-inline lays out the datepicker and then the time picker.
+  // the root dom node has oj-form-control on it, and also the time-picker has oj-form-control
+  // on it. So it has double the margin-bottom. Override it for the timepicker.
+  html .oj-inputdatetime-inline .oj-inputdatetime-time-only {
+    margin-bottom: 0;
+  }
+
+  .oj-datetimepicker-switcher {
+    border-radius: 0 0 var(--oj-popup-border-radius) var(--oj-popup-border-radius);
+    padding: 0.3125rem 0.75rem;
+    margin-top: 0.625rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .oj-datetimepicker-switcher a.oj-enabled {
+    display: inline-block;
+    color: var(--oj-core-text-color-primary);
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  .oj-datetimepicker-switcher .oj-inputdatetime-calendar-icon,
+  .oj-datetimepicker-switcher .oj-inputdatetime-time-icon {
+    padding-inline-start: 0;
+  }
+
+  .oj-datetimepicker-switcher-buttons a:first-child {
+    padding-inline-end: 1.25rem;
+  }
+
+  .oj-datepicker-inline .oj-datepicker-content {
+    background-color: var(--oj-text-field-bg-color);
+    border: 1px solid var(--oj-text-field-border-color);
+    border-radius: var(--oj-text-field-border-radius);
+  }
+
+  //**************************
+  // WHEEL TIME PICKER
+  //**************************
+
+  .oj-timepicker-popup .oj-popup-content {
+    padding: 0;
+  }
+
+  .oj-timepicker-content {
+    height: 25.25rem;
+    padding: 0 0.75rem;
+    min-width: 22.5rem;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-content: center;
+    justify-content: space-around;
+  }
+  .oj-timepicker-mobile-content {
+    height: 100vh;
+    min-width: 17.25rem;
+    width: calc(17.25rem + (0.75rem * 2));
+  }
+
+  // common to timepicker header and footer
+  .oj-timepicker-header,
+  .oj-timepicker-footer {
+    color: var(--oj-core-text-color-primary);
+    font-size: 1.125rem;
+    height: 2.1875rem;
+    line-height: 2.1875rem;
+    background: none;
+    border: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .oj-timepicker-cancel-button {
+    @include oj-ltr() {
+      left: 0;
+    }
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+
+  .oj-timepicker-ok-button {
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  .oj-timepicker-footer {
+    box-sizing: border-box;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+  }
+
+  .oj-timepicker-header a.oj-enabled,
+  .oj-timepicker-footer a.oj-enabled {
+    text-decoration: none;
+    color: var(--oj-core-text-color-primary);
+  }
+
+  .oj-timepicker-wheel-group {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    position: absolute;
+    align-self: center;
+    margin-top: 1rem;
+  }
+
+  .oj-timepicker-wheel {
+    position: relative;
+    height: 18.5rem;
+    width: 5.75rem;
+    overflow: hidden;
+    box-sizing: border-box;
+    outline: 0;
+  }
+
+  .oj-timepicker-wheel.oj-timepicker-minute,
+  .oj-timepicker-wheel.oj-timepicker-meridian {
+    border-image: linear-gradient(180deg, rgba(241, 239, 237, 0), rgba(86, 80, 75, 0.2), rgba(241, 239, 237, 0)) 1;
+    border-inline-start-width: 1px;
+    border-inline-start-style: solid;
+  }
+
+  .oj-timepicker-wheel-item {
+    transition: all 0.15s;
+    top: -6.25rem;
+    position: absolute;
+    width: 5.75rem;
+    text-align: center;
+    color: var(--oj-core-text-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .oj-timepicker-wheel-item.oj-disabled {
+    color: var(--oj-core-text-color-disabled);
+  }
+
+  .oj-timepicker-wheel-item-content {
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .oj-timepicker-wheel.oj-focus .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0 {
+    border-radius: var(--oj-text-field-border-radius);
+    background-color: var(--oj-core-bg-color-hover);
+    color: var(--oj-core-text-color-primary);
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0 {
+    font-size: 2.25rem;
+    font-weight: 600;
+    height: 2.5rem;
+    top: 7.25rem;
+    opacity: 1;
+    padding: 0.75rem 0 1rem;
+  }
+
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0,
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position1,
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-1 {
+    font-size: var(--oj-typography-subheading-sm-font-size);
+    font-weight: normal;
+    padding: 1.125rem 0 0.625rem;
+    margin-top: 0;
+  }
+
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position0 {
+    font-weight: bold;
+  }
+
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position1,
+  .oj-timepicker-meridian .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-1 {
+    font-weight: 300;
+  }
+
+  // common to wheel items position1 and position-1
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position1,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-1 {
+    font-size: 2.25rem;
+    font-weight: 300;
+    height: 2.5rem;
+    opacity: 0.3;
+  }
+
+  // common to wheel items position2 and position-2
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position2,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-2 {
+    font-size: 2.25rem;
+    font-weight: 300;
+    height: 1.875rem;
+    opacity: 0.1;
+  }
+
+  // common to wheel items: position 3, 4, 5, 6, 7
+  // and position -3, -4, -5, -6, -7
+  .oj-timepicker-wheel-item {
+    height: 1.25rem;
+  }
+
+  // Reduced font size for meridian wheel on some languages
+
+  .oj-timepicker-meridian .oj-timepicker-wheel-item-content {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position1 {
+    top: 11.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position2 {
+    top: 14.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position3,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position4,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position5,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position6,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position7 {
+    top: 18.5rem;
+    visibility: hidden;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-1 {
+    top: 3.75rem;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-2 {
+    top: 0;
+  }
+
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-3,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-4,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-5,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-6,
+  .oj-timepicker-wheel-item.oj-timepicker-wheel-item-position-7 {
+    top: -1.5rem;
+    visibility: hidden;
+  }
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+  // editable datagrid cells and editable table cells
+  // -----------------------------------------------------------------------------------------
+
+  // Styling on form control dom which doesn't require text-align, padding, or color
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime .oj-inputdatetime-input-trigger {
+    height: 100%;
+  }
+
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputdatetime:not(.oj-disabled) .oj-inputdatetime-input-trigger {
+    
+  // use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+
+  }
+
+  // only override the border when not oj-invalid or oj-warning
+  .oj-form-control-inherit:not(.oj-form-control-default)
+    .oj-inputdatetime:not(.oj-invalid):not(.oj-warning)
+    .oj-inputdatetime-input-trigger {
+    border-width: 0;
+  }
+
+  /* Override default options*/
+  $inputDateTimeDefaultOptions: ();
+
+  @if ($privateInputDateTimeKeyboardEditOptionDefault) {
+    $inputDateTimeDefaultOptions: map-merge(
+      $inputDateTimeDefaultOptions,
+      (
+        keyboardEdit: $privateInputDateTimeKeyboardEditOptionDefault
+      )
+    );
+  }
+
+  @if ($privateInputDateTimeTimePickerOptionDefault) {
+    $inputDateTimeDefaultOptions: map-merge(
+      $inputDateTimeDefaultOptions,
+      (
+        timePicker: $privateInputDateTimeTimePickerOptionDefault
+      )
+    );
+  }
+    $inputDateTimeDefaultOptions: map-merge(
+      $inputDateTimeDefaultOptions,
+      (
+        converterYear: 'numeric'
+      )
+    );
+  
+    $inputDateTimeDefaultOptions: map-merge(
+      $inputDateTimeDefaultOptions,
+      (
+        showPickerOnDesktop: 'disabled'
+      )
+    );
+  
+
+  .oj-inputdatetime-option-defaults {
+    font-family: oj-json-from-map($inputDateTimeDefaultOptions) !important;
+  }
+
+  // DateTime configuration
+  //----------------------------------
+
+  $dateTimePickerConfig: ();
+
+  .oj-datetimepicker-config {
+    font-family: oj-json-from-map($dateTimePickerConfig) !important;
+  }
+
+  // TODO delete all the border information from the trigger.
+  // This is temporary. I would clean the whole border thing when this component is cleaned up
+  .oj-text-field .oj-inputdatetime-input-trigger {
+    border: 0;
+  }
+
+  // For quiet Forms
+
+  .oj-text-field-label-inside .oj-inputdatetime-input {
+    background-color: transparent;
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 0;
+  }
+
+  .oj-text-field-label-inside .oj-inputdatetime-input-trigger {
+    min-height: var(--oj-text-field-inside-edge-height);
+  }
+
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -483,8 +483,9 @@ define(['ojs/ojcore-base', 'jquery', 'knockout', 'ojs/ojanimation', 'ojs/ojconte
    */
 
   /**
-   *<p>Specifies display option for {@link oj.ojMessage#message.category} text in all the messages
-   * specified for the {@link oj.ojMessages#messages} attribute.
+   * <p>Specifies display option for {@link oj.ojMessage#message.category} text in all the messages
+   * specified for the {@link oj.ojMessages#messages} attribute.</p>
+   * <p>In Redwood theme, showing the category text is an anti-pattern. Set this attribute to "none".</p>
    *
    * @example <caption>Initialize the element with <code class="prettyprint">display-options.category</code> attribute:</caption>
    * &lt;oj-messages display-options.category="none" message.summary="Some summary" message.detail="Some detail">&lt;/oj-messages>

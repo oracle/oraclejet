@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+
+  @include module-include-once("redwood.variables.timeline") {
+
+:root {
+  
+    // timeline
+    // ----------------------------
+    --oj-private-timeline-reference-object-color:                rgb(var(--oj-palette-danger-rgb-100));
+    --oj-private-timeline-border-color:                          rgb(var(--oj-palette-neutral-rgb-50));
+        
+    --oj-private-timeline-item-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));            
+    --oj-private-timeline-item-border-color:                     rgb(var(--oj-palette-neutral-rgb-160));             
+    --oj-private-timeline-item-border-color-hover:               var(--oj-private-timeline-item-border-color);
+
+    --oj-private-timeline-minor-axis-bg-color:                   transparent;              
+    --oj-private-timeline-minor-axis-border-color:               transparent;              
+    --oj-private-timeline-minor-axis-separator-color:            var(--oj-private-dvt-gridline-color);
+                           
+    --oj-private-timeline-series-bg-color:                       transparent;
+    --oj-private-timeline-item-padding:                          16px;
+    --oj-private-timeline-item-border-radius:                    6px;
+    --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-30));
+}
+
+}

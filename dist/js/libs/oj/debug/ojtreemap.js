@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -596,10 +596,7 @@ var __oj_treemap_node_metadata =
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-treemap
-   *    nodes='[{"value": 100, "color": "#FFFF00", "label": "Total Sales",
-   *             "nodes": [{"value": 75, "color": "#00FF00", "label": "Candy"},
-   *                       {"value": 20, "color": "#FFFF00", "label": "Fruit"},
-   *                       {"value": 15, "color": "#FF0000", "label": "Vegetables"}]}]'>
+   *    data="[[treeDataProvider]]">
    * &lt;/oj-treemap>
    * </code>
    * </pre>
@@ -1432,7 +1429,7 @@ var __oj_treemap_node_metadata =
 
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
-        return ojdvtTreeview.Treemap.newInstance(context, callback, callbackObj);
+        return new ojdvtTreeview.Treemap(context, callback, callbackObj);
       },
 
 
@@ -2326,7 +2323,9 @@ var __oj_treemap_node_metadata =
   /**
    * @ojstylevariableset oj-tree-map-node-css-set2
    * @ojdisplayname Selected
-   * @ojstylevariable oj-treemap-node-header-bg-color-selected {description: "Treemap node header background color when selected", formats: ["color"], help: "#oj-tree-map-node-css-set2"}
+   * @ojstylevariable oj-treemap-node-header-bg-color-selected {description: "Treemap node header background color when selected", formats: ["color"],
+   * help: "#oj-tree-map-node-css-set2"}
+
    * @memberof! oj.ojTreemapNode
   */
   /**

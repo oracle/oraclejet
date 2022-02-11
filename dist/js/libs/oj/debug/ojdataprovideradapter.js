@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -459,6 +459,9 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojmodel', 'ojs/ojdataprovi
             if (!self._isFetching && !self._requestEventTriggered) {
                 if (event[TableDataSourceAdapter._OFFSET] != null) {
                     self._startIndex = event[TableDataSourceAdapter._OFFSET];
+                    if (self.tableDataSource._fetchType === 'loadMore') {
+                        self.offset = event[TableDataSourceAdapter._OFFSET];
+                    }
                 }
                 else {
                     self._startIndex = null;

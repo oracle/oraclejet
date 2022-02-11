@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 'ojs/ojvcollection', 'ojs/ojcontext', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, DataCollectionUtils, ojvcollection, Context, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
+define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdatacollection-common', 'ojs/ojcontext', 'ojs/ojvcollection', 'ojs/ojcore-base', 'ojs/ojkeyset', 'ojs/ojtreedataprovider', 'ojs/ojanimation', 'ojs/ojthemeutils', 'ojs/ojdomutils'], function (exports, preact, ojvcomponent, Translations, DataCollectionUtils, Context, ojvcollection, oj, ojkeyset, ojtreedataprovider, AnimationUtils, ThemeUtils, DomUtils) { 'use strict';
 
     Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
@@ -19,24 +19,39 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             this.scrollPolicy = scrollPolicy;
             this.scrollPolicyOptions = scrollPolicyOptions;
             this.postRender = () => {
+                if (this.viewportResolveFunc) {
+                    return;
+                }
                 this.vnodesCache = this.newVnodesCache;
                 this.newVnodesCache = new Map();
-                if (this.callback) {
-                    if (this.domScroller) {
-                        const itemsRoot = this.root.lastElementChild;
-                        const items = itemsRoot.querySelectorAll('.oj-stream-list-item');
-                        if (items.length > 0) {
-                            const rootOffsetTop = this.root.offsetTop;
-                            const start = items[0].offsetTop - rootOffsetTop;
-                            const end = items[items.length - 1].offsetTop +
-                                items[items.length - 1].offsetHeight -
-                                rootOffsetTop;
-                            this.domScroller.setViewportRange(start, end);
+                const itemsRoot = this.root.lastElementChild;
+                if (itemsRoot) {
+                    this.viewportResolveFunc = this.addBusyState('checking viewport');
+                    const busyContext = Context.getContext(itemsRoot).getBusyContext();
+                    busyContext.whenReady().then(() => {
+                        if (this.viewportResolveFunc) {
+                            this.viewportResolveFunc();
                         }
-                    }
-                    if (this.domScroller && !this.domScroller.checkViewport()) {
-                        return;
-                    }
+                        this.viewportResolveFunc = null;
+                        if (this.callback && this.domScroller) {
+                            const itemsRoot = this.root.lastElementChild;
+                            const items = itemsRoot.querySelectorAll('.oj-stream-list-item');
+                            if (items.length > 0) {
+                                const rootOffsetTop = this.root.offsetTop;
+                                const start = items[0].offsetTop - rootOffsetTop;
+                                const end = items[items.length - 1].offsetTop +
+                                    items[items.length - 1].offsetHeight -
+                                    rootOffsetTop;
+                                this.domScroller.setViewportRange(start, end);
+                            }
+                            this.checkViewport();
+                        }
+                    }, () => {
+                        if (this.viewportResolveFunc) {
+                            this.viewportResolveFunc();
+                        }
+                        this.viewportResolveFunc = null;
+                    });
                 }
             };
             this.newItemsTracker = new Set();
@@ -79,11 +94,16 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             const renderer = this.callback.getItemRenderer();
             const vnodes = renderer({ data, key });
             let vnode;
-            for (const curr of vnodes) {
-                vnode = curr;
-                if (vnode.props) {
-                    break;
+            if (Array.isArray(vnodes)) {
+                for (const curr of vnodes) {
+                    vnode = curr;
+                    if (vnode.props) {
+                        break;
+                    }
                 }
+            }
+            else {
+                vnode = vnodes;
             }
             const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
@@ -160,9 +180,9 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             }.bind(this));
             super.handleItemsRemoved(detail);
         }
-        handleModelRefresh() {
+        handleModelRefresh(detail) {
             this.vnodesCache.clear();
-            super.handleModelRefresh();
+            super.handleModelRefresh(detail);
         }
         destroy() {
             super.destroy();
@@ -220,11 +240,16 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
                 depth: metadata.treeDepth
             });
             let vnode;
-            for (const curr of vnodes) {
-                vnode = curr;
-                if (vnode.props) {
-                    break;
+            if (Array.isArray(vnodes)) {
+                for (const curr of vnodes) {
+                    vnode = curr;
+                    if (vnode.props) {
+                        break;
+                    }
                 }
+            }
+            else {
+                vnode = vnodes;
             }
             const prunedVnodes = [vnode];
             this.newVnodesCache.set(key, { vnodes: prunedVnodes });
@@ -469,11 +494,12 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             const initialSkeleton = this.state.initialSkeleton;
             const initialSkeletonCount = this.state.initialSkeletonCount;
             let content;
+            let data;
             if (this.contentHandler == null && initialSkeleton) {
                 content = this._renderInitialSkeletons(initialSkeletonCount);
             }
             else {
-                const data = this.getData();
+                data = this.getData();
                 if ((data != null && initialSkeleton) || data == null) {
                     content = this._renderInitialSkeletons(initialSkeletonCount, data == null);
                 }
@@ -486,8 +512,14 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
                     }
                 }
             }
-            return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
-                preact.h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+            if (data == null) {
+                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
+                    preact.h("div", { role: 'list', "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+            }
+            else {
+                return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
+                    preact.h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+            }
         }
         _doBlur() {
             if (this.actionableMode) {
@@ -583,6 +615,14 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
                 scroller: this._getScroller()
             };
         }
+        _debounce(callback, wait) {
+            let timeout = null;
+            return (...args) => {
+                const next = () => callback(...args);
+                clearTimeout(timeout);
+                timeout = setTimeout(next, wait);
+            };
+        }
         componentDidMount() {
             const data = this.props.data;
             if (this._isTreeData()) {
@@ -599,7 +639,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             }
             if (window['ResizeObserver']) {
                 const root = this.root;
-                const resizeObserver = new window['ResizeObserver']((entries) => {
+                const resizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
                     entries.forEach((entry) => {
                         if (entry.target === root && entry.contentRect) {
                             const currHeight = this.height;
@@ -612,7 +652,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
                             }
                         }
                     });
-                });
+                }, StreamList_1.debounceThreshold));
                 resizeObserver.observe(root);
                 this.resizeObserver = resizeObserver;
             }
@@ -1125,6 +1165,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojdatacollection-common', 
             y: 0
         }
     };
+    exports.StreamList.debounceThreshold = 100;
     exports.StreamList.collapse = (key, currentData) => {
         const data = currentData.value.data;
         const metadata = currentData.value.metadata;

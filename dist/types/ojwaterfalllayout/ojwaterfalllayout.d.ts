@@ -53,9 +53,10 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private lastInternalScrollPositionUpdate;
     private focusInHandler;
     private focusOutHandler;
+    private delayShowSkeletonsTimeout;
     constructor();
     static defaultProps: Partial<Props<any, any>>;
-    private static readonly gutterWidth;
+    private gutterWidth;
     private static readonly minResizeWidthThreshold;
     private static readonly debounceThreshold;
     private static readonly _CSS_Vars;
@@ -107,7 +108,6 @@ export declare class WaterfallLayout<K extends string | number, D> extends Compo
     private _resetFocus;
     private _setFocus;
     private _updateCurrentItem;
-    private _scrollToVisible;
     private _getScroller;
     private _getContentDiv;
     private _getContentDivStyle;

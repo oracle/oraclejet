@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// JET 12 - import CSS from oraclejet-preact; remove in 13
+@import "../base/_oj-message-banner.scss";
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-message-banner.cssvars.scss";
+// scoped cssvars override
+@import "_oj-message-banner-scoped.cssvars.scss";
+
+@include module-include-once("stable.messagebanner") {
+
+}

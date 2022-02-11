@@ -1,0 +1,144 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example typography/themes/redwood/oj-typography.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.typography") {
+  .oj-typography-heading-2xl,
+  .oj-typography-title-1 {
+    font-size: var(--oj-typography-heading-2xl-font-size) !important;
+    font-weight: var(--oj-typography-heading-2xl-font-weight) !important;
+    line-height: var(--oj-typography-heading-2xl-line-height) !important;
+  }
+
+  .oj-typography-heading-xl,
+  .oj-typography-title-2 {
+    font-size: var(--oj-typography-heading-xl-font-size) !important;
+    font-weight: var(--oj-typography-heading-xl-font-weight) !important;
+    line-height: var(--oj-typography-heading-xl-line-height) !important;
+  }
+
+  .oj-typography-heading-lg,
+  .oj-typography-title-3 {
+    font-size: var(--oj-typography-heading-lg-font-size) !important;
+    font-weight: var(--oj-typography-heading-lg-font-weight) !important;
+    line-height: var(--oj-typography-heading-lg-line-height) !important;
+  }
+
+  .oj-typography-heading-md,
+  .oj-typography-title-4 {
+    font-size: var(--oj-typography-heading-md-font-size) !important;
+    font-weight: var(--oj-typography-heading-md-font-weight) !important;
+    line-height: var(--oj-typography-heading-md-line-height) !important;
+  }
+
+  .oj-typography-heading-sm,
+  .oj-typography-title-5 {
+    font-size: var(--oj-typography-heading-sm-font-size) !important;
+    font-weight: var(--oj-typography-heading-sm-font-weight) !important;
+    line-height: var(--oj-typography-heading-sm-line-height) !important;
+  }
+
+  .oj-typography-heading-xs,
+  .oj-typography-title-6 {
+    font-size: var(--oj-typography-heading-xs-font-size) !important;
+    font-weight: var(--oj-typography-heading-xs-font-weight) !important;
+    line-height: var(--oj-typography-heading-xs-line-height) !important;
+  }
+
+  .oj-typography-subheading-2xl,
+  .oj-typography-subtitle-1 {
+    font-size: var(--oj-typography-subheading-2xl-font-size) !important;
+    font-weight: var(--oj-typography-subheading-2xl-font-weight) !important;
+    line-height: var(--oj-typography-subheading-2xl-line-height) !important;
+  }
+
+  .oj-typography-subheading-xl,
+  .oj-typography-subtitle-2 {
+    font-size: var(--oj-typography-subheading-xl-font-size) !important;
+    font-weight: var(--oj-typography-subheading-xl-font-weight) !important;
+    line-height: var(--oj-typography-subheading-xl-line-height) !important;
+  }
+
+  .oj-typography-subheading-lg,
+  .oj-typography-subtitle-3 {
+    font-size: var(--oj-typography-subheading-lg-font-size) !important;
+    font-weight: var(--oj-typography-subheading-lg-font-weight) !important;
+    line-height: var(--oj-typography-subheading-lg-line-height) !important;
+  }
+
+  .oj-typography-subheading-md,
+  .oj-typography-subtitle-4 {
+    font-size: var(--oj-typography-subheading-md-font-size) !important;
+    font-weight: var(--oj-typography-subheading-md-font-weight) !important;
+    line-height: var(--oj-typography-subheading-md-line-height) !important;
+  }
+
+  .oj-typography-subheading-sm {
+    font-size: var(--oj-typography-subheading-sm-font-size) !important;
+    font-weight: var(--oj-typography-subheading-sm-font-weight) !important;
+    line-height: var(--oj-typography-subheading-sm-line-height) !important;
+  }
+
+  .oj-typography-subheading-xs {
+    font-size: var(--oj-typography-subheading-xs-font-size) !important;
+    font-weight: var(--oj-typography-subheading-xs-font-weight) !important;
+    line-height: var(--oj-typography-subheading-xs-line-height) !important;
+  }
+
+  .oj-typography-body-xl {
+    font-size: var(--oj-typography-body-xl-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-xl-line-height) !important;
+  }
+
+  .oj-typography-body-lg,
+  .oj-typography-body-1 {
+    font-size: var(--oj-typography-body-lg-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-lg-line-height) !important;
+  }
+
+  .oj-typography-body-md,
+  .oj-typography-body-2 {
+    font-size: var(--oj-typography-body-md-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-md-line-height) !important;
+  }
+
+  .oj-typography-body-sm,
+  .oj-typography-body-3 {
+    font-size: var(--oj-typography-body-sm-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-sm-line-height) !important;
+  }
+
+  .oj-typography-body-xs,
+  .oj-typography-caption-1 {
+    font-size: var(--oj-typography-body-xs-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-xs-line-height) !important;
+  }
+
+  .oj-typography-body-2xs,
+  .oj-typography-caption-2 {
+    font-size: var(--oj-typography-body-2xs-font-size) !important;
+    font-weight: normal !important;
+    line-height: var(--oj-typography-body-2xs-line-height) !important;
+  }
+
+  .oj-typography-semi-bold {
+    font-weight: 600 !important;
+  }
+
+  .oj-typography-bold {
+    font-weight: 700 !important;
+  }
+}

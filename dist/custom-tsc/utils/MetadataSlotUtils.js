@@ -25,13 +25,18 @@ const MetaTypes = __importStar(require("./MetadataTypes"));
 const MetaUtils = __importStar(require("./MetadataUtils"));
 const TypeUtils = __importStar(require("./MetadataTypeUtils"));
 const TransformerError_1 = require("./TransformerError");
+const _DYNAMIC_SLOT_DETECTED = 0b0001;
+const _DYNAMIC_TEMPLATE_SLOT_DETECTED = 0b0010;
+const _DYNAMIC_SLOT_INVALID_STATE = 0b0011;
+const _DYNAMIC_SLOT_INVALID_STATE_MSG = `Components cannot have properties for both dynamic slots and dynamic template slots. Only a single Property is allowed to specify support for dynamic slots.`;
 function generateSlotsMetadata(memberKey, propDeclaration, typeName, metaUtilObj) {
+    var _a;
     if (!typeName)
         return false;
-    checkDefaultSlotType(memberKey, typeName, metaUtilObj);
+    checkDefaultSlotType(memberKey, typeName, propDeclaration, metaUtilObj);
     switch (typeName) {
         case `${metaUtilObj.namedExportToAlias.ComponentChildren}`:
-            updateRtSlotMetadata("", propDeclaration, false, false, metaUtilObj);
+            updateRtSlotMetadata('', propDeclaration, false, false, metaUtilObj);
             return true;
         case `${metaUtilObj.namedExportToAlias.TemplateSlot}`:
             updateRtSlotMetadata(memberKey, propDeclaration, true, false, metaUtilObj);
@@ -40,27 +45,37 @@ function generateSlotsMetadata(memberKey, propDeclaration, typeName, metaUtilObj
             updateRtSlotMetadata(memberKey, propDeclaration, false, false, metaUtilObj);
             return true;
         case `${metaUtilObj.namedExportToAlias.DynamicTemplateSlots}`:
-            metaUtilObj.dynamicSlotsInUse = metaUtilObj.dynamicSlotsInUse | 0b0010;
-            if (metaUtilObj.dynamicSlotsInUse === 3) {
-                throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
+            if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_TEMPLATE_SLOT_DETECTED) {
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Components cannot have multiple properties for dynamic template slots. Only a single Property is allowed to specify support for dynamic slots.`, propDeclaration);
             }
-            MetaUtils.updateRtExtensionMetadata("_DYNAMIC_SLOT", {
+            metaUtilObj.dynamicSlotsInUse =
+                metaUtilObj.dynamicSlotsInUse | _DYNAMIC_TEMPLATE_SLOT_DETECTED;
+            if (metaUtilObj.dynamicSlotsInUse === _DYNAMIC_SLOT_INVALID_STATE) {
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, _DYNAMIC_SLOT_INVALID_STATE_MSG, propDeclaration);
+            }
+            MetaUtils.updateRtExtensionMetadata('_DYNAMIC_SLOT', {
                 prop: memberKey,
-                isTemplate: 1,
+                isTemplate: 1
             }, metaUtilObj);
             updateRtSlotMetadata(memberKey, propDeclaration, true, true, metaUtilObj);
             return true;
         case `${metaUtilObj.namedExportToAlias.DynamicSlots}`:
-            metaUtilObj.dynamicSlotsInUse = metaUtilObj.dynamicSlotsInUse | 0b0001;
-            if (metaUtilObj.dynamicSlotsInUse === 3) {
-                throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Components cannot have properties for both named and template dynamic slots. Only one dynamic slot property is allowed.`);
+            if (metaUtilObj.dynamicSlotsInUse & _DYNAMIC_SLOT_DETECTED) {
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Components cannot have multiple properties for dynamic slots. Only a single Property is allowed to specify support for dynamic slots.`, propDeclaration);
             }
-            MetaUtils.updateRtExtensionMetadata("_DYNAMIC_SLOT", {
+            metaUtilObj.dynamicSlotsInUse = metaUtilObj.dynamicSlotsInUse | _DYNAMIC_SLOT_DETECTED;
+            if (metaUtilObj.dynamicSlotsInUse === _DYNAMIC_SLOT_INVALID_STATE) {
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, _DYNAMIC_SLOT_INVALID_STATE_MSG, propDeclaration);
+            }
+            MetaUtils.updateRtExtensionMetadata('_DYNAMIC_SLOT', {
                 prop: memberKey,
-                isTemplate: 0,
+                isTemplate: 0
             }, metaUtilObj);
-            metaUtilObj.fullMetadata.dynamicSlots =
-                metaUtilObj.fullMetadata.dynamicSlots || {};
+            metaUtilObj.fullMetadata.dynamicSlots = metaUtilObj.fullMetadata.dynamicSlots || {};
+            metaUtilObj.dynamicSlotNameNodes.push({
+                name: '',
+                node: (_a = propDeclaration.type) !== null && _a !== void 0 ? _a : propDeclaration
+            });
             return true;
         default:
             return false;
@@ -78,8 +93,7 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
     }
     else {
         if (isTemplateSlot) {
-            metaUtilObj.fullMetadata.dynamicSlots =
-                metaUtilObj.fullMetadata.dynamicSlots || {};
+            metaUtilObj.fullMetadata.dynamicSlots = metaUtilObj.fullMetadata.dynamicSlots || {};
             const typeRefNode = propDeclaration.type;
             if (typeRefNode.typeArguments && typeRefNode.typeArguments.length) {
                 const detailNode = typeRefNode.typeArguments[0];
@@ -90,7 +104,7 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
                         let dt = MetaUtils.getDtMetadata(propDeclaration, metaUtilObj);
                         const dataObj = getSlotData(detailData, metaUtilObj);
                         if (dataObj) {
-                            dt["data"] = dataObj;
+                            dt['data'] = dataObj;
                         }
                         let key;
                         if (ts.isTypeReferenceNode(detailData)) {
@@ -100,6 +114,10 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
                             key = `dynamicTmplSlotKey${k++}`;
                         }
                         metaUtilObj.fullMetadata.dynamicSlots[key] = dt;
+                        metaUtilObj.dynamicSlotNameNodes.push({
+                            name: key,
+                            node: detailData
+                        });
                     });
                 }
                 else {
@@ -107,6 +125,10 @@ function updateRtSlotMetadata(slotName, propDeclaration, isTemplateSlot = false,
                         ? TypeUtils.getTypeNameFromTypeReference(detailNode)
                         : detailNode.getText();
                     metaUtilObj.fullMetadata.dynamicSlots[key] = getDtMetadataForSlot(propDeclaration, metaUtilObj);
+                    metaUtilObj.dynamicSlotNameNodes.push({
+                        name: key,
+                        node: detailNode
+                    });
                 }
             }
         }
@@ -120,7 +142,7 @@ function getDtMetadataForSlot(propDeclaration, metaUtilObj) {
         const detailNode = typeRefNode.typeArguments[0];
         const dataObj = getSlotData(detailNode, metaUtilObj);
         if (dataObj) {
-            dt["data"] = dataObj;
+            dt['data'] = dataObj;
         }
     }
     return dt;
@@ -137,15 +159,14 @@ function getSlotData(detailNode, metaUtilObj) {
             return;
         }
         const symbolType = metaUtilObj.typeChecker.getTypeOfSymbolAtLocation(symbol, propSignature);
-        if (ts.isPropertySignature(propSignature) ||
-            ts.isPropertyDeclaration(propSignature)) {
+        if (ts.isPropertySignature(propSignature) || ts.isPropertyDeclaration(propSignature)) {
             const property = key.toString();
-            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj);
+            const slotDataMetadata = TypeUtils.getAllMetadataForDeclaration(propSignature, MetaTypes.MetadataScope.DT, metaUtilObj, MetaTypes.GETMD_FLAGS_NONE, symbol);
             data = data || {};
             data[property] = slotDataMetadata;
             if (TypeUtils.possibleComplexProperty(symbolType, slotDataMetadata.type, MetaTypes.MetadataScope.DT)) {
                 let stack = [];
-                if (slotDataMetadata.type === "Array<object>") {
+                if (slotDataMetadata.type === 'Array<object>') {
                     stack.push(key);
                 }
                 const subprops = TypeUtils.getComplexPropertyMetadata(symbol, slotDataMetadata.type, detailName, MetaTypes.MetadataScope.DT, stack, metaUtilObj);
@@ -153,13 +174,13 @@ function getSlotData(detailNode, metaUtilObj) {
                     if (subprops.circRefDetected) {
                         data[property].type = TypeUtils.getSubstituteTypeForCircularReference(slotDataMetadata);
                     }
-                    else if (slotDataMetadata.type === "Array<object>") {
+                    else if (slotDataMetadata.type === 'Array<object>') {
                         data[property].extension = {};
                         data[property].extension.vbdt = {};
                         data[property].extension.vbdt.itemProperties = subprops;
                     }
                     else {
-                        data[property].type = "object";
+                        data[property].type = 'object';
                         data[property].properties = subprops;
                     }
                 }
@@ -170,40 +191,33 @@ function getSlotData(detailNode, metaUtilObj) {
     return data;
 }
 exports.getSlotData = getSlotData;
-function checkDefaultSlotType(propName, typeName, metaUtilObj) {
+function checkDefaultSlotType(propName, typeName, propDecl, metaUtilObj) {
+    var _a;
     if (propName === MetaTypes.DEFAULT_SLOT_PROP &&
         typeName !== `${metaUtilObj.namedExportToAlias.ComponentChildren}`) {
-        throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`);
+        throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Unsupported type '${typeName}' for reserved default slot property name '${MetaTypes.DEFAULT_SLOT_PROP}'.`, (_a = propDecl.type) !== null && _a !== void 0 ? _a : propDecl);
     }
 }
 exports.checkDefaultSlotType = checkDefaultSlotType;
 function validateDynamicSlots(metaUtilObj) {
-    let found = false;
-    let matchingKey = true;
-    if (metaUtilObj.fullMetadata.dynamicSlots) {
-        const keys = Object.keys(metaUtilObj.fullMetadata.dynamicSlots);
+    if (metaUtilObj.dynamicSlotNameNodes.length > 0) {
+        const allDynSlotDefs = new Set();
         if (metaUtilObj.fullMetadata.properties) {
             const allPropsArr = Object.keys(metaUtilObj.fullMetadata.properties);
             for (let i = 0; i < allPropsArr.length; i++) {
-                let propKey = allPropsArr[i];
-                let defValue = metaUtilObj.fullMetadata.properties[propKey].dynamicSlotDef;
+                const propKey = allPropsArr[i];
+                const defValue = metaUtilObj.fullMetadata.properties[propKey].dynamicSlotDef;
                 if (defValue !== undefined) {
-                    found = true;
-                    if (keys.length > 0) {
-                        if (keys.indexOf(defValue) < 0) {
-                            matchingKey = false;
-                            break;
-                        }
-                    }
+                    allDynSlotDefs.add(defValue);
                 }
             }
         }
-        if (!found) {
-            throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, 'Dynamic Slots were defined for this component but no "dynamicSlotDef" metadata was found.');
-        }
-        if (!matchingKey) {
-            throw new TransformerError_1.TransformerError(metaUtilObj.componentClassName, 'Dynamic Slots were defined for this component but "dynamicSlotDef" metadata value does not match a key in "dynamicSlots" metadata.');
+        for (let nameNode of metaUtilObj.dynamicSlotNameNodes) {
+            if (!allDynSlotDefs.has(nameNode.name)) {
+                throw new TransformerError_1.TransformerError(metaUtilObj.componentName, `Dynamic slots were defined for this component, but no Property with a matching 'dynamicSlotDef' metadata value of "${nameNode.name}" was found.`, nameNode.node);
+            }
         }
     }
 }
 exports.validateDynamicSlots = validateDynamicSlots;
+//# sourceMappingURL=MetadataSlotUtils.js.map

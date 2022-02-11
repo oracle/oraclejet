@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -55,16 +55,6 @@
   }
 }
 
-@mixin oj-form-control-text-size-adjust-css-vars()
-{
-    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
-      @media #{$responsiveQuerySmallOnly} {
-        & {
-          -webkit-text-size-adjust: var(--oj-text-field-font-size-adjust);
-        }
-      }
-    }
-}
 // form controls
 //----------------------------------
 
@@ -90,35 +80,6 @@
 
 }
 
-@mixin oj-form-control-content-css-vars($valueColor: '--oj-text-field-input-value-color',
-                                        $textAlign:  '--oj-text-field-text-align') {
-
- 
-  text-align: var(#{$textAlign});
- 
-  color: var(#{$valueColor});
-  background-color: var(--oj-text-field-bg-color);
-  @include oj-form-control-border($outputCssVars: true);
-  // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
-  &:-ms-input-placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    // in Firefox the default opacity is not 1 for placeholder
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style);
-  }
-  &::placeholder {
-    color: var(--oj-text-field-placeholder-color);
-    // in Firefox the default opacity is not 1 for placeholder
-    opacity: 1;
-    font-style: var(--oj-text-field-placeholder-font-style);
-  }
-
-  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
-  -webkit-appearance: none;
-  // remove ios background-color on tap since we tend to put our own background-color on tap
-  -webkit-tap-highlight-color: transparent;
-}
-
 // this doesn't add borders
 @mixin oj-form-control-input($valueColor: $formControlInputValueColor,
                              $textAlign:  $formControlTextAlign) {
@@ -139,34 +100,6 @@
       // in Firefox the default opacity is not 1 for placeholder
       opacity: 1;
       font-style: $formControlPlaceholderFontStyle;
-    }
-}
-
-@mixin oj-form-control-input-css-vars($valueColor: '--oj-text-field-input-value-color',
-                             $textAlign: '--oj-text-field-text-align') {
-
-    text-align: var(#{$textAlign});
-    color: var(#{$valueColor});
-    background-color: var(--oj-text-field-bg-color);
-
-    // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
-    -webkit-appearance: none;
-    // remove ios background-color on tap since we tend to put our own background-color on tap
-    -webkit-tap-highlight-color: transparent;
-
-    
-    // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
-    &:-ms-input-placeholder {
-      color: var(--oj-text-field-placeholder-color);
-      // in Firefox the default opacity is not 1 for placeholder
-      opacity: 1;
-      font-style: var(--oj-text-field-placeholder-font-style);
-    }
-    &::placeholder {
-      color: var(--oj-text-field-placeholder-color);
-      // in Firefox the default opacity is not 1 for placeholder
-      opacity: 1;
-      font-style: var(--oj-text-field-placeholder-font-style);
     }
 }
 
@@ -411,10 +344,6 @@
       $formControlBorderRadius != 0) {
     @include oj-border-radius(0);
   }
-}
-@mixin oj-form-control-border-message-width-css-vars()
-{
-  border-width: var(--oj-text-field-messaging-border-top-width) var(--oj-text-field-messaging-border-right-width) var(--oj-text-field-messaging-border-bottom-width) var(--oj-text-field-messaging-border-left-width);
 }
 // returns the border-width for when there is a message (e.g., error) on the form control.
 // we calculate this because in some cases, we want only a bottom-border, in other cases we

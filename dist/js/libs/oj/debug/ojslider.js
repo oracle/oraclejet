@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -377,6 +377,15 @@ var __oj_range_slider_metadata =
         oj.CollectionUtils.mergeDeep(__oj_range_slider_metadata, bindingMeta)
     });
   }());
+
+  const OJ_SLIDER_THUMB = '.oj-slider-thumb';
+  const ARIA_LABEL = 'aria-label';
+  const ARIA_LABELLEDBY = 'aria-labelledby';
+  const OJ_SLIDER_THUMB_INDEX = 'oj-slider-thumb-index';
+  const EMPTY_DIV = '<div></div>';
+  const OJ_SLIDER_BAR = 'oj-slider-bar';
+  const OJ_SLIDER_BAR_VALUE = 'oj-slider-bar-value';
+  const UI_DRAGGABLE = '.ui-draggable';
 
   (function () {
     /*!
@@ -1718,8 +1727,9 @@ var __oj_range_slider_metadata =
         * @private
         */
       _SetRawValue: function (val, event) {
-        var flags = {};
-        flags._context = { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
+        var flags = {
+          _context: { originalEvent: event, writeback: true, internalSet: true, readOnly: true }
+        };
         if (!oj.Object.compareValues(this.options[this._transientValueName], val)) {
           this.option(this._transientValueName, val, flags);
         }
@@ -1787,7 +1797,7 @@ var __oj_range_slider_metadata =
       },
 
       _copyLabelledbyToThumb: function (labelId) {
-        var thumb = this._elementWrapped.find('.oj-slider-thumb');
+        var thumb = this._elementWrapped.find(OJ_SLIDER_THUMB);
         var thumb2;
         if (this._isCustomRangeSlider()) {
           var labelEl = document.getElementById(labelId);
@@ -1798,14 +1808,14 @@ var __oj_range_slider_metadata =
           var higherValueThumbString = Translations.getTranslatedString(
             'oj-ojSlider.higherValueThumb'
           );
-          thumb.attr('aria-label', ariaLabelText + ' ' + lowerValueThumbString);
+          thumb.attr(ARIA_LABEL, ariaLabelText + ' ' + lowerValueThumbString);// @HTMLUpdateOK
           thumb2 = thumb[1];
-          $(thumb2).attr('aria-label', ariaLabelText + ' ' + higherValueThumbString);
+          $(thumb2).attr(ARIA_LABEL, ariaLabelText + ' ' + higherValueThumbString);// @HTMLUpdateOK
         } else {
-          thumb.attr('aria-labelledby', labelId);
+          thumb.attr(ARIA_LABELLEDBY, labelId);// @HTMLUpdateOK
           if (thumb.length > 1) {
             thumb2 = thumb[1];
-            $(thumb2).attr('aria-labelledby', String(labelId));
+            $(thumb2).attr(ARIA_LABELLEDBY, String(labelId));// @HTMLUpdateOK
           }
         }
       },
@@ -1820,13 +1830,13 @@ var __oj_range_slider_metadata =
             'oj-ojSlider.higherValueThumb'
           );
 
-          thumb = this._elementWrapped.find('.oj-slider-thumb');
-          thumb.attr('aria-label', ariaLabel + ' ' + lowerValueThumbString);
+          thumb = this._elementWrapped.find(OJ_SLIDER_THUMB);
+          thumb.attr(ARIA_LABEL, ariaLabel + ' ' + lowerValueThumbString);// @HTMLUpdateOK
           var thumb2 = thumb[1];
-          $(thumb2).attr('aria-label', ariaLabel + ' ' + higherValueThumbString);
+          $(thumb2).attr(ARIA_LABEL, ariaLabel + ' ' + higherValueThumbString);// @HTMLUpdateOK
         } else {
-          thumb = this.OuterWrapper.querySelector('.oj-slider-thumb');
-          thumb.setAttribute('aria-label', ariaLabel);
+          thumb = this.OuterWrapper.querySelector(OJ_SLIDER_THUMB);
+          thumb.setAttribute(ARIA_LABEL, ariaLabel);// @HTMLUpdateOK
         }
       },
 
@@ -1836,7 +1846,6 @@ var __oj_range_slider_metadata =
         this._makeDraggable();
         this._setAriaInfo();
       },
-
       _setAriaInfo: function () {
         var ariaLabelString;
         var label;
@@ -1857,7 +1866,7 @@ var __oj_range_slider_metadata =
           // there is a use-case where aria-label is set on the component, and we write that to the
           // thumb.
           if (!this.options.labelledBy || document.getElementById(this.options.labelledBy)) {
-            ariaLabelString = this.OuterWrapper.getAttribute('aria-label');
+            ariaLabelString = this.OuterWrapper.getAttribute(ARIA_LABEL);
             if (ariaLabelString) {
               this._setAriaLabelToThumb(ariaLabelString);
             }
@@ -1885,12 +1894,12 @@ var __oj_range_slider_metadata =
             //
             // Check if the <input> has aria-label=""
             //
-            ariaLabelString = this.element.attr('aria-label');
+            ariaLabelString = this.element.attr(ARIA_LABEL);
             if (ariaLabelString) {
-              thumb = this._elementWrapped.find('.oj-slider-thumb');
+              thumb = this._elementWrapped.find(OJ_SLIDER_THUMB);
 
               // Set the aria-labelledby attribute of the thumb to the returned id
-              thumb.attr('aria-label', ariaLabelString);
+              thumb.attr(ARIA_LABEL, ariaLabelString);// @HTMLUpdateOK
             }
           }
         }
@@ -1953,13 +1962,12 @@ var __oj_range_slider_metadata =
         // .prop does not work for aria-labelledby. Need to use .attr to find
         // aria-labelledby.
 
-        var ariaId = this.element.attr('aria-labelledby');
+        var ariaId = this.element.attr(ARIA_LABELLEDBY);
 
         // Handle direct labelling case for custom elements
         // (this is not the common case, but still is supported)
         if (ariaId === undefined && this.OuterWrapper) {
-            // ariaId = this._elementWrapped.attr('aria-labelledby');
-          var ariaIdDirect = this._elementWrapped.attr('aria-labelledby');
+          var ariaIdDirect = this._elementWrapped.attr(ARIA_LABELLEDBY);
           if (ariaIdDirect) {
             if (document.getElementById(ariaIdDirect) !== null) {
               return $(document.getElementById(ariaIdDirect));
@@ -2030,8 +2038,7 @@ var __oj_range_slider_metadata =
       //
       _getThumbId: function (index) {
         var elementId = this._getElementId();
-        var thumbId = elementId + '-thumb' + index;
-        return thumbId;
+        return (elementId + '-thumb' + index);
       },
 
       //
@@ -2039,8 +2046,7 @@ var __oj_range_slider_metadata =
       //
       _getBarValueId: function () {
         var elementId = this._getElementId();
-        var thumbId = elementId + '-barValue';
-        return thumbId;
+        return (elementId + '-barValue');
       },
 
       //
@@ -2048,8 +2054,7 @@ var __oj_range_slider_metadata =
       //
       _getBarBackgroundId: function () {
         var elementId = this._getElementId();
-        var thumbId = elementId + '-barBack';
-        return thumbId;
+        return (elementId + '-barBack');
       },
 
       //
@@ -2057,8 +2062,7 @@ var __oj_range_slider_metadata =
       //
       _getSliderWrapperId: function () {
         var elementId = this._getElementId();
-        var sliderWrapperId = elementId + '-sliderWrapper';
-        return sliderWrapperId;
+        return (elementId + '-sliderWrapper');
       },
 
       _createThumbs: function () {
@@ -2100,7 +2104,7 @@ var __oj_range_slider_metadata =
         var that = this;
         var i = 0;
         this._thumbs.each(function () {
-          $(this).data('oj-slider-thumb-index', i);
+          $(this).data(OJ_SLIDER_THUMB_INDEX, i);
           i += 1;
 
           if (that._isVertical()) {
@@ -2135,7 +2139,7 @@ var __oj_range_slider_metadata =
 
         if (existingSliderWrapper.length) existingSliderWrapper.remove();
 
-        this._sliderContainer = $('<div></div>');
+        this._sliderContainer = $(EMPTY_DIV);
         $(this._sliderContainer).attr('id', sliderWrapperId);
         this._sliderContainer.addClass('oj-slider-container').addClass('oj-form-control-container');
 
@@ -2153,7 +2157,7 @@ var __oj_range_slider_metadata =
 
         if (existingBarBack.length) existingBarBack.remove();
 
-        this._barback = $('<div></div>');
+        this._barback = $(EMPTY_DIV);
 
         var classes = 'oj-slider-bar';
 
@@ -2166,14 +2170,16 @@ var __oj_range_slider_metadata =
         //
         // Clicking on the bar repositions the thumb.
         //
-        var that = this;
-        this._barback.on('mousedown' + that.eventNamespace, function (event) {
-          that._repositionThumb(event);
-          that._mouseStop(event);
+        this._barback.on('mousedown' + this.eventNamespace, this._reposition.bind(this));
+      },
 
-          var thumb = that._getActiveThumb();
-          thumb.focus();
-        });
+
+      _reposition: function (event) {
+        this._repositionThumb(event);
+        this._mouseStop(event);
+
+        var thumb = this._getActiveThumb();
+        thumb.focus();
       },
 
       //
@@ -2241,11 +2247,10 @@ var __oj_range_slider_metadata =
         var classes = '';
 
         if (options.type) {
-          var that = this;
           //
           // Define the range (value bar) div
           //
-          this._range = $('<div></div>');
+          this._range = $(EMPTY_DIV);
           // Give the bar an id.
           $(this._range).attr('id', this._getBarValueId());
 
@@ -2256,15 +2261,7 @@ var __oj_range_slider_metadata =
           // Like the bar background, clicking on the bar value also repositions the thumb.
           //
 
-          this._range.on('mousedown' + that.eventNamespace, function (event) {
-            that._repositionThumb(event);
-            that._mouseStop(event);
-
-            var thumb = that._getActiveThumb();
-            // if we add oj-active here it "sticks"
-            // thumb.addClass("oj-active").focus();
-            thumb.focus();
-          });
+          this._range.on('mousedown' + this.eventNamespace, this._reposition.bind(this));
 
           this._range = this._sliderContainer.find('#' + this._getBarValueId());
 
@@ -2288,6 +2285,14 @@ var __oj_range_slider_metadata =
       _tearDownTouch: function (e) {
         oj._TouchProxy.removeTouchListeners(e);
       },
+  // The resizeObserver listens for when a user resizes the window and recalculates the slider’s
+  // width and grid, so that when a user resizes the window, the thumb will still snap to the latest grid, whether
+  // in a form-layout or not.
+      _registerResizeListener: function (element) {
+        this._resizeObserver = new ResizeObserver(this._makeDraggable.bind(this));
+        this._resizeObserver.observe(element);
+      },
+
 
       /**
        * Setup events for slider.
@@ -2297,6 +2302,7 @@ var __oj_range_slider_metadata =
        * @instance
        */
       _setupEvents: function () {
+        this._registerResizeListener(this._elementWrapped[0]);
         if (this._CanSetValue()) {
           this._AddHoverable(this._elementWrapped);
         }
@@ -2356,6 +2362,7 @@ var __oj_range_slider_metadata =
       // divs added for messaging, such as oj-messaging-inline-container.
       //
       _destroySliderDom: function () {
+        this._resizeObserver.disconnect();
         // Tear down touch events for each thumb.
         this._thumbs.toArray().forEach(
           function (current) {
@@ -2647,9 +2654,7 @@ var __oj_range_slider_metadata =
 
         valueMouse = this._valueMin() + (fracThumb * valueTotal);
 
-        var trimmedValue = this._trimAlignValue(valueMouse);
-
-        return trimmedValue;
+        return (this._trimAlignValue(valueMouse));
       },
 
       // Return the value for the inactive thumb.
@@ -2749,7 +2754,6 @@ var __oj_range_slider_metadata =
             }
           }
         } else {
-          vals = [];
           var i;
           vals = this.options.value.slice();
           for (i = 0; i < vals.length; i++) {
@@ -2792,23 +2796,6 @@ var __oj_range_slider_metadata =
         this._newMultiValue[index] = this._trimAlignValue(newValue);
         this._change(event, index, rawOnly);
         if (!rawOnly) this._updateUI();
-      },
-
-      /**
-       * Notifies the component that its subtree has been connected to the document
-       * programmatically after the component has been created.
-       * Use case: oj-form-layout that wraps an oj-slider will most likely
-       * change the initial width of the slider because of being in the o-f-l
-       * column. So we need to recalculate the grid for stepping.
-       * @return {void}
-       * @memberof oj.ojSlider
-       * @instance
-       * @protected
-       * @override
-      */
-      _NotifyAttached: function () {
-        this._super();
-        this._makeDraggable();
       },
 
       _setOption: function (key, value, flags) {
@@ -3349,7 +3336,7 @@ var __oj_range_slider_metadata =
           var newVal;
           var step;
           var tempVal;
-          var index = $(event.target).data('oj-slider-thumb-index');
+          var index = $(event.target).data(OJ_SLIDER_THUMB_INDEX);
 
           this._thumbIndex = index;
 
@@ -3460,7 +3447,7 @@ var __oj_range_slider_metadata =
             case $.ui.keyCode.DOWN:
             case $.ui.keyCode.LEFT:
 
-              var index = $(event.target).data('oj-slider-thumb-index');
+              var index = $(event.target).data(OJ_SLIDER_THUMB_INDEX);
               this._thumbIndex = index;
 
               this._change(event, index, false);
@@ -3602,12 +3589,12 @@ var __oj_range_slider_metadata =
         var subId = locator.subId;
 
         if (subId === 'oj-slider-thumb-0') {
-          return this.widget().find('.oj-slider-thumb')[0];
+          return this.widget().find(OJ_SLIDER_THUMB)[0];
         } else if (subId === 'oj-slider-thumb-1') {
-          return this.widget().find('.oj-slider-thumb')[1];
-        } else if (subId === 'oj-slider-bar') {
+          return this.widget().find(OJ_SLIDER_THUMB)[1];
+        } else if (subId === OJ_SLIDER_BAR) {
           return this.widget().find('.' + subId)[0];
-        } else if (subId === 'oj-slider-bar-value') {
+        } else if (subId === OJ_SLIDER_BAR_VALUE) {
           return this.widget().find('.' + subId)[0];
         }
 
@@ -3622,10 +3609,10 @@ var __oj_range_slider_metadata =
             return { subId: 'oj-slider-thumb-0' };
           } else if (node.id === this._getThumbId(1) && $(node).hasClass('oj-slider-thumb')) {
             return { subId: 'oj-slider-thumb-1' };
-          } else if ($(node).hasClass('oj-slider-bar')) {
-            return { subId: 'oj-slider-bar' };
-          } else if ($(node).hasClass('oj-slider-bar-value')) {
-            return { subId: 'oj-slider-bar-value' };
+          } else if ($(node).hasClass(OJ_SLIDER_BAR)) {
+            return { subId: OJ_SLIDER_BAR };
+          } else if ($(node).hasClass(OJ_SLIDER_BAR_VALUE)) {
+            return { subId: OJ_SLIDER_BAR_VALUE };
           }
         }
 
@@ -3804,7 +3791,6 @@ var __oj_range_slider_metadata =
             //
             if (that._multipleThumbs) {
               var otherThumb;
-              // var thumb = that._getActiveThumb();
 
               if (that._thumbIndex === 0) {
                 otherThumb = $(that._thumbs[1]);
@@ -3820,12 +3806,10 @@ var __oj_range_slider_metadata =
               if (!that._isVertical()) {
                 var halfThumbWidth = thumbParam.outerWidth() / 2;
                 var parentLeft = that._barback.offsetParent().offset().left;
-                // pos1 = thumbParam.offset().left + halfThumbWidth - parentLeft;
                 pos2 = (otherThumb.offset().left + halfThumbWidth) - parentLeft;
               } else {
                 var halfThumbHeight = thumbParam.outerHeight() / 2;
                 var parentTop = that._barback.offsetParent().offset().top;
-                // pos1 = thumbParam.offset().top + halfThumbHeight - parentTop;
                 pos2 = (otherThumb.offset().top + halfThumbHeight) - parentTop;
               }
 
@@ -3886,13 +3870,13 @@ var __oj_range_slider_metadata =
 
             function (current) {
               var thumb = $(current);
-              if (thumb.is('.ui-draggable')) {
+              if (thumb.is(UI_DRAGGABLE)) {
                 thumb.draggable('disable');
               }
             },
             this
           );
-        } else if (this._thumb.is('.ui-draggable')) {
+        } else if (this._thumb.is(UI_DRAGGABLE)) {
           this._thumb.draggable('disable');
         }
       },
@@ -3906,13 +3890,13 @@ var __oj_range_slider_metadata =
 
             function (current) {
               var thumb = $(current);
-              if (thumb.is('.ui-draggable')) {
+              if (thumb.is(UI_DRAGGABLE)) {
                 thumb.draggable('destroy');
               }
             },
             this
           );
-        } else if (this._thumb.is('.ui-draggable')) {
+        } else if (this._thumb.is(UI_DRAGGABLE)) {
           this._thumb.draggable('destroy');
         }
       }

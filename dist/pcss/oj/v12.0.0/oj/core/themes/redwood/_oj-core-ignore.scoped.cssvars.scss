@@ -1,0 +1,43 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.core.ignored.scoped") {
+
+.oj-private-scale-lg {
+
+  //Redefining IconsSizes var
+  --oj-core-icon-size-lg: 24px;
+  --oj-core-icon-size-sm: 16px;
+
+
+  //Redefining Spacing values
+  --oj-core-spacing-1x : 4px;
+  --oj-core-spacing-2x : 8px;
+  --oj-core-spacing-3x : 12px;
+  --oj-core-spacing-4x : 16px;
+  --oj-core-spacing-5x : 20px;
+  --oj-core-spacing-6x : 24px;
+  --oj-core-spacing-7x : 28px;
+  --oj-core-spacing-8x : 32px;
+  --oj-core-spacing-9x : 36px;
+  --oj-core-spacing-10x : 40px;
+  --oj-core-spacing-11x : 44px;
+  --oj-core-spacing-12x : 48px;
+
+  --oj-private-core-wrappable-margin-bottom : 0px;
+  
+   font-size: var(--oj-typography-body-md-font-size);
+   line-height: var(--oj-typography-body-md-line-height);
+}
+
+  .oj-color-invert {
+    color: var(--oj-core-text-color-primary); 
+  }
+
+  .oj-contrast-marker .oj-contrast-background,
+  .oj-contrast-marker.oj-contrast-background {
+    background-color: RGB(var(--oj-palette-neutral-rgb-160));
+    color: var(--oj-core-text-color-primary);
+  }
+}

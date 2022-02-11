@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.button.ignored.scoped") {
+  
+  /* button                     */
+  /* -------------------------- */
+
+.oj-button-danger-chrome {
+ 
+  // solid enabled
+  --oj-button-solid-chrome-bg-color:                      var(--oj-core-danger-1);
+  --oj-button-solid-chrome-border-color:                  transparent;
+  --oj-button-solid-chrome-text-color:                    var(--oj-core-danger-contrast);
+ 
+ 
+  // solid hover
+  --oj-button-solid-chrome-bg-color-hover:                var(--oj-core-danger-2);
+  --oj-button-solid-chrome-border-color-hover:            transparent;
+  --oj-button-solid-chrome-text-color-hover:              var(--oj-core-danger-contrast);
+ 
+ 
+  // solid active
+  --oj-button-solid-chrome-bg-color-active:               var(--oj-core-danger-3);
+  --oj-button-solid-chrome-border-color-active:           transparent;
+  --oj-button-solid-chrome-text-color-active:             var(--oj-core-danger-contrast);
+}
+}

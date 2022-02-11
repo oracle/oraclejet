@@ -1,7 +1,9 @@
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, FetchListResult,
    FetchListParameters } from '../ojdataprovider';
 declare class CachedIteratorResultsDataProvider<K, D> implements DataProvider<K, D> {
-    constructor(dataProvider: DataProvider<K, D>);
+    constructor(dataProvider: DataProvider<K, D>, options?: {
+        includeFilteredRowCount?: 'disabled' | 'enabled';
+    });
     addEventListener(eventType: string, listener: EventListener): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
     createOptimizedKeyMap?(initialMap?: Map<K, D>): Map<K, D>;

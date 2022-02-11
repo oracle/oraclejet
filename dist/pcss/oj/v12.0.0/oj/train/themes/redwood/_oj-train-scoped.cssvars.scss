@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.train.scoped") {
+  
+  /* train                      */
+  /* -------------------------- */
+  :root.oj-scale-sm {
+    --oj-train-label-font-size:                 var(--oj-typography-body-md-font-size);
+  }
+
+  :root.oj-scale-md {
+    --oj-train-label-font-size:                 var(--oj-typography-body-md-font-size);
+  }
+}

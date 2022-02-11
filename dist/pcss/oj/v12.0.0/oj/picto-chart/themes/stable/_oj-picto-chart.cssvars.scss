@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../icons/themes/stable/_oj-icons.cssvars.scss";
+
+  @include module-include-once("stable.variables.pictochart") {
+:root {
+  
+    // picto chart
+    // ----------------------------
+   --oj-picto-chart-item-bg-color: rgba(var(--oj-palette-neutral-rgb-170),.15);
+}
+
+}

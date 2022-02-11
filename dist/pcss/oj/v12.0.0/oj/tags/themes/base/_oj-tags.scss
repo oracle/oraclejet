@@ -1,0 +1,279 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example tags/themes/redwood/oj-tags.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.tags") {
+  /* html */
+  /* --------------------------------------------------------------- */
+  // we want to allow for using rems, which requires the base
+  // font size is set on the html element.
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-family: var(--oj-html-font-family);
+    font-size: var(--oj-html-font-size);
+  }
+
+  /* body */
+  /* --------------------------------------------------------------- */
+
+  body {
+    margin: 0;
+    background-repeat: repeat;
+    background-position: top left;
+    color: var(--oj-core-text-color-primary);
+    background-color: var(--oj-body-bg-color);
+    touch-action: manipulation;
+    line-height: var(--oj-typography-body-md-line-height);
+  }
+
+  a {
+    color: var(--oj-link-text-color);
+    line-height: inherit;
+    text-decoration: var(--oj-link-text-decoration);
+  }
+
+  a:not(.oj-disabled) {
+    cursor: var(--oj-core-cursor-clickable);
+  }
+
+  a:visited {
+    color: var(--oj-link-text-color-visited);
+  }
+
+  a:active {
+    color: var(--oj-link-text-color-active);
+  }
+
+  a:hover {
+    text-decoration: var(--oj-link-text-decoration-hover);
+    transition: text-decoration var(--oj-animation-duration-long);
+  }
+
+  a.oj-link-embedded:not(.oj-disabled),
+  a.oj-link-embedded:visited:not(.oj-disabled) {
+    text-decoration: var(--oj-link-embedded-text-decoration);
+    box-shadow: 0px calc(0px - var(--oj-link-embedded-border-bottom-width)) 0px 0px inset;
+    transition: text-decoration var(--oj-animation-duration-long), box-shadow var(--oj-animation-duration-long);
+  }
+
+  a.oj-link-embedded:hover:not(.oj-disabled),
+  a.oj-link-embedded:active:not(.oj-disabled) {
+    text-decoration: var(--oj-link-embedded-text-decoration-hover);
+    box-shadow: 0px calc(0px - var(--oj-link-embedded-border-bottom-width-hover)) 0px 0px inset;
+    transition: text-decoration var(--oj-animation-duration-long), box-shadow var(--oj-animation-duration-long);
+  }
+
+  //standalone
+  a.oj-link-standalone:not(.oj-disabled),
+  a.oj-link-standalone:visited:not(.oj-disabled) {
+    text-decoration: none;
+  }
+
+  a.oj-link-standalone:hover:not(.oj-disabled),
+  a.oj-link-standalone:active:not(.oj-disabled) {
+    box-shadow: 0px 1px 0px 0px;
+    transition: box-shadow var(--oj-animation-duration-long);
+  }
+
+  //subtle primary
+  a.oj-link-subtle-primary,
+  a.oj-link-subtle-primary:visited {
+    color: var(--oj-core-text-color-primary);
+  }
+
+  //subtle secondary
+  a.oj-link-subtle-secondary,
+  a.oj-link-subtle-secondary:visited {
+    color: var(--oj-core-text-color-secondary);
+  }
+
+  a.oj-disabled,
+  a.oj-disabled:visited {
+    color: var(--oj-core-text-color-disabled);
+    text-decoration: none;
+  }
+
+  /* header */
+  /* --------------------------------------------------------------- */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--oj-heading-text-color);
+    font-family: inherit;
+    font-style: normal;
+    padding: 0;
+    margin-top: var(--oj-heading-margin-top);
+    margin-bottom: var(--oj-heading-margin-bottom);
+  }
+
+  h1.oj-typography-subheading-2xl,
+  h1.oj-typography-subheading-xl,
+  h1.oj-typography-subheading-lg,
+  h1.oj-typography-subheading-md,
+  h1.oj-typography-subheading-sm,
+  h1.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h2.oj-typography-subheading-2xl,
+  h2.oj-typography-subheading-xl,
+  h2.oj-typography-subheading-lg,
+  h2.oj-typography-subheading-md,
+  h2.oj-typography-subheading-sm,
+  h2.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h3.oj-typography-subheading-2xl,
+  h3.oj-typography-subheading-xl,
+  h3.oj-typography-subheading-lg,
+  h3.oj-typography-subheading-md,
+  h3.oj-typography-subheading-sm,
+  h3.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h4.oj-typography-subheading-2xl,
+  h4.oj-typography-subheading-xl,
+  h4.oj-typography-subheading-lg,
+  h4.oj-typography-subheading-md,
+  h4.oj-typography-subheading-sm,
+  h4.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h5.oj-typography-subheading-2xl,
+  h5.oj-typography-subheading-xl,
+  h5.oj-typography-subheading-lg,
+  h5.oj-typography-subheading-md,
+  h5.oj-typography-subheading-sm,
+  h5.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h6.oj-typography-subheading-2xl,
+  h6.oj-typography-subheading-xl,
+  h6.oj-typography-subheading-lg,
+  h6.oj-typography-subheading-md,
+  h6.oj-typography-subheading-sm,
+  h6.oj-typography-subheading-xs {
+    margin-top: var(--oj-subheading-margin-top);
+    margin-bottom: var(--oj-subheading-margin-bottom);
+  }
+
+  h1 {
+    font-size: var(--oj-typography-heading-2xl-font-size);
+    font-weight: var(--oj-typography-heading-2xl-font-weight);
+    line-height: var(--oj-typography-heading-2xl-line-height);
+  }
+
+  h2 {
+    font-size: var(--oj-typography-heading-xl-font-size);
+    font-weight: var(--oj-typography-heading-xl-font-weight);
+    line-height: var(--oj-typography-heading-xl-line-height);
+  }
+
+  h3 {
+    font-size: var(--oj-typography-heading-lg-font-size);
+    font-weight: var(--oj-typography-heading-lg-font-weight);
+    line-height: var(--oj-typography-heading-lg-line-height);
+  }
+
+  h4 {
+    font-size: var(--oj-typography-heading-md-font-size);
+    font-weight: var(--oj-typography-heading-md-font-weight);
+    line-height: var(--oj-typography-heading-md-line-height);
+  }
+
+  h5 {
+    font-size: var(--oj-typography-heading-sm-font-size);
+    font-weight: var(--oj-typography-heading-sm-font-weight);
+    line-height: var(--oj-typography-heading-sm-line-height);
+  }
+
+  h6 {
+    font-size: var(--oj-typography-heading-xs-font-size);
+    font-weight: var(--oj-typography-heading-xs-font-weight);
+    line-height: var(--oj-typography-heading-xs-line-height);
+  }
+
+  /* hr */
+  /* --------------------------------------------------------------- */
+  hr {
+    border: solid var(--oj-core-divider-color);
+    border-width: 1px 0 0;
+    margin: var(--oj-core-divider-margin) 0;
+
+    // Add the correct box sizing and height in Firefox.
+    box-sizing: content-box;
+    height: 0;
+
+    // Show the overflow in Edge and IE 11.
+    overflow: visible;
+  }
+
+  /* p */
+  /* --------------------------------------------------------------- */
+  p {
+    margin: 0 0 var(--oj-paragraph-margin-bottom) 0;
+  }
+
+  .oj-header-border {
+    border: solid var(--oj-core-divider-color);
+
+    border-width: 0 0 1px;
+    padding: 0 0 7px;
+  }
+
+  /* lists */
+  /* --------------------------------------------------------------- */
+
+  ul,
+  ol {
+    margin: var(--oj-list-margin-top) 0;
+    padding: 0 40px;
+  }
+
+  ul {
+    list-style: var(--oj-list-unordered-style-type);
+  }
+
+  ul ul,
+  ul ol,
+  ol ul,
+  ol ol {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 0 var(--oj-list-nested-padding-start);
+  }
+
+  ul li,
+  ol li {
+    line-height: var(--oj-list-item-line-height);
+  }
+
+  // tag text is very small without this
+  // the monospace, monospace thing is odd, see this for more info:
+  // https://github.com/necolas/normalize.css/issues/519#issuecomment-197131966
+  code,
+  kbd,
+  samp {
+    font-family: monospace, monospace;
+    font-size: 0.875em;
+  }
+}

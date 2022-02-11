@@ -5,6 +5,7 @@ import 'ojs/oj-jsx-interfaces';
 import { Action, CancelableAction, ExtendGlobalProps, ObservedGlobalProps, Slot } from 'ojs/ojvcomponent';
 import { h, Component } from 'preact';
 import { ojMessage } from 'ojs/ojmessage';
+import 'jqueryui-amd/tabbable';
 declare type Props = ObservedGlobalProps<'aria-label' | 'role'> & {
     accept?: string[] | null;
     capture?: 'user' | 'environment' | 'implementation' | 'none' | null;

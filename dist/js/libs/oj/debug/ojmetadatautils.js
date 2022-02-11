@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -111,7 +111,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils'], function (ex
       // We should only recurse/freeze if value is a pojo.
       // proto will be null if Object.create(null) was used
       const proto = Object.getPrototypeOf(value);
-      if (proto === null || proto === Object.prototype) {
+      // We want to freeze all POJOs except for VNodes
+      if ((proto === null || proto === Object.prototype) && !isVNode(value)) {
         // Retrieve the property names defined on object
         Object.keys(value).forEach(function (name) {
           // eslint-disable-next-line no-param-reassign
@@ -122,6 +123,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcustomelement-utils'], function (ex
     }
     return value;
   };
+
+  function isVNode(obj) {
+    // we know preact/compat is in the stack and its options.vnode hook
+    // injects a $$typeof property into every VNode so we'll use that
+    // as a heuristic for identifying VNodes
+    return Object.prototype.hasOwnProperty.call(obj, '$$typeof');
+  }
 
   MetadataUtils.getPropertyMetadata = function (propName, metadata) {
     let propMeta = metadata;

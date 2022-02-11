@@ -1,0 +1,32 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../button/themes/stable/_oj-button.cssvars.scss";
+
+@include module-include-once("stable.variables.dialog") {
+
+:root {
+  --oj-dialog-bg-color:                 rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-dialog-border-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
+  --oj-dialog-border-radius:            var(--oj-core-border-radius-lg);
+  --oj-dialog-box-shadow:               var(--oj-core-box-shadow-xl);
+
+  --oj-dialog-cancel-icon-margin-top: -1.5rem;
+  --oj-dialog-cancel-icon-margin-end: -1.5rem;
+
+  --oj-dialog-header-padding:           2rem 2rem 0.75rem;
+  --oj-dialog-body-padding:             0 2rem 1rem 2rem;
+  --oj-dialog-footer-padding:           1rem 2rem 2rem 2rem;
+
+  --oj-dialog-header-bg-color:          transparent;
+  --oj-dialog-header-border-color:      transparent;
+  --oj-dialog-title-font-size:         var(--oj-typography-heading-xs-font-size);
+  --oj-dialog-title-line-height:       var(--oj-typography-heading-xs-line-height);     
+  --oj-dialog-title-font-weight:       var(--oj-typography-heading-xs-font-weight);
+  --oj-dialog-title-text-color:        var(--oj-core-text-color-primary);
+
+}
+
+}

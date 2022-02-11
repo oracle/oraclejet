@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,6 +12,7 @@ import { Component, createRef, h } from 'preact';
 import { getTranslatedString } from 'ojs/ojtranslation';
 import { pickFiles } from 'ojs/ojfilepickerutils';
 import FocusUtils from 'ojs/ojfocusutils';
+import 'jqueryui-amd/tabbable';
 
 var __decorate = (null && null.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -129,13 +130,19 @@ let FilePicker = class FilePicker extends Component {
                 this._handleDragLeave(event, mimeTypeDropFail);
             }
         };
-        this._handleFocusIn = () => {
+        this._handleFocusIn = (event) => {
+            if (event.target === event.currentTarget) {
+                this._handleFocus(event);
+            }
             if (this.selecting) {
                 return;
             }
             this.setState({ focus: !recentPointer() });
         };
-        this._handleFocusOut = () => {
+        this._handleFocusOut = (event) => {
+            if (event.target === event.currentTarget) {
+                this._handleBlur(event);
+            }
             if (this.selecting) {
                 return;
             }
@@ -195,25 +202,25 @@ let FilePicker = class FilePicker extends Component {
     _renderDisabled(props, triggerSlot) {
         const rootClasses = triggerSlot ? 'oj-filepicker' : 'oj-filepicker oj-filepicker-no-trigger';
         return (h(Root, { class: rootClasses },
-            h("div", { class: 'oj-filepicker-disabled oj-filepicker-container' }, triggerSlot || this._renderDefaultTriggerContent(props))));
+            h("div", { class: "oj-filepicker-disabled oj-filepicker-container" }, triggerSlot || this._renderDefaultTriggerContent(props))));
     }
     _renderWithCustomTrigger(props, triggerSlot, clickHandler) {
         const dndHandlers = this._getDndHandlers(props);
-        return (h(Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onFocus: this._handleFocus, onBlur: this._handleBlur, role: this._getRole(props, clickHandler), "aria-label": this._getAriaLabel(props, clickHandler) },
-            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: 'oj-filepicker-container' }, triggerSlot)));
+        return (h(Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut },
+            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, triggerSlot)));
     }
     _renderWithDefaultTrigger(props, clickHandler) {
         const validity = this.state.validity;
         const validityState = validity === 'valid' ? 'oj-valid-drop' : validity === 'invalid' ? 'oj-invalid-drop' : '';
         const dndHandlers = this._getDndHandlers(props);
-        return (h(Root, { class: 'oj-filepicker oj-filepicker-no-trigger', ref: this.rootRef, role: this._getRole(props, clickHandler), "aria-label": this._getAriaLabel(props, clickHandler) },
-            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container' },
-                h("div", { tabIndex: 0, class: `oj-filepicker-dropzone ${validityState} ${this._getFocusClass()}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onFocus: this._handleFocus, onBlur: this._handleBlur }, this._renderDefaultTriggerContent(props)))));
+        return (h(Root, { class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef },
+            h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) },
+                h("div", { class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, this._renderDefaultTriggerContent(props)))));
     }
     _renderDefaultTriggerContent(props) {
         return [
-            h("div", { class: 'oj-filepicker-text' }, this._getPrimaryText(props)),
-            h("div", { class: 'oj-filepicker-secondary-text' }, this._getSecondaryText(props))
+            h("div", { class: "oj-filepicker-text" }, this._getPrimaryText(props)),
+            h("div", { class: "oj-filepicker-secondary-text" }, this._getSecondaryText(props))
         ];
     }
     _getRole(props, clickHandler) {
@@ -340,7 +347,7 @@ let FilePicker = class FilePicker extends Component {
                 return true;
             }
             else if (accept.startsWith('.', 0)) {
-                if (!file.name || (file.name && file.name.endsWith(accept))) {
+                if (!file.name || (file.name && file.name.toLowerCase().endsWith(accept.toLowerCase()))) {
                     return true;
                 }
             }

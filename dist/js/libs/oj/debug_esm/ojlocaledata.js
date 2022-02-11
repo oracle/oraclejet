@@ -1,12 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import oj from 'ojs/ojcore-base';
 import ojldimport from 'ojL10n!ojtranslations/nls/localeElements';
+import { CalendarUtils } from 'ojs/ojcalendarutils';
 
 var ojld = ojldimport;
 
@@ -124,10 +125,13 @@ LocaleData.getMonthNames = function (type) {
  *  instead which returns the formatted pieces in order."}]
  */
 LocaleData.isMonthPriorToYear = function () {
-  var longDateFormat = LocaleData._getCalendarData().dateFormats.long.toUpperCase();
-  var monthIndex = longDateFormat.indexOf('M');
-  var yearIndex = longDateFormat.indexOf('Y');
-
+  var options = { dateStyle: 'long' };
+  var locale = oj.Config.getLocale();
+  var d = new Date();
+  var intlFormatter = new Intl.DateTimeFormat(locale, options);
+  var parts = intlFormatter.formatToParts(d);
+  var monthIndex = parts.findIndex(obj => obj.type === 'month');
+  var yearIndex = parts.findIndex(obj => obj.type === 'year');
   return monthIndex < yearIndex;
 };
 
@@ -156,15 +160,9 @@ LocaleData._getWeekData = function (key) {
  * @private
  */
 LocaleData._getCalendarData = function () {
-  var b = LocaleData.__getBundle();
-  var main = b.main;
-
-  // skip one level (the name of the locale)
-  var keys = Object.keys(main);
-  var localeName = keys[0];
-  var data = main[localeName];
-
-  return data.dates.calendars.gregorian;
+  var locale = oj.Config.getLocale();
+  var cal = CalendarUtils.getCalendar(locale, 'gregory');
+  return cal;
 };
 
 /**

@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+
+  @include module-include-once("stable.variables.timeline") {
+
+:root {
+  
+    // timeline
+    // ----------------------------
+    --oj-private-timeline-reference-object-color:                rgb(var(--oj-palette-danger-rgb-100));
+    --oj-private-timeline-border-color:                          rgb(var(--oj-palette-neutral-rgb-50));
+        
+    --oj-private-timeline-item-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));            
+    --oj-private-timeline-item-border-color:                     rgb(var(--oj-palette-neutral-rgb-160));             
+    --oj-private-timeline-item-border-color-hover:               rgb(var(--oj-palette-brand-rgb-70));
+
+    --oj-private-timeline-minor-axis-bg-color:                   rgb(var(--oj-palette-neutral-rgb-40));              
+    --oj-private-timeline-minor-axis-border-color:               rgb(var(--oj-palette-neutral-rgb-50));              
+    --oj-private-timeline-minor-axis-separator-color:            rgb(var(--oj-palette-neutral-rgb-100)); 
+                           
+    --oj-private-timeline-series-bg-color:                       rgb(var(--oj-palette-neutral-rgb-20));
+    --oj-private-timeline-item-padding:                          5px;
+    --oj-private-timeline-item-border-radius:                    0px;
+    --oj-private-timeline-item-duration-event-overflow-bg-color: rgb(var(--oj-palette-neutral-rgb-40));
+}
+
+}

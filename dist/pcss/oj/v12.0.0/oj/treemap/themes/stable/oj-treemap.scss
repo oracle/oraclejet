@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+// import legend
+@import "../../../legend/themes/stable/oj-legend.scss"; 
+@import "../../../dvt/themes/stable/_oj-dvt.scss"; 
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+@import "_oj-treemap.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-treemap.scss"; 

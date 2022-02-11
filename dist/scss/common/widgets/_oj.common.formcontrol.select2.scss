@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -26,9 +26,10 @@
       vertical-align: middle;
         max-width: $formControlLargeMaxWidth;
         min-width: $formControlMinWidth;
-        // font size needs to be on the root, because max/min width is in em.
-        font-size: var(--oj-text-field-font-size);
-        @include oj-form-control-text-size-adjust-css-vars();
+        // because max/min width is in em the font size needs to be on this element 
+        // and not on the selector that goes on the input.
+        font-size: $formControlInputFontSize;
+        @include oj-form-control-text-size-adjust($formControlInputFontSize);
 
       width: 100%;
 
@@ -62,23 +63,17 @@
       white-space: nowrap;
       text-overflow: ellipsis;
         background-color: transparent;
-        color: var(--oj-text-field-value-color);
-        font-size: var(--oj-text-field-font-size);
+        color: $formControlInputValueColor;
+        font-size: $formControlInputFontSize;
         box-shadow: none;
-        @include oj-form-control-text-size-adjust-css-vars();
-        // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
-        &:-ms-input-placeholder {
-          color: var(--oj-text-field-placeholder-color);
-          // in Firefox the default opacity is not 1 for placeholder
-          opacity: 1;
-          font-style: var(--oj-text-field-placeholder-font-style);
-        }
-        &::placeholder {
-          color: var(--oj-text-field-placeholder-color);
+        @include oj-form-control-text-size-adjust($formControlInputFontSize);
+        @include oj-placeholder()
+        {
+          color: $formControlPlaceholderColor;
           // in Firefox the default opacity is not 1 for placeholder
           opacity: 1;
           font-style: $formControlPlaceholderFontStyle;
-        }
+        }  
 
       // the below styles came from the old oj-searchselect-choice class
 

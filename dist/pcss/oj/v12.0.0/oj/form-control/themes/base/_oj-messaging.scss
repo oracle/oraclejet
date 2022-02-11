@@ -1,0 +1,308 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example form-control/themes/redwood/oj-messaging.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// todo: get rid of this file
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("formcontrol.messaging") {
+  /* messaging */
+  /* --------------------------------------------------------------- */
+
+  /* styles the root of the popup component that wraps all messaging content */
+
+  /* wraps all messaging content that displays inside popup. */
+  .oj-messaging-popup-container {
+    max-width: 320px;
+  }
+
+  /* separator inside popup container */
+  .oj-messaging-popup-container hr {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  /* prevent messaging content from overflowing the container */
+  .oj-messaging-inline-container {
+    overflow: hidden;
+  }
+
+  /* wraps all messaging content that displays inline */
+  .oj-messaging-inline-container .oj-message {
+    padding: var(--oj-private-message-component-inline-padding);
+    border-style: solid;
+    border-width: var(--oj-private-message-component-inline-border-width);
+    margin-top: var(--oj-private-message-component-inline-margin-top);
+    border-radius: var(--oj-private-message-component-inline-border-radius);
+  }
+
+  .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
+  .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
+    margin-top: var(--oj-private-message-radiocheckbox-inline-margin-top);
+    border-top-width: var(--oj-private-message-radiocheckbox-inline-border-top-width);
+  }
+
+  // For these components it needs a top border regardless of border radius.
+  .oj-switch .oj-messaging-inline-container .oj-message:first-child,
+  .oj-slider .oj-messaging-inline-container .oj-message:first-child {
+    border-top-width: 1px;
+  }
+
+  // switch and slider always needs room between the component and the inline message.
+  .oj-switch .oj-messaging-inline-container .oj-message:first-child,
+  .oj-slider .oj-messaging-inline-container .oj-message:first-child {
+    margin-top: 5px;
+  }
+
+  // the vertical slider's thumb is positioned into the message container, so we need extra margin
+  .oj-slider-vertical .oj-messaging-inline-container .oj-message:first-child {
+    margin-top: 18px;
+  }
+
+  // red box
+  .oj-messaging-inline-container .oj-message.oj-message-error {
+    background-color: var(--oj-private-message-component-inline-bg-color-error);
+    border-color: var(--oj-private-message-component-inline-border-color-error);
+  }
+
+  // gold box
+  .oj-messaging-inline-container .oj-message.oj-message-warning {
+    background-color: var(--oj-private-message-component-inline-bg-color-warning);
+    border-color: var(--oj-private-message-component-inline-border-color-warning);
+  }
+
+  // blue box
+  .oj-messaging-inline-container .oj-message.oj-message-info {
+    background-color: var(--oj-private-message-component-inline-bg-color-info);
+    border-color: var(--oj-private-message-component-inline-border-color-info);
+  }
+
+  // green box
+  .oj-messaging-inline-container .oj-message.oj-message-confirmation {
+    background-color: var(--oj-private-message-component-inline-bg-color-confirmation);
+    border-color: var(--oj-private-message-component-inline-border-color-confirmation);
+  }
+
+  /** 
+     * wraps a message block that includes the icon and content inline-blocks
+     * 1. prevent wrapping the content inline-block.  
+     */
+
+  .oj-message {
+    display: flex;
+    text-align: left;
+    html[dir="rtl"] & {
+      text-align: right;
+    }
+    white-space: nowrap; /* 1 */
+  }
+
+  /* from second to last message blocks inside popup container */
+  .oj-messaging-popup-container .oj-message:nth-of-type(n + 2) {
+    padding-top: 20px;
+  }
+
+  /* 
+     * wraps the message summary and detail parts 
+     */
+  .oj-message-content {
+    display: inline-block;
+  }
+
+  /**
+     * message summary text 
+     * 1. allow summary text to wrap normally.
+     */
+
+  .oj-message-content .oj-message-summary {
+    white-space: normal;
+    vertical-align: top;
+    @include oj-ltr() {
+      padding: 0 0 0 var(--oj-private-message-component-icon-to-text-padding);
+    }
+    @include oj-rtl() {
+      padding: 0 var(--oj-private-message-component-icon-to-text-padding) 0 0;
+    }
+  }
+
+  /** 
+     * message detail text 
+     * 1. allow detail text to wrap normally.
+     */
+  /* If the detail is the first child it means there is no summary rendered
+       so it won't need top padding */
+  .oj-message-content .oj-message-detail:first-child {
+    white-space: normal;
+  }
+  html:not([dir="rtl"]) .oj-message-content .oj-message-detail {
+    padding: 0 0 0 var(--oj-private-message-component-icon-to-text-padding);
+  }
+  html[dir="rtl"] .oj-message-content .oj-message-detail {
+    padding: 0 var(--oj-private-message-component-icon-to-text-padding) 0 0;
+  }
+  /* if the summary is rendered, we need the top padding */
+  .oj-message-content .oj-message-detail:not(:first-child) {
+    white-space: normal;
+    @include oj-ltr() {
+      padding: 7px 0 0 var(--oj-private-message-component-icon-to-text-padding);
+    }
+    @include oj-rtl() {
+      padding: 7px var(--oj-private-message-component-icon-to-text-padding) 0 0;
+    }
+  }
+
+  /**
+     * wraps all hints
+     */
+  .oj-form-control-hints {
+  }
+
+  /**
+     * for hint types - validator, converter
+     */
+  .oj-form-control-hint-converter,
+  .oj-form-control-hint-validator {
+  }
+
+  /**
+     * for hint title 
+     * 1. if title isn't the first hint add padding to the top. 
+     */
+  .oj-form-control-hint-title:not(:first-child) {
+    padding-top: 20px; /* 1 */
+  }
+
+  //------------------------------------------
+  // icons.
+  //------------------------------------------
+
+  // use flex: 0 0 auto (which is the same as flex:none)
+  // so that the icon doesn't get cut off or stretch. It's
+  // a fixed size - the width set on the icon.
+  .oj-message-status-icon {
+    flex: 0 0 auto;
+    position: relative;
+    font-size: 1rem;
+    line-height: calc(var(--oj-user-assistance-inline-font-size) * 1.333);
+  }
+
+  .oj-message-status-icon.oj-message-error-icon {
+    @extend .oj-fwk-icon-message-error;
+    color: var(--oj-core-danger-3);
+  }
+
+  .oj-message-status-icon.oj-message-warning-icon {
+    @extend .oj-fwk-icon-message-warning;
+    color: var(--oj-core-warning-3);
+  }
+
+  .oj-message-status-icon.oj-message-info-icon {
+    @extend .oj-fwk-icon-message-info;
+    color: var(--oj-core-info-3);
+  }
+
+  .oj-message-status-icon.oj-message-confirmation-icon {
+    @extend .oj-fwk-icon-message-confirmation;
+    color: var(--oj-core-success-3);
+  }
+
+  // Note window animation defaults
+  //----------------------------------
+  // Applies to both notewindow and inline messages.
+  // The defaults is specified as json in a font-family style so that it can
+  // be retrieved in JS with oj.ThemeUtils.parseJSONFromFontFamily
+
+  $noteWindowAnimationDefaults: ();
+
+  @if ($privatePopupTailOpenAnimation) {
+    $noteWindowAnimationDefaults: map-merge(
+      $noteWindowAnimationDefaults,
+      (
+        open: $privatePopupTailOpenAnimation
+      )
+    );
+  }
+
+  @if ($privatePopupTailCloseAnimation) {
+    $noteWindowAnimationDefaults: map-merge(
+      $noteWindowAnimationDefaults,
+      (
+        close: $privatePopupTailCloseAnimation
+      )
+    );
+  }
+
+  // $noteWindowDetaultOptions applies to both notewindow and inline messages
+  $noteWindowDefaultOptions: ();
+
+  @if ($noteWindowAnimationDefaults) {
+    $noteWindowDefaultOptions: map-merge(
+      $noteWindowDefaultOptions,
+      (
+        animation: $noteWindowAnimationDefaults
+      )
+    );
+  }
+
+  @if ($privateFormControlMessageSummaryOptionDefault) {
+    $noteWindowDefaultOptions: map-merge(
+      $noteWindowDefaultOptions,
+      (
+        messageSummaryOptionDefault: $privateFormControlMessageSummaryOptionDefault
+      )
+    );
+  }
+
+  .oj-messaging-popup-option-defaults {
+    font-family: oj-json-from-map($noteWindowDefaultOptions) !important;
+  }
+
+  // Inline messaging animation defaults
+  //-------------------------------------
+  // The defaults is specified as json in a font-family style so that it can
+  // be retrieved in JS with oj.ThemeUtils.parseJSONFromFontFamily
+
+  $messageInlineAnimationDefaults: ();
+
+  @if ($privateMessageComponentInlineOpenAnimation) {
+    $messageInlineAnimationDefaults: map-merge(
+      $messageInlineAnimationDefaults,
+      (
+        open: $privateMessageComponentInlineOpenAnimation
+      )
+    );
+  }
+
+  @if ($privateMessageComponentInlineCloseAnimation) {
+    $messageInlineAnimationDefaults: map-merge(
+      $messageInlineAnimationDefaults,
+      (
+        close: $privateMessageComponentInlineCloseAnimation
+      )
+    );
+  }
+
+  $messageInlineDefaultOptions: ();
+
+  @if ($messageInlineAnimationDefaults) {
+    $messageInlineDefaultOptions: map-merge(
+      $messageInlineDefaultOptions,
+      (
+        animation: $messageInlineAnimationDefaults
+      )
+    );
+  }
+  // this is used for the form components inline messaging. See InlineMessagingStrategy.
+  .oj-messaging-inline-option-defaults {
+    font-family: oj-json-from-map($messageInlineDefaultOptions) !important;
+  }
+
+  .oj-text-field .oj-messaging-inline-container .oj-message-detail {
+    font-size: var(--oj-user-assistance-inline-font-size);
+  }
+}

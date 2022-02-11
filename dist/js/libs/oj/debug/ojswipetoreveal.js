@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -114,6 +114,26 @@ define(['exports', 'ojs/ojcore-base', 'jquery', 'ojs/ojcontext', 'ojs/ojoffcanva
 
     drawer
       .on('ojpanstart', function (event, ui) {
+        if (options && options.callback) {
+          // give callback a chance to veto, ojSwipeActions use this to ensure only one
+          // offcanvas on an item is opened at a time
+          if (options.callback()) {
+            event.preventDefault();
+            return;
+          }
+        }
+
+        // don't start if the drawer is already open
+        if (drawer.hasClass('oj-offcanvas-open')) {
+          event.preventDefault();
+          // make sure it's close if it wasn't in the process already
+          OffcanvasUtils.close(offcanvas).then(() => {
+            // if promise is resolved but still has oj-offcanvas-open class, then manually remove it
+            drawer.removeClass('oj-offcanvas-open');
+          });
+          return;
+        }
+
         // if the swipe direction does not match the offcanvas's edge, veto it
         if (ui.direction !== direction) {
           event.preventDefault();

@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "_oj-progress-circle.servervars.scss";
+@import "_oj-progress-circle.cssvars.scss";
+@import "../base/_oj-progress-circle.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "_oj-progress-circle-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.progress-circle") {
+  }

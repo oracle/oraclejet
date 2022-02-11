@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+  @include module-include-once("stable.variables.ThematicMap") {
+
+:root {
+  
+    // map
+    // ----------------------------
+    --oj-thematic-map-bg-color:            rgb(var(--oj-palette-neutral-rgb-30));              
+    --oj-thematic-map-border-color:        rgb(var(--oj-palette-neutral-rgb-50));              
+    --oj-thematic-map-marker-bg-color:     rgb(var(--oj-palette-neutral-rgb-190));              
+    --oj-thematic-map-marker-border-color: rgb(var(--oj-palette-neutral-rgb-190));              
+    --oj-thematic-map-link-color:          rgb(var(--oj-palette-neutral-rgb-190));  
+}
+}

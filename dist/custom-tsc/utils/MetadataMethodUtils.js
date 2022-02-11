@@ -63,8 +63,7 @@ function getDtMetadataForMethod(method, metaUtilObj) {
 }
 function isCustomElementMethod(node, metaUtilObj) {
     return (ts.isMethodDeclaration(node) &&
-        DecoratorUtils.getDecorator(node, metaUtilObj.namedExportToAlias.method) !=
-            null);
+        DecoratorUtils.getDecorator(node, metaUtilObj.namedExportToAlias.method) != null);
 }
 exports.isCustomElementMethod = isCustomElementMethod;
 function updateJetElementMethods(metaObjUtils) {
@@ -73,44 +72,45 @@ function updateJetElementMethods(metaObjUtils) {
 exports.updateJetElementMethods = updateJetElementMethods;
 const _ELEMENT_METHODS = {
     setProperty: {
-        description: "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.",
-        help: "#setProperty",
+        description: 'Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.',
+        help: '#setProperty',
         params: [
             {
-                name: "property",
-                description: "The property name to set. Supports dot notation for subproperty access.",
-                type: "string",
+                name: 'property',
+                description: 'The property name to set. Supports dot notation for subproperty access.',
+                type: 'string'
             },
             {
-                name: "value",
-                description: "The new value to set the property to.",
-                type: "any",
-            },
+                name: 'value',
+                description: 'The new value to set the property to.',
+                type: 'any'
+            }
         ],
-        return: "void",
+        return: 'void'
     },
     getProperty: {
-        description: "Retrieves the value of a property or a subproperty.",
-        help: "#getProperty",
+        description: 'Retrieves the value of a property or a subproperty.',
+        help: '#getProperty',
         params: [
             {
-                name: "property",
-                description: "The property name to get. Supports dot notation for subproperty access.",
-                type: "string",
-            },
+                name: 'property',
+                description: 'The property name to get. Supports dot notation for subproperty access.',
+                type: 'string'
+            }
         ],
-        return: "any",
+        return: 'any'
     },
     setProperties: {
-        description: "Performs a batch set of properties.",
-        help: "#setProperties",
+        description: 'Performs a batch set of properties.',
+        help: '#setProperties',
         params: [
             {
-                name: "properties",
-                description: "An object containing the property and value pairs to set.",
-                type: "object",
-            },
+                name: 'properties',
+                description: 'An object containing the property and value pairs to set.',
+                type: 'object'
+            }
         ],
-        return: "void",
-    },
+        return: 'void'
+    }
 };
+//# sourceMappingURL=MetadataMethodUtils.js.map

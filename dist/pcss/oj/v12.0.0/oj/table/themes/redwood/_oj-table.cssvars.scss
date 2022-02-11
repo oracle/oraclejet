@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../utilities/_oj.utilities.json.scss";
+
+// import dependencies
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+@import "../../../messages/themes/redwood/_oj-messages.cssvars.scss";
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+  @include module-include-once("redwood.variables.table") {
+
+
+:root {
+  // table
+  // ----------------------------
+  --oj-table-cell-padding-horizontal:             1rem;  
+
+
+  --oj-private-table-global-display-default:           list;
+  --oj-private-table-global-display-list-horizontal-grid-visible-default:    enabled;
+
+  --oj-private-table-global-add-animation:       '[{"effect":"slideIn","direction":"bottom"},"fadeIn"]';
+  --oj-private-table-global-remove-animation:    '[{"effect":"slideOut","direction":"top"},"fadeOut"]';
+  --oj-private-table-global-update-animation:    '{"effect":"fadeIn"}';
+
+  --oj-private-table-global-load-indicator-default:       skeleton;
+  --oj-private-table-global-enable-selector-default:       true;
+
+  --oj-private-table-global-sticky-default:       true;
+}
+
+}

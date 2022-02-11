@@ -1,0 +1,8 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../radio-checkbox/themes/stable/_oj-radiocheckbox.cssvars.scss";
+@import "../../../menu/themes/stable/_oj-menu.cssvars.scss";
+
+  @include module-include-once("stable.variables.menuselectmany") {
+  }

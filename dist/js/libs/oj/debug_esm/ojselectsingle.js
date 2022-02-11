@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -12,6 +12,7 @@ import $ from 'jquery';
 import { setDefaultOptions } from 'ojs/ojcomponentcore';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
 import { warn } from 'ojs/ojlogger';
+import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
 
 var __oj_select_single_metadata = 
 {
@@ -730,6 +731,13 @@ oj$1.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
    */
   _ComponentCreate: function () {
     this._super();
+
+    // JET-44210 - throw an error when a value-item is set externally that contains the key
+    // but not the data
+    var valueItem = this.options.valueItem;
+    if (!this._IsValueItemForPlaceholder(valueItem) && valueItem.data == null) {
+      throw new Error('Select Single: value-item contains key but no data');
+    }
 
     this._cssOptionDefaults =
       parseJSONFromFontFamily('oj-searchselect-option-defaults') || {};
@@ -1599,12 +1607,24 @@ oj$1.__registerWidget('oj.ojSelectSingle', $.oj.ojSelectBase, {
       if (event.shiftKey) {
         var filterInputText = this._filterInputText;
         var parentElem = filterInputText.parentNode;
-        // move all the siblings before the filterInputText to the end, so that focus won't go
-        // to the main input field and will instead go to the previous tabbable elem on the page
-        // (can't just move the filterInputText because it's involved in the focus change and
-        // the browser throws an error)
-        while (parentElem.firstChild !== filterInputText) {
-          parentElem.appendChild(parentElem.firstChild);
+
+        // As discussed in JET-49016, the appendChild calls below end up being
+        // short-circuited by our Preact slot management workarounds.  As a
+        // result, the appendChild calls are treated as no-ops and we end up in an
+        // infinite while loop.  To avoid this fate, we temporarily disable the slot
+        // management workarounds.
+        CustomElementUtils.allowSlotRelocation(true);
+
+        try {
+          // move all the siblings before the filterInputText to the end, so that focus won't go
+          // to the main input field and will instead go to the previous tabbable elem on the page
+          // (can't just move the filterInputText because it's involved in the focus change and
+          // the browser throws an error)
+          while (parentElem.firstChild !== filterInputText) {
+            parentElem.appendChild(parentElem.firstChild);
+          }
+        } finally {
+          CustomElementUtils.allowSlotRelocation(false);
         }
       }
       // JET-44700 - <OJ-SELECT-SINGLE> AND <OJ-INPUT-NUMBER/DATE/TEXT> ARE NOT BEHAVING

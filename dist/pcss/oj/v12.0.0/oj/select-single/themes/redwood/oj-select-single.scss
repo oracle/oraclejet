@@ -1,0 +1,11 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../select/themes/redwood/_oj-select.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-select-single.scss";
+
+@include module-include-once("redwood.selectsingle") {
+  
+}

@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+  @include module-include-once("redwood.variables.treemap") {
+:root {
+  // treemap
+  // ----------------------------                        
+  --oj-treemap-node-header-bg-color:                   rgb(var(--oj-palette-neutral-rgb-20));             
+  --oj-treemap-node-header-bg-color-selected:          rgb(var(--oj-palette-brand-rgb-40));             
+  --oj-treemap-node-header-border-color:               rgb(var(--oj-palette-neutral-rgb-40));              
+  --oj-treemap-node-header-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-40));   
+  
+}
+
+}

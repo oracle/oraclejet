@@ -1,0 +1,9 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../gauge/themes/redwood/oj-gauge.scss"; 
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import classes defined in the base directory
+@import "../base/_oj-led-gauge.scss"; 
+@import "_oj-led-gauge.cssvars.scss";

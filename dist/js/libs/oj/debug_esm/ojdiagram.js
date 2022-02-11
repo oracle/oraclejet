@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,6 +15,7 @@ import * as Logger from 'ojs/ojlogger';
 import { error } from 'ojs/ojlogger';
 import { KeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojdatasource-common';
+import { enableAllFocusableElements, disableAllFocusableElements } from 'ojs/ojkeyboardfocus-utils';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
@@ -1166,7 +1167,8 @@ ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (nod
  * <code>
  * &lt;oj-diagram
  *    layout = '{{layoutFunc}}'
- *    data = '{{dataSource}}'>
+ *    node-data="[[nodeDataProvider]]"
+ *    link-data="[[linkDataProvider]]">
  * &lt;/oj-diagram>
  * </code>
  * </pre>
@@ -2364,6 +2366,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
          *   <li>insert: SVGElement - An SVG element, which will be used as content of a Diagram node.</li>
          * </ul>
          *
+         * <p>The callback function is responsible for placing the child content by positioning either the content object passed on the RendererContext
+         * or [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
+         * If an oj-diagram-child-content element is used, diagram will replace this element with the node child contents.</p>
+         *
          * <p><b>Note</b> that when nodeContent.renderer is specified, but the other state renderer functions are not, then
          * the default state renderer will be used to render the state.</p>
          *
@@ -3509,6 +3515,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       if (this.options.renderer || this._TemplateHandler.getTemplates().nodeContentTemplate ||
         this.options.linkContent || this._TemplateHandler.getTemplates().linkContentTemplate) {
         this.options._contextHandler = this._getContextHandler();
+        this.options._cleanTemplate = this._cleanTemplateMap();
       }
       if (this.options.nodeData) {
         this.options._fetchDataHandler = this._getFetchDataHandler('nodeData');
@@ -3542,13 +3549,16 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
           background: {}, nodes: {}, links: {}, ports: {}
         };
       }
+      // Add these enable/disable all focusable functions to enable actionable mode
+      this.options._keyboardUtils = { enableAllFocusable: enableAllFocusableElements,
+                                      disableAllFocusable: disableAllFocusableElements };
     },
 
 
     _IsDraggable: function () {
       var dragObj = this.options.dnd ? this.options.dnd.drag : null;
-      return (dragObj.nodes && Object.keys(dragObj.nodes).length > 0) ||
-        (dragObj.ports && Object.keys(dragObj.ports).length > 0);
+      return (dragObj && dragObj.nodes && Object.keys(dragObj.nodes).length > 0) ||
+        (dragObj && dragObj.ports && Object.keys(dragObj.ports).length > 0);
     },
 
 
@@ -3590,7 +3600,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
      */
     _getContextHandler: function () {
       var thisRef = this;
-      var contextHandlerFunc = function (type, parentElement, rootElement,
+      return function (type, parentElement, rootElement,
         childContent, dataContext, state, previousState, linkPoints) {
         var context = {
           component: __GetWidgetConstructor(thisRef.element),
@@ -3613,7 +3623,6 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         }
         return thisRef._FixRendererContext(context);
       };
-      return contextHandlerFunc;
     },
 
     /**
@@ -3699,7 +3708,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
 
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return Diagram.newInstance(context, callback, callbackObj);
+      return new Diagram(context, callback, callbackObj);
     },
 
 
@@ -3883,12 +3892,101 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       return configs;
     },
 
+    /**
+     * @override
+     * @memberof oj.ojDiagram
+     * @protected
+     */
+    _CleanAllTemplates: function (isResize) {
+      if (!isResize) {
+        this._CleanTemplate('nodeContentTemplate');
+      }
+      this._super(isResize);
+    },
+
+    /**
+     * @override
+     * @memberof oj.ojDiagram
+     * @protected
+     */
+    _CleanTemplate: function (templateName) {
+      if (templateName === 'nodeContentTemplate') {
+        if (this._nodeContentTemplateMap) {
+          var nodes = Object.keys(this._nodeContentTemplateMap);
+          for (var i = 0; i < nodes.length; i++) {
+            this._nodeContentTemplateMap[nodes[i]]();
+          }
+          this._nodeContentTemplateMap = {};
+        }
+      } else {
+        this._super(templateName);
+      }
+    },
+
+    /**
+     * @override
+     * @memberof oj.ojDiagram
+     * @protected
+     */
+    _AddTemplate: function (context) {
+      var templateName = context._templateName;
+      if (templateName === 'nodeContentTemplate') {
+        if (!this._nodeContentTemplateMap) {
+          this._nodeContentTemplateMap = {};
+        }
+        this._nodeContentTemplateMap[context.id || 'dummyDiv'] = context._templateCleanup;
+      } else {
+        this._super(context);
+      }
+    },
+
+    /**
+     * Cleans a specific template stored by the component
+     * @private
+     * @memberof oj.ojDiagram
+     */
+    _cleanTemplateMap: function () {
+      var thisRef = this;
+      return function (id) {
+        if (thisRef._nodeContentTemplateMap && thisRef._nodeContentTemplateMap[id]) {
+          thisRef._nodeContentTemplateMap[id]();
+          delete thisRef._nodeContentTemplateMap[id];
+        }
+      };
+    },
+
+     // Executes the inline template and returns the nodes from the template
+    _TemplateRenderer: function (context, templateEngine, templateElement, templateName) {
+      var states = context.state;
+      var prevStates = context.previousState;
+      var trackableProperties = Object.keys(states);
+      var id = context.id;
+      this._states[id] = states;
+      this._prevStates[id] = prevStates;
+      for (var i = 0; i < trackableProperties.length; i++) {
+        var property = trackableProperties[i];
+        templateEngine.defineTrackableProperty(states, property, states[property]);
+        templateEngine.defineTrackableProperty(prevStates, property, prevStates[property]);
+      }
+      return this._super(context, templateEngine, templateElement, templateName);
+    },
+
+    _ProcessInlineTemplateRenderer: function (options, optionPath,
+      templateElement, templateName) {
+        if (!this._states) {
+          this._states = {};
+        }
+        if (!this._prevStates) {
+          this._prevStates = {};
+        }
+        this._super(options, optionPath, templateElement, templateName);
+      },
 
     _WrapInlineTemplateRenderer: function (origRenderer, templateName, option) {
       var templateDataSet = this._TemplateHandler.getDataSet(templateName);
 
       // get the index of the interval that the zoom value is in.
-      var getInterval = function (zoom, thresholds) {
+      var getInterval = (zoom, thresholds) => {
         for (var i = 0; i < thresholds.length; i++) {
           if (zoom < thresholds[i]) {
             return i;
@@ -3897,16 +3995,23 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         return thresholds.length;
       };
 
-      var hasZoomThresholdChange = function (state, prevState, thresholds) {
+      var hasZoomThresholdChange = (state, prevState, thresholds) => {
         return getInterval(state, thresholds) !== getInterval(prevState, thresholds);
       };
 
-      var getDefaultWrapperFunction = function (defaultFunc) {
-        return function (context) {
+      var mutateObservables = (context) => {
+        var id = context.id;
+        Object.assign(this._prevStates[id], context.previousState);
+        Object.assign(this._states[id], context.state);
+      };
+
+      var getDefaultWrapperFunction = (defaultFunc) => {
+        return (context) => {
           context[defaultFunc]();
-          return origRenderer(context);
+          return mutateObservables(context);
         };
       };
+
       if (option === 'nodeContent/focusRenderer' && this._TemplateHandler.getDataSetBoolean(templateName, 'oj-default-focus')) {
         return getDefaultWrapperFunction('renderDefaultFocus');
       }
@@ -3923,7 +4028,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
             return function (context) {
               if (hasZoomThresholdChange(context.state.zoom,
                 context.previousState.zoom, thresholds)) {
-                return origRenderer(context);
+                return mutateObservables(context);
               }
               return undefined;
             };
@@ -3934,7 +4039,10 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         return null;
       }
 
-      return origRenderer;
+      if (option === 'nodeContent/renderer' || option === 'linkContent/renderer') {
+        return origRenderer;
+      }
+      return mutateObservables;
     },
 
 
@@ -4263,6 +4371,14 @@ setDefaultOptions({
  *     <tr>
  *       <td><kbd>Ctrl + &lt;node or link navigation shortcut&gt;</kbd></td>
  *       <td>Move focus to a node or a link but do not select.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>F2</kbd></td>
+ *       <td>Enter Actionable mode.  This enables keyboard action on elements inside the node/link, including navigating between focusable elements inside the node/link.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Exit Actionable mode.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -5189,6 +5305,8 @@ setDefaultOptions({
  * <ul>
  *   <li>$current - an object that contains information for the current node. (See [oj.ojDiagram.RendererContext]{@link oj.ojDiagram.RendererContext} or the table below for a list of properties available on $current) </li>
  * </ul>
+ * <p>The template for a container node must include an [oj-diagram-child-content]{@link oj.ojDiagramChildContent} element.
+ * Diagram will replace this element with the node child contents.</p>
  * <p>Add data-oj-default-focus, data-oj-default-hover and/or data-oj-default-selection attributes to the template to also render the default focus, hover and/or selection effect for the data item.</p>
  * <p>Similarly, add data-oj-zoom-thresholds attribute to the template to set thresholds that will trigger a rerender when crossed. This should be a JSON array containing values between the <i><b>min-zoom</b></i> and <i><b>max-zoom</b></i></p>
  *
@@ -5396,6 +5514,27 @@ setDefaultOptions({
  * &lt;/oj-diagram>
  * </code>
  * </pre>
+ */
+
+/**
+ * @ojcomponent oj.ojDiagramChildContent
+ * @ojshortdesc oj-diagram-child-content is used to indicate where the container node child contents are placed.
+ * @since 12.0.0
+ *
+ * @classdesc
+ * <h3 id="overview">
+ *   JET Diagram Child Content
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h3>
+ *
+ * <p>
+ * The oj-diagram-child-content element is used to by the
+ * [nodeContentTemplate Slot]{@link oj.ojDiagram#nodeContentTemplate}
+ * and the [nodeContent]{@link oj.ojDiagram#nodeContent} renderer
+ * to indicate where the container node child contents
+ * should be placed.  This element does not support any child content or attributes and will
+ * be removed from the DOM when the node is rendered.
+ * </p>
  */
 
 /**

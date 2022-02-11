@@ -1,0 +1,123 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.core.scoped") {
+  
+  /* core                       */
+  /* -------------------------- */
+// please do not change this classes grouping order
+.oj-contrast-marker,
+.oj-color-invert {
+  --oj-core-text-color-primary:   rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-text-color-secondary: rgba(var(--oj-palette-neutral-rgb-0), .6);
+  --oj-core-text-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0), .3);
+
+  --oj-core-bg-color-content:     rgb(var(--oj-palette-neutral-rgb-170)); 
+  --oj-core-bg-color-hover:       rgba(var(--oj-palette-neutral-rgb-0), .08);
+  --oj-core-bg-color-active:      rgba(var(--oj-palette-neutral-rgb-0), .12);
+  --oj-core-divider-color:        rgba(var(--oj-palette-neutral-rgb-0), .3);
+  
+  // core text colors
+  // --------------------------
+  
+  --oj-core-text-color-danger:    rgb(var(--oj-palette-danger-rgb-70));
+  --oj-core-text-color-warning:   rgb(var(--oj-palette-warning-rgb-70));
+  --oj-core-text-color-success:   rgb(var(--oj-palette-success-rgb-70));
+ 
+  
+  // brand
+  // --------------------------
+  --oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-50));
+  --oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-60));
+  --oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-70));
+  --oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-190));
+  
+  // neutral
+  // --------------------------
+  --oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-90));
+  --oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-70));
+  --oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-140));
+  --oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-150));
+  --oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-160));
+  --oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-40));
+  
+  // success
+  // --------------------------
+  --oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
+  --oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-90));
+  --oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-70));
+  --oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+  // success secondary
+  // --------------------------
+  --oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-140));
+  --oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-150));
+  --oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-160));
+  --oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-40));
+
+  // warning
+  // --------------------------
+  --oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
+  --oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-90));
+  --oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-70));
+  --oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+  // warning secondary
+  // --------------------------
+  --oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-140));
+  --oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-150));
+  --oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-160));
+  --oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-40));
+  
+  // danger
+  // --------------------------
+  --oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
+  --oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-90));
+  --oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-70));
+  --oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+  
+  // danger secondary
+  // --------------------------
+  --oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-140));
+  --oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-150));
+  --oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-160));
+  --oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-40));
+  
+  // info
+  // --------------------------
+  --oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
+  --oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-90));
+  --oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-70));
+  --oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+  // info secondary
+  // --------------------------
+  --oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-140));
+  --oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-150));
+  --oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-160));
+  --oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-40));
+  
+  // Box-shadows
+  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
+  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
+  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16); 
+  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
+  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
+  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
+
+  //Focus Border color
+  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-0));
+}
+
+:root.oj-scale-sm {
+  --oj-core-icon-size-lg: 1.3333rem;
+}
+
+:root.oj-scale-md {
+  --oj-core-icon-size-lg: 1.4286rem;
+}
+}

@@ -1,0 +1,39 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../animation/themes/redwood/oj-animation.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../button/themes/redwood/oj-button.scss";
+@import "../../../menu/themes/redwood/oj-menu.scss";
+
+@import "_oj-navigation-list.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-navigation-list.scss";
+// scoped cssvars override
+@import "_oj-navigation-list-scoped.cssvars.scss";
+
+    @include module-include-once("redwood.navigationlist") {
+        .oj-navigationlist-previous-icon {
+            @extend .oj-fwk-icon-caret-start;
+        }
+        .oj-navigationlist-collapsible .oj-navigationlist-expand-icon {
+            @extend .oj-fwk-icon-caret-s;
+        }
+        .oj-navigationlist-collapsible .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-caret-end;
+        }
+        .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-caret-end;
+        }
+
+        .oj-navigationlist-overflow-item-icon {
+           @extend .oj-fwk-icon-dots-vertical;
+        }
+    }

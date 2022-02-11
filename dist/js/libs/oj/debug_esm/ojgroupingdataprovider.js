@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -296,7 +296,7 @@ class GroupingDataProvider {
                 const doneOrSkip = skipFetch || this._parent._dataFetchComplete;
                 return this._parent._getDataFromDataProvider(this._params, 'root', doneOrSkip).then((res) => {
                     if (res === 'error') {
-                        return Promise.reject("Fetch interrupted due to refresh event");
+                        return Promise.reject('Fetch interrupted due to refresh event');
                     }
                     this._parent._updateSectionIndex();
                     const updatedParams = new this._parent.FetchByOffsetParameters(this._parent, this._parent._currentBaseOffset, this._params.size, this._params.sortCriteria, this._params.filterCriterion);
@@ -340,7 +340,7 @@ class GroupingDataProvider {
                     ._getDataFromDataProvider(this._params, this._parentKey, doneOrSkip)
                     .then((value) => {
                     if (value === 'error') {
-                        return Promise.reject("Fetch interrupted due to refresh event");
+                        return Promise.reject('Fetch interrupted due to refresh event');
                     }
                     else if (value === undefined) {
                         this._parent._updateSectionIndex();
@@ -545,8 +545,8 @@ class GroupingDataProvider {
         return basePromise.then((result) => {
             const results = result.results;
             const newResults = [];
-            for (let i = 0; i < results.length; i++) {
-                const data = results[i]['data'];
+            for (const result of results) {
+                const data = result['data'];
                 const metadata = this._getNodeMetadata(data);
                 newResults.push({ data, metadata });
             }
@@ -563,7 +563,7 @@ class GroupingDataProvider {
             const node = this._getNodeForKey(key);
             if (node) {
                 results.set(key, {
-                    metadata: { key: key },
+                    metadata: { key },
                     data: node
                 });
             }
@@ -688,7 +688,6 @@ class GroupingDataProvider {
             return helperFunction(this._internalIteratorCacheLength, iterator);
         });
     }
-    ;
     _inCurrentFetchingSection(source) {
         if (source === 'root') {
             return true;
@@ -779,7 +778,7 @@ class GroupingDataProvider {
             next: keyParams.nextKey,
             previousLeaf: leafParams.previousLeaf,
             nextLeaf: leafParams.nextLeaf,
-            depth: depth,
+            depth,
             active: true
         };
         this._sections[keyParams.newKey] = newSection;

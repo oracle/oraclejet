@@ -1,0 +1,40 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.led-gauge") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-led-gauge:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-led-gauge {
+    display: block;
+  }
+
+  .oj-ledgauge-fit {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .oj-ledgauge-sm {
+    width: var(--oj-led-gauge-sm-size) !important;
+    height: var(--oj-led-gauge-sm-size) !important;
+  }
+
+  .oj-ledgauge-md {
+    width: var(--oj-led-gauge-md-size) !important;
+    height: var(--oj-led-gauge-md-size) !important;
+  }
+
+  .oj-ledgauge-lg {
+    width: var(--oj-led-gauge-lg-size) !important;
+    height: var(--oj-led-gauge-lg-size) !important;
+  }
+
+  .oj-ledgauge.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+}

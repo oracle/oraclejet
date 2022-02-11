@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -95,18 +95,9 @@
         font-weight: $filePickerSecondaryTextFontWeight;
     }
 
-    .oj-filepicker-icon {
-        font-size: 24px;
-        color: $iconColorDefault;
-    }
-
     .oj-filepicker-disabled .oj-filepicker-text,
     .oj-filepicker-disabled .oj-filepicker-secondary-text {
       color: $textColorDisabled;
-    }
-
-    .oj-filepicker-disabled .oj-filepicker-icon {
-      color: $iconColorDisabled;
     }
     
   }

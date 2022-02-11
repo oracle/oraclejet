@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!
 // WARNING: do not directly import this file, instead import the
@@ -74,6 +74,13 @@
 
     }
 
+    /* Styling for row focus highlight */
+    .oj-gantt-row.oj-focus-highlight {
+      stroke-width: 1px;
+      stroke-dasharray: 1 1;
+      stroke: $primaryTextColor;
+    }
+
     /* Styling related to rows as drop targets */
     .oj-gantt-row.oj-active-drop {
 
@@ -107,19 +114,23 @@
 
     /* Styling for all tasks when hover */
     .oj-gantt-task.oj-hover {
+      fill: none;
+      filter: none;
       stroke-width: 2;
     }
 
     /* Styling for all tasks when focus */
     .oj-gantt-task.oj-focus {
+      fill: none;
+      filter: none;
       stroke-width: 2;
     }
 
     /* Styling for all tasks when selected */
     .oj-gantt-task.oj-selected {
-
-        stroke: $dvtGanttTaskBorderColorSelected;
-
+      fill: none;
+      filter: none;
+      stroke: $dvtGanttTaskBorderColorSelected;
     }
 
     /* Styling for all task bars */
@@ -184,6 +195,23 @@
         fill: $dvtGanttTaskBgColor;
         border-radius: 0;
 
+    }
+
+    /* Styling for all task overtime bars */
+    .oj-gantt-task-overtime {
+      fill: $dvtGanttMilestoneBgColor;
+    }
+
+    /* Styling for all task downtime bars */
+    .oj-gantt-task-downtime {
+      fill: $dvtGanttMilestoneBgColor;
+      height: 0.25rem;
+    }
+
+    /* Styling for all task attribute bars */
+    .oj-gantt-task-attribute {
+      fill: $accentColorDvt9;
+      height: 0.313rem;
     }
 
     /* Styling for all baseline */

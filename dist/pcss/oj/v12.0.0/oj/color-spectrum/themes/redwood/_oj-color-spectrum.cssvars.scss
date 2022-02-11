@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../messages/themes/redwood/_oj-messages.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.colorspectrum") {
+
+:root {
+  // color spectrum
+  // ---------------------------
+
+  // Spectrum saturation/luminosity rectangle
+  --oj-color-spectrum-border-color:                rgb(var(--oj-palette-neutral-rgb-50));
+
+}
+
+}

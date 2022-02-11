@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../animation/themes/stable/oj-animation.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../popup/themes/stable/_oj-layer.scss"; // overlay class in this file
+@import "../../../resizable/themes/stable/_oj-resizable.scss"; 
+@import "../../../button/themes/stable/oj-button.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-dialog.servervars.scss";
+@import "_oj-dialog.cssvars.scss";
+// scoped cssvars override
+@import "_oj-dialog-scoped.cssvars.scss";
+@import "../base/_oj-dialog-ignore.scoped.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-dialog.scss"; 

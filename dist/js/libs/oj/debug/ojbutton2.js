@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -36,12 +36,18 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', '
                 this.setState({ active: false });
             };
             this._handleFocusIn = (event) => {
+                if (event.target === event.currentTarget) {
+                    this._handleFocus(event);
+                }
                 this.setState({ focus: true });
                 if (this._rootRef.current) {
                     this.focusInHandler(this._rootRef.current);
                 }
             };
             this._handleFocusOut = (event) => {
+                if (event.target === event.currentTarget) {
+                    this._handleBlur(event);
+                }
                 this.setState({ focus: false });
                 if (this._rootRef.current) {
                     this.focusOutHandler(this._rootRef.current);
@@ -105,10 +111,11 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', '
         }
         render(props, state) {
             const defaultSlot = props.children;
-            const startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-start');
-            const endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-end');
+            let startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-start');
+            let endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-end');
             let ariaLabel = props['aria-label'];
             let ariaLabelledBy = props['aria-labelledby'];
+            let ariaDescribedBy = props['aria-describedby'];
             const hasDefaultAriaAttribute = ariaLabel || ariaLabelledBy;
             let defaultContent = null;
             let clickHandler = null;
@@ -122,35 +129,51 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', '
                         if (!hasDefaultAriaAttribute) {
                             ariaLabel = props.label;
                         }
+                        defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
                     }
                     else {
                         if (!hasDefaultAriaAttribute) {
                             ariaLabelledById = this.uniquePrefix + '|text';
                             ariaLabelledBy = ariaLabelledById;
                         }
-                        defaultContent = (preact.h("span", { class: 'oj-button-text oj-helper-hidden-accessible', id: ariaLabelledById }, buttonLabel));
+                        defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text oj-helper-hidden-accessible", id: ariaLabelledById }, buttonLabel));
                     }
+                }
+                else if (props.display === 'label') {
+                    if (props.startIcon) {
+                        startIconContent = this._processIcon(props.startIcon, 'oj-button-icon oj-helper-hidden oj-start');
+                    }
+                    if (props.endIcon) {
+                        endIconContent = this._processIcon(props.endIcon, 'oj-button-icon oj-helper-hidden oj-end');
+                    }
+                    if (!hasDefaultAriaAttribute) {
+                        ariaLabelledById = this.uniquePrefix + '|text';
+                        ariaLabelledBy = ariaLabelledById;
+                    }
+                    defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, buttonLabel));
                 }
                 else {
                     if (!hasDefaultAriaAttribute) {
                         ariaLabelledById = this.uniquePrefix + '|text';
                         ariaLabelledBy = ariaLabelledById;
                     }
-                    defaultContent = (preact.h("span", { class: 'oj-button-text', id: ariaLabelledById }, buttonLabel));
+                    defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem), class: "oj-button-text", id: ariaLabelledById }, buttonLabel));
                 }
             }
-            defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
-            const labelContent = (preact.h("div", { class: 'oj-button-label' },
+            else {
+                defaultContent = (preact.h("span", { ref: (elem) => (this._defaultSlotRef = elem) }, defaultContent));
+            }
+            const labelContent = (preact.h("div", { class: "oj-button-label" },
                 startIconContent,
                 defaultContent,
                 endIconContent));
             let buttonContent;
             if (props.disabled) {
-                buttonContent = (preact.h("button", { class: 'oj-button-button', "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, disabled: true }, labelContent));
+                buttonContent = (preact.h("button", { class: "oj-button-button", "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, disabled: true }, labelContent));
             }
             else {
                 clickHandler = this._handleClick;
-                buttonContent = (preact.h("button", { class: 'oj-button-button', ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup, onFocus: this._handleFocus, onBlur: this._handleBlur }, labelContent));
+                buttonContent = (preact.h("button", { class: "oj-button-button", ref: (elem) => (this._buttonRef = elem), "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-label": ariaLabel, onTouchStart: this._handleTouchstart, onTouchEnd: this._handleTouchend, onTouchCancel: this._handleTouchend, onMouseEnter: this._handleMouseenter, onMouseLeave: this._handleMouseleave, onMouseDown: this._handleMousedown, onMouseUp: this._handleMouseup, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onKeyDown: this._handleKeydown, onKeyUp: this._handleKeyup }, labelContent));
             }
             const rootClasses = this._getRootClasses(startIconContent, endIconContent);
             return (preact.h(ojvcomponent.Root, { class: rootClasses, id: props.id, title: title, onClick: clickHandler, ref: this._rootRef },
@@ -203,8 +226,12 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', '
             const multipleIcons = startIconContent && endIconContent;
             const atLeastOneIcon = startIconContent || endIconContent;
             const displayIsIcons = this.props.display === 'icons';
+            const displayIsLabel = this.props.display === 'label';
             let buttonClass;
-            if (atLeastOneIcon) {
+            if (displayIsLabel) {
+                buttonClass = 'oj-button-text-only';
+            }
+            else if (atLeastOneIcon) {
                 if (displayIsIcons) {
                     if (multipleIcons) {
                         buttonClass = 'oj-button-icons-only';
@@ -346,7 +373,7 @@ define(['exports', 'ojs/ojdomutils', 'ojs/ojgestureutils', 'ojs/ojvcomponent', '
         display: 'all',
         chroming: getChromingDefault()
     };
-    exports.Button2.metadata = { "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean" }, "display": { "type": "string", "enumValues": ["all", "icons"] }, "label": { "type": "string" }, "translations": { "type": "object|null" }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["id", "title", "aria-label", "aria-labelledby"] }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
+    exports.Button2.metadata = { "slots": { "": {}, "startIcon": {}, "endIcon": {}, "contextMenu": {} }, "properties": { "disabled": { "type": "boolean" }, "display": { "type": "string", "enumValues": ["all", "icons", "label"] }, "label": { "type": "string" }, "translations": { "type": "object|null" }, "chroming": { "type": "string", "enumValues": ["borderless", "callToAction", "danger", "full", "half", "outlined", "solid"], "binding": { "consume": { "name": "containerChroming" } } } }, "events": { "ojAction": { "bubbles": true } }, "extension": { "_OBSERVED_GLOBAL_PROPS": ["id", "title", "aria-label", "aria-labelledby", "aria-describedby"] }, "methods": { "refresh": {}, "focus": {}, "blur": {} } };
     exports.Button2 = Button2_1 = __decorate([
         ojvcomponent.customElement('oj-button')
     ], exports.Button2);

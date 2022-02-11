@@ -1,0 +1,41 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import dependencies
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+@import "../../../buttonset/themes/redwood/_oj-buttonset.cssvars.scss";
+@import "../../../tooltip/themes/redwood/_oj-tooltip.cssvars.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+
+@include module-include-once("redwood.variables.dvtbase") {
+:root {
+  
+    
+
+    --oj-dvt-danger-color:              rgb(214, 59, 37);
+    --oj-dvt-warning-color:             rgb(207, 124, 0);
+    --oj-dvt-success-color:             rgb(80, 130, 35);
+
+    --oj-dvt-item-border-color-selected:   rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-dvt-item-contrast-color:           rgb(var(--oj-palette-neutral-rgb-20));
+
+    --oj-dvt-marquee-color:                    rgba(var(--oj-palette-neutral-rgb-20),.1);
+    --oj-dvt-marquee-border-color:             rgba(var(--oj-palette-neutral-rgb-190), 0.8);
+    
+    --oj-dvt-contrast-line-color:              rgba(var(--oj-palette-neutral-rgb-20), 0.7);
+    --oj-dvt-reference-object-area-color:      rgba(var(--oj-palette-neutral-rgb-170), 0.08);
+    --oj-dvt-reference-object-line-color:      rgba(var(--oj-palette-neutral-rgb-190), 0.8); 
+
+    --oj-dvt-overview-bg-color:                rgb(var(--oj-palette-neutral-rgb-50));
+    --oj-dvt-overview-window-bg-color:         rgb(var(--oj-palette-neutral-rgb-0));
+    --oj-dvt-overview-window-border-color:     rgb(var(--oj-palette-neutral-rgb-170));    
+
+    --oj-dvt-label-font-size-sm:              var(--oj-typography-body-xs-font-size);
+    --oj-dvt-label-font-size-md:              var(--oj-typography-body-sm-font-size); 
+    --oj-dvt-label-font-size-lg:              var(--oj-typography-body-md-font-size); 
+
+    --oj-dvt-node-border-color-hover:         rgb(var(--oj-palette-neutral-rgb-20));
+
+    --oj-private-dvt-gridline-color:        rgba(var(--oj-palette-neutral-rgb-190), 0.3);
+  }
+}

@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";  
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../animation/themes/stable/oj-animation.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-tree-view.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-tree-view.scss";
+
+  @include module-include-once("stable.treeview") {
+    /* Styling for a collapsed icon */
+    .oj-collapsed > .oj-treeview-item-content > .oj-treeview-disclosure-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
+
+    /* Styling for an expanded icon */
+    .oj-expanded > .oj-treeview-item-content > .oj-treeview-disclosure-icon {
+      @extend .oj-fwk-icon-arrow03-s-end;
+    }
+    
+  }

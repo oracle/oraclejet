@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -69,6 +69,14 @@ var __oj_gantt_metadata =
           ]
         }
       }
+    },
+    "dependencyLineShape": {
+      "type": "string",
+      "enumValues": [
+        "rectilinear",
+        "straight"
+      ],
+      "value": "rectilinear"
     },
     "dnd": {
       "type": "object",
@@ -272,6 +280,20 @@ var __oj_gantt_metadata =
         }
       }
     },
+    "rowData": {
+      "type": "object",
+      "extension": {
+        "webelement": {
+          "exceptionStatus": [
+            {
+              "type": "deprecated",
+              "since": "12.0.0",
+              "description": "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."
+            }
+          ]
+        }
+      }
+    },
     "rowDefaults": {
       "type": "object",
       "properties": {
@@ -307,6 +329,14 @@ var __oj_gantt_metadata =
       "writeback": true,
       "value": []
     },
+    "selectionBehavior": {
+      "type": "string",
+      "enumValues": [
+        "highlightDependencies",
+        "normal"
+      ],
+      "value": "normal"
+    },
     "selectionMode": {
       "type": "string",
       "enumValues": [
@@ -319,6 +349,14 @@ var __oj_gantt_metadata =
     "start": {
       "type": "string",
       "value": ""
+    },
+    "taskAggregation": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
     },
     "taskData": {
       "type": "object",
@@ -337,6 +375,19 @@ var __oj_gantt_metadata =
     "taskDefaults": {
       "type": "object",
       "properties": {
+        "attribute": {
+          "type": "object",
+          "properties": {
+            "svgClassName": {
+              "type": "string",
+              "value": ""
+            },
+            "svgStyle": {
+              "type": "object",
+              "value": {}
+            }
+          }
+        },
         "baseline": {
           "type": "object",
           "properties": {
@@ -358,6 +409,19 @@ var __oj_gantt_metadata =
         },
         "borderRadius": {
           "type": "string"
+        },
+        "downtime": {
+          "type": "object",
+          "properties": {
+            "svgClassName": {
+              "type": "string",
+              "value": ""
+            },
+            "svgStyle": {
+              "type": "object",
+              "value": {}
+            }
+          }
         },
         "height": {
           "type": "number"
@@ -394,6 +458,19 @@ var __oj_gantt_metadata =
             },
             "offset": {
               "type": "number"
+            }
+          }
+        },
+        "overtime": {
+          "type": "object",
+          "properties": {
+            "svgClassName": {
+              "type": "string",
+              "value": ""
+            },
+            "svgStyle": {
+              "type": "object",
+              "value": {}
             }
           }
         },
@@ -445,6 +522,14 @@ var __oj_gantt_metadata =
         }
       }
     },
+    "timeCursor": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
     "tooltip": {
       "type": "object",
       "properties": {
@@ -492,6 +577,9 @@ var __oj_gantt_metadata =
         "labelAndValue": {
           "type": "string"
         },
+        "labelAttribute": {
+          "type": "string"
+        },
         "labelBaselineDate": {
           "type": "string"
         },
@@ -513,6 +601,12 @@ var __oj_gantt_metadata =
         "labelDate": {
           "type": "string"
         },
+        "labelDowntimeEnd": {
+          "type": "string"
+        },
+        "labelDowntimeStart": {
+          "type": "string"
+        },
         "labelEnd": {
           "type": "string"
         },
@@ -529,6 +623,12 @@ var __oj_gantt_metadata =
           "type": "string"
         },
         "labelNoData": {
+          "type": "string"
+        },
+        "labelOvertimeEnd": {
+          "type": "string"
+        },
+        "labelOvertimeStart": {
           "type": "string"
         },
         "labelProgress": {
@@ -629,6 +729,22 @@ var __oj_gantt_metadata =
     "valueFormats": {
       "type": "object",
       "properties": {
+        "attribute": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
         "baselineDate": {
           "type": "object",
           "properties": {
@@ -705,6 +821,44 @@ var __oj_gantt_metadata =
             }
           }
         },
+        "downtimeEnd": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "downtimeStart": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
         "end": {
           "type": "object",
           "properties": {
@@ -727,6 +881,44 @@ var __oj_gantt_metadata =
         "label": {
           "type": "object",
           "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "overtimeEnd": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "overtimeStart": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
             "tooltipDisplay": {
               "type": "string",
               "enumValues": [
@@ -803,6 +995,14 @@ var __oj_gantt_metadata =
     "viewportStart": {
       "type": "string",
       "value": ""
+    },
+    "zooming": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
     }
   },
   "methods": {
@@ -869,6 +1069,28 @@ var __oj_gantt_dependency_metadata =
 var __oj_gantt_task_metadata = 
 {
   "properties": {
+    "attribute": {
+      "type": "object",
+      "properties": {
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
+        "shortDesc": {
+          "type": "string|function"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
+    },
     "baseline": {
       "type": "object",
       "properties": {
@@ -896,6 +1118,25 @@ var __oj_gantt_task_metadata =
     },
     "borderRadius": {
       "type": "string"
+    },
+    "downtime": {
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "string",
+          "value": ""
+        },
+        "start": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "end": {
       "type": "string",
@@ -937,6 +1178,25 @@ var __oj_gantt_task_metadata =
         }
       }
     },
+    "overtime": {
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "string",
+          "value": ""
+        },
+        "start": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
+    },
     "progress": {
       "type": "object",
       "properties": {
@@ -973,6 +1233,9 @@ var __oj_gantt_task_metadata =
     "svgStyle": {
       "type": "object"
     },
+    "taskId": {
+      "type": "string"
+    },
     "type": {
       "type": "string",
       "enumValues": [
@@ -1003,6 +1266,17 @@ var __oj_gantt_row_metadata =
     "labelStyle": {
       "type": "object",
       "value": {}
+    },
+    "referenceObjects": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "shortDesc": {
+      "type": "string|function"
+    },
+    "tasks": {
+      "type": "Array<Object>",
+      "value": []
     }
   },
   "extension": {}
@@ -1012,6 +1286,36 @@ var __oj_gantt_row_metadata =
   __oj_gantt_row_metadata.extension._CONSTRUCTOR = function () {};
   oj.CustomElementBridge.register('oj-gantt-row', {
     metadata: __oj_gantt_row_metadata
+  });
+}());
+
+var __oj_gantt_reference_object_metadata = 
+{
+  "properties": {
+    "end": {
+      "type": "string",
+      "value": ""
+    },
+    "start": {
+      "type": "string",
+      "value": ""
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "extension": {}
+};
+/* global __oj_gantt_reference_object_metadata:false */
+(function () {
+  __oj_gantt_reference_object_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.register('oj-gantt-reference-object', {
+    metadata: __oj_gantt_reference_object_metadata
   });
 }());
 
@@ -1188,6 +1492,28 @@ var __oj_gantt_row_metadata =
  *       <td>Move focus to a task but do not select.</td>
  *     </tr>
  *     <tr>
+ *       <td><kbd>Alt + LeftArrow</kbd></td>
+ *       <td>When focus is on a task and if row labels are rendered, move focus to the row label.
+ *          In RTL reading direction, the opposite happens: if focus is on a row label, move focus to the last focused task in the same row
+ *          (or the first task in the row if there are no previously focused task from the row).
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Alt + RightArrow</kbd></td>
+ *       <td>When focus is on a row label move focus to the last focused task in the same row
+ *          (or the first task in the row if there are no previously focused task from the row).
+ *          In RTL reading direction, the opposite happens: if focus is on a task and if row labels are rendered, move focus to the row label.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+ *       <td>When focus is on a row label, collapse the row if it's currently expanded.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + RightArrow</kbd></td>
+ *       <td>When focus is on a row label, expand the row if it's currently collapsed.</td>
+ *     </tr>
+ *     <tr>
  *       <td><kbd>Alt + &lt; or Alt + ,</kbd></td>
  *       <td>Move focus from a task to an associated dependency line connecting to a predecessor task (RTL: successor task).
  *          Note that the dependency line must have been created referencing the task's ID in its predecessor/successorTask objects for an association to exist.
@@ -1213,21 +1539,21 @@ var __oj_gantt_row_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl + m</kbd></td>
- *       <td>When focus is on a task and <code class="prettyprint">dnd.move.tasks</code> is enabled, enter move mode.
+ *       <td>When focus is on a selected task and <code class="prettyprint">dnd.move.tasks</code> is enabled, enter move mode.
  *          See also the <kbd>UpArrow</kbd>, <kbd>DownArrow</kbd>, <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>,
  *          <kbd>PageUp or PageDown</kbd>, <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
  *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Alt + s</kbd></td>
- *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+ *       <td>When focus is on a selected task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
  *          enter resize (start) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
  *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
  *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Alt + e</kbd></td>
- *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+ *       <td>When focus is on a selected task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
  *          enter resize (end) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
  *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
  *       </td>
@@ -1322,7 +1648,7 @@ var __oj_gantt_row_metadata =
  * @ojsignature [{target: "Type", value: "K1", for: "id"},
  *               {target: "Type", value: "K2", for: "predecessorTaskId"},
  *               {target: "Type", value: "K2", for: "successorTaskId"},
- *               {target: "Type", value: "<K1, K2>", for:"genericTypeParameters"}]
+ *               {target: "Type", value: "<K1, K2=any>", for:"genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.ReferenceObject
@@ -1338,6 +1664,7 @@ var __oj_gantt_row_metadata =
  *    See <a href="#formats-section">Date and Time Formats</a> for more details on required string formats, and see type for more details.
  * @property {string=} end The end time value of this reference object.
  *    See <a href="#formats-section">Date and Time Formats</a> for more details on required string formats, and see type for more details.
+ * @property {string=} label The label of this reference object to be shown. This is not supported for type "area".
  * @property {string=} shortDesc The description of this object.
  *    This is used for accessibility and also for customizing the tooltip text.
  * @ojsignature [{target: "Type", value: "?Partial<CSSStyleDeclaration>", for: "svgStyle", jsdocOverride: true}]
@@ -1350,24 +1677,35 @@ var __oj_gantt_row_metadata =
  *    When only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the task is considered a milestone task.
  *    Note that values of analogous properties from <a href="#taskDefaults">task-defaults</a> are used for any unspecified properties on the task,
  *    and values of any specified properties would override those from <a href="#taskDefaults">task-defaults</a>.
- * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.RowTask<K2>>", for: "tasks", jsdocOverride:true},
- *               {target: "Type", value: "<K2>", for:"genericTypeParameters"}]
+ * @property {Array.<Object>} [referenceObjects] An array of reference objects associated with the row.
+ * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.RowTask<K2,D2>>", for: "tasks", jsdocOverride:true},
+ *               {target: "Type", value: "Array<Partial<oj.ojGantt.ReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
+ *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for:"genericTypeParameters"}]
+ */
+/**
+ * Object type that defines a gantt data row item for the no template case, when data is set using the row-data attribute.
+ * @typedef {Object} oj.ojGantt.DataRow
+ * @ojimportmembers oj.ojGanttRowProperties
+ * @property {Array.<Object>} [tasks] The tasks associated with the row.
+ * @property {Array.<Object>} [referenceObjects] An array of reference objects associated with the row.
+ * @ojsignature [{target: "Type", value: "Array<oj.ojGantt.DataTask<K2, D2>>", for: "tasks", jsdocOverride:true},
+ *               {target: "Type", value: "Array<Partial<oj.ojGantt.ReferenceObject>>", for: "referenceObjects", jsdocOverride:true},
+ *               {target: "Type", value: "<K3=any, D3=any, K2=any, D2=any>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.RowTask
  * @ojimportmembers oj.ojGanttTaskProperties
  * @property {any} id The identifier for the task.
  *    This must be unique across all tasks in the Gantt, and is required in order for the Gantt to properly render.
- *    The id should be set by the application if the <a href="#taskData">task-data</a> DataProvider is not being used.
- *    The row key will be used as id in the  case.
  * @ojsignature [{target: "Type", value: "K2", for: "id"},
- *               {target: "Type", value: "<K2, D2=any>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K2=any, D2=any>", for: "genericTypeParameters"}]
  */
 /**
  * Object type that defines a gantt data task item for the no template case.
  * @typedef {Object} oj.ojGantt.DataTask
  * @ojimportmembers oj.ojGanttTaskProperties
- * @property {any=} rowId The id for the row the task belongs to.
+ * @property {any=} rowId The id for the row the task belongs to, if the data is set using the task-data attribute.
+ * @property {string=} taskId The id for the task, if the data is set using the row-data attribute.
  * @ojsignature [{target: "Type", value: "<K2=any, D2=any>", for: "genericTypeParameters"}]
  */
 /**
@@ -1375,40 +1713,50 @@ var __oj_gantt_row_metadata =
  * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
  * @property {Object} data The data object of the hovered task.
  * @property {Object} rowData The data for the row the hovered task belongs to.
- * @property {Object|null} itemData The data provider row data object for the hovered task.
- *    This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Object|null} itemData The data provider data object for the hovered task.
  * @property {Element} componentElement The gantt element.
  * @property {string} color The color of the hovered task.
- * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2>", for: "data", jsdocOverride:true},
- *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "rowData", jsdocOverride:true},
+ * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "data", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
  *               {target: "Type", value: "D2", for: "itemData"},
- *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
+ */
+/**
+ * @typedef {Object} oj.ojGantt.RowShortDescContext
+ * @property {Object} data The data for the row.
+ * @property {Object|null} itemData The data provider data object for the row.
+ * @ojsignature [{target: "Type", value: "oj.ojGantt.Row<any, any, K3, D3>", for: "data", jsdocOverride:true},
+ *               {target: "Type", value: "D3", for: "itemData"},
+ *               {target: "Type", value: "<K3, D3>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.TaskShortDescContext
  * @property {Object} data The data object of the hovered task.
  * @property {Object} rowData The data for the row the hovered task belongs to.
- * @property {Object|null} itemData The data provider row data object for the hovered task.
- *    This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Object|null} itemData The data provider data object for the hovered task.
  * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "data", jsdocOverride:true},
- *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "rowData", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
  *               {target: "Type", value: "D2", for: "itemData"},
- *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.RowAxisLabelRendererContext
  * @property {Element} parentElement A parent group element that takes a custom SVG fragment as the row label content. Modifications of the parentElement are not supported.
  * @property {Object} rowData The data for the row.
- * @property {Array.<Object>|null} itemData An array of the data provider row data objects associated with the tasks belonging to the gantt row.
- *    This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Array.<Object>|null} itemData An array of the data provider data objects associated with the tasks belonging to the gantt row.
  * @property {Element} componentElement The gantt element.
  * @property {number} maxWidth The maximum available width in px, as constrained by the row-axis.width and row-axis.max-width values.
  *    If row-axis.width is 'max-content' and row-axis.max-width is 'none',
  *    then this is -1, and the component will automatically allocate enough width space to accommodate the content.
  * @property {number} maxHeight The maximum available height in px.
- * @ojsignature [{target: "Type", value: "oj.ojGantt.Row<K2>", for: "rowData", jsdocOverride:true},
+ * @property {Object} data The data object for the row from the row-data DataProvider.
+ * @property {number} depth The depth of the row. The depth of the outermost row under the invisible root is 1. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @property {boolean} leaf True if the current row is a leaf row. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @property {any} parentKey The key of the parent row. The parent key is null for (the invisible) root. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @ojsignature [{target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
  *               {target: "Type", value: "D2[]", for: "itemData"},
- *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "D3|null", for: "data"},
+ *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.DependencyTemplateContext
@@ -1416,9 +1764,13 @@ var __oj_gantt_row_metadata =
  * @property {Object} data The data object for the current dependency
  * @property {number} index The zero-based index of the current dependency
  * @property {any} key The key of the current dependency
+ * @ojsignature [{target: "Type", value: "K1", for: "key"},
+ *               {target: "Type", value: "D1", for: "data"},
+ *               {target: "Type", value: "<K1, D1>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.RowTemplateContext
+ * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute and use the RowMappingTemplateContext instead.'}
  * @property {Element} componentElement The &lt;oj-gantt> custom element
  * @property {number} index The row index
  * @property {any} id The row id, if specified in the task template. Otherwise, it's the single task per row case, and this would be the task id.
@@ -1431,6 +1783,7 @@ var __oj_gantt_row_metadata =
  */
 /**
  * @typedef {Object} oj.ojGantt.TaskTemplateContext
+ * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute and use the TaskMappingTemplateContext instead.'}
  * @property {Element} componentElement The &lt;oj-gantt> custom element
  * @property {Object} data The data object for the current task
  * @property {number} index The zero-based index of the current task
@@ -1439,10 +1792,38 @@ var __oj_gantt_row_metadata =
  * @property {any} parentKey The key of the parent task. The parent key is null for root tasks.
  */
 /**
+ * @typedef {Object} oj.ojGantt.RowMappingTemplateContext
+ * @property {number} index The row index
+ * @property {any} key The key of the row.
+ * @property {Object} data The data object for the row.
+ * @property {number} depth The depth of the row. The depth of the outermost row under the invisible root is 1. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @property {boolean} leaf True if the current row is a leaf row. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @property {any} parentKey The key of the parent row. The parent key is null for (the invisible) root. This is available if the supplied row-data DataProvider is a TreeDataProvider.
+ * @ojsignature [{target: "Type", value: "K3", for: "key"},
+ *               {target: "Type", value: "K3", for: "parentKey"},
+ *               {target: "Type", value: "D3", for: "data"},
+ *               {target: "Type", value: "<K3, D3>", for: "genericTypeParameters"}]
+ */
+/**
+ * @typedef {Object} oj.ojGantt.TaskMappingTemplateContext
+ * @property {Object} data The data object for the current task
+ * @property {number} index The index of the current task
+ * @property {Object} rowData The data object for the row the task belongs to.
+ * @ojsignature [{target: "Type", value: "D2", for: "data"},
+ *               {target: "Type", value: "D3", for: "rowData"},
+ *               {target: "Type", value: "<D2, D3>", for: "genericTypeParameters"}]
+ */
+/**
+ * @typedef {Object} oj.ojGantt.ReferenceObjectMappingTemplateContext
+ * @property {Object} data The data object for the current reference object.
+ * @property {number} index The index of the current reference object.
+ * @property {Object} rowData The data object for the row the reference object belongs to.
+ */
+/**
  * @typedef {Object} oj.ojGantt.TaskContentTemplateContext
  * @property {Object} data The data object of the task.
  * @property {Object} rowData The data for the row the task belongs to.
- * @property {Object|null} itemData The data provider row data object for the task. This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+ * @property {Object|null} itemData The data provider data object for the task.
  * @property {Object} content An object that describes the child content.
  * @property {number} content.height Height of the child content in pixels.
  * @property {number} content.width Width of the child content in pixels.
@@ -1451,16 +1832,15 @@ var __oj_gantt_row_metadata =
  * @property {boolean} state.hovered True if the task is hovered.
  * @property {boolean} state.selected True if the task is selected.
  * @property {boolean} state.focused True if the task is focused.
- * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2>", for: "data", jsdocOverride:true},
- *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "rowData", jsdocOverride:true},
+ * @ojsignature [{target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "data", jsdocOverride:true},
+ *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowData", jsdocOverride:true},
  *               {target: "Type", value: "D2", for: "itemData"},
- *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojGantt.DependencyContentTemplateContext
  * @property {Object} data The data object of the dependency.
  * @property {Object|null} itemData The data provider row data object for the dependency.
- *    This will only be set if a DataProvider for <a href="#dependencyData">dependency-data</a> is being used.
  * @property {Object} content An object that describes the child content.
  * @property {number} content.predecessorX The x coordinate of the predecessor task endpoint.
  * @property {number} content.predecessorY The y coordinate of the predecessor task endpoint.
@@ -1471,7 +1851,7 @@ var __oj_gantt_row_metadata =
  * @property {boolean} state.focused True if the dependency is focused.
  * @ojsignature [{target: "Type", value: "oj.ojGantt.Dependency<K1, K2>", for: "data", jsdocOverride:true},
  *               {target: "Type", value: "D1", for: "itemData"},
- *               {target: "Type", value: "<K1, K2, D1>", for: "genericTypeParameters"}]
+ *               {target: "Type", value: "<K1, K2=any, D1=any>", for: "genericTypeParameters"}]
  */
 
 // Slots
@@ -1498,12 +1878,45 @@ var __oj_gantt_row_metadata =
  * @memberof oj.ojGantt
  * @ojtemplateslotprops oj.ojGantt.TaskTemplateContext
  * @ojpreferredcontent ["GanttTaskElement"]
+ * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute and use the TaskMappingTemplateContext instead.'}
  *
  * @example <caption>Initialize the Gantt with an inline task template specified:</caption>
  * &lt;oj-gantt task-data="[[taskDataProvider]]">
  *   &lt;template slot="taskTemplate">
  *     &lt;oj-gantt-task
  *       row-id="[[$current.data.resource]]"
+ *       start="[[$current.data.begin]]"
+ *       end="[[$current.data.finish]]">
+ *     &lt;/oj-gantt-task>
+ *   &lt;/template>
+ * &lt;/oj-gantt>
+ */
+
+/**
+ * <p>The <code class="prettyprint">taskMappingTemplate</code> slot is used to specify the template for creating each task of the gantt.
+ * The slot content must be a single &lt;template> element.
+ * The content of the template should only be one &lt;oj-gantt-task> element. The reference data provider is that of the <a href="#rowData">row-data</a> attribute.
+ * See the [oj-gantt-task]{@link oj.ojGanttTask} doc for more details.
+ * Note that if invalid values for both task start and end are specified, then the task is not rendered.
+ * <p>When the template is executed for each task, it will have access to the gantt's binding context containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current task.
+ *    (See [oj.ojGantt.TaskMappingTemplateContext]{@link oj.ojGantt.TaskMappingTemplateContext} for a list of properties available on $current)
+ *   </li>
+ * </ul>
+ *
+ * @ojslot taskMappingTemplate
+ * @ojshortdesc The taskMappingTemplate slot is used to specify the template for creating each task of the Gantt. See the Help documentation for more information.
+ * @ojmaxitems 1
+ * @memberof oj.ojGantt
+ * @ojtemplateslotprops oj.ojGantt.TaskMappingTemplateContext
+ * @ojpreferredcontent ["GanttTaskElement"]
+ *
+ * @example <caption>Initialize the Gantt with an inline task mapping template specified:</caption>
+ * &lt;oj-gantt row-data="[[rowDataProvider]]">
+ *   &lt;template slot="taskMappingTemplate">
+ *     &lt;oj-gantt-task
+ *       task-id="[[$current.data.ID]]"
  *       start="[[$current.data.begin]]"
  *       end="[[$current.data.finish]]">
  *     &lt;/oj-gantt-task>
@@ -1562,12 +1975,41 @@ var __oj_gantt_row_metadata =
  * @memberof oj.ojGantt
  * @ojtemplateslotprops oj.ojGantt.RowTemplateContext
  * @ojpreferredcontent ["GanttRowElement"]
+ * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute and use the RowMappingTemplateContext instead.'}
  *
  * @example <caption>Initialize the Gantt with an inline row template specified:</caption>
  * &lt;oj-gantt task-data="[[taskDataProvider]]">
  *   &lt;template slot="rowTemplate">
  *     &lt;oj-gantt-row
  *       label="[[$current.tasks[0].data.resource]]">
+ *     &lt;/oj-gantt-row>
+ *   &lt;/template>
+ * &lt;/oj-gantt>
+ */
+
+/**
+ * <p>The <code class="prettyprint">rowMappingTemplate</code> slot is used to specify the template for generating the row properties of the gantt.
+ * The slot content must be a &lt;template> element.
+ * The content of the template should only be one &lt;oj-gantt-row> element. The reference data provider is that of the <a href="#rowData">row-data</a> attribute. See the [oj-gantt-row]{@link oj.ojGanttRow} doc for more details.</p>
+ * <p>When the template is executed for each row, it will have access to the gantt's binding context containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current row.
+ *    (See [oj.ojGantt.RowMappingTemplateContext]{@link oj.ojGantt.RowMappingTemplateContext} for a list of properties available on $current)
+ *   </li>
+ * </ul>
+ *
+ * @ojslot rowMappingTemplate
+ * @ojshortdesc The rowTemplate slot is used to specify the template for generating the row properties of the Gantt. See the Help documentation for more information.
+ * @ojmaxitems 1
+ * @memberof oj.ojGantt
+ * @ojtemplateslotprops oj.ojGantt.RowMappingTemplateContext
+ * @ojpreferredcontent ["GanttRowElement"]
+ *
+ * @example <caption>Initialize the Gantt with an inline row mapping template specified:</caption>
+ * &lt;oj-gantt row-data="[[rowDataProvider]]">
+ *   &lt;template slot="rowMappingTemplate">
+ *     &lt;oj-gantt-row
+ *       label="[[$current.data.resource]]">
  *     &lt;/oj-gantt-row>
  *   &lt;/template>
  * &lt;/oj-gantt>
@@ -1690,6 +2132,34 @@ var __oj_gantt_row_metadata =
  * &lt;/oj-gantt>
  */
 
+/**
+ * <p>The <code class="prettyprint">referenceObjectMappingTemplate</code> slot is used to specify the template for generating the row reference object properties of the gantt.
+ * The slot content must be a &lt;template> element.
+ * The content of the template should only be one &lt;oj-gantt-reference-object> element. The reference data provider is that of the <a href="#rowData">row-data</a> attribute. See the [oj-gantt-row]{@link oj.ojGanttRow} doc for more details.</p>
+ * <p>When the template is executed for each reference object, it will have access to the gantt's binding context containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current row reference object.
+ *    (See [oj.ojGantt.ReferenceObjectMappingTemplateContext]{@link oj.ojGantt.ReferenceObjectMappingTemplateContext} for a list of properties available on $current)
+ *   </li>
+ * </ul>
+ *
+ * @ojslot referenceObjectMappingTemplate
+ * @ojshortdesc The referenceObjectMappingTemplate slot is used to specify the template for generating the row reference object properties of the Gantt. See the Help documentation for more information.
+ * @ojmaxitems 1
+ * @memberof oj.ojGantt
+ * @ojtemplateslotprops oj.ojGantt.ReferenceObjectMappingTemplateContext
+ * @ojpreferredcontent ["GanttReferenceObjectElement"]
+ *
+ * @example <caption>Initialize the Gantt with an inline row reference object mapping template specified:</caption>
+ * &lt;oj-gantt row-data="[[rowDataProvider]]">
+ *   &lt;template slot="referenceObjectMappingTemplate">
+ *     &lt;oj-gantt-reference-object
+ *       value="[[$current.data.date]]">
+ *     &lt;/oj-gantt-reference-object>
+ *   &lt;/template>
+ * &lt;/oj-gantt>
+ */
+
 // KEEP FOR WIDGET SYNTAX
 
 // SubId Locators **************************************************************
@@ -1788,7 +2258,14 @@ var __oj_gantt_row_metadata =
 /**
  * @ojcomponent oj.ojGanttRow
  * @ojimportmembers oj.ojGanttRowProperties
- * @ojsignature {target: "Type", value:"class ojGanttRow extends JetElement<ojGanttRowSettableProperties>"}
+ * @ojsignature [{target: "Type",
+ *                value:"class ojGanttRow<K3=any,D3=any> extends dvtTimeComponent<ojGanttRowSettableProperties<K3,D3>",
+ *                genericParameters: [{"name": "K3", "description": "Type of key of the rowData dataprovider"},
+ *                                    {"name": "D3", "description": "Type of data from the rowData dataprovider"}]
+ *                },
+ *               {target: "Type",
+ *                value: "ojGanttRowSettableProperties<K3=any, D3=any> extends dvtTimeComponentSettableProperties",
+ *                for: "SettableProperties"}]
  * @ojslotcomponent
  * @ojsubcomponenttype data
  * @ojshortdesc The oj-gantt-row element is used to declare properties for gantt rows. See the Help documentation for more information.
@@ -1803,20 +2280,49 @@ var __oj_gantt_row_metadata =
  *
  * <p>
  *  The oj-gantt-row element is used to declare properties for gantt rows and is only valid as the
- *  child of a template element for the [rowTemplate]{@link oj.ojGantt#rowTemplate} slot of oj-gantt.
+ *  child of a template element for the [rowMappingTemplate]{@link oj.ojGantt#rowMappingTemplate} slot of oj-gantt.
  * </p>
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-gantt task-data="[[taskDataProvider]]">
- *   &lt;template slot="rowTemplate">
+ * &lt;oj-gantt row-data="[[rowDataProvider]]">
+ *   &lt;template slot="rowMappingTemplate">
  *     &lt;oj-gantt-row
- *       label="[[$current.tasks[0].data.resource]]">
+ *       label="[[$current.data.resource]]"
+ *       tasks="[[$current.data.tasks]]"
+ *       reference-objects="[[$current.data.unavailabilities]]">
  *     &lt;/oj-gantt-row>
  *   &lt;/template>
  * &lt;/oj-gantt>
  * </code>
  * </pre>
+ */
+
+/**
+ * The tasks associated with the row. This is required if data is set using row-data attribute.
+ * @expose
+ * @name tasks
+ * @memberof! oj.ojGanttRow
+ * @instance
+ * @type {Array.<Object>}
+ * @default []
+ *
+ * @example <caption>Initialize the gantt row with the
+ * <code class="prettyprint">tasks</code> attribute specified:</caption>
+ * &lt;oj-gantt-row tasks="[[$current.data.tasks]]">&lt;/oj-gantt-row>
+ */
+/**
+ * The reference objects associated with the row. This is optional and is only used if data is set using row-data attribute.
+ * @expose
+ * @name referenceObjects
+ * @memberof! oj.ojGanttRow
+ * @instance
+ * @type {Array.<Object>}
+ * @default []
+ *
+ * @example <caption>Initialize the gantt row with the
+ * <code class="prettyprint">reference-objects</code> attribute specified:</caption>
+ * &lt;oj-gantt-row reference-objects="[[$current.data.referenceObjects]]">&lt;/oj-gantt-row>
  */
 
 /**
@@ -1852,7 +2358,7 @@ var __oj_gantt_row_metadata =
  * &lt;oj-gantt task-data="[[taskDataProvider]]">
  *   &lt;template slot="taskTemplate">
  *     &lt;oj-gantt-task
- *       row-id="[[$current.data.resource]]"
+ *       task-id="[[$current.data.ID]]"
  *       start="[[$current.data.begin]]"
  *       end="[[$current.data.finish]]">
  *     &lt;/oj-gantt-task>
@@ -1863,16 +2369,137 @@ var __oj_gantt_row_metadata =
  */
 
 /**
- * The id for the row the task belongs to.
+ * The id for the row the task belongs to. This is required if data is set using task-data attribute.
  * @expose
  * @name rowId
  * @memberof! oj.ojGanttTask
  * @instance
  * @type {any=}
+ * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute instead of task-data, and specify task-id instead of this attribute.'}
  *
  * @example <caption>Initialize the gantt task with the
  * <code class="prettyprint">row-id</code> attribute specified:</caption>
  * &lt;oj-gantt-task row-id="[[$current.data.resource]]">&lt;/oj-gantt-task>
+ */
+/**
+ * The id of the task. This is required if data is set using row-data attribute.
+ * @expose
+ * @name taskId
+ * @memberof! oj.ojGanttTask
+ * @instance
+ * @type {string}
+ *
+ * @example <caption>Initialize the gantt task with the
+ * <code class="prettyprint">task-id</code> attribute specified:</caption>
+ * &lt;oj-gantt-task task-id="[[$current.data.ID]]">&lt;/oj-gantt-task>
+ */
+
+/**
+ * @ojcomponent oj.ojGanttReferenceObject
+ * @ojsignature {target: "Type", value:"class ojGanttReferenceObject extends JetElement<ojGanttReferenceObjectSettableProperties>"}
+ * @ojslotcomponent
+ * @ojsubcomponenttype data
+ * @ojshortdesc The oj-gantt-reference-object element is used to declare properties for gantt row reference objects. See the Help documentation for more information.
+ * @since 12.0.0
+ *
+ *
+ * @classdesc
+ * <h3 id="overview">
+ *   JET Gantt Row Reference Object
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h3>
+ *
+ * <p>
+ *  The oj-gantt-reference-object element is used to declare properties for gantt row reference objects and is only valid as the
+ *  child of a template element for the [referenceObjectMappingTemplate]{@link oj.ojGantt#referenceObjectMappingTemplate} slot of oj-gantt.
+ * </p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-gantt row-data="[[rowDataProvider]]">
+ *   &lt;template slot="referenceObjectMappingTemplate">
+ *     &lt;oj-gantt-reference-object
+ *       start="[[$current.data.unavailabilityStart]]"
+ *       end="[[$current.data.unavailabilityEnd]]">
+ *     &lt;/oj-gantt-reference-object>
+ *   &lt;/template>
+ * &lt;/oj-gantt>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * A space delimited list of CSS style classes defining the style of the reference object.
+ * Note that only CSS style applicable to SVG elements can be used.
+ * @expose
+ * @name svgClassName
+ * @memberof! oj.ojGanttReferenceObject
+ * @instance
+ * @type {string=}
+ * @default ""
+ *
+ * @example <caption>Initialize the gantt row reference object with the
+ * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+ * &lt;oj-gantt-reference-object svg-class-name="[[$current.data.className]]">&lt;/oj-gantt-reference-object>
+ */
+/**
+ * The CSS style defining the style of the reference object. Only SVG CSS style properties are supported.
+ * @expose
+ * @name svgStyle
+ * @memberof! oj.ojGanttReferenceObject
+ * @instance
+ * @type {Object=}
+ * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+ * @default {}
+ *
+ * @example <caption>Initialize the gantt row reference object with the
+ * <code class="prettyprint">svg-style</code> attribute specified:</caption>
+ * &lt;oj-gantt-reference-object svg-style="[[$current.data.style]]">&lt;/oj-gantt-reference-object>
+ */
+/**
+ * The start time value of this reference object.
+ * See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @expose
+ * @name start
+ * @ojshortdesc The start time value of this reference object. See the Help documentation for more information.
+ * @memberof! oj.ojGanttReferenceObject
+ * @instance
+ * @type {string=}
+ * @ojformat date-time
+ * @default ""
+ *
+ * @example <caption>Initialize the gantt row reference object with the
+ * <code class="prettyprint">start</code> attribute specified:</caption>
+ * &lt;oj-gantt-reference-object start="[[$current.data.start]]">&lt;/oj-gantt-reference-object>
+ */
+/**
+ * The end time value of this reference object.
+ * See <a href="oj.ojGantt.html#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @expose
+ * @name end
+ * @ojshortdesc The end time value of this reference object. See the Help documentation for more information.
+ * @memberof! oj.ojGanttReferenceObject
+ * @instance
+ * @type {string=}
+ * @ojformat date-time
+ * @default ""
+ *
+ * @example <caption>Initialize the gantt row reference object with the
+ * <code class="prettyprint">end</code> attribute specified:</caption>
+ * &lt;oj-gantt-reference-object end="[[$current.data.end]]">&lt;/oj-gantt-reference-object>
+ */
+/**
+ * The description of the reference object. This is used for accessibility.
+ * @expose
+ * @name shortDesc
+ * @memberof! oj.ojGanttDependencyProperties
+ * @instance
+ * @type {?string=}
+ * @default null
+ *
+ * @example <caption>Initialize the gantt row reference object with the
+ * <code class="prettyprint">short-desc</code> attribute specified:</caption>
+ * &lt;oj-gantt-reference-object short-desc="[[$current.data.shortDesc]]">&lt;/oj-gantt-reference-object>
  */
 
 /**
@@ -1917,21 +2544,23 @@ function _getTaskProgressDefaultConverter() {
  * @ojtsimport {module: "ojdvttimecomponentscale", type: "AMD", imported: ["DvtTimeComponentScale"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojGantt<K1, K2, D1 extends oj.ojGantt.Dependency<K1, K2>|any, D2 extends oj.ojGantt.DataTask|any> extends dvtTimeComponent<ojGanttSettableProperties<K1, K2, D1, D2>>",
+ *                value: "class ojGantt<K1, K2, D1 extends oj.ojGantt.Dependency<K1, K2>|any, D2 extends oj.ojGantt.DataTask|any, K3, D3 extends oj.ojGantt.DataRow|any> extends dvtTimeComponent<ojGanttSettableProperties<K1, K2, D1, D2, K3, D3>>",
  *                genericParameters: [{"name": "K1", "description": "Type of key of the dependencyData dataprovider"},
- *                  {"name": "K2", "description": "Type of key of the taskData dataprovider"},
+ *                  {"name": "K2", "description": "Type of key of the task"},
+ *                  {"name": "K3", "description": "Type of key of the rowData dataprovider"},
  *                  {"name": "D1", "description": "Type of data from the dependencyData dataprovider"},
- *                  {"name": "D2", "description": "Type of data from the taskData dataprovider"}]
+ *                  {"name": "D2", "description": "Type of data of the task"},
+ *                  {"name": "D3", "description": "Type of data from the rowData dataprovider"}]
  *               },
  *               {
  *                target: "Type",
- *                value: "ojGanttSettableProperties<K1, K2, D1 extends oj.ojGantt.Dependency<K1, K2>|any, D2 extends oj.ojGantt.DataTask|any> extends dvtTimeComponentSettableProperties",
+ *                value: "ojGanttSettableProperties<K1, K2, D1 extends oj.ojGantt.Dependency<K1, K2>|any, D2 extends oj.ojGantt.DataTask|any, K3, D3 extends oj.ojGantt.DataRow|any> extends dvtTimeComponentSettableProperties",
  *                for: "SettableProperties"
  *               }
  *              ]
  *
  * @ojpropertylayout {propertyGroup: "common", items: ["start", "end", "gridlines.horizontal", "gridlines.vertical", "majorAxis.scale", "majorAxis.zoomOrder", "minorAxis.scale", "minorAxis.zoomOrder", "style"]}
- * @ojpropertylayout {propertyGroup: "data", items: ["taskData", "selection"]}
+ * @ojpropertylayout {propertyGroup: "data", items: ["rowData", "taskData", "dependencyData", "selection", "expanded"]}
  * @ojvbdefaultcolumns 12
  * @ojvbmincolumns 12
  *
@@ -2171,6 +2800,29 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       dependencyData: null,
       /**
+       * Specifies the shape of the dependency lines.
+       * @expose
+       * @name dependencyLineShape
+       * @ojshortdesc Specifies the shape of the dependency lines.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "rectilinear"
+       * @ojvalue {string} "straight"
+       * @default "rectilinear"
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">dependency-line-shape</code> attribute specified:</caption>
+       * &lt;oj-gantt dependency-line-shape="linear">&lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">dependencyLineShape</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.dependencyLineShape;
+       *
+       * // setter
+       * myGantt.dependencyLineShape = 'straight';
+       */
+      dependencyLineShape: 'rectilinear',
+      /**
        * Enables drag and drop functionality.
        * @expose
        * @name dnd
@@ -2214,20 +2866,20 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          */
         move: {
           /**
-           * Enable or disable moving the non-baseline portions of tasks to a different location of some row within
+           * Enable or disable moving the non-baseline portions of selected tasks to a different location of some row within
            * the same gantt using drag and drop or equivalent keyboard actions
            * (See <a href="#keyboard-section">Keyboard End User Information</a>).
            * See also <a href="#event:move">ojMove</a>.
            * <br></br>See the <a href="#dnd">dnd</a> attribute for usage examples.
            * @expose
            * @name dnd.move.tasks
-           * @ojshortdesc Enable or disable moving the non-baseline portions of tasks to a different location within the same Gantt.
+           * @ojshortdesc Enable or disable moving the non-baseline portions of selected tasks to a different location within the same Gantt.
            * @memberof! oj.ojGantt
            * @instance
            * @type {string}
            * @ojsignature {target: "Type", value: "?"}
-           * @ojvalue {string} "disabled" Disable moving tasks
-           * @ojvalue {string} "enabled" Enable moving tasks
+           * @ojvalue {string} "disabled" Disable moving selected tasks
+           * @ojvalue {string} "enabled" Enable moving selected tasks
            * @default "disabled"
            */
           tasks: 'disabled'
@@ -2292,7 +2944,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @instance
        * @type {KeySet}
        * @default new KeySetImpl()
-       * @ojsignature {target:"Type", value:"oj.KeySet<K2>"}
+       * @ojsignature {target:"Type", value:"oj.KeySet<K3|K2>"}
        * @ojwriteback
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">expanded</code> attribute specified:</caption>
@@ -2724,6 +3376,51 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         }
       },
       /**
+       * The DataProvider for the rows of the gantt. It should provide data rows where each maps data for a single gantt row.
+       * This DataProvider takes precedence over the task-data DataProvider if specified.
+       * If the nature of the data is hierarchical, it's recommended that applications
+       * turn on row labels via the <a href="#rowAxis.rendered">row-axis.rendered</a> attribute to show the expand and collapse affordances.
+       * The DataProvider can either have an arbitrary data shape, in which case
+       * a template for the <a href="#rowMappingTemplate">rowMappingTemplate</a> slot for generating gantt row properties
+       * and a template for the <a href="#taskMappingTemplate">taskMappingTemplate</a> slot for generating gantt task properties must be provided,
+       * or it can have ojGantt.DataRow as its data shape, in which case no template is required.
+       * Providing a template for the <a href="#referenceObjectMappingTemplate">referenceObjectMappingTemplate</a> slot for generating the gantt row reference object properties is optional.
+       * @expose
+       * @name rowData
+       * @ojshortdesc Specifies the DataProvider for the rows of the Gantt. See the Help documentation for more information.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {?Object}
+       * @ojsignature {target: "Type", value: "?(DataProvider<K3, D3>)", jsdocOverride:true}
+       * @default null
+       * @ojwebelementstatus {type: "deprecated", since: "12.0.0",
+       *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">row-data</code> attribute specified:</caption>
+       * &lt;oj-gantt row-data="[[rowDataProvider]]" row-axis.rendered="on">
+       *   &lt;template slot="rowMappingTemplate">
+       *     &lt;oj-gantt-row
+       *       label="[[$current.data.label]]">
+       *     &lt;/oj-gantt-row>
+       *   &lt;/template>
+       *   &lt;template slot="taskMappingTemplate">
+       *     &lt;oj-gantt-task
+       *       task-id="[[$current.data.id]]"
+       *       start="[[$current.data.begin]]"
+       *       end="[[$current.data.finish]]">
+       *     &lt;/oj-gantt-task>
+       *   &lt;/template>
+       * &lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">rowData</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.rowData;
+       *
+       * // setter
+       * myGantt.rowData = rowDataProvider;
+       */
+      rowData: null,
+      /**
        * An object with the following properties, used to define default styling for rows in the Gantt.
        * @expose
        * @name rowDefaults
@@ -2784,8 +3481,8 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @memberof oj.ojGantt
        * @instance
        * @type {?(Array.<Object>|Promise)}
-       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojGantt.Row<K2>>>|null",
-       *                                           SetterType: "Array<oj.ojGantt.Row<K2>>|Promise<Array<oj.ojGantt.Row<K2>>>|null"},
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojGantt.Row<K2,D2,K3,D3>>>|null",
+       *                                           SetterType: "Array<oj.ojGantt.Row<K2,D2,K3,D3>>|Promise<Array<oj.ojGantt.Row<K2,D2,K3,D3>>>|null"},
        *                                           jsdocOverride: true}
        * @default null
        *
@@ -2929,7 +3626,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         offsetY: null
       },
       /**
-       * An array of strings containing the ids of the initially selected tasks.
+       * An array containing the ids of the initially selected tasks.
        * @expose
        * @name selection
        * @memberof oj.ojGantt
@@ -2989,6 +3686,29 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       selectionMode: 'none',
       /**
+       * Defines the visual behavior upon task selection.
+       * @expose
+       * @name selectionBehavior
+       * @ojshortdesc Specifies the action that is performed when a drag occurs.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "highlightDependencies" All dependency lines are initially not shown, but upon selection of a task, its dependent tasks and associated dependency lines are highlighted.
+       * @ojvalue {string} "normal" There are no additional visual treatments beyond the normal task selection
+       * @default "normal"
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">selection-behavior</code> attribute specified:</caption>
+       * &lt;oj-gantt selection-behavior='highlightDependencies'>&lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">selectionBehavior</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.selectionBehavior;
+       *
+       * // setter
+       * myGantt.selectionBehavior = 'highlightDependencies';
+       */
+      selectionBehavior: 'normal',
+      /**
        * The start time of the Gantt.
        * A valid value is required for the Gantt to render properly.
        * See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
@@ -3014,6 +3734,29 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       start: '',
       /**
+       * Specifies whether to apply a horizontally stacked visual treatment to chronologically adjacent tasks, i.e. when the end time of a previous task is equal to the start time of the next task.
+       * @expose
+       * @name taskAggregation
+       * @ojshortdesc Specifies whether to apply a horizontally stacked visual treatment to adjacent tasks.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">task-aggregation</code> attribute specified:</caption>
+       * &lt;oj-gantt task-aggregation='select'>&lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">taskAggregation</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.taskAggregation;
+       *
+       * // setter
+       * myGantt.taskAggregation = 'on';
+       */
+      taskAggregation: 'off',
+      /**
        * The DataProvider for the tasks of the gantt. It should provide data rows where each row maps data for a single gantt task.
        * The row key will be used as the id for gantt tasks. If the nature of the data is hierarchical, it's recommended that applications
        * turn on row labels via the <a href="#rowAxis.rendered">row-axis.rendered</a> attribute to show the expand and collapse affordances.
@@ -3028,6 +3771,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @type {?Object}
        * @ojsignature {target: "Type", value: "?(DataProvider<K2, D2>)", jsdocOverride:true}
        * @default null
+       * @ojdeprecated {since: '12.0.0', description: 'Set the data using the row-data attribute instead.'}
        * @ojwebelementstatus {type: "deprecated", since: "11.0.0",
        *   description: "Data sets from a DataProvider cannot be sent to WebDriverJS; use ViewModels or page variables instead."}
        *
@@ -3211,18 +3955,18 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
           offset: null
         },
         /**
-         * Enable or disable resizing the non-baseline portions of tasks.
+         * Enable or disable resizing the non-baseline portions of selected tasks.
          * See also <a href="#event:resize">ojResize</a>.
          * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
          * @expose
          * @name taskDefaults.resizable
-         * @ojshortdesc Enable or disable resizing of the non-baseline portions of tasks.
+         * @ojshortdesc Enable or disable resizing of the non-baseline portions of selected tasks.
          * @memberof! oj.ojGantt
          * @instance
          * @type {string}
          * @ojsignature {target: "Type", value: "?"}
-         * @ojvalue {string} "disabled" Disable tasks resize
-         * @ojvalue {string} "enabled" Enable tasks resize
+         * @ojvalue {string} "disabled" Disable selected tasks resize
+         * @ojvalue {string} "enabled" Enable selected tasks resize
          * @default "disabled"
          */
         resizable: 'disabled',
@@ -3408,8 +4152,151 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            * @default {}
            */
           svgStyle: {}
+        },
+        /**
+         * An object with the following properties, used to define default styling for task downtime elements.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.downtime
+         * @ojshortdesc Specifies default styling for task downtime elements.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        downtime: {
+          /**
+           * A space delimited list of CSS style classes defining the style of the downtime.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.downtime.svgClassName
+           * @ojshortdesc A space delimited list of CSS style classes defining the downtime style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default ""
+           */
+          svgClassName: '',
+          /**
+           * The CSS style defining the style of the downtime.
+           * Only SVG CSS style properties are supported.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.downtime.svgStyle
+           * @ojshortdesc The CSS style defining the downtime style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {Object}
+           * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           * @default {}
+           */
+          svgStyle: {}
+        },
+        /**
+         * An object with the following properties, used to define default styling for task overtime elements.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.overtime
+         * @ojshortdesc Specifies default styling for task overtime elements.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        overtime: {
+          /**
+           * A space delimited list of CSS style classes defining the style of the overtime.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.overtime.svgClassName
+           * @ojshortdesc A space delimited list of CSS style classes defining the overtime style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default ""
+           */
+          svgClassName: '',
+          /**
+           * The CSS style defining the style of the overtime.
+           * Only SVG CSS style properties are supported.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.overtime.svgStyle
+           * @ojshortdesc The CSS style defining the overtime style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {Object}
+           * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           * @default {}
+           */
+          svgStyle: {}
+        },
+        /**
+         * An object with the following properties, used to define default styling for task attribute elements.
+         * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+         * @expose
+         * @name taskDefaults.attribute
+         * @ojshortdesc Specifies default styling for task attribute elements.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+         attribute: {
+          /**
+           * A space delimited list of CSS style classes defining the style of the attribute.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.attribute.svgClassName
+           * @ojshortdesc A space delimited list of CSS style classes defining the attribute style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @default ""
+           */
+          svgClassName: '',
+          /**
+           * The CSS style defining the style of the attribute.
+           * Only SVG CSS style properties are supported.
+           * <br></br>See the <a href="#taskDefaults">task-defaults</a> attribute for usage examples.
+           * @expose
+           * @name taskDefaults.attribute.svgStyle
+           * @ojshortdesc The CSS style defining the attribute style.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {Object}
+           * @ojsignature {target: "Type", value: "?Partial<CSSStyleDeclaration>", jsdocOverride: true}
+           * @default {}
+           */
+          svgStyle: {}
         }
       },
+      /**
+       * Specifies whether the time cursor is enabled.
+       * @expose
+       * @name timeCursor
+       * @ojshortdesc Specifies whether the time cursor is enabled.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">time-cursor</code> attribute specified:</caption>
+       * &lt;oj-gantt time-cursor='on'>&lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">timeCursor</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.timeCursor;
+       *
+       * // setter
+       * myGantt.timeCursor = 'on';
+       */
+      timeCursor: 'off',
       /**
        * An object containing an optional callback function for tooltip customization.
        * @expose
@@ -3446,7 +4333,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
          * @memberof! oj.ojGantt
          * @instance
          * @type {?(function(Object):Object)}
-         * @ojsignature {target: "Type", value: "((context: oj.ojGantt.TooltipContext<K2, D2>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojGantt.TooltipContext<K2, D2, K3, D3>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          * @default null
          */
         renderer: null
@@ -3955,6 +4842,271 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
            * @default "auto"
            */
           tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the start value of the downtime.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.downtimeStart
+         * @ojshortdesc Specifies tooltip behavior for the downtime start value.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+         downtimeStart: {
+          /**
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label.
+           * If not specified, a default converter depending on the axes scale is used.
+           * See also {@link oj.DateTimeConverter}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeStart.converter
+           * @ojshortdesc An object used to format the downtime start value. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt#translations.labelDowntimeStart}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeStart.tooltipLabel
+           * @ojshortdesc The label to display before the downtime start value in the tooltip. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeStart.tooltipDisplay
+           * @ojshortdesc Specifies whether the downtime start value is displayed in the tooltip.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the end value of the downtime.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.downtimeEnd
+         * @ojshortdesc Specifies tooltip behavior for the downtime end value.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        downtimeEnd: {
+          /**
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label.
+           * If not specified, a default converter depending on the axes scale is used.
+           * See also {@link oj.DateTimeConverter}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeEnd.converter
+           * @ojshortdesc An object used to format the downtime end value. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt#translations.labelDowntimeEnd}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeEnd.tooltipLabel
+           * @ojshortdesc The label to display before the downtime end value in the tooltip. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.downtimeEnd.tooltipDisplay
+           * @ojshortdesc Specifies whether the downtime end value is displayed in the tooltip.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the start value of the overtime.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.overtimeStart
+         * @ojshortdesc Specifies tooltip behavior for the overtime start value.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        overtimeStart: {
+          /**
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label.
+           * If not specified, a default converter depending on the axes scale is used.
+           * See also {@link oj.DateTimeConverter}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeStart.converter
+           * @ojshortdesc An object used to format the overtime start value. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt#translations.labelOvertimeStart}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeStart.tooltipLabel
+           * @ojshortdesc The label to display before the overtime start value in the tooltip. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeStart.tooltipDisplay
+           * @ojshortdesc Specifies whether the overtime start value is displayed in the tooltip.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the end value of the overtime.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.overtimeEnd
+         * @ojshortdesc Specifies tooltip behavior for the overtime end value.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        overtimeEnd: {
+          /**
+           * A converter (an instance that duck types {@link oj.Converter}) used to format the label.
+           * If not specified, a default converter depending on the axes scale is used.
+           * See also {@link oj.DateTimeConverter}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeEnd.converter
+           * @ojshortdesc An object used to format the overtime end value. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt#translations.labelOvertimeEnd}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeEnd.tooltipLabel
+           * @ojshortdesc The label to display before the overtime end value in the tooltip. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.overtimeEnd.tooltipDisplay
+           * @ojshortdesc Specifies whether the overtime end value is displayed in the tooltip.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the attribute value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.attribute
+         * @ojshortdesc Specifies tooltip behavior for the attribute value.
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+         attribute: {
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojGantt#translations.labelAttribute}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.attribute.tooltipLabel
+           * @ojshortdesc The label to display before the attribute value in the tooltip. See the Help documentation for more information.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.attribute.tooltipDisplay
+           * @ojshortdesc Specifies whether the attribute value is displayed in the tooltip.
+           * @memberof! oj.ojGantt
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
         }
       },
       /**
@@ -4006,6 +5158,29 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        */
       viewportStart: '',
       /**
+       * Specifies whether zooming is allowed on the Gantt. When 'off', gestures that perform zooming are disabled, and zoom controls are not rendered.
+       * @expose
+       * @name zooming
+       * @ojshortdesc Specifies whether zooming is allowed on the Gantt.
+       * @memberof oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "on"
+       *
+       * @example <caption>Initialize the Gantt with the <code class="prettyprint">zooming</code> attribute specified:</caption>
+       * &lt;oj-gantt zooming='off'>&lt;/oj-gantt>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">zooming</code> property after initialization:</caption>
+       * // getter
+       * var value = myGantt.zooming;
+       *
+       * // setter
+       * myGantt.zooming = 'off';
+       */
+      zooming: 'on',
+      /**
        * Triggered after the viewport is changed due to a zoom or scroll operation.
        * If the viewport changes the minor (and/or major) axis scale into a custom timescale instance of {@link DvtTimeComponentScale},
        * then the minorAxisScale (and/or majorAxisScale) will be the "name" field value of the instance.
@@ -4033,8 +5208,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        *    (e.g. the task directly under the mouse when drag started).
        * @property {Object} taskContexts.data The data object of the source task.
        * @property {Object} taskContexts.rowData The data for the row the source task belongs to.
-       * @property {Object|null} taskContexts.itemData The data provider row data object for the source task.
-       *    This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+       * @property {Object|null} taskContexts.itemData The data provider data object for the source task.
        * @property {string} taskContexts.color The color of the source task.
        * @property {string} value The value at the target position the source task is moved to.
        *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
@@ -4051,12 +5225,12 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @property {Object} rowContext The data context for the row at the target position.
        * @property {Object} rowContext.rowData The data for the target row.
        * @property {Element} rowContext.componentElement The gantt element.
-       * @ojsignature [{target: "Type", value: "Array<{data: oj.ojGantt.RowTask<K2>, rowData: oj.ojGantt.Row<K2>, itemData: D2|null, color: string}>", for: "taskContexts"},
-       *               {target: "Type", value: "{rowData: oj.ojGantt.Row<K2>, componentElement: Element}", for: "rowContext"},
-       *               {target: "Type", value: "oj.ojGantt.RowTask<K2>", for: "taskContexts.data", jsdocOverride:true},
-       *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "taskContexts.rowData", jsdocOverride:true},
-       *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "rowContext.rowData", jsdocOverride:true},
-       *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+       * @ojsignature [{target: "Type", value: "Array<{data: oj.ojGantt.RowTask<K2,D2>, rowData: oj.ojGantt.Row<K2,D2,K3,D3>, itemData: D2|null, color: string}>", for: "taskContexts"},
+       *               {target: "Type", value: "{rowData: oj.ojGantt.Row<K2,D2,K3,D3>, componentElement: Element}", for: "rowContext"},
+       *               {target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "taskContexts.data", jsdocOverride:true},
+       *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "taskContexts.rowData", jsdocOverride:true},
+       *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "rowContext.rowData", jsdocOverride:true},
+       *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
        *
        * @expose
        * @event
@@ -4077,8 +5251,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        *    (e.g. the task directly under the mouse when drag started).
        * @property {Object} taskContexts.data The data object of the source task.
        * @property {Object} taskContexts.rowData The data for the row the source task belongs to.
-       * @property {Object|null} taskContexts.itemData The data provider row data object for the source task.
-       *    This will only be set if a DataProvider for <a href="#taskData">task-data</a> is being used.
+       * @property {Object|null} taskContexts.itemData The data provider data object for the source task.
        * @property {string} taskContexts.color The color of the source task.
        * @property {string} type The type of resize, either 'start' or 'end'.
        * @property {string} value The value at the target position.
@@ -4087,10 +5260,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
        * @property {string} end The end value of the task (always chronologically after, or equivalent to, the start value), if the resize happened.
        * See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
-       * @ojsignature [{target: "Type", value: "Array<{data: oj.ojGantt.RowTask<K2>, rowData: oj.ojGantt.Row<K2>, itemData: D2|null, color: string}>", for: "taskContexts"},
-       *               {target: "Type", value: "oj.ojGantt.RowTask<K2>", for: "taskContexts.data", jsdocOverride:true},
-       *               {target: "Type", value: "oj.ojGantt.Row<K2>", for: "taskContexts.rowData", jsdocOverride:true},
-       *               {target: "Type", value: "<K2, D2>", for: "genericTypeParameters"}]
+       * @ojsignature [{target: "Type", value: "Array<{data: oj.ojGantt.RowTask<K2,D2>, rowData: oj.ojGantt.Row<K2,D2,K3,D3>, itemData: D2|null, color: string}>", for: "taskContexts"},
+       *               {target: "Type", value: "oj.ojGantt.RowTask<K2,D2>", for: "taskContexts.data", jsdocOverride:true},
+       *               {target: "Type", value: "oj.ojGantt.Row<K2,D2,K3,D3>", for: "taskContexts.rowData", jsdocOverride:true},
+       *               {target: "Type", value: "<K2=any, D2=any, K3=any, D3=any>", for: "genericTypeParameters"}]
        *
        * @expose
        * @event
@@ -4151,8 +5324,18 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
     _getComponentStyleMap: function () {
       return {
         databody: 'oj-gantt-container',
+        databodyDim: 'oj-gantt-databody-dim',
         dependencyLine: 'oj-gantt-dependency-line',
+        dependencyRectilinearLine: 'oj-gantt-dependency-rectilinear-line',
+        dependencyStraightLine: 'oj-gantt-dependency-straight-line',
+        dependencyStartOpenStraightLine: 'oj-gantt-dependency-start-open-straight-line',
+        dependencyStartClosedStraightLine: 'oj-gantt-dependency-start-closed-straight-line',
+        dependencyEndOpenStraightLine: 'oj-gantt-dependency-end-open-straight-line',
+        dependencyEndClosedStraightLine: 'oj-gantt-dependency-end-closed-straight-line',
         dependencyLineConnector: 'oj-gantt-dependency-line-connector',
+        dependencyRectilinearLineArrowConnector: 'oj-gantt-dependency-rectilinear-line-arrow-connector',
+        dependencyStraightLineOpenCircleConnector: 'oj-gantt-dependency-straight-line-open-circle-connector',
+        dependencyStraightLineClosedCircleConnector: 'oj-gantt-dependency-straight-line-closed-circle-connector',
         dependencyLineCustom: 'oj-gantt-dependency-line-custom',
         nodata: 'oj-gantt-no-data-message',
         hgridline: 'oj-gantt-horizontal-gridline',
@@ -4167,6 +5350,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         row: 'oj-gantt-row',
         rowLabel: 'oj-gantt-row-label',
         task: 'oj-gantt-task',
+        taskHighlight: 'oj-gantt-task-highlight',
         taskCustom: 'oj-gantt-task-custom',
         taskBar: 'oj-gantt-task-bar',
         taskBackdrop: 'oj-gantt-task-backdrop',
@@ -4181,15 +5365,21 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         taskLabel: 'oj-gantt-task-label',
         taskProgress: 'oj-gantt-task-progress',
         taskUnprogress: 'oj-gantt-task-progress-container',
+        taskOvertime: 'oj-gantt-task-overtime',
+        taskDowntime: 'oj-gantt-task-downtime',
+        taskAttribute: 'oj-gantt-task-attribute',
         tooltipLabel: 'oj-dvt-datatip-label',
         tooltipValue: 'oj-dvt-datatip-value',
         tooltipTable: 'oj-dvt-datatip-table',
         referenceObjectInnerLine: 'oj-gantt-reference-object-inner-line',
         referenceObjectLine: 'oj-gantt-reference-object-line',
         referenceObjectArea: 'oj-gantt-reference-object-area',
+        timeCursorLine: 'oj-gantt-time-cursor-line',
+        timeCursorInnerLine: 'oj-gantt-time-cursor-inner-line',
         selected: 'oj-selected',
         hover: 'oj-hover',
         focus: 'oj-focus',
+        focusHighlight: 'oj-focus-highlight',
         draggable: 'oj-draggable',
         activeDrop: 'oj-active-drop',
         invalidDrop: 'oj-invalid-drop'
@@ -4409,6 +5599,27 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         }
       ];
 
+      styleClasses['oj-gantt-task-milestone'] = {
+        path: '_resources/milestoneBorderRadius',
+        property: 'border-top-left-radius'
+      };
+
+      styleClasses['oj-gantt-task-downtime'] = [
+        {
+          path: '_resources/taskDowntimeHeight',
+          property: 'height'
+        },
+        {
+          path: '_resources/taskDowntimeBorderRadius',
+          property: 'border-top-left-radius'
+        }
+      ];
+
+      styleClasses['oj-gantt-task-attribute'] = {
+        path: '_resources/taskAttributeHeight',
+        property: 'height'
+      };
+
       return styleClasses;
     },
 
@@ -4434,6 +5645,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
     // @inheritdoc
     _ProcessOptions: function () {
       this._super();
+
+      if (this.options.rowData) {
+        this._fetchDataHandler = this._getFetchDataHandler('rowData');
+      }
 
       if (this.options.taskData) {
         this._fetchDataHandler = this._getFetchDataHandler('taskData');
@@ -4504,10 +5719,16 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
         };
         var self = this;
         this._NotReady(); // Register busy state
-        var fetchDataPromise = this.options.taskData
-          ? this._fetchDataHandler(this.options.taskData, event.expanded,
-                                   expandPayload.rowData, expandPayload.id)
-          : Promise.resolve();
+        var fetchDataPromise;
+        if (this.options.rowData) {
+          fetchDataPromise = this._fetchDataHandler(this.options.rowData, event.expanded,
+            expandPayload.rowData, expandPayload.id);
+        } else if (this.options.taskData) {
+          fetchDataPromise = this._fetchDataHandler(this.options.taskData, event.expanded,
+            expandPayload.rowData, expandPayload.id);
+        } else {
+          fetchDataPromise = Promise.resolve();
+        }
         fetchDataPromise.then(function () {
           self._UserOptionChange('expanded', event.expanded);
           self._Render();
@@ -4561,16 +5782,33 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       noClonePaths.viewportEnd = true;
       noClonePaths.referenceObjects = { value: true };
 
-      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales/Converter
       // If the instance is a class, class methods may not be cloned for some reason.
-      noClonePaths.majorAxis = { scale: true, zoomOrder: true };
-      noClonePaths.minorAxis = { scale: true, zoomOrder: true };
+      noClonePaths.majorAxis = { converter: true, scale: true, zoomOrder: true };
+      noClonePaths.minorAxis = { converter: true, scale: true, zoomOrder: true };
+
+      // Don't clone areas where app may pass in an instance of Converter
+      // If the instance is a class, class methods may not be cloned for some reason.
+      noClonePaths.valueFormats = {
+        baselineDate: { converter: true },
+        baselineEnd: { converter: true },
+        baselineStart: { converter: true },
+        date: { converter: true },
+        downtimeEnd: { converter: true },
+        downtimeStart: { converter: true },
+        end: { converter: true },
+        overtimeEnd: { converter: true },
+        overtimeStart: { converter: true },
+        progress: { converter: true },
+        start: { converter: true }
+      };
+      noClonePaths._resources.percentConverter = true;
       return noClonePaths;
     },
 
     // @inheritdoc
     _GetComponentDeferredDataPaths: function () {
-      return { root: ['rows', 'dependencies', 'taskData', 'dependencyData'] };
+      return { root: ['rows', 'dependencies', 'taskData', 'dependencyData', 'rowData'] };
     },
 
     // @inheritdoc
@@ -4586,9 +5824,20 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
           templateElementName: 'oj-gantt-task',
           resultPath: 'rows',
           derivedTemplates: ['rowTemplate']
+        },
+        rowData: {
+          templateName: 'rowMappingTemplate',
+          templateElementName: 'oj-gantt-row',
+          resultPath: 'rows',
+          derivedTemplates: ['taskMappingTemplate', 'referenceObjectMappingTemplate']
         }
       };
       Object.defineProperty(configs.taskData, 'expandedKeySet', {
+        get: function () {
+          return this.options.expanded;
+        }.bind(this)
+      });
+      Object.defineProperty(configs.rowData, 'expandedKeySet', {
         get: function () {
           return this.options.expanded;
         }.bind(this)
@@ -4614,6 +5863,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
       // If there is a change in the expanded property, the data provider state needs to be cleared
       if (hasProperty('expanded')) {
         this._ClearDataProviderState('taskData');
+        this._ClearDataProviderState('rowData');
       }
       this._super(options);
     },
@@ -4621,42 +5871,106 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
     // @inheritdoc
     _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData,
       parentKey, isRoot, updateChildren) {
-      var results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;
+      let results = isRoot ? this._TemplateHandler.getComponentResults(dataProperty) : null;
       if (!results) {
-        var pathValues = this._super(dataProperty, data, templateEngine, isTreeData,
+        const pathValues = this._super(dataProperty, data, templateEngine, isTreeData,
           parentKey, isRoot, updateChildren);
-        // Hierarchical Task Tree case, wrap each task with a row object
-        if (dataProperty === 'taskData' && isTreeData) {
-          var config = this._GetSimpleDataProviderConfigs()[dataProperty];
-          var rowsConfig = this._GetDataProviderSeriesConfig();
-          var rowsTemplateName = rowsConfig.templateName;
-          var rowsTemplateElementName = rowsConfig.templateElementName;
-          var rowsTemplate = this._TemplateHandler.getTemplates()[rowsTemplateName];
-          var parentElement = this.element[0];
+        if (dataProperty === 'rowData') {
+          const templates = this._TemplateHandler.getTemplates();
+          const tasksTemplateName = 'taskMappingTemplate';
+          const tasksTemplateElementName = 'oj-gantt-task';
+          const tasksTemplate = templates[tasksTemplateName]
+            ? templates[tasksTemplateName][0]
+            : null;
+          const refObjsTemplateName = 'referenceObjectMappingTemplate';
+          const refObjsTemplateElementName = 'oj-gantt-reference-object';
+          const refObjsTemplate = templates[refObjsTemplateName]
+            ? templates[refObjsTemplateName][0]
+            : null;
 
-          var wrapWithRows = function (taskChildSubTrees, parentData, _parentKey) {
-            for (var i = 0; i < taskChildSubTrees.length; i++) {
-              var task = taskChildSubTrees[i];
-              var rowId = task.rowId != null ? task.rowId : task.id;
-              var rowWrappedObject = { id: rowId, tasks: [task] };
+          const processTemplate = (nodeData, nodeKey, template, elementName, context) => {
+            let processedDatum;
+            if (template) {
+              processedDatum = this._TemplateHandler.processNodeTemplate(dataProperty,
+                templateEngine, template, elementName, context, nodeKey, false);
+            } else {
+              processedDatum = Object.create(nodeData);
+              processedDatum._noTemplate = true;
+              processedDatum._dvtNoClone = true;
+            }
+            processedDatum._itemData = nodeData;
+            return processedDatum;
+          };
+
+          const processInnerData = (rowDatum) => {
+            // task template mapping
+            const tasks = rowDatum.tasks || [];
+            // eslint-disable-next-line no-param-reassign
+            rowDatum.tasks = tasks.map((taskDatum, i) => {
+              const taskContext = {
+                data: taskDatum,
+                index: i,
+                rowData: rowDatum._itemData
+              };
+              // Use rowid + index as key, since we don't have the task ids at this point.
+              const resolvedTaskObj = processTemplate(taskDatum, `${rowDatum.id}_${i}`,
+                tasksTemplate, tasksTemplateElementName, taskContext);
+              resolvedTaskObj.id = resolvedTaskObj.taskId;
+              resolvedTaskObj.taskId = undefined;
+              return resolvedTaskObj;
+            });
+            // reference objects template mapping
+            const referenceObjects = rowDatum.referenceObjects || [];
+            // eslint-disable-next-line no-param-reassign
+            rowDatum.referenceObjects = referenceObjects.map((refObjDatum, i) => {
+              const refObjContext = {
+                data: refObjDatum,
+                index: i,
+                rowData: rowDatum._itemData
+              };
+              // Use rowid + index as key, since we ref objects don't have ids.
+              return processTemplate(refObjDatum, `${rowDatum.id}_${i}`,
+                refObjsTemplate, refObjsTemplateElementName, refObjContext);
+            });
+
+            if (rowDatum.rows) {
+              rowDatum.rows.forEach(processInnerData);
+            }
+          };
+          pathValues.values[0].forEach(processInnerData);
+          results = pathValues;
+        } else if (dataProperty === 'taskData' && isTreeData) {
+          // Hierarchical Task Tree case, wrap each task with a row object
+          const config = this._GetSimpleDataProviderConfigs()[dataProperty];
+          const rowsConfig = this._GetDataProviderSeriesConfig();
+          const rowsTemplateName = rowsConfig.templateName;
+          const rowsTemplateElementName = rowsConfig.templateElementName;
+          const rowsTemplate = this._TemplateHandler.getTemplates()[rowsTemplateName];
+          const parentElement = this.element[0];
+
+          const wrapWithRows = function (taskChildSubTrees, parentData, _parentKey) {
+            for (let i = 0; i < taskChildSubTrees.length; i++) {
+              const task = taskChildSubTrees[i];
+              const rowId = task.rowId != null ? task.rowId : task.id;
+              let rowWrappedObject = { id: rowId, tasks: [task] };
 
               // If provided, augment row object with template evaluated properties
               if (rowsTemplate) {
-                var taskContext = {
+                const taskContext = {
                   data: task._itemData,
                   index: i,
                   key: task.id,
                   parentData: parentData,
                   parentKey: _parentKey
                 };
-                var rowContext = {
+                const rowContext = {
                   componentElement: parentElement,
                   id: rowId,
                   index: i,
                   tasks: [taskContext]
                 };
                 try {
-                  var resolvedRowObj = this._TemplateHandler.processNodeTemplate(dataProperty,
+                  const resolvedRowObj = this._TemplateHandler.processNodeTemplate(dataProperty,
                     templateEngine, rowsTemplate[0], rowsTemplateElementName,
                     rowContext, rowId);
                   resolvedRowObj.id = rowWrappedObject.id;
@@ -4667,10 +5981,10 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
                 }
               }
 
-              var taskChildren = task[config.resultPath];
+              const taskChildren = task[config.resultPath];
               if (taskChildren) {
                 task[config.resultPath] = undefined;
-                var newParentData = parentData.slice(0);
+                const newParentData = parentData.slice(0);
                 newParentData.push(task._itemData);
                 rowWrappedObject.rows = wrapWithRows(taskChildren, newParentData, task.id);
               }

@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";  
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../slider/themes/stable/oj-slider.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-color-spectrum.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-color-spectrum.scss";

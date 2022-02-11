@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -109,8 +109,8 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
      * </p>
      *
      * <i>Example of consumer listening for the "submittableChange" event type:</i>
-     * <pre class="prettyprint"><code>var listener = function(event) {
-     *   var editItems = event.detail;
+     * <pre class="prettyprint"><code>let listener = function(event) {
+     *   const editItems = event.detail;
      *   console.log("Number of submittable edit items: " + editItems.length);
      * };
      * dataProvider.addEventListener("submittableChange", listener);
@@ -813,7 +813,7 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                             --i;
                         }
                     }
-                    if (params.size && newItemArray.length > params.size) {
+                    if (params.size && params.size != -1 && newItemArray.length > params.size) {
                         newItemArray.splice(params.size);
                     }
                     return { fetchParameters: params, results: newItemArray, done: baseResults.done };
@@ -1374,10 +1374,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                 detailAdd.metadata.forEach((metadata, idx) => {
                     const addBeforeKey = this._addToMergedArrays({ metadata: detailAdd.metadata[idx], data: detailAdd.data[idx] }, true, detailAdd.addBeforeKeys[idx]);
                     if (detailAdd.addBeforeKeys[idx] && !addBeforeKey) {
-                        this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
-                            data: detailAdd.data[idx],
-                            metadata: detailAdd.metadata[idx]
-                        });
+                        if (this.lastIterator && this.lastIterator.mergedItemArray) {
+                            this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
+                                data: detailAdd.data[idx],
+                                metadata: detailAdd.metadata[idx]
+                            });
+                        }
                     }
                     detailAdd.addBeforeKeys[idx] = addBeforeKey;
                 });
@@ -1398,10 +1400,12 @@ define(['ojs/ojcore-base', 'ojs/ojdataprovider', 'ojs/ojeventtarget', 'ojs/ojmap
                         this._removeFromMergedArrays(detailUpdate.metadata[idx].key, true);
                         addBeforeKeys[idx] = this._addToMergedArrays({ data: currData, metadata: detailUpdate.metadata[idx] }, true);
                         if (!addBeforeKeys[idx]) {
-                            this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
-                                data: currData,
-                                metadata: detailUpdate.metadata[idx]
-                            });
+                            if (this.lastIterator && this.lastIterator.mergedItemArray) {
+                                this.lastIterator.mergedItemArray.splice(this.lastIterator.mergedItemArray.length, 0, {
+                                    data: currData,
+                                    metadata: detailUpdate.metadata[idx]
+                                });
+                            }
                         }
                     }
                 });

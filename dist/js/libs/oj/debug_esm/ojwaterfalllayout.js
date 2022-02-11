@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,6 +11,7 @@ import oj from 'ojs/ojcore-base';
 import { handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
 import { fadeOut, slideIn, fadeIn, slideOut } from 'ojs/ojanimation';
 import { getCachedCSSVarValues } from 'ojs/ojthemeutils';
+import { getTranslatedString } from 'ojs/ojtranslation';
 import Context from 'ojs/ojcontext';
 import { info } from 'ojs/ojlogger';
 import { IteratingDataProviderContentHandler } from 'ojs/ojvcollection';
@@ -384,11 +385,16 @@ class WaterfallLayoutContentHandler extends IteratingDataProviderContentHandler 
     }
     decorateItem(vnodes, key, x, y, initialFetch, visible) {
         let vnode;
-        for (const curr of vnodes) {
-            if (curr.props) {
-                vnode = curr;
-                break;
+        if (Array.isArray(vnodes)) {
+            for (const curr of vnodes) {
+                if (curr.props) {
+                    vnode = curr;
+                    break;
+                }
             }
+        }
+        else {
+            vnode = vnodes;
         }
         if (vnode != null) {
             vnode.key = key;
@@ -490,6 +496,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         this.actionableMode = false;
         this.renderCompleted = false;
         this.ticking = false;
+        this.gutterWidth = 16;
         this._handleFocusIn = (event) => {
             if (this.currentItem) {
                 this.focusInHandler(this.currentItem);
@@ -577,11 +584,12 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
     }
     render() {
         let content;
+        let data;
         if (this.contentHandler == null) {
             content = this._renderInitialSkeletons(null);
         }
         else {
-            const data = this.getData();
+            data = this.getData();
             const positions = this.state.skeletonPositions;
             if (data) {
                 if (data.value && data.value.data.length === 0) {
@@ -601,9 +609,16 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 content = this._renderInitialSkeletons(positions.positions);
             }
         }
-        return (h(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-            h("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: 'grid', "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
-                h("div", { role: 'row', style: this._getContentDivStyle(), "data-oj-context": true }, content))));
+        if (data == null) {
+            return (h(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                h("div", { role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                    h("div", { role: "row", style: this._getContentDivStyle(), tabIndex: 0, "aria-label": getTranslatedString('oj-ojWaterfallLayout.msgFetchingData'), "data-oj-context": true }, content))));
+        }
+        else {
+            return (h(Root, { ref: this.setRootElement, style: this._getRootElementStyle(), "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                h("div", { onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, role: "grid", "aria-label": this.props['aria-label'], "aria-labelledby": this.props['aria-labelledby'] },
+                    h("div", { role: "row", style: this._getContentDivStyle(), "data-oj-context": true }, content))));
+        }
     }
     _getScrollPolicyOptions() {
         return {
@@ -624,7 +639,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         const root = this.getRootElement();
         root.addEventListener('touchStart', this._touchStartHandler, { passive: true });
         if (this.props.data) {
-            this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
+            this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), this.gutterWidth);
         }
         const rootWidth = root.clientWidth;
         const rootHeight = root.clientHeight;
@@ -683,7 +698,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         this.currentKey = null;
         this.currentItem = null;
         const root = this.getRootElement();
-        this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), WaterfallLayout_1.gutterWidth);
+        this.contentHandler = new WaterfallLayoutContentHandler(root, this.props.data, this, this.props.scrollPolicy, this._getScrollPolicyOptions(), this.gutterWidth);
         this._delayShowSkeletons();
     }
     componentDidUpdate(oldProps, oldState) {
@@ -836,6 +851,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         if (data == null || skeletons.length === 0) {
             this.setState({ skeletonPositions: null });
         }
+        window.clearTimeout(this.delayShowSkeletonsTimeout);
     }
     updateData(updater) {
         this.renderCompleted = false;
@@ -1025,19 +1041,6 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         const elem = item;
         this.currentKey = this.contentHandler.getKey(elem);
         this._setFocus(elem, true);
-        this._scrollToVisible(elem);
-    }
-    _scrollToVisible(elem) {
-        const top = elem.offsetTop;
-        const height = elem.offsetHeight;
-        const container = this._getScroller();
-        const containerScrollTop = container.scrollTop;
-        const containerHeight = container.offsetHeight;
-        if (top >= containerScrollTop && top + height <= containerScrollTop + containerHeight) {
-            return;
-        }
-        const scrollTop = Math.max(0, Math.min(top, Math.abs(top + height - containerHeight)));
-        container.scrollTop = scrollTop;
     }
     _getScroller() {
         let scroller = this.props.scrollPolicyOptions.scroller;
@@ -1061,14 +1064,14 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
             scroller.scrollTop = 0;
         }
         if (positions == null) {
-            return [this._renderSkeleton(null)];
+            return [this._renderSkeleton(null, true)];
         }
         else {
             const count = positions.size;
             const skeletons = [];
             for (let i = 0; i < count; i++) {
                 const position = positions.get(i);
-                skeletons.push(this._renderSkeleton(position));
+                skeletons.push(this._renderSkeleton(position, true));
             }
             return skeletons;
         }
@@ -1083,7 +1086,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 key: i
             });
         }
-        const layout = new DefaultLayout(null, rootWidth, WaterfallLayout_1.gutterWidth, skeletonWidth, cache);
+        const layout = new DefaultLayout(null, rootWidth, this.gutterWidth, skeletonWidth, cache);
         return layout.getPositionForItems(items, 0);
     }
     _restoreCurrentItem(items) {
@@ -1130,6 +1133,14 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         this.actionableMode = false;
         this._disableAllTabbableElements(items);
         this._restoreCurrentItem(items);
+        this.delayShowSkeletonsTimeout = window.setTimeout(() => {
+            if (this.isAvailable()) {
+                const skeletons = this._findSkeletons();
+                skeletons.forEach((s) => {
+                    s.style.visibility = 'visible';
+                });
+            }
+        }, this._getShowSkeletonsDelay());
     }
     renderSkeletons(positions) {
         const skeletons = [];
@@ -1138,7 +1149,7 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
         });
         return skeletons;
     }
-    _renderSkeleton(position) {
+    _renderSkeleton(position, isInitial) {
         let style;
         if (position == null) {
             style = { visibility: 'hidden' };
@@ -1149,12 +1160,15 @@ let WaterfallLayout = WaterfallLayout_1 = class WaterfallLayout extends Componen
                 left: position.left + 'px',
                 height: position.height + 'px'
             };
+            if (!isInitial) {
+                style.visibility = 'hidden';
+            }
             if (!isNaN(position.width)) {
                 style.width = position.width + 'px';
             }
         }
-        return (h("div", { class: 'oj-waterfalllayout-skeleton', style: style },
-            h("div", { class: 'oj-waterfalllayout-skeleton-content oj-animation-skeleton' })));
+        return (h("div", { class: "oj-waterfalllayout-skeleton", style: style },
+            h("div", { class: "oj-waterfalllayout-skeleton-content oj-animation-skeleton" })));
     }
 };
 WaterfallLayout.defaultProps = {
@@ -1167,7 +1181,6 @@ WaterfallLayout.defaultProps = {
     },
     scrollPosition: { y: 0 }
 };
-WaterfallLayout.gutterWidth = 20;
 WaterfallLayout.minResizeWidthThreshold = 10;
 WaterfallLayout.debounceThreshold = 100;
 WaterfallLayout._CSS_Vars = {

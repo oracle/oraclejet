@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../text-field/themes/redwood/_oj-text-field.cssvars.scss";
+@import "../../../messages/themes/redwood/_oj-messages.cssvars.scss";
+// scoped cssvars override
+@import "../../../text-field/themes/redwood/_oj-text-field-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.colorpalette") {
+
+:root {
+
+  // color palette
+  // --------------------------
+ 
+  --oj-color-palette-swatch-inner-border-color:          rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-color-palette-swatch-outer-border-color-selected: rgb(var(--oj-palette-neutral-rgb-190)); 
+  --oj-color-palette-border-radius:                      50%;
+  --oj-color-palette-swatch-margin:                      1px;
+  
+  --oj-color-palette-grid-font-size:                     var(--oj-typography-body-xs-font-size);
+
+  
+  
+}
+
+}

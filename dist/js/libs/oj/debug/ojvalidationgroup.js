@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -849,6 +849,7 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
       // sort the invalidComponents based on dom order
       invalidComponents.sort(function (elementA, elementB) {
         // If elementA precedes elementB in dom order, return -1
+        // Node.DOCUMENT_POSITION_FOLLOWING returns a bitmask, so the & is intentional
         // eslint-disable-next-line no-bitwise
         return (elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING) ?
           -1 : 1;
@@ -890,7 +891,7 @@ define(['ojs/ojcore-base', 'ojs/ojcustomelement-utils', 'ojs/ojcontext', 'ojs/oj
         widgetElem = Components.__GetWidgetConstructor(bridgeWidgetElem);
       }
 
-      return !!((bridgeWidgetElem === undefined || widgetElem));
+      return !!(bridgeWidgetElem === undefined || widgetElem);
     }
   }
 

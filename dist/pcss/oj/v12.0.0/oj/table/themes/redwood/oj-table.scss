@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../animation/themes/redwood/oj-animation.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-table.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-table.scss"; 
+
+@include module-include-once("redwood.table") {
+
+    /* Styling for the default sort icon */
+    .oj-table-column-header-default-sort-icon {
+        @extend .oj-fwk-icon-sort;
+    }
+
+    /* Styling for the sort ascending icon */
+    .oj-table-column-header-asc-icon {
+        @extend .oj-fwk-icon-caret-n;
+    }
+
+    /* Styling for the sort descending icon */
+    .oj-table-column-header-dsc-icon {
+        @extend .oj-fwk-icon-caret-s;
+    }
+
+}

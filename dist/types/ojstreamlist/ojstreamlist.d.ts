@@ -70,6 +70,7 @@ export declare class StreamList<K extends string | number, D> extends Component<
     private focusOutHandler;
     constructor(props: Readonly<Props<K, D>>);
     static defaultProps: Partial<Props<any, any>>;
+    private static readonly debounceThreshold;
     private readonly _handleFocusIn;
     private readonly _handleFocusOut;
     _clearFocusoutTimeout(): void;
@@ -88,6 +89,7 @@ export declare class StreamList<K extends string | number, D> extends Component<
     private instanceOfTreeDataProvider;
     private _postRender;
     private _getScrollPolicyOptions;
+    private _debounce;
     componentDidMount(): void;
     private getSkeletonHeight;
     private outerHeight;

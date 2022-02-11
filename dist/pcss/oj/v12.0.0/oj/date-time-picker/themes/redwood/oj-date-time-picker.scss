@@ -1,0 +1,33 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../label/themes/redwood/_oj-label.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../button/themes/redwood/oj-button.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../animation/themes/redwood/oj-animation.scss";
+
+//Need to look similar to listbox, so share the CSS
+@import "../../../list-box/themes/redwood/_oj-list-box.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-date-time-picker.servervars.scss";
+@import "_oj-date-time-picker.cssvars.scss";
+// most of the styling for the field is in common file
+@import "../base/_oj-date-time-picker.scss";
+
+  @include module-include-once("redwood.datetimepicker") {
+
+  }

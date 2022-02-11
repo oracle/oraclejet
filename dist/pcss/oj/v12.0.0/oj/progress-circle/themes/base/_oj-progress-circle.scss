@@ -1,0 +1,132 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example progress-circle/themes/redwood/oj-progress-circle.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.progress-circle") {
+  /* progress circle*/
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-progress-circle:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-progress-circle {
+    display: block;
+  }
+
+  .oj-progress-circle {
+    overflow: hidden;
+  }
+
+  .oj-progress-circle,
+  .oj-progress-circle-indeterminate {
+    position: relative;
+    display: inline-block;
+    width: var(--oj-progress-circle-md-size);
+    height: var(--oj-progress-circle-md-size);
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .oj-progress-circle.oj-progress-circle-sm {
+    width: var(--oj-progress-circle-sm-size);
+    height: var(--oj-progress-circle-sm-size);
+  }
+
+  .oj-progress-circle.oj-progress-circle-lg {
+    width: var(--oj-progress-circle-lg-size);
+    height: var(--oj-progress-circle-lg-size);
+  }
+
+  .oj-progress-circle-lg .oj-progress-circle-indeterminate,
+  .oj-progress-circle-md .oj-progress-circle-indeterminate,
+  .oj-progress-circle-sm .oj-progress-circle-indeterminate {
+    width: 100%;
+    height: 100%;
+  }
+
+  .oj-progress-circle-sm .oj-progress-circle-tracker,
+  .oj-progress-circle-sm .oj-progress-circle-value,
+  .oj-progress-circle-sm .oj-progress-circle-indeterminate-inner {
+    border-width: var(--oj-progress-circle-sm-track-width);
+  }
+
+  .oj-progress-circle-lg .oj-progress-circle-tracker,
+  .oj-progress-circle-lg .oj-progress-circle-value,
+  .oj-progress-circle-lg .oj-progress-circle-indeterminate-inner {
+    border-width: var(--oj-progress-circle-lg-track-width);
+  }
+
+  .oj-progress-circle-tracker,
+  .oj-progress-circle-value,
+  .oj-progress-circle-indeterminate-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+
+  /* Determinate Classes */
+  .oj-progress-circle-tracker,
+  .oj-progress-circle-value {
+    position: absolute;
+  }
+
+  .oj-progress-circle-tracker {
+    border: var(--oj-progress-circle-md-track-width) solid var(--oj-progress-circle-determinate-track-bg-color);
+  }
+
+  .oj-progress-circle-value {
+    border: var(--oj-progress-circle-md-track-width) solid var(--oj-progress-circle-value-bg-color);
+  }
+
+  /* Indeterminate Classes */
+  .oj-progress-circle-indeterminate {
+    animation: circleRotation 1s linear 0s infinite;
+  }
+
+  .oj-progress-circle-indeterminate-inner {
+    border: var(--oj-progress-circle-md-track-width) solid var(--oj-progress-circle-value-bg-color);
+    animation: circleLength 1.5s linear 0s infinite alternate;
+    position: absolute;
+  }
+
+  @keyframes circleRotation {
+    0% {
+      transform: rotate(30deg);
+    }
+    100% {
+      transform: rotate(390deg);
+    }
+  }
+
+  @keyframes circleLength {
+    0% {
+      clip-path: polygon(21.1% 0, 21.1% 0, 21.1% 0, 50% 50%, 78.9% 0, 78.9% 0, 78.9% 0);
+    }
+    6.25% {
+      clip-path: polygon(0 0, 0 0, 0 0, 50% 50%, 100% 0, 100% 0, 100% 0);
+    }
+    43.75% {
+      clip-path: polygon(0 0, 0 100%, 0 100%, 50% 50%, 100% 100%, 100% 100%, 100% 0);
+    }
+    50% {
+      clip-path: polygon(0 0, 0 100%, 21.1% 100%, 50% 50%, 78.9% 100%, 100% 100%, 100% 0);
+    }
+    56.25% {
+      clip-path: polygon(0 0, 0 100%, 0 100%, 50% 50%, 100% 100%, 100% 100%, 100% 0);
+    }
+    93.75% {
+      clip-path: polygon(0 0, 0 0, 0 0, 50% 50%, 100% 0, 100% 0, 100% 0);
+    }
+    100% {
+      clip-path: polygon(21.1% 0, 21.1% 0, 21.1% 0, 50% 50%, 78.9% 0, 78.9% 0, 78.9% 0);
+    }
+  }
+}

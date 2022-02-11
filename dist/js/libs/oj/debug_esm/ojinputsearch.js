@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -240,9 +240,15 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             this._updateState({ hover: false });
         };
         this._handleFocusin = (event) => {
+            if (event.target === event.currentTarget) {
+                this._handleFocus(event);
+            }
             this._updateState({ focus: true });
         };
         this._handleFocusout = (event) => {
+            if (event.target === event.currentTarget) {
+                this._handleBlur(event);
+            }
             this._updateState({ focus: false });
         };
         this._handleMobileFilterInputFocusin = (event) => {
@@ -895,7 +901,7 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         const autocompleteFloatingElem = state.autocompleteFloatingText
             ? this._renderAutocompleteFloatingText(state.autocompleteFloatingText, displayValue)
             : null;
-        const searchIcon = h("span", { class: iconClasses, role: 'presentation' });
+        const searchIcon = h("span", { class: iconClasses, role: "presentation" });
         const textFieldContainer = state.fullScreenPopup
             ? this._renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId)
             : this._renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem);
@@ -913,22 +919,22 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         const text = state.fetchedInitial && !state.fetching && ((_a = state.fetchedData) === null || _a === void 0 ? void 0 : _a.length) == 0
             ? getTranslatedString('oj-ojInputSearch2.noSuggestionsFound')
             : '\xa0';
-        return (h("div", { id: 'oj-listbox-live-' + this._uniqueId, class: 'oj-helper-hidden-accessible oj-listbox-liveregion', "aria-live": 'polite' }, text));
+        return (h("div", { id: 'oj-listbox-live-' + this._uniqueId, class: "oj-helper-hidden-accessible oj-listbox-liveregion", "aria-live": "polite" }, text));
     }
     _renderDesktopMainTextFieldContainer(props, state, searchIcon, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-        return (h("div", { role: 'presentation', class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem },
-            h("span", { class: 'oj-text-field-start' }, searchIcon),
-            h("div", { class: 'oj-text-field-middle', role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
-                h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: 'off', autocorrect: 'off' }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onFocus: this._handleFocus, onBlur: this._handleBlur, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown })),
+        return (h("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId(), ref: this._setMainInputContainerElem },
+            h("span", { class: "oj-text-field-start" }, searchIcon),
+            h("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
+                h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMainInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, "aria-activedescendant": this._dataProvider ? state.activeDescendantId : null, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleDesktopMainInputKeydown })),
                 autocompleteFloatingElem)));
     }
     _renderMobileMainTextFieldContainer(props, state, searchIcon, inputClasses, ariaLabel, listboxId) {
         const containerClasses = 'oj-text-field-container oj-text-field-has-start-slot';
-        return (h("div", { role: 'presentation', class: containerClasses, id: this._getMainInputContainerId() },
-            h("span", { class: 'oj-text-field-start' }, searchIcon),
-            h("div", { class: 'oj-text-field-middle', role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
-                h("input", Object.assign({ readOnly: true, ref: this._setMainInputElem, value: props.value, class: inputClasses, placeholder: props.placeholder, autocomplete: 'off', autocorrect: 'off' }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout, onFocus: this._handleFocus, onBlur: this._handleBlur })))));
+        return (h("div", { role: "presentation", class: containerClasses, id: this._getMainInputContainerId() },
+            h("span", { class: "oj-text-field-start" }, searchIcon),
+            h("div", { class: "oj-text-field-middle", role: this._dataProvider ? 'combobox' : undefined, "aria-label": this._dataProvider ? ariaLabel : null, "aria-owns": listboxId, "aria-haspopup": this._dataProvider ? 'listbox' : 'false', "aria-expanded": state.dropdownOpen ? 'true' : 'false' },
+                h("input", Object.assign({ readOnly: true, ref: this._setMainInputElem, value: props.value, class: inputClasses, placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": this._dataProvider ? 'list' : null, "aria-controls": listboxId, "aria-busy": state.dropdownOpen && state.loading, onfocusin: this._handleFocusin, onfocusout: this._handleFocusout })))));
     }
     _renderMobileDropdownFilterField(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
         let classes = 'oj-text-field';
@@ -946,23 +952,23 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
             clearIcon = this._renderMobileDropdownClearIcon();
         }
         return (h("div", { class: classes },
-            h("div", { role: 'presentation', class: containerClasses, id: this._getMobileFilterContainerId() },
-                h("span", { class: 'oj-text-field-start' }, backIcon),
-                h("div", { class: 'oj-text-field-middle', "aria-label": ariaLabel, "aria-owns": listboxId },
-                    h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMobileFilterInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: 'off', autocorrect: 'off' }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": 'list', "aria-controls": listboxId, "aria-busy": state.loading, "aria-activedescendant": state.activeDescendantId, onfocusin: this._handleMobileFilterInputFocusin, onfocusout: this._handleMobileFilterInputFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleMobileFilterInputKeydown, onMouseDown: this._handleFilterInputMousedown })),
+            h("div", { role: "presentation", class: containerClasses, id: this._getMobileFilterContainerId() },
+                h("span", { class: "oj-text-field-start" }, backIcon),
+                h("div", { class: "oj-text-field-middle", "aria-label": ariaLabel, "aria-owns": listboxId },
+                    h(ComposingInput, Object.assign({ type: inputType, inputRef: this._setMobileFilterInputElem, value: displayValue, class: inputClasses + ' oj-inputsearch-filter', placeholder: props.placeholder, autocomplete: "off", autocorrect: "off" }, { autocapitalize: 'off' }, { spellcheck: false, autofocus: false, "aria-label": ariaLabel, "aria-autocomplete": "list", "aria-controls": listboxId, "aria-busy": state.loading, "aria-activedescendant": state.activeDescendantId, onfocusin: this._handleMobileFilterInputFocusin, onfocusout: this._handleMobileFilterInputFocusout, onInputChanged: this._handleInputChanged, onKeyDown: this._handleMobileFilterInputKeydown, onMouseDown: this._handleFilterInputMousedown })),
                     autocompleteFloatingElem),
-                h("span", { class: 'oj-text-field-end' }, clearIcon))));
+                h("span", { class: "oj-text-field-end" }, clearIcon))));
     }
     _renderMobileDropdownBackIcon() {
         const backIconClasses = 'oj-inputsearch-back-icon oj-inputsearch-icon oj-component-icon oj-clickable-icon-nocontext';
         const backButtonAriaLabel = getTranslatedString('oj-ojInputSearch2.cancel');
-        return (h("span", { class: 'oj-inputsearch-back-button', "aria-label": backButtonAriaLabel, onClick: this._handleMobileDropdownBack },
+        return (h("span", { class: "oj-inputsearch-back-button", "aria-label": backButtonAriaLabel, onClick: this._handleMobileDropdownBack },
             h("span", { class: backIconClasses })));
     }
     _renderMobileDropdownClearIcon() {
         const clearIconClasses = 'oj-inputsearch-clear-icon oj-inputsearch-icon oj-component-icon' +
             ' oj-clickable-icon-nocontext';
-        return (h("span", { class: 'oj-inputsearch-clear-button', "aria-hidden": true, onClick: this._handleMobileFilterClear },
+        return (h("span", { class: "oj-inputsearch-clear-button", "aria-hidden": true, onClick: this._handleMobileFilterClear },
             h("span", { class: clearIconClasses })));
     }
     _renderDropdown(props, state, displayValue, inputClasses, ariaLabel, listboxId, inputType, autocompleteFloatingElem) {
@@ -1000,16 +1006,16 @@ let InputSearch = InputSearch_1 = class InputSearch extends Component {
         return this._renderVPopup(dropdownPosition, dropdownClasses, dropdownStyle, dropdownContent, dropdownFilterField, null);
     }
     _renderVPopup(position, classes, style, content, headerContent, mousedownHandler) {
-        return (h(VPopup, { position: position, layerSelectors: 'oj-listbox-drop-layer', autoDismiss: this._clickAwayHandler },
-            h("div", { "data-oj-binding-provider": 'preact', id: this._getDropdownElemId(), ref: this._setDropdownElem, class: classes, role: 'presentation', style: style, onMouseDown: mousedownHandler, onMouseMove: this._handleDropdownMousemove, onMouseLeave: this._handleDropdownMouseleave },
+        return (h(VPopup, { position: position, layerSelectors: "oj-listbox-drop-layer", autoDismiss: this._clickAwayHandler },
+            h("div", { "data-oj-binding-provider": "preact", id: this._getDropdownElemId(), ref: this._setDropdownElem, class: classes, role: "presentation", style: style, onMouseDown: mousedownHandler, onMouseMove: this._handleDropdownMousemove, onMouseLeave: this._handleDropdownMouseleave },
                 headerContent,
                 content)));
     }
     _renderAutocompleteFloatingText(autocompleteFloatingText, displayValue) {
         const text = '\xa0\u2014\xa0' + autocompleteFloatingText;
-        return (h("div", { class: 'oj-inputsearch-autocomplete-floating-container' },
-            h("span", { style: 'visibility: hidden;' }, displayValue),
-            h("span", { class: 'oj-inputsearch-autocomplete-floating-text' }, text)));
+        return (h("div", { class: "oj-inputsearch-autocomplete-floating-container" },
+            h("span", { style: "visibility: hidden;" }, displayValue),
+            h("span", { class: "oj-inputsearch-autocomplete-floating-text" }, text)));
     }
     _scrollSuggestionIntoView(activeDescendantId, alignToTop) {
         const labelElem = document.getElementById(activeDescendantId);
@@ -1233,7 +1239,6 @@ InputSearch.defaultProps = {
     suggestions: null,
     suggestionItemText: 'label',
     placeholder: '',
-    rawValue: null,
     value: null
 };
 InputSearch.metadata = { "properties": { "suggestions": { "type": "object|null" }, "suggestionItemText": { "type": "string | number|function" }, "placeholder": { "type": "string" }, "rawValue": { "type": "string|null", "readOnly": true, "writeback": true }, "value": { "type": "string|null", "writeback": true } }, "events": { "ojValueAction": {} }, "slots": { "suggestionItemTemplate": { "data": {} } }, "extension": { "_WRITEBACK_PROPS": ["rawValue", "value"], "_READ_ONLY_PROPS": ["rawValue"], "_OBSERVED_GLOBAL_PROPS": ["aria-label", "id"] }, "methods": { "focus": {}, "blur": {}, "_testChangeValue": {}, "_testChangeValueByKey": {} } };

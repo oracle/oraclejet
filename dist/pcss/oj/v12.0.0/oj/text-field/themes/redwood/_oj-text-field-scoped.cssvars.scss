@@ -1,0 +1,56 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.textfield.scoped") {
+  
+  /* text field                 */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-text-field-text-highlight-color: rgb(var(--oj-palette-brand-rgb-50)); 
+
+
+  // enabled
+  --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-180));
+  --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-0),.3);
+  --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary);
+  --oj-text-field-text-color:      var(--oj-core-text-color-primary);
+
+  // disabled
+  --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0), 0.16); // need to double check with design team as there is no specification
+
+  --oj-text-field-border-color-disabled:  rgba(var(--oj-palette-neutral-rgb-0),.1);
+  --oj-text-field-text-color-disabled:   var(--oj-core-text-color-disabled);
+
+  // readonly
+
+  // focus
+  --oj-text-field-border-color-focus: rgb(var(--oj-palette-brand-rgb-50));
+
+  // variables that apply when the label-edge is inside
+  // todo: disabled color should apply regardless of location, error and focus only apply when label is inside
+  --oj-text-field-inside-edge-label-color-error:       var(--oj-core-danger-3);
+  --oj-text-field-inside-edge-label-color-focus:       var(--oj-core-brand-1);
+  --oj-text-field-inside-edge-label-color-warning:     var(--oj-core-warning-3);
+
+  // User Assistance
+  --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary);
+}
+
+:root.oj-scale-sm {
+
+  // text field
+  // ------------------------------
+  --oj-text-field-height:               2.3333rem;
+  --oj-text-field-text-to-edge-padding: 0.6667rem;
+  --oj-text-field-icon-to-text-padding: var(--oj-text-field-text-to-edge-padding);
+  --oj-text-field-icon-to-edge-padding: var(--oj-text-field-text-to-edge-padding);
+
+  --oj-user-assistance-inline-font-size: var(--oj-typography-body-sm-font-size);
+
+
+}  
+
+
+}

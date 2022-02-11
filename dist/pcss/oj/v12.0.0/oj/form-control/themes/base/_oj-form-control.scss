@@ -1,0 +1,997 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example form-control/themes/redwood/oj-form-control.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+
+@include module-include-once("common.formcontrolcommon") {
+  /* form-control classes */
+
+  /* --------------------------------------------------------------- */
+
+  /* Component option defaults. */
+  $formControlDefaultOptions: ();
+
+  @if ($privateLoadingIndicatorDelayDuration != null) {
+    $formControlDefaultOptions: map-merge(
+      $formControlDefaultOptions,
+      (
+        showIndicatorDelay: $privateLoadingIndicatorDelayDuration
+      )
+    );
+  }
+  @if ($privateFormControlLabelEdgeDefault != null) {
+    $formControlDefaultOptions: map-merge(
+      $formControlDefaultOptions,
+      (
+        labelEdge: $privateFormControlLabelEdgeDefault
+      )
+    );
+  }
+  @if ($privateInputFormControlReadonlyDefault != null) {
+    $formControlDefaultOptions: map-merge(
+      $formControlDefaultOptions,
+      (
+        readonlyElem: $privateInputFormControlReadonlyDefault
+      )
+    );
+  }
+  @if ($privateFormControlUseUserAssistanceOptionDefault != null) {
+    $formControlDefaultOptions: map-merge(
+      $formControlDefaultOptions,
+      (
+        useUserAssistanceOptionDefault: $privateFormControlUseUserAssistanceOptionDefault
+      )
+    );
+  }
+
+  .oj-form-control-option-defaults {
+    font-family: oj-json-from-map($formControlDefaultOptions) !important;
+  }
+
+  // bumping up the specificity with the html because in some cases the input
+  // will get a margin of 0 which would override the margin set here
+  html .oj-form-control {
+    margin-bottom: var(--oj-private-core-wrappable-margin-bottom);
+
+    vertical-align: top;
+  }
+
+  // TOGGLE FOR READONLY
+  // if it isn't in mixed form mode, show the readonly-div
+  // instead of the input/textarea. Need a different selector for combobox
+  // because combobox does not have oj-text-field-input.
+  @if ($privateInputFormControlReadonlyDefault != "input") {
+    .oj-text-field.oj-read-only:not(.oj-textarea):not(.oj-inputpassword) .oj-text-field-input,
+    .oj-text-field.oj-combobox.oj-read-only .oj-combobox-input,
+    .oj-text-field.oj-textarea.oj-read-only.oj-maxrows-neg1 .oj-text-field-input,
+    .oj-text-field.oj-textarea.oj-read-only:not(.oj-maxrows-neg1) .oj-text-field-readonly-div,
+    .oj-text-field:not(.oj-read-only) .oj-text-field-readonly-div {
+      display: none;
+    }
+    // we do not render the readonly-div if 'input', so put those styles here to keep them out
+    // of the alta demoThemes css, unless it is clearer to have them next to the 'input' selector equivalent.
+
+    // We render a readonly-div with an inner div for readonly.
+    // Start with getting the styles to look good for 100% readonly
+    // which is where we show all the text in a div, no overflow hidden.
+    // inside and top labels.
+    // Then, add on styles to make it work for when it is inside an
+    // enable oj-form-layout, aka mixed mode, where we do not show
+    // all the text, but the readonly-div needs to be the same height
+    // as an enabled oj-input-text component.
+    // needed to vertically center align the text. no justify-content for full readonly,
+    // whether label is on top or inside. justify-content center for top when in mixed
+    // needed to give the div some height.
+    .oj-text-field-readonly-div {
+      @include oj-text-field-input-css-vars();
+      // need the readonly div to preserve spaces and newlines that
+      // were entered into the textarea or input.
+      white-space: pre-wrap;
+      @include oj-text-field-content-readonly();
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    // put these on the root dom element so they can be overridden
+    // by the typography classes which define line-height and font-weight
+    // and font-size.
+    .oj-text-field.oj-read-only {
+      font-weight: var(--oj-form-control-font-weight-read-only);
+      font-size: var(--oj-typography-body-md-font-size);
+    }
+    
+
+    // min height is on the inner div that takes focus. If it wasn't, then
+    // if there is no value, there is no height, and the focusring is not shown.
+    .oj-text-field-readonly {
+      min-height: calc(var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size));
+      word-break: break-word;
+    }
+
+    // additional css for when the label is inside.
+    // padding-top needed to push down the text from the label
+    // outside a form (or inside readonly form). According to what I tell in the spec,
+    // this distance is the same in readonly and non readonly modes.
+    // min-height is needed when there is no value.
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-text-field-readonly-div {
+      min-height: var(--oj-text-field-inside-edge-height);
+      padding-top: var(--oj-text-field-inside-edge-padding-top);
+    }
+
+    .oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-text-field-label-inside .oj-text-field-readonly-div {
+      padding-top: 0;
+      margin-top: calc(var(--oj-label-inside-edge-font-size) * var(--oj-label-inside-edge-line-height) + var(--oj-label-inside-edge-position-top));
+      min-height: 0;
+    }
+
+    // under these conditions we need the text to be centered.
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-form-control-label-inside) .oj-text-field-readonly-div,
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-form-control-label-inside) .oj-text-field-readonly-div {
+      justify-content: center;
+    }
+
+    // show an outline on focus for accessibility.
+    // usually we would suppress this focus ring on mouse click using
+    // :not(.oj-focus-highlight), but it would be unlikely a user clicks
+    // on a readonly field with his mouse so for coding simplicity sake,
+    // we are not suppressing the focus ring on mouse click.
+    // because the overflow is hidden, we put the outline on the ::after
+    // pseudo element
+    .oj-text-field-readonly:focus::after {
+      outline: dotted 1px var(--oj-core-focus-border-color);
+      outline-offset: -1px;
+      content: '';
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    // because we are putting the outline on the pseudo element, we need to disable
+    // the outline on the default element
+    // we make the focus element position: relative so that the outline pseudo element
+    // is positioned absolute to this element
+    .oj-text-field-readonly:focus {
+      outline: none;
+      position: relative;
+    }
+
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-text-field-readonly-div {
+      padding-left: var(--oj-text-field-text-to-edge-padding);
+      padding-right: var(--oj-text-field-text-to-edge-padding);
+    }
+
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field-container.oj-text-field-has-start-slot .oj-text-field-readonly-div {
+      padding-left: var(--oj-text-field-icon-to-text-padding);
+      padding-right: var(--oj-text-field-icon-to-text-padding);
+    }
+    // mixed mode. want scrolling for input components, but no visible scrollbar
+    // want scrolling, but no visible scrollbar
+    // this contains hiding the scrollbar for FF and IE.
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width */
+    .oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly {
+      white-space: nowrap;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    // On all browsers, we want scrolling, but no visible scrollbar.
+    // This is what we have to do for Chrome
+   .oj-form-layout .oj-form.oj-enabled .oj-text-field:not(.oj-textarea) .oj-text-field-readonly::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    // need a little less in mixed mode for non-textarea because it has justify:center.
+    // .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside:not(.oj-textarea) .oj-text-field-readonly-div {
+    //   padding-top: var(--oj-text-field-inside-edge-padding-top);
+    // }
+  }
+
+  // Need this for 100% readonly mode.
+  // We constrain the height with min-height when in an enabled form
+  .oj-text-field.oj-read-only .oj-text-field-container {
+    border-width: 0;
+    background-color: transparent;
+    height: auto;
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field .oj-text-field-container,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only) .oj-text-field-container {
+    min-height: var(--oj-text-field-inside-edge-height);
+  }
+
+  .oj-text-field-label-inside:not(.oj-read-only):not(.oj-textarea) .oj-text-field-container.oj-text-field-has-start-slot .oj-text-field-input,
+  .oj-text-field-label-inside:not(.oj-read-only):not(.oj-textarea) .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-text-field-input {
+    min-height: var(--oj-text-field-inside-edge-height); 
+    padding-top: var(--oj-text-field-inside-edge-padding-top);
+  }
+
+  // oj-label-value mixed mode. use oj-label margin-bottom, otherwise margin-bottom is 0
+  .oj-form-layout .oj-form.oj-enabled:not(.oj-form-cols-labels-inline) .oj-label,
+  .oj-label-value:not(.oj-formlayout-labels-inline) .oj-label {
+    margin-bottom: var(--oj-form-layout-top-edge-label-to-value-padding);
+  }
+
+  /** for all hints */
+  .oj-form-control-hint {
+    color: var(--oj-core-text-color-primary);
+
+    padding: 0;
+    word-wrap: break-word;
+    font-size: var(--oj-user-assistance-inline-font-size);
+  }
+
+  .oj-form-control-title {
+    color: var(--oj-core-text-color-primary);
+  }
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment
+  // -----------------------------------------------------------------------------------------
+  // inherit the height of the container and remove margin-bottom
+  // form controls have min-width/max-width set on their root dom element.
+  // Allow that to be inherited as well.
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-form-control,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field {
+    height: 100%;
+    min-height: 100%;
+    margin-bottom: 0;
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  // suppress the native clear icons in IE
+  .oj-form-control input::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-middle,
+  .oj-text-field:not(.oj-read-only) .oj-text-field-middle {
+    position: relative;
+    display: inline-flex;
+    // grow the input using the flex property
+    flex: 1;
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-middle {
+    // needed or else readonly mixed mode could overflow its div container in Firefox.
+    min-width: 1em;
+  }
+
+  /* when the label is inside or above, we must set the max-width of the component to
+      100%. Otherwise some components like input text, whose max-width is decided by
+      oj-text-field-default-max-width looks so different from other components like radioset
+      which does not have a configured default max width in alta.
+  */
+  .oj-text-field-label-inside.oj-form-control,
+  .oj-text-field-label-inside.oj-text-field,
+  .oj-form-control-label-inside.oj-form-control {
+    max-width: 100%;
+  }
+
+  /* when the label is inside, set the padding right so that the long labels are truncated
+    at the same width as input field
+  */
+  .oj-text-field-label-inside .oj-label {
+    max-width: 100%;
+    @include oj-ltr() {
+      padding-right: calc(2 * var(--oj-text-field-text-to-edge-padding));
+    }
+    @include oj-rtl() {
+      padding-left: calc(2 * var(--oj-text-field-text-to-edge-padding));
+    }
+    box-sizing: border-box;
+  }
+
+  // This overrides the margin added by oj-label class.
+  .oj-text-field-label-inside.oj-read-only .oj-label,
+  .oj-form-control-label-inside.oj-read-only .oj-label {
+    margin-bottom: 0;
+  }
+
+  /* consolidating styles - start
+  */
+
+  //common styles for component root
+  .oj-text-field {
+    display: inline-block;
+    line-height: var(--oj-typography-body-md-line-height);
+    font-weight: normal;
+    // because max/min width is in em the font size needs to be on this element
+    // and not on the selector that goes on the input.
+    font-size: var(--oj-text-field-font-size);
+    @include oj-text-field-text-size-adjust-css-vars();
+    /* use a width of 100% and then max and min width so that when
+        there's less room for the form control it can automatically
+        get smaller instead of overflowing its boundaries */
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  // .oj-form-control-full-width is an override to set max-width to 100% if on the
+  // element or an ancestor element
+  .oj-form-control-full-width.oj-text-field,
+  .oj-form-control-full-width .oj-text-field {
+    max-width: 100%;
+  }
+
+  //common styles for actual input field
+  .oj-text-field-input {
+    // normally removing an outline can cause accessibility issues, however
+    // on an input the cursor blinks so an outline is not required for
+    // accessibility. As of 6-11-14 only chrome is putting
+    // an outline on inputs anyway
+    outline: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+    line-height: inherit;
+    font-weight: inherit;
+    font-size: 100%;
+    border: 0;
+    background-color: transparent;
+    color: var(--oj-text-field-text-color);
+    width: 100%; 
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+  }
+
+  .oj-text-field-container.oj-text-field-has-start-slot .oj-text-field-input {
+    padding-inline-start: var(--oj-text-field-icon-to-text-padding);
+  }
+  .oj-text-field-container.oj-text-field-has-end-slot .oj-text-field-input {
+    padding-inline-end: var(--oj-text-field-icon-to-text-padding);
+  }
+  /* Styling for text-align */
+  .oj-form-control-text-align-right.oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-right .oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-right.oj-text-field .oj-text-field-readonly-div {
+    text-align: right;
+  }
+
+  .oj-form-control-text-align-start.oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-start .oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-start.oj-text-field .oj-text-field-readonly-div,
+  .oj-form-control-text-align-start .oj-text-field .oj-text-field-readonly-div {
+    text-align: left;
+    html[dir="rtl"] & {
+      text-align: right;
+    }
+  }
+
+  .oj-form-control-text-align-end.oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-end .oj-text-field .oj-text-field-input,
+  .oj-form-control-text-align-end.oj-text-field .oj-text-field-readonly-div,
+  .oj-form-control-text-align-end .oj-text-field .oj-text-field-readonly-div {
+    text-align: right;
+    html[dir="rtl"] & {
+      text-align: left;
+    }
+  }
+
+  // Styling for readonly state, if supported in the future
+  .oj-text-field.oj-read-only .oj-text-field-input {
+    @include oj-text-field-content-readonly();
+  }
+
+  // Styling for disabled state
+  .oj-text-field.oj-disabled .oj-text-field-input {
+    color: var(--oj-text-field-text-color-disabled);
+  }
+
+  /* clears the 'X' from Chrome */
+  .oj-text-field-input::-webkit-search-decoration,
+  .oj-text-field-input::-webkit-search-cancel-button,
+  .oj-text-field-input::-webkit-search-results-button,
+  .oj-text-field-input::-webkit-search-results-decoration {
+    display: none;
+  }
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+  // editable datagrid cells and editable table cells
+  // -----------------------------------------------------------------------------------------
+
+  // remove borders, inherit colors and stretch the height
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-input,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-readonly-div,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field .oj-text-field-container {
+    @include oj-form-control-inherit();
+  }
+
+  // for readonly, remove white-space definition we have
+  // so that it can be inherited by the table cell which has nowrap
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field-readonly-div {
+    white-space: inherit;
+  }
+
+  // only override the background when not disabled
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-input,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-readonly-div,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-disabled) .oj-text-field-container {
+    
+// use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+
+  }
+
+  // only override the border when not oj-invalid or oj-warning
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-input,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-readonly-div,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-text-field:not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+    border-width: 0;
+  }
+
+  //Quiet form common styles
+  //For inside label
+
+  .oj-text-field-label-inside .oj-text-field-input.oj-hover {
+    background-color: transparent;
+  }
+
+  // border when form component is enabled or when readonly in enabled form-layout.
+  .oj-text-field .oj-text-field-container {
+    position: relative;
+    box-sizing: border-box;
+    border-style: solid;
+    transition: border-color 0.1s linear;
+    border-color: var(--oj-text-field-border-color);
+    border-width: var(--oj-text-field-border-width);
+    border-radius: var(--oj-text-field-border-radius);
+    background-color: var(--oj-text-field-bg-color);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+    height: var(--oj-text-field-height);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field .oj-text-field-container {
+    overflow: hidden;
+  }
+
+  // the third selector for select-one needs to be removed once select-one stops being supported.
+  .oj-text-field .oj-text-field-input::selection,
+  .oj-text-field .oj-combobox-input::selection,
+  .oj-text-field .oj-select-chosen::selection {
+    background-color: var(--oj-core-bg-color-selected);
+  }
+
+  // suppress this for readonly oj-input-password's input. All other form components with input
+  // use a readonly div and their input has display:none on it, so it isn't needed there.
+  .oj-inputpassword.oj-read-only .oj-text-field-input::selection {
+    background-color: transparent;
+  }
+
+  // only put the border when it is in mixed mode.
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-container {
+    border-width: var(--oj-text-field-border-width);
+    border-color: var(--oj-text-field-border-color-disabled);
+    background-color: transparent;
+    // only set height in mixed mode
+    height: var(--oj-text-field-height);
+  }
+  // the height is 'auto' in mixed/readonly mode
+  // we want them to grow in readonly mode like the enabled one does.
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-textarea .oj-text-field-container,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-select-multi .oj-text-field-container,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only.oj-combobox-multi .oj-text-field-container {
+    height: auto;
+  }
+
+  // set min-height to match the height in mixed/readonly mode when value is none.
+  .oj-form-layout
+    .oj-form.oj-enabled
+    .oj-text-field.oj-select-multi.oj-has-no-value:not(.oj-text-field-label-inside)
+    .oj-text-field-container,
+  .oj-form-layout
+    .oj-form.oj-enabled
+    .oj-text-field.oj-combobox-multi.oj-has-no-value:not(.oj-text-field-label-inside)
+    .oj-text-field-container,
+  .oj-form-layout
+    .oj-form.oj-enabled
+    .oj-text-field.oj-textarea.oj-has-no-value:not(.oj-text-field-label-inside)
+    .oj-text-field-container,
+  // Also need to always override min-height for mixed mode oj-text-area
+  .oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only:not(.oj-text-field-label-inside) .oj-text-field-container {
+    min-height: var(--oj-text-field-height);
+  }
+
+  .oj-text-field.oj-focus:not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-text-field-container {
+    border-color: var(--oj-text-field-border-color-focus);
+  }
+
+  .oj-text-field.oj-invalid .oj-text-field-container,
+  .oj-text-field.oj-warning .oj-text-field-container {
+    border-style: solid;
+  }
+
+  // Styling for invalid state
+  .oj-text-field.oj-invalid .oj-text-field-container {
+    border-color: var(--oj-core-danger-3);
+  }
+  // Styling for warning state
+  .oj-text-field.oj-warning .oj-text-field-container {
+    border-color: var(--oj-core-warning-3);
+  }
+
+  // Styling for disabled state
+  .oj-text-field.oj-disabled .oj-text-field-container {
+    background-color: var(--oj-text-field-bg-color-disabled);
+    border-color: var(--oj-text-field-border-color-disabled);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field .oj-text-field-container .oj-label,
+  .oj-form-layout .oj-form.oj-enabled oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only) .oj-text-field-container .oj-label,
+  .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container .oj-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.25s ease 0.1s;
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-form-layout .oj-form.oj-enabled oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only) .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-text-to-edge-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-text-to-edge-padding);
+    }
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-form-layout .oj-form.oj-enabled oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only) .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-text-field-label-inside.oj-text-field.oj-disabled .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-icon-to-text-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-icon-to-text-padding);
+    }
+  }
+
+  // Styling for small inside label on non-text-field
+  .oj-form-control-label-inside.oj-form-control .oj-label,
+  .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-label,
+  .oj-form-control-label-inside.oj-label-value .oj-label[slot="label"] {
+    font-size: var(--oj-label-inside-edge-font-size);
+    font-weight: var(--oj-label-inside-edge-font-weight);
+    line-height: var(--oj-label-inside-edge-line-height);
+    color: var(--oj-label-inside-edge-color);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container .oj-label,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only).oj-focus .oj-text-field-container .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only):not(.oj-has-no-value) .oj-text-field-container .oj-label {
+    transition: top 0.25s ease 0.1s, font-weight 0.25s ease 0.1s, font-size 0.25s ease 0.1s, transform 0.25s ease 0.1s;
+    font-size: var(--oj-label-inside-edge-font-size);
+    font-weight: var(--oj-label-inside-edge-font-weight);
+    line-height: var(--oj-label-inside-edge-line-height);
+    transform: none;
+    top: var(--oj-label-inside-edge-position-top);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only).oj-focus .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only):not(.oj-has-no-value) .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-text-to-edge-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-text-to-edge-padding);
+    }
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-focus .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field:not(.oj-has-no-value) .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only).oj-focus .oj-text-field-container.oj-text-field-has-start-slot .oj-label,
+  .oj-text-field-label-inside.oj-text-field:not(.oj-read-only):not(.oj-has-no-value) .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-icon-to-text-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-icon-to-text-padding);
+    }
+  }
+
+  // readonly in a mixed form has indentation, otherwise it doesn't
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container .oj-label {
+    transition: none;
+    transform: none;
+    background-color: transparent;
+    font-size: var(--oj-label-inside-edge-font-size);
+    font-weight: var(--oj-label-inside-edge-font-weight);
+    line-height: var(--oj-label-inside-edge-line-height);
+    top: var(--oj-label-inside-edge-position-top);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container.oj-text-field-has-start-slot .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-icon-to-text-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-icon-to-text-padding);
+    }
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-text-field.oj-read-only .oj-text-field-container:not(.oj-text-field-has-start-slot) .oj-label {
+    @include oj-ltr() {
+      left: var(--oj-text-field-text-to-edge-padding);
+    }
+    @include oj-rtl() {
+      right: var(--oj-text-field-text-to-edge-padding);
+    }
+  }
+  .oj-text-field-label-inside.oj-focus:not(.oj-read-only):not(.oj-warning):not(.oj-invalid) .oj-text-field-container .oj-label {
+    color: var(--oj-text-field-inside-edge-label-color-focus);
+  }
+
+  .oj-text-field-label-inside.oj-disabled:not(.oj-has-no-value) .oj-text-field-container .oj-label {
+    transition: none;
+    color: var(--oj-label-color-disabled);
+  }
+
+  .oj-text-field-label-inside.oj-invalid .oj-text-field-container .oj-label {
+    color: var(--oj-text-field-inside-edge-label-color-error);
+  }
+
+  .oj-text-field-label-inside .oj-text-field-container .oj-label {
+    color: var(--oj-label-inside-edge-color);
+  }
+
+  .oj-text-field-label-inside.oj-warning .oj-text-field-container .oj-label {
+    color: var(--oj-text-field-inside-edge-label-color-warning);
+  }
+
+  .oj-text-field-label-inside.oj-textarea.oj-text-field:not(.oj-read-only) .oj-label,
+  .oj-form-layout
+    .oj-form.oj-enabled
+    .oj-text-field-label-inside.oj-text-field.oj-textarea.oj-has-no-value:not(.oj-focus)
+    .oj-text-field-container
+    .oj-label,
+  .oj-text-field-label-inside.oj-textarea.oj-disabled.oj-has-no-value.oj-text-field .oj-label {
+    top: calc(var(--oj-text-field-inside-edge-height) / 2);
+  }
+
+  .oj-text-field-label-inside.oj-textarea.oj-text-field.oj-read-only .oj-label,
+  .oj-form-layout
+    .oj-form.oj-enabled
+    .oj-text-field-label-inside.oj-text-field.oj-textarea.oj-has-no-value.oj-read-only
+    .oj-text-field-container
+    .oj-label {
+    top: var(--oj-label-inside-edge-position-top);
+  }
+
+  .oj-text-field-middle {
+    width: 100%;
+    // needed for stopping single combobox to shrink
+    height: 100%;
+  }
+
+  // start/end slot styles
+
+  // Center the content vertically for label inside.
+  .oj-text-field.oj-text-field-label-inside .oj-text-field-start,
+  .oj-text-field.oj-text-field-label-inside .oj-text-field-end {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .oj-text-field .oj-text-field-start .oj-text-field-start-end-icon {
+    margin-inline-start: var(--oj-text-field-icon-to-edge-padding);
+  }
+
+  .oj-text-field .oj-text-field-end .oj-text-field-start-end-icon {
+    margin-inline-end: var(--oj-text-field-icon-to-edge-padding);
+  }
+
+  .oj-text-field.oj-text-field-label-inside .oj-text-field-start .oj-button {
+    margin-bottom: 0;
+    margin-inline-start: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height)) / 2);
+  }
+  .oj-text-field.oj-text-field-label-inside .oj-text-field-end .oj-button {
+    margin-bottom: 0;
+    margin-inline-end: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height)) / 2);
+  }
+  .oj-text-field .oj-text-field-start .oj-button {
+    margin-bottom: 0;
+    margin-inline-start: calc((var(--oj-text-field-height) - var(--oj-button-sm-height)) / 2);
+  }
+  .oj-text-field .oj-text-field-end .oj-button {
+    margin-bottom: 0;
+    margin-inline-end: calc((var(--oj-text-field-height) - var(--oj-button-sm-height)) / 2);
+  }
+  // the margin is opposite for read only
+  .oj-text-field.oj-read-only .oj-text-field-start .oj-text-field-start-end-icon {
+    margin-inline-start: 0;
+    margin-inline-end: var(--oj-text-field-icon-to-edge-padding);
+  }
+  .oj-text-field.oj-read-only .oj-text-field-end .oj-text-field-start-end-icon {
+    margin-inline-end: 0;
+    margin-inline-start: var(--oj-text-field-icon-to-edge-padding);
+  }
+  // mixed readonly needs to work like enabled
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-start .oj-text-field-start-end-icon {
+    margin-inline-start: var(--oj-text-field-icon-to-edge-padding);
+  }
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-read-only .oj-text-field-end .oj-text-field-start-end-icon {
+    margin-inline-end: var(--oj-text-field-icon-to-edge-padding);
+  }
+
+  .oj-text-field.oj-text-field-label-inside.oj-read-only .oj-text-field-start .oj-button {
+    margin-inline-start: 0;
+    margin-inline-end: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height)) / 2);
+  }
+  .oj-text-field.oj-text-field-label-inside.oj-read-only .oj-text-field-end .oj-button {
+    margin-inline-end: 0;
+    margin-inline-start: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height)) / 2);
+  }
+  .oj-text-field.oj-read-only .oj-text-field-start .oj-button {
+    margin-inline-start: 0;
+    margin-inline-end: calc((var(--oj-text-field-height) - var(--oj-button-sm-height)) / 2);
+  }
+  .oj-text-field.oj-read-only .oj-text-field-end .oj-button {
+    margin-inline-end: 0;
+    margin-inline-start: calc((var(--oj-text-field-height) - var(--oj-button-sm-height)) / 2);
+  }
+
+  .oj-text-field.oj-disabled .oj-text-field-start-end-icon {
+    color: var(--oj-private-icon-color-disabled);
+  }
+  .oj-text-field .oj-text-field-start-end-icon {
+    font-size: var(--oj-button-sm-icon-size);
+  }
+  .oj-text-field-label-inside .oj-text-field-start-end-icon {
+    font-size: var(--oj-button-icon-size);
+  }
+
+  .oj-text-field-counter {
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: default;
+    font-size: var(--oj-typography-body-xs-font-size);
+    font-weight: 600;
+    line-height: var(--oj-typography-body-xs-line-height);
+    color: var(--oj-core-text-color-secondary);
+  }
+
+  //Consolidating all loading styles on form elements here
+  .oj-text-field.oj-loading .oj-text-field-container {
+    background-color: var(--oj-animation-skeleton-bg-end-color);
+    background-size: 200% 200%;
+    border-width: 0;
+    animation-name: SkeletonAnimation;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-duration: 1.5s;
+    opacity: 1;
+  }
+
+  .oj-form-control-width-sm {
+    width: var(--oj-text-field-sm-width) !important;
+  }
+
+  .oj-form-control-max-width-sm {
+    max-width: var(--oj-text-field-sm-width) !important;
+  }
+
+  .oj-form-control-width-md {
+    width: var(--oj-text-field-md-width) !important;
+  }
+
+  .oj-form-control-max-width-md {
+    max-width: var(--oj-text-field-md-width) !important;
+  }
+
+  .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon):not(.oj-label-help-icon-anchor) {
+    padding: 0;
+    border-radius: var(--oj-button-border-radius);
+    color: var(--oj-private-icon-color-default);
+  }
+
+  .oj-text-field:not(.oj-text-field-label-inside) .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon):not(.oj-label-help-icon-anchor) {
+      width: var(--oj-button-sm-height);
+      height: var(--oj-button-sm-height);
+      line-height: var(--oj-button-sm-height);
+      // make the margin relative to the small button height, subtract 2px for any border
+      margin: calc((var(--oj-text-field-height) - var(--oj-button-sm-height) - 2px) / 2);
+  }
+
+  .oj-text-field.oj-text-field-label-inside .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon):not(.oj-label-help-icon-anchor) {
+      width: var(--oj-button-height);
+      height: var(--oj-button-height);
+      line-height: var(--oj-button-height);
+      // make the margin relative to the button height, subtract 2px for any border
+      margin: calc((var(--oj-text-field-inside-edge-height) - var(--oj-button-height) - 2px) / 2);
+  }
+
+  .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon):not(.oj-disabled):hover {
+    color: var(--oj-private-icon-color-hover);
+    background-color: var(--oj-private-icon-bg-color-hover);
+    border-color: var(--oj-private-icon-border-color-hover);
+  }
+
+  .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext.oj-active:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon) {
+    color: var(--oj-private-icon-color-active);
+    background-color: var(--oj-private-icon-bg-color-active);
+    border-color: var(--oj-private-icon-border-color-active);
+  }
+
+  .oj-text-field-container
+    .oj-component-icon.oj-clickable-icon-nocontext.oj-disabled:not(.oj-select-clear-entry-icon):not(.oj-combobox-clear-entry-icon):not(.oj-label-help-icon-anchor) {
+    background-color: transparent;
+    color: var(--oj-private-icon-color-disabled);
+  }
+
+  .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: var(--oj-core-cursor-clickable);
+  }
+  .oj-text-field .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+  .oj-text-field:not(.oj-focus-highlight) .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext:focus {
+    outline: none;
+  }
+
+  // setting background-color doesn't work, using box shadow is the only
+  // known hack to override the browser's default autofill background color
+  // -webkit-text-fill-color is used to fix chrome overriding the text color
+  // on autocompleted inputs 
+  .oj-form-control input:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px var(--oj-text-field-bg-color) inset;
+    -webkit-text-fill-color: var(--oj-text-field-text-color);
+  }
+
+  // We display:none the required container when we have hints or messages. Required
+  // disappears immediately while the hint/message animates in (see InlineHelpHintsStrategy)
+  // And messages takes precedence over help hints, so we display:none help hints
+  // if we have both help hints and messages.
+  .oj-user-assistance-inline-container.oj-has-messages > .oj-required-inline-container,
+  .oj-user-assistance-inline-container.oj-has-helphints > .oj-required-inline-container,
+  .oj-form-control .oj-user-assistance-inline-container.oj-has-messages .oj-helphints-inline-container {
+    display: none;
+  }
+
+  .oj-user-assistance-inline-container {
+    margin-top: 2px;
+  }
+
+  .oj-user-assistance-inline-container.oj-reflow:empty {
+    margin-top: 0px;
+  }
+
+  // inside an enabled form that has 'efficient' set: always reserve space for the form component.
+  // this is regardless of whether the field is enabled/disabled or readonly
+  //
+  // if outside a form, already reserve space if efficient.
+  // what about if it is readonly?
+  // no, do not reserve space if readonly or disabled outside of a form, regardless of
+  // if efficient or reflow.
+  .oj-form.oj-enabled .oj-user-assistance-inline-container.oj-efficient,
+  .oj-form-control:not(.oj-read-only):not(.oj-disabled) .oj-user-assistance-inline-container.oj-efficient {
+    min-height: 1.333rem;
+  }
+
+  // this is the container for the user assistance text containers, like required,
+  // helphints, messages. The inner dom inherit these styles.
+  // oj-helphints-inline-container is outside of .oj-user-assistance-inline-container
+  // for the set components and is inside in other components.
+  .oj-user-assistance-inline-container,
+  .oj-user-assistance-inline-container .oj-message-detail,
+  .oj-helphints-inline-container {
+    color: var(--oj-user-assistance-inline-text-color);
+    font-size: var(--oj-user-assistance-inline-font-size);
+    font-weight: normal;
+    line-height: 1.333;
+  }
+
+  .oj-user-assistance-inline-container {
+    word-break: break-word;
+  }
+
+  .oj-required-inline-container,
+  .oj-helphints-inline-container {
+    @include oj-ltr() {
+    padding-left: 2px;
+    }
+    @include oj-rtl() {
+    padding-right: 2px;
+  }
+  }
+
+  // make these inline-block so that they will automatically render
+  // in the correct order in rtl mode.
+  .oj-helphints-inline-container div {
+    display: inline-block;
+  }
+
+  // There could be two divs: one for hints and one for help-hints.source.
+  // In case there are two divs, add a margin between them.
+  .oj-helphints-inline-container div:nth-child(2) {
+    @include oj-ltr() {
+      margin-left: 0.25rem;
+    }
+    @include oj-rtl() {
+      margin-right: 0.25rem;
+    }
+  }
+
+  .oj-helphints-anchor:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+  }
+
+  .oj-helphints-anchor:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-required-inline-container {
+    text-align: right;
+    html[dir="rtl"] & {
+      text-align: left;
+    }
+  }
+
+  .oj-checkboxset:not(.oj-choice-direction-row) .oj-required-inline-container,
+  .oj-radioset:not(.oj-choice-direction-row) .oj-required-inline-container {
+    text-align: left;
+    html[dir="rtl"] & {
+      text-align: right;
+    }
+  }
+
+  // Animate placeholder for inside labels. Since we can't directly animate the placeholder
+  // because of the way it's added to the DOM, we animate the input from opacity .001 to 1.
+  // WebdriverJS can't locate input elements that are opacity:0, and ios doesn't scroll into view
+  // on focus if opacity:0 which is why we start at .001 and not 0.
+  // And to limit the scope of when we set opacity: .001, we only do this on focus.
+  @keyframes animatePlaceholder {
+    from {
+      opacity: .001;
+    }
+    to {
+      opacity: 1;
+    }
+  } 
+
+  .oj-text-field-label-inside.oj-has-no-value.oj-focus:not(.oj-read-only) .oj-text-field-input,
+  .oj-searchselect.oj-text-field-label-inside .oj-searchselect-filter.oj-has-no-value.oj-focus:not(.oj-read-only) .oj-text-field-input,
+  .oj-text-field-label-inside.oj-has-no-value.oj-focus:not(.oj-read-only) .oj-combobox-input,
+  .oj-text-field-label-inside.oj-has-no-value.oj-focus:not(.oj-read-only) .oj-select-default {
+    animation-name: animatePlaceholder;
+    animation-duration: var(--oj-animation-duration-xlong);
+    animation-timing-function: var(--oj-animation-ease-in);
+  }
+}

@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+@include module-include-once("redwood.variables.status-meter-gauge") {
+
+    :root {
+        --oj-statusmeter-gauge-bar-sm-size: 0.375rem;
+        --oj-statusmeter-gauge-bar-md-size: 0.625rem;
+        --oj-statusmeter-gauge-bar-lg-size: 0.875rem;
+        --oj-statusmeter-gauge-bar-plotarea-border-color: transparent;
+        --oj-statusmeter-gauge-bar-plotarea-color: rgba(var(--oj-palette-neutral-rgb-170), .15);
+
+        --oj-statusmeter-gauge-circular-sm-size:       3.5rem;
+        --oj-statusmeter-gauge-circular-md-size:       6rem;
+        --oj-statusmeter-gauge-circular-lg-size:       12.25rem;
+    }
+
+}

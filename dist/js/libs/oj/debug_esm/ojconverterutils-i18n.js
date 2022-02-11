@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -60,16 +60,18 @@ OraI18nUtils._ISO_DATE_REGEXP =
  * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT+07:00"
  * 2- The local time is UTC+1 (Central European Standard Time):
  * OraI18nUtils. getLocalTimeZoneOffset() will return the string "Etc/GMT-01:00"
+ * @param {Date=} date optional Date object. If not present return the local time zone
+ * offset of the current date, otherwise return the local time zone offset at the
+ * particular date.
  * @returns {string}
  * @memberof oj.OraI18nUtils
  * @method getLocalTimeZoneOffset
  */
-OraI18nUtils.getLocalTimeZoneOffset = function () {
-  var d = new Date();
+OraI18nUtils.getLocalTimeZoneOffset = function (date) {
+  var d = date || new Date();
   var offset = d.getTimezoneOffset();
   return OraI18nUtils.getTimeStringFromOffset('Etc/GMT', offset, false, false);
 };
-
 
 /*
  * Will return timezone if it exists.
@@ -92,8 +94,23 @@ OraI18nUtils.getLocalTimeZoneOffset = function () {
 //  return null;
 // };
 
-/*
- * Will return local isoString provided a date.
+/**
+ * <p>Returns a local ISO string provided a Date object.
+ * This method can be used to convert a moment in time or a local ISO string into
+ * a local ISO string. It can also be used to convert any Date object into local ISO
+ * string.</p>
+ * Examples below are where the local (user's system) time zone is UTC-06:00<br>
+ * dateToLocalIso(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03T22:00:00'<br>
+ * dateToLocalIso(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03T20:30:00'<br>
+ * In this example the input ISO string is local, the output is the same:<br>
+ * dateToLocalIso(new Date('2021-06-04T02:30:00')); -->'2021-06-04T02:30:00'<br>
+ * In this example we just want to convert a Date object:<br>
+ * dateToLocalIso(new Date());<br>
+ *
+ * @param {Date} _date
+ * @returns {string} isoString
+ * @export
+ * @since 0.7.0
  * @memberof oj.OraI18nUtils
  * @method dateToLocalIso
  */
@@ -116,6 +133,29 @@ OraI18nUtils.dateToLocalIso = function (_date) {
 };
 
 /**
+ * <p>Returns the date only portion of a local ISO string provided a Date object.
+ * This method can be used to convert a moment in time ISO string into a local
+ * ISO string and get the date part of it. This method is useful if you are storing
+ * your dates as a moment in time and you want to use it in a date only component,
+ * like oj-input-date, that shows the date in the timezone of the user's local system.</p>
+ * Examples where local time zone offset is UTC-06:00<br>
+ * dateToLocalIsoDateString(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03'<br>
+ * dateToLocalIsoDateString(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03'<br>
+ *
+ * @param {Date} date
+ * @returns {string} date portion only of the ISO String
+ * @export
+ * @since 12.0.0
+ * @memberof oj.OraI18nUtils
+ * @method dateToLocalIsoDateString
+ */
+OraI18nUtils.dateToLocalIsoDateString = function (date) {
+  var isoStr = OraI18nUtils.dateToLocalIso(date);
+  var parts = isoStr.split('T');
+  return parts[0];
+};
+
+/**
  * @memberof oj.OraI18nUtils
  * @method partsToIsoString
  */
@@ -133,6 +173,10 @@ OraI18nUtils.partsToIsoString = function (parts) {
 };
 
 /**
+ * Returns a local Date object from a local ISO string. This method is only meant
+ * to work with local ISO strings. If the input ISO string contain Z or offset,
+ * they will be ignored.
+ * @param {string} isoString
  * @memberof oj.OraI18nUtils
  * @method isoToLocalDate
  */
@@ -248,7 +292,7 @@ OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
   if (exe === null) {
     OraI18nUtils._throwInvalidISOStringSyntax(isoStr);
   }
-  if (exe[1] === undefined && exe[2] === undefined) {
+  if (exe && exe[1] === undefined && exe[2] === undefined) {
     res.format = 'local';
     res.dateTime = isoStr;
     res.isoStrParts = OraI18nUtils._IsoStrParts(res.dateTime);
@@ -283,7 +327,7 @@ OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
   if (exe === null) {
     OraI18nUtils._throwInvalidISOStringSyntax(isoStr);
   }
-  if (exe[1] === undefined && exe[2] === undefined) {
+  if (exe && exe[1] === undefined && exe[2] === undefined) {
     format = 'local';
     return format;
   }
@@ -543,7 +587,7 @@ OraI18nUtils.getGetOption = function (options, getOptionCaller) {
         ' error. Default options missing.');
   }
 
-  var getOption = function getOption(property, type, values, defaultValue) {
+  var getOption = function (property, type, values, defaultValue) {
     if (options[property] !== undefined) {
       var value = options[property];
       switch (type) {
@@ -855,6 +899,49 @@ OraI18nUtils.formatString = function (str, params) {
 };
 
 /**
+ * converts an ISO string based on isoStrFormat and local system's time zone.
+ * if isoStrFormat is offset, it appends the local system's offset to the iso string.
+ * If isoStrFormat is zulu, it converts the ISO string to UTC and appends 'Z' to it.
+ * if isoStrFormat is local, it returns as is.
+ * For example if local system's timezone is America/Los_Angeles
+ * convertISOString('2021-01-01T13:00:00', 'offset') -->  2021-01-01T13:00:00-08:00
+ * convertISOString('2021-06-01T13:00:00', 'offset') -->  2021-06-01T13:00:00-07:00
+ * convertISOString('2021-01-01T13:00:00', 'zulu') -->  2021-01-01T21:00:00Z
+ * convertISOString('2021-06-01T13:00:00', 'zulu') -->  2021-06-01T20:00:00Z
+ * @param {string} iso  string to be formatted.
+ * @param {string} isoStrFormat, possible values: 'offset', 'zulu' or 'local'
+ * @returns {string} The formatted iso string
+ * @since 12.0.0
+ */
+OraI18nUtils.convertISOString = function (isoStr, isoStrFormat) {
+  // return the ISO string as is if it is time only
+  if (isoStr.startsWith('T')) {
+    return isoStr;
+  }
+  var formattedIsoStr = isoStr;
+  if (isoStrFormat === 'offset') {
+    var localOffset = new Date(isoStr).getTimezoneOffset();
+    localOffset = OraI18nUtils.getTimeStringFromOffset('', localOffset, true, true);
+    formattedIsoStr = isoStr + localOffset;
+  } else if (isoStrFormat === 'zulu') {
+    var parts = OraI18nUtils._IsoStrParts(isoStr);
+    var date = new Date(parts[0], parts[1] - 1, parts[2], parts[3],
+                  parts[4], parts[5], parts[6]);
+    formattedIsoStr = (OraI18nUtils.padZeros(date.getUTCFullYear(), 4) + '-' +
+                OraI18nUtils.padZeros((date.getUTCMonth() + 1), 2) + '-' +
+                OraI18nUtils.padZeros(date.getUTCDate(), 2) + 'T' +
+                OraI18nUtils.padZeros((date.getUTCHours()), 2) + ':' +
+                OraI18nUtils.padZeros((date.getUTCMinutes()), 2) + ':' +
+                OraI18nUtils.padZeros((date.getUTCSeconds()), 2));
+    if (date.getMilliseconds() > 0) {
+      formattedIsoStr += '.' + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getUTCMilliseconds(), 3));
+    }
+    formattedIsoStr += 'Z';
+  }
+  return formattedIsoStr;
+};
+
+/**
  * Returns a person's initials
  *
  * @param {string=} firstName first name
@@ -914,7 +1001,7 @@ OraI18nUtils.getInitials = function (firstName, lastName) {
 
   // Handle surrogate characters for Japanese and Chinese characters.
   if (c >= 0xD800 && c <= 0xDBFF) {
-    if (lastName.length < 2) {
+    if (lastName && lastName.length < 2) {
       return '';
     }
     c1 = lastName.charCodeAt(1);
@@ -970,9 +1057,11 @@ IntlConverterUtils.isoToDate = function (isoString) {
 };
 
 /**
- * Returns a local Date object provided a local isoString
+ * Returns a local Date object from a local ISO string. This method is only meant
+ * to work with local ISO strings. If the input ISO string contain Z or offset,
+ * they will be ignored.
  *
- * @param {string} isoString date in isoString format
+ * @param {string} isoString an ISO 8601 string
  * @returns {Date} localDate
  * @export
  * @since 0.7.0
@@ -984,7 +1073,17 @@ IntlConverterUtils.isoToLocalDate = function (isoString) {
 };
 
 /**
- * Returns a local isoString provided a Date object
+ * <p>Returns a local ISO string provided a Date object.
+ * This method can be used to convert a moment in time or a local ISO string into
+ * a local ISO string. It can also be used to convert any Date object into local ISO
+ * string.</p>
+ * Examples below are where the local (user's system) time zone is UTC-06:00<br>
+ * dateToLocalIso(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03T22:00:00'<br>
+ * dateToLocalIso(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03T20:30:00'<br>
+ * In this example the input ISO string is local, the output is the same:<br>
+ * dateToLocalIso(new Date('2021-06-04T02:30:00')); -->'2021-06-04T02:30:00'<br>
+ * In this example we just want to convert a Date object:<br>
+ * dateToLocalIso(new Date());<br>
  *
  * @param {Date} date
  * @returns {string} isoString
@@ -995,6 +1094,27 @@ IntlConverterUtils.isoToLocalDate = function (isoString) {
  */
 IntlConverterUtils.dateToLocalIso = function (date) {
   return OraI18nUtils.dateToLocalIso(date);
+};
+
+/**
+ * <p>Returns the date only portion of a local ISO string provided a Date object.
+ * This method can be used to convert a moment in time ISO string into a local
+ * ISO string and get the date part of it. This method is useful if you are storing
+ * your dates as a moment in time and you want to use it in a date only component,
+ * like oj-input-date, that shows the date in the timezone of the user's local system.</p>
+ * Examples where local time zone offset is UTC-06:00<br>
+ * dateToLocalIsoDateString(new Date('2021-06-04T00:00:00-04:00')); -->'2021-06-03'<br>
+ * dateToLocalIsoDateString(new Date('2021-06-04T02:30:00Z')); -->'2021-06-03'<br>
+ *
+ * @param {Date} date
+ * @returns {string} date portion only of the ISO String
+ * @export
+ * @since 12.0.0
+ * @memberof oj.IntlConverterUtils
+ * @method dateToLocalIsoDateString
+ */
+IntlConverterUtils.dateToLocalIsoDateString = function (date) {
+  return OraI18nUtils.dateToLocalIsoDateString(date);
 };
 
 // This private method is not called, commenting out for now to remove it from code coverage calculations
@@ -1015,12 +1135,14 @@ IntlConverterUtils.dateToLocalIso = function (date) {
  * oj.IntlConverterUtils.getLocalTimeZoneOffset() will return the string "Etc/GMT-01:00"
  *
  * @export
+ * @param {Date=} date If date is undefined, it returns the local timezone offset of the current
+ * date, otherwise it returns the local timezone offset at that given date.
  * @returns {string}
  * @memberof oj.IntlConverterUtils
  * @method getLocalTimeZoneOffset
  */
-IntlConverterUtils.getLocalTimeZoneOffset = function () {
-  return OraI18nUtils.getLocalTimeZoneOffset();
+IntlConverterUtils.getLocalTimeZoneOffset = function (date) {
+  return OraI18nUtils.getLocalTimeZoneOffset(date);
 };
 
 /**
@@ -1092,6 +1214,39 @@ IntlConverterUtils._getISOStrFormatType = function (isoStr) {
 };
 
 /**
+ * Will issue a warning if the ISO string value has a time portion specified.  For input date, we only
+ * want the date portion of the ISO string specified.  We pass in a logger function so that this function
+ * can be tested by providing an alternate function.  See pattern library for useControlledVariantWarning
+ * @param {string} name The name is used for logging purposes only
+ * @param {string} value The iSO string value to be tested
+ * @param {function} logger The method used to log the warning
+ * @memberof oj.IntlConverterUtils
+ * @method _warnIfISOFormatHasTime
+ * @private
+ */
+IntlConverterUtils._warnIfISOFormatHasTime = function (name, value, logger = warn) {
+  if (value && value.indexOf('T') !== -1) {
+    logger(`${name} iso string value should not include a time value for oj-input-date component.`);
+  }
+};
+
+/**
+ * This method will verify that the value, min, and max iso strings
+ * contain no time component, and issue warnings if they do, and then
+ * call _verifyValueMinMax to verify the time portion if the iso string.
+ * @param {string} value iso string value for the component value
+ * @param {string} min iso string value for the min property
+ * @param {string} max iso string value for the max property
+ */
+IntlConverterUtils._verifyValueMinMaxNoTime = function (value, min, max) {
+  // call _warnIfISOFormatHasTime for each parameter
+  Object.entries({ value, min, max }).forEach(
+    ([k, v]) => IntlConverterUtils._warnIfISOFormatHasTime(k, v));
+
+  IntlConverterUtils._verifyValueMinMax(value, min, max);
+};
+
+/**
  * Checks that min and max are parseable isoStrings, and that they
  * are the same type as each other and as the value option.
  * Logs a warning if value, min, max are not all iso strings, or are not of the same type.
@@ -1113,19 +1268,19 @@ IntlConverterUtils._getISOStrFormatType = function (isoStr) {
   let minIsoFormat;
   let maxIsoFormat;
 
-  // If value or min or max is not an iso string (say ‘abc’ or ‘2021/03/03’),
+  // If value or min or max is not an iso string (say 'abc' or '2021/03/03'),
   // the datepicker renders, but you see an inline converter error meant only for an application
-  // developer under the field, “Please provide valid ISO 8601 string”.
+  // developer under the field, 'Please provide valid ISO 8601 string'.
   // This is inconsistent with other component attributes** that are not set to the correct type
-  // ** e.g., set oj-input-number value=“abc” and an error is thrown in the console.
-  // For now, log a warning and then our customers can fix this. Then in a future release
-  // we can throw an error.
+  // ** e.g., set oj-input-number value='abc' and an error is thrown in the console.
+  // In v11 we logged the warning and monitored FA tests for this warning. After six months or so
+  // we saw no warnings and so now in v12 we will throw an error.
   if (value) {
     try {
       valueIsoFormat = IntlConverterUtils._getISOStrFormatType(value);
     } catch (e) {
       // We weren't checking this in pre-v11.
-      warn('value must be an iso string: ' + e);
+      throw new Error('value must be an iso string: ' + e);
     }
   }
 
@@ -1133,7 +1288,7 @@ IntlConverterUtils._getISOStrFormatType = function (isoStr) {
     try {
       minIsoFormat = IntlConverterUtils._getISOStrFormatType(min);
     } catch (e) {
-      warn('min must be an iso string: ' + e);
+      throw new Error('min must be an iso string: ' + e);
     }
   }
 
@@ -1141,33 +1296,128 @@ IntlConverterUtils._getISOStrFormatType = function (isoStr) {
     try {
       maxIsoFormat = IntlConverterUtils._getISOStrFormatType(max);
     } catch (e) {
-      warn('max must be an iso string: ' + e);
+      throw new Error('max must be an iso string: ' + e);
     }
   }
 
   // Issue two is.
   // If value and min and max are not of the same iso string type: zulu, offset, or local,
   // we coerced to the same type so that we could easily compare them,
-  // like min <= value <= max. We plan to instead throw an error if they are not of the same type,
-  // but for now we log a warning so our customers can fix this.
+  // like min <= value <= max. In v11, we warned. In v12 we throw an error
+  // if they are not of the same type,
 
   if (value && min && max &&
     !(valueIsoFormat === minIsoFormat && valueIsoFormat === maxIsoFormat)) {
-    warn(`min and max must be in the same iso string format as value.
+    throw new Error(`min and max must be in the same iso string format as value.
     value is in ${valueIsoFormat} format.`);
   }
   if (value && min && !(valueIsoFormat === minIsoFormat)) {
-    warn(`min must be in the same iso string format as value.
+    throw new Error(`min must be in the same iso string format as value.
     value is in ${valueIsoFormat} format.`);
   }
   if (value && max && !(valueIsoFormat === maxIsoFormat)) {
-    warn(`max must be in the same iso string format as value.
+    throw new Error(`max must be in the same iso string format as value.
       value is in ${valueIsoFormat} format.`);
   }
   if (min && max && !(minIsoFormat === maxIsoFormat)) {
-    warn(`min and max must be in the same iso string format.
+    throw new Error(`min and max must be in the same iso string format.
       min is in ${minIsoFormat} format and max is in ${maxIsoFormat} format.`);
   }
+};
+
+/**
+ * Returns the current date on the browser's local system in iso string format. E.g., '2021-10-13'
+ * @return {str} isoStr
+ * @export
+ * @ignore
+ * @since 12.0.0
+ * @memberof oj.IntlConverterUtils
+ * @method _getTodaysDateIsoStr
+ * @private
+ */
+IntlConverterUtils._getTodaysDateIsoStr = function () {
+    const now = new Date();
+    const localDateIsoStr = OraI18nUtils.padZeros(now.getFullYear(), 4) + '-' +
+                    OraI18nUtils.padZeros(now.getMonth() + 1, 2) + '-' +
+                    OraI18nUtils.padZeros(now.getDate(), 2);
+    return localDateIsoStr;
+};
+
+/**
+ * Takes two iso strings and returns two iso strings that can be passed
+ * into new Date() so they can be compared.
+ * This function makes sure they are both in a date or date+time
+ * format. new Date does not accept time only, like T00:00:00.
+ * @param {string} isoStr1 first iso string
+ * @param {string} isoStr2 second iso string
+ * @returns {Array.<string>} an array with two iso strings that can be compared with Date.
+ * @export
+ * @ignore
+ * @since 12.0.0
+ * @memberof oj.IntlConverterUtils
+ * @method _makeIsoDateStringsDateComparable
+ * @private
+ */
+IntlConverterUtils._makeIsoDateStringsDateComparable = function (isoStr1, isoStr2) {
+  const isoStr1TimeOnly = isoStr1.startsWith('T'); // e.g., T02:00:20
+  const isoStr2TimeOnly = isoStr2.startsWith('T');
+  const isoStr1ContainsDateOnly = !isoStr1.includes('T');
+  const isoStr2ContainsDateOnly = !isoStr2.includes('T');
+  let comparableIsoStr1 = isoStr1;
+  let comparableIsoStr2 = isoStr2;
+
+  // We may have time-only iso strings which new Date() does not like.
+  // So check for that and convert.
+  if (isoStr1TimeOnly || isoStr2TimeOnly) {
+    const datePart = IntlConverterUtils._getTodaysDateIsoStr();
+    if (isoStr1TimeOnly) {
+      comparableIsoStr1 = datePart + isoStr1;
+    }
+    if (isoStr2TimeOnly) {
+      comparableIsoStr2 = datePart + isoStr2;
+    }
+  }
+
+  // at this point comparableIsoStrs will contain date-only or date+time.
+  // if one has date-only, add a time piece.
+  if (!(isoStr1ContainsDateOnly && isoStr2ContainsDateOnly)) {
+    if (isoStr1ContainsDateOnly) {
+      comparableIsoStr1 = `${isoStr1}T00:00:00`;
+    }
+    if (isoStr2ContainsDateOnly) {
+      comparableIsoStr2 = `${isoStr2}T00:00:00`;
+    }
+  }
+  return [comparableIsoStr1, comparableIsoStr2];
+};
+
+/**
+ * Compares 2 ISO 8601 strings, returning the time difference between the two.
+ * The two values MUST be valid iso strings, and in the same format:
+ * local, zulu, or offset before calling this method.
+ * They should be in the same date/time format like time only or date only, etc., when used
+ * in JET's date/time components.
+ * For backward compatibility we coerce to the same date/time if they are not.
+ * This is an replacement for the deprecated IntlDateTimeConverter.compareISODates.
+ * @param {string} isoStr1 first iso string
+ * @param {string} isoStr2 second iso string
+ * @return {number} the time difference between isoStr and isoStr2 in ms.
+ * @export
+ * @ignore
+ * @since 12.0.0
+ * @memberof oj.IntlConverterUtils
+ * @method _compareISODates
+ * @private
+ */
+IntlConverterUtils._compareISODates = function (isoStr1, isoStr2) {
+  // Sometimes people use oj-input-date with min/max that contain date and time, which is not advised,
+  // but is currently allowed. It should only accept dates, no time.
+  // This method needs to handle if one of the strings is date only, and the other is date/time;
+  // if one is time only and the other is datetime, etc.
+  const comparableIsoStrings =
+    IntlConverterUtils._makeIsoDateStringsDateComparable(isoStr1, isoStr2);
+
+  return (new Date(comparableIsoStrings[0]) - new Date(comparableIsoStrings[1]));
 };
 
 /**
@@ -1222,6 +1472,18 @@ IntlConverterUtils.__getConverterOptionError = function (errorCode, parameterMap
     detail = IntlConverterUtils._getOptionValueDetailMessage(propName, propValueValid);
   }
 
+  return new ConverterError(summary, detail);
+};
+
+/**
+ * Returns a oj.ConverterERror instance.
+ * @param {string} summary
+ * @param {string} detail
+ * @return {Object} an ConverterError instance
+ * @private
+ * @memberof oj.IntlConverterUtils
+ */
+IntlConverterUtils.__getConverterError = function (summary, detail) {
   return new ConverterError(summary, detail);
 };
 

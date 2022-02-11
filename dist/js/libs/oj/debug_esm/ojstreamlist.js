@@ -1,15 +1,16 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 import { Component, h } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
+import { getTranslatedString } from 'ojs/ojtranslation';
 import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getFocusableElementsIncludingDisabled, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
-import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
 import Context from 'ojs/ojcontext';
+import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
 import oj from 'ojs/ojcore-base';
 import { KeySetImpl } from 'ojs/ojkeyset';
 import 'ojs/ojtreedataprovider';
@@ -26,24 +27,39 @@ class StreamListContentHandler extends IteratingDataProviderContentHandler {
         this.scrollPolicy = scrollPolicy;
         this.scrollPolicyOptions = scrollPolicyOptions;
         this.postRender = () => {
+            if (this.viewportResolveFunc) {
+                return;
+            }
             this.vnodesCache = this.newVnodesCache;
             this.newVnodesCache = new Map();
-            if (this.callback) {
-                if (this.domScroller) {
-                    const itemsRoot = this.root.lastElementChild;
-                    const items = itemsRoot.querySelectorAll('.oj-stream-list-item');
-                    if (items.length > 0) {
-                        const rootOffsetTop = this.root.offsetTop;
-                        const start = items[0].offsetTop - rootOffsetTop;
-                        const end = items[items.length - 1].offsetTop +
-                            items[items.length - 1].offsetHeight -
-                            rootOffsetTop;
-                        this.domScroller.setViewportRange(start, end);
+            const itemsRoot = this.root.lastElementChild;
+            if (itemsRoot) {
+                this.viewportResolveFunc = this.addBusyState('checking viewport');
+                const busyContext = Context.getContext(itemsRoot).getBusyContext();
+                busyContext.whenReady().then(() => {
+                    if (this.viewportResolveFunc) {
+                        this.viewportResolveFunc();
                     }
-                }
-                if (this.domScroller && !this.domScroller.checkViewport()) {
-                    return;
-                }
+                    this.viewportResolveFunc = null;
+                    if (this.callback && this.domScroller) {
+                        const itemsRoot = this.root.lastElementChild;
+                        const items = itemsRoot.querySelectorAll('.oj-stream-list-item');
+                        if (items.length > 0) {
+                            const rootOffsetTop = this.root.offsetTop;
+                            const start = items[0].offsetTop - rootOffsetTop;
+                            const end = items[items.length - 1].offsetTop +
+                                items[items.length - 1].offsetHeight -
+                                rootOffsetTop;
+                            this.domScroller.setViewportRange(start, end);
+                        }
+                        this.checkViewport();
+                    }
+                }, () => {
+                    if (this.viewportResolveFunc) {
+                        this.viewportResolveFunc();
+                    }
+                    this.viewportResolveFunc = null;
+                });
             }
         };
         this.newItemsTracker = new Set();
@@ -86,11 +102,16 @@ class StreamListContentHandler extends IteratingDataProviderContentHandler {
         const renderer = this.callback.getItemRenderer();
         const vnodes = renderer({ data, key });
         let vnode;
-        for (const curr of vnodes) {
-            vnode = curr;
-            if (vnode.props) {
-                break;
+        if (Array.isArray(vnodes)) {
+            for (const curr of vnodes) {
+                vnode = curr;
+                if (vnode.props) {
+                    break;
+                }
             }
+        }
+        else {
+            vnode = vnodes;
         }
         const prunedVnodes = [vnode];
         this.newVnodesCache.set(key, { vnodes: prunedVnodes });
@@ -167,9 +188,9 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
         }.bind(this));
         super.handleItemsRemoved(detail);
     }
-    handleModelRefresh() {
+    handleModelRefresh(detail) {
         this.vnodesCache.clear();
-        super.handleModelRefresh();
+        super.handleModelRefresh(detail);
     }
     destroy() {
         super.destroy();
@@ -227,11 +248,16 @@ class StreamListTreeContentHandler extends IteratingTreeDataProviderContentHandl
             depth: metadata.treeDepth
         });
         let vnode;
-        for (const curr of vnodes) {
-            vnode = curr;
-            if (vnode.props) {
-                break;
+        if (Array.isArray(vnodes)) {
+            for (const curr of vnodes) {
+                vnode = curr;
+                if (vnode.props) {
+                    break;
+                }
             }
+        }
+        else {
+            vnode = vnodes;
         }
         const prunedVnodes = [vnode];
         this.newVnodesCache.set(key, { vnodes: prunedVnodes });
@@ -476,11 +502,12 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         const initialSkeleton = this.state.initialSkeleton;
         const initialSkeletonCount = this.state.initialSkeletonCount;
         let content;
+        let data;
         if (this.contentHandler == null && initialSkeleton) {
             content = this._renderInitialSkeletons(initialSkeletonCount);
         }
         else {
-            const data = this.getData();
+            data = this.getData();
             if ((data != null && initialSkeleton) || data == null) {
                 content = this._renderInitialSkeletons(initialSkeletonCount, data == null);
             }
@@ -493,8 +520,14 @@ let StreamList = StreamList_1 = class StreamList extends Component {
                 }
             }
         }
-        return (h(Root, { ref: this.setRootElement },
-            h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+        if (data == null) {
+            return (h(Root, { ref: this.setRootElement },
+                h("div", { role: 'list', "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+        }
+        else {
+            return (h(Root, { ref: this.setRootElement },
+                h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+        }
     }
     _doBlur() {
         if (this.actionableMode) {
@@ -590,6 +623,14 @@ let StreamList = StreamList_1 = class StreamList extends Component {
             scroller: this._getScroller()
         };
     }
+    _debounce(callback, wait) {
+        let timeout = null;
+        return (...args) => {
+            const next = () => callback(...args);
+            clearTimeout(timeout);
+            timeout = setTimeout(next, wait);
+        };
+    }
     componentDidMount() {
         const data = this.props.data;
         if (this._isTreeData()) {
@@ -606,7 +647,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         }
         if (window['ResizeObserver']) {
             const root = this.root;
-            const resizeObserver = new window['ResizeObserver']((entries) => {
+            const resizeObserver = new window['ResizeObserver'](this._debounce((entries) => {
                 entries.forEach((entry) => {
                     if (entry.target === root && entry.contentRect) {
                         const currHeight = this.height;
@@ -619,7 +660,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
                         }
                     }
                 });
-            });
+            }, StreamList_1.debounceThreshold));
             resizeObserver.observe(root);
             this.resizeObserver = resizeObserver;
         }
@@ -1132,6 +1173,7 @@ StreamList.defaultProps = {
         y: 0
     }
 };
+StreamList.debounceThreshold = 100;
 StreamList.collapse = (key, currentData) => {
     const data = currentData.value.data;
     const metadata = currentData.value.metadata;

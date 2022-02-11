@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -302,6 +302,7 @@ function _getDateDefaultConverter() {
 
 /**
  * @ojcomponent oj.ojTimeAxis
+ * @ojdeprecated {since: '12.0.0', description: 'Use the Gantt or Timeline components instead.'}
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
  *
@@ -529,7 +530,7 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
 
     // @inheritdoc
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return TimeAxis.newInstance(context, callback, callbackObj);
+      return new TimeAxis(context, callback, callbackObj);
     },
 
     // @inheritdoc
@@ -586,6 +587,11 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
           this.options._scaleLabelPosition[scale] = 'center';
         }
       }
+      // Set label alignment
+      this.options._labelAlignment = {
+        horizontal: 'middle',
+        vertical: 'middle'
+      };
     },
 
     // @inheritdoc
@@ -666,6 +672,15 @@ oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
       // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
       // If the instance is a class, class methods may not be cloned for some reason.
       noClonePaths.scale = true;
+
+      // Don't clone areas where app may pass in an instance of Converter
+      // If the instance is a class, class methods may not be cloned for some reason.
+      noClonePaths.converter = true;
+      noClonePaths._resources = {
+        converter: true,
+        defaultDateConverter: true,
+        defaultDateTimeConverter: true
+      };
       return noClonePaths;
     }
   });

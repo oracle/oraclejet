@@ -1,0 +1,180 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+
+@include module-include-once("stable.variables.core") {
+
+
+:root {
+
+// text colors
+// --------------------------
+--oj-core-text-color-primary:      rgb(var(--oj-palette-neutral-rgb-190));
+--oj-core-text-color-secondary:    rgba(var(--oj-palette-neutral-rgb-190), .65);
+--oj-core-text-color-disabled:     rgba(var(--oj-palette-neutral-rgb-190), .4);
+--oj-core-text-color-brand:        rgb(var(--oj-palette-brand-rgb-110));
+--oj-core-text-color-danger:       rgb(var(--oj-palette-danger-rgb-120));
+--oj-core-text-color-warning:      rgb(var(--oj-palette-warning-rgb-120));
+--oj-core-text-color-success:      rgb(var(--oj-palette-success-rgb-120));
+
+
+
+--oj-core-bg-color-content:       rgb(var(--oj-palette-neutral-rgb-0));
+--oj-core-bg-color-hover:         rgba(var(--oj-palette-neutral-rgb-190), .04);
+--oj-core-bg-color-active:        rgba(var(--oj-palette-neutral-rgb-190), .06);
+--oj-core-bg-color-selected:      rgb(var(--oj-palette-brand-rgb-30));
+--oj-core-border-color-selected:  rgb(var(--oj-palette-brand-rgb-110));
+--oj-core-color-disabled-1:      rgba(var(--oj-palette-neutral-rgb-190), 0.05);
+--oj-core-color-disabled-2:  rgba(var(--oj-palette-neutral-rgb-190),.1);
+
+// icon
+// --------------------------
+--oj-core-icon-size-lg:              1.5rem;
+--oj-core-icon-size-sm:              1rem;
+
+// divider
+// --------------------------
+--oj-core-divider-color:             rgba(var(--oj-palette-neutral-rgb-190),.1);
+--oj-core-divider-margin:            0.5rem;
+
+// color neutral
+// --------------------------
+--oj-core-neutral-1:                      rgb(var(--oj-palette-neutral-rgb-100));
+--oj-core-neutral-2:                      rgb(var(--oj-palette-neutral-rgb-110));
+--oj-core-neutral-3:                      rgb(var(--oj-palette-neutral-rgb-120));
+--oj-core-neutral-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+--oj-core-neutral-secondary-1:            rgb(var(--oj-palette-neutral-rgb-30));
+--oj-core-neutral-secondary-2:            rgb(var(--oj-palette-neutral-rgb-20));
+--oj-core-neutral-secondary-3:            rgb(var(--oj-palette-neutral-rgb-10));
+--oj-core-neutral-secondary-contrast:     rgb(var(--oj-palette-neutral-rgb-120));
+
+// brand
+// --------------------------
+--oj-core-brand-1:                      rgb(var(--oj-palette-brand-rgb-100));
+--oj-core-brand-2:                      rgb(var(--oj-palette-brand-rgb-110));
+--oj-core-brand-3:                      rgb(var(--oj-palette-brand-rgb-120));
+--oj-core-brand-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+
+// danger
+// --------------------------
+--oj-core-danger-1:                      rgb(var(--oj-palette-danger-rgb-100));
+--oj-core-danger-2:                      rgb(var(--oj-palette-danger-rgb-110));
+--oj-core-danger-3:                      rgb(var(--oj-palette-danger-rgb-120));
+--oj-core-danger-contrast:               rgb(var(--oj-palette-neutral-rgb-0));
+
+// danger secondary
+// --------------------------
+--oj-core-danger-secondary-1:            rgb(var(--oj-palette-danger-rgb-30));
+--oj-core-danger-secondary-2:            rgb(var(--oj-palette-danger-rgb-20));
+--oj-core-danger-secondary-3:            rgb(var(--oj-palette-danger-rgb-10));
+--oj-core-danger-secondary-contrast:     rgb(var(--oj-palette-danger-rgb-120));
+
+// warning
+// --------------------------
+--oj-core-warning-1:                    rgb(var(--oj-palette-warning-rgb-100));
+--oj-core-warning-2:                    rgb(var(--oj-palette-warning-rgb-110));
+--oj-core-warning-3:                    rgb(var(--oj-palette-warning-rgb-120));
+--oj-core-warning-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+
+// warning secondary
+// --------------------------
+--oj-core-warning-secondary-1:          rgb(var(--oj-palette-warning-rgb-30));
+--oj-core-warning-secondary-2:          rgb(var(--oj-palette-warning-rgb-20));
+--oj-core-warning-secondary-3:          rgb(var(--oj-palette-warning-rgb-10));
+--oj-core-warning-secondary-contrast:   rgb(var(--oj-palette-warning-rgb-120));
+
+// success
+// --------------------------
+--oj-core-success-1:                    rgb(var(--oj-palette-success-rgb-100));
+--oj-core-success-2:                    rgb(var(--oj-palette-success-rgb-110));
+--oj-core-success-3:                    rgb(var(--oj-palette-success-rgb-120));
+--oj-core-success-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+// success secondary
+// --------------------------
+--oj-core-success-secondary-1:          rgb(var(--oj-palette-success-rgb-30));
+--oj-core-success-secondary-2:          rgb(var(--oj-palette-success-rgb-20));
+--oj-core-success-secondary-3:          rgb(var(--oj-palette-success-rgb-10));
+--oj-core-success-secondary-contrast:   rgb(var(--oj-palette-success-rgb-120));
+
+
+// info
+// --------------------------
+--oj-core-info-1:                    rgb(var(--oj-palette-info-rgb-100));
+--oj-core-info-2:                    rgb(var(--oj-palette-info-rgb-110));
+--oj-core-info-3:                    rgb(var(--oj-palette-info-rgb-120));
+--oj-core-info-contrast:             rgb(var(--oj-palette-neutral-rgb-0));
+
+// info secondary
+// --------------------------
+--oj-core-info-secondary-1:          rgb(var(--oj-palette-info-rgb-30));
+--oj-core-info-secondary-2:          rgb(var(--oj-palette-info-rgb-20));
+--oj-core-info-secondary-3:          rgb(var(--oj-palette-info-rgb-10));
+--oj-core-info-secondary-contrast:   rgb(var(--oj-palette-info-rgb-120));
+
+
+
+  
+// focus
+// --------------------------
+  --oj-core-focus-border-color:     rgb(var(--oj-palette-neutral-rgb-190)); 
+
+  --oj-core-cursor-clickable:      pointer;
+
+  --oj-core-drag-drop-color-1:       rgb(var(--oj-palette-brand-rgb-40));
+  --oj-core-drag-drop-color-2:       rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-drag-drop-line-color:    rgb(var(--oj-palette-brand-rgb-100));
+  
+  --oj-core-touch-target-min-size:    2.25rem;
+
+  --oj-core-box-shadow-rgb:     var(--oj-palette-neutral-rgb-200);
+  --oj-core-box-shadow-xs:      0px 1px 4px 0px    rgba(var(--oj-core-box-shadow-rgb),.12);
+  --oj-core-box-shadow-sm:      0px 4px 8px 0px    rgba(var(--oj-core-box-shadow-rgb),.16); 
+  --oj-core-box-shadow-md:      0px 6px 12px 0px   rgba(var(--oj-core-box-shadow-rgb),.2);
+  --oj-core-box-shadow-lg:      0px 8px 16px 0px   rgba(var(--oj-core-box-shadow-rgb),0.24);
+  --oj-core-box-shadow-xl:      0px 12px 20px 0px  rgba(var(--oj-core-box-shadow-rgb),0.28);
+
+// a dropdown is a popup that drops down from a component, for example a menu or select popup
+  --oj-core-dropdown-box-shadow:  var(--oj-core-box-shadow-sm);
+  
+  --oj-private-core-global-dropdown-offset: 0;
+ 
+  --oj-core-scrim-color:   rgba(var(--oj-palette-neutral-rgb-190), .4);
+
+  
+  --oj-core-spacing-1x:                  .25rem;
+  --oj-core-spacing-2x:                  .5rem;
+  --oj-core-spacing-3x:                  .75rem;
+  --oj-core-spacing-4x:                  1rem;
+  --oj-core-spacing-5x:                  1.25rem;
+  --oj-core-spacing-6x:                  1.5rem;
+  --oj-core-spacing-7x:                  1.75rem;
+  --oj-core-spacing-8x:                  2rem;
+  --oj-core-spacing-9x:                  2.25rem;
+  --oj-core-spacing-10x:                 2.5rem;
+  --oj-core-spacing-11x:                 2.75rem;
+  --oj-core-spacing-12x:                 3rem;
+
+  
+  --oj-private-core-wrappable-margin-bottom:       0px;
+
+  --oj-core-border-radius-sm:                2px;
+  --oj-core-border-radius-md:               .25rem;
+  --oj-core-border-radius-lg:               .375rem;
+  --oj-core-border-radius-xl:               .5rem;
+
+  
+  --oj-private-core-z-index-fixed:           100;
+  --oj-private-core-z-index-off-canvas:      200;
+  --oj-private-core-z-index-resizable:       900;
+  --oj-core-z-index-popup:                   1000;
+  --oj-core-z-index-dialog:                  1050;
+  --oj-core-z-index-messages:                2000;
+
+  --oj-private-core-global-loading-indicator-delay-duration: 0.05s;
+
+}
+}

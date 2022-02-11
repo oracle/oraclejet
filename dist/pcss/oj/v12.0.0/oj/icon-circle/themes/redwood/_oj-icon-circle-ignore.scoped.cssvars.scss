@@ -1,0 +1,82 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "../../../avatar/themes/redwood/_oj-avatar-scoped.cssvars.scss";
+
+
+@include module-include-once("redwood.variables.icon.color.size") {
+  .oj-icon-circle-xxs .oj-icon-circle-inner,
+  .oj-icon-xxs .oj-icon-circle-inner {
+    @extend .oj-avatar-xxs;
+    font-size: 0.75rem;
+  }
+
+  .oj-icon-circle-xs .oj-icon-circle-inner,
+  .oj-icon-xs .oj-icon-circle-inner {
+    @extend .oj-avatar-xs;
+    font-size: 1rem;
+  }
+
+  .oj-icon-circle-sm .oj-icon-circle-inner,
+  .oj-icon-sm .oj-icon-circle-inner {
+    @extend .oj-avatar-sm;
+    font-size: 1.5rem;
+  }
+  .oj-icon-circle-lg .oj-icon-circle-inner,
+  .oj-icon-lg .oj-icon-circle-inner {
+    @extend .oj-avatar-lg;
+    font-size: 2.25rem;
+  }
+
+  .oj-icon-circle-xl .oj-icon-circle-inner,
+  .oj-icon-xl .oj-icon-circle-inner {
+    @extend .oj-avatar-xl;
+    font-size: 3.5rem;
+  }
+
+  .oj-icon-circle-xxl .oj-icon-circle-inner,
+  .oj-icon-xxl .oj-icon-circle-inner {
+    @extend .oj-avatar-xxl;
+    font-size: 4.5rem;
+  }
+
+  .oj-icon-circle-forest .oj-icon-circle-inner,
+  .oj-icon-circle-green .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-green;
+  }
+
+  .oj-icon-circle-purple .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-purple;
+  }
+
+  .oj-icon-circle-teal .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-teal;
+  }
+
+  .oj-icon-circle-red .oj-icon-circle-inner,
+  .oj-icon-circle-orange .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-orange;
+  }
+
+  .oj-icon-circle-mauve .oj-icon-circle-inner,
+  .oj-icon-circle-pink .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-pink;
+  }
+
+  .oj-icon-circle-slate .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-slate;
+  }
+
+  .oj-icon-circle-blue .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-blue;
+  }
+
+  .oj-icon-circle-lilac .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-lilac;
+  }
+
+  .oj-icon-circle-gray .oj-icon-circle-inner {
+    @extend .oj-avatar-bg-gray;
+  }
+}

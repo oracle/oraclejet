@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -72,7 +72,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
         verifyKey(key) {
             return this.validKeyTypes.indexOf(typeof key) > -1;
         }
-        handleModelRefresh() {
+        handleModelRefresh(detail) {
             this.callback.setData(null);
             this.fetchRows();
         }
@@ -80,23 +80,48 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
         handleItemsRemoved(detail) { }
         handleItemsUpdated(detail) { }
         _handleModelEvent(event) {
+            var _a;
+            const detail = event['detail'];
             if (event.type === 'refresh') {
-                this.handleModelRefresh();
+                this.handleModelRefresh(detail);
             }
             else if (event.type === 'mutate') {
                 if (this.callback.getData() == null) {
                     return;
                 }
-                const detail = event['detail'];
+                const addAndRemoveKeys = [];
+                if (detail.add && detail.remove) {
+                    detail.remove.keys.forEach((key) => {
+                        if (detail.add.keys.has(key)) {
+                            addAndRemoveKeys.push(key);
+                        }
+                    });
+                }
                 if (detail.add) {
-                    this.handleItemsAdded(detail.add);
+                    const keys = detail.add.keys;
+                    const keysArray = [...keys];
+                    const metadata = (_a = this.callback.getData()) === null || _a === void 0 ? void 0 : _a.value.metadata;
+                    const addDetail = Object.assign({}, detail.add);
+                    metadata === null || metadata === void 0 ? void 0 : metadata.forEach((data) => {
+                        var _a, _b, _c, _d, _e, _f;
+                        if (keys.has(data.key) && addAndRemoveKeys.indexOf(data.key) == -1) {
+                            const index = keysArray.indexOf(data.key);
+                            (_a = addDetail.addBeforeKeys) === null || _a === void 0 ? void 0 : _a.splice(index, 1);
+                            (_b = addDetail.data) === null || _b === void 0 ? void 0 : _b.splice(index, 1);
+                            (_c = addDetail.indexes) === null || _c === void 0 ? void 0 : _c.splice(index, 1);
+                            (_d = addDetail.keys) === null || _d === void 0 ? void 0 : _d.delete(data.key);
+                            (_e = addDetail.metadata) === null || _e === void 0 ? void 0 : _e.splice(index, 1);
+                            (_f = addDetail.parentKeys) === null || _f === void 0 ? void 0 : _f.splice(index, 1);
+                        }
+                    });
+                    this.handleItemsAdded(addDetail);
                 }
                 if (detail.remove) {
                     this.handleItemsRemoved(detail.remove);
                     detail.remove.keys.forEach((key) => {
-                        var _a;
-                        if (!((_a = detail.add) === null || _a === void 0 ? void 0 : _a.keys.has(key)))
+                        if (addAndRemoveKeys.indexOf(key) == -1) {
                             this.callback.handleItemRemoved(key);
+                        }
                     });
                 }
                 if (detail.update) {
@@ -611,7 +636,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
         }
         checkViewport() {
             if (this.domScroller) {
-                this.domScroller.checkViewport();
+                return this.domScroller.checkViewport();
             }
         }
         renderSkeletonsForLoadMore() { }
@@ -681,6 +706,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             }
         }
         _handleScrollerMaxRowCount() {
+            Logger.info('ScrollPolicyOptions max count has been reached.');
         }
         renderData(data, metadata, startIndex) {
             if (this.callback == null) {
@@ -1140,8 +1166,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                 return returnItem;
             };
             this.expand = (key) => {
-                const childDataProvider = this.getChildDataProvider(key);
-                if (childDataProvider === null) {
+                const fetchNext = this.fetchNextFromChildDataProvider(key);
+                if (fetchNext == null) {
                     return;
                 }
                 const showSkeletonTimeout = setTimeout(function () {
@@ -1150,13 +1176,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                         this.callback.updateSkeletonKeys(key);
                     }
                 }.bind(this), 250);
-                const fetchSize = this.getFetchSize();
-                let options = { clientId: this._clientId, size: fetchSize };
-                let iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
-                this._cachedIteratorsAndResults[key] = { iterator: iterator, cache: null };
-                return this._fetchNextFromIterator(iterator, key, options, {
-                    value: { data: [], metadata: [] }
-                }).then(function (finalResults) {
+                fetchNext.then(function (finalResults) {
                     if (this.callback == null) {
                         return;
                     }
@@ -1176,49 +1196,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                                 expandingKeys: expandingKeys.delete([key])
                             };
                         }
-                        let updatedData;
-                        let newData = finalResults.value.data;
-                        let newMetadata = finalResults.value.metadata;
-                        let recacheData;
-                        let recacheMetadata;
-                        if (result) {
-                            let data = result.value.data;
-                            let metadata = result.value.metadata;
-                            let insertIndex = this._getIndexByKey(key, metadata);
-                            if (insertIndex !== -1) {
-                                const fetchedCount = newData.length;
-                                let dataToSet = data.slice(0, insertIndex + 1).concat(newData);
-                                let metadataToSet = metadata.slice(0, insertIndex + 1).concat(newMetadata);
-                                let done = result.done;
-                                if (fetchedCount < fetchSize) {
-                                    dataToSet = dataToSet.concat(data.slice(insertIndex + 1));
-                                    metadataToSet = metadataToSet.concat(metadata.slice(insertIndex + 1));
-                                }
-                                else {
-                                    recacheData = data.slice(insertIndex + 1);
-                                    recacheMetadata = metadata.slice(insertIndex + 1);
-                                    if (recacheData.length > 0) {
-                                        done = false;
-                                        if (this.domScroller != null) {
-                                            this.domScroller.setAsyncIterator({ next: this.fetchMoreRows.bind(this) });
-                                        }
-                                    }
-                                }
-                                updatedData = {
-                                    value: {
-                                        data: dataToSet,
-                                        metadata: metadataToSet
-                                    },
-                                    done
-                                };
-                            }
-                        }
-                        if (updatedData == null) {
-                            updatedData = { value: { data: newData, metadata: newMetadata }, done: true };
-                        }
-                        if (recacheData != null) {
-                            this._recacheData(recacheData, recacheMetadata);
-                        }
+                        let updatedData = this.getUpdatedData([finalResults], result, [key]);
                         expandingKeys = expandingKeys.delete([key]);
                         return {
                             expandedSkeletonKeys: skeletonKeys,
@@ -1368,6 +1346,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             Logger.error('iterating dataprovider content handler fetch error :' + reason);
         }
         _handleScrollerMaxRowCount() {
+            Logger.info('ScrollPolicyOptions max count has been reached.');
         }
         renderData(data, metadata) {
             if (this.callback == null) {
@@ -1450,13 +1429,168 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
             }
             return -1;
         }
-        handleModelRefresh() {
-            if (this.domScroller) {
-                this.domScroller.destroy();
+        _findKeyForLastChild(metadata, parentKey, maxLevel) {
+            if (maxLevel === 0) {
+                Logger.warn('Maximum number of levels exceed');
+                return null;
             }
-            this.domScroller = null;
-            this._cachedIteratorsAndResults = {};
-            super.handleModelRefresh();
+            const groups = metadata.filter((data) => {
+                return data.parentKey == parentKey;
+            });
+            if (groups.length > 0) {
+                const lastGroupKey = groups[groups.length - 1].key;
+                const lastChildKey = this._findKeyForLastChild(metadata, lastGroupKey, maxLevel - 1);
+                return lastChildKey || lastGroupKey;
+            }
+            else {
+                return null;
+            }
+        }
+        _findIndexForNewGroup(metadata, index) {
+            if (index === 0)
+                return 0;
+            const groups = metadata.filter((data) => data.parentKey == null);
+            if (groups.length === 0)
+                return 0;
+            const prevGroupKey = groups[index - 1].key;
+            const prevGroupLastChildKey = this._findKeyForLastChild(metadata, prevGroupKey, 5);
+            const prevGroupLastChildIndex = prevGroupLastChildKey
+                ? this._findIndex(metadata, prevGroupLastChildKey)
+                : this._findIndex(metadata, prevGroupKey);
+            return prevGroupLastChildIndex + 1;
+        }
+        _findIndexForLastItem(parentKey, data) {
+            let index = -1;
+            const lastItem = this._getLastItemByParentKey(parentKey, data);
+            if (lastItem) {
+                const metadata = data.value.metadata;
+                const lastItemLastChildKey = this._findKeyForLastChild(metadata, lastItem.metadata.key, 5);
+                index = lastItemLastChildKey
+                    ? this._findIndex(metadata, lastItemLastChildKey)
+                    : this._findIndex(metadata, lastItem.metadata.key);
+                if (index > -1) {
+                    index += 1;
+                }
+            }
+            if (lastItem == null || index === -1) {
+                return -1;
+            }
+            return index;
+        }
+        handleModelRefresh(detail) {
+            var _a;
+            if (((_a = detail === null || detail === void 0 ? void 0 : detail.keys) === null || _a === void 0 ? void 0 : _a.size) > 0) {
+                this.handleModelRefreshChildren(detail.keys);
+            }
+            else {
+                if (this.domScroller) {
+                    this.domScroller.destroy();
+                }
+                this.domScroller = null;
+                this._cachedIteratorsAndResults = {};
+                super.handleModelRefresh();
+            }
+        }
+        fetchNextFromChildDataProvider(key) {
+            const childDataProvider = this.getChildDataProvider(key);
+            if (childDataProvider === null) {
+                return null;
+            }
+            const fetchSize = this.getFetchSize();
+            let options = { clientId: this._clientId, size: fetchSize };
+            let iterator = childDataProvider.fetchFirst(options)[Symbol.asyncIterator]();
+            this._cachedIteratorsAndResults[key] = { iterator: iterator, cache: null };
+            return this._fetchNextFromIterator(iterator, key, options, {
+                value: { data: [], metadata: [] }
+            });
+        }
+        getUpdatedData(finalResults, renderedData, validKeys) {
+            let updatedData;
+            let updatingData = renderedData;
+            let recacheData;
+            let recacheMetadata;
+            if (updatingData) {
+                validKeys.forEach((key, i) => {
+                    let data = updatingData.value.data;
+                    let metadata = updatingData.value.metadata;
+                    let insertIndex = this._getIndexByKey(key, metadata);
+                    if (insertIndex !== -1) {
+                        let newData = finalResults[i].value.data;
+                        let newMetadata = finalResults[i].value.metadata;
+                        const fetchedCount = newData.length;
+                        let dataToSet = data.slice(0, insertIndex + 1).concat(newData);
+                        let metadataToSet = metadata.slice(0, insertIndex + 1).concat(newMetadata);
+                        let done = updatingData.done;
+                        const fetchSize = this.getFetchSize();
+                        if (fetchedCount < fetchSize) {
+                            recacheData = null;
+                            recacheMetadata = null;
+                            dataToSet = dataToSet.concat(data.slice(insertIndex + 1));
+                            metadataToSet = metadataToSet.concat(metadata.slice(insertIndex + 1));
+                        }
+                        else {
+                            recacheData = data.slice(insertIndex + 1);
+                            recacheMetadata = metadata.slice(insertIndex + 1);
+                            if (recacheData.length > 0) {
+                                done = false;
+                                if (this.domScroller != null) {
+                                    this.domScroller.setAsyncIterator({ next: this.fetchMoreRows.bind(this) });
+                                }
+                            }
+                        }
+                        updatingData = {
+                            value: {
+                                data: dataToSet,
+                                metadata: metadataToSet
+                            },
+                            done
+                        };
+                        updatedData = updatingData;
+                    }
+                });
+            }
+            if (updatedData == null) {
+                let newData = finalResults.map((result) => result.value.data);
+                let newMetadata = finalResults.map((result) => result.value.metadata);
+                updatedData = { value: { data: newData, metadata: newMetadata }, done: true };
+            }
+            if (recacheData != null) {
+                this._recacheData(recacheData, recacheMetadata);
+            }
+            return updatedData;
+        }
+        handleModelRefreshChildren(keys) {
+            const allFetchNext = [];
+            const validKeys = [];
+            for (let key of keys) {
+                const fetchNext = this.fetchNextFromChildDataProvider(key);
+                if (fetchNext != null) {
+                    allFetchNext.push(fetchNext);
+                    validKeys.push(key);
+                }
+            }
+            Promise.all(allFetchNext).then((finalResults) => {
+                if (this.callback == null) {
+                    return;
+                }
+                this.callback.updateData((renderedData) => {
+                    if (renderedData) {
+                        validKeys.forEach((key) => {
+                            let metadata = renderedData.value.metadata;
+                            let insertIndex = this._getIndexByKey(key, metadata);
+                            if (insertIndex !== -1) {
+                                const count = IteratingTreeDataProviderContentHandler.getLocalDescendentCount(metadata, insertIndex);
+                                renderedData.value.data.splice(insertIndex + 1, count);
+                                renderedData.value.metadata.splice(insertIndex + 1, count);
+                            }
+                        });
+                    }
+                    let updatedData = this.getUpdatedData(finalResults, renderedData, validKeys);
+                    return {
+                        renderedData: updatedData
+                    };
+                });
+            });
         }
         handleItemsAdded(detail) {
             if (this.callback == null) {
@@ -1500,25 +1634,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojlogger', 'ojs/ojdatacollection-comm
                                     index = beforeIndex;
                                 }
                                 else {
-                                    const lastItem = this._getLastItemByParentKey(parentKey, newData);
-                                    if (lastItem) {
-                                        index = this._findIndex(newData.value.metadata, lastItem.metadata.key);
-                                        if (index > -1) {
-                                            index += 1;
-                                        }
-                                    }
-                                    if (lastItem == null || index === -1) {
+                                    index = this._findIndexForLastItem(parentKey, newData);
+                                    if (index === -1) {
                                         return;
                                     }
                                 }
                             }
-                            else if (indexes != null) {
-                                const parentIndex = this._findIndex(newData.value.metadata, parentKey);
-                                index = parentIndex === -1 ? indexes[i] + 1 : parentIndex + indexes[i] + 1;
+                            else if (i < indexes.length) {
+                                if (parentKey == null) {
+                                    index = this._findIndexForNewGroup(newData.value.metadata, indexes[i]);
+                                }
+                                else {
+                                    index = this._findIndex(newData.value.metadata, parentKey);
+                                    if (index === -1) {
+                                        return;
+                                    }
+                                    index += indexes[i] + 1;
+                                }
                             }
                             else {
-                                index =
-                                    this._findIndex(newData.value.metadata, this._getLastItemByParentKey(parentKey).metadata.key) + 1;
+                                index = this._findIndexForLastItem(parentKey, newData);
+                                if (index === -1) {
+                                    return;
+                                }
                             }
                         }
                         if (index > -1) {

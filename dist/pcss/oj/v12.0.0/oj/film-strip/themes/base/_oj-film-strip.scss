@@ -1,0 +1,324 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example film-strip/themes/redwood/oj-film-strip.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.filmstrip") {
+  /* filmstrip */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-film-strip:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  //applied to the root element
+  .oj-filmstrip {
+    //specify min size so that it's always greater than 0 and the component
+    //can get notified of resizes
+    min-height: 1px;
+    min-width: 1px;
+    overflow: hidden;
+  }
+
+  //  The oj-focus-highlight class applies focus styling that may not be desirable
+  //  when the focus results from pointer interaction (touch or mouse), but which is
+  //  needed for accessibility when the focus occurs by a non-pointer mechanism, for
+  //  example keyboard or initial page load.
+  //  See also the $focusHighlightPolicy variable, which controls when this
+  //  class is set.
+  .oj-filmstrip:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-filmstrip:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  //applied to each layout container
+  .oj-filmstrip-container {
+    position: relative;
+    display: flex;
+  }
+
+  //applied to each layout container in a vertical filmstrip
+  .oj-filmstrip-vertical.oj-filmstrip-container,
+  .oj-filmstrip-vertical .oj-filmstrip-container {
+    flex-direction: column;
+  }
+
+  //applied to the container around the oj-filmstrip-pages-container when
+  //navigation arrows are "adjacent" and not hidden
+  .oj-filmstrip-content-container {
+    overflow: hidden;
+  }
+
+  //applied to each logical page and the container around all logical pages,
+  //as well as the container around the oj-filmstrip-pages-container when
+  //navigation arrows are "adjacent" and not hidden
+  .oj-filmstrip-pages-container,
+  .oj-filmstrip-page,
+  .oj-filmstrip-content-container {
+    flex-grow: 1;
+    flex-shrink: 0;
+  }
+
+  //applied to the container around each item in the filmstrip
+  .oj-filmstrip-item-container {
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  //applied to each item in the filmstrip
+  .oj-filmstrip-item {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  //this class specifies the basic details of a logical page navigation
+  //transition, but the details of the initial and destination states of
+  //the transition are specified by the *-from and *-to classes below
+  .oj-filmstrip-transition {
+    //can't use oj-transition-property mixin here because we need to split
+    //the transform properties across the different transition properties
+    //to ensure that transitions on iOS work
+
+    transition: transform var(--oj-animation-duration-long);
+
+    transition-timing-function: var(--oj-animation-ease-in-out);
+  }
+
+  //the below oj-filmstrip-transition-*-from and oj-filmstrip-transition-*-to
+  //classes are applied to each individual logical page involved in a
+  //transition and specify the initial and destination states of the
+  //transition
+
+  //these oj-filmstrip-transition-*-from classes are empty because the
+  //default slide transition does not require special initial state
+  .oj-filmstrip-transition-next-oldpage-from,
+  .oj-filmstrip-transition-next-newpage-from,
+  .oj-filmstrip-transition-prev-oldpage-from,
+  .oj-filmstrip-transition-prev-newpage-from {
+  }
+
+  //when set on a filmstrip page, the page will be displayed as first page
+  .oj-filmstrip-transition-display-as-firstpage {
+    order: -1;
+  }
+
+  //when set on a filmstrip page, the page will be displayed as last page
+  .oj-filmstrip-transition-display-as-lastpage {
+    order: 1;
+  }
+
+  //the default layout of logical pages positions them next to each other in
+  //a single row or column in their original DOM order, so the
+  //_oj-filmstrip-transition-*-to classes below need to transform them from
+  //that natural position to the destination position
+
+  .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to,
+  .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
+    @include oj-ltr() {
+      //slide the page left by a page width
+      transform: translate3d(-100%, 0, 0);
+    }
+    @include oj-rtl() {
+      //slide the page right by a page width
+      transform: translate3d(100%, 0, 0);
+    }
+  }
+
+  .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to,
+  .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
+    @include oj-ltr() {
+      //slide the page right by a page width
+      transform: translate3d(100%, 0, 0);
+    }
+    @include oj-rtl() {
+      //slide the page left by a page width
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+
+  .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-next-oldpage-to,
+  .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-next-newpage-to {
+    //slide the page up by a page height
+    transform: translate3d(0, -100%, 0);
+  }
+
+  .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-prev-oldpage-to,
+  .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-prev-newpage-to {
+    //slide the page down by a page height
+    transform: translate3d(0, 100%, 0);
+  }
+
+  /* navigation arrows */
+
+  //applied to the container around a navigation arrow
+  .oj-filmstrip-arrow-container {
+    display: flex;
+    align-items: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .oj-filmstrip-vertical .oj-filmstrip-arrow-container {
+    flex-direction: column;
+  }
+
+  //applied to the container around a navigation arrow when the arrows overlay
+  //the filmStrip
+  .oj-filmstrip-arrow-container-overlay {
+    position: absolute;
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-start {
+    @include oj-ltr() {
+      left: 0;
+    }
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-end {
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-start,
+  .oj-filmstrip-arrow-container-overlay.oj-end {
+    //can't use 'align-self: center' here because the container is
+    //absolutely positioned
+    top: 50%;
+    transform: translate3d(0, -50%, 0);
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-top {
+    top: 0;
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-bottom {
+    bottom: 0;
+  }
+
+  .oj-filmstrip-arrow-container-overlay.oj-top,
+  .oj-filmstrip-arrow-container-overlay.oj-bottom {
+    //can't use 'align-self: center' here because the container is
+    //absolutely positioned
+    @include oj-ltr() {
+      left: 50%;
+      transform: translate3d(-50%, 0, 0);
+    }
+    @include oj-rtl() {
+      right: 50%;
+      transform: translate3d(50%, 0, 0);
+    }
+  }
+
+  //applied to a navigation arrow
+  .oj-filmstrip-arrow {
+    box-sizing: border-box;
+
+    width: var(--oj-button-height);
+    height: var(--oj-button-height);
+
+    cursor: var(--oj-core-cursor-clickable);
+    border-radius: var(--oj-button-border-radius);
+
+    border: 1px solid;
+    display: flex;
+    outline: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .oj-filmstrip-arrow.oj-default {
+    border-color: transparent;
+  }
+
+  .oj-filmstrip-arrow.oj-hover {
+    //from .oj-button.oj-hover
+    background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+    border-color: var(--oj-button-borderless-chrome-border-color-hover);
+  }
+
+  //active should trump hover
+  .oj-filmstrip-arrow.oj-active,
+  .oj-filmstrip-arrow.oj-active.oj-hover {
+    //from .oj-button.oj-active
+    background-color: var(--oj-button-borderless-chrome-bg-color-active);
+    border-color: var(--oj-button-borderless-chrome-border-color-active);
+  }
+
+  /* navigation arrow icons */
+  .oj-filmstrip-arrow .oj-filmstrip-arrow-icon {
+    // make sure that the cursor is uniform across the whole navigation button
+    cursor: inherit;
+  }
+
+  .oj-filmstrip-arrow.oj-default .oj-filmstrip-arrow-icon {
+    color: var(--oj-button-borderless-chrome-text-color);
+  }
+
+  .oj-filmstrip-arrow.oj-hover .oj-filmstrip-arrow-icon {
+    color: var(--oj-button-borderless-chrome-text-color-hover);
+  }
+
+  //active should trump hover
+  .oj-filmstrip-arrow.oj-active .oj-filmstrip-arrow-icon,
+  .oj-filmstrip-arrow.oj-active.oj-hover .oj-filmstrip-arrow-icon {
+    color: var(--oj-button-borderless-chrome-text-color-active);
+  }
+
+  //applied to the navigation arrows when they are only shown on hover
+  .oj-filmstrip-arrow-transition {
+    transition: opacity var(--oj-animation-duration-medium);
+
+    transition-timing-function: var(--oj-animation-ease-in-out);
+  }
+
+  .oj-filmstrip.oj-filmstrip-hover .oj-filmstrip-arrow-transition.oj-filmstrip-arrow-container {
+    //if on the arrow container, set opacity to 1 because it doesn't affect
+    //the opacity of the arrow itself
+    opacity: 1;
+  }
+
+  .oj-filmstrip.oj-filmstrip-hover .oj-filmstrip-arrow-transition.oj-filmstrip-arrow {
+    //if on the arrow, set opacity to 0.8, which is the default arrow
+    //opacity, because this value will override that
+
+    opacity: 1;
+  }
+
+  .oj-filmstrip:not(.oj-filmstrip-hover) .oj-filmstrip-arrow-transition {
+    opacity: 0;
+  }
+
+  // icons
+  //------------------------------------------
+
+  .oj-filmstrip-arrow-icon.oj-start {
+    @extend .oj-fwk-icon-caret-start;
+  }
+  .oj-filmstrip-arrow-icon.oj-end {
+    @extend .oj-fwk-icon-caret-end;
+  }
+  .oj-filmstrip-arrow-icon.oj-top {
+    @extend .oj-fwk-icon-caret-n;
+  }
+  .oj-filmstrip-arrow-icon.oj-bottom {
+    @extend .oj-fwk-icon-caret-s;
+  }
+}

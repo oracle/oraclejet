@@ -1,0 +1,46 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-data-grid.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-data-grid.scss";
+
+  @include module-include-once("stable.datagrid") {
+    /* Styling for the default sort icon */
+    .oj-datagrid-sort-default-icon {
+      @extend .oj-fwk-icon-sort;
+    }
+
+    /* Styling for the sort ascending icon */
+    .oj-datagrid-sort-ascending-icon {
+      @extend .oj-fwk-icon-arrowtail-n;
+    }
+
+    /* Styling for the sort descending icon */
+    .oj-datagrid-sort-descending-icon {
+      @extend .oj-fwk-icon-arrowtail-s;
+    }    
+    
+    /* Styling for a collapsed icon */
+    .oj-datagrid-collapsed-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
+
+    /* Styling for an expanded icon */
+    .oj-datagrid-expanded-icon {
+      @extend .oj-fwk-icon-arrow03-s-end;
+    }
+  }

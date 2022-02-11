@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "_oj-progress-bar.servervars.scss";
+@import "_oj-progress-bar.cssvars.scss";
+@import "../base/_oj-progress-bar.scss";
+@import "_oj-progress-bar-scoped.cssvars.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+  @include module-include-once("stable.progress-bar") {
+
+
+  }

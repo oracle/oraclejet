@@ -1,0 +1,10 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "_oj-theme.servervars.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../base/_oj-helpers.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "../base/_oj-helpers-ignore.scoped.cssvars.scss";

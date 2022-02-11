@@ -1,9 +1,0 @@
-@import "../../../select/themes/stable/_oj-select.scss";
-@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
-
-// import classes defined in the base directory
-@import "../base/_oj-select-single.scss";
-
-@include module-include-once("stable.selectsingle") {
-  
-}

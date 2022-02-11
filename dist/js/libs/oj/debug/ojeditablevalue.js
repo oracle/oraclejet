@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -2922,7 +2922,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             this.widget()[0].classList.add('oj-text-field');
           }
         }
-        this._toggleOjHasNoValueClass();
+        this._toggleOjHasNoValueClass(this.options.value);
         // We need to make sure the form component has an id since oj-form-layout
         // creates the label and associates them via for/id. Adding an id from ojformlayout
         // after the component is created does not create the form component's internal id.
@@ -3295,32 +3295,35 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           case 'displayOptions':
             // since the displayOptions defaults are theme-dependent
             // (except for displayOptions.helpInstruction), we
-            // need set the defaults ourselves when displayOptions is set to undefined.
+            // need to set the defaults ourselves when displayOptions
+            // or any of its subproperties is set to undefined.
+            // For displayOptions we never want to blow away any of the sub-properties,
+            // so for the case where the app dev doesn't set all the sub-properties, we
+            // default the others. e.g., formComponent.displayOptions = {messages:'none'}
             // Also, in Redwood theme, we use 'display' and 'none'. Anything that isn't 'none'
             // works the same as 'display'.
             // In Alta, it must be one of the accepted options that Alta supports.
-            // JET framework doesn't support unsetting of subproperties.
-            // Can only reset top level, not sub-properties
             // Setting to null doesn't reset.
             var displayOptions = value;
-            var resetNeeded = (value !== null) && (value.validatorHint === undefined &&
-              value.converterHint === undefined && value.messages === undefined);
+            var resetNeeded = (value !== null) && (value.validatorHint === undefined ||
+              value.converterHint === undefined || value.messages === undefined);
             if (resetNeeded) {
-              // this will change value back to the defaults,
+              // this will change any of the sub-properties not set back to the defaults,
               // and when super is called at the end of the method, the displayOptions option will
-              // be set with defaults
+              // be set with defaults if necessary.
               let useUserAssistanceDensity =
               (ojthemeutils.parseJSONFromFontFamily('oj-form-control-option-defaults') || {})
               .useUserAssistanceOptionDefault === 'use';
-
-              if (useUserAssistanceDensity) {
-                displayOptions.validatorHint = _sDisplayOptionsRedwoodDefaults.VALIDATOR_HINT;
-                displayOptions.converterHint = _sDisplayOptionsRedwoodDefaults.CONVERTER_HINT;
-                displayOptions.messages = _sDisplayOptionsRedwoodDefaults.MESSAGES;
-              } else {
-                displayOptions.validatorHint = _sDisplayOptionsAltaDefaults.VALIDATOR_HINT;
-                displayOptions.converterHint = _sDisplayOptionsAltaDefaults.CONVERTER_HINT;
-                displayOptions.messages = _sDisplayOptionsAltaDefaults.MESSAGES;
+              const displayOptionsDefaults = useUserAssistanceDensity ?
+                _sDisplayOptionsRedwoodDefaults : _sDisplayOptionsAltaDefaults;
+              if (value.validatorHint === undefined) {
+                displayOptions.validatorHint = displayOptionsDefaults.VALIDATOR_HINT;
+              }
+              if (value.converterHint === undefined) {
+                displayOptions.converterHint = displayOptionsDefaults.CONVERTER_HINT;
+              }
+              if (value.messages === undefined) {
+                displayOptions.messages = displayOptionsDefaults.MESSAGES;
               }
             }
 
@@ -3454,6 +3457,24 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        */
       _GetMessagingLauncherElement: function () {
         return this._GetContentElement();
+      },
+      /**
+       * Returns the dom element that should be used for positioning popup messages.
+       *
+       * @return {HTMLElement}
+       *
+       * @memberof oj.editableValue
+       * @instance
+       * @protected
+       */
+      _GetMessagingPositionElement: function () {
+        let formCtrl = this._GetFormControlContainer();
+        // if this component has a text field container, return that element
+        if (formCtrl) {
+          return formCtrl;
+        }
+        // otherwise, return the content element.
+        return this._GetMessagingLauncherElement()[0];
       },
 
       /**
@@ -3984,8 +4005,12 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
         return false;
       },
       /**
-      * This method toggles a
-      * 'oj-has-no-value' style class.
+      * This method toggles a 'oj-has-no-value' style class as needed.
+      * The styleclass is used to position the inside label.
+      * This method also updates component messaging (specifically InlineRequiredStrategy),
+      * because the Required dom is created when the component is required and
+      * there is no value displayed to the user and the Required dom is removed
+      * when there is a value, as per the Redwood UX spec.
       *
       * @memberof oj.editableValue
       * @instance
@@ -3993,10 +4018,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       */
       _toggleOjHasNoValueClass: function (value) {
         let element = this._getRootElement();
-        if (this._IsValueEmpty(value)) {
-          element.classList.add('oj-has-no-value');
-        } else {
-          element.classList.remove('oj-has-no-value');
+        const ojHasNoValueClass = 'oj-has-no-value';
+        const hasOjHasNoValueClass = element.classList.contains(ojHasNoValueClass);
+        const isValueEmpty = this._IsValueEmpty(value);
+        const addClass = isValueEmpty && !hasOjHasNoValueClass;
+        const removeClass = !isValueEmpty && hasOjHasNoValueClass;
+
+        if (addClass) {
+          element.classList.add(ojHasNoValueClass);
+        } else if (removeClass) {
+          element.classList.remove(ojHasNoValueClass);
+        }
+        // only bother to do this if required option is true and the class was added or removed,
+        // since this is only used in the InlineRequiredStrategy right now.
+        if (this.options.required && (addClass || removeClass)) {
+          this._getComponentMessaging().update({ hasNoValueToggled: true });
         }
       },
 
@@ -4286,9 +4322,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               return (fulfilledNewValue !== undefined);
             });
           }
-        } else if (Logger.level > Logger.LEVEL_WARN) {
-          Logger.info('Validation skipped and value option not updated as submitted value "' +
-            (newValue.toString) ? newValue.toString() : newValue + '" same as previous.');
         }
         return resolvedState;
       },
@@ -4439,9 +4472,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             self._updateMessagesOption('messagesShown', newMsgs, event);
             self._setValidOption(_INVALID_SHOWN, event);
           }
-        } else if (Logger.level > Logger.LEVEL_WARN) {
-          Logger.info('Validation skipped and value option not set as component state does not ' +
-                          ' allow setting value. For example if the component is readonly or disabled.');
         }
         return validateReturn;
       },
@@ -5339,8 +5369,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
           if (typeof converter === 'object') {
             if (converter.format && typeof converter.format === 'function') {
               formattedValue = converter.format(value);
-            } else if (Logger.level > Logger.LEVEL_WARN) {
-              Logger.info('converter does not support the format method.');
             }
           }
         }
@@ -5681,8 +5709,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               } catch (error) {
                 throw error;
               }
-            } else if (Logger.level > Logger.LEVEL_WARN) {
-              Logger.info('converter does not support the parse method.');
             }
           }
         }
@@ -5859,8 +5885,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             }
             return;
           }
-        } else if (Logger.level > Logger.LEVEL_WARN) {
-          Logger.info('Deferred validation skipped as component is readonly or disabled.');
         }
         this._setValidOption(this._determineValidFromMessagesOptions(), null);
       },
@@ -6276,11 +6300,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
               status = 'resolved';
             } else {
-              if (Logger.level > Logger.LEVEL_WARN) {
-                Logger.info(
-                  'Validate ignored because new value came in before async validator finished for '
-                  + value);
-              }
               status = 'ignore';
             }
             return { v: v, status: status };
@@ -6298,11 +6317,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               }
               status = 'rejected';
             } else {
-              if (Logger.level > Logger.LEVEL_WARN) {
-                Logger.info(
-                  'Validate ignored because new value came in before async validator finished for '
-                  + value);
-              }
               status = 'ignore';
             }
             return { e: e, status: status };
@@ -7263,6 +7277,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
           if (!isPopupOpen) {
             $launcher = this.GetLauncher();
+            const $position = $(this.GetComponent()._GetMessagingPositionElement());
             if (event && event.type === 'press') {
               this._openPopupOnPressEvent($launcher);
             }
@@ -7272,7 +7287,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
               this._setActionResolver(messagingContentRoot, 'open', resolve);
             }
 
-            messagingContentRoot.ojPopup('open', $launcher);
+            messagingContentRoot.ojPopup('open', $launcher, { of: $position });
 
             // Just return if we call ojPopup open.  The promise will be resolved
             // by the ojopen event listener.
@@ -8378,6 +8393,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     this._userAssistanceDivElement = parentElement;
   };
 
+  const OJ_HAS_HELPHINTS_STYLECLASS = 'oj-has-helphints';
+
   /**
    * Registers the InlineHelpHintsStrategy constructor function with ComponentMessaging.
    * No need to register since we are not creating this strategy on from ComponentMessaging.
@@ -8423,9 +8440,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     if (!containerRootExists) {
       this._createInlineHelpHints();
     }
-    // set the global flag so that in the focusIn handler we will fetch
-    // the content again.
-    this._setFocusInContentCurrent(false);
   };
 
   /**
@@ -8462,7 +8476,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   InlineHelpHintsStrategy.prototype.update = function () {
     InlineHelpHintsStrategy.superclass.update.call(this);
-    this._updateInlineHelpHints(true);
+    this._updateInlineHelpHints();
   };
 
   /**
@@ -8475,12 +8489,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineHelpHintsStrategy.prototype.deactivate = function () {
     var component = this.GetComponent();
     var element = component._getRootElement();
-    var container = this._getHelpHintsInlineContainer(element);
-    if (container) {
-      this.RemoveAriaDescribedByForInlineMessaging(container);
-      container.parentElement.removeChild(container);
-    }
-
+    this._removeHelpHintsContainerAndContent();
 
     // if we created a event handler then we know we have to delete them here.
     if (this._focusinCallback) {
@@ -8493,8 +8502,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   /**
-   * Creates the dom adding associated event listeners for applying
-   * marker selectors to the root and responding to focus event listeners.
+   * Creates the dom if showHelpHints is 'always' (like for radioset)
+   * and adds focus/helpHints attributes event listeners on the component.
+   * Focus in will create the dom and focus out will remove the dom.
    * @memberof InlineHelpHintsStrategy
    * @instance
    * @private
@@ -8503,14 +8513,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     var component = this.GetComponent();
 
     let showHelpHints = component._ShowHelpHints();
+    // always is for form comps like radioset/checkboxset, focus is for
+    // inputtext, etc.
     if (showHelpHints === 'always') {
       // if showHelpHints is 'focus', then we create the content on the first focusin so that
       // we can delay getting validation hints.
       // otherwise add content now.
+      // It is possible there is no content to show.
       this._addHelpHintsContent(component);
     }
 
     if (showHelpHints === 'focus') {
+      // the help container gets created in focusin and removed in focusout
       this._createFocusEventHandlers(component);
     }
     this._createHelpHintsAttributeEventHandlers(component);
@@ -8602,7 +8616,29 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   /**
-   * Creates the content.
+   * Removes the helphints container and its content.
+   * @param {Object} component the form component
+   * @return {boolean} Returns true if content was added
+   * @memberof InlineHelpHintsStrategy
+   * @instance
+   * @private
+   */
+   InlineHelpHintsStrategy.prototype._removeHelpHintsContainerAndContent = function () {
+      var component = this.GetComponent();
+      var element = component._getRootElement();
+      var container = this._getHelpHintsInlineContainer(element);
+      if (container) {
+        this.RemoveAriaDescribedByForInlineMessaging(container);
+        container.parentElement.removeChild(container);
+        if (this._userAssistanceDivElement) {
+          this._userAssistanceDivElement.classList.remove(OJ_HAS_HELPHINTS_STYLECLASS);
+          this.containerRoot = null;
+        }
+      }
+   };
+
+  /**
+   * Creates the content, if any.
    * @param {Object} component the form component
    * @return {boolean} Returns true if content was added
    * @memberof InlineHelpHintsStrategy
@@ -8689,14 +8725,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       }
     }
 
-    if (this._userAssistanceDivElement) {
+    // only when the help/required/messages are all inline does the styleclass matter.
+    const showInline = component._ShowHelpHintsLocation() === 'inline';
+    if (this._userAssistanceDivElement && showInline) {
       // add this selector the first time we have hints. then use
-      // theming to hide/show it based on focus and whether or not
-      // we have messages, which trumps hints.
+      // theming to hide/show it or hide/show required dom according to UX rules.
       if (hintsHtml || helpSourceDom) {
-        this._userAssistanceDivElement.classList.add('oj-has-helphints');
+        this._userAssistanceDivElement.classList.add(OJ_HAS_HELPHINTS_STYLECLASS);
       } else {
-        this._userAssistanceDivElement.classList.remove('oj-has-helphints');
+        this._userAssistanceDivElement.classList.remove(OJ_HAS_HELPHINTS_STYLECLASS);
       }
     }
     return (hintsHtml || helpSourceDom);
@@ -8739,13 +8776,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * inline help hints content or when mc.update is called
    * // (like when an async validator hint resolves)
    * This also gets called from EditableValue when help.instruction attribute changes.
+   * Help Hints are only shown on focus for some components, and always for others.
+   * This won't change the content unless it is in focus or we always want to show the hints.
    * @param {boolean} showRightAway true if we need to add the content right away
    * which is the case when the update method is called.
    * @private
    * @memberof InlineHelpHintsStrategy
    * @instance
    */
-  InlineHelpHintsStrategy.prototype._updateInlineHelpHints = function (showRightAway = false) {
+  InlineHelpHintsStrategy.prototype._updateInlineHelpHints = function () {
     const component = this.GetComponent();
 
     if (this.containerRoot) {
@@ -8754,43 +8793,22 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       this.containerRoot.innerHTML = ''; // @HTMLUpdateOK
     }
     let showHelpHints = component._ShowHelpHints();
-    if (showHelpHints === 'always' || showRightAway) {
+    // if the component is one that always shows the help hints, like oj-checkboxset, or
+    // if it is one that shows on focus and it has focus, then add help hints content.
+    // if the component already has focus when an update occurs, add the help content
+    if (showHelpHints === 'always' || this._focusIn) {
       // if showHelpHints is 'focus', then we create the content on the first focusin so that
       // we can delay getting validation hints.
       // otherwise add content now.
-      this._addHelpHintsContent(component);
-    } else {
-      // set the global flag so that in the focusIn handler we will fetch
-      // the content again.
-      this._setFocusInContentCurrent(false);
+      let hasContent = this._addHelpHintsContent(component);
+      if (!hasContent) {
+        this._removeHelpHintsContainerAndContent();
+      }
     }
   };
 
   /**
-   * @return {boolean} true if you need to re-fetch new content on focusin.
-   * @memberof InlineHelpHintsStrategy
-   * @instance
-   */
-  InlineHelpHintsStrategy.prototype._isFocusInContentCurrent = function () {
-    return this._focusInContentCurrent;
-  };
-
-  /**
-   * Sets a flag to false when we something has changed that causes the helphints content to
-   * need to be updated again. Instead of just changing it we wait until it is needed which is on focus.
-   * @param {boolean} isContentCurrent
-   * @private
-   * @memberof InlineHelpHintsStrategy
-   * @instance
-   */
-  InlineHelpHintsStrategy.prototype._setFocusInContentCurrent = function (isContentCurrent) {
-    this._focusInContentCurrent = isContentCurrent;
-  };
-
-  /**
-   * When the component's root element has lost focus, then remove oj-focus.
-   * Show the message on focus. We will use theming to hide the message on blur.
-   * This way it will already be there the next time we focus.
+   * Show the help hint message on focus. We remove it on focusout.
    * We show helpInstruction and if that's not there validaton hint and
    * if that is not there help definition. And on whichever of these, we show
    * Learn more... for help.source if that is there.
@@ -8810,23 +8828,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       return;
     }
 
+    if (this.containerRoot) {
+      // clear out the containerRoot's innerHTML since need to create the content
+      // again.
+      this.containerRoot.innerHTML = ''; // @HTMLUpdateOK
+    }
+
     // flag needed to know if we are back in focusin in the focusout
     // handler during the animation promise resolution.
     this._focusIn = true;
 
-    // add 'oj-focus' on parent
-    this._userAssistanceDivElement.classList.add('oj-focus');
-
-    // if the content we fetched earlier is still up-to-date, like no
-    // properties that affect the help hints has changed, then animate in and return
-    if (this.containerRoot && this._isFocusInContentCurrent()) {
+    let hasContent = this._addHelpHintsContent(component);
+    if (hasContent) {
       this._animateOpen();
     } else {
-      let hasContent = this._addHelpHintsContent(component);
-      this._setFocusInContentCurrent(true);
-      if (hasContent) {
-        this._animateOpen();
-      }
+      // it is possible that when the component has focus, something is changed,
+      // that causes the help to no longer hae content, like the app dev
+      // removes the help property from the component.
+      // if that's the case, then remove it.
+      this._removeHelpHintsContainerAndContent();
     }
   };
 
@@ -8841,8 +8861,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     // This way you can put the event handler on the component's root
     // element and if any child element that can get focus loses focus,
     // this handler will be called. But we need to check if we are still
-    // within the element or not, and we remove the oj-focus only if
-    // we focusout of the component. This way the inline hint won't disappear
+    // within the element or not. This way the inline hint won't disappear
     // if we focus on the help source Learn more... link.
     // The currentTarget read-only property of the Event interface identifies
     // the current target for the event, as the event traverses the DOM.
@@ -8853,13 +8872,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       return;
     }
     this._focusIn = false;
-    var removeOjFocus = (function () {
-      // flag needed so that we do not remove oj-focus when the close animation finishes
-      // if the user focuses back in in the meantime.
-      if (!this._focusIn) {
-        this._userAssistanceDivElement.classList.remove('oj-focus');
-      }
-    }).bind(this);
 
     // if we have helphint content, then animate it closed on focusout.
     if (this.containerRoot && this.containerRoot.hasChildNodes()) {
@@ -8871,13 +8883,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       let self = this;
       AnimationUtils.startAnimation(this.containerRoot, 'inline-hints-' + action, effect,
       this.GetComponent()).then(() => {
-        // The removal of oj-focus styleclass is used to display:none the help hints dom.
-        // We want to animate it closed before we do that.
-        removeOjFocus();
+        // As of v12.0.0 we are removing the dom instead of using css.
+        this._removeHelpHintsContainerAndContent();
         self._clearBusyState();
       });
-    } else {
-      removeOjFocus();
     }
   };
 
@@ -9362,23 +9371,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
 
   /**
    * Adds oj-has-messages styleclass if there is contentToShow otherwise
-   * removes oj-has-messages.
+   * removes oj-has-messages and removes messaging dom.
+   *  add/remove oj-has-messages on this._parentElement if it exists;
+   * if the animation is opening, add 'oj-has-messages' right away.
+   * if the animation is closing, then don't remove 'oj-has-messages' until the messages is
+   * closed completely. The help-hints that are also inline only displays when 'oj-has-messages' is
+   * not there. So if we remove oj-has-messages too fast, both will show at the same time.
+   * This is why this is method called in the AnimationUtils.startAnimation callback.
    *
    * @private
    * @memberof oj.InlineMessagingStrategy
    * @instance
    */
   InlineMessagingStrategy.prototype._addRemoveOjHasMessagesClass = function (contentToShow) {
-    // add/remove oj-has-messages on this._parentElement if it exists;
-    // if the animation is opening, add 'oj-has-messages' right away.
-    // if the animation is closing, then don't remove 'oj-has-messages' until the messages is
-    // closed completely. The help-hints that are also inline only displays when 'oj-has-messages' is
-    // not there. So if we remove oj-has-messages too fast, both will show at the same time.
     if (this._parentElement) {
       if (contentToShow) {
         this._parentElement.classList.add('oj-has-messages');
       } else {
         this._parentElement.classList.remove('oj-has-messages');
+        this._removeMessagingContentRootDom();
       }
     }
   };
@@ -9599,7 +9610,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineRequiredStrategy.prototype.activate = function (cm) {
     InlineRequiredStrategy.superclass.activate.call(this, cm);
     if (this.containerRoot == null) {
-      this._createInlineRequired();
+      this._createOrUpdateInlineRequired();
     }
   };
 
@@ -9614,16 +9625,17 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
     InlineRequiredStrategy.superclass.reactivate.call(this, newOptions);
     this._parentElement = parentElement;
     // select/combobox on refresh destroys all its contents, including
-    // the inline messaging container, and then reactivate is called.
+    // the oj-required-inline-container, and then reactivate is called.
     var containerRootExists = this._isContainerRootDomInDocument();
     if (!containerRootExists) {
-      this._createInlineRequired();
+      this._createOrUpdateInlineRequired();
     }
   };
 
   /**
-   * @param {Object=} content the messaging content object. If it contains validityState, then
-   * this means the component has messaging content.
+   * @param {Object=} content the messaging content object. If it contains hasNoValueToggled, then
+   * this means the component's oj-has-no-value styleclass was toggled. And the Redwood UX Required
+   * rule is, if the field has no value, show the inline Required dom. Else, do not show it.
    * @return {boolean}
    * @memberof InlineRequiredStrategy
    * @instance
@@ -9632,8 +9644,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    */
   // eslint-disable-next-line no-unused-vars
   InlineRequiredStrategy.prototype.shouldUpdate = function (content) {
+    // This gets sent from EditableValue when oj-has-no-value styleclass
+    // is toggled. This is how we know we need to add or remove the Required dom.
+    if (content && ('hasNoValueToggled' in content)) {
+      return true;
+    }
     // We are registering a requiredChanged listener that
-    // will update when it should.
+    // will cause an update when the required prop changes, so that is why this returns false.
     return false;
   };
 
@@ -9645,6 +9662,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @override
    */
   InlineRequiredStrategy.prototype.update = function () {
+    this._createOrUpdateInlineRequired();
     InlineRequiredStrategy.superclass.update.call(this);
   };
 
@@ -9656,37 +9674,31 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
    * @override
    */
   InlineRequiredStrategy.prototype.deactivate = function () {
-    var container = this._getRequiredInlineContainer();
-    if (container) {
-      this._parentElement.removeChild(container);
-    }
+    this._removeInlineRequired();
     var component = this.GetComponent();
     var element = component._getRootElement();
     element.removeEventListener('requiredChanged', this._requiredChangedCallback);
     delete this._requiredChangedCallback;
+    element.removeEventListener('focusout', this._focusoutCallback);
+    delete this._focusoutCallback;
     this._parentElement = null;
-    this.containerRoot = null;
     InlineRequiredStrategy.superclass.deactivate.call(this);
   };
 
   /**
-   * Creates the Required dom adding associated event listeners for applying
-   * marker selectors to the root and responding to required property changes.
    * @memberof InlineRequiredStrategy
    * @instance
    * @private
    */
-  InlineRequiredStrategy.prototype._createInlineRequired = function () {
+   InlineRequiredStrategy.prototype._createOrUpdateInlineRequired = function () {
     var component = this.GetComponent();
 
     const options = component.options;
     const element = component._getRootElement();
 
-    // we render the required dom if the component is required. We use theming to toggle
-    // the visibility of the Required text to follow the Redwood UX design, which is to
-    // show the Required text when required and empty and no other user assistance text is showing,
-    // else do not show Required.
-    if (options.required) {
+    const hasNoValue = element.classList.contains('oj-has-no-value');
+    const container = this._getRequiredInlineContainer();
+    if (options.required && hasNoValue && !container) {
       this.containerRoot = document.createElement('div');
       this.containerRoot.classList.add('oj-required-inline-container');
       let requiredText = Translations.getTranslatedString('oj-ojEditableValue.requiredText');
@@ -9696,6 +9708,15 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       if (component._AriaRequiredUnsupported()) {
         this.AddDescribedByToElement(element, this.containerRoot.id);
       }
+      // focusout will check if there is a value and if so remove required dom
+      this._focusoutCallback =
+      this._focusoutHandler.bind(this, component);
+      element.addEventListener('focusout', this._focusoutCallback);
+    }
+
+    // if value was programmatically changed to have a value, will need to remove
+    if (options.required && !hasNoValue && container) {
+      this._removeInlineRequired();
     }
 
     if (!this._requiredChangedCallback) {
@@ -9709,6 +9730,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   /**
+   * Removes the Required dom. Keeps the associated event listeners
+   * which respond to required property changes.
+   * @memberof InlineRequiredStrategy
+   * @instance
+   * @private
+   */
+   InlineRequiredStrategy.prototype._removeInlineRequired = function () {
+     const component = this.GetComponent();
+     let container = this._getRequiredInlineContainer();
+     if (container && component._AriaRequiredUnsupported()) {
+      this.RemoveDescribedByFromElement(component._getRootElement(), container.id);
+    }
+    if (container && this._parentElement) {
+      this._parentElement.removeChild(container);
+      this.containerRoot = null;
+    }
+  };
+
+  /**
    * @memberof InlineRequiredStrategy
    * @instance
    * @private
@@ -9718,6 +9758,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   };
 
   /**
+   * This is where we delete the required dom if required changes from true to false.
+   * Remove anything else we may have added, like aria-described by.
    * @memberof InlineRequiredStrategy
    * @instance
    * @private
@@ -9727,15 +9769,46 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
   InlineRequiredStrategy.prototype._requiredChangedHandler = function (component, event) {
     let requiredOptionValue = event.detail.value;
     let container = this._getRequiredInlineContainer();
-
-    if (requiredOptionValue && container === null) {
-      this._createInlineRequired();
+    const element = component._getRootElement();
+    const hasNoValue = element.classList.contains('oj-has-no-value');
+    if (requiredOptionValue && hasNoValue && container === null) {
+      this._createOrUpdateInlineRequired();
     } else if (!requiredOptionValue && container !== null) {
       // not required
       // remove the dom if it is there
-      if (container) {
-        this._parentElement.removeChild(container);
-      }
+      this._removeInlineRequired();
+    }
+  };
+
+  /**
+   * Required text is shown on initial render if the field doesn't have a value.
+   * When the user focuses out of the field, check if the comp is required
+   * and the field has a value, and in that case, remove the inline required text (animate out first).
+   * messages take precedence in the css.
+   * @memberof InlineRequiredStrategy
+   * @instance
+   * @private
+   * @param {Component} the component
+   */
+   InlineRequiredStrategy.prototype._focusoutHandler = function (component) {
+    const container = this._getRequiredInlineContainer();
+    const element = component._getRootElement();
+    const requiredOptionValue = component.options.required;
+
+    const hasNoValue = element.classList.contains('oj-has-no-value');
+    if (requiredOptionValue && !hasNoValue && container !== null) {
+      // if we have required content, then animate it closed on focusout.
+      let action = 'close';
+      let defaults = this._getDefaultAnimation();
+      let effect = defaults.close; // e.g., {effect: 'fadeOut', duration: '200ms'}
+      this._setBusyState();
+      let self = this;
+      AnimationUtils.startAnimation(this.containerRoot, 'inline-required-' + action, effect,
+      this.GetComponent()).then(() => {
+        // As of v12.0.0 we are removing the dom
+        this._removeInlineRequired();
+        self._clearBusyState();
+      });
     }
   };
 
@@ -9756,6 +9829,69 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       containerRootExistsInDocument = document.getElementById(id);
     }
     return containerRootExistsInDocument !== null;
+  };
+
+  /**
+   * Get the default animation.
+   * To save from sending unnecessary theming variables to the client, we hardcode.
+   * @private
+   * @memberof InlineRequiredStrategy
+   * @instance
+   * @return {Object} Object with open and close key for the default animation.
+   */
+   InlineRequiredStrategy.prototype._getDefaultAnimation = function () {
+    // Load the default animation once per page scope
+    if (!InlineRequiredStrategy._defaultAnimation) {
+      InlineRequiredStrategy._defaultAnimation =
+      { open: {
+          effect: 'fadeIn',
+          duration: '200ms',
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' },
+        close: {
+          effect: 'fadeOut',
+          duration: '200ms',
+          timingFunction: 'cubic-bezier(0.4,0,0.2,1)' } };
+    }
+
+    return InlineRequiredStrategy._defaultAnimation;
+  };
+
+  /**
+   * Set busy state before opening or closing inline message.
+   *
+   * @private
+   * @memberof InlineRequiredStrategy
+   * @instance
+   */
+  InlineRequiredStrategy.prototype._setBusyState = function () {
+    // Set a page-level busy state if not already set
+    if (!this._resolveBusyState) {
+      let component = this.GetComponent();
+      let domElem = component._getRootElement();
+      let busyContext = Context.getContext(domElem).getBusyContext();
+      let description = 'The page is waiting for inline required ';
+
+      if (domElem && domElem.id) {
+        description += 'for "' + domElem.id + '" ';
+      }
+      description += 'to open/close';
+
+      this._resolveBusyState = busyContext.addBusyState({ description: description });
+    }
+  };
+
+  /**
+   * Clear busy state after opening or closing inline required.
+   *
+   * @private
+   * @memberof InlineRequiredStrategy
+   * @instance
+   */
+  InlineRequiredStrategy.prototype._clearBusyState = function () {
+    if (this._resolveBusyState) {
+      this._resolveBusyState();
+      this._resolveBusyState = null;
+    }
   };
 
   /**

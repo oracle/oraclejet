@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -105,7 +105,8 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
      * a query parameter.
      * <p>
      * This URL adapter uses a query parameter to synchronize router state
-     * (?ojr=...) with the URL. All other query parameters are unaffected.
+     * with the URL (using <code>ojr</code> parameter). All other query parameters
+     * are unaffected.
      * </p>
      * <p>
      * Since this adapter doesn't require that the server understand URL rewriting
@@ -131,7 +132,7 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
      * defined for the route, but allows UrlParamAdapter to persist the router state
      * using query parameters, removing the need for a server capable of URL rewriting
      * during development time. The resulting URL will contain UrlParamAdapter's
-     * query paraneter "ojr", which holds the value of the original URL that the
+     * query parameter <code>ojr</code>, which holds the value of the original URL that the
      * delegate created.
      * </p>
      *
@@ -141,7 +142,7 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
      * the normalized URL for the router state. Normally (when not wrapped),
      * adapters will read directly from the URL to parse router states. However, when
      * wrapped, the contents of the URL aren't known to the delegate, so it must rely
-     * on its decorator to pass it the normalized URL.
+     * on its decorator to pass it the normalized value.
      * </p>
      *
      * <p>
@@ -150,10 +151,37 @@ define(['ojs/ojurlpathadapter'], function (UrlPathAdapter) { 'use strict';
      * parameters and persist them to the URL.
      * </p>
      * Alternatives to UrlParamAdapter are {@link UrlPathAdapter} and {@link UrlPathParamAdapter}.
+     *
+     * <h3 id="query-params-section">
+     *   Query Parameters
+     *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#query-params-section"></a>
+     * </h3>
+     * UrlParamAdapter uses only one query parameter - <code>ojr</code>, to maintain
+     * the router state. When manipulating query parameters, ensure this is preserved.
+     * <pre class="prettyprint">
+     * <code>
+     * function getOjrParam() {
+     *   return document.location.search.split(/[?&]/).find(kv => kv.split(/=/)[0] === 'ojr')
+     * }
+     *
+     * router.go({ path: 'orders' })
+     * .then(state => {
+     *   window.history.replaceState(
+     *     null,
+     *     '',
+     *     `${document.location.pathame}?${getOjrParam()}&deptId=123&empId=456`
+     *   );
+     *   return state;
+     * });
+     * </code>
+     * </pre>
+     * The application is free to manipulate any other query parameter.
+     *
      * @param {CoreRouter.UrlAdapter=} pathAdapter An optional path adapter to which
      * this adapter will delegate for translating routes to paths (getUrlForRoutes)
      * and vice-versa (getRoutesForUrl). If not defined, {@link UrlPathAdapter} is
      * used.
+     * </p>
      * @constructor
      * @export
      * @ojtsmodule

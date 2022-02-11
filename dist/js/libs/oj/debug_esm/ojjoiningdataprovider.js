@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -86,12 +86,12 @@ import { warn } from 'ojs/ojlogger';
  * let deptJoin = { foreignKeyMapping: { foreignKey: 'departmentId' }, joinedDataProvider: dpJoinDepartment };
  * let mgrJoin = { foreignKeyMapping: { foreignKey: 'managerId' }, joinedDataProvider: dpEmployee };
  *
- * this.dpJoinEmployee = new JoiningDataProvider(dpEmployee,
+ * let dpJoinEmployee = new JoiningDataProvider(dpEmployee,
  *   { joins: { manager: mgrJoin, department: deptJoin } });
  *
  * // Using joined dataprovider attributes for fetch methods
  * // The returned fields will include all fields from base data provider and department plus title from manager.
- * this.dpJoinEmployee.fetchByOffset({ offset: 0, attributes: ['manager.title'] });
+ * dpJoinEmployee.fetchByOffset({ offset: 0, attributes: ['manager.title'] });
  */
 
 /**

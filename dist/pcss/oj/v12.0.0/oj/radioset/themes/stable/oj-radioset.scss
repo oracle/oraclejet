@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../form-control/themes/stable/_oj-messaging.scss";
+@import "../../../popup/themes/stable/oj-popup.scss";
+@import "../../../label/themes/stable/oj-label.scss";
+@import "../../../form-control/themes/stable/_oj-form-control.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+@import "../../../radio-checkbox/themes/stable/_oj-radiocheckbox.servervars.scss";
+@import "_oj-radioset.cssvars.scss";
+// import classes defined in the base directory
+@import "../../../radio-checkbox/themes/base/_oj-radiocheckbox.scss";
+
+  @include module-include-once("stable.radioset") {
+
+  }

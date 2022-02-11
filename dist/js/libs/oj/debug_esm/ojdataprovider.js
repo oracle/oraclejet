@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -353,14 +353,18 @@ oj.DataProvider = function () {
  *
  * @since 4.2.0
  * @param {string} capabilityName capability name. Defined capability names are:
- *                  "fetchByKeys", "fetchByOffset", "sort", "fetchCapability" and "filter".
+ *                  "dedup", "eventFiltering", "fetchByKeys", "fetchByOffset", "fetchCapability", "fetchFirst", "filter", and "sort".
  * @return {Object} capability information or null if undefined
  * <ul>
+ *   <li>If capabilityName is "dedup", returns a {@link DedupCapability} object.</li>
+ *   <li>If capabilityName is "eventFiltering", returns a {@link EventFilteringCapability} object.</li>
  *   <li>If capabilityName is "fetchByKeys", returns a {@link FetchByKeysCapability} object.</li>
  *   <li>If capabilityName is "fetchByOffset", returns a {@link FetchByOffsetCapability} object.</li>
- *   <li>If capabilityName is "sort", returns a {@link SortCapability} object.</li>
+ *   <li>If capabilityName is "fetchCapability", returns a {@link FetchCapability} object.
+ *       <b>(Deprecated since 10.0.0. Use specific fetch capabilityName (fetchByKeys/fetchByOffset/fetchFirst) instead.)</b></li>
+ *   <li>If capabilityName is "fetchFirst", returns a {@link FetchFirstCapability} object.</li>
  *   <li>If capabilityName is "filter", returns a {@link FilterCapability} object.</li>
- *   <li>If capabilityName is "fetchCapability", returns a {@link FetchCapability} object.</li>
+ *   <li>If capabilityName is "sort", returns a {@link SortCapability} object.</li>
  * </ul>
  * @export
  * @expose
@@ -390,11 +394,12 @@ oj.DataProvider = function () {
  * @name getTotalSize
  * @ojtsexample <caption>Get the total rows</caption>
  * let value = await dataprovider.getTotalSize();
- * if (value == -1) {
+ * if (value === -1) {
  *   // we don't know the total row count
  * } else {
  *   // the total count
  *   console.log(value);
+ * }
  */
 
 /**
@@ -446,7 +451,7 @@ oj.DataProvider = function () {
  * let results = value['results'];
  * if (results.has(1001)) {
  *   console.log('Has key 1001');
- * } else if (results.has(556){
+ * } else if (results.has(556)) {
  *   console.log('Has key 556');
  * }
  */
@@ -1201,10 +1206,13 @@ var FilterUtils;
         }
     }
     FilterUtils.satisfy = satisfy;
-    function _buildExpressionTree(expression) {
+    function _buildExpressionTree(expression, collationOptions = undefined) {
         let subTree;
         const itemTreeArray = [];
         for (const key in expression) {
+            if (key === 'collationOptions') {
+                continue;
+            }
             if (expression.hasOwnProperty(key)) {
                 const value = expression[key];
                 if (key.indexOf('$') === 0) {
@@ -1215,7 +1223,7 @@ var FilterUtils;
                                 array: []
                             };
                             for (const val of value) {
-                                const itemTree = _buildExpressionTree(val);
+                                const itemTree = _buildExpressionTree(val, expression.collationOptions);
                                 subTree.array.push(itemTree);
                             }
                         }
@@ -1231,12 +1239,14 @@ var FilterUtils;
                     itemTreeArray.push({
                         left: key,
                         right: value,
-                        operator: '$eq'
+                        operator: '$eq',
+                        collationOptions
                     });
                 }
                 else {
                     const partialTree = {
-                        left: key
+                        left: key,
+                        collationOptions
                     };
                     _completePartialTree(partialTree, value);
                     itemTreeArray.push(partialTree);
@@ -1270,6 +1280,7 @@ var FilterUtils;
     }
     function _evaluateExpressionTree(expTree, itemData) {
         const operator = expTree.operator;
+        const { collationOptions } = expTree;
         if (_isMultiSelector(operator)) {
             if (expTree.left || !(expTree.array instanceof Array)) {
                 throw new Error('invalid expression tree!' + expTree);
@@ -1295,13 +1306,13 @@ var FilterUtils;
             let itemValue;
             if (expTree.left != '*') {
                 itemValue = getValue(expTree.left, itemData);
-                return _evaluateSingleSelectorExpression(operator, value, itemValue);
+                return _evaluateSingleSelectorExpression(operator, value, itemValue, collationOptions);
             }
             else {
                 const itemProperties = Object.keys(itemData);
                 for (const itemProp of itemProperties) {
                     itemValue = getValue(itemProp, itemData);
-                    if (_evaluateSingleSelectorExpression(operator, value, itemValue)) {
+                    if (_evaluateSingleSelectorExpression(operator, value, itemValue, collationOptions)) {
                         return true;
                     }
                 }
@@ -1312,36 +1323,47 @@ var FilterUtils;
             throw new Error('not a valid expression!' + expTree);
         }
     }
-    function _evaluateSingleSelectorExpression(operator, value, itemValue) {
+    function _evaluateSingleSelectorExpression(operator, value, itemValue, collationOptions) {
+        if (collationOptions &&
+            ['base', 'accent', 'case', 'variant'].indexOf(collationOptions.sensitivity) < 0) {
+            throw new Error('not a valid sensitivity! ' + collationOptions.sensitivity);
+        }
+        let collator;
+        if (collationOptions &&
+            (typeof value === 'string' || value instanceof String) &&
+            (typeof itemValue === 'string' || itemValue instanceof String) &&
+            ['base', 'accent', 'case', 'variant'].indexOf(collationOptions.sensitivity) >= 0) {
+            collator = new Intl.Collator(undefined, collationOptions);
+        }
         if (operator === '$lt') {
             const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
-            return itemValue < value;
+            return collator ? collator.compare(itemValue, value) < 0 : itemValue < value;
         }
         else if (operator === '$gt') {
             const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
-            return itemValue > value;
+            return collator ? collator.compare(itemValue, value) > 0 : itemValue > value;
         }
         else if (operator === '$lte') {
             const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
-            return itemValue <= value;
+            return collator ? collator.compare(itemValue, value) <= 0 : itemValue <= value;
         }
         else if (operator === '$gte') {
             const fixedTokens = _fixNullForString(itemValue, value);
             itemValue = fixedTokens[0];
             value = fixedTokens[1];
-            return itemValue >= value;
+            return collator ? collator.compare(itemValue, value) >= 0 : itemValue >= value;
         }
         else if (operator === '$eq') {
-            return itemValue === value;
+            return collator ? collator.compare(itemValue, value) === 0 : itemValue === value;
         }
         else if (operator === '$ne') {
-            return itemValue !== value;
+            return collator ? collator.compare(itemValue, value) !== 0 : itemValue !== value;
         }
         else if (operator === '$regex') {
             if (itemValue) {
@@ -1355,6 +1377,15 @@ var FilterUtils;
                             return false;
                         }
                     }
+                }
+                const sensitivity = collationOptions === null || collationOptions === void 0 ? void 0 : collationOptions.sensitivity;
+                if (sensitivity === 'base' || sensitivity === 'case') {
+                    itemValue = itemValue.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                }
+                if (sensitivity === 'base' || sensitivity === 'accent') {
+                    itemValue = itemValue.toLowerCase();
+                    value = value.toLowerCase();
                 }
                 const matchResult = itemValue.match(value);
                 return matchResult !== null;
@@ -1422,7 +1453,7 @@ class FilterImpl {
         if (filterDef) {
             if (filterDef['op']) {
                 this['op'] = filterDef['op'];
-                if (filterDef['value']) {
+                if (filterDef['value'] !== undefined) {
                     this['value'] = filterDef['value'];
                     if (filterDef['attribute']) {
                         this['attribute'] = filterDef['attribute'];
@@ -1430,6 +1461,9 @@ class FilterImpl {
                 }
                 else if (filterDef['criteria']) {
                     this['criteria'] = filterDef['criteria'];
+                }
+                if (filterDef['collationOptions']) {
+                    this['collationOptions'] = filterDef['collationOptions'];
                 }
             }
             else if (filterDef['text']) {
@@ -1445,6 +1479,7 @@ class FilterImpl {
         if (filter) {
             let op = filter.op;
             let filterValue;
+            const collationOptions = filter.collationOptions;
             if (filter['text']) {
                 op = '$regex';
             }
@@ -1510,6 +1545,7 @@ class FilterImpl {
                 transformedExpr = {};
                 transformedExpr[op] = criteriaArray;
             }
+            transformedExpr.collationOptions = collationOptions;
         }
         return transformedExpr;
     }

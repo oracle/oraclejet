@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.textfield.ignored.scoped") {
+
+.oj-private-scale-lg {
+     //Redefining Text field Vars
+     --oj-text-field-font-size: var(--oj-typography-body-md-font-size);
+     --oj-text-field-text-to-edge-padding: 12px;
+     --oj-text-field-height:              44px;  
+   }
+
+} 

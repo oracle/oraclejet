@@ -1,0 +1,102 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.variables.helpers.ignored.scoped") {
+  .oj-bg-body {
+    --oj-current-bg-color:              var(--oj-body-bg-color);
+  }
+  
+  .oj-bg-neutral-0 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-0));
+  }
+
+  .oj-bg-neutral-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-10));
+  }
+
+  .oj-bg-neutral-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-20));
+  }
+
+  .oj-bg-neutral-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-30));
+  }
+
+  .oj-bg-neutral-170 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-170));      
+  }
+
+  .oj-bg-neutral-180 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-180));      
+  }
+  .oj-bg-neutral-190 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-190));      
+  }
+
+  .oj-bg-neutral-200 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-neutral-rgb-200));      
+  }
+
+  .oj-bg-danger-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-danger-rgb-10));      
+  }
+
+  .oj-bg-danger-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-danger-rgb-30));      
+  }
+  
+  .oj-bg-danger-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-danger-rgb-20));      
+  }
+
+  .oj-bg-warning-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-warning-rgb-10));      
+  }
+
+  .oj-bg-warning-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-warning-rgb-30));      
+  }
+  
+  .oj-bg-warning-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-warning-rgb-20));      
+  }
+  
+  .oj-bg-success-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-success-rgb-10));      
+  }
+
+  .oj-bg-success-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-success-rgb-30));      
+  }
+
+  .oj-bg-success-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-success-rgb-20));      
+  }
+
+
+  .oj-bg-info-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-info-rgb-10));      
+  }
+
+  .oj-bg-info-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-info-rgb-20));      
+  }
+
+  .oj-bg-info-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-info-rgb-30));      
+  }
+
+  .oj-bg-brand-10 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-brand-rgb-10));      
+  }
+
+  .oj-bg-brand-20 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-brand-rgb-20));      
+  }
+
+  .oj-bg-brand-30 {
+    --oj-current-bg-color:              RGB(var(--oj-palette-brand-rgb-30));      
+  }
+
+}

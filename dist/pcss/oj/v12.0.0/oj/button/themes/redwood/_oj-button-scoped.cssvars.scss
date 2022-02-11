@@ -1,0 +1,170 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.button.scoped") {
+  
+  /* button                     */
+  /* -------------------------- */
+// please do not change this classes grouping order
+.oj-contrast-marker,
+.oj-color-invert {
+
+  // solid enabled
+  --oj-button-solid-chrome-bg-color:                      rgba(var(--oj-palette-neutral-rgb-10), 0.08);
+  --oj-button-solid-chrome-border-color:                  transparent;
+  --oj-button-solid-chrome-text-color:                    var(--oj-core-neutral-contrast); 
+
+
+  // solid hover
+  --oj-button-solid-chrome-bg-color-hover:                rgba(var(--oj-palette-neutral-rgb-10), 0.12);
+  --oj-button-solid-chrome-border-color-hover:            transparent;
+  --oj-button-solid-chrome-text-color-hover:              var(--oj-core-neutral-contrast);
+
+
+  // solid active
+  --oj-button-solid-chrome-bg-color-active:               rgba(var(--oj-palette-neutral-rgb-10), 0.16);
+  --oj-button-solid-chrome-border-color-active:           transparent;
+  --oj-button-solid-chrome-text-color-active:             var(--oj-core-neutral-contrast);
+
+
+  // solid disabled
+  --oj-button-solid-chrome-bg-color-disabled:             rgba(var(--oj-palette-neutral-rgb-0), 0.16);
+  --oj-button-solid-chrome-border-color-disabled:         transparent;
+  --oj-button-solid-chrome-text-color-disabled:           var(--oj-core-text-color-disabled);
+
+
+  // solid selected
+  --oj-button-solid-chrome-bg-color-selected:             rgba(var(--oj-palette-neutral-rgb-10), 0.08);
+  --oj-button-solid-chrome-border-color-selected:         transparent;
+  --oj-button-solid-chrome-text-color-selected:           var(--oj-core-neutral-contrast);
+
+
+  // solid selected hover
+  --oj-button-solid-chrome-bg-color-selected-hover:       rgba(var(--oj-palette-neutral-rgb-10), 0.12);
+  --oj-button-solid-chrome-border-color-selected-hover:   transparent;
+  --oj-button-solid-chrome-text-color-selected-hover:     var(--oj-core-neutral-contrast);
+
+
+  // solid selected disabled TODO
+  --oj-button-solid-chrome-bg-color-selected-disabled:     rgba(var(--oj-palette-neutral-rgb-0), 0.16);
+  --oj-button-solid-chrome-border-color-selected-disabled: transparent;
+  --oj-button-solid-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+
+
+  // borderless-chrome enabled
+  --oj-button-borderless-chrome-text-color:        var(--oj-core-text-color-primary);
+
+
+  // borderless chrome hover
+  --oj-button-borderless-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-hover:    transparent;
+  --oj-button-borderless-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+
+
+  // borderless chrome-active
+  --oj-button-borderless-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-borderless-chrome-border-color-active:   transparent;
+  --oj-button-borderless-chrome-text-color-active:     var(--oj-core-text-color-primary);
+
+
+  // borderless chrome disabled
+  --oj-button-borderless-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+
+
+  // borderless-chrome-selected
+  --oj-button-borderless-chrome-bg-color-selected:     transparent;
+  --oj-button-borderless-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-borderless-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+
+
+  // borderless chrome selected hover
+  --oj-button-borderless-chrome-bg-color-selected-hover:     var(--oj-core-bg-color-hover);
+  --oj-button-borderless-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-borderless-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+
+
+  // borderless chrome selected disabled
+  --oj-button-borderless-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-borderless-chrome-border-color-selected-disabled: rgba(rgb(var(--oj-palette-neutral-rgb-0)), .6);
+  --oj-button-borderless-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+
+
+  //outlined enabled
+  --oj-button-outlined-chrome-border-color:          rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-outlined-chrome-text-color:            var(--oj-core-text-color-primary);
+
+
+  // outlined hover
+  --oj-button-outlined-chrome-bg-color-hover:        var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-hover:    rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-outlined-chrome-text-color-hover:      var(--oj-core-text-color-primary);
+
+
+  // outlined active
+  --oj-button-outlined-chrome-bg-color-active:       var(--oj-core-bg-color-active);
+  --oj-button-outlined-chrome-border-color-active:   rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-outlined-chrome-text-color-active:     var(--oj-core-text-color-primary);
+
+
+  // outlined disabled
+  --oj-button-outlined-chrome-border-color-disabled: rgba(var(--oj-palette-neutral-rgb-0), .1);
+  --oj-button-outlined-chrome-text-color-disabled:   var(--oj-core-text-color-disabled);
+
+
+  // outlined selected
+  --oj-button-outlined-chrome-bg-color-selected:     transparent;
+  --oj-button-outlined-chrome-border-color-selected: rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-outlined-chrome-text-color-selected:   var(--oj-core-text-color-primary);
+
+
+  // outlined selected hover
+  --oj-button-outlined-chrome-bg-color-selected-hover:    var(--oj-core-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-selected-hover: rgba(var(--oj-palette-neutral-rgb-0), .3);
+  --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-core-text-color-primary);
+
+
+  // outlined selected disabled
+  --oj-button-outlined-chrome-bg-color-selected-disabled:     transparent;
+  --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-border-color-disabled);
+  --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-core-text-color-disabled);
+
+
+   // cta enabled
+   --oj-button-call-to-action-chrome-bg-color:                      rgb(var(--oj-palette-neutral-rgb-0));
+   --oj-button-call-to-action-chrome-border-color:                  transparent;
+   --oj-button-call-to-action-chrome-text-color:                    rgb(var(--oj-palette-neutral-rgb-190));
+
+ 
+   // cta hover
+   --oj-button-call-to-action-chrome-bg-color-hover:                rgb(var(--oj-palette-neutral-rgb-10));
+   --oj-button-call-to-action-chrome-border-color-hover:            transparent;
+   --oj-button-call-to-action-chrome-text-color-hover:              rgb(var(--oj-palette-neutral-rgb-190));
+
+ 
+   // cta active
+   --oj-button-call-to-action-chrome-bg-color-active:               rgb(var(--oj-palette-neutral-rgb-20));
+   --oj-button-call-to-action-chrome-border-color-active:           transparent;
+   --oj-button-call-to-action-chrome-text-color-active:             rgb(var(--oj-palette-neutral-rgb-190));
+   
+}
+
+:root.oj-scale-sm {
+  // button
+  // ------------------------------
+  --oj-button-height:                   var(--oj-text-field-height);
+  // Overrides for button font size, which normally uses --oj-typography-body-sm-font-size
+  --oj-button-font-size: var(--oj-typography-body-md-font-size);
+  --oj-button-sm-font-size: var(--oj-typography-body-md-font-size);
+  --oj-button-lg-font-size: var(--oj-typography-body-md-font-size);
+}
+
+:root.oj-scale-md {
+  // button
+  // ------------------------------
+  --oj-button-font-size: var(--oj-typography-body-md-font-size);
+  --oj-button-sm-font-size: var(--oj-typography-body-md-font-size);
+  --oj-button-lg-font-size: var(--oj-typography-body-md-font-size);
+}
+}

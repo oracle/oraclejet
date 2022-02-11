@@ -1,0 +1,237 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example message/themes/redwood/oj-message.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.message") {
+  oj-message:not(.oj-complete) {
+    visibility: hidden;
+  }
+  
+  .oj-messages-general .oj-error .oj-message-container,
+  .oj-messages-inline .oj-error .oj-message-container {
+    background-color: var(--oj-core-danger-secondary-3);
+  }
+  
+  .oj-messages-general .oj-confirmation .oj-message-container,
+  .oj-messages-inline .oj-confirmation .oj-message-container {
+    background-color: var(--oj-core-success-secondary-3);
+  }
+  
+  .oj-messages-general .oj-warning .oj-message-container,
+  .oj-messages-inline .oj-warning .oj-message-container {
+    background-color: var(--oj-core-warning-secondary-3);
+  }
+  
+  .oj-messages-general .oj-info .oj-message-container,
+  .oj-messages-inline .oj-info .oj-message-container,
+  .oj-messages-general .oj-message-container,
+  .oj-messages-inline .oj-message-container {
+    background-color: var(--oj-core-info-secondary-3);
+  }
+  
+  .oj-messages-general .oj-error .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-inline .oj-error .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-general .oj-error .oj-message-status-icon.oj-message-error-icon,
+  .oj-messages-inline .oj-error .oj-message-status-icon.oj-message-error-icon {
+    color: var(--oj-core-danger-secondary-contrast);
+  }
+  .oj-messages-general .oj-confirmation .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-inline .oj-confirmation .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-general .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon,
+  .oj-messages-inline .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon {
+    color: var(--oj-core-success-secondary-contrast);
+  }
+  .oj-messages-general .oj-warning .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-inline .oj-warning .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-general .oj-warning .oj-message-status-icon.oj-message-warning-icon,
+  .oj-messages-inline .oj-warning .oj-message-status-icon.oj-message-warning-icon {
+    color: var(--oj-core-warning-secondary-contrast);
+  }
+  .oj-messages-general .oj-info .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-inline .oj-info .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-general .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-inline .oj-message-leading-header>.oj-message-summary,
+  .oj-messages-general .oj-info .oj-message-status-icon.oj-message-info-icon,
+  .oj-messages-inline .oj-info .oj-message-status-icon.oj-message-info-icon {
+    color: var(--oj-core-info-secondary-contrast);
+  }
+  
+  .oj-messages-notification .oj-error .oj-message-status-icon.oj-message-error-icon,
+  .oj-messages-notification .oj-confirmation .oj-message-status-icon.oj-message-confirmation-icon,
+  .oj-messages-notification .oj-warning .oj-message-status-icon.oj-message-warning-icon,
+  .oj-messages-notification .oj-info .oj-message-status-icon.oj-message-info-icon {
+    color: var(--oj-private-message-category-text-color);
+  }
+
+  .oj-message-container {
+    width: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .oj-message-header {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: var(--oj-private-message-header-height);
+  }
+
+  .oj-message-leading-header {
+    display: inline-flex;
+    align-items: center;
+    @include oj-ltr {
+      margin-right: var(--oj-private-message-header-margin-end);
+    }
+
+    @include oj-rtl {
+      margin-left: var(--oj-private-message-header-margin-end);
+    }
+  }
+
+  .oj-message-trailing-header {
+    align-items: center;
+    display: inline-flex;
+  }
+
+  .oj-message-custom-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .oj-message-category {
+    color: var(--oj-private-message-category-text-color);
+    font-size: var(--oj-private-message-component-inline-font-size);
+    font-weight: var(--oj-private-message-component-inline-font-weight);
+
+    // category text is expected to be single word, but it could be long, like "CONFIRMATION"
+    //  which could end up overlapping the timestamp in small screens, eg. small iphones.
+    //  Allow most lenient wrapping between two adjacent letters to prevent this.
+    word-break: break-word;
+  }
+
+  .oj-messages-notification .oj-message-category {
+    font-size: var(--oj-private-message-notification-overlay-font-size);
+    font-weight: var(--oj-private-message-notification-overlay-font-weight);
+  }
+
+  .oj-message-category h1 {
+    // Supress general h1 overrides, and use what is in oj-message-category
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+
+    // Supress the undesirable 8px margin and 2px bottom padding in generic h1
+    margin: 0px;
+    padding: 0px;
+  }
+
+  .oj-message-body {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    align-items: flex-start;
+  }
+
+  // Inline component messages also share this class
+  .oj-message-summary {
+    font-weight: var(--oj-private-message-summary-font-weight);
+    color: var(--oj-private-message-summary-text-color);
+    font-size: var(--oj-private-message-summary-font-size);
+    line-height: var(--oj-private-message-summary-line-height);
+
+    // usually a multi word text, set wrap at word ends
+    word-break: break-word;
+  }
+
+  // Inline component messages also share this class
+  .oj-message-detail {
+    color: var(--oj-private-message-detail-text-color);
+    font-size: var(--oj-private-message-detail-font-size);
+    line-height: var(--oj-private-message-detail-line-height);
+
+    // usually a multi word text, set wrap at word ends
+    word-break: break-word;
+    width: 100%;
+  }
+  // Toasts (Notification messages) have different detail text color
+  // in dark theme
+  .oj-messages-notification .oj-message-detail {
+    color: var(--oj-private-message-notification-detail-text-color);
+  }
+
+  .oj-message-leading-header > .oj-message-summary {
+    // Supress the undesirable 8px margin and 2px bottom padding in generic h1
+    margin: 0px;
+    padding: 0px;
+    color: var(--oj-private-message-category-text-color);
+    font-size: var(--oj-private-message-component-inline-font-size);
+    font-weight: var(--oj-private-message-component-inline-font-weight);
+
+    // category text is expected to be single word, but it could be long, like "CONFIRMATION"
+    //  which could end up overlapping the timestamp in small screens, eg. small iphones.
+    //  Allow most lenient wrapping between two adjacent letters to prevent this.
+    word-break: break-word;
+  }
+
+  .oj-messages-notification .oj-message-leading-header > .oj-message-summary {
+    font-size: var(--oj-private-message-notification-overlay-font-size);
+    font-weight: var(--oj-private-message-notification-overlay-font-weight);
+  }
+
+  .oj-message-timestamp {
+    color: var(--oj-private-message-time-text-color);
+    font-size: var(--oj-private-message-time-font-size);
+    margin-right: var(--oj-private-message-time-margin-end);
+    @include oj-rtl {
+      margin-left: var(--oj-private-message-time-margin-end);
+    }
+    flex-grow: 9;
+
+    // To keep the time part from wrapping
+    min-width: 5em;
+    // in worst case let it wrap at word ends so as to not overlap with category text
+    word-break: break-word;
+  }
+
+  .oj-message-close {
+    float: right;
+    display: var(--oj-private-message-close-icon-display);
+    html[dir="rtl"] & {
+      float: left;
+    }
+  }
+
+  .oj-message-auto-timeout-close {
+    display: var(--oj-private-message-auto-timeout-close-icon-display);
+  }
+
+  // button adds bottom margin of 4px, we dont want that when inside message
+  .oj-message-close .oj-button {
+    margin-bottom: 0;
+  }
+
+  // Theme defaults for properties
+  //------------------------------
+
+  $messageDefaults: ();
+
+  @if ($privateMessageAutoTimeoutOptionDefault != null) {
+    $messageDefaults: map-merge(
+      $messageDefaults,
+      (
+        autoTimeout: $privateMessageAutoTimeoutOptionDefault
+      )
+    );
+  }
+
+  .oj-message-option-defaults {
+    font-family: oj-json-from-map($messageDefaults) !important;
+  }
+}

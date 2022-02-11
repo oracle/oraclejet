@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1861,7 +1861,7 @@ var __oj_paging_control_metadata =
             } else if (size === 0) {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_NO_TOTAL,
-                  { pageFrom: 0 });
+                  { pageTo: 0 });
             } else {
               itemRangeCurrentText =
                 this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_NO_TOTAL,
@@ -2159,6 +2159,8 @@ var __oj_paging_control_metadata =
        */
       // eslint-disable-next-line no-unused-vars
       _handleDataRefresh: function (event) {
+        // if in loadMoreOnScroll mode, reset the start index.
+        this._currentStartIndex = 0;
         this._queueRefresh();
       },
       /**
@@ -2473,13 +2475,10 @@ var __oj_paging_control_metadata =
           }
           if (self._pageFetchCount === 0 && !self._componentDestroyed) {
             self._pendingPageFetch = null;
-            self._invokeDataSetPage(self._pageFetchLatestPage).then(
-              function () {
-                self = null;
-              }, self._queueFetchError
-            );
+            self._invokeDataSetPage(self._pageFetchLatestPage)
+            .catch((ex) => self._queueFetchError(ex));
           }
-        }, self._queueFetchError);
+        }, (ex) => self._queueFetchError(ex));
       },
       // error on fetching
       _queueFetchError: function (error$1) {

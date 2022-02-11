@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example spark-chart/themes/redwood/oj-spark-chart.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.sparkchart") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-spark-chart:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-spark-chart {
+    display: block;
+  }
+
+  .oj-sparkchart {
+    width: 100px;
+    height: 18px;
+  }
+
+  .oj-sparkchart.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+}

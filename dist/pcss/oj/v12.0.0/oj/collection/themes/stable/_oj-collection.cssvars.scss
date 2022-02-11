@@ -1,0 +1,52 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("stable.variables.collection") {
+
+:root {
+
+  // collections (used by components like table, data grid, list view)
+  // ----------------------------
+
+  --oj-collection-bg-color:                                rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-collection-border-color:                            rgba(var(--oj-palette-neutral-rgb-190), .1);
+  --oj-collection-free-space-bg-color:                     rgb(var(--oj-palette-neutral-rgb-0));
+
+//  For table in list mode and listview
+  --oj-collection-list-row-height:                         2.5rem;
+  --oj-collection-list-cell-padding-vertical:              0.5rem;
+
+  // this should be at least as high as var(--oj-text-field-height)
+  --oj-collection-grid-row-height:                         2.375rem;
+
+  // header
+  --oj-collection-header-font-size:                        var(--oj-typography-body-xs-font-size);
+  --oj-collection-header-font-weight:                      normal;
+  --oj-collection-header-bg-color:                         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-collection-header-text-color:                       var(--oj-core-text-color-secondary);
+  --oj-collection-grid-header-height:                      2.25rem;
+
+  // header hover
+  --oj-collection-header-bg-color-hover:                   var(--oj-core-bg-color-hover); 
+
+  // header selected
+  --oj-collection-header-bg-color-selected:                rgba(var(--oj-palette-neutral-rgb-190), 0.08);
+  --oj-collection-header-bg-color-partial-selected:        rgba(var(--oj-palette-neutral-rgb-190), 0.03);
+
+  // cell
+  --oj-collection-cell-banded-bg-color:                    rgb(var(--oj-palette-neutral-rgb-10));
+
+  --oj-collection-grid-cell-padding:                       .5rem;
+
+  // cell focus
+  --oj-collection-editable-cell-border-color-focus:        rgb(var(--oj-palette-brand-rgb-110));
+
+  // cell readonly
+  --oj-collection-editable-cell-bg-color-read-only:        var(--oj-core-bg-color-hover);
+
+  // icon
+  --oj-collection-default-sort-icon-display:               block;
+}
+
+}

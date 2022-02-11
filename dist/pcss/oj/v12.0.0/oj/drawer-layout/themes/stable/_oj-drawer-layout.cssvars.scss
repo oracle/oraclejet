@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// Re-use the variables from <oj-drawer-popup>
+@import "../../../drawer-popup/themes/stable/oj-drawer-popup.cssvars";
+// import dependencies
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+// scoped cssvars override
+@include module-include-once("stable.variables.drawerlayout") {
+:root {
+  --oj-drawer-reflow-bg-color: var(--oj-core-bg-color-content);
+  --oj-drawer-reflow-divider-color: rgb(var(--oj-palette-neutral-rgb-40));
+  --oj-drawer-overlay-bg-color: var(--oj-core-bg-color-content);
+}
+
+}

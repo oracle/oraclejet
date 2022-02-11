@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example picto-chart/themes/redwood/oj-picto-chart.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.pictochart") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-picto-chart:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-picto-chart {
+    display: inline-block;
+  }
+
+  .oj-pictochart {
+    user-select: none;
+
+    display: inline-block;
+  }
+
+  .oj-pictochart-item {
+    background-color: var(--oj-picto-chart-item-bg-color);
+  }
+}

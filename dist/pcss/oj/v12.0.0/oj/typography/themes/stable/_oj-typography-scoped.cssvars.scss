@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+
+@include module-include-once("stable.variables.typography.scoped") {
+  
+  /* typography                 */
+  /* -------------------------- */
+@if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+  @media #{$responsiveQuerySmallOnly} {
+    :root {
+      --oj-typography-heading-2xl-font-size:                     2.25rem;
+      --oj-typography-heading-xl-font-size:                      2rem;
+      --oj-typography-heading-lg-font-size:                      1.75rem;
+      --oj-typography-heading-md-font-size:                      1.5rem;
+      --oj-typography-heading-sm-font-size:                      1.25rem;
+      --oj-typography-heading-xs-font-size:                      1.125rem;
+      
+      --oj-typography-subheading-2xl-font-size:                  2rem;
+      --oj-typography-subheading-xl-font-size:                   1.75rem;
+      --oj-typography-subheading-lg-font-size:                   1.5rem;
+      --oj-typography-subheading-md-font-size:                   1.25rem;
+      --oj-typography-subheading-sm-font-size:                   1.125rem;
+      --oj-typography-subheading-xs-font-size:                   0.875rem;
+    }
+  }
+}
+}

@@ -1,0 +1,68 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example waterfall-layout/themes/redwood/oj-waterfall-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.waterfalllayout") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-waterfall-layout:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  /* styling on the root */
+  oj-waterfall-layout {
+    display: block;
+    position: relative;
+    overflow: auto;
+  }
+
+  /* styling to remove focus ring border on waterfall layout */
+  .oj-waterfall-layout:focus,
+  .oj-waterfalllayout-item:focus {
+    outline: none;
+  }
+
+  .oj-waterfalllayout-item.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+  /* styling applied to item where the sole purpose is to determine its position only */
+  .oj-waterfalllayout-position-only {
+    position: absolute;
+    visibility: hidden;
+  }
+
+  /* styling on each item */
+  .oj-waterfalllayout-item {
+    position: absolute;
+    visibility: hidden;
+  }
+
+  /* suppress focus ring on item */
+  .oj-waterfalllayout-item-suppress-focus {
+    outline: none;
+  }
+
+  /* Styling for skeleton card */
+  .oj-waterfalllayout-skeleton {
+    position: absolute;
+    width: 330px;
+    height: 396px;
+    border: 1px solid var(--oj-panel-border-color);
+    border-radius: var(--oj-panel-border-radius);
+    box-sizing: border-box;
+    padding: var(--oj-core-spacing-4x);
+    background-color: var(--oj-core-bg-color-content);
+  }
+
+  /* Styling for skeleton card content */
+  .oj-waterfalllayout-skeleton-content {
+    width: 100%;
+    height: 100%;
+  }
+}

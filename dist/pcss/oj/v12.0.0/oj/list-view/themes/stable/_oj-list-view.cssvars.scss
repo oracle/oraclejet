@@ -1,0 +1,42 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+
+@include module-include-once("stable.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  // group header
+  --oj-list-view-group-header-bg-color:          transparent;
+  --oj-list-view-group-header-bg-color-sticky:   rgb(var(--oj-palette-neutral-rgb-30));
+
+  --oj-list-view-group-header-font-weight:  var(--oj-typography-subheading-xs-font-weight);
+  --oj-list-view-group-header-font-size:    var(--oj-typography-subheading-xs-font-size);
+  --oj-list-view-group-header-line-height:  var(--oj-typography-subheading-xs-line-height);
+  
+  // item
+  --oj-list-view-item-padding-horizontal: 1rem;
+  
+  --oj-private-list-view-global-load-indicator-default: skeleton;
+  // animations
+  --oj-private-list-view-global-add-animation-default: '[{"effect":"expand"},"fadeIn"]';
+  --oj-private-list-view-global-remove-animation-default: '[{"effect":"collapse"},"fadeOut"]';
+  --oj-private-list-view-global-update-animation-default:'{"effect": "fadeIn"}';
+  --oj-private-list-view-global-expand-animation-default:'{"effect": "expand"}';
+  --oj-private-list-view-global-collapse-animation-default:'{"effect": "collapse"}';
+  --oj-private-list-view-global-pointerUp-animation-default:'{"effect": "ripple"}';
+  --oj-private-list-view-global-card-entrance-animation-default:'[{"effect":"slideIn","offsetY":"300px","duration":"300ms"}, {"effect":"fadeIn","duration":"300ms"}] ';
+  --oj-private-list-view-global-card-exit-animation-default:'[{"effect":"slideOut","offsetY":"300px","duration":"300ms","persist":"all"},{"effect":"fadeOut","duration":"300ms","persist":"all"}]';
+  // gridlines
+  --oj-private-list-view-global-gridlines-item-default: hidden;
+  --oj-private-list-view-global-gridlines-top-default: hidden;
+  --oj-private-list-view-global-gridlines-bottom-default: hidden;
+  
+}
+
+}

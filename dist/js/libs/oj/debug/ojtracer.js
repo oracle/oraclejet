@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -30,7 +30,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
      *
      * @ojexports
      * @memberof ojtracer
-     * @param {Object} provider
+     * @param {unknown} provider
      * @method
      * @name setTracerProvider
      */
@@ -40,7 +40,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
      *
      * @ojexports
      * @memberof ojtracer
-     * @returns {Object} opentelemetry-compatible TracerProvider
+     * @returns {unknown} opentelemetry-compatible TracerProvider
      * @method
      * @name getTracerProvider
      */

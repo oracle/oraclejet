@@ -684,6 +684,7 @@ export namespace ojChart {
         series: string;
         seriesData: Series<K, I> | null;
         targetValue: number;
+        totalValue: number;
         value: number;
         volume: number;
         x: number | string;
@@ -983,6 +984,7 @@ export namespace ojChart {
         series: string;
         seriesData: Series<K, I> | null;
         targetValue: number;
+        totalValue: number;
         value: number;
         volume: number;
         x: number | string;
@@ -1055,7 +1057,7 @@ export namespace ojChart {
     };
     // tslint:disable-next-line interface-over-type-literal
     type XTickLabel<T extends number | string = number | string> = {
-        converter?: (Converter<T>);
+        converter?: (Array<Converter<T>> | Converter<T>);
         rendered?: 'off' | 'on';
         rotation?: 'none' | 'auto';
         scaling?: 'none' | 'thousand' | 'million' | 'billion' | 'trillion' | 'quadrillion' | 'auto';
@@ -2492,6 +2494,7 @@ export namespace ChartElement {
         series: string;
         seriesData: ojChart.Series<K, I> | null;
         targetValue: number;
+        totalValue: number;
         value: number;
         volume: number;
         x: number | string;

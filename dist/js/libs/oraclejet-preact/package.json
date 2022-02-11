@@ -1,0 +1,121 @@
+{
+  "name": "@oracle/oraclejet-preact",
+  "version": "0.0.1",
+  "description": "Oracle JET preact based components",
+  "scripts": {
+    "build": "npm run rollup && npm run build:index && npm run build:types && npm run build:copy",
+    "build:index": "npx rollup -c rollup.index.js",
+    "build:copy": "npx copyfiles package.json dist",
+    "build:types": "npx tsc -p tsconfig.types.json",
+    "build:watch": "npx rollup -c --watch",
+    "rollup": "npx rollup -c",
+    "clean": "npx rimraf dist",
+    "package": "cd dist && npm pack",
+    "test": "npx jest",
+    "test:watch": "npm test -- --watch dist/cjs/*",
+    "test:browser": "npm run test:browser:convert && npx karma start test/karma.conf.js",
+    "test:browser:convert": "node test/convert-testing-libs.js",
+    "test:browser:watch": "npm run test:browser -- --singleRun=false",
+    "test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand",
+    "storybook": "install-sb-patch && start-storybook -p 6006 -s dist/sb-static",
+    "storybook-docs": "install-sb-patch && start-storybook --docs --no-manager-cache -p 6006 -s dist/sb-static",
+    "build-storybook": "install-sb-patch && build-storybook -o dist/storybook-static -s dist/sb-static",
+    "build-storybook-docs": "install-sb-patch && build-storybook --docs -s dist/sb-static",
+    "type-check": "tsc -p . --noEmit"
+  },
+  "author": "",
+  "license": "UPL-1.0",
+  "keywords": [
+    "oraclejet"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/plugin-syntax-flow": "^7.14.5",
+    "@babel/preset-flow": "^7.14.5",
+    "@linaria/babel-preset": "^3.0.0-beta.4",
+    "@linaria/core": "3.0.0-beta.4",
+    "@linaria/rollup": "3.0.0-beta.7",
+    "@linaria/shaker": "3.0.0-beta.7",
+    "@linaria/webpack-loader": "3.0.0-beta.13",
+    "@linaria/webpack4-loader": "3.0.0-beta.13",
+    "@oracle/oraclejet-cssprops": "file:../oraclejet-cssprops/oracle-oraclejet-cssprops-1.0.0.tgz",
+    "@oracle/oraclejet-storybook-addons-reading": "*",
+    "@oracle/oraclejet-storybook-addons-theme": "*",
+    "@oracle/oraclejet-storybook-patch": "*",
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-virtual": "^2.0.3",
+    "@storybook/addon-actions": "6.3.8",
+    "@storybook/addon-docs": "6.3.8",
+    "@storybook/addon-essentials": "6.3.8",
+    "@storybook/addon-links": "6.3.8",
+    "@storybook/preact": "6.3.8",
+    "@testing-library/dom": "^8.11.1",
+    "@testing-library/preact": "^2.0.1",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
+    "@types/ramda": "^0.27.46",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-react-docgen": "^4.2.1",
+    "chai": "^4.2.0",
+    "core-js": "^3.16.1",
+    "fs-extra": "^10.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^27.0.6",
+    "jest-runner-mocha-next": "^3.2.0",
+    "jsdom": "^19.0.0",
+    "jsdom-global": "^3.0.2",
+    "karma": "^5.0.5",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cli": "^2.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-requirejs": "^1.1.0",
+    "linaria": "^2.1.0",
+    "mocha": "^6.1.4",
+    "module-alias": "^2.2.2",
+    "preact": "10.6.4",
+    "react-docgen-typescript-loader": "^3.7.2",
+    "react-docgen-typescript-plugin": "^1.0.0",
+    "require-css": "^0.1.10",
+    "requirejs": "^2.3.6",
+    "rollup": "^2.56.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-typescript": "^1.0.1",
+    "sinon": "^7.4.2",
+    "typescript": "~4.2.0",
+    "webpack": "^4.27.0"
+  },
+  "files": [
+    "amd",
+    "es",
+    "types",
+    "!**/*.spec.*"
+  ],
+  "main": "es/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
+  "sideEffects": false,
+  "jest": {
+    "runner": "jest-runner-mocha-next",
+    "testMatch": [
+      "<rootDir>/dist/cjs/**/*.spec.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/jest-setup.js"
+    ]
+  },
+  "_moduleAliases": {
+    "@oracle/oraclejet-preact": "./dist/cjs"
+  },
+  "peerDependencies": {
+    "preact": "10.6.4"
+  },
+  "dependencies": {
+    "ramda": "^0.27.1"
+  }
+}

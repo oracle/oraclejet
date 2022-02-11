@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.badge.scoped") {
+  
+  /* badge                      */
+  /* -------------------------- */
+  .oj-badge-sm {
+    --oj-badge-height: 1rem;
+    --oj-badge-font-size: 0.5625rem;
+    --oj-badge-font-weight: 700;
+    --oj-badge-border-radius: var(--oj-core-border-radius-md);
+  }
+}

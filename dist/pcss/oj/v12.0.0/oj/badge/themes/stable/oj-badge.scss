@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// ----- start dependencies ---------
+@import "../../../utilities/_oj.utilities.bidi.scss";
+// ----- end dependencies ---------
+
+// import variables
+@import "_oj-badge.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-badge.scss";
+
+// scoped cssvars override
+@import "_oj-badge-scoped.cssvars.scss";

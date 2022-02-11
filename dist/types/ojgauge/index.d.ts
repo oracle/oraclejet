@@ -77,6 +77,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
         style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
+    markerSize?: 'sm' | 'md' | 'lg' | 'fit';
     max?: number;
     metricLabel?: {
         converter?: Converter<string>;
@@ -100,7 +101,7 @@ export interface ojLedGauge extends dvtBaseGauge<ojLedGaugeSettableProperties> {
         }));
     };
     type?: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
     addEventListener<T extends keyof ojLedGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojLedGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -117,6 +118,8 @@ export namespace ojLedGauge {
     type colorChanged = JetElementCustomEvent<ojLedGauge["color"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelChanged = JetElementCustomEvent<ojLedGauge["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged = JetElementCustomEvent<ojLedGauge["markerSize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojLedGauge["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -165,6 +168,7 @@ export interface ojLedGaugeEventMap extends dvtBaseGaugeEventMap<ojLedGaugeSetta
     'borderColorChanged': JetElementCustomEvent<ojLedGauge["borderColor"]>;
     'colorChanged': JetElementCustomEvent<ojLedGauge["color"]>;
     'labelChanged': JetElementCustomEvent<ojLedGauge["label"]>;
+    'markerSizeChanged': JetElementCustomEvent<ojLedGauge["markerSize"]>;
     'maxChanged': JetElementCustomEvent<ojLedGauge["max"]>;
     'metricLabelChanged': JetElementCustomEvent<ojLedGauge["metricLabel"]>;
     'minChanged': JetElementCustomEvent<ojLedGauge["min"]>;
@@ -186,6 +190,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
         style?: Partial<CSSStyleDeclaration>;
         text?: string;
     };
+    markerSize?: 'sm' | 'md' | 'lg' | 'fit';
     max?: number;
     metricLabel?: {
         converter?: Converter<string>;
@@ -209,7 +214,7 @@ export interface ojLedGaugeSettableProperties extends dvtBaseGaugeSettableProper
         }));
     };
     type?: 'arrow' | 'diamond' | 'square' | 'rectangle' | 'triangle' | 'star' | 'human' | 'circle' | string;
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
 }
 export interface ojLedGaugeSettablePropertiesLenient extends Partial<ojLedGaugeSettableProperties> {
@@ -249,7 +254,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
-    size?: 'small' | 'medium' | 'large' | 'fit';
+    size?: 'sm' | 'md' | 'lg' | 'fit' | 'small' | 'medium' | 'large';
     step?: 0.5 | 1 | number;
     thresholds?: ojRatingGauge.Threshold[];
     tooltip?: {
@@ -268,7 +273,7 @@ export interface ojRatingGauge extends dvtBaseGauge<ojRatingGaugeSettablePropert
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
     addEventListener<T extends keyof ojRatingGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojRatingGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -396,7 +401,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
-    size?: 'small' | 'medium' | 'large' | 'fit';
+    size?: 'sm' | 'md' | 'lg' | 'fit' | 'small' | 'medium' | 'large';
     step?: 0.5 | 1 | number;
     thresholds?: ojRatingGauge.Threshold[];
     tooltip?: {
@@ -415,7 +420,7 @@ export interface ojRatingGaugeSettableProperties extends dvtBaseGaugeSettablePro
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
     };
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
 }
 export interface ojRatingGaugeSettablePropertiesLenient extends Partial<ojRatingGaugeSettableProperties> {
@@ -467,6 +472,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
     };
     readonly?: boolean;
     referenceLines?: ojStatusMeterGauge.ReferenceLine[];
+    size?: 'sm' | 'md' | 'lg' | 'fit';
     startAngle?: number;
     step?: number | null;
     svgClassName?: string;
@@ -481,7 +487,7 @@ export interface ojStatusMeterGauge extends dvtBaseGauge<ojStatusMeterGaugeSetta
         }));
     };
     readonly transientValue?: number | null;
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
     addEventListener<T extends keyof ojStatusMeterGaugeEventMap>(type: T, listener: (this: HTMLElement, ev: ojStatusMeterGaugeEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -532,6 +538,8 @@ export namespace ojStatusMeterGauge {
     type readonlyChanged = JetElementCustomEvent<ojStatusMeterGauge["readonly"]>;
     // tslint:disable-next-line interface-over-type-literal
     type referenceLinesChanged = JetElementCustomEvent<ojStatusMeterGauge["referenceLines"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type sizeChanged = JetElementCustomEvent<ojStatusMeterGauge["size"]>;
     // tslint:disable-next-line interface-over-type-literal
     type startAngleChanged = JetElementCustomEvent<ojStatusMeterGauge["startAngle"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -614,6 +622,7 @@ export interface ojStatusMeterGaugeEventMap extends dvtBaseGaugeEventMap<ojStatu
     'plotAreaChanged': JetElementCustomEvent<ojStatusMeterGauge["plotArea"]>;
     'readonlyChanged': JetElementCustomEvent<ojStatusMeterGauge["readonly"]>;
     'referenceLinesChanged': JetElementCustomEvent<ojStatusMeterGauge["referenceLines"]>;
+    'sizeChanged': JetElementCustomEvent<ojStatusMeterGauge["size"]>;
     'startAngleChanged': JetElementCustomEvent<ojStatusMeterGauge["startAngle"]>;
     'stepChanged': JetElementCustomEvent<ojStatusMeterGauge["step"]>;
     'svgClassNameChanged': JetElementCustomEvent<ojStatusMeterGauge["svgClassName"]>;
@@ -672,6 +681,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
     };
     readonly?: boolean;
     referenceLines?: ojStatusMeterGauge.ReferenceLine[];
+    size?: 'sm' | 'md' | 'lg' | 'fit';
     startAngle?: number;
     step?: number | null;
     svgClassName?: string;
@@ -686,7 +696,7 @@ export interface ojStatusMeterGaugeSettableProperties extends dvtBaseGaugeSettab
         }));
     };
     readonly transientValue?: number | null;
-    value?: number | null;
+    value: number | null;
     visualEffects?: 'none' | 'auto';
 }
 export interface ojStatusMeterGaugeSettablePropertiesLenient extends Partial<ojStatusMeterGaugeSettableProperties> {
@@ -702,6 +712,8 @@ export namespace LedGaugeElement {
     type colorChanged = JetElementCustomEvent<ojLedGauge["color"]>;
     // tslint:disable-next-line interface-over-type-literal
     type labelChanged = JetElementCustomEvent<ojLedGauge["label"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type markerSizeChanged = JetElementCustomEvent<ojLedGauge["markerSize"]>;
     // tslint:disable-next-line interface-over-type-literal
     type maxChanged = JetElementCustomEvent<ojLedGauge["max"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -835,6 +847,8 @@ export namespace StatusMeterGaugeElement {
     // tslint:disable-next-line interface-over-type-literal
     type referenceLinesChanged = JetElementCustomEvent<ojStatusMeterGauge["referenceLines"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type sizeChanged = JetElementCustomEvent<ojStatusMeterGauge["size"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type startAngleChanged = JetElementCustomEvent<ojStatusMeterGauge["startAngle"]>;
     // tslint:disable-next-line interface-over-type-literal
     type stepChanged = JetElementCustomEvent<ojStatusMeterGauge["step"]>;
@@ -885,6 +899,7 @@ export interface LedGaugeIntrinsicProps extends Partial<Readonly<ojLedGaugeSetta
     onborderColorChanged?: (value: ojLedGaugeEventMap['borderColorChanged']) => void;
     oncolorChanged?: (value: ojLedGaugeEventMap['colorChanged']) => void;
     onlabelChanged?: (value: ojLedGaugeEventMap['labelChanged']) => void;
+    onmarkerSizeChanged?: (value: ojLedGaugeEventMap['markerSizeChanged']) => void;
     onmaxChanged?: (value: ojLedGaugeEventMap['maxChanged']) => void;
     onmetricLabelChanged?: (value: ojLedGaugeEventMap['metricLabelChanged']) => void;
     onminChanged?: (value: ojLedGaugeEventMap['minChanged']) => void;
@@ -945,6 +960,7 @@ export interface StatusMeterGaugeIntrinsicProps extends Partial<Readonly<ojStatu
     onplotAreaChanged?: (value: ojStatusMeterGaugeEventMap['plotAreaChanged']) => void;
     onreadonlyChanged?: (value: ojStatusMeterGaugeEventMap['readonlyChanged']) => void;
     onreferenceLinesChanged?: (value: ojStatusMeterGaugeEventMap['referenceLinesChanged']) => void;
+    onsizeChanged?: (value: ojStatusMeterGaugeEventMap['sizeChanged']) => void;
     onstartAngleChanged?: (value: ojStatusMeterGaugeEventMap['startAngleChanged']) => void;
     onstepChanged?: (value: ojStatusMeterGaugeEventMap['stepChanged']) => void;
     onsvgClassNameChanged?: (value: ojStatusMeterGaugeEventMap['svgClassNameChanged']) => void;

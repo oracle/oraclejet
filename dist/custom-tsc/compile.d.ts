@@ -1,8 +1,7 @@
-import * as ts from "typescript";
-import * as MetadataTypes from "ojs/ojmetadata";
+import * as ts from 'typescript';
+import * as MetadataTypes from 'ojs/ojmetadata';
 declare type CompileOptions = {
-    files: string[];
-    compilerOptions?: ts.CompilerOptions;
+    tsconfigJson: ts.TsConfigSourceFile;
     buildOptions?: BuildOptions;
 };
 export declare type BuildOptions = {
@@ -19,12 +18,16 @@ export declare type BuildOptions = {
     };
     componentToMetadata?: Record<string, MetadataTypes.ComponentMetadata>;
     templatePath?: string;
-    reservedGlobalProps?: Array<string>;
+    reservedGlobalProps?: Set<string>;
     tsBuiltDir: string;
     mainEntryFile: string;
     typesDir: string;
 };
-export default function compile({ files, compilerOptions, buildOptions, }: CompileOptions): {
+export default function compile({ tsconfigJson, buildOptions }: CompileOptions): {
     errors: any[];
+    parsedTsconfigJson: {
+        compilerOptions: ts.CompilerOptions;
+        files: string[];
+    };
 };
 export {};

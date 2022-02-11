@@ -1,0 +1,376 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example icons/themes/redwood/oj-icons.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+$iconFontFileName: "internal_iconfont.woff2" !default;
+
+// this function is needed because
+// escaped unicode not output when using vars
+// https://github.com/sass/sass/issues/659
+// https://github.com/FortAwesome/Font-Awesome/pull/6728
+// http://www.sassmeister.com/gist/2c5975d9b52afa8a68f6
+// expects the var passed in to be
+// assigned to a string without a slash,
+// for example
+// $foo: "e60a";
+// prepend-slash($foo);
+@function oj-prepend-slash($char) {
+  @return #{'"\\'}#{$char + '"'};
+}
+
+@include module-include-once("common.icons") {
+  /* Icons
+    --------------------------------------------------------------------*/
+
+  @if $iconFontFileName and $iconFontFileName != "" {
+    @font-face {
+      font-family: "JetInternal IconFont";
+      src: url($fontDir + $iconFontFileName) format("woff");
+    }
+  }
+
+  /*--------------------------------------------------------------------
+    /  Generic style that can be used for widget images
+    /  You can use the mixin ("oj-icon-content") to generate
+    /  a class with additions/overrides
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
+    /  generate a class ".binky-icon". You
+    /  could then put class="oj-icon binky-icon" on your dom element.
+    --------------------------------------------------------------------*/
+  .oj-fwk-icon,
+  .oj-component-icon {
+    font-family: "JetInternal IconFont";
+    font-size: var(--oj-core-icon-size-lg);
+    line-height: 1;
+    display: inline-block;
+    font-weight: normal;
+    speak: none;
+    font-style: normal;
+    font-variant: normal;
+    text-transform: none;
+    color: var(--oj-private-icon-color);
+    text-align: center;
+    box-sizing: content-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    &:before {
+      display: inline-block;
+    }
+  }
+
+  /*--------------------------------------------------------------------
+    /  Generic style that can be used for images
+    /  App developers can use the mixin ("oj-icon-content") to generate
+    /  a class with additions/overrides
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
+    /  generate a class ".binky-icon". You
+    /  could then put class="oj-icon binky-icon" on your dom element.
+    --------------------------------------------------------------------*/
+  .oj-icon {
+    @include oj-icon-base($height: 16px, $width: 16px);
+  }
+
+  // we support two generic classes for getting icon font colors
+  //   1. oj-clickable-icon
+  //   2. oj-clickable-icon-nocontext
+  //
+  // these classes, when used in conjunction with an anchor tag and/or
+  // marker classes like oj-default, oj-hover, oj-active, oj-selected,
+  // and oj-disabled will use the $iconColor* variables
+  //
+  // oj-clickable-icon is optionally contextual, meaning the anchor
+  // or marker style can be on an ancestor. For example this will work
+  //
+  //   <div class="oj-default">
+  //     <span class="oj-clickable-icon demo-icon-font demo-icon-gear"></span>
+  //   </div>
+  //   <a href="http://www.oracle.com">
+  //     <span class="oj-clickable-icon demo-icon-font demo-icon-gear"></span>
+  //   </a>
+  //
+  //
+  // oj-clickable-icon-nocontext is not contextual, instead it must go on the
+  // same tag as seen below (oj-clickable-icon would also work in the examples below).
+  //
+  //   <span class="oj-default oj-clickable-icon-nocontext demo-icon-font demo-icon-gear"></span>
+  //   <a href="http://www.oracle.com"
+  //      class="oj-clickable-icon-nocontext demo-icon-font demo-icon-gear"></a>
+
+  a .oj-clickable-icon,
+  a.oj-clickable-icon,
+  a.oj-clickable-icon-nocontext {
+    // needed when clickable on an anchor tag
+    font-weight: normal;
+  }
+
+  a .oj-clickable-icon,
+  a.oj-clickable-icon,
+  a.oj-clickable-icon-nocontext,
+  a:visited .oj-clickable-icon,
+  a:visited.oj-clickable-icon,
+  a:visited.oj-clickable-icon-nocontext,
+  .oj-default .oj-clickable-icon,
+  .oj-default.oj-clickable-icon,
+  .oj-default.oj-clickable-icon-nocontext {
+    color: var(--oj-private-icon-color-default);
+  }
+
+  a:hover .oj-clickable-icon,
+  a:hover.oj-clickable-icon,
+  a:hover.oj-clickable-icon-nocontext,
+  .oj-hover .oj-clickable-icon,
+  .oj-hover.oj-clickable-icon,
+  .oj-hover.oj-clickable-icon-nocontext {
+    color: var(--oj-private-icon-color-hover);
+    text-decoration: none;
+  }
+
+  a:active .oj-clickable-icon,
+  a:active.oj-clickable-icon,
+  a:active.oj-clickable-icon-nocontext,
+  .oj-active .oj-clickable-icon,
+  .oj-active.oj-clickable-icon,
+  .oj-active.oj-clickable-icon-nocontext {
+    color: var(--oj-private-icon-color-active);
+  }
+
+  a.oj-disabled .oj-clickable-icon,
+  a.oj-disabled.oj-clickable-icon,
+  a.oj-disabled.oj-clickable-icon-nocontext,
+  .oj-disabled .oj-clickable-icon,
+  .oj-disabled a .oj-clickable-icon,
+  .oj-disabled.oj-clickable-icon,
+  .oj-disabled.oj-clickable-icon-nocontext {
+    color: var(--oj-private-icon-color-disabled);
+  }
+
+  .oj-fwk-icon-load {
+    @include oj-icon-content($icon: url("#{$imageDir}node_anim.gif"));
+  }
+
+  // arrow
+  .oj-fwk-icon-arrowtail-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrowtail-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrowtail-e;
+    }
+  }
+
+  .oj-fwk-icon-arrowtail-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrowtail-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrowtail-w;
+    }
+  }
+
+  .oj-fwk-icon-arrow-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-e;
+    }
+  }
+
+  .oj-fwk-icon-arrow-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-w;
+    }
+  }
+
+  .oj-fwk-icon-arrow-n-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-nw;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-ne;
+    }
+  }
+
+  .oj-fwk-icon-arrow-n-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-ne;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-nw;
+    }
+  }
+
+  .oj-fwk-icon-arrow-s-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-sw;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-se;
+    }
+  }
+
+  .oj-fwk-icon-arrow-s-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow-se;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow-sw;
+    }
+  }
+
+  .oj-fwk-icon-arrow02-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow02-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow02-e;
+    }
+  }
+
+  .oj-fwk-icon-arrow02-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow02-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow02-w;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-e;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-w;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-n-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-nw;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-ne;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-n-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-ne;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-nw;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-s-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-sw;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-se;
+    }
+  }
+
+  .oj-fwk-icon-arrow03-s-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-arrow03-se;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-arrow03-sw;
+    }
+  }
+
+  .oj-fwk-icon-caret-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret-e;
+    }
+  }
+
+  .oj-fwk-icon-caret-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret-w;
+    }
+  }
+
+  .oj-fwk-icon-caret02-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret02-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret02-e;
+    }
+  }
+
+  .oj-fwk-icon-caret02-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret02-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret02-w;
+    }
+  }
+
+  .oj-fwk-icon-caret02end-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret02end-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret02end-e;
+    }
+  }
+
+  .oj-fwk-icon-caret02end-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret02end-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret02end-w;
+    }
+  }
+
+  .oj-fwk-icon-caret03-start:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret03-w;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret03-e;
+    }
+  }
+
+  .oj-fwk-icon-caret03-end:before {
+    @include oj-ltr() {
+      @extend .oj-fwk-icon-caret03-e;
+    }
+    @include oj-rtl() {
+      @extend .oj-fwk-icon-caret03-w;
+    }
+  }
+}

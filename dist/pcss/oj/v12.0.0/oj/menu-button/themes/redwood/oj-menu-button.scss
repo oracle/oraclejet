@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../button/themes/redwood/oj-button.scss";
+
+@import "_oj-menu-button.servervars.scss";
+@import "_oj-menu-button.cssvars.scss";
+
+@include module-include-once("redwood.menubutton") {
+    .oj-button-menu-dropdown-icon {
+        @extend .oj-fwk-icon-arrow-s;
+    }
+    .oj-button-menu-icon-only-dropdown-icon {
+        @extend .oj-fwk-icon-dots-horizontal;
+    }
+}

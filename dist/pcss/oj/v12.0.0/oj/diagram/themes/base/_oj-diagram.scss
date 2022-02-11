@@ -1,0 +1,126 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example diagram/themes/redwood/oj-diagram.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss"; 
+
+  @include module-include-once("common.diagram") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+      oj-diagram:not(.oj-complete) {
+        visibility: hidden;
+      }
+
+    oj-diagram {
+      display: block;
+    }
+
+    // top level diagram styles
+    .oj-diagram {
+        user-select: none;
+        width:100%;
+        height:560px;
+    }
+
+    // diagram node
+    .oj-diagram-node {
+      fill: var(--oj-diagram-node-bg-color); 
+    }
+
+    // applied to the diagram node on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border
+    .oj-diagram-node.oj-hover { 
+      border-top-color: var(--oj-diagram-node-border-color-hover);
+      border-bottom-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    // applied to the selected diagram node
+    .oj-diagram-node.oj-selected {
+      border-color: var(--oj-dvt-item-border-color-selected);
+    }
+
+    // applied to the diagram node label
+    .oj-diagram-node-label {
+      font-size: var(--oj-dvt-label-font-size-sm);
+      color: var(--oj-core-text-color-primary);
+    }
+
+    // diagram link
+    .oj-diagram-link {
+      color: var(--oj-diagram-link-color);
+      padding: 10px;  
+    }
+
+    // applied to the diagram link on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border
+    .oj-diagram-link.oj-hover {
+      border-top-color: var(--oj-diagram-link-color);
+      border-bottom-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    // applied to the selected diagram link
+    .oj-diagram-link.oj-selected {
+     border-color: var(--oj-dvt-item-border-color-selected);
+    }
+
+    // applied to the diagram link label
+    .oj-diagram-link-label {
+      font-size: var(--oj-dvt-label-font-size-sm);
+      color: var(--oj-core-text-color-primary);
+    }
+
+    .oj-diagram-node.oj-draggable {
+    }
+    
+    .oj-diagram .oj-active-drop {
+       
+            fill: var(--oj-core-drag-drop-color-1);
+      
+      fill-opacity: 0.75;
+    }
+
+    .oj-diagram .oj-invalid-drop {
+      cursor: no-drop;
+    }
+
+    .oj-diagram-node.oj-active-drop {
+      fill: var(--oj-core-drag-drop-color-1);
+      fill-opacity: 0.75;
+    }
+
+    .oj-diagram-node.oj-invalid-drop {
+      cursor: no-drop;
+    }
+
+    .oj-diagram-link.oj-active-drop {
+      stroke: var(--oj-core-drag-drop-color-1);
+      stroke-opacity: 0.75;
+    }
+    .oj-diagram-link.oj-invalid-drop {
+      cursor: no-drop;
+    }
+
+    .oj-diagram-overview {
+      background-color: var(--oj-dvt-overview-bg-color);
+      padding: 0px;
+    }
+    
+    .oj-diagram-overview-content {
+      padding: 10px;
+    }
+
+    .oj-diagram-overview-viewport {
+      background-color: var(--oj-dvt-overview-window-bg-color);
+      border-color: var(--oj-dvt-overview-window-border-color);
+    }
+
+    .oj-diagram-overview-container-node {
+      fill-opacity:0.25;
+    }
+  }

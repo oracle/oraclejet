@@ -1,0 +1,59 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../utilities/_oj.utilities.json.scss";
+
+// import dependencies
+@import "../../../popup/themes/redwood/_oj-popup.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+
+  @include module-include-once("redwood.variables.menu") {
+    :root {
+
+      // menu
+      // ---------------------------
+      --oj-menu-icon-size:                      var(--oj-core-icon-size-lg);
+      --oj-menu-icon-to-edge-padding:           1rem;
+      --oj-menu-text-to-start-icon-padding:     1rem;
+      --oj-menu-text-to-end-icon-padding:       2rem;
+      --oj-menu-text-to-edge-padding:           1rem;
+      --oj-menu-divider-margin:                 var(--oj-core-spacing-2x) 0;
+    
+      --oj-menu-item-text-color:                var(--oj-core-text-color-primary);
+      --oj-menu-icon-color:                     var(--oj-core-text-color-primary);
+    
+      // menu sheet
+      --oj-menu-sheet-margin-horizontal:        0px;
+
+      // dropdown menu
+      --oj-private-menu-global-drop-down-open-animation: '{"effect":"zoomIn","transformOrigin":"#myPosition","duration":".25s"}'; 
+      --oj-private-menu-global-drop-down-close-animation: '{"effect":"none"}';
+      
+      // sheet menu
+      --oj-private-menu-global-sheet-open-animation: '{"effect":"slideIn","direction":"top","duration":".25s"}'; 
+      --oj-private-menu-global-sheet-close-animation: '{"effect":"slideOut","direction":"bottom","duration":".25s"}'; 
+
+      // submenu
+      --oj-private-menu-global-submenu-open-animation: '{"effect":"zoomIn","transformOrigin":"#myPosition","duration":".25s"}'; 
+      --oj-private-menu-global-submenu-close-animation: '{"effect":"none"}';
+
+      // Controls whether sheet menus have a "Cancel" menu item automatically added.
+      // Valid values are "none" and "menuItem".
+      --oj-private-menu-global-sheet-cancel-affordance: none;
+
+      // Controls whether "swipe down to dismiss" is supported for sheet menus.
+      // Note that this only applies to swipes starting on the menu, since any touch
+      // outside the menu will dismiss, regardless of whether it turns into a swipe.
+      // Valid values are "dismiss" and "none".
+      --oj-private-menu-global-sheet-swipe-down-behavior: dismiss;
+
+      // Controls whether a "glass pane" is displayed behind dropDown menus.
+      // Valid values are "modal" and "modeless".
+      --oj-private-menu-global-drop-down-modality: modeless;
+
+      // Controls whether a "glass pane" is displayed behind sheet menus.
+      // Valid values are "modal" and "modeless".
+      --oj-private-menu-global-sheet-modality: modal;
+      --oj-private-menu-global-sheet-margin-bottom: 0;
+    }  
+  }

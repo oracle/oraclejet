@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -56,9 +56,9 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      * </p>
      *
      * <i>Example of consumer listening for the "mutate" event type:</i>
-     * <pre class="prettyprint"><code>var listener = function(event) {
+     * <pre class="prettyprint"><code>let listener = function(event) {
      *   if (event.detail.remove) {
-     *     var removeDetail = event.detail.remove;
+     *     const removeDetail = event.detail.remove;
      *     // Handle removed items
      *   }
      * };
@@ -88,11 +88,11 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      * let dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
      * @example
      * // First initialize an array
-     * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+     * const deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
      *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
      *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
      * // Then create an ArrayDataProvider object with the array
-     * var dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
+     * const dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
      * @ojtsexample
      * // Data and Key array
      * let deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
@@ -102,11 +102,11 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      * let dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
      * @example
      * // Data and Key array
-     * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
+     * const deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
      *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
      *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
-     * var keysArray = [10, 20, 30];
-     * var dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
+     * const keysArray = [10, 20, 30];
+     * const dataprovider = new ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId', keys: keysArray});
      */
 
     /**
@@ -117,15 +117,11 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      * Please check {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare#numeric_sorting|String.prototype.localeCompare()} for details.
      * </p>
      * <p>
-     * For numbers, we convert them into strings then compare them with localeCompare.
-     * If you want to sort floating point numbers correctly, sortComparator can be used to do a custom sort.
+     * For numbers, we convert them into strings then compare them with localeCompare, which may not sort floating point numbers based on their numeric values.
+     * If you want to sort floating point numbers based on their numeric values, sortComparator can be used to do a custom sort.
      * </p>
      * <p>
-     * For null and undefined values, we convert them into string which is 'null' and 'undefined'.
-     * The sorting behavior for undefined and null values will be changed in version 12.0.0.
-     * </p>
-     * <p>
-     * In version 12.0.0, null and undefined values will be considered as the largest values during sorting.
+     * For undefined and null values, they are considered as the largest values during sorting. For an empty string, it is considered as the smallest value during sorting.
      * </p>
      * @property {SortCriterion=} implicitSort - Optional array of {@link SortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
      * This is used for cases where we would like display some indication that the data is already sorted.
@@ -160,8 +156,8 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      *      return 0;
      *    }
      *
-     *    var dateA = new Date(a).getTime();
-     *    var dateB = new Date(b).getTime();
+     *    const dateA = new Date(a).getTime();
+     *    const dateB = new Date(b).getTime();
      *    return dateA > dateB ? 1 : -1;
      * };
      * // Then create an ArrayDataProvider object and set Date field to use the this comparator
@@ -174,26 +170,10 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
      * let comparator = function (a, b) {
      *    return a - b;
      *  };
-     * // Then create an ArrayDataProvider object and set Date field to use the this comparator
+     * // Then create an ArrayDataProvider object and set Salary field to use the this comparator
      * this.dataprovider = new ArrayDataProvider(JSON.parse(deptArray), {
      *    keyAttributes: "DepartmentId",
-     *    sortComparators: { comparators: new Map().set("Date", comparator) },
-     * });
-     * @ojtsexample
-     * // Custom comparator for numnbers with null/undefined
-     * let comparator = function (a, b) {
-     *     if (a === null || a === undefined) {
-     *       return 1;
-     *     }
-     *     if (b === null || b === undefined) {
-     *       return -1;
-     *     }
-     *     return a - b;
-     *  };
-     * // Then create an ArrayDataProvider object and set Date field to use the this comparator
-     * this.dataprovider = new ArrayDataProvider(JSON.parse(deptArray), {
-     *    keyAttributes: "DepartmentId",
-     *    sortComparators: { comparators: new Map().set("Date", comparator) },
+     *    sortComparators: { comparators: new Map().set("Salary", comparator) },
      * });
      */
 
@@ -424,8 +404,36 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 ['next']() {
                     const cachedOffset = this._parent._mapClientIdToOffset.get(this._clientId);
                     const resultObj = this._nextFunc(this._params, cachedOffset, false, this._cacheObj);
+                    Object.defineProperty(resultObj.result.value, 'totalFilteredRowCount', {
+                        get: () => {
+                            return this._getTotalFilteredRowCount();
+                        },
+                        enumerable: true
+                    });
                     this._parent._mapClientIdToOffset.set(this._clientId, resultObj.offset);
                     return Promise.resolve(resultObj.result);
+                }
+                _getTotalFilteredRowCount() {
+                    if (this._totalFilteredRowCount === undefined) {
+                        const rowData = this._parent._getRowData();
+                        const filterDef = this._params ? this._params[ArrayDataProvider._FILTERCRITERION] : null;
+                        if (filterDef) {
+                            this._totalFilteredRowCount = 0;
+                            let filterCriterion = ojdataprovider.FilterFactory.getFilter({
+                                filterDef: filterDef,
+                                filterOptions: this._parent.options
+                            });
+                            for (let i = 0; i < rowData.length; i++) {
+                                if (filterCriterion.filter(rowData[i])) {
+                                    ++this._totalFilteredRowCount;
+                                }
+                            }
+                        }
+                        else {
+                            this._totalFilteredRowCount = rowData.length;
+                        }
+                    }
+                    return this._totalFilteredRowCount;
                 }
             };
             this.AsyncIteratorYieldResult = class {
@@ -604,7 +612,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 return Object.assign({ implementation: 'randomAccess' }, ArrayDataProvider._getFetchCapability());
             }
             else if (capabilityName === 'fetchFirst') {
-                return Object.assign({ iterationSpeed: 'immediate' }, ArrayDataProvider._getFetchCapability());
+                return Object.assign({ iterationSpeed: 'immediate', totalFilteredRowCount: 'exact' }, ArrayDataProvider._getFetchCapability());
             }
             else if (capabilityName === 'fetchCapability') {
                 return ArrayDataProvider._getFetchCapability();
@@ -613,7 +621,10 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 return {
                     operators: ['$co', '$eq', '$ew', '$pr', '$gt', '$ge', '$lt', '$le', '$ne', '$regex', '$sw'],
                     attributeExpression: ['*'],
-                    textFilter: {}
+                    textFilter: {},
+                    collationOptions: {
+                        sensitivity: ['base', 'accent', 'case', 'variant']
+                    }
                 };
             }
             return null;
@@ -988,6 +999,9 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
             return val[attr];
         }
         _getAllVals(val) {
+            if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+                return val;
+            }
             return Object.keys(val).map((key) => {
                 return this._getVal(val, key);
             });
@@ -1054,7 +1068,7 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                 }
                 return row;
             });
-            const resultMetadata = resultKeys.map((value) => {
+            let resultMetadata = resultKeys.map((value) => {
                 return new this.ItemMetadata(value);
             });
             let result = new this.FetchListResult(params, filteredResultData, resultMetadata);
@@ -1124,12 +1138,24 @@ define(['ojs/ojcore-base', 'ojs/ojmap', 'ojs/ojset', 'ojs/ojdataprovider', 'ojs/
                         const strX = typeof xval === 'string' ? xval : new String(xval).toString();
                         const strY = typeof yval === 'string' ? yval : new String(yval).toString();
                         if (direction === 'ascending') {
+                            if (strX === 'null' || strX === 'undefined') {
+                                return 1;
+                            }
+                            if (strY === 'null' || strY === 'undefined') {
+                                return -1;
+                            }
                             compareResult = strX.localeCompare(strY, undefined, {
                                 numeric: true,
                                 sensitivity: 'base'
                             });
                         }
                         else {
+                            if (strX === 'null' || strX === 'undefined') {
+                                return -1;
+                            }
+                            if (strY === 'null' || strY === 'undefined') {
+                                return 1;
+                            }
                             compareResult = strY.localeCompare(strX, undefined, {
                                 numeric: true,
                                 sensitivity: 'base'

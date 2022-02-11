@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+@import "../../../button/themes/stable/_oj-button-ignore.scoped.cssvars.scss";
+
+@include module-include-once("stable.variables.buttonset.scoped") {
+  
+  /* buttonset                  */
+  /* -------------------------- */
+  oj-buttonset-one.oj-color-invert,
+  oj-buttonset-many.oj-color-invert,
+  .oj-color-invert oj-buttonset-one,
+  .oj-color-invert oj-buttonset-many {
+    --oj-button-outlined-chrome-bg-color:                          var(--oj-core-bg-color-active);
+    --oj-button-outlined-chrome-text-color:                        var(--oj-core-text-color-secondary);
+    --oj-button-outlined-chrome-bg-color-disabled:                 var(--oj-button-solid-chrome-bg-color-disabled);
+    --oj-buttonset-outlined-chrome-internal-border-color:          var(--oj-button-outlined-chrome-border-color);
+    --oj-buttonset-outlined-chrome-internal-border-color-selected: var(--oj-button-outlined-chrome-border-color);
+  }
+ 
+  oj-buttonset-one,
+  oj-buttonset-many {
+    --oj-button-outlined-chrome-bg-color:          var(--oj-core-bg-color-active);
+    --oj-button-outlined-chrome-text-color:        var(--oj-core-text-color-secondary);
+    --oj-button-outlined-chrome-bg-color-disabled: var(--oj-button-solid-chrome-bg-color-disabled);
+  }
+}

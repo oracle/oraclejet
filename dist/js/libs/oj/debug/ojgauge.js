@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcomponentcore', 'ojs/ojcore-base', 'ojs/ojdvt-base', 'jquery', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number', 'ojs/ojlabelledbyutils', 'ojs/ojconfig', 'ojs/ojgauge-toolkit'], function (ojcomponentcore, oj, DvtAttributeUtils, $, Logger, ConverterUtils, NumberConverter, LabelledByUtils, Config, ojgaugeToolkit) { 'use strict';
+define(['ojs/ojcomponentcore', 'ojs/ojcore-base', 'ojs/ojdvt-base', 'jquery', 'ojs/ojlogger', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter-number', 'ojs/ojlabelledbyutils', 'ojs/ojgauge-toolkit'], function (ojcomponentcore, oj, DvtAttributeUtils, $, Logger, ConverterUtils, NumberConverter, LabelledByUtils, ojgaugeToolkit) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   DvtAttributeUtils = DvtAttributeUtils && Object.prototype.hasOwnProperty.call(DvtAttributeUtils, 'default') ? DvtAttributeUtils['default'] : DvtAttributeUtils;
@@ -37,6 +37,16 @@ var __oj_led_gauge_metadata =
           "value": ""
         }
       }
+    },
+    "markerSize": {
+      "type": "string",
+      "enumValues": [
+        "fit",
+        "lg",
+        "md",
+        "sm"
+      ],
+      "value": "fit"
     },
     "max": {
       "type": "number",
@@ -374,7 +384,10 @@ var __oj_rating_gauge_metadata =
       "enumValues": [
         "fit",
         "large",
+        "lg",
+        "md",
         "medium",
+        "sm",
         "small"
       ],
       "value": "fit"
@@ -764,6 +777,16 @@ var __oj_status_meter_gauge_metadata =
       "type": "Array<Object>",
       "value": []
     },
+    "size": {
+      "type": "string",
+      "enumValues": [
+        "fit",
+        "lg",
+        "md",
+        "sm"
+      ],
+      "value": "fit"
+    },
     "startAngle": {
       "type": "number",
       "value": 90
@@ -933,8 +956,27 @@ var __oj_status_meter_gauge_metadata =
        * @protected
        */
       _ComponentCreate: function () {
+        this._SetSizeClass();
         this._super();
         this._SetLocaleHelpers(NumberConverter, ConverterUtils);
+      },
+
+      _OptionChangeHandler: function (options) {
+        this._SetSizeClass();
+        this._super(options);
+      },
+
+      _GetSizeClass: function () {
+        // subcomponents should override
+     },
+
+      _SetSizeClass: function () {
+        var newClass = this._GetSizeClass();
+        if (newClass !== this._sizeClass) {
+          this.element.removeClass(this._sizeClass);
+          this._sizeClass = newClass;
+          this.element.addClass(newClass);
+        }
       },
 
       _ProcessStyles: function (optionsCopy) {
@@ -954,8 +996,9 @@ var __oj_status_meter_gauge_metadata =
       },
       _AfterCreate: function () {
         this._super();
-        var flags = {};
-        flags._context = { writeback: true, internalSet: true, readOnly: true };
+        var flags = {
+          _context: { writeback: true, internalSet: true, readOnly: true }
+        };
         this.option('rawValue', this.options.value, flags);
         if (this._SupportsOjLabel()) {
           var labelledBy = this.options.labelledBy;
@@ -1021,8 +1064,9 @@ var __oj_status_meter_gauge_metadata =
         }
 
         if (key === 'value') {
-          var rawValueFlags = {};
-          rawValueFlags._context = { writeback: true, internalSet: true, readOnly: true };
+          var rawValueFlags = {
+            _context: { writeback: true, internalSet: true, readOnly: true }
+          };
           this.option('rawValue', value, rawValueFlags);
         }
 
@@ -1047,8 +1091,7 @@ var __oj_status_meter_gauge_metadata =
         var subId = locator.subId;
 
         // Convert the supported locators
-        if (subId === 'oj-dialgauge-tooltip'
-            || subId === 'oj-ledgauge-tooltip'
+        if (subId === 'oj-ledgauge-tooltip'
             || subId === 'oj-ratinggauge-tooltip'
             || subId === 'oj-statusmetergauge-tooltip') {
           subId = 'tooltip';
@@ -1062,301 +1105,6 @@ var __oj_status_meter_gauge_metadata =
         return subId;
       }
     }, true);
-
-  /**
-   * @ojcomponent oj.ojDialGauge
-   * @ignore
-   * @augments oj.dvtBaseGauge
-   * @since 0.7.0
-   *
-   * @classdesc
-   * <h3 id="dialGaugeOverview-section">
-   *   JET Dial Gauge Component
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dialGaugeOverview-section"></a>
-   * </h3>
-   *
-   * <p>Dial gauge component for JET.  Dial gauges are used to display a metric value in relation to the minimum and
-   * maximum possible values for that metric.</p>
-   *
-   * {@ojinclude "name":"warning"}
-   *
-   * <pre class="prettyprint">
-   * <code>
-   * &lt;div data-bind="ojComponent: {
-   *   component: 'ojDialGauge',
-   *   value: 63, min: 0, max: 100,
-   *   metricLabel: {rendered: 'on'}
-   * }"/>
-   * </code>
-   * </pre>
-   *
-   * {@ojinclude "name":"a11yKeyboard"}
-   *
-   * <h3 id="touch-section">
-   *   Touch End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"touchDoc"}
-   *
-   * <h3 id="keyboard-section">
-   *   Keyboard End User Information
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"keyboardDoc"}
-   *
-   * <h3 id="perf-section">
-   *   Performance
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"fragment_trackResize"}
-   *
-   * <h3 id="rtl-section">
-   *   Reading direction
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
-   * </h3>
-   *
-   * {@ojinclude "name":"rtl"}
-   *
-   * @desc Creates a JET Dial Gauge.
-   * @example <caption>Initialize the Dial Gauge with no options specified:</caption>
-   * $(".selector").ojDialGauge();
-   *
-   * @example <caption>Initialize the Dial Gauge with some options:</caption>
-   * $(".selector").ojDialGauge({value: 63, min: 0, max: 100, metricLabel: {rendered: 'on'}});
-   *
-   * @example <caption>Initialize the Dial Gauge via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
-   * &lt;div data-bind="ojComponent: {component: 'ojDialGauge'}">
-   */
-  oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
-    {
-      widgetEventPrefix: 'oj',
-      options: {
-      /**
-       * <p>The <code class="prettyprint">rawValue</code> is the read-only option for retrieving
-       * the transient value from the dial gauge.</p>
-       *
-       * <p>This is a read-only option so page authors cannot set or change it directly.</p>
-       * @expose
-       * @instance
-       * @type {?number|undefined}
-       * @memberof oj.ojDialGauge
-       * @since 1.2
-       * @readonly
-       */
-        rawValue: undefined
-      },
-
-
-      _CreateDvtComponent: function (context, callback, callbackObj) {
-        this._focusable({ element: this.element, applyHighlight: true });
-        return ojgaugeToolkit.DialGauge.newInstance(context, callback, callbackObj);
-      },
-
-
-      _ConvertSubIdToLocator: function (subId) {
-        var locator = {};
-
-        if (subId === 'tooltip') {
-          locator.subId = 'oj-dialgauge-tooltip';
-        }
-        return locator;
-      },
-
-
-      _GetComponentStyleClasses: function () {
-        var styleClasses = this._super();
-        styleClasses.push('oj-dialgauge');
-        return styleClasses;
-      },
-
-
-      _Render: function () {
-        // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-        if (this.element.attr('title')) {
-          this.options.shortDesc = this.element.attr('title');
-          this.element.data(this.element, 'title', this.element.attr('title'));
-          this.element.removeAttr('title');
-        } else if (this.element.data('title')) {
-          this.options.shortDesc = this.element.data('title');
-        }
-
-        // Set images for dial gauge
-        this._setImages();
-
-        // Call the super to render
-        this._super();
-      },
-
-      /**
-       * Applies image URLs to the options object passed into the dial gauge.
-       * @private
-       */
-      _setImages: function () {
-        // Pass the correct background image information set the default circleAlta and needleAlta.
-        var backgroundImages = this.options.background;
-        if (backgroundImages == null) {
-          backgroundImages = 'circleAlta';
-          this.options.background = 'circleAlta';
-        }
-        var indicatorImages = this.options.indicator;
-        if (indicatorImages == null) {
-          indicatorImages = 'needleAlta';
-          this.options.indicator = 'needleAlta';
-        }
-        if (typeof backgroundImages === 'string') {
-          var backgroundInfo = [
-            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-200x200.png'),
-              width: 200,
-              height: 200 },
-            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-400x400.png'),
-              width: 400,
-              height: 400 }
-          ];
-          if (backgroundImages === 'rectangleAlta') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-200x200.png'),
-                width: 200,
-                height: 154 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-400x400.png'),
-                width: 400,
-                height: 309 }];
-          } else if (backgroundImages === 'domeAlta') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-200x200.png'),
-                width: 200,
-                height: 154 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-400x400.png'),
-                width: 400,
-                height: 309 }
-            ];
-          } else if (backgroundImages === 'circleAntique') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-200x200.png'),
-                width: 200,
-                height: 200 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-400x400.png'),
-                width: 400,
-                height: 400 }
-            ];
-          } else if (backgroundImages === 'rectangleAntique') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-200x200.png'),
-                width: 200,
-                height: 168 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-400x400.png'),
-                width: 400,
-                height: 335 }
-            ];
-          } else if (backgroundImages === 'domeAntique') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-200x200.png'),
-                width: 200,
-                height: 176 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-400x400.png'),
-                width: 400,
-                height: 352 }
-            ];
-          } else if (backgroundImages === 'circleLight') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-200x200.png'),
-                width: 200,
-                height: 200 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-400x400.png'),
-                width: 400,
-                height: 400 }
-            ];
-          } else if (backgroundImages === 'rectangleLight') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-200x200.png'),
-                width: 200,
-                height: 154 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-400x400.png'),
-                width: 400,
-                height: 307 }
-            ];
-          } else if (backgroundImages === 'domeLight') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-200x200.png'),
-                width: 200,
-                height: 138 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-400x400.png'),
-                width: 400,
-                height: 276 }
-            ];
-          } else if (backgroundImages === 'circleDark') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-200x200.png'),
-                width: 200,
-                height: 200 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-400x400.png'),
-                width: 400,
-                height: 400 }
-            ];
-          } else if (backgroundImages === 'rectangleDark') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-200x200.png'),
-                width: 200,
-                height: 154 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-400x400.png'),
-                width: 400,
-                height: 307 }
-            ];
-          } else if (backgroundImages === 'domeDark') {
-            backgroundInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-200x200.png'),
-                width: 200,
-                height: 138 },
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-400x400.png'),
-                width: 400,
-                height: 276 }
-            ];
-          }
-          this.options._backgroundImages = backgroundInfo;
-        }
-        if (typeof indicatorImages === 'string') {
-          var indicatorInfo = [
-            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-needle-1600x1600.png'),
-              width: 374,
-              height: 575 }
-          ];
-          if (indicatorImages === 'needleAntique') {
-            indicatorInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-needle-1600x1600.png'),
-                width: 81,
-                height: 734 }
-            ];
-          } else if (indicatorImages === 'needleDark') {
-            indicatorInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-needle-1600x1600.png'),
-                width: 454,
-                height: 652 }
-            ];
-          } else if (indicatorImages === 'needleLight') {
-            indicatorInfo = [
-              { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-needle-1600x1600.png'),
-                width: 454,
-                height: 652 }
-            ];
-          }
-          this.options._indicatorImages = indicatorInfo;
-        }
-      },
-
-      /**
-       * Returns the gauge's metric label.
-       * @return {Object} The metric label object
-       * @expose
-       * @instance
-       * @memberof oj.ojDialGauge
-       */
-      getMetricLabel: function () {
-        var auto = this._component.getAutomation();
-        return auto.getMetricLabel();
-      }
-    });
 
   /**
    * @ojcomponent oj.ojLedGauge
@@ -1578,6 +1326,21 @@ var __oj_status_meter_gauge_metadata =
           textType: 'number'
         },
 
+        /** Specifies the size of the led gauge.
+        * @expose
+        * @name markerSize
+        * @memberof oj.ojLedGauge
+        * @ojshortdesc Specifies the led size.
+        * @instance
+        * @type {string=}
+        * @ojvalue {string} "sm" {"description": "Small size, as determined by the theme, will be used for the gauge."}
+        * @ojvalue {string} "md" {"description": "Medium size, as determined by the theme, will be used for the gauge."}
+        * @ojvalue {string} "lg" {"description": "Large size, as determined by the theme, will be used for the gauge."}
+        * @ojvalue {string} "fit" {"description": "The size of the led will be determined based on application styling. If no explicit component size is specified, a default size will be used."}
+        * @default "fit"
+        */
+        markerSize: 'fit',
+
         /**
          * The maximum value of the gauge.
          * @expose
@@ -1662,7 +1425,7 @@ var __oj_status_meter_gauge_metadata =
          * @memberof oj.ojLedGauge
          * @ojshortdesc An array of objects specifying the gauge thresholds.
          * @instance
-         * @type {Array.<Object>=}
+         * @type {(Array.<Object>)=}
          * @ojsignature {target: "Type", value: "Array<oj.ojLedGauge.Threshold>", jsdocOverride: true}
          * @default []
          */
@@ -1721,14 +1484,14 @@ var __oj_status_meter_gauge_metadata =
          * @name value
          * @memberof oj.ojLedGauge
          * @instance
-         * @type {(number|null)=}
+         * @type {number|null}
          * @ojwriteback
          * @ojeventgroup common
          */
         value: null,
 
         /**
-         * Defines whether visual effects such as overlays are applied to the gauge.
+         * Defines whether the theme specific visual effects such as overlays and gradients are applied to the gauge.
          * @expose
          * @name visualEffects
          * @memberof oj.ojLedGauge
@@ -1744,7 +1507,7 @@ var __oj_status_meter_gauge_metadata =
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
         this._focusable({ element: this.element, applyHighlight: true });
-        return ojgaugeToolkit.LedGauge.newInstance(context, callback, callbackObj);
+        return new ojgaugeToolkit.LedGauge(context, callback, callbackObj);
       },
 
 
@@ -1761,7 +1524,13 @@ var __oj_status_meter_gauge_metadata =
       _GetComponentStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses.push('oj-ledgauge');
+        styleClasses.push(this._sizeClass);
         return styleClasses;
+      },
+
+      _GetSizeClass: function () {
+        // class is added to elemet in _GetComponentStyleClasses
+        return `oj-ledgauge-${this.options.markerSize}`;
       },
 
 
@@ -1827,8 +1596,7 @@ var __oj_status_meter_gauge_metadata =
    * &lt;/oj-rating-gauge>
    * </code>
    * </pre>
-   *
-   * {@ojinclude "name":"a11yKeyboard"}
+   * {@ojinclude "name":"a11y"}
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -1853,6 +1621,7 @@ var __oj_status_meter_gauge_metadata =
    *
    * {@ojinclude "name":"rtl"}
    */
+  const OJ_RATING_GUAGE_FIT = 'oj-rating-gauge-fit';
   oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
     {
       widgetEventPrefix: 'oj',
@@ -2185,17 +1954,23 @@ var __oj_status_meter_gauge_metadata =
          */
         disabled: false,
 
-        /** Specifies the size of the individual rating gauge shapes.
+        /** Specifies the size of the individual rating gauge shapes. Note that small, medium and large were deprecated in 12.0.0. Use sm, md and lg instead.
         * @expose
         * @name size
         * @memberof oj.ojRatingGauge
-        * @ojshortdesc Specifies the size of the rating gauge item.
+        * @ojshortdesc Specifies the size of the rating gauge item. See the Help documentation for more information.
         * @instance
         * @type {string=}
-        * @ojvalue {string} "small" {"description": "Small size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
-        * @ojvalue {string} "medium" {"description": "Medium size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
-        * @ojvalue {string} "large" {"description": "Large size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes."}
+        * @ojvalue {string} "sm" {"description": "Small size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
+        * @ojvalue {string} "md" {"description": "Medium size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes. Not recommended for editable gauges."}
+        * @ojvalue {string} "lg" {"description": "Large size, as determined by the theme, will be used for the rating gauge shapes. The component size will be computed to fit the individual shapes."}
         * @ojvalue {string} "fit" {"description": "The size of the individual rating gauge shapes will be determined based on the component size and the value of <code>max</code>. If no explicit component size is specified, a theme-specific default will be used."}
+        * @ojvalue {string} "small" {"description": "Small size, as determined by the theme, will be used for the rating gauge shapes. Deprecated in 12.0.0. Use sm instead."}
+        * @ojvalue {string} "medium" {"description": "Medium size, as determined by the theme, will be used for the rating gauge shapes. Deprecated in 12.0.0. Use md instead."}
+        * @ojvalue {string} "large" {"description": "Large size, as determined by the theme, will be used for the rating gauge shapes. Deprecated in 12.0.0. Use lg instead."}
+        * @ojdeprecated [{target:'propertyValue', for:"small", since: "12.0.0", description: "This value will be removed in the future. Please use sm."},
+        *                {target:'propertyValue', for:"medium", since: "12.0.0", description: "This value will be removed in the future. Please use md."},
+        *                {target:'propertyValue', for:"large", since: "12.0.0", description: "This value will be removed in the future. Please use lg."}]
         * @default "fit"
         */
        size: 'fit',
@@ -2309,7 +2084,7 @@ var __oj_status_meter_gauge_metadata =
          * @memberof oj.ojRatingGauge
          * @ojshortdesc An array of objects specifying the gauge thresholds.
          * @instance
-         * @type {Array.<Object>=}
+         * @type {(Array.<Object>)=}
          * @ojsignature {target: "Type", value: "Array<oj.ojRatingGauge.Threshold>", jsdocOverride: true}
          * @default []
          */
@@ -2438,7 +2213,7 @@ var __oj_status_meter_gauge_metadata =
          * @name value
          * @memberof oj.ojRatingGauge
          * @instance
-         * @type {(number|null)=}
+         * @type {number|null}
          * @ojwriteback
          * @ojmin 0
          * @ojeventgroup common
@@ -2446,7 +2221,7 @@ var __oj_status_meter_gauge_metadata =
         value: null,
 
         /**
-         * Defines whether visual effects such as overlays are applied to the gauge.
+         * Defines whether theme specific visual effects such as overlays and gradients are applied to the gauge.
          * @expose
          * @name visualEffects
          * @memberof oj.ojRatingGauge
@@ -2462,7 +2237,7 @@ var __oj_status_meter_gauge_metadata =
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
         this._focusable({ element: this.element, applyHighlight: true });
-        return ojgaugeToolkit.RatingGauge.newInstance(context, callback, callbackObj);
+        return new ojgaugeToolkit.RatingGauge(context, callback, callbackObj);
       },
 
 
@@ -2483,7 +2258,7 @@ var __oj_status_meter_gauge_metadata =
         var styleClasses = this._super();
         styleClasses.push('oj-ratinggauge');
         if (this.options.size === 'fit') {
-          styleClasses.push('oj-rating-gauge-fit');
+          styleClasses.push(OJ_RATING_GUAGE_FIT);
         }
         // TODO  Add style classes for rating gauge selected/hover/unselected/changed
         return styleClasses;
@@ -2492,17 +2267,18 @@ var __oj_status_meter_gauge_metadata =
 
       _GetChildStyleClasses: function () {
         var styleClasses = this._super();
+
         styleClasses['oj-rating-gauge-hover'] = [
           { path: 'hoverState/color', property: 'fill' },
           { path: 'hoverState/borderColor', property: 'stroke' }
         ];
 
-        styleClasses['oj-rating-gauge-selected'] = [
+        styleClasses[`oj-rating-gauge-selected ${this.options.readonly ? 'oj-rating-gauge-readonly' : ''}`] = [
           { path: 'selectedState/color', property: 'fill' },
           { path: 'selectedState/borderColor', property: 'stroke' }
         ];
 
-        styleClasses['oj-rating-gauge-unselected'] = [
+        styleClasses[`oj-rating-gauge-unselected ${this.options.readonly ? 'oj-rating-gauge-readonly' : ''}`] = [
           { path: 'unselectedState/color', property: 'fill' },
           { path: 'unselectedState/borderColor', property: 'stroke' }
         ];
@@ -2512,15 +2288,15 @@ var __oj_status_meter_gauge_metadata =
           { path: 'changedState/borderColor', property: 'stroke' }
         ];
 
-        styleClasses['oj-rating-gauge-shape-small'] = {
-          path: '_shapeSize/small', property: 'width'
+        styleClasses['oj-rating-gauge-shape-sm'] = {
+          path: '_shapeSize/sm', property: 'width'
         };
-        styleClasses['oj-rating-gauge-shape-medium'] = {
-          path: '_shapeSize/medium', property: 'width'
+        styleClasses['oj-rating-gauge-shape-md'] = {
+          path: '_shapeSize/md', property: 'width'
         };
 
-        styleClasses['oj-rating-gauge-shape-large'] = {
-          path: '_shapeSize/large', property: 'width'
+        styleClasses['oj-rating-gauge-shape-lg'] = {
+          path: '_shapeSize/lg', property: 'width'
         };
         return styleClasses;
       },
@@ -2551,7 +2327,8 @@ var __oj_status_meter_gauge_metadata =
       _ProcessStyles: function (optionsCopy) {
         var options = optionsCopy;
         this._super(options);
-        var size = options.size;
+        var aliasedSizeValues = { small: 'sm', medium: 'md', large: 'lg' };
+        var size = aliasedSizeValues[options.size] || options.size;
         if (size !== 'fit') {
           var shapeDim = parseInt(options._shapeSize[size], 10);
           var isHoriz = options.orientation === 'horizontal';
@@ -2567,9 +2344,9 @@ var __oj_status_meter_gauge_metadata =
         this._super();
 
         if (this.options.size === 'fit') {
-          this.element.addClass('oj-rating-gauge-fit');
+          this.element.addClass(OJ_RATING_GUAGE_FIT);
         } else {
-          this.element.removeClass('oj-rating-gauge-fit');
+          this.element.removeClass(OJ_RATING_GUAGE_FIT);
         }
       },
 
@@ -3050,6 +2827,21 @@ var __oj_status_meter_gauge_metadata =
          */
         orientation: 'horizontal',
 
+        /** Specifies the size of the status meter gauge.
+        * @expose
+        * @name size
+        * @memberof oj.ojStatusMeterGauge
+        * @ojshortdesc Specifies the gauge size.
+        * @instance
+        * @type {string=}
+        * @ojvalue {string} "sm" {"description": "Small size, as determined by the theme, will be used for the size of the gauge."}
+        * @ojvalue {string} "md" {"description": "Medium size, as determined by the theme, will be used for the size of the gauge."}
+        * @ojvalue {string} "lg" {"description": "Large size, as determined by the theme, will be used for the size of the gauge."}
+        * @ojvalue {string} "fit" {"description": "The size of the gauge will be determined based on the application styling. If no explicit component size is specified, a default size will be used."}
+        * @default "fit"
+        */
+        size: 'fit',
+
         /**
          * Plot Area for Status Meter Gauge
          * @expose
@@ -3283,7 +3075,7 @@ var __oj_status_meter_gauge_metadata =
          * @memberof oj.ojStatusMeterGauge
          * @ojshortdesc An array of objects specifying the gauge thresholds.
          * @instance
-         * @type {Array.<Object>=}
+         * @type {(Array.<Object>)=}
          * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.Threshold>", jsdocOverride: true}
          * @default []
          */
@@ -3295,14 +3087,14 @@ var __oj_status_meter_gauge_metadata =
          * @name value
          * @memberof oj.ojStatusMeterGauge
          * @instance
-         * @type {(number|null)=}
+         * @type {number|null}
          * @ojwriteback
          * @ojeventgroup common
          */
         value: null,
 
         /**
-         * Defines whether visual effects such as overlays are applied to the gauge.
+         * Defines whether the theme specific visual effects such as overlays and gradients are applied to the gauge.
          * @expose
          * @name visualEffects
          * @memberof oj.ojStatusMeterGauge
@@ -3318,7 +3110,7 @@ var __oj_status_meter_gauge_metadata =
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
         this._focusable({ element: this.element, applyHighlight: true });
-        return ojgaugeToolkit.StatusMeterGauge.newInstance(context, callback, callbackObj);
+        return new ojgaugeToolkit.StatusMeterGauge(context, callback, callbackObj);
       },
 
 
@@ -3335,9 +3127,14 @@ var __oj_status_meter_gauge_metadata =
       _GetComponentStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses.push('oj-statusmetergauge');
+        styleClasses.push(this._sizeClass);
         return styleClasses;
       },
 
+      _GetSizeClass: function () {
+        // class is added to elemet in _GetComponentStyleClasses
+        return `oj-statusmetergauge-${this.options.orientation}-${this.options.size}`;
+      },
 
       _GetComponentRendererOptions: function () {
         return [{ path: 'tooltip/renderer', slot: 'tooltipTemplate' },
@@ -3364,6 +3161,9 @@ var __oj_status_meter_gauge_metadata =
       _GetChildStyleClasses: function () {
         var styleClasses = this._super();
         styleClasses['oj-dvtbase oj-statusmetergauge'] = { path: 'animationDuration', property: 'ANIM_DUR' };
+        styleClasses['oj-statusmeter-gauge-plotarea'] = [
+          { path: 'plotArea/borderColor', property: 'border-color' },
+          { path: 'plotArea/color', property: 'color' }];
         return styleClasses;
       },
 
@@ -3397,560 +3197,6 @@ var __oj_status_meter_gauge_metadata =
       }
 
     });
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Gesture</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td><kbd>Press & Hold</kbd></td>
-   *       <td>Display tooltip.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Drag</kbd></td>
-   *       <td>Value change when <code class="prettyprint">readOnly</code> is <code class="prettyprint">false</code>.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-   * @memberof oj.ojDialGauge
-   */
-
-  /**
-   * <table class="keyboard-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Key</th>
-   *       <th>Action</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td><kbd>Enter</kbd></td>
-   *       <td>Submit the current value of the gauge.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Tab</kbd></td>
-   *       <td>Move focus to next component and submit the current value of the gauge.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>Shift + Tab</kbd></td>
-   *       <td>Move focus to previous component.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>UpArrow</kbd></td>
-   *       <td>Increase rawValue. Value is set after using <kbd>Enter</kbd> or <kbd>Tab</kbd> to submit.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>DownArrow</kbd></td>
-   *       <td>Decrease rawValue. Value is set after using <kbd>Enter</kbd> or <kbd>Tab</kbd> to submit.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>LeftArrow</kbd></td>
-   *       <td>Decrease rawValue in left-to-right locales. Increase rawValue in right-to-left locales. Value is set after using <kbd>Enter</kbd> or <kbd>Tab</kbd> to submit.</td>
-   *     </tr>
-   *     <tr>
-   *       <td><kbd>RightArrow</kbd></td>
-   *       <td>Increase rawValue in left-to-right locales. Decrease rawValue in right-to-left locales. Value is set after using <kbd>Enter</kbd> or <kbd>Tab</kbd> to submit.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-   * @memberof oj.ojDialGauge
-   */
-
-  /**
-   * The metric value.
-   * @expose
-   * @name value
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The minimum value of the gauge.
-   * @expose
-   * @name min
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">0</code>
-   */
-  /**
-   * The maximum value of the gauge.
-   * @expose
-   * @name max
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">100</code>
-   */
-  /**
-   *  An object containing an optional callback function for tooltip customization.
-   * @expose
-   * @name tooltip
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   *  A function that returns a custom tooltip. The function takes a dataContext argument, provided by the gauge, with the following properties: <ul> <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> <li>label: The computed metric label.</li> <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> </ul> The function may return an HTML element, which will be appended to the tooltip, or a tooltip string.
-   * @expose
-   * @name tooltip.renderer
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {function(Object)}
-   * @default null
-   */
-  /**
-   * An object or string defining the background specification for the gauge. Acceptable string options are: circleAlta, domeAlta, rectangleAlta, circleLight, domeLight, rectangleLight, circleDark, domeDark, rectangleDark, circleAntique, domeAntique, rectangleAntique
-   * @expose
-   * @name background
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {object|string}
-   * @default null
-   */
-  /**
-   * An array of objects with the following properties, used to the define the image for the background. Multiple versions of the same image to be specified for different resolutions and for right to left locales, and the first image with enough detail for the requested resolution will be used.
-   * @expose
-   * @name background.images
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {Array.<Object>}
-   * @default null
-   */
-  /**
-   * The URI specifying the location of the image resource.
-   * @expose
-   * @name background.images[].src
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @default null
-   */
-  /**
-   * The width of this image resource. The size of the first image is considered the reference size, upon which the anchor and other coordinates are based.
-   * @expose
-   * @name background.images[].width
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The height of this image resource. The size of the first image is considered the reference size, upon which the anchor and other coordinates are based.
-   * @expose
-   * @name background.images[].height
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * Specifies the text direction for which this image is used.
-   * @expose
-   * @name background.images[].dir
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "rtl"
-   * @ojvalue {string} "ltr"
-   * @default <code class="prettyprint">"ltr"</code>
-   */
-  /**
-   * The x coordinate of the indicator anchor point. Defaults to the center of the background.
-   * @expose
-   * @name background.anchorX
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The y coordinate of the indicator anchor point. Defaults to the center of the background.
-   * @expose
-   * @name background.anchorY
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The start angle of the dial in degrees.
-   * @expose
-   * @name background.startAngle
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">180</code>
-   */
-  /**
-   * The angular extent of the dial in degrees.
-   * @expose
-   * @name background.angleExtent
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">180</code>
-   */
-  /**
-   * The distance from the anchor to the center of the tick labels.
-   * @expose
-   * @name background.radius
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The height bound for the tick labels.
-   * @expose
-   * @name background.tickLabelHeight
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The width bound for the tick labels.
-   * @expose
-   * @name background.tickLabelWidth
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The number of ticks that have labels. By default, no ticks are drawn.
-   * @expose
-   * @name background.majorTickCount
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">0</code>
-   */
-  /**
-   * An object defining the bounds of the metric label. By default, the metric label is centered within the gauge.
-   * @expose
-   * @name background.metricLabelBounds
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   * The x coordinate of the bounding box.
-   * @expose
-   * @name background.metricLabelBounds.x
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The y coordinate of the bounding box.
-   * @expose
-   * @name background.metricLabelBounds.y
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The width of the bounding box.
-   * @expose
-   * @name background.metricLabelBounds.width
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The height of the bounding box.
-   * @expose
-   * @name background.metricLabelBounds.height
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The length of the indicator as a fraction of the background radius. Valid values are between 0 and 1.
-   * @expose
-   * @name background.indicatorLength
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default <code class="prettyprint">0.7</code>
-   */
-  /**
-   * An object or string defining the indicator specification for the gauge. Acceptable string options are: needleAlta, needleLight, needleDark, needleAntique
-   * @expose
-   * @name indicator
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {object|string}
-   * @default null
-   */
-  /**
-   * An array of objects with the following properties, used to the define the image for the indicator. Multiple versions of the same image to be specified for different resolutions, and the first image with enough detail for the requested resolution will be used.
-   * @expose
-   * @name indicator.images
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {Array.<Object>}
-   * @default null
-   */
-  /**
-   * The URI specifying the location of the image resource. The image must be provided with the indicator at 90 degrees (pointing up).
-   * @expose
-   * @name indicator.images[].src
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @default null
-   */
-  /**
-   * The width of this image resource. The size of the first image is considered the reference size, upon which the anchor and other coordinates are based.
-   * @expose
-   * @name indicator.images[].width
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The height of this image resource. The size of the first image is considered the reference size, upon which the anchor and other coordinates are based.
-   * @expose
-   * @name indicator.images[].height
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The x coordinate of the indicator anchor point. Defaults to the center of the indicator.
-   * @expose
-   * @name indicator.anchorX
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * The y coordinate of the indicator anchor point. Defaults to the bottom of the indicator.
-   * @expose
-   * @name indicator.anchorY
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * An object defining the value label.
-   * @expose
-   * @name metricLabel
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   * The CSS style string defining the style of the label.
-   * @expose
-   * @name metricLabel.style
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @default null
-   */
-  /**
-   * Defines if the label is rendered.
-   * @expose
-   * @name metricLabel.rendered
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "on"
-   * @ojvalue {string} "off"
-   * @default "off"
-   */
-  /**
-   * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-   * @expose
-   * @name metricLabel.scaling
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "none"
-   * @ojvalue {string} "thousand"
-   * @ojvalue {string} "million"
-   * @ojvalue {string} "billion"
-   * @ojvalue {string} "trillion"
-   * @ojvalue {string} "quadrillion"
-   * @ojvalue {string} "auto"
-   * @default "auto"
-   */
-  /**
-   * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-   * @expose
-   * @name metricLabel.converter
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   * An object defining the dial tick labels.
-   * @expose
-   * @name tickLabel
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   * The CSS style string defining the style of the label.
-   * @expose
-   * @name tickLabel.style
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @default null
-   */
-  /**
-   * Define the label to be displayed as number or as a percentage of the total value.
-   * @expose
-   * @name tickLabel.textType
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "percent"
-   * @ojvalue {string} "number"
-   * @default <code class="prettyprint">"number"</code>
-   */
-  /**
-   * Defines if the label is rendered.
-   * @expose
-   * @name tickLabel.rendered
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "on"
-   * @ojvalue {string} "off"
-   * @default "off"
-   */
-  /**
-   * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-   * @expose
-   * @name tickLabel.scaling
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "none"
-   * @ojvalue {string} "thousand"
-   * @ojvalue {string} "million"
-   * @ojvalue {string} "billion"
-   * @ojvalue {string} "trillion"
-   * @ojvalue {string} "quadrillion"
-   * @ojvalue {string} "auto"
-   * @default "auto"
-   */
-  /**
-   * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-   * @expose
-   * @name tickLabel.converter
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {Object}
-   * @default null
-   */
-  /**
-   * The duration of the animations, in milliseconds. Also accepts CSS strings such as 1s and 1000ms.
-   * @expose
-   * @ignore
-   * @name animationDuration
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {number}
-   * @default null
-   */
-  /**
-   * Defines the animation that is applied on data changes.
-   * @expose
-   * @name animationOnDataChange
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "auto"
-   * @ojvalue {string} "none"
-   * @default "none"
-   */
-  /**
-   * Defines the animation that is shown on initial display.
-   * @expose
-   * @name animationOnDisplay
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {string}
-   * @ojvalue {string} "auto"
-   * @ojvalue {string} "none"
-   * @default "none"
-   */
-  /**
-   * Defines whether the value of the gauge can be changed by the end user.
-   * @expose
-   * @name readOnly
-   * @memberof oj.ojDialGauge
-   * @instance
-   * @type {boolean}
-   * @default <code class="prettyprint">true</code>
-   */
-
-  // SubId Locators **************************************************************
-
-  /**
-   * <p>Sub-ID for the the dial guage tooltip.</p>
-   *
-   * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and
-   * <a href="#getSubIdByNode">getSubIdByNode</a> methods for details.</p>
-   *
-   * @ojsubid
-   * @member
-   * @name oj-dialgauge-tooltip
-   * @memberof oj.ojDialGauge
-   * @instance
-   *
-   * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
-   * var nodes = $( ".selector" ).ojDialGauge( "getNodeBySubId", {'subId': 'oj-dialgauge-tooltip'} );
-   */
-
-  /**
-   * The knockout template used to render the content of the tooltip.
-   *
-   * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
-   * component option. The following variables are also passed into the template:
-   *  <ul>
-   *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
-   *    <li>label: The computed metric label.</li>
-   *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li>
-   *  </ul>
-   *
-   * @ojbindingonly
-   * @name tooltip.template
-   * @memberof! oj.ojDialGauge
-   * @instance
-   * @type {string|null}
-   * @default null
-   */
 
   /**
    * <p>This element has no touch interaction.  </p>
@@ -4026,6 +3272,23 @@ var __oj_status_meter_gauge_metadata =
    *  &lt;/template>
    * &lt;/oj-led-gauge>
    */
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+   /**
+   * @ojstylevariableset oj-led-gauge-css-set1
+   * @ojdisplayname metricLabel
+   * @ojstylevariable --oj-gauge-metric-label-font-weight {description: "Font weight for metric label.", formats: ["font_weight"], help: "oj-led-gauge-css-set1"}
+   * @memberof oj.ojLedGauge
+   */
+  /**
+   * @ojstylevariableset oj-led-gauge-css-set2
+   * @ojdisplayname markerSize
+   * @ojstylevariable oj-led-gauge-sm-size {description: "Led gauge small size", formats: ["length"], help: "oj-led-gauge-css-set2"}
+   * @ojstylevariable oj-led-gauge-md-size {description: "Led gauge medium size",formats: ["length"], help: "oj-led-gauge-css-set2"}
+   * @ojstylevariable oj-led-gauge-lg-size {description: "Led gauge large size", formats: ["length"], help: "oj-led-gauge-css-set2"}
+   * @memberof oj.ojLedGauge
+  */
 
   /**
    * <table class="keyboard-table">
@@ -4047,6 +3310,20 @@ var __oj_status_meter_gauge_metadata =
    *   </tbody>
    * </table>
    * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRatingGauge
+   */
+
+  /**
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   *
+   * <p>The application is responsible for populating the <i>title</i> attribute on the element with meaningful descriptors as the oj-rating-gauge element does not provide a default descriptor.
+   * Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
+   *
+   *
+   * @ojfragment a11y
    * @memberof oj.ojRatingGauge
    */
 
@@ -4225,6 +3502,21 @@ var __oj_status_meter_gauge_metadata =
    * @ojstylevariableset oj-rating-gauge-css-set7
    * @ojdisplayname Unselected and disabled
    * @ojstylevariable oj-rating-gauge-color-unselected-disabled {description: "Rating gauge color when unselected and disabled", formats: ["color"], help: "oj-rating-gauge-css-set7"}
+   * @memberof oj.ojRatingGauge
+  */
+
+  /**
+   * @ojstylevariableset oj-rating-gauge-css-set8
+   * @ojdisplayname Selected and readonly
+   * @ojstylevariable oj-rating-gauge-color-selected-readonly {description: "Rating gauge color when selected and readonly", formats: ["color"], help: "oj-rating-gauge-css-set8"}
+   * @ojstylevariable oj-rating-gauge-border-color-selected-readonly {description: "Rating gauge border color when selected and readonly", formats: ["color"], help: "oj-rating-gauge-css-set8"}
+   * @memberof oj.ojRatingGauge
+  */
+  /**
+   * @ojstylevariableset oj-rating-gauge-css-set9
+   * @ojdisplayname Unselected and readonly
+   * @ojstylevariable oj-rating-gauge-color-unselected-readonly {description: "Rating gauge color when unselected and readonly", formats: ["color"], help: "oj-rating-gauge-css-set9"}
+   * @ojstylevariable oj-rating-gauge-border-color-unselected-readonly {description: "Rating gauge border color when unselected and readonly", formats: ["color"], help: "oj-rating-gauge-css-set9"}
    * @memberof oj.ojRatingGauge
   */
 
@@ -4417,5 +3709,40 @@ var __oj_status_meter_gauge_metadata =
    *  &lt;/template>
    * &lt;/oj-status-meter-gauge>
    */
+
+  //-----------------------------------------------------
+  //                   Styling
+  //-----------------------------------------------------
+   /**
+   * @ojstylevariableset oj-status-meter-gauge-css-set1
+   * @ojdisplayname metricLabel
+   * @ojstylevariable --oj-gauge-metric-label-font-weight {description: "Font weight for metric label.", formats: ["font_weight"], help: "oj-status-meter-gauge-css-set1"}
+   */
+
+  /**
+   * @ojstylevariableset oj-statusmeter-gauge-css-set2
+   * @ojdisplayname Horizontal and Vertical Status Meter Gauge Size
+   * @ojstylevariable oj-statusmeter-gauge-bar-sm-size {description: "Vertical and horizontal status meter gauge small size", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-statusmeter-gauge-bar-md-size {description: "Vertical and horizontal status meter gauge medium size",formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-statusmeter-gauge-bar-lg-size {description: "Vertical and horizontal status meter gauge large size", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojStatusMeterGauge
+  */
+
+  /**
+   * @ojstylevariableset oj-statusmeter-gauge-css-set2
+   * @ojdisplayname Circular Status Meter Gauge Size
+   * @ojstylevariable oj-statusmeter-gauge-circular-sm-size {description: "Circular status meter gauge small size", formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-statusmeter-gauge-circular-md-size {description: "Circular status meter gauge medium size",formats: ["length"], help: "#css-variables"}
+   * @ojstylevariable oj-statusmeter-gauge-circular-lg-size {description: "Circular status meter gauge large size", formats: ["length"], help: "#css-variables"}
+   * @memberof oj.ojStatusMeterGauge
+  */
+
+  /**
+   * @ojstylevariableset oj-statusmeter-gauge-css-set3
+   * @ojdisplayname Plot Area
+   * @ojstylevariable --oj-statusmeter-gauge-bar-plotarea-border-color {description: "Border color for plot area in vertical and horizontal status meter gauges.", formats: ["color"], help: "#css-variables"}
+   * @ojstylevariable --oj-statusmeter-gauge-bar-plotarea-color {description: "Color for plot area in vertical and horizontal status meter gauges.", formats: ["color"], help: "#css-variables"}
+   * @memberof oj.ojStatusMeterGauge
+  */
 
 });

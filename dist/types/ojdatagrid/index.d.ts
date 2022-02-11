@@ -17,6 +17,12 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
     };
     currentCell: ojDataGrid.CurrentCell<K> | null;
     data: DataGridProvider<D>;
+    dataTransferOptions: {
+        copy: 'disable' | 'enable';
+        cut: 'disable' | 'enable';
+        fill: 'disable' | 'enable';
+        paste: 'disable' | 'enable';
+    };
     dnd: {
         reorder: {
             row: 'enable' | 'disable';
@@ -126,6 +132,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
     };
     translations: {
         accessibleActionableMode?: string;
+        accessibleCollapsed?: string;
         accessibleColumnContext?: string;
         accessibleColumnEndHeaderContext?: string;
         accessibleColumnEndHeaderLabelContext?: string;
@@ -134,6 +141,7 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
+        accessibleExpanded?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;
@@ -160,15 +168,27 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
         accessibleSummaryExpanded?: string;
+        collapsedText?: string;
+        columnWidth?: string;
+        expandedText?: string;
+        labelCopyCells?: string;
         labelCut?: string;
+        labelCutCells?: string;
         labelDisableNonContiguous?: string;
         labelEnableNonContiguous?: string;
+        labelFillCells?: string;
         labelPaste?: string;
+        labelPasteCells?: string;
         labelResize?: string;
+        labelResizeColumn?: string;
+        labelResizeDialogApply?: string;
         labelResizeDialogCancel?: string;
         labelResizeDialogSubmit?: string;
+        labelResizeFitToContent?: string;
         labelResizeHeight?: string;
+        labelResizeRow?: string;
         labelResizeWidth?: string;
+        labelSelectMultiple?: string;
         labelSortCol?: string;
         labelSortColAsc?: string;
         labelSortColDsc?: string;
@@ -177,6 +197,9 @@ export interface ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProper
         labelSortRowDsc?: string;
         msgFetchingData?: string;
         msgNoData?: string;
+        resizeColumnDialog?: string;
+        resizeRowDialog?: string;
+        rowHeight?: string;
     };
     addEventListener<T extends keyof ojDataGridEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojDataGridEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -212,6 +235,42 @@ export namespace ojDataGrid {
         [propName: string]: any;
     }> {
     }
+    interface ojCollapseRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCopyRequest<D> extends CustomEvent<{
+        sourceRange: Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCutRequest<D> extends CustomEvent<{
+        sourceRange: Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpandRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojFillRequest<D> extends CustomEvent<{
+        action: 'flood' | 'down' | 'end';
+        sourceRange: Range;
+        targetRange: Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojPasteRequest<D> extends CustomEvent<{
+        action: 'cut' | 'copy' | 'unknown';
+        sourceRange: Range;
+        targetRange: Range;
+        [propName: string]: any;
+    }> {
+    }
     interface ojResize extends CustomEvent<{
         header: string | number;
         newDimensions: {
@@ -237,6 +296,13 @@ export namespace ojDataGrid {
         [propName: string]: any;
     }> {
     }
+    interface ojSortRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        direction: 'ascending' | 'descending';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type bandingIntervalChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -245,6 +311,8 @@ export namespace ojDataGrid {
     type currentCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataTransferOptionsChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dataTransferOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -349,6 +417,17 @@ export namespace ojDataGrid {
         item: GridItem<D>;
     };
     // tslint:disable-next-line interface-over-type-literal
+    type Range = {
+        startIndex: {
+            row: number;
+            column?: number;
+        };
+        endIndex: {
+            row: number;
+            column?: number;
+        };
+    };
+    // tslint:disable-next-line interface-over-type-literal
     type Selection<K> = {
         startIndex?: {
             row: number;
@@ -372,13 +451,21 @@ export interface ojDataGridEventMap<K, D> extends baseComponentEventMap<ojDataGr
     'ojBeforeCurrentCell': ojDataGrid.ojBeforeCurrentCell<K>;
     'ojBeforeEdit': ojDataGrid.ojBeforeEdit<K, D>;
     'ojBeforeEditEnd': ojDataGrid.ojBeforeEditEnd<K, D>;
+    'ojCollapseRequest': ojDataGrid.ojCollapseRequest<D>;
+    'ojCopyRequest': ojDataGrid.ojCopyRequest<D>;
+    'ojCutRequest': ojDataGrid.ojCutRequest<D>;
+    'ojExpandRequest': ojDataGrid.ojExpandRequest<D>;
+    'ojFillRequest': ojDataGrid.ojFillRequest<D>;
+    'ojPasteRequest': ojDataGrid.ojPasteRequest<D>;
     'ojResize': ojDataGrid.ojResize;
     'ojScroll': ojDataGrid.ojScroll;
     'ojSort': ojDataGrid.ojSort;
+    'ojSortRequest': ojDataGrid.ojSortRequest<D>;
     'bandingIntervalChanged': JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
     'cellChanged': JetElementCustomEvent<ojDataGrid<K, D>["cell"]>;
     'currentCellChanged': JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>;
     'dataChanged': JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
+    'dataTransferOptionsChanged': JetElementCustomEvent<ojDataGrid<K, D>["dataTransferOptions"]>;
     'dndChanged': JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     'editModeChanged': JetElementCustomEvent<ojDataGrid<K, D>["editMode"]>;
     'gridlinesChanged': JetElementCustomEvent<ojDataGrid<K, D>["gridlines"]>;
@@ -404,6 +491,12 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
     };
     currentCell: ojDataGrid.CurrentCell<K> | null;
     data: DataGridProvider<D> | null;
+    dataTransferOptions: {
+        copy: 'disable' | 'enable';
+        cut: 'disable' | 'enable';
+        fill: 'disable' | 'enable';
+        paste: 'disable' | 'enable';
+    };
     dnd: {
         reorder: {
             row: 'enable' | 'disable';
@@ -513,6 +606,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
     };
     translations: {
         accessibleActionableMode?: string;
+        accessibleCollapsed?: string;
         accessibleColumnContext?: string;
         accessibleColumnEndHeaderContext?: string;
         accessibleColumnEndHeaderLabelContext?: string;
@@ -521,6 +615,7 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleColumnSelected?: string;
         accessibleColumnSpanContext?: string;
         accessibleContainsControls?: string;
+        accessibleExpanded?: string;
         accessibleFirstColumn?: string;
         accessibleFirstRow?: string;
         accessibleLastColumn?: string;
@@ -547,15 +642,27 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         accessibleSummaryEstimate?: string;
         accessibleSummaryExact?: string;
         accessibleSummaryExpanded?: string;
+        collapsedText?: string;
+        columnWidth?: string;
+        expandedText?: string;
+        labelCopyCells?: string;
         labelCut?: string;
+        labelCutCells?: string;
         labelDisableNonContiguous?: string;
         labelEnableNonContiguous?: string;
+        labelFillCells?: string;
         labelPaste?: string;
+        labelPasteCells?: string;
         labelResize?: string;
+        labelResizeColumn?: string;
+        labelResizeDialogApply?: string;
         labelResizeDialogCancel?: string;
         labelResizeDialogSubmit?: string;
+        labelResizeFitToContent?: string;
         labelResizeHeight?: string;
+        labelResizeRow?: string;
         labelResizeWidth?: string;
+        labelSelectMultiple?: string;
         labelSortCol?: string;
         labelSortColAsc?: string;
         labelSortColDsc?: string;
@@ -564,6 +671,9 @@ export interface ojDataGridSettableProperties<K, D> extends baseComponentSettabl
         labelSortRowDsc?: string;
         msgFetchingData?: string;
         msgNoData?: string;
+        resizeColumnDialog?: string;
+        resizeRowDialog?: string;
+        rowHeight?: string;
     };
 }
 export interface ojDataGridSettablePropertiesLenient<K, D> extends Partial<ojDataGridSettableProperties<K, D>> {
@@ -585,6 +695,42 @@ export namespace DataGridElement {
     interface ojBeforeEditEnd<K, D> extends CustomEvent<{
         cancelEdit: boolean;
         cellContext: ojDataGrid.CellContext<K, D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCollapseRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCopyRequest<D> extends CustomEvent<{
+        sourceRange: ojDataGrid.Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojCutRequest<D> extends CustomEvent<{
+        sourceRange: ojDataGrid.Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojExpandRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojFillRequest<D> extends CustomEvent<{
+        action: 'flood' | 'down' | 'end';
+        sourceRange: ojDataGrid.Range;
+        targetRange: ojDataGrid.Range;
+        [propName: string]: any;
+    }> {
+    }
+    interface ojPasteRequest<D> extends CustomEvent<{
+        action: 'cut' | 'copy' | 'unknown';
+        sourceRange: ojDataGrid.Range;
+        targetRange: ojDataGrid.Range;
         [propName: string]: any;
     }> {
     }
@@ -613,6 +759,13 @@ export namespace DataGridElement {
         [propName: string]: any;
     }> {
     }
+    interface ojSortRequest<D> extends CustomEvent<{
+        axis: 'row' | 'column';
+        direction: 'ascending' | 'descending';
+        item: GridHeaderItem<D>;
+        [propName: string]: any;
+    }> {
+    }
     // tslint:disable-next-line interface-over-type-literal
     type bandingIntervalChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["bandingInterval"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -621,6 +774,8 @@ export namespace DataGridElement {
     type currentCellChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["currentCell"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dataChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["data"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type dataTransferOptionsChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dataTransferOptions"]>;
     // tslint:disable-next-line interface-over-type-literal
     type dndChanged<K, D> = JetElementCustomEvent<ojDataGrid<K, D>["dnd"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -692,18 +847,45 @@ export namespace DataGridElement {
         datasource: DataGridProvider<D>;
         item: GridItem<D>;
     };
+    // tslint:disable-next-line interface-over-type-literal
+    type Selection<K> = {
+        startIndex?: {
+            row: number;
+            column?: number;
+        };
+        startKey?: {
+            row: K;
+            column?: K;
+        };
+        endIndex?: {
+            row: number;
+            column?: number;
+        };
+        endKey?: {
+            row: K;
+            column?: K;
+        };
+    };
 }
 export interface DataGridIntrinsicProps extends Partial<Readonly<ojDataGridSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {
     onojBeforeCurrentCell?: (value: ojDataGridEventMap<any, any>['ojBeforeCurrentCell']) => void;
     onojBeforeEdit?: (value: ojDataGridEventMap<any, any>['ojBeforeEdit']) => void;
     onojBeforeEditEnd?: (value: ojDataGridEventMap<any, any>['ojBeforeEditEnd']) => void;
+    onojCollapseRequest?: (value: ojDataGridEventMap<any, any>['ojCollapseRequest']) => void;
+    onojCopyRequest?: (value: ojDataGridEventMap<any, any>['ojCopyRequest']) => void;
+    onojCutRequest?: (value: ojDataGridEventMap<any, any>['ojCutRequest']) => void;
+    onojExpandRequest?: (value: ojDataGridEventMap<any, any>['ojExpandRequest']) => void;
+    onojFillRequest?: (value: ojDataGridEventMap<any, any>['ojFillRequest']) => void;
+    onojPasteRequest?: (value: ojDataGridEventMap<any, any>['ojPasteRequest']) => void;
     onojResize?: (value: ojDataGridEventMap<any, any>['ojResize']) => void;
     onojScroll?: (value: ojDataGridEventMap<any, any>['ojScroll']) => void;
     onojSort?: (value: ojDataGridEventMap<any, any>['ojSort']) => void;
+    onojSortRequest?: (value: ojDataGridEventMap<any, any>['ojSortRequest']) => void;
     onbandingIntervalChanged?: (value: ojDataGridEventMap<any, any>['bandingIntervalChanged']) => void;
     oncellChanged?: (value: ojDataGridEventMap<any, any>['cellChanged']) => void;
     oncurrentCellChanged?: (value: ojDataGridEventMap<any, any>['currentCellChanged']) => void;
     ondataChanged?: (value: ojDataGridEventMap<any, any>['dataChanged']) => void;
+    ondataTransferOptionsChanged?: (value: ojDataGridEventMap<any, any>['dataTransferOptionsChanged']) => void;
     ondndChanged?: (value: ojDataGridEventMap<any, any>['dndChanged']) => void;
     oneditModeChanged?: (value: ojDataGridEventMap<any, any>['editModeChanged']) => void;
     ongridlinesChanged?: (value: ojDataGridEventMap<any, any>['gridlinesChanged']) => void;

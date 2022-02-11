@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -46,7 +46,8 @@ import { warn } from 'ojs/ojlogger';
    *
    * <p>A toolbar that contains radios should contain all radios in the radio group.
    *
-   * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a> and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
+   * <p>Multiple toolbars can be laid out as a set using the <a href="ToolbarSets.html#oj-toolbars">.oj-toolbars</a>
+   * and <a href="ToolbarSets.html#oj-toolbar-row">.oj-toolbar-row</a> style classes.
    *
    *
    * <h3 id="touch-section">
@@ -163,6 +164,27 @@ import { warn } from 'ojs/ojlogger';
    * @ignore
    */
 
+   //-----------------------------------------------------
+   //                   Slots
+   //-----------------------------------------------------
+   /**
+    * <p>The &lt;oj-toolbar> element accepts <code class="prettyprint">oj-button</code>, <code class="prettyprint">oj-buttonset-many</code>,
+    * <code class="prettyprint">oj-buttonset-one</code>, <code class="prettyprint">oj-menu-button</code> and non-focusable content such as separator icon elements as children.</p>
+    *
+    * @ojchild Default
+    * @memberof oj.ojToolbar
+    * @ojpreferredcontent ["ButtonElement","ButtonsetManyElement","ButtonsetOneElement","MenuButtonElement"]
+    *
+    * @example <caption>Initialize the Toolbar with child content specified:</caption>
+    * &lt;oj-toolbar>
+    *   &lt;oj-button>Button Text 1&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button>Button Text 2&lt;/oj-button>
+    *   &lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator">&lt;/span>
+    *   &lt;oj-button>Button Text 3&lt;/oj-button>
+    * &lt;/oj-toolbar>
+    */
+
   //-----------------------------------------------------
   //                   Fragments
   //-----------------------------------------------------
@@ -269,11 +291,15 @@ import { warn } from 'ojs/ojlogger';
   */
   // --------------------------------------------------- oj.ojToolbar Styling End -----------------------------------------------------------
 
+  (function () {
+  const _OJ_TOOLBAR = 'oj-toolbar';
+  const _OJ_MENU_BUTTON = 'OJ-MENU-BUTTON';
+  const _OJ_BUTTON = 'OJ-BUTTON';
+
   oj.__registerWidget('oj.ojToolbar', $.oj.baseComponent, {
     widgetEventPrefix: 'oj',
 
     options: {
-      // options is in externs.js.  TODO: same as other prototype fields.
         /**
          * <p>Indicates in what states the toolbar's buttons and buttonsets have chrome (background and border).
          *
@@ -293,7 +319,7 @@ import { warn } from 'ojs/ojlogger';
          * @type {string}
          * @ojvalue {string} "solid" Solid buttons stand out, and direct the user's attention to the most important actions in the UI.
          * @ojvalue {string} "outlined" Outlined buttons are salient, but lighter weight than solid buttons. Outlined buttons are useful for secondary actions.
-         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation. Borderless buttons are useful for supplemental actions that require minimal emphasis.
+         * @ojvalue {string} "borderless" Borderless buttons are the least prominent variation and are useful for supplemental actions that require minimal emphasis.
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states.
          * @ojdeprecated [{target:'propertyValue', for:"half", since: "6.0.0", description: "This value will be removed in the future. Please use borderless instead."},
@@ -355,7 +381,7 @@ import { warn } from 'ojs/ojlogger';
 
       var elem = this.element[0];
       elem.setAttribute(_OJ_CONTAINER_ATTR, this.widgetName); // @HTMLUpdateOK
-      elem.classList.add('oj-toolbar');
+      elem.classList.add(_OJ_TOOLBAR);
       elem.classList.add('oj-component');
       elem.setAttribute('role', 'toolbar');
       this._hasInitialFocusHandler = false;
@@ -451,7 +477,7 @@ import { warn } from 'ojs/ojlogger';
         if (!this._hasInitialFocusHandler) { // Don't add more than one initial focus handler (for the case where toolbar is refreshed but not yet focused)
               // defer setting up button-specific event handling until the first focusin event is triggered
           this._focusinListener = function (event) { // eslint-disable-line no-unused-vars
-            self._handleInitialFocus();
+            self._handleInitialFocus(event.target);
           };
           elem.addEventListener('focusin', this._focusinListener, true);
           this._hasInitialFocusHandler = true;
@@ -466,8 +492,8 @@ import { warn } from 'ojs/ojlogger';
             // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
         this._refreshChildren();
       } else {
-        // TODO: Update this after guidance on keeping track of handlers for bind and unbind
-        this.$buttons = this.element.find(':oj-button')
+        const _OJ_BUTTON_FIND = ':oj-button';
+        this.$buttons = this.element.find(_OJ_BUTTON_FIND)
                 .off('keydown' + this.eventNamespace)
                 .on('keydown' + this.eventNamespace, function (event) {
                   self._handleKeyDown(event, $(this));
@@ -493,7 +519,7 @@ import { warn } from 'ojs/ojlogger';
             // TBD: Consider only calling refresh() on children that haven't had their chroming option set, i.e. those still using the dynamic getter.
         this.$buttonsets = this.element.find(':oj-buttonset')
                 .ojButtonset('refresh');
-        this.$topLevelButtons = this.$buttons.not(this.$buttonsets.find(':oj-button'))
+        this.$topLevelButtons = this.$buttons.not(this.$buttonsets.find(_OJ_BUTTON_FIND))
                 .ojButton('refresh');
       }
     },
@@ -518,7 +544,7 @@ import { warn } from 'ojs/ojlogger';
     // there is delay between setting the property and having the class updated.
     _isButtonDisabled: function (button) {
       var disabled;
-      if ((button.tagName === 'OJ-BUTTON') || (button.tagName === 'OJ-MENU-BUTTON')) {
+      if ((button.tagName === _OJ_BUTTON) || (button.tagName === _OJ_MENU_BUTTON)) {
         disabled = button.disabled;
       } else { // "button" is a span around an oj-option that represents a button in oj-buttonset-one or oj-buttonset-many
         disabled = button.parentNode.disabled;
@@ -532,7 +558,7 @@ import { warn } from 'ojs/ojlogger';
 
     // For custom element only, we setup this handler for any focusin event on the toolbar. We then remove this handler, and setup the rest of the handlers we need
     // once all of our children have finished being initialized.
-    _handleInitialFocus: function () {
+    _handleInitialFocus: function (targetElement) {
       // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
       var self = this;
       var elem = this.element[0];
@@ -546,7 +572,7 @@ import { warn } from 'ojs/ojlogger';
 
       // Add a MutationObserver to handle add and remove of descendants
       if (!this._mutationObserver) {
-        var ojElementNames = ['OJ-BUTTON', 'OJ-MENU-BUTTON', 'OJ-BUTTONSET-ONE', 'OJ-BUTTONSET-MANY', 'OJ-OPTION'];
+        var ojElementNames = [_OJ_BUTTON, _OJ_MENU_BUTTON, 'OJ-BUTTONSET-ONE', 'OJ-BUTTONSET-MANY', 'OJ-OPTION'];
         this._disabledChangedListener = this.refresh.bind(this);
         this._mutationObserver = new MutationObserver(function (mutationList) {
           // mutationList is an array of MutationRecord
@@ -620,7 +646,18 @@ import { warn } from 'ojs/ojlogger';
       }
 
       this._initTabindexes(this._lastTabStop == null);
-      this._getButtonFocusElem(this.$enabledButtons[0]).focus();
+      if (this.$enabledButtons && this.$enabledButtons.length > 0) {
+        if (targetElement) {
+          let targetButton =
+            targetElement.nodeName === 'INPUT' ? targetElement.parentElement : targetElement;
+            targetButton.focus();
+        } else {
+          let btn = this._getButtonFocusElem(this.$enabledButtons[0]);
+          if (btn) {
+            btn.focus();
+          }
+        }
+      }
     },
 
     // Update list of enabled buttons and refresh tabindex settings
@@ -683,7 +720,7 @@ import { warn } from 'ojs/ojlogger';
       this._lastTabStop = undefined;
 
       if (this._IsCustomElement()) {
-        for (var i = 0; i < this.$buttons.length; i++) { // TODO: this depends on having solution for bind and unbind
+        for (var i = 0; i < this.$buttons.length; i++) {
           this._getButtonFocusElem(this.$buttons[i]).setAttribute('tabindex', '-1');
         }
       } else {
@@ -718,7 +755,6 @@ import { warn } from 'ojs/ojlogger';
     //   of enabled radios, guarantee that if $button is a radio, then all of its potentially checked groupmates are enabled and thus in
     //   $enabledButtons.
     //
-    // Firefox browser issue:   (TODO: should we doc this?  File FF and/or JET bug?)
     //
     // When this method maps an unchecked radio to its checked groupmate, the caller ensures that the former still has focus, but the latter
     // is the tabstop for when the user tabs out and back in.  When tabbing / Shift-Tabbing from the unchecked radio in the direction of the
@@ -769,10 +805,6 @@ import { warn } from 'ojs/ojlogger';
     // No return value.
     _setTabStop: function (_button) {
       var $button = _button;
-      // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-//        if (!window.setTabStopCounter) window.setTabStopCounter=1; // REMOVE, is only for console.log's
-//        console.log("in _setTabStop: " + window.setTabStopCounter++ + ".  Orig (premap) button checked: " + $button[0].checked); // + " and is:");
-//        console.log($button[0]);
 
       if (this._IsCustomElement()) {
         $button = this._mapToTabbable($(this._getButtonFocusElem($button[0])));
@@ -784,16 +816,12 @@ import { warn } from 'ojs/ojlogger';
       var last = this._lastTabStop; // last is undefined iff $(last) is empty iff there are no existing tabstops to clear (b/c _initTabindexes just ran
                                       // or previously there were no enabled buttons to make tabbable)
 
-//        console.log("mapped button and last button are:");  console.log(button);  console.log(last);  console.log(".");
-
         // Cases: both are undefined: have no tabstops; want to keep it that way (b/c none enabled), so do nothing
         //        both are node X: X is the tabstop; want to keep it that way, so do nothing
         //        last is node X; button is undefined: X is the tabstop; want to clear it w/o replacing it (b/c none enabled).  This logic does that.
         //        last is undefined; button is node X: no existing tabstop; want to make X the tabstop.  This logic does that.
         //        last is node X; button is node Y: X is the tabstop; want to clear it and make Y the tabstop.  This logic does that.
       if (button !== last) {
-            // console.log("setting tab stop to " + $button.attr("id"));  console.log("$(last).length:");  console.log($(last).length);
-
         $(last).attr('tabindex', '-1'); // no-op iff $(last) is empty iff (see comment above)
         $button.attr('tabindex', '0'); // no-op iff $button is empty iff (see comment above)
         this._lastTabStop = button;
@@ -862,7 +890,7 @@ import { warn } from 'ojs/ojlogger';
       // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
       // this entire stmt can be removed once restoreAttrs code is running.
       var elem = this.element[0];
-      elem.classList.remove('oj-toolbar');
+      elem.classList.remove(_OJ_TOOLBAR);
       elem.classList.remove('oj-component');
       elem.removeAttribute(_OJ_CONTAINER_ATTR);
       elem.removeAttribute('role');
@@ -888,7 +916,7 @@ import { warn } from 'ojs/ojlogger';
         // This relies on the button and buttonset components being implemented with JQUI - this will need to be revisited once that is no longer the case
         for (var i = 0; i < this.topLevelChildren.length; i++) {
           var child = this.topLevelChildren[i];
-          if (child.tagName === 'OJ-BUTTON' || child.tagName === 'OJ-MENU-BUTTON') {
+          if (child.tagName === _OJ_BUTTON || child.tagName === _OJ_MENU_BUTTON) {
                     // must check to make sure the child button element has been initialized
             if (__GetWidgetConstructor(this._getButtonFocusElem(child), 'ojButton')) {
               child.refresh();
@@ -903,6 +931,7 @@ import { warn } from 'ojs/ojlogger';
       }
     }
   });
+}());
 
 // -----------------------------------------------------------------------------
 // "private static members" shared by all toolbars:
@@ -949,7 +978,6 @@ import { warn } from 'ojs/ojlogger';
 
 // Set theme-based defaults
 setDefaultOptions({
-    // same Q as for Button: does this correctly handle the case where the theme has no $var, in which case we want there to effectively be no dynamic getter so that the prototype default is used?
   ojToolbar: {
     chroming: createDynamicPropertyGetter(function () {
       return getCachedCSSVarValues(['--oj-private-toolbar-global-chroming-default'])[0];

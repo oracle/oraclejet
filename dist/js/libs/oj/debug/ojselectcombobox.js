@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1121,6 +1121,13 @@ var __oj_select_many_metadata =
         }
       },
 
+    /**
+     * Helper style classes
+     */
+    STYLE_CLASS: {
+      HIDDEN: 'oj-helper-hidden'
+    },
+
     /*
        * The default fetch size from the data provider
        */
@@ -1428,6 +1435,20 @@ var __oj_select_many_metadata =
     // _ComboUtils
     killEvent: function (event) {
       event.preventDefault();
+    },
+
+    /**
+     * Creates a kill event handler that supports exception.
+     *
+     * @param {string[]} selectors An exception selectors array. If the event target matches one of the selectors
+     *                             the event will not be killed.
+     * @param {Event} event The event object that needs to be killed
+     */
+    killEventWithExceptions: function (selectors, event) {
+      const target = $(event.target);
+      if (selectors.some(selector => target.is(selector))) return;
+      // If the element is not an exception, kill the event
+      _ComboUtils.killEvent(event);
     },
 
     // _ComboUtils
@@ -3555,6 +3576,9 @@ var __oj_select_many_metadata =
         this.results = results;
         this.results.on('click', _ComboUtils.killEvent);
 
+        // Store the busyContext of the results container
+        this._resultsBusyContext = Context.getContext(this.results[0]).getBusyContext();
+
         //  - oghag missing label for ojselect and ojcombobox
         var alabel = this._getTransferredAttribute('aria-label');
         if (alabel != null) {
@@ -3600,7 +3624,9 @@ var __oj_select_many_metadata =
 
         // initialize the container
         this._initContainer();
-        this.container.on('click', _ComboUtils.killEvent);
+        // JET-48083 - clicking help-hints.source link does nothing
+        // Do not kill events originating from user-assistance-container
+        this.container.on('click', '.oj-text-field-container', _ComboUtils.killEvent);
         _ComboUtils.installFilteredMouseMove(this.results);
 
         //  - CUSTOM TABINDEX DOES NOT WORK
@@ -3941,6 +3967,7 @@ var __oj_select_many_metadata =
                   this.selection.attr('aria-labelledby', ariaLabelledBy);
                 }
               }
+              this.selection.attr('aria-readonly', true);
             } else {
               $content.attr('readonly', true);
               // create readonly div if it doesn't exist.
@@ -3963,6 +3990,7 @@ var __oj_select_many_metadata =
               }
               this.selection.removeAttr('tabindex');
               this.selection.removeAttr('aria-labelledby');
+              this.selection.removeAttr('aria-readonly');
             } else {
               $content.removeAttr('readonly', true);
             }
@@ -4686,12 +4714,20 @@ var __oj_select_many_metadata =
 
         if (tagName !== 'select' && opts.manageNewEntry !== null) {
           opts.manageNewEntry = function (term, includeUnparsedValue) {
-            var entry = {};
-            var parsedEntry;
-            entry.label = $.trim(term);
-            entry.value = entry.label;
+            const entry = {};
+            let parsedEntry = entry;
 
-            parsedEntry = entry;
+            if (term == null) {
+              entry.label = '';
+              entry.value = '';
+            } else if (typeof term === 'string') {
+              entry.label = term.trim();
+              entry.value = entry.label;
+            } else {
+              entry.label = String(term);
+              entry.value = term;
+            }
+
             if (opts.parseData != null) {
               parsedEntry = opts.parseData(entry);
               if (includeUnparsedValue === true) {
@@ -5034,7 +5070,8 @@ var __oj_select_many_metadata =
         // dropdown message (if exists) and dropdown margin
         const extraElementsHeight = dropdownHeight - resultsHeight;
 
-        const netAvailableHeight = availableSize.height - extraElementsHeight;
+        const netAvailableHeight = availableSize.height -
+          extraElementsHeight - this._dropdownVerticalOffset;
         const newHeight = Math.min(this._defaultResultsMaxHeight, netAvailableHeight);
 
         // Make sure the max-width and max-height attributes are cleared properly from
@@ -5579,7 +5616,34 @@ var __oj_select_many_metadata =
         _ComboUtils.updateDropdownLoadingState(this, true);
 
         function postRender() {
-          self._positionDropdown();
+          // JET-46027 - combobox many - item auto selecting from dropdown sometimes when dropdown appears infront of cursor
+          // Dropdown content can contain custom elements and they might not be upgraded yet.
+          // So, we need to wait for the rendering to be done before we reposition the dropdown
+          // again.
+          if (self._resultsBusyContext.isReady()) {
+            // Clear any busyState promises that we are waiting on.
+            self._resultsBusyContextPromise = null;
+            // the results container is ready to be positioned.
+            self._positionDropdown();
+          } else {
+            // reposition once the busyState is resolved or rejected
+            // Store the busyContext whenReady promise so that we can
+            // react only to the latest promise
+            const resultsBusyContextPromise = self._resultsBusyContext.whenReady();
+            self._resultsBusyContextPromise = resultsBusyContextPromise;
+
+            const repositionDropdown = function () {
+              // only react to the latest promise
+              if (self._resultsBusyContextPromise === resultsBusyContextPromise) {
+                // clear the stored promise
+                self._resultsBusyContextPromise = null;
+                self._positionDropdown();
+              }
+            };
+            resultsBusyContextPromise
+              .then(repositionDropdown, repositionDropdown)
+              .catch(repositionDropdown);
+          }
 
           if (self.header && self.headerItems.length) {
             var highlightableChoices = self._findHighlightableChoices();
@@ -5636,7 +5700,7 @@ var __oj_select_many_metadata =
               }
 
               // clear hidden class from results if any
-              this.results.removeClass('oj-helper-hidden');
+              this.results.removeClass(_ComboUtils.STYLE_CLASS.HIDDEN);
 
               // save context, if any
               this.context = (!data || data.context === undefined) ? null : data.context;
@@ -5661,7 +5725,7 @@ var __oj_select_many_metadata =
 
                   _ComboUtils.addDropdownMessage(self.dropdown, self.ojContext, translatedString);
                   // Hide the results area
-                  this.results.addClass('oj-helper-hidden');
+                  this.results.addClass(_ComboUtils.STYLE_CLASS.HIDDEN);
 
                   // if no search box, don't need a separator
                   if (!this._hasSearchBox()) {
@@ -6535,7 +6599,9 @@ var __oj_select_many_metadata =
           // in oj.Combobox and this will called synchronously for both sync and async validators
           // as the validation happens after the parsing.
           this.shouldApplyConverter = true;
-          return this.opts.manageNewEntry(value, true);
+          const newEntryItem = this.opts.manageNewEntry(value, true);
+          delete this.shouldApplyConverter;
+          return newEntryItem;
         }
 
         return null;
@@ -8123,7 +8189,7 @@ var __oj_select_many_metadata =
           "<div class='oj-combobox-description oj-helper-hidden-accessible'></div>",
           "<div class='oj-listbox-drop oj-listbox-drop-multi'>",
           "   <div class='oj-listbox-loader-wrapper'></div>",
-          "   <ul class='oj-listbox-results' role='listbox'>",
+          "   <ul class='oj-listbox-results' role='listbox' data-oj-context>",
           '   </ul>',
           '</div>',
 
@@ -8620,30 +8686,28 @@ var __oj_select_many_metadata =
 
             var selectionData = this.selection.data(this._elemNm);
             var previousValue = this.getVal();
+            var optionalCleanupPromise = null;
 
             if ((!selectionData && value !== '')
                     || (selectionData && (selectionData.label !== value))
                     || (!this.ojContext.isValid() && value !== this._previousDisplayValue)) {
               var onSelectReturn = this._onSelect(valopt, options, e);
+              optionalCleanupPromise = onSelectReturn;
 
               if (e.type !== 'blur') {
                 if (onSelectReturn instanceof Promise) {
                   onSelectReturn.then(this._bind(function (result) {
-                    delete this.shouldApplyConverter;
                     if (result) {
                       // trigger events only if the value is set
                       this._triggerUpdateEvent(valopt, options, e);
                       this._triggerValueUpdatedEvent(valopt, previousValue);
                     }
                   }));
-                } else {
-                  delete this.shouldApplyConverter;
-                  if (onSelectReturn !== false) {
-                    // Need to trigger the events even when onSelectReturn is null
-                    // as the events should be triggered even when setting the same value again
-                    this._triggerUpdateEvent(valopt, options, e);
-                    this._triggerValueUpdatedEvent(valopt, previousValue);
-                  }
+                } else if (onSelectReturn !== false) {
+                  // Need to trigger the events even when onSelectReturn is null
+                  // as the events should be triggered even when setting the same value again
+                  this._triggerUpdateEvent(valopt, options, e);
+                  this._triggerValueUpdatedEvent(valopt, previousValue);
                 }
               }
             } else if (e.type === 'keyup') {
@@ -8657,6 +8721,15 @@ var __oj_select_many_metadata =
 
               this._triggerUpdateEvent(valopt, options, e);
               this._triggerValueUpdatedEvent(valopt, previousValue);
+            }
+
+            // Cleanup the converter flags once the selection operation is complete
+            if (optionalCleanupPromise instanceof Promise) {
+              optionalCleanupPromise.then(this._bind(function () {
+                delete this.shouldApplyConverter;
+              }));
+            } else {
+              delete this.shouldApplyConverter;
             }
           }
 
@@ -9297,7 +9370,7 @@ var __oj_select_many_metadata =
           '</div>',
           "<div class='oj-listbox-drop' role='presentation'>",
           "   <div class='oj-listbox-loader-wrapper'></div>",
-          "   <ul class='oj-listbox-results' role='listbox'>",
+          "   <ul class='oj-listbox-results' role='listbox' data-oj-context>",
           '   </ul>',
           '</div>',
 
@@ -11531,8 +11604,7 @@ var __oj_select_many_metadata =
         * myCombobox.required = true;
         *
         * @name required
-        * @ojshortdesc Specifies whether a value is required.
-        * @expose
+        * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.      * @expose
         * @access public
         * @instance
         * @memberof oj.ojComboboxOne
@@ -11555,7 +11627,7 @@ var __oj_select_many_metadata =
         * myCombobox.required = true;
         *
         * @name required
-        * @ojshortdesc Specifies whether a value is required.
+        * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
         * @expose
         * @access public
         * @instance
@@ -11565,61 +11637,65 @@ var __oj_select_many_metadata =
         * @since 0.7.0
         * @see #translations
         */
-          /**
-        * Whether the Combobox is required or optional. When required is set to true, an implicit
-        * required validator is created using the RequiredValidator -
-        * <code class="prettyprint">RequiredValidator()</code>.
-        *
-        * Translations specified using the <code class="prettyprint">translations.required</code> attribute
-        * and the label associated with the Combobox, are passed through to the options parameter of the
-        * createValidator method.
-        *
-        * <p>
-        * When <code class="prettyprint">required</code> property changes due to programmatic intervention,
-        * the Combobox may clear messages and run validation, based on the current state it's in. </br>
-        *
-        * <h4>Running Validation</h4>
-        * <ul>
-        * <li>if element is valid when required is set to true, then it runs deferred validation on
-        * the value. This is to ensure errors are not flagged unnecessarily.
-        * </li>
-        * <li>if element is invalid and has deferred messages when required is set to false, then
-        * element messages are cleared but no deferred validation is run.
-        * </li>
-        * <li>if element is invalid and currently showing invalid messages when required is set, then
-        * element messages are cleared and normal validation is run using the current display value.
-        * <ul>
-        *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-        *   property is not updated and the error is shown.
-        *   </li>
-        *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-        *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
-        *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
-        * </ul>
-        * </li>
-        * </ul>
-        *
-        * <h4>Clearing Messages</h4>
-        * <ul>
-        * <li>Only messages created by the element are cleared.</li>
-        * <li><code class="prettyprint">messages-custom</code> attribute is not cleared.</li>
-        * </ul>
-        *
-        * </p>
-        * <p>
-        * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-        * This is the default.
-        * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
-        * </p>
-        * <p>
-        * Additionally a required validator -
-        * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-        * An explicit required validator can be set by page authors using the validators attribute.
-        * </p>
-        * <p>
-        * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
-        * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
-        * </p>
+        /**
+         * <p>
+         * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+         * This is the default.
+         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+         * </p>
+         * <p>
+         * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+         * If user-assistance-density is 'compact', it will show on the label as an icon.
+         * In the Alta theme the input's label will render a required icon.
+         * </p>
+         * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+         * it be changed.
+         * To override the required error message,
+         * use the <code class="prettyprint">translations.required</code> attribute.
+         * The component's label text is passed in as a token {label} and can be used in the message detail.
+         * </p>
+         * <p>When required is set to true, an implicit
+         * required validator is created, i.e.,
+         * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+         * validator to run during initial render, and its error is not shown to the user at this time;
+         * this is called deferred validation. The required validator also runs during normal validation;
+         * this is when the errors are shown to the user.
+         * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+         * </p>
+         * <p>
+         * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+         * the component may clear component messages and run validation, based on the current state it's in. </br>
+         *
+         * <h4>Running Validation when required property changes</h4>
+         * <ul>
+         * <li>if component is valid when required is set to true, then it runs deferred validation on
+         * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+         * shown to the user.
+         * </li>
+         * <li>if component is invalid and has deferred messages when required is set to false, then
+         * component messages are cleared (messages-custom messages are not cleared)
+         * but no deferred validation is run because required is false.
+         * </li>
+         * <li>if component is invalid and currently showing invalid messages when required is set, then
+         * component messages are cleared and normal validation is run using the current display value.
+         * <ul>
+         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+         *   property is not updated and the error is shown.
+         *   </li>
+         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+         *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+         *   event on the component to clear custom errors.</li>
+         * </ul>
+         * </li>
+         * </ul>
+         *
+         * <h4>Clearing Messages when required property changes</h4>
+         * <ul>
+         * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+         * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+         * </ul>
+         *
+         * </p>
         *
         * @expose
         * @access public
@@ -12880,20 +12956,6 @@ var __oj_select_many_metadata =
       },
 
       /**
-       * Returns the messaging launcher element  i.e., where user sets focus that triggers the popup.
-       * Usually this is the element input or select that will receive focus and on which the popup
-       * for messaging is initialized.
-       *
-       * @override
-       * @protected
-       * @memberof! oj.ojCombobox
-       * @return {Object} jquery element which represents the messaging launcher component
-       */
-      _GetMessagingLauncherElement: function () {
-        return this.combobox.search;
-      },
-
-      /**
        * @override
        * @protected
        * @memberof! oj.ojCombobox
@@ -13471,7 +13533,7 @@ var __oj_select_many_metadata =
           "       role='button' aria-label='search'></a>",
           '</div>',
           "<div class='oj-listbox-drop' role='presentation'>",
-          "   <ul class='oj-listbox-results' role='listbox'>",
+          "   <ul class='oj-listbox-results' role='listbox' data-oj-context>",
           '   </ul>',
           '</div>',
 
@@ -13842,61 +13904,63 @@ var __oj_select_many_metadata =
          */
           placeholder: undefined,
         /**
-          * Whether the component is required or optional. When required is set to true, an implicit
-          * required validator is created using the RequiredValidator -
-         * <code class="prettyprint">RequiredValidator()</code>.
-          *
-          * Translations specified using the <code class="prettyprint">translations.required</code> option
-          * and the label associated with the component, are passed through to the options parameter of the
-          * createValidator method.
-          *
-          * <p>
-          * When <code class="prettyprint">required</code> option changes due to programmatic intervention,
-          * the component may clear messages and run validation, based on the current state it's in. </br>
-          *
-          * <h4>Running Validation</h4>
-          * <ul>
-          * <li>if component is valid when required is set to true, then it runs deferred validation on
-          * the option value. This is to ensure errors are not flagged unnecessarily.
-          * </li>
-          * <li>if component is invalid and has deferred messages when required is set to false, then
-          * component messages are cleared but no deferred validation is run.
-          * </li>
-          * <li>if component is invalid and currently showing invalid messages when required is set, then
-          * component messages are cleared and normal validation is run using the current display value.
-          * <ul>
-          *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-          *   option is not updated and the error is shown.
-          *   </li>
-          *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-          *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-          *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
-          * </ul>
-          * </li>
-          * </ul>
-          *
-          * <h4>Clearing Messages</h4>
-          * <ul>
-          * <li>Only messages created by the component are cleared.</li>
-          * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
-          * </ul>
-          *
-          * </p>
-          * <p>
-          * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
-          * This is the default.
-          * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
-          * </p>
-          * <p>
-          * Additionally a required validator -
-          * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-          * An explicit required validator can be set by page authors using the validators attribute.
-          * </p>
-          * <p>
-          * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
-          * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
-          * </p>
-          *
+         * <p>
+         * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
+         * This is the default.
+         * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
+         * </p>
+         * <p>
+         * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
+         * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+         * </p>
+         * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+         * it be changed.
+         * To override the required error message,
+         * use the <code class="prettyprint">translations.required</code> attribute.
+         * The component's label text is passed in as a token {label} and can be used in the message detail.
+         * </p>
+         * <p>When required is set to true, an implicit
+         * required validator is created, i.e.,
+         * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+         * validator to run during initial render, and its error is not shown to the user at this time;
+         * this is called deferred validation. The required validator also runs during normal validation;
+         * this is when the errors are shown to the user.
+         * See the <a href="#validation-section">Validation and Messaging</a> section for details.
+         * </p>
+         * <p>
+         * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+         * the component may clear component messages and run validation, based on the current state it's in. </br>
+         *
+         * <h4>Running Validation when required property changes</h4>
+         * <ul>
+         * <li>if component is valid when required is set to true, then it runs deferred validation on
+         * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+         * shown to the user.
+         * </li>
+         * <li>if component is invalid and has deferred messages when required is set to false, then
+         * component messages are cleared (messages-custom messages are not cleared)
+         * but no deferred validation is run because required is false.
+         * </li>
+         * <li>if component is invalid and currently showing invalid messages when required is set, then
+         * component messages are cleared and normal validation is run using the current display value.
+         * <ul>
+         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+         *   property is not updated and the error is shown.
+         *   </li>
+         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+         *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+         *   event on the component to clear custom errors.</li>
+         * </ul>
+         * </li>
+         * </ul>
+         *
+         * <h4>Clearing Messages when required property changes</h4>
+         * <ul>
+         * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+         * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+         * </ul>
+         *
+         * </p>
           * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
           * $(".selector").ojInputSearch({required: true});<br/>
           * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
@@ -14742,20 +14806,6 @@ var __oj_select_many_metadata =
         },
 
       /**
-       * Returns the messaging launcher element  i.e., where user sets focus that triggers the popup.
-       * Usually this is the element input or select that will receive focus and on which the popup
-       * for messaging is initialized.
-       *
-       * @override
-       * @protected
-       * @memberof! oj.ojInputSearchWidget
-       * @return {Object} jquery element which represents the messaging launcher component
-       */
-        _GetMessagingLauncherElement: function () {
-          return this.inputSearch.search;
-        },
-
-      /**
        * Returns the jquery element that represents the content part of the component.
        * This is usually the component that user sets focus on (tabindex is set 0) and
        * where aria attributes like aria-required, aria-labelledby etc. are set. This is
@@ -15001,13 +15051,35 @@ var __oj_select_many_metadata =
 
           "  <div class='oj-listbox-loader-wrapper'></div>",
 
-          "   <ul class='oj-listbox-results' role='listbox'>",
+          "   <ul class='oj-listbox-results' role='listbox' data-oj-context>",
           '   </ul>',
           '</div>',
 
           "<div class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"
         ];
         return $(contentStructure.join(''));
+      },
+
+      // _OjMultiSelect
+      _initContainer: function () {
+        _OjMultiSelect.superclass._initContainer.apply(this, arguments);
+
+
+        // JET-47442 - validation error popup unexpectedly while creating the new labor schedule
+        // The editable table relies on the focus events from the popup to determine whether
+        // or not the table should be edit mode. In select-many, when there is a search field
+        // and it is focused, the focus stays in the popup. At this point, when one clicks on
+        // an option item, the focus will be lost on mousedown. Since, none of the other elements
+        // in the dropdown are focusable, the focus is transferred to the first focusable ancestor
+        // which in this case happens to be the body element. This results in the focusout event
+        // on the popup. As the selection only happens on the mouseup event, if one keeps the mouse
+        // pressed long enough, the table will exit the edit mode before the selection happens.
+        // Since, we are not relying on the physical focus anyway for selection mechanism, a patchy
+        // solution here would be to prevent the focus transfer when one clicks in the results area.
+        // This way the table would stay in edit mode. One important thing is to allow focus transfer
+        // when one clicks on the search field, we only want to prevent it in the rest of the region
+        // in the dropdown.
+        this.dropdown.on('mousedown', _ComboUtils.killEventWithExceptions.bind(null, ['.oj-listbox-input']));
       },
 
       // _OjMultiSelect
@@ -15254,7 +15326,7 @@ var __oj_select_many_metadata =
 
           "  <div class='oj-listbox-loader-wrapper'></div>",
 
-          "   <ul class='oj-listbox-results' role='listbox'>",
+          "   <ul class='oj-listbox-results' role='listbox' data-oj-context>",
           '   </ul>',
           '</div>',
 
@@ -15422,6 +15494,22 @@ var __oj_select_many_metadata =
         this.selection.on('blur', function (e) {
           self._testClear(e);
         });
+
+        // JET-47442 - validation error popup unexpectedly while creating the new labor schedule
+        // The editable table relies on the focus events from the popup to determine whether
+        // or not the table should be edit mode. In select-one, when there is a search field
+        // and it is focused, the focus stays in the popup. At this point, when one clicks on
+        // an option item, the focus will be lost on mousedown. Since, none of the other elements
+        // in the dropdown are focusable, the focus is transferred to the first focusable ancestor
+        // which in this case happens to be the body element. This results in the focusout event
+        // on the popup. As the selection only happens on the mouseup event, if one keeps the mouse
+        // pressed long enough, the table will exit the edit mode before the selection happens.
+        // Since, we are not relying on the physical focus anyway for selection mechanism, a patchy
+        // solution here would be to prevent the focus transfer when one clicks in the results area.
+        // This way the table would stay in edit mode. One important thing is to allow focus transfer
+        // when one clicks on the search field, we only want to prevent it in the rest of the region
+        // in the dropdown.
+        this.dropdown.on('mousedown', _ComboUtils.killEventWithExceptions.bind(null, ['.oj-listbox-input']));
       },
 
       // _OjSingleSelect
@@ -17175,7 +17263,7 @@ var __oj_select_many_metadata =
         *
         * @name required
         * @expose
-        * @ojshortdesc Specifies whether a value is required.
+        * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
         * @access public
         * @instance
         * @memberof oj.ojSelectOne
@@ -17199,7 +17287,7 @@ var __oj_select_many_metadata =
         *
         * @name required
         * @expose
-        * @ojshortdesc Specifies whether a value is required.
+        * @ojshortdesc Specifies whether the component is required or optional. See the Help documentation for more information.
         * @access public
         * @instance
         * @memberof oj.ojSelectMany
@@ -17209,59 +17297,63 @@ var __oj_select_many_metadata =
         * @see #translations
         */
         /**
-         * Whether the element is required or optional. When required is set to true, an implicit
-         * required validator is created using the RequiredValidator -
-         * <code class="prettyprint">RequiredValidator()</code>.
-         *
-         * Translations specified using the <code class="prettyprint">translations.required</code> attribute
-         * and the label associated with the element, are passed through to the options parameter of the
-         * createValidator method.
-         *
-         * <p>
-         * When <code class="prettyprint">required</code> property changes due to programmatic intervention,
-         * the element may clear messages and run validation, based on the current state it's in. </br>
-         *
-         * <h4>Running Validation</h4>
-         * <ul>
-         * <li>if element is valid when required is set to true, then it runs deferred validation on
-         * the value. This is to ensure errors are not flagged unnecessarily.
-         * </li>
-         * <li>if element is invalid and has deferred messages when required is set to false, then
-         * element messages are cleared but no deferred validation is run.
-         * </li>
-         * <li>if element is invalid and currently showing invalid messages when required is set, then
-         * element messages are cleared and normal validation is run using the current display value.
-         * <ul>
-         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
-         *   property is not updated and the error is shown.
-         *   </li>
-         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
-         *   property is updated; page author can listen to the <code class="prettyprint">optionChange</code>
-         *   event on the <code class="prettyprint">value</code> property to clear custom errors.</li>
-         * </ul>
-         * </li>
-         * </ul>
-         *
-         * <h4>Clearing Messages</h4>
-         * <ul>
-         * <li>Only messages created by the element are cleared.</li>
-         * <li><code class="prettyprint">messages-custom</code> property is not cleared.</li>
-         * </ul>
-         *
-         * </p>
          * <p>
          * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
          * This is the default.
          * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by the user.
          * </p>
          * <p>
-         * Additionally a required validator -
-         * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set.
-         * An explicit required validator can be set by page authors using the validators attribute.
+         * In the Redwood theme, by default, a Required text is rendered inline when the field is empty.
+         * If user-assistance-density is 'compact', it will show on the label as an icon.
+         * In the Alta theme the input's label will render a required icon.
+         * </p>
+         * <p>The Required error text is based on Redwood UX designs, and it is not recommended that
+         * it be changed.
+         * To override the required error message,
+         * use the <code class="prettyprint">translations.required</code> attribute.
+         * The component's label text is passed in as a token {label} and can be used in the message detail.
+         * </p>
+         * <p>When required is set to true, an implicit
+         * required validator is created, i.e.,
+         * <code class="prettyprint">new RequiredValidator()</code>. The required validator is the only
+         * validator to run during initial render, and its error is not shown to the user at this time;
+         * this is called deferred validation. The required validator also runs during normal validation;
+         * this is when the errors are shown to the user.
+         * See the <a href="#validation-section">Validation and Messaging</a> section for details.
          * </p>
          * <p>
-         * In the Alta theme the input's label will render a required icon. In the Redwood theme, by default,
-         * a Required text is rendered inline when the field is empty.  If user-assistance-density is 'compact', it will show on the label as an icon.
+         * When the <code class="prettyprint">required</code> property changes due to programmatic intervention,
+         * the component may clear component messages and run validation, based on the current state it's in. </br>
+         *
+         * <h4>Running Validation when required property changes</h4>
+         * <ul>
+         * <li>if component is valid when required is set to true, then it runs deferred validation on
+         * the value property. If the field is empty, the valid state is invalidHidden. No errors are
+         * shown to the user.
+         * </li>
+         * <li>if component is invalid and has deferred messages when required is set to false, then
+         * component messages are cleared (messages-custom messages are not cleared)
+         * but no deferred validation is run because required is false.
+         * </li>
+         * <li>if component is invalid and currently showing invalid messages when required is set, then
+         * component messages are cleared and normal validation is run using the current display value.
+         * <ul>
+         *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+         *   property is not updated and the error is shown.
+         *   </li>
+         *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+         *   property is updated; page author can listen to the <code class="prettyprint">valueChanged</code>
+         *   event on the component to clear custom errors.</li>
+         * </ul>
+         * </li>
+         * </ul>
+         *
+         * <h4>Clearing Messages when required property changes</h4>
+         * <ul>
+         * <li>Only messages created by the component, like validation messages, are cleared when the required property changes.</li>
+         * <li><code class="prettyprint">messagesCustom</code> property is not cleared.</li>
+         * </ul>
+         *
          * </p>
          *
          * @expose
@@ -19586,11 +19678,8 @@ var __oj_select_many_metadata =
        * @return {Object} jquery element which represents the messaging launcher component
        */
         _GetMessagingLauncherElement: function () {
-          // native renderMode
-          if (this.select) {
-            return this.select.selection;
-          }
-          return this.element;
+          // If native render mode, return selection, otherwise return _super()
+          return this.select ? this.select.selection : this._super();
         },
 
       /**

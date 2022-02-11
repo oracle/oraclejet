@@ -1,0 +1,132 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example text-area/themes/redwood/oj-text-area.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.textarea") {
+  // most of the textarea selectors are in the input text files,
+  // this file includes classes that are text area specific
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-text-area:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // specific css for textarea-input
+  .oj-textarea-input {
+    font-family: inherit;
+    font-size: 100%;
+    // Remove the margin in Firefox and Safari.
+    margin: 0;
+    // Remove the default vertical scrollbar in IE 10+.
+    overflow: auto;
+    padding-top: calc((var(--oj-text-field-height) - 1rem * var(--oj-typography-body-md-line-height)) / 2 - 1px);
+    padding-bottom: calc((var(--oj-text-field-height) - 1rem * var(--oj-typography-body-md-line-height)) / 2 - 1px);
+    line-height: inherit;
+    height: auto;
+    resize: none; //turning off as resizing can cause layout problems.
+  }
+
+  .oj-textarea.oj-read-only .oj-textarea-input {
+    padding-top: 0px;
+    padding-left: 0;
+    padding-right: 0;
+    // We want to allow readonly text styling to be overridden from the root dom.
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  // in mixed mode, put horizontal padding back
+  .oj-form-layout .oj-form.oj-enabled .oj-textarea.oj-read-only .oj-textarea-input {
+    padding: 0.5rem var(--oj-text-field-text-to-edge-padding);
+  }
+
+  // show an outline on focus for accessibility.
+  // usually we would suppress this focus ring on mouse click using
+  // :not(.oj-focus-highlight), but it would be unlikely a user clicks
+  // on a readonly field with his mouse so for coding simplicity sake,
+  // we are not suppressing the focus ring on mouse click.
+  .oj-text-field.oj-read-only .oj-textarea-input:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+  }
+
+  .oj-text-field-counter.oj-textarea-counter-container {
+    height: 32px;
+    width: 100%;
+    padding: 0 8px;
+  }
+
+  .oj-textarea .oj-text-field-counter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .oj-textarea .oj-text-field-counter .oj-textarea-counter-el {
+    visibility: hidden;
+  }
+
+  .oj-textarea.oj-focus .oj-text-field-counter .oj-textarea-counter-el {
+    visibility: visible;
+  }
+
+  .oj-textarea .oj-text-field-container {
+    flex-wrap: wrap;
+  }
+
+  .oj-textarea .oj-text-field-container {
+    height: auto;
+  }
+
+  // The min height helps when max rows is set and the textarea doesn't have any value. 
+  .oj-textarea .oj-text-field-container {
+    min-height: var(--oj-text-field-height);
+  }
+  .oj-textarea.oj-read-only .oj-text-field-container {
+    min-height: 0;
+  }
+
+  //For quiet forms.
+  .oj-textarea.oj-text-field-label-inside .oj-text-field-container {
+    align-items: stretch;
+  }
+  .oj-text-field-label-inside .oj-textarea-input {
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+    margin-top: calc(var(--oj-label-inside-edge-font-size) * var(--oj-label-inside-edge-line-height) + var(--oj-label-inside-edge-position-top)); 
+    margin-bottom: 0.25rem;
+    // Since, textarea is an inline-block element, it was leaving a gap between itself and it's parent. fixed it by changing it to block
+    display: block;
+  }
+
+  .oj-text-field-label-inside.oj-textarea.oj-read-only .oj-textarea-input {
+    margin-top: 0;
+  }
+
+  // inside an enabled form, readonly form components have padding
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-textarea-input {
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+    margin-top: calc(var(--oj-label-inside-edge-font-size) * var(--oj-label-inside-edge-line-height) + var(--oj-label-inside-edge-position-top));
+  } 
+
+  // for regular readonly, it has no padding-horizontal
+  .oj-text-field-label-inside.oj-read-only .oj-textarea-input {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  // Min-height is set on container element and we don't want min-height on the field input because we are using rows
+  // If the other selector is removed, this selector can be removed.
+  .oj-text-field-label-inside .oj-textarea-input.oj-text-field-input {
+    min-height: 0;
+  }
+
+  .oj-text-field.oj-textarea.oj-disabled .oj-text-field-container {
+    background-color: var(--oj-text-field-bg-color-disabled);
+  }
+}

@@ -1,0 +1,538 @@
+/* start:src/Avatar/themes/redwood/Avatar.css */
+:root {
+  --oj-avatar-bg-color: rgb(var(--oj-palette-neutral-rgb-130));
+  --oj-avatar-text-color: var(--oj-core-neutral-contrast);
+  --oj-avatar-pattern-display: block;
+
+  --oj-avatar-size: 4.5rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size: var(--oj-typography-heading-lg-font-size);
+  --oj-avatar-initials-font-weight: lighter;
+  --oj-avatar-icon-font-size: 2rem;
+
+  --oj-private-avatar-global-shape-default: square;
+}
+
+.oj-avatar-bg-purple {
+  --oj-avatar-bg-color: #846a92;
+}
+
+.oj-avatar-bg-orange {
+  --oj-avatar-bg-color: #9b5734;
+}
+
+.oj-avatar-bg-teal {
+  --oj-avatar-bg-color: #4f7d7b;
+}
+
+.oj-avatar-bg-green {
+  --oj-avatar-bg-color: #4c825c;
+}
+
+.oj-avatar-bg-pink {
+  --oj-avatar-bg-color: #925865;
+}
+
+.oj-avatar-bg-slate {
+  --oj-avatar-bg-color: #798b8a;
+}
+
+.oj-avatar-bg-blue {
+  --oj-avatar-bg-color: #437c94;
+}
+
+.oj-avatar-bg-lilac {
+  --oj-avatar-bg-color: #6b7494;
+}
+
+.oj-avatar-bg-gray {
+  --oj-avatar-bg-color: #6f757e;
+}
+.oj-avatar-xxs {
+  --oj-avatar-size: 1.75rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size: var(--oj-typography-body-xs-font-size);
+  --oj-avatar-initials-font-weight: 600;
+  --oj-avatar-icon-font-size: 0.75rem;
+}
+
+.oj-avatar-xs {
+  --oj-avatar-size: 2.75rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size: var(--oj-typography-body-md-font-size);
+  --oj-avatar-initials-font-weight: 400;
+  --oj-avatar-icon-font-size: 1rem;
+}
+.oj-avatar-sm {
+  --oj-avatar-size: 3.5rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size: var(--oj-typography-heading-xs-font-size);
+  --oj-avatar-initials-font-weight: normal;
+  --oj-avatar-icon-font-size: 1.5rem;
+}
+
+.oj-avatar-lg {
+  --oj-avatar-size: 6rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-lg);
+  --oj-avatar-initials-font-size: 2.5rem;
+  --oj-avatar-icon-font-size: 2.25rem;
+}
+
+.oj-avatar-xl {
+  --oj-avatar-size: 9rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-xl);
+  --oj-avatar-initials-font-size: 3rem;
+  --oj-avatar-icon-font-size: 3.5rem;
+}
+
+.oj-avatar-xxl {
+  --oj-avatar-size: 12.25rem;
+  --oj-avatar-border-radius: var(--oj-core-border-radius-xl);
+  --oj-avatar-initials-font-size: 4.5rem;
+  --oj-avatar-icon-font-size: 4.5rem;
+}
+
+/* end:src/Avatar/themes/redwood/Avatar.css */
+/* start:src/Common/themes/redwood/Common.css */
+:root {
+  --oj-palette-danger-rgb-10: 255, 248, 247;
+  --oj-palette-danger-rgb-20: 255, 241, 239;
+  --oj-palette-danger-rgb-30: 255, 235, 232;
+  --oj-palette-danger-rgb-40: 255, 217, 211;
+  --oj-palette-danger-rgb-50: 255, 193, 184;
+  --oj-palette-danger-rgb-60: 255, 157, 144;
+  --oj-palette-danger-rgb-70: 255, 134, 117;
+  --oj-palette-danger-rgb-80: 254, 104, 84;
+  --oj-palette-danger-rgb-90: 236, 79, 58;
+  --oj-palette-danger-rgb-100: 214, 59, 37;
+  --oj-palette-danger-rgb-110: 195, 53, 34;
+  --oj-palette-danger-rgb-120: 179, 49, 31;
+  --oj-palette-danger-rgb-130: 170, 34, 34;
+  --oj-palette-danger-rgb-140: 143, 39, 25;
+  --oj-palette-danger-rgb-150: 124, 34, 22;
+  --oj-palette-danger-rgb-160: 102, 28, 18;
+  --oj-palette-danger-rgb-170: 86, 24, 15;
+
+  --oj-palette-warning-rgb-10: 254, 249, 242;
+  --oj-palette-warning-rgb-20: 253, 242, 229;
+  --oj-palette-warning-rgb-30: 252, 237, 220;
+  --oj-palette-warning-rgb-40: 249, 221, 188;
+  --oj-palette-warning-rgb-50: 246, 199, 146;
+  --oj-palette-warning-rgb-60: 240, 169, 87;
+  --oj-palette-warning-rgb-70: 235, 150, 50;
+  --oj-palette-warning-rgb-80: 225, 128, 18;
+  --oj-palette-warning-rgb-90: 198, 113, 14;
+  --oj-palette-warning-rgb-100: 172, 99, 12;
+  --oj-palette-warning-rgb-110: 156, 89, 11;
+  --oj-palette-warning-rgb-120: 143, 82, 10;
+  --oj-palette-warning-rgb-130: 129, 73, 9;
+  --oj-palette-warning-rgb-140: 114, 65, 8;
+  --oj-palette-warning-rgb-150: 99, 56, 7;
+  --oj-palette-warning-rgb-160: 81, 47, 6;
+  --oj-palette-warning-rgb-170: 69, 39, 5;
+
+  --oj-palette-success-rgb-10: 244, 252, 235;
+  --oj-palette-success-rgb-20: 235, 248, 222;
+  --oj-palette-success-rgb-30: 228, 245, 211;
+  --oj-palette-success-rgb-40: 207, 235, 179;
+  --oj-palette-success-rgb-50: 177, 221, 136;
+  --oj-palette-success-rgb-60: 138, 201, 79;
+  --oj-palette-success-rgb-70: 125, 186, 69;
+  --oj-palette-success-rgb-80: 111, 169, 57;
+  --oj-palette-success-rgb-90: 94, 148, 43;
+  --oj-palette-success-rgb-100: 80, 130, 35;
+  --oj-palette-success-rgb-110: 73, 118, 32;
+  --oj-palette-success-rgb-120: 67, 107, 29;
+  --oj-palette-success-rgb-130: 60, 96, 26;
+  --oj-palette-success-rgb-140: 53, 86, 23;
+  --oj-palette-success-rgb-150: 46, 73, 20;
+  --oj-palette-success-rgb-160: 38, 61, 16;
+  --oj-palette-success-rgb-170: 31, 51, 14;
+
+  --oj-palette-info-rgb-10: 246, 250, 252;
+  --oj-palette-info-rgb-20: 237, 246, 249;
+  --oj-palette-info-rgb-30: 228, 241, 247;
+  --oj-palette-info-rgb-40: 208, 229, 238;
+  --oj-palette-info-rgb-50: 180, 213, 225;
+  --oj-palette-info-rgb-60: 143, 191, 208;
+  --oj-palette-info-rgb-70: 121, 177, 198;
+  --oj-palette-info-rgb-80: 95, 162, 186;
+  --oj-palette-info-rgb-90: 65, 144, 172;
+  --oj-palette-info-rgb-100: 34, 126, 158;
+  --oj-palette-info-rgb-110: 14, 114, 151;
+  --oj-palette-info-rgb-120: 0, 104, 140;
+  --oj-palette-info-rgb-130: 2, 94, 126;
+  --oj-palette-info-rgb-140: 4, 83, 111;
+  --oj-palette-info-rgb-150: 6, 72, 95;
+  --oj-palette-info-rgb-160: 6, 60, 78;
+  --oj-palette-info-rgb-170: 5, 50, 66;
+
+  --oj-palette-brand-rgb-10: 247, 252, 243;
+  --oj-palette-brand-rgb-20: 237, 248, 230;
+  --oj-palette-brand-rgb-30: 229, 244, 220;
+  --oj-palette-brand-rgb-40: 208, 234, 193;
+  --oj-palette-brand-rgb-50: 189, 217, 174;
+  --oj-palette-brand-rgb-60: 163, 193, 148;
+  --oj-palette-brand-rgb-70: 148, 179, 130;
+  --oj-palette-brand-rgb-80: 130, 163, 114;
+  --oj-palette-brand-rgb-90: 111, 145, 93;
+  --oj-palette-brand-rgb-100: 95, 125, 79;
+  --oj-palette-brand-rgb-110: 87, 115, 70;
+  --oj-palette-brand-rgb-120: 79, 105, 63;
+  --oj-palette-brand-rgb-130: 70, 95, 56;
+  --oj-palette-brand-rgb-140: 61, 84, 49;
+  --oj-palette-brand-rgb-150: 53, 72, 42;
+  --oj-palette-brand-rgb-160: 43, 58, 33;
+  --oj-palette-brand-rgb-170: 37, 51, 29;
+
+  --oj-palette-neutral-rgb-0: 255, 255, 255;
+  --oj-palette-neutral-rgb-10: 251, 249, 248;
+  --oj-palette-neutral-rgb-20: 245, 244, 242;
+  --oj-palette-neutral-rgb-30: 241, 239, 237;
+  --oj-palette-neutral-rgb-40: 228, 225, 221;
+  --oj-palette-neutral-rgb-50: 212, 207, 202;
+  --oj-palette-neutral-rgb-60: 188, 182, 177;
+  --oj-palette-neutral-rgb-70: 174, 168, 162;
+  --oj-palette-neutral-rgb-80: 158, 152, 146;
+  --oj-palette-neutral-rgb-90: 139, 133, 128;
+  --oj-palette-neutral-rgb-100: 123, 117, 112;
+  --oj-palette-neutral-rgb-110: 111, 105, 100;
+  --oj-palette-neutral-rgb-120: 101, 95, 91;
+  --oj-palette-neutral-rgb-130: 92, 86, 81;
+  --oj-palette-neutral-rgb-140: 81, 76, 71;
+  --oj-palette-neutral-rgb-150: 71, 66, 62;
+  --oj-palette-neutral-rgb-160: 58, 54, 50;
+  --oj-palette-neutral-rgb-170: 49, 45, 42;
+  --oj-palette-neutral-rgb-180: 32, 30, 28;
+  --oj-palette-neutral-rgb-190: 22, 21, 19;
+  --oj-palette-neutral-rgb-200: 00, 00, 00;
+
+  --oj-palette-dvt-rgb-1: 36, 93, 99;
+  --oj-palette-dvt-rgb-2: 222, 127, 17;
+  --oj-palette-dvt-rgb-3: 95, 185, 181;
+  --oj-palette-dvt-rgb-4: 78, 65, 55;
+  --oj-palette-dvt-rgb-5: 160, 201, 139;
+  --oj-palette-dvt-rgb-6: 180, 114, 130;
+  --oj-palette-dvt-rgb-7: 131, 64, 30;
+  --oj-palette-dvt-rgb-8: 158, 127, 204;
+  --oj-palette-dvt-rgb-9: 251, 194, 106;
+  --oj-palette-dvt-rgb-10: 88, 49, 110;
+  --oj-palette-dvt-rgb-11: 95, 162, 186;
+  --oj-palette-dvt-rgb-12: 49, 122, 69;
+}
+
+:root {
+  /* text colors */
+  /* -------------------------- */
+  --oj-core-text-color-primary: rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-core-text-color-secondary: rgba(var(--oj-palette-neutral-rgb-190), 0.65);
+  --oj-core-text-color-disabled: rgba(var(--oj-palette-neutral-rgb-190), 0.4);
+  --oj-core-text-color-brand: rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-text-color-danger: rgb(var(--oj-palette-danger-rgb-120));
+  --oj-core-text-color-warning: rgb(var(--oj-palette-warning-rgb-120));
+  --oj-core-text-color-success: rgb(var(--oj-palette-success-rgb-120));
+
+  /* TODO - Move this variable into Heading component CSS files once Heading implementation is merged */
+  --oj-heading-text-color: var(--oj-core-text-color-primary);
+
+  --oj-core-bg-color-content: rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-bg-color-hover: rgba(var(--oj-palette-neutral-rgb-190), 0.04);
+  --oj-core-bg-color-active: rgba(var(--oj-palette-neutral-rgb-190), 0.06);
+  --oj-core-bg-color-selected: rgb(var(--oj-palette-brand-rgb-30));
+  --oj-core-border-color-selected: rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-color-disabled-1: rgba(var(--oj-palette-neutral-rgb-190), 0.05);
+  --oj-core-color-disabled-2: rgba(var(--oj-palette-neutral-rgb-190), 0.1);
+
+  /* icon */
+  /* -------------------------- */
+  --oj-core-icon-size-lg: 1.5rem;
+  --oj-core-icon-size-sm: 1rem;
+
+  /* divider */
+  /* -------------------------- */
+  --oj-core-divider-color: rgba(var(--oj-palette-neutral-rgb-190), 0.1);
+  --oj-core-divider-margin: 0.5rem;
+
+  /* neutral */
+  /* -------------------------- */
+  --oj-core-neutral-1: rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-core-neutral-2: rgb(var(--oj-palette-neutral-rgb-110));
+  --oj-core-neutral-3: rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-core-neutral-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-core-neutral-secondary-1: rgb(var(--oj-palette-neutral-rgb-30));
+  --oj-core-neutral-secondary-2: rgb(var(--oj-palette-neutral-rgb-20));
+  --oj-core-neutral-secondary-3: rgb(var(--oj-palette-neutral-rgb-10));
+  --oj-core-neutral-secondary-contrast: rgb(var(--oj-palette-neutral-rgb-120));
+
+  /* brand */
+  /* -------------------------- */
+  --oj-core-brand-1: rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-brand-2: rgb(var(--oj-palette-brand-rgb-110));
+  --oj-core-brand-3: rgb(var(--oj-palette-brand-rgb-120));
+  --oj-core-brand-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+
+  /* danger */
+  /* -------------------------- */
+  --oj-core-danger-1: rgb(var(--oj-palette-danger-rgb-100));
+  --oj-core-danger-2: rgb(var(--oj-palette-danger-rgb-110));
+  --oj-core-danger-3: rgb(var(--oj-palette-danger-rgb-120));
+  --oj-core-danger-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+
+  /* danger secondary */
+  /* -------------------------- */
+  --oj-core-danger-secondary-1: rgb(var(--oj-palette-danger-rgb-30));
+  --oj-core-danger-secondary-2: rgb(var(--oj-palette-danger-rgb-20));
+  --oj-core-danger-secondary-3: rgb(var(--oj-palette-danger-rgb-10));
+  --oj-core-danger-secondary-contrast: rgb(var(--oj-palette-danger-rgb-120));
+
+  /* warning */
+  /* -------------------------- */
+  --oj-core-warning-1: rgb(var(--oj-palette-warning-rgb-100));
+  --oj-core-warning-2: rgb(var(--oj-palette-warning-rgb-110));
+  --oj-core-warning-3: rgb(var(--oj-palette-warning-rgb-120));
+  --oj-core-warning-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+
+  /* warning secondary */
+  /* -------------------------- */
+  --oj-core-warning-secondary-1: rgb(var(--oj-palette-warning-rgb-30));
+  --oj-core-warning-secondary-2: rgb(var(--oj-palette-warning-rgb-20));
+  --oj-core-warning-secondary-3: rgb(var(--oj-palette-warning-rgb-10));
+  --oj-core-warning-secondary-contrast: rgb(var(--oj-palette-warning-rgb-120));
+
+  /* success */
+  /* -------------------------- */
+  --oj-core-success-1: rgb(var(--oj-palette-success-rgb-100));
+  --oj-core-success-2: rgb(var(--oj-palette-success-rgb-110));
+  --oj-core-success-3: rgb(var(--oj-palette-success-rgb-120));
+  --oj-core-success-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+
+  /* success secondary */
+  /* -------------------------- */
+  --oj-core-success-secondary-1: rgb(var(--oj-palette-success-rgb-30));
+  --oj-core-success-secondary-2: rgb(var(--oj-palette-success-rgb-20));
+  --oj-core-success-secondary-3: rgb(var(--oj-palette-success-rgb-10));
+  --oj-core-success-secondary-contrast: rgb(var(--oj-palette-success-rgb-120));
+
+  /* info */
+  /* -------------------------- */
+  --oj-core-info-1: rgb(var(--oj-palette-info-rgb-100));
+  --oj-core-info-2: rgb(var(--oj-palette-info-rgb-110));
+  --oj-core-info-3: rgb(var(--oj-palette-info-rgb-120));
+  --oj-core-info-contrast: rgb(var(--oj-palette-neutral-rgb-0));
+
+  /* info secondary */
+  /* -------------------------- */
+  --oj-core-info-secondary-1: rgb(var(--oj-palette-info-rgb-30));
+  --oj-core-info-secondary-2: rgb(var(--oj-palette-info-rgb-20));
+  --oj-core-info-secondary-3: rgb(var(--oj-palette-info-rgb-10));
+  --oj-core-info-secondary-contrast: rgb(var(--oj-palette-info-rgb-120));
+
+  /* focus */
+  /* -------------------------- */
+  --oj-core-focus-border-color: rgb(var(--oj-palette-neutral-rgb-190));
+
+  /* cursor */
+  /* -------------------------- */
+  --oj-core-cursor-clickable: pointer;
+
+  /* drag and drop */
+  /* -------------------------- */
+  --oj-core-drag-drop-color-1: rgb(var(--oj-palette-brand-rgb-40));
+  --oj-core-drag-drop-color-2: rgb(var(--oj-palette-brand-rgb-100));
+  --oj-core-drag-drop-line-color: rgb(var(--oj-palette-brand-rgb-100));
+
+  /* touch target */
+  /* -------------------------- */
+  --oj-core-touch-target-min-size: 2.25rem;
+
+  /* shadow */
+  /* -------------------------- */
+  --oj-core-box-shadow-rgb: var(--oj-palette-neutral-rgb-200);
+  --oj-core-box-shadow-xs: 0px 1px 4px 0px
+    rgba(var(--oj-core-box-shadow-rgb), 0.12);
+  --oj-core-box-shadow-sm: 0px 4px 8px 0px
+    rgba(var(--oj-core-box-shadow-rgb), 0.16);
+  --oj-core-box-shadow-md: 0px 6px 12px 0px
+    rgba(var(--oj-core-box-shadow-rgb), 0.2);
+  --oj-core-box-shadow-lg: 0px 8px 16px 0px
+    rgba(var(--oj-core-box-shadow-rgb), 0.24);
+  --oj-core-box-shadow-xl: 0px 12px 20px 0px
+    rgba(var(--oj-core-box-shadow-rgb), 0.28);
+
+  /* a dropdown is a popup that drops down from a component, for example a menu or select popup */
+  --oj-core-dropdown-box-shadow: var(--oj-core-box-shadow-sm);
+  --oj-private-core-global-dropdown-offset: 4;
+
+  /* scrim color, for example behind a modal dialog */
+  /* -------------------------- */
+  --oj-core-scrim-color: rgba(var(--oj-palette-neutral-rgb-190), 0.4);
+
+  /* spacing */
+  /* -------------------------- */
+  --oj-core-spacing-1x: 0.25rem;
+  --oj-core-spacing-2x: 0.5rem;
+  --oj-core-spacing-3x: 0.75rem;
+  --oj-core-spacing-4x: 1rem;
+  --oj-core-spacing-5x: 1.25rem;
+  --oj-core-spacing-6x: 1.5rem;
+  --oj-core-spacing-7x: 1.75rem;
+  --oj-core-spacing-8x: 2rem;
+  --oj-core-spacing-9x: 2.25rem;
+  --oj-core-spacing-10x: 2.5rem;
+  --oj-core-spacing-11x: 2.75rem;
+  --oj-core-spacing-12x: 3rem;
+
+  /* border radius */
+  /* -------------------------- */
+  --oj-core-border-radius-sm: 2px;
+  --oj-core-border-radius-md: 0.25rem;
+  --oj-core-border-radius-lg: 0.375rem;
+  --oj-core-border-radius-xl: 0.5rem;
+
+  /* z index */
+  /* -------------------------- */
+  --oj-private-core-z-index-fixed: 100;
+  --oj-private-core-z-index-off-canvas: 200;
+  --oj-private-core-z-index-resizable: 900;
+  --oj-core-z-index-popup: 1000;
+  --oj-core-z-index-dialog: 1050;
+  --oj-core-z-index-messages: 2000;
+
+  --oj-private-core-global-loading-indicator-delay-duration: 0.05s;
+  --oj-private-core-wrappable-margin-bottom: 0px;
+}
+
+:root {
+  --oj-typography-heading-2xl-font-size: 2.5rem;
+  --oj-typography-heading-2xl-font-weight: 900;
+  --oj-typography-heading-2xl-line-height: 1.3;
+
+  --oj-typography-heading-xl-font-size: 2.25rem;
+  --oj-typography-heading-xl-font-weight: 900;
+  --oj-typography-heading-xl-line-height: 1.222;
+
+  --oj-typography-heading-lg-font-size: 2rem;
+  --oj-typography-heading-lg-font-weight: 900;
+  --oj-typography-heading-lg-line-height: 1.25;
+
+  --oj-typography-heading-md-font-size: 1.75rem;
+  --oj-typography-heading-md-font-weight: 900;
+  --oj-typography-heading-md-line-height: 1.2857;
+
+  --oj-typography-heading-sm-font-size: 1.5rem;
+  --oj-typography-heading-sm-font-weight: 900;
+  --oj-typography-heading-sm-line-height: 1.3333;
+
+  --oj-typography-heading-xs-font-size: 1.25rem;
+  --oj-typography-heading-xs-font-weight: 900;
+  --oj-typography-heading-xs-line-height: 1.4;
+
+  --oj-typography-subheading-2xl-font-size: 2.25rem;
+  --oj-typography-subheading-2xl-font-weight: bold;
+  --oj-typography-subheading-2xl-line-height: 1.2222;
+
+  --oj-typography-subheading-xl-font-size: 2rem;
+  --oj-typography-subheading-xl-font-weight: bold;
+  --oj-typography-subheading-xl-line-height: 1.25;
+
+  --oj-typography-subheading-lg-font-size: 1.75rem;
+  --oj-typography-subheading-lg-font-weight: bold;
+  --oj-typography-subheading-lg-line-height: 1.2857;
+
+  --oj-typography-subheading-md-font-size: 1.5rem;
+  --oj-typography-subheading-md-font-weight: bold;
+  --oj-typography-subheading-md-line-height: 1.3333;
+
+  --oj-typography-subheading-sm-font-size: 1.25rem;
+  --oj-typography-subheading-sm-font-weight: bold;
+  --oj-typography-subheading-sm-line-height: 1.4;
+
+  --oj-typography-subheading-xs-font-size: 1rem;
+  --oj-typography-subheading-xs-font-weight: bold;
+  --oj-typography-subheading-xs-line-height: 1.5;
+
+  --oj-typography-body-xl-font-size: 1.25rem;
+  --oj-typography-body-xl-line-height: 1.4;
+
+  --oj-typography-body-lg-font-size: 1.125rem;
+  --oj-typography-body-lg-line-height: 1.3333;
+
+  --oj-typography-body-md-font-size: 1rem;
+  --oj-typography-body-md-line-height: 1.25;
+
+  --oj-typography-body-sm-font-size: 0.859rem;
+  --oj-typography-body-sm-line-height: 1.2;
+
+  --oj-typography-body-xs-font-size: 0.75rem;
+  --oj-typography-body-xs-line-height: 1.3333;
+
+  --oj-typography-body-2xs-font-size: 0.625rem;
+  --oj-typography-body-2xs-line-height: 1.2;
+}
+
+/* animations */
+/* -------------------------- */
+:root {
+  --oj-animation-duration-xshort: 0.15s;
+  --oj-animation-duration-short: 0.2s;
+  --oj-animation-duration-medium: 0.25s;
+  --oj-animation-duration-long: 0.4s;
+  --oj-animation-duration-xlong: 0.5s;
+}
+
+/* button */
+/* -------------------------- */
+/* TODO - Move this variable into Button component CSS files once Button implementation is merged */
+:root {
+  --oj-private-button-ghost-chrome-text-color: var(--oj-core-text-color-primary);
+  --oj-private-button-ghost-chrome-text-color-hover: var(--oj-core-text-color-secondary);
+  --oj-private-button-ghost-chrome-text-color-active: var(--oj-core-text-color-primary);
+}
+
+/* end:src/Common/themes/redwood/Common.css */
+/* start:src/Sample/themes/redwood/Sample.css */
+:root {
+  --sample-font-weight: normal;
+}
+/* end:src/Sample/themes/redwood/Sample.css */
+/* start:src/UNSAFE_Collapsible/themes/redwood/Collapsible.css */
+
+/* end:src/UNSAFE_Collapsible/themes/redwood/Collapsible.css */
+/* start:src/UNSAFE_MessageBanner/themes/redwood/MessageBanner.css */
+:root {
+  --oj-private-message-banner-background-color:         var(--oj-core-info-secondary-3);
+
+  --oj-private-message-banner-start-icon-color:         var(--oj-core-info-3);
+  --oj-private-message-banner-start-icon-size:          1rem;
+
+  --oj-private-message-banner-summary-text-color:       var(--oj-core-info-3);
+  --oj-private-message-banner-summary-text-weight:      var(--oj-typography-subheading-xs-font-weight);
+  --oj-private-message-banner-summary-text-size:        var(--oj-typography-subheading-xs-font-size);
+  --oj-private-message-banner-summary-line-height:      1.25rem;
+}
+
+.oj-messagebanner-error {
+  --oj-private-message-banner-background-color:   var(--oj-core-danger-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-danger-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-danger-3);
+}
+
+.oj-messagebanner-warning {
+  --oj-private-message-banner-background-color:   var(--oj-core-warning-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-warning-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-warning-3);
+}
+
+.oj-messagebanner-confirmation {
+  --oj-private-message-banner-background-color:   var(--oj-core-success-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-success-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-success-3);
+}
+
+.oj-messagebanner-info {
+  --oj-private-message-banner-background-color:   var(--oj-core-info-secondary-3);
+  --oj-private-message-banner-start-icon-color:   var(--oj-core-info-3);
+  --oj-private-message-banner-summary-text-color: var(--oj-core-info-3);
+}
+
+/* end:src/UNSAFE_MessageBanner/themes/redwood/MessageBanner.css */

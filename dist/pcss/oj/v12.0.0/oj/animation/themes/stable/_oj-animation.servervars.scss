@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// animation duration
+//----------------------------------
+$privateAnimationDurationShort: .25s !default;
+$privateAnimationDurationMedium: .4s !default;
+$privateAnimationDurationLong: .5s !default;
+
+// todo: should this be in animations or module?
+
+// Default animation types for the oj.ModuleAnimations.navChild, navParent,
+// navSiblingEarlier, and navSiblingLater implementations,
+// which can be specified on the "animation" option of ojModule binding.
+// These variables can be overriden in theme files to provide different
+// animation types.  Valid values are the names of specific animation
+// implementations in oj.ModuleAnimations such as coverStart, coverUp,
+// revealEnd, revealDown, zoomIn, zoomOut.
+$privateAnimationNavChildDefault:           coverUp     !default;
+$privateAnimationNavParentDefault:          revealDown  !default;
+$privateAnimationNavSiblingEarlierDefault:  pushEnd     !default;
+$privateAnimationNavSiblingLaterDefault:    pushStart   !default;
+
+// animation delay between cards, used by listview and waterfall
+$privateCardEntranceAnimationDelayIncrement: "50" !default;

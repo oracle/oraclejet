@@ -1,0 +1,113 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example chart/themes/redwood/oj-chart.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.chart") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-chart:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-chart {
+    display: block;
+  }
+
+  .oj-chart {
+    user-select: none;
+
+    width: 100%;
+    height: 448px;
+  }
+
+  .oj-chart-data-label {
+    font-size: var(--oj-dvt-label-font-size-sm);
+    color: var(--oj-core-text-color-primary);
+  }
+
+  .oj-chart-data-cursor-line {
+    color: var(--oj-chart-data-cursor-line-color);
+    width: 1px;
+  }
+
+  .oj-chart-data-cursor-outer-line {
+    stroke: var(--oj-dvt-contrast-line-color);
+    stroke-width: 1px;
+  }
+
+  .oj-chart-polar-axis-tick-label-outside {
+    fill: var(--oj-chart-polar-axis-tick-label-outside-bg-color);
+  }
+
+  .oj-chart-polar-axis-tick-label-inside {
+    fill: var(--oj-chart-polar-axis-tick-label-inside-bg-color);
+  }
+
+  .oj-chart-stock-falling {
+    background-color: var(--oj-chart-stock-falling-bg-color);
+  }
+
+  .oj-chart-stock-range {
+    background-color: var(--oj-chart-stock-range-bg-color);
+  }
+
+  .oj-chart-stock-rising {
+    background-color: var(--oj-chart-stock-rising-bg-color);
+  }
+
+  .oj-chart-stack-label {
+    font-size: var(--oj-dvt-label-font-size-sm);
+
+    font-weight: bold;
+  }
+
+  .oj-chart-pie-center-label,
+  .oj-chart-xaxis-title,
+  .oj-chart-yaxis-title,
+  .oj-chart-y2axis-title {
+    font-size: var(--oj-dvt-label-font-size-sm);
+    color: var(--oj-chart-axis-title-text-color);
+  }
+
+  .oj-chart-xaxis-tick-label,
+  .oj-chart-yaxis-tick-label,
+  .oj-chart-y2axis-tick-label {
+    font-size: var(--oj-dvt-label-font-size-sm);
+    color: var(--oj-chart-axis-tick-label-text-color);
+  }
+
+  .oj-chart-animation-down {
+    fill: var(--oj-chart-animation-falling-icon-color);
+  }
+
+  .oj-chart-animation-up {
+    fill: var(--oj-chart-animation-rising-icon-color);
+  }
+
+  .oj-chart-animation-marker {
+    fill: var(--oj-chart-animation-marker-color);
+  }
+
+  .oj-chart .oj-active-drop {
+    fill: var(--oj-core-drag-drop-color-1);
+  }
+
+  .oj-chart-reference-object-area {
+    color: var(--oj-dvt-reference-object-area-color);
+  }
+
+  .oj-chart-reference-object-line {
+    width: 1px;
+    color: var(--oj-dvt-reference-object-line-color);
+  }
+
+  .oj-chart-reference-object-inner-line {
+    stroke: var(--oj-dvt-contrast-line-color);
+    stroke-width: 1px;
+  }
+}

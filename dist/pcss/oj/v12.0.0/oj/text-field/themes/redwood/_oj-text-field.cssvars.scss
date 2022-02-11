@@ -1,0 +1,78 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../palette/themes/redwood/_oj-palette.cssvars.scss";
+@import "../../../form-layout/themes/redwood/_oj-form-layout.cssvars.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.cssvars.scss";
+// scoped cssvars override
+@import "../../../palette/themes/redwood/_oj-palette-scoped.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core-ignore.scoped.cssvars.scss";
+@import "oj-text-field-ignore.scoped.cssvars.scss";
+
+  @include module-include-once("redwood.variables.textfield") {
+:root { 
+
+    // common form controls
+    //--------------------------
+ 
+    --oj-text-field-sm-width: calc(var(--oj-form-layout-column-max-width)/2);
+    --oj-text-field-md-width: var(--oj-form-layout-column-max-width);
+
+    --oj-text-field-border-radius:       var(--oj-core-border-radius-md);
+
+    --oj-text-field-border-width:    1px;
+
+    // controls the padding inside text field
+    --oj-text-field-icon-to-text-padding: var(--oj-core-spacing-3x);
+    --oj-text-field-icon-to-edge-padding: var(--oj-core-spacing-3x); 
+    --oj-text-field-text-to-edge-padding: var(--oj-core-spacing-3x);
+
+    --oj-text-field-text-align: start;
+
+
+
+    // oj-form-control-input variables apply to
+    // input style form controls, like input text, password, etc
+    // --oj-text-field-height should match the button height
+    
+    --oj-text-field-height:              2.75rem;
+    --oj-text-field-font-size:        var(--oj-typography-body-md-font-size);
+    --oj-private-text-field-font-size-adjust: 100%;
+
+    // enabled
+    --oj-text-field-bg-color:               rgb(var(--oj-palette-neutral-rgb-0));
+    --oj-text-field-border-color:           rgba(var(--oj-palette-neutral-rgb-190),.5);
+    --oj-text-field-placeholder-color:      var(--oj-core-text-color-secondary);
+    --oj-text-field-placeholder-font-style: normal;
+    --oj-text-field-text-color:      var(--oj-core-text-color-primary);
+
+
+    // disabled
+    --oj-text-field-bg-color-disabled:      rgba(var(--oj-palette-neutral-rgb-0),.3);
+
+    --oj-text-field-border-color-disabled:  var(--oj-core-color-disabled-2);
+    --oj-text-field-text-color-disabled:   var(--oj-core-text-color-disabled);
+
+    // readonly
+
+    // focus
+
+    // todo: ideally this pointed  at --oj-core-border-color-selected but it's not the same color
+    --oj-text-field-border-color-focus:        rgb(var(--oj-palette-brand-rgb-110));
+
+    // variables that apply when the label-edge is inside
+    --oj-text-field-inside-edge-height:                  3.25rem;
+    --oj-text-field-inside-edge-padding-top:             0.8125rem;
+    // todo: disabled color should apply regardless of location, error and focus only apply when label is inside
+    --oj-text-field-inside-edge-label-color-error:       rgb(var(--oj-palette-danger-rgb-100));
+    --oj-text-field-inside-edge-label-color-focus:       rgb(var(--oj-palette-brand-rgb-110));
+    --oj-text-field-inside-edge-label-color-warning:     rgb(var(--oj-palette-warning-rgb-100));
+    
+    // User Assistance
+    --oj-user-assistance-inline-text-color: var(--oj-core-text-color-secondary);
+    --oj-user-assistance-inline-font-size: var(--oj-typography-body-xs-font-size);
+}
+
+}

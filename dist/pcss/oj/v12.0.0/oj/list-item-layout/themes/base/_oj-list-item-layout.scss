@@ -1,0 +1,100 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example list-item-layout/themes/redwood/oj-list-item-layout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.listitemlayout") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-list-item-layout:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-list-item-layout {
+    display: block;
+  }
+
+  .oj-listitemlayout-grid {
+    display: grid;
+    grid-template-areas: "selector leading textslots extra" ".... .... quaternary navigation";
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: var(--oj-collection-list-cell-padding-vertical)
+      var(--oj-list-view-item-padding-horizontal);
+    box-sizing: border-box;
+    min-height: var(--oj-collection-list-row-height);
+  }
+
+  .oj-listitemlayout-padding-off > .oj-listitemlayout-grid {
+    padding: 0;
+  }
+
+  .oj-listitemlayout-selector {
+    grid-area: selector;
+    align-self: center;
+    margin: -0.875rem -0.875rem;
+  }
+
+  .oj-listitemlayout-leading {
+    grid-area: leading;
+    align-self: center;
+  }
+
+  .oj-listitemlayout-textslots {
+    grid-area: textslots;
+    align-self: center;
+    grid-template-columns: 1fr;
+  }
+
+  .oj-listitemlayout-extra {
+    grid-area: extra;
+    display: grid;
+    grid-template-areas: "metadata trailing action";
+    align-items:center;
+    align-self: center;
+  }
+
+  .oj-listitemlayout-metadata {
+    grid-area: metadata;
+  }
+
+  .oj-listitemlayout-trailing {
+    grid-area: trailing;
+  }
+
+  .oj-listitemlayout-action {
+    grid-area: action;
+    margin-top: calc(-1 * var(--oj-collection-list-cell-padding-vertical));
+    margin-bottom: calc(-1 * var(--oj-collection-list-cell-padding-vertical));
+  }
+
+  .oj-listitemlayout-quaternary {
+    grid-area: quaternary;
+    min-width: 0;
+    justify-self: start;
+    padding-top: 0.75rem;
+  }
+
+  .oj-listitemlayout-navigation {
+    grid-area: navigation;
+    justify-self: end;
+    padding-top: 0.75rem;
+  }
+
+  .oj-listitemlayout-start-padding {
+    padding-inline-start: 1rem;
+  }
+
+  .oj-listitemlayout-horizontal-padding {
+    padding-inline-start: var(--oj-list-view-item-padding-horizontal);
+  }
+
+  .oj-listitemlayout-tertiary {
+    padding-top: 0.125rem;
+  }
+
+}

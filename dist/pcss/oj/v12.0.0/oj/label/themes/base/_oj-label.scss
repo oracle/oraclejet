@@ -1,0 +1,232 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example label/themes/redwood/oj-label.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.label") {
+  // JET is designed to be mobile first, therefore labels are
+  // top aligned as this should be their position on a mobile device.
+  // If the user wants them to be inline, they use the oj-label-inline selector
+  // to indicate this.
+  // oj-label most likely will be on a div surrounding the help and
+  // required icons as well as the label element. It won't be on the label
+  // element itself (the input component wraps the label element and adds
+  // oj-label style)
+  // If oj-label-inline is set on the label element in the page,
+  // the input component moves it to the label's wrapper dom element.
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-label:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  /* wraps help text that displays inside popup. */
+  .oj-label-help-popup-container {
+    max-width: 320px;
+  }
+
+  .oj-label {
+    display: block;
+    // the color, size, and font-weight need to go on outer dom
+    // in case you use something like text-overflow: ellipsis,
+    // otherwise the ellipsis won't be the same font
+    // color/size/weight as the label text.
+
+    color: var(--oj-label-color);
+    font-size: var(--oj-label-font-size);
+    font-weight: var(--oj-label-font-weight);
+    line-height: var(--oj-label-line-height);
+    word-break: break-word;
+  }
+
+  // inside labels are always truncated, except when full readonly mode
+  // where they are never truncated.
+  .oj-text-field-label-inside.oj-read-only .oj-label {
+    white-space: normal;
+  }
+
+  .oj-text-field-label-inside:not(.oj-read-only) .oj-label,
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside .oj-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* When label is block, this wrapper is needed in order 
+       to float modifiers (required, help, changed) to the end of the label */
+  .oj-label-group {
+    display: inline-block;
+    // align bottom to take out the inherent padding. Then I can add my own padding that
+    // works for non-component and component labels
+    vertical-align: bottom;
+  }
+
+  // There are selectors that set float: none on oj-label-help-icon.
+  // (see float:none in _oj.common.formlayout.scss/
+  // .#{$selectorPrefix}-label-inline).
+  // Since vertical-align is needed when not floating, we put it here by default.
+  // It appears to have no effect when floating.
+  .oj-label-help-icon {
+    vertical-align: middle;
+  }
+
+  // JET is designed to be mobile first, therefore by default labels are
+  // top aligned as this should be their position on a mobile device.
+  // When labels are on top of the field, the alta spec says the
+  // icons (required, help) come after the label.
+  // We use float to position them this way.
+  .oj-label-required-icon,
+  .oj-label-help-icon {
+    float: right;
+    margin-top: calc((( var(--oj-label-font-size) * var(--oj-label-line-height)) - var(--oj-core-icon-size-sm)) / 2);     
+    margin-bottom: calc((( var(--oj-label-font-size) * var(--oj-label-line-height)) - var(--oj-core-icon-size-sm)) / -2);
+    html[dir="rtl"] & {
+      float: left;
+    }
+    // need 6px of space between icons and label. if floating
+    // end, then that means icons are after label, so we want
+    // space on the left in ltr.
+    @include oj-ltr {
+      margin-left: 6px;
+      margin-right: 0;
+    }
+    @include oj-rtl() {
+      margin-right: 6px;
+      margin-left: 0;
+    }
+  }
+  // we need a tiny bit of padding. If we put a border around the oj-label-group,
+  // or when we set overflow:hidden on oj-label-group during nowrap, the icon gets slightly
+  // cut off.
+  .oj-label-help-icon-anchor {
+    text-decoration: none;
+
+    float: right;
+    html[dir="rtl"] & {
+      float: left;
+    }
+
+    @include oj-ltr {
+      padding-right: 2px;
+    }
+    @include oj-rtl() {
+      padding-left: 2px;
+    }
+  }
+
+  .oj-label-help-icon-anchor:hover,
+  .oj-label-help-icon-anchor:focus {
+    text-decoration: none; //workaround for IE11 where underline appears on icon hover and focus
+  }
+
+  .oj-label-help-icon-anchor:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+  }
+
+  // Suppress focus ring
+  .oj-label-help-icon-anchor:not(.oj-focus-highlight).oj-focus {
+    outline: none;
+  }
+  // This is for when you don't want your labels to wrap, whether the label is inline or
+  // on top.
+  .oj-label.oj-label-nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // oj-label-group is a little less wide than oj-label, and we want to contain the
+  // text within oj-label group as well. The only reason I see where this is nicer
+  // than setting overflow: hidden on this dom node instead of root is that
+  // the user could style the root to do other things besides overflow: hidden
+  // and this will inherit it.
+  .oj-label.oj-label-nowrap .oj-label-group {
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+
+  // This is for inline labels - labels and input are on the same line
+  .oj-label-inline {
+    display: inline-block;
+    vertical-align: top;
+    // box sizing required for firefox
+    box-sizing: border-box;
+
+    @include oj-ltr() {
+      padding-right: 1rem;
+    }
+
+    @include oj-rtl() {
+      padding-left: 1rem;
+    }
+  }
+  // This is for inline text - labels and text are on the same line. We put oj-label-inline
+  // on the label and we need this to put on the plain text to have them line up.
+  .oj-form-non-control-inline {
+    display: inline-block;
+    vertical-align: top;
+    // box sizing required for firefox
+    box-sizing: border-box;
+  }
+
+  // When labels are inline with the field, the alta spec says the
+  // icons (required, help) come before the label.
+  // We float to achieve this. The oj-label-inline selector tells
+  // us it is inline.
+  .oj-label-inline .oj-label-required-icon,
+  .oj-label-inline .oj-label-help-icon {
+    float: left;
+    html[dir="rtl"] & {
+      float: right;
+    }
+
+    @include oj-ltr {
+      margin-right: 6px;
+      margin-left: 0;
+    }
+    @include oj-rtl() {
+      margin-left: 6px;
+      margin-right: 0;
+    }
+  }
+  .oj-label-inline .oj-label-help-icon-anchor {
+    float: left;
+    html[dir="rtl"] & {
+      float: right;
+    }
+  }
+
+  .oj-label-inline.oj-label-inline-top {
+    margin-top: 0;
+  }
+
+  /* Deprecated since v8.0.0. JET's Accessibility team discourages access keys */
+  .oj-label-accesskey {
+    text-decoration: underline;
+  }
+
+  .oj-label-help-icon {
+    @extend .oj-fwk-icon-help;
+    font-size: var(--oj-core-icon-size-sm);
+  }
+  // render the label's required icon as an icon font character, else render as plain css.
+  // this allows the alta theme to render an '*' icon using content css property,
+  // and alta mobile themes to render a circle w/o using content css property.
+
+  .oj-label-required-icon:before {
+    content: "*";
+  }
+  .oj-label-required-icon {
+    color: var(--oj-label-required-icon-color);
+    font-size: var(--oj-label-required-char-font-size);
+    font-weight: normal;
+    line-height: 0.5rem;
+    font-family: inherit;
+  }
+}

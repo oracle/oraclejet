@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.avatar") {
+:root {
+
+  // avatar
+  // ----------------------------
+  --oj-avatar-bg-color:                       rgb(var(--oj-palette-neutral-rgb-130));
+  --oj-avatar-text-color:                     var(--oj-core-neutral-contrast);
+  --oj-avatar-pattern-display:                none;
+
+  --oj-avatar-size:                        4.5rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size:          var(--oj-typography-heading-lg-font-size);
+  --oj-avatar-initials-font-weight:        lighter;
+  --oj-avatar-icon-font-size:              2rem;
+
+  --oj-private-avatar-global-shape-default:         circle;
+
+}
+
+}

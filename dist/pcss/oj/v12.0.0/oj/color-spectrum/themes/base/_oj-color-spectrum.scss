@@ -1,0 +1,104 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example color-spectrum/themes/redwood/oj-color-spectrum.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.formcontrol.colorspectrum") {
+  /* Color  Spectrum */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-color-spectrum:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-colorspectrum {
+    display: inline-block;
+    position: relative;
+  }
+
+  /*  The spectrum rectangle containing the saturation/luminosity spectrum for the hue */
+  .oj-colorspectrum-spectrum {
+    width: 13.75rem;
+    height: 13.75rem;
+    border-color: var(--oj-color-spectrum-border-color);
+    margin: 0.75rem 0.75rem 0;
+    border-style: solid;
+    border-width: 1px;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+  }
+
+  .oj-colorspectrum-container {
+    white-space: nowrap;
+  }
+
+  .oj-colorspectrum-container > .oj-slider-vertical {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  /*  Horizontal opacity slider  */
+  .oj-colorspectrum-container > .oj-slider-horizontal {
+    display: block;
+  }
+
+  /*  Horizontal opacity slider  - length  */
+  .oj-colorspectrum-container > .oj-slider-horizontal > .oj-slider-container {
+    width: 13.75rem;
+  }
+
+  /*  Vertical Hue slider  - height  */
+  .oj-colorspectrum-container > .oj-slider-vertical > .oj-slider-container {
+    height: 13.75rem;
+  }
+
+  /*  Remove bottom margins from sliders  */
+  html .oj-colorspectrum-container .oj-form-control {
+    margin-bottom: 0;
+  }
+
+  /*  Spectrum thumb   */
+  // border-color value is hardcoded white as the color-spectrum-thumb is always white
+  // regardless of theming because it's shown over a slider with many colors
+  .oj-colorspectrum-thumb {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border-width: 2px;
+    border-color: #ffffff;
+    box-shadow: 1px 1px 5px 0 rgba(var(--oj-core-box-shadow-rgb), 0.4);
+
+    border-style: solid;
+    background-color: transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+    position: absolute;
+  }
+
+  .oj-colorspectrum-thumb:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-colorspectrum.oj-disabled .oj-colorspectrum-thumb {
+    border-color: var(--oj-slider-thumb-border-color-disabled);
+  }
+
+  //class put on temp div to get computed path to spectrum-opacity-slider-bg.png
+  //all styles besides background-image are to ensure it is never displayed
+  .oj-colorspectrum-alpha-bg {
+    background-image: url("#{$imageDir}spectrum-opacity-slider-bg.png");
+    position: absolute;
+    height: 0;
+    width: 0;
+    display: none;
+  }
+
+  /* --------------------------------------------------------------- */
+}

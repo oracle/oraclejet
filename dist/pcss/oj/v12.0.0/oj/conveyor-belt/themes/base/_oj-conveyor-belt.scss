@@ -1,0 +1,222 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example conveyor-belt/themes/redwood/oj-conveyor-belt.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.conveyorbelt") {
+  /* conveyorbelt */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-conveyor-belt:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-conveyor-belt {
+    display: block;
+  }
+
+  .oj-conveyorbelt {
+    position: relative;
+  }
+
+  .oj-conveyorbelt,
+  .oj-conveyorbelt-overflow-container,
+  .oj-conveyorbelt-content-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .oj-conveyorbelt-content-container,
+  .oj-conveyorbelt-overflow-container {
+      height: 100%
+  }
+
+  .oj-conveyorbelt.oj-conveyorbelt-vertical .oj-conveyorbelt-content-container {
+    height: auto
+  }
+
+  //_oj-conveyorbelt-vertical is applied to the root element when the
+  //conveyor orientation is vertical
+  .oj-conveyorbelt.oj-conveyorbelt-vertical {
+    display: inline-flex;
+  }
+
+  .oj-conveyorbelt.oj-conveyorbelt-vertical,
+  .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-overflow-container,
+  .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-overflow-container > .oj-conveyorbelt-content-container {
+    flex-direction: column;
+  }
+
+  //applied to the container around the content container in the conveyor
+  .oj-conveyorbelt-overflow-container {
+    overflow: hidden;
+    flex: 1 1 auto;
+  }
+
+  //applied to the container around the items in the conveyor
+  .oj-conveyorbelt-content-container {
+    //need to specify position:relative so that we can add a resize listener to this element
+    //(which adds its own absolutely positioned child elements)
+    position: relative;
+    //when a navList is wrapped by a conveyorBelt, allow the navList to
+    //grow so that its items can grow, like a navList not wrapped by a
+    //conveyorBelt
+    flex: 1 0 auto;
+  }
+
+  //applied to each item in the conveyor
+  .oj-conveyorbelt-item {
+    flex: 0 0 auto;
+  }
+
+  //when a navList is wrapped by a conveyorBelt, allow the navList to
+  //grow so that its items can grow, like a navList not wrapped by a
+  //conveyorBelt
+  .oj-conveyorbelt-item.oj-navigationlist,
+  .oj-conveyorbelt-item.oj-tabbar {
+    flex: 1 0 auto;
+  }
+
+  /* overflow indicators */
+  .oj-conveyorbelt-overflow-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    min-width: var(--oj-button-height);
+    min-height: var(--oj-button-height);
+    //FIX BUG 19571727: specify line-height to be same as height so that
+    //arrows appear vertically centered regardless of font size
+    line-height: var(--oj-button-height);
+
+    text-align: center;
+    border: 1px solid;
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-start {
+    @include oj-ltr() {
+      box-shadow: var(--oj-conveyor-belt-box-shadow-width) 0 var(--oj-conveyor-belt-box-shadow-width)
+        calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+      margin: 0 var(--oj-conveyor-belt-box-shadow-width) 0 0;
+    }
+    @include oj-rtl() {
+      box-shadow: calc(var(--oj-conveyor-belt-box-shadow-width) * -1) 0 var(--oj-conveyor-belt-box-shadow-width)
+        calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+      margin: 0 0 0 var(--oj-conveyor-belt-box-shadow-width);
+    }
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-end {
+    @include oj-ltr() {
+      box-shadow: calc(var(--oj-conveyor-belt-box-shadow-width) * -1) 0 var(--oj-conveyor-belt-box-shadow-width)
+        calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+      margin: 0 0 0 var(--oj-conveyor-belt-box-shadow-width);
+    }
+    @include oj-rtl() {
+      box-shadow: var(--oj-conveyor-belt-box-shadow-width) 0 var(--oj-conveyor-belt-box-shadow-width)
+        calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+      margin: 0 var(--oj-conveyor-belt-box-shadow-width) 0 0;
+    }
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-top {
+    margin: 0 0 var(--oj-conveyor-belt-box-shadow-width) 0;
+    box-shadow: 0 var(--oj-conveyor-belt-box-shadow-width) var(--oj-conveyor-belt-box-shadow-width)
+      calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-bottom {
+    margin: var(--oj-conveyor-belt-box-shadow-width) 0 0 0;
+    box-shadow: 0 calc(var(--oj-conveyor-belt-box-shadow-width) * -1) var(--oj-conveyor-belt-box-shadow-width)
+      calc(var(--oj-conveyor-belt-box-shadow-width) * -1) unquote("rgba(var(--oj-core-box-shadow-rgb),0.2)");
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-default {
+    border-color: transparent;
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-hover {
+    border-color: transparent;
+  }
+
+  //active should trump hover
+  .oj-conveyorbelt-overflow-indicator.oj-active,
+  .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover {
+    border-color: transparent;
+  }
+
+  .oj-conveyorbelt-overflow-button {
+    height: var(--oj-button-height);
+    width: var(--oj-button-height);
+    cursor: var(--oj-core-cursor-clickable);
+    border-radius: var(--oj-button-border-radius);
+    border-color: var(--oj-button-borderless-chrome-border-color-hover);
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-hover .oj-conveyorbelt-overflow-button,
+  .oj-conveyorbelt-overflow-button:hover {
+    //from .oj-button.oj-hover
+    background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+    border-color: var(--oj-button-borderless-chrome-border-color-hover);
+  }
+
+  //active should trump hover
+  .oj-conveyorbelt-overflow-indicator.oj-active .oj-conveyorbelt-overflow-button,
+  .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover .oj-conveyorbelt-overflow-button {
+    //from .oj-button.oj-active
+    background-color: var(--oj-button-borderless-chrome-bg-color-active);
+    border-color: var(--oj-button-borderless-chrome-border-color-active);
+  }
+
+  /* overflow icons */
+  .oj-conveyorbelt-overflow-indicator .oj-conveyorbelt-overflow-icon {
+    // make sure that the cursor is uniform across the whole overflow indicator
+    cursor: inherit;
+    //FIX BUG 19571727: align the icon vertically; add margin on bottom to
+    //center it better than vertical-align by itself
+    vertical-align: middle;
+    margin-bottom: 3px;
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-default .oj-conveyorbelt-overflow-icon {
+    color: var(--oj-button-borderless-chrome-text-color);
+  }
+
+  .oj-conveyorbelt-overflow-indicator.oj-hover .oj-conveyorbelt-overflow-icon {
+    //from .oj-button.oj-hover .oj-button-icon
+    color: var(--oj-button-borderless-chrome-text-color-hover);
+  }
+
+  //active should trump hover
+  .oj-conveyorbelt-overflow-indicator.oj-active .oj-conveyorbelt-overflow-icon,
+  .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover .oj-conveyorbelt-overflow-icon {
+    //from .oj-button.oj-active .oj-button-icon
+    color: var(--oj-button-borderless-chrome-text-color-active);
+  }
+
+  // icons
+  //------------------------------------------
+
+  .oj-conveyorbelt-overflow-icon.oj-start {
+    @extend .oj-fwk-icon-caret-start;
+  }
+  .oj-conveyorbelt-overflow-icon.oj-end {
+    @extend .oj-fwk-icon-caret-end;
+  }
+  .oj-conveyorbelt-overflow-icon.oj-top {
+    @extend .oj-fwk-icon-caret-n;
+  }
+  .oj-conveyorbelt-overflow-icon.oj-bottom {
+    @extend .oj-fwk-icon-caret-s;
+  }
+
+}

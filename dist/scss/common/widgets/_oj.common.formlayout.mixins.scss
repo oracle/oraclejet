@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 
 //------------------------------------------------------------------------------------------------
@@ -151,22 +151,29 @@
   }
 
   // without this, the required icon is chopped off at top in Chrome.
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
-     margin-top: 1px;
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
+    margin-top: 1px;
   }
 
   // when labels are inline we don't float. 
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor {
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor,
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor {
      float:none; 
   }
   
   // when labels are inline we don't float so we need to add spacing. 
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
-     @include oj-inline-label-support-non-float-spacing();
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+    @include oj-inline-label-support-non-float-spacing();
   }
   
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label,

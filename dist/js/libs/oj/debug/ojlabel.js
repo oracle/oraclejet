@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -18,14 +18,14 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      * @private
      * @type {string}
      */
-    var _HELP_ICON_ID = '_helpIcon';
+    const _HELP_ICON_ID = '_helpIcon';
     /**
      * String used in the id on the span that surrounds the required icon.
      * @const
      * @private
      * @type {string}
      */
-    var _REQUIRED_ICON_ID = '_requiredIcon';
+    const _REQUIRED_ICON_ID = '_requiredIcon';
 
     /**
      * aria-describedby
@@ -33,28 +33,28 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      * @private
      * @type {string}
      */
-    var _ARIA_DESCRIBEDBY = 'aria-describedby';
+    const _ARIA_DESCRIBEDBY = 'aria-describedby';
     /**
      * described-by
      * @const
      * @private
      * @type {string}
      */
-    var _DESCRIBED_BY = 'described-by';
+    const _DESCRIBED_BY = 'described-by';
     /**
      * aria-labelledby
      * @const
      * @private
      * @type {string}
      */
-    var _ARIA_LABELLEDBY = 'aria-labelledby';
+    const _ARIA_LABELLEDBY = 'aria-labelledby';
     /**
      * labelled-by
      * @const
      * @private
      * @type {string}
      */
-    var _LABELLED_BY = 'labelled-by';
+    const _LABELLED_BY = 'labelled-by';
 
     /**
      * time to close the popup
@@ -63,6 +63,27 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
      * @type {number}
      */
     const _CLOSE_POPUP_TIME = 200;
+
+    /**
+     * @const
+     * @private
+     * @type {string}
+     */
+    const _DATA_OJ_INPUT_ID = 'data-oj-input-id';
+
+    /**
+     * @const
+     * @private
+     * @type {string}
+     */
+    const _ARIA_LABEL = 'aria-label';
+
+    /**
+     * @const
+     * @private
+     * @type {string}
+     */
+    const OJ_LABEL_HELP_ICON_CLASS = '.oj-label-help-icon';
 
     /*!
      * JET oj-label. @VERSION
@@ -596,7 +617,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           var targetElement;
 
           if (this.OuterWrapper) {
-            inputIdOption = this.OuterWrapper.getAttribute('data-oj-input-id');
+            inputIdOption = this.OuterWrapper.getAttribute(_DATA_OJ_INPUT_ID);
             setIdOption = this.OuterWrapper.getAttribute('data-oj-set-id');
           }
 
@@ -649,7 +670,8 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
                 var helpSpan = document.getElementById(self.helpSpanId);
                 if (self._needsHelpIcon()) {
                   self._addHelpSpanIdOnTarget(self.helpSpanId, targetElement);
-                } else if (!helpSpan && targetElement.getAttribute('described-by') === self.helpSpanId) {
+                } else if (!helpSpan && targetElement.getAttribute(_DESCRIBED_BY)
+                  === self.helpSpanId) {
                   self._removeHelpSpanIdOnTarget(self.helpSpanId, targetElement);
                 }
                 if (showRequiredOption) {
@@ -761,9 +783,6 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
          * @memberof oj.ojLabel
          */
         _GetTranslationsSectionName: function () {
-          if (!this._IsCustomElement()) {
-            return 'oj-ojLabel';
-          }
           return 'oj-ojLabel';
         },
         /**
@@ -781,7 +800,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           this._superApply(arguments);
 
           switch (attr) {
-            case 'data-oj-input-id':
+            case _DATA_OJ_INPUT_ID:
               // set 'for' on the label element to be the value of this inputId.
               this.element[0].setAttribute('for', newValue);
               break;
@@ -834,7 +853,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           var describedBy;
           var tokens;
 
-          describedBy = element.getAttribute('described-by');
+          describedBy = element.getAttribute(_DESCRIBED_BY);
           // split into tokens
           tokens = describedBy ? describedBy.split(/\s+/) : [];
           tokens = tokens.filter(function (item) {
@@ -843,9 +862,9 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           // join the tokens back together and trim whitespace
           describedBy = tokens.join(' ').trim();
           if (describedBy) {
-            element.setAttribute('described-by', describedBy);
+            element.setAttribute(_DESCRIBED_BY, describedBy); // @HTMLUpdateOK
           } else {
-            element.removeAttribute('described-by');
+            element.removeAttribute(_DESCRIBED_BY);
           }
         },
         /**
@@ -1202,7 +1221,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
               // if class name has -label- in it, then move it
               // (e.g., oj-label, oj-label-inline, oj-md-label-nowrap,
               // oj-md-labels-inline)
-              if (className.indexOf('-label') > 0) {
+              if (className.includes('-label')) {
                 this.uiLabel.addClass(className);
                 this.element.removeClass(className);
               }
@@ -1256,9 +1275,6 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
             rootDomNodeClasses = rootDomNodeClasses + ' ' + inputLabelClass;
           }
 
-          // rootDomNode =
-          //  $("<div class='oj-label oj-component'><div class='oj-label-group'></div></div>",
-          //     this.document[0]);
           rootDomNode = document.createElement('div');
           rootDomNode.className = rootDomNodeClasses;
           rootDomNode.appendChild(this._createOjLabelGroupDom()); // @HTMLUpdateOK
@@ -1293,7 +1309,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           requiredDom.setAttribute('role', 'img');
           requiredDom.setAttribute('title', requiredTooltip);
         // title isn't being read by the screen reader. this is only needed for radioset/checkboxset.
-          requiredDom.setAttribute('aria-label', requiredTooltip);
+          requiredDom.setAttribute(_ARIA_LABEL, requiredTooltip); // @HTMLUpdateOK
           return requiredDom;
         },
         /**
@@ -1338,9 +1354,9 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           }
 
           if (helpDef) {
-            helpIconAnchor.setAttribute('aria-label', helpDef);
+            helpIconAnchor.setAttribute(_ARIA_LABEL, helpDef); // @HTMLUpdateOK
           } else {
-            helpIconAnchor.setAttribute('aria-label',
+            helpIconAnchor.setAttribute(_ARIA_LABEL, // @HTMLUpdateOK
                                         this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_HELP));
           }
 
@@ -1743,7 +1759,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           var targetElement = this._targetElement;
 
           // remove the help info if it is there.
-          $helpIcon = this.uiLabel.find('.oj-label-help-icon');
+          $helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
 
           if ($helpIcon.length === 1) {
             // remove things we added in _attachHelpDefToIconAnchor
@@ -1827,7 +1843,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
             // If someone removes 'for', the labelled-by is removed and the
             // internal 'for' is removed and data-oj-input-id is removed.
             labelElement.removeAttribute('for');
-            this.OuterWrapper.removeAttribute('data-oj-input-id');
+            this.OuterWrapper.removeAttribute(_DATA_OJ_INPUT_ID);
             var oldTarget = document.getElementById(oldValue);
             if (oldTarget) {
               var labelledBy = oldTarget.getAttribute(_LABELLED_BY);
@@ -1939,7 +1955,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           if (!node) {
             subId = locator.subId;
             if (subId === 'oj-label-help-icon') {
-              node = this.widget().find('.oj-label-help-icon')[0];
+              node = this.widget().find(OJ_LABEL_HELP_ICON_CLASS)[0];
             }
           }
           // Non-null locators have to be handled by the component subclasses
@@ -1950,7 +1966,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
           var subId = null;
 
           if (node != null) {
-            if (node === this.widget().find('.oj-label-help-icon')[0]) {
+            if (node === this.widget().find(OJ_LABEL_HELP_ICON_CLASS)[0]) {
               subId = { subId: 'oj-label-help-icon' };
             }
           }
@@ -1966,7 +1982,7 @@ define(['ojs/ojcore', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'ojs/ojpopup
          */
         _destroy: function () {
           // remove things we added in _attachHelpDefToIconAnchor
-          var helpIcon = this.uiLabel.find('.oj-label-help-icon');
+          var helpIcon = this.uiLabel.find(OJ_LABEL_HELP_ICON_CLASS);
           this._removeHelpDefIconEventListeners(helpIcon);
           this._removeHelpDefPopup();
           this.helpSpanId = null;

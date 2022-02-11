@@ -1,0 +1,318 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+//          for example alta/widgets/_oj.alta.popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//-------------------------------------------------------------------------------------------------
+// Creates a popup tail using CSS borders. When rendering a border with varying edge colors but
+// the same style (solid), the seam dividing each pair of adjacent corners is a diagonal line.
+// Dividing a square with diagonal lines joining its four corners results in four right triangles whose right angles meet at the square's midpoint.
+// You can see more information about it here: http://apps.eky.hk/css-triangle-generator/
+//-------------------------------------------------------------------------------------------------
+
+@include module-include-once("common.popup") {
+  /* popup */
+  /* --------------------------------------------------------------- */
+
+  oj-popup {
+    display: none;
+  }
+
+  /* defines the stacking context for the popup and its children */
+  .oj-popup-layer {
+    @extend .oj-component-layer;
+
+    z-index: var(--oj-core-z-index-popup);
+  }
+  .oj-popup-layer.oj-focus-within {
+    z-index: calc(var(--oj-core-z-index-popup) + 1);
+  }
+  /* defines the z-index of the popup tail */
+  .oj-popup-layer.oj-popup-tail-simple {
+    z-index: calc(var(--oj-core-z-index-popup) + 30);
+  }
+  .oj-popup-layer.oj-popup-tail-simple .oj-popup .oj-popup-tail-simple {
+    z-index: calc(var(--oj-core-z-index-popup) + 31);
+  }
+  .oj-popup-layer.oj-popup-tail-simple.oj-focus-within {
+    z-index: calc(var(--oj-core-z-index-popup) + 32);
+  }
+  .oj-popup-layer.oj-popup-tail-simple.oj-focus-within .oj-popup .oj-popup-tail-simple {
+    z-index: calc(var(--oj-core-z-index-popup) + 33);
+  }
+
+  .oj-popup {
+    @extend .oj-component-popup;
+
+    max-width: calc(100vw - 3rem);
+    max-height: calc(100vh - 3rem);
+    
+    border: 1px solid var(--oj-popup-border-color);
+    border-radius: var(--oj-popup-border-radius);
+    background-color: var(--oj-popup-bg-color);
+    box-shadow: var(--oj-popup-box-shadow);
+
+    will-change: top, left;
+  }
+  .oj-popup.oj-popup-tail-simple {
+    border-width: 1px;
+    border-color: var(--oj-popup-border-color);
+    background-color: var(--oj-popup-bg-color);
+
+    will-change: top, left, bottom, right;
+  }
+
+  // Border radius definition for popup content DIV
+  //----------------------------------
+  .oj-popup.oj-popup-tail-simple.oj-right.oj-bottom {
+    border-radius: var(--oj-popup-border-radius) var(--oj-popup-border-radius) 0;
+  }
+  .oj-popup.oj-popup-tail-simple.oj-left.oj-bottom {
+    border-radius: var(--oj-popup-border-radius) var(--oj-popup-border-radius) var(--oj-popup-border-radius) 0;
+  }
+  .oj-popup.oj-popup-tail-simple.oj-right.oj-top {
+    border-radius: var(--oj-popup-border-radius) 0 var(--oj-popup-border-radius) var(--oj-popup-border-radius);
+  }
+  .oj-popup.oj-popup-tail-simple.oj-left.oj-top {
+    border-radius: 0 var(--oj-popup-border-radius) var(--oj-popup-border-radius) var(--oj-popup-border-radius);
+  }
+  .oj-popup.oj-popup-no-chrome {
+    border-width: 0;
+    background-color: transparent;
+
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .oj-popup-content {
+    padding: var(--oj-popup-padding);
+    position: relative;
+  }
+  .oj-popup-no-chrome > .oj-popup-content {
+    padding: 0;
+  }
+  // Disable the focus ring if the popup was open from a mouse gesture
+  .oj-popup:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-popup.oj-focus-highlight {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+  .oj-popup-tail {
+    position: absolute;
+    pointer-events: none;
+  }
+  .oj-popup-tail.oj-popup-tail-simple {
+
+    //Define popup tail container height and width
+    height: var(--oj-popup-tail-height);
+    width: var(--oj-popup-tail-width);
+
+    font-size: 0;
+    box-sizing: border-box;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple:before,
+  .oj-popup-tail.oj-popup-tail-simple:after {
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+  }
+
+  // Setting up popup tail positioning
+  //----------------------------------
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
+    left: calc(0px - (var(--oj-popup-tail-width) / 2) - (var(--oj-popup-tail-height) / 2) + 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+    height: var(--oj-popup-tail-width);
+    width: var(--oj-popup-tail-height);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle {
+    left: calc(0px - var(--oj-popup-tail-height));
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+    right: calc(0px - var(--oj-popup-tail-height));
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+    right: calc(0px - (var(--oj-popup-tail-width) / 2) - (var(--oj-popup-tail-height) / 2) + 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+    top: calc(0px - 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+    bottom: calc(0px - 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top {
+    top: calc(0px - var(--oj-popup-tail-height));
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
+    bottom: calc(0px - var(--oj-popup-tail-height));
+  }
+
+  // POPUP TAIL CSS: This is being generated using css borders. When rendering a border with varying edge
+  // colors but the same style (solid), the seam dividing each pair of adjacent corners is a diagonal line.
+  // When the top, bottom and left borders are white, while the right border is a shade of blue this will generate
+  // a triangle pointing to the left. You can see more information about it here: http://apps.eky.hk/css-triangle-generator/
+  //----------------------------------
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:after {
+    border-top: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-right: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-left: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-bottom-width: 0;
+    left: 0;
+    top: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
+    border-top: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    border-right: var(--oj-popup-tail-height) solid transparent;
+    border-left: var(--oj-popup-tail-height) solid transparent;
+    top: 0;
+    left: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:after {
+    border-top: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-right: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-left: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-bottom-width: 0;
+    right: 0;
+    top: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:before {
+    border-top: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    border-right: var(--oj-popup-tail-height) solid transparent;
+    border-left: var(--oj-popup-tail-height) solid transparent;
+    border-bottom-width: 0;
+    right: 1px;
+    top: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle:after {
+    border-top: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-bottom: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-left: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-right-width: 0;
+    left: calc(0px - 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle:before {
+    border-top: var(--oj-popup-tail-height) solid transparent;
+    border-bottom: var(--oj-popup-tail-height) solid transparent;
+    border-left: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    border-right-width: 0;
+    top: calc(0px - 1px);
+    left: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle:after {
+    border-top: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-bottom: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-right: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-left-width: 0;
+    right: calc(0px - 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle:before {
+    border-top: var(--oj-popup-tail-height) solid transparent;
+    border-bottom: var(--oj-popup-tail-height) solid transparent;
+    border-right: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    top: calc(0px - 1px);
+    right: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:after {
+    border-bottom: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-right: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-left: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-top-width: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:before {
+    border-bottom: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    border-right: var(--oj-popup-tail-height) solid transparent;
+    border-left: var(--oj-popup-tail-height) solid transparent;
+    border-top-width: 0;
+    bottom: 0;
+    left: 1px;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
+    left: calc(0px - 1px);
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:after {
+    border-bottom: calc(var(--oj-popup-tail-height) - 1px) solid var(--oj-popup-bg-color);
+    border-right: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-left: calc(var(--oj-popup-tail-height) - 1px) solid transparent;
+    border-top-width: 0;
+    bottom: 0;
+    right: 0;
+  }
+
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:before {
+    border-bottom: var(--oj-popup-tail-height) solid var(--oj-popup-border-color);
+    border-right: var(--oj-popup-tail-height) solid transparent;
+    border-left: var(--oj-popup-tail-height) solid transparent;
+    border-top-width: 0;
+    bottom: 0;
+    right: 1px;
+  }
+
+  // Rotate corner popup tails
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top::before {
+    transform: rotate(45deg);
+  }
+
+  // Rotate corner popup tails
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:after,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:before {
+    transform: rotate(-45deg);
+  }
+
+  // IE11 override - needs a block display or blows out the svg image outside
+  // boundaries of the tail dom rect
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:before,
+  .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
+    display: block;
+  }
+}

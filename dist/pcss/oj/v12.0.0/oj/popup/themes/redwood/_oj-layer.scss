@@ -1,0 +1,9 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// todo: try to get rid of this and just include base ../base/_oj-layer.scss from popup, dialog etc. 
+
+// this is for shared classes, for example a modal overlay class that 
+// more than one component might use
+@import "../base/_oj-layer.scss"; 

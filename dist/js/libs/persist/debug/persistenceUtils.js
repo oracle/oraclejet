@@ -76,7 +76,8 @@ define(['./impl/logger'], function (logger) {
   function _derivePayloadType(xhr, response) {
     var contentType = response.headers.get('Content-Type');
     var responseType = xhr.responseType;
-    if (_isTextPayload(response.headers)) {
+    var isSVG = contentType && contentType.indexOf('image/svg+xml') !== -1;
+    if (_isTextPayload(response.headers) || isSVG) {
       return "text";
     } else if (isCachedResponse(response) || responseType === 'blob') {
       return "blob";
@@ -89,17 +90,25 @@ define(['./impl/logger'], function (logger) {
     }
   }
 
-  function _isTextPayload(headers) {
+  function _isTextPayload(headers, isAppJsonText) {
 
     var contentType = headers.get('Content-Type');
 
     // the response is considered text type when contentType value is of
     // pattern text/ or application/*json .
-    if (contentType &&
-        (contentType.match(/.*text\/.*/) ||
-         contentType.match(/.*application\/.*json.*/))) {
-      return true;
+    if (isAppJsonText) {
+      if (contentType &&
+        (contentType.match(/.*text\/.*/) || 
+        contentType.match(/.*application\/.*json.*/))) {
+        return true;
+      }
+    } else {
+      if (contentType &&
+        (contentType.match(/.*text\/.*/))) {
+        return true;
+      }
     }
+    
     return false;
   };
 
@@ -196,7 +205,7 @@ define(['./impl/logger'], function (logger) {
     }
 
     if ((source instanceof Request) ||
-        _isTextPayload(source.headers)) {
+        _isTextPayload(source.headers, true)) {
       return source.text().then(function (text) {
         targetObj.body.text = text;
         return targetObj;

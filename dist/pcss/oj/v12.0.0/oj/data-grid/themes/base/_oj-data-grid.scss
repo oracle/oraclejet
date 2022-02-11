@@ -1,0 +1,862 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example data-grid/themes/redwood/oj-data-grid.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.datagrid") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-data-grid:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // do not overwrite hidden display properties
+  [hidden].oj-datagrid {
+    display: none;
+  }
+
+  /* Styling for the datagrid widget container */
+  .oj-datagrid {
+    display: block;
+    // position relative is required
+    position: relative;
+
+    border: 1px solid var(--oj-collection-border-color);
+    // color to fill the empty area around cells if the databody is not filled
+    background-color: var(--oj-collection-free-space-bg-color);
+    user-select: none;
+
+    box-sizing: border-box;
+    // color to fill the empty area around cells if the databody is not filled
+    // prevent graying on iOS safari
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* Styling to remove focus ring border on focusable elements */
+  .oj-datagrid:focus,
+  .oj-datagrid-cell:focus,
+  .oj-datagrid-header-cell:focus,
+  .oj-datagrid-header-label:focus,
+  .oj-datagrid-end-header-cell:focus,
+  .oj-datagrid-scrollers:focus,
+  .oj-datagrid-databody:focus {
+    outline: none;
+  }
+
+  /* The default column width should be set here*/
+  .oj-datagrid-cell,
+  .oj-datagrid-column-header-cell,
+  .oj-datagrid-column-end-header-cell {
+    width: var(--oj-data-grid-column-width);
+  }
+
+  /* The default row height should be set here*/
+  .oj-datagrid-cell,
+  .oj-datagrid-row-header-cell,
+  .oj-datagrid-row-end-header-cell {
+    height: var(--oj-collection-grid-row-height);
+  }
+
+  /* Styling on the row header and row end header containere*/
+  .oj-datagrid-row-header,
+  .oj-datagrid-row-end-header {
+    box-sizing: border-box;
+  }
+
+  /* Styling on the column header and column end header container*/
+  .oj-datagrid-column-header,
+  .oj-datagrid-column-end-header {
+    box-sizing: border-box;
+  }
+
+  /* Style for disabling horizontal gridlines on cells */
+  .oj-datagrid-cell.oj-datagrid-border-horizontal-none,
+  .oj-datagrid-header-cell.oj-datagrid-border-horizontal-none,
+  .oj-datagrid-end-header-cell.oj-datagrid-border-horizontal-none {
+    border-bottom-color: transparent;
+  }
+
+  /* Style for disabling horizontal gridlines on corners, is the top border for corners */
+  .oj-datagrid-row-header-spacer.oj-datagrid-border-horizontal-none,
+  .oj-datagrid-bottom-corner.oj-datagrid-border-horizontal-none {
+    border-top-color: transparent;
+  }
+
+  /* Style for disabling vertical gridlines */
+  .oj-datagrid-cell.oj-datagrid-border-vertical-none,
+  .oj-datagrid-header-cell.oj-datagrid-border-vertical-none,
+  .oj-datagrid-end-header-cell.oj-datagrid-border-vertical-none {
+    border-inline-end-color: transparent;
+  }
+
+  /* Style for disabling vertical gridlines on corners, is the opposite of cell sides */
+  .oj-datagrid-column-header-spacer.oj-datagrid-border-vertical-none,
+  .oj-datagrid-bottom-corner.oj-datagrid-border-vertical-none {
+    border-inline-start-color: transparent;
+  }
+
+  /* Style for grid border if the grid doesn't fill the container the end headers need a border-bottom */
+  .oj-datagrid .oj-datagrid-row-header-spacer.oj-datagrid-small-content-border-horizontal,
+  .oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-horizontal,
+  .oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-horizontal {
+    border-bottom-width: 1px;
+  }
+
+  /* Style for disabling vertical gridlines */
+  .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
+  .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
+  .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {
+    border-inline-end-width: 1px;
+  }
+
+  /* Styling on header cells both for rows and columns, start and end */
+  .oj-datagrid-header-label,
+  .oj-datagrid-header-cell,
+  .oj-datagrid-end-header-cell {
+    //sizing and position
+    position: absolute;
+    //content of the header cells
+
+    font-size: var(--oj-collection-header-font-size);
+    font-weight: var(--oj-collection-header-font-weight);
+    color: var(--oj-collection-header-text-color);
+    background-color: var(--oj-collection-header-bg-color);
+    border-color: var(--oj-collection-border-color);
+
+    border-style: solid;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Styling on the cells in the column and column end header, the default column header height should be set here*/
+  .oj-datagrid-column-header-label,
+  .oj-datagrid-column-end-header-label,
+  .oj-datagrid-column-header-cell,
+  .oj-datagrid-column-end-header-cell {
+    //match the row height
+
+    height: var(--oj-collection-grid-header-height);
+    padding: var(--oj-collection-grid-cell-padding);
+    justify-content: flex-end;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .oj-datagrid-column-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-2,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-2 {
+    height: calc(2 * var(--oj-collection-grid-header-height));
+  }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-3,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-3 {
+    height: calc(3 * var(--oj-collection-grid-header-height));
+  }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-4,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-4 {
+    height: calc(4 * var(--oj-collection-grid-header-height));
+  }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-5,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-5 {
+    height: calc(5 * var(--oj-collection-grid-header-height));
+  }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-6,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-6 {
+    height: calc(6 * var(--oj-collection-grid-header-height));
+  }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-column-header-cell.oj-datagrid-depth-7,
+  .oj-datagrid-column-end-header-cell.oj-datagrid-depth-7 {
+    height: calc(7 * var(--oj-collection-grid-header-height));
+  }
+
+  .oj-datagrid-column-header-label,
+  .oj-datagrid-column-end-header-label {
+    justify-content: flex-end;
+  }
+
+  /* Styling on the cells in the column header */
+  .oj-datagrid-column-header-cell {
+    @include oj-ltr() {
+      border-width: 0 1px 1px 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 0 1px 1px;
+    }
+  }
+
+  /* Styling on the cells in the column end header */
+  .oj-datagrid-column-end-header-cell,
+  .oj-datagrid-row-header-label {
+    @include oj-ltr() {
+      border-width: 1px 1px 0 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 1px 0 0 1px;
+    }
+  }
+
+  /* Styling on row and row end header cells, the default row header width should be set here */
+  .oj-datagrid-row-header-label,
+  .oj-datagrid-row-end-header-label,
+  .oj-datagrid-row-header-cell,
+  .oj-datagrid-row-end-header-cell {
+    justify-content: flex-start;
+    align-items: center;
+    width: var(--oj-data-grid-column-width);
+    border-color: var(--oj-collection-border-color);
+    padding: var(--oj-collection-grid-cell-padding);
+
+    box-sizing: border-box;
+    border-style: solid;
+  }
+
+  .oj-datagrid-row-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-2,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-2 {
+    width: calc(2 * var(--oj-data-grid-column-width));
+  }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-3,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-3 {
+    width: calc(3 * var(--oj-data-grid-column-width));
+  }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-4,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-4 {
+    width: calc(4 * var(--oj-data-grid-column-width));
+  }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-5,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-5 {
+    width: calc(5 * var(--oj-data-grid-column-width));
+  }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-6,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-6 {
+    width: calc(6 * var(--oj-data-grid-column-width));
+  }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-row-header-cell.oj-datagrid-depth-7,
+  .oj-datagrid-row-end-header-cell.oj-datagrid-depth-7 {
+    width: calc(7 * var(--oj-data-grid-column-width));
+  }
+
+  .oj-datagrid-row-end-header-label {
+    @include oj-ltr() {
+      border-width: 0 0 0 1px;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 1px 0 0;
+    }
+  }
+
+  .oj-datagrid-column-end-header-label {
+    border-width: 1px 0 0 0;
+  }
+
+  /* Styling on row header cells */
+  .oj-datagrid-row-header-cell {
+    @include oj-ltr() {
+      border-width: 0 1px 1px 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 0 1px 1px;
+    }
+  }
+
+  /* Styling on row end header cells */
+  .oj-datagrid-row-end-header-cell,
+  .oj-datagrid-column-header-label {
+    @include oj-ltr() {
+      border-width: 0 0 1px 1px;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 1px 1px 0;
+    }
+  }
+
+  /* Styling on databody cells */
+  .oj-datagrid-cell {
+    // cells are positioned absolute, and use border-box sizing
+    position: absolute;
+    box-sizing: border-box;
+    // override the text and color properties in the cells
+    border-style: solid;
+    overflow: hidden;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: inherit;
+    background-color: var(--oj-collection-bg-color);
+    border-color: var(--oj-core-divider-color);
+    padding: var(--oj-collection-grid-cell-padding);
+
+    display: flex;
+    @include oj-ltr() {
+      border-width: 0 1px 1px 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 0 1px 1px;
+    }
+  }
+
+  /* Base styling on databody cell outlines when they are focused/edited */
+  .oj-datagrid-cell.oj-focus::before,
+  .oj-datagrid-header-cell.oj-focus::before,
+  .oj-datagrid-header-label.oj-focus::before,
+  .oj-datagrid-end-header-cell.oj-focus::before,
+  .oj-datagrid-cell.oj-datagrid-selected-top::before,
+  .oj-datagrid-cell.oj-datagrid-selected-start::before,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-top::before,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-start::before,
+  .oj-datagrid-cell.oj-datagrid-floodfill-top::before,
+  .oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    @include oj-ltr() {
+      left: 0;
+    }
+
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+
+  .oj-datagrid-cell.oj-datagrid-selected-end,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-end,
+  .oj-datagrid-cell.oj-datagrid-floodfill-end {
+    border-inline-end-color: var(--oj-core-border-color-selected);
+  }
+  .oj-datagrid-cell.oj-datagrid-selected-bottom,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-bottom,
+  .oj-datagrid-cell.oj-datagrid-floodfill-bottom {
+    border-bottom-color: var(--oj-core-border-color-selected);
+  }
+  .oj-datagrid-cell.oj-datagrid-selected-top::before,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-top::before,
+  .oj-datagrid-cell.oj-datagrid-floodfill-top::before {
+    border-top: 1px solid var(--oj-core-border-color-selected);
+  }
+  .oj-datagrid-cell.oj-datagrid-selected-start::before,
+  .oj-datagrid-cell.oj-datagrid-cell-edit-start::before,
+  .oj-datagrid-cell.oj-datagrid-floodfill-start::before {
+    border-inline-start: 1px solid var(--oj-core-border-color-selected);
+  }
+
+  .oj-datagrid-cell.oj-datagrid-floodfill-end:not(.oj-datagrid-selected-end):not(.oj-datagrid-cell-edit-end) {
+    border-inline-end-style: dashed;
+  }
+  .oj-datagrid-cell.oj-datagrid-floodfill-bottom:not(.oj-datagrid-selected-bottom):not(.oj-datagrid-cell-edit-bottom) {
+    border-bottom-style: dashed;
+  }
+  .oj-datagrid-cell.oj-datagrid-floodfill-top:not(.oj-datagrid-selected-top):not(.oj-datagrid-cell-edit-top)::before {
+    border-top-style: dashed;
+  }
+  .oj-datagrid-cell.oj-datagrid-floodfill-start:not(.oj-datagrid-selected-start):not(.oj-datagrid-cell-edit-start)::before {
+    border-inline-start-style: dashed;
+  }
+
+  /* Styling on databody cell outlines when they can be overwritten, to use a background color don't use the after psuedo class */
+  .oj-datagrid-editable .oj-datagrid-cell.oj-focus:not(.oj-datagrid-cell-edit)::before,
+  .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-focus:not(.oj-datagrid-cell-edit)::before {
+    border: 1px solid var(--oj-collection-editable-cell-border-color-focus);
+  }
+
+  .oj-datagrid-editable .oj-datagrid-cell.oj-focus.oj-datagrid-selected-top:not(.oj-datagrid-cell-edit)::before {
+    border-top-width: 2px;
+  }
+
+  .oj-datagrid-editable .oj-datagrid-cell.oj-focus.oj-datagrid-selected-start:not(.oj-datagrid-cell-edit)::before {
+    border-inline-start-width: 2px;
+  }
+
+  /* Styling on databody cells when they are being edited */
+  .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit,
+  .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-cell.oj-datagrid-cell-edit {
+    // actively editable cells have no padding so input controls consume the whole cell
+    padding: 0;
+  }
+
+  .oj-datagrid-resized-top {
+    border-top-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  .oj-datagrid-resized-bottom,
+  .oj-datagrid-top-corner.oj-datagrid-resized-bottom,
+  .oj-datagrid-column-header-spacer.oj-datagrid-resized-bottom,
+  .oj-datagrid-row-header-label.oj-datagrid-resized-bottom {
+    border-bottom-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  .oj-datagrid-resized-end,
+  .oj-datagrid-top-corner.oj-datagrid-resized-end,
+  .oj-datagrid-row-header-spacer.oj-datagrid-resized-end,
+  .oj-datagrid-column-header-label.oj-datagrid-resized-end {
+    border-right-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  .oj-datagrid-resized-start,
+  .oj-datagrid-top-corner.oj-datagrid-resized-start,
+  .oj-datagrid-row-header-spacer.oj-datagrid-resized-start,
+  .oj-datagrid-column-header-label.oj-datagrid-resized-start {
+    border-left-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  /* A helper class oj-datagrid-editable-no-padding is a helper to provide the appearance of no padding, it has padding to give the border space when in cellNavigation mode*/
+  .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
+    @include oj-ltr() {
+      padding: 1px 0 0 1px;
+    }
+
+    @include oj-rtl() {
+      padding: 1px 1px 0 0;
+    }
+  }
+
+  /* A helper class oj-datagrid-cell-no-padding should have padding 0 otherwise*/
+  .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-no-padding {
+    padding: 0;
+  }
+
+  /* A helper class oj-datagrid-editable-padding should be appleid to editable components that should maintain padding in edit mode*/
+  .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit.oj-datagrid-cell-padding {
+    padding: var(--oj-collection-grid-cell-padding);
+  }
+
+  /* Styling on form controls stamped inside a datagrid */
+  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+    @include oj-form-control-padding-override($padding: "0 " + var(--oj-collection-grid-cell-padding));
+    @include oj-form-control-font-size-override($fontSize: inherit);
+  }
+
+  .oj-datagrid-cell .oj-checkboxset .oj-checkbox-label {
+    justify-content: flex-end;
+  }
+
+  /* Styling on header and cell default text for vertical alignment, add this class name to headers when using a
+            knockout template or custom renderer to bottom align text*/
+  .oj-datagrid-cell-text,
+  .oj-datagrid-header-cell-text {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+  }
+
+  /* styling to top align outside grouped headers */
+  .oj-datagrid-header-grouping > :first-child.oj-datagrid-row-header-cell,
+  .oj-datagrid-header-grouping > :first-child.oj-datagrid-row-end-header-cell {
+    align-items: flex-start;
+  }
+
+  /* styling to center align outside grouped headers */
+  .oj-datagrid-header-grouping > :first-child.oj-datagrid-column-header-cell:not(.oj-datagrid-hierarchical-group),
+  .oj-datagrid-header-grouping > :first-child.oj-datagrid-column-end-header-cell {
+    justify-content: center;
+  }
+
+  // styling is set on row or cell level for the cell and row selection case optimizations
+  /* Styling on row and column banding */
+  .oj-datagrid-cell.oj-datagrid-banded {
+    background-color: var(--oj-collection-cell-banded-bg-color);
+  }
+
+  /* Styling on read only datagrid cells, oj-readOnly must be applied by the application */
+  .oj-datagrid-cell.oj-read-only {
+    background-color: var(--oj-collection-editable-cell-bg-color-read-only);
+  }
+
+  /* Styling on row and cell hover */
+  .oj-datagrid-cell.oj-hover {
+    background-color: var(--oj-core-bg-color-hover);
+  }
+
+  /* Styling on row and cell selection, only applied when cell is not being actively edited */
+  .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit),
+  .oj-datagrid-cell.oj-selected:not(.oj-datagrid-cell-edit){
+    background-color: var(--oj-core-bg-color-selected);
+  }
+
+  /* Styling on focused row and cell outlines, to use a background color don't use the after pseudo class */
+  .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::before,
+  .oj-datagrid.oj-focus .oj-datagrid-header-label.oj-focus-highlight::before,
+  .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::before,
+  .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::before {
+    top: 1px;
+    // outline falls outside of border-box so need to subtract add the dimensions
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+
+    outline: dotted 1px var(--oj-core-focus-border-color);
+
+    @include oj-ltr() {
+      left: 1px;
+    }
+    @include oj-rtl() {
+      right: 1px;
+    }
+  }
+
+  .oj-datagrid.oj-focus .oj-datagrid-column-end-header-cell.oj-focus-highlight::before {
+    height: calc(100% - 2px);
+  }
+
+  .oj-datagrid.oj-focus .oj-datagrid-row-end-header-cell.oj-focus-highlight::before {
+    width: calc(100% - 2px);
+  }
+
+  /* Styling for the data cell elements in selected state when data grid in high contrast mode. */
+  .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
+    border-width: 3px;
+    border-style: double;
+  }
+
+  /* Styling on header containers, used for positioning*/
+  .oj-datagrid-header,
+  .oj-datagrid-end-header {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  /* Styling on scrollers and databody regions, used for positioning*/
+  .oj-datagrid-scrollers,
+  .oj-datagrid-databody {
+    position: absolute;
+    overflow: auto;
+  }
+
+  /* Styling on scroller region, used for positioning*/
+  .oj-datagrid-scroller {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Styles used to optimize scolling on touch devices used to optimize translate
+           3d swiping on touch and engage hardware acceleration, they are not for animation changes*/
+  .oj-datagrid-scroller-touch {
+    transition: 0.5s;
+    transition-timing-function: var(--oj-animation-ease-out);
+
+    backface-visibility: hidden;
+
+    perspective: 1000;
+  }
+
+  /* Styling on header cells when hovered both for rows and columns */
+  .oj-datagrid-header-label.oj-hover,
+  .oj-datagrid-header-cell.oj-hover,
+  .oj-datagrid-end-header-cell.oj-hover {
+    background-color: var(--oj-collection-header-bg-color-hover);
+  }
+
+  /* Styling for headers when a sub set > 1 of its respective cells are selected */
+  .oj-datagrid-header-label.oj-partial-selected,
+  .oj-datagrid-header-cell.oj-partial-selected,
+  .oj-datagrid-end-header-cell.oj-partial-selected{
+    background-color: var(--oj-collection-header-bg-color-partial-selected)
+  }
+
+  /* Styling for headers when all of its respective cells are selected */
+  .oj-datagrid-header-label.oj-selected,
+  .oj-datagrid-header-cell.oj-selected,
+  .oj-datagrid-end-header-cell.oj-selected{
+    background-color: var(--oj-collection-header-bg-color-selected)
+  }
+
+  /* Styling on the status text, such as fetching data */
+  .oj-datagrid-status {
+    position: absolute;
+    display: none;
+  }
+
+  /* Styling for the activity indicator */
+  .oj-datagrid-loading-icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: auto;
+    @include oj-icon-content($icon: url("#{$imageDir}spinner_full.gif"), $lowResProportion: 0.25);
+  }
+
+  /* Styling for the empty data grid text, default only used for positioning */
+  .oj-datagrid-empty-text {
+    position: absolute;
+
+    padding: var(--oj-collection-grid-cell-padding);
+  }
+
+  /* Styling for the corner between row and column headers and scrollbars */
+  .oj-datagrid-row-header-spacer,
+  .oj-datagrid-column-header-spacer,
+  .oj-datagrid-bottom-corner,
+  .oj-datagrid-top-corner {
+    position: absolute;
+    box-sizing: border-box;
+
+    border-color: var(--oj-collection-border-color);
+
+    border-style: solid;
+  }
+
+  /* Styling for the top corner between headers */
+  .oj-datagrid-top-corner {
+    @include oj-ltr() {
+      border-width: 0 1px 1px 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 0 1px 1px;
+    }
+  }
+
+  /* Styling for the corner between scrollbars if present */
+  .oj-datagrid-bottom-corner {
+    background-color: var(--oj-collection-free-space-bg-color);
+
+    @include oj-ltr() {
+      border-width: 1px 0 0 1px;
+    }
+
+    @include oj-rtl() {
+      border-width: 1px 1px 0 0;
+    }
+  }
+
+  /* Styling for the corner between row headers and horizontal scrollbar */
+  .oj-datagrid-row-header-spacer {
+    //sets the axis border
+    @include oj-ltr() {
+      border-width: 1px 1px 0 0;
+    }
+
+    @include oj-rtl() {
+      border-width: 1px 0 0 1px;
+    }
+  }
+
+  /* Styling for the corner between column headers and vertical scrollbar */
+  .oj-datagrid-column-header-spacer {
+    //sets the axis border
+    @include oj-ltr() {
+      border-width: 0 0 1px 1px;
+    }
+
+    @include oj-rtl() {
+      border-width: 0 1px 1px 0;
+    }
+  }
+
+  /* Styling for the area around the icon */
+  .oj-datagrid-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: var(--oj-core-cursor-clickable);
+    height: var(--oj-core-touch-target-min-size);
+    border-radius: var(--oj-button-border-radius);
+  }
+  
+  .oj-datagrid-sort-icon {
+    width: var(--oj-core-touch-target-min-size);
+    min-width: var(--oj-core-touch-target-min-size);
+  }
+
+  .oj-datagrid-disclosure-icon {
+    width: 1.5rem;
+    min-width: 1.5rem;
+    margin-inline-end: 0.5rem;
+  }
+
+  /* Styling for both the sort icons and click area */
+  .oj-datagrid-sort-ascending-icon,
+  .oj-datagrid-sort-descending-icon,
+  .oj-datagrid-sort-default-icon {
+    flex: 0 1 auto;
+    font-size: inherit;
+  }
+
+  /* Styling for disabled sort icons */
+  .oj-datagrid-sort-ascending-icon.oj-disabled,
+  .oj-datagrid-sort-descending-icon.oj-disabled,
+  .oj-datagrid-sort-default-icon.oj-disabled {
+    display: block;
+    color: inherit;
+  }
+
+  .oj-datagrid-row-header-cell .oj-datagrid-sort-default-icon::before,
+  .oj-datagrid-row-header-cell .oj-datagrid-sort-ascending-icon::before,
+  .oj-datagrid-row-header-cell .oj-datagrid-sort-descending-icon::before {
+    transform: rotate(90deg);
+  }
+
+  .oj-datagrid-icon-container .oj-component-icon {
+    color: var(--oj-private-button-ghost-chrome-text-color);
+  }
+
+  .oj-datagrid-icon-container.oj-hover .oj-component-icon {
+    color: var(--oj-private-button-ghost-chrome-text-color-hover);
+  }
+
+  .oj-datagrid-icon-container.oj-active .oj-component-icon {
+    color: var(--oj-private-button-ghost-chrome-text-color-active);
+  }
+
+  /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */
+  .oj-datagrid-cell.oj-datagrid-cut {
+    opacity: 0.8;
+  }
+
+  /* Styling row and row headers that are draggable */
+  .oj-datagrid .oj-draggable {
+    cursor: move;
+  }
+
+  /* Styling for the row that is being moved using drag */
+  .oj-datagrid .oj-drag {
+    opacity: 0.8;
+    //bring in front of other rows
+    z-index: 1;
+  }
+
+  /* Styling all drop targets in the datagrid when dragging rows*/
+  .oj-datagrid .oj-drop {
+    box-sizing: border-box;
+    width: 100%;
+    position: absolute;
+    opacity: 0.8;
+  }
+
+  /* Styling for databody drop targets when dragging rows*/
+  .oj-datagrid-databody .oj-drop {
+    border: 1px solid var(--oj-core-drag-drop-color-2);
+    background-color: var(--oj-core-drag-drop-color-1);
+  }
+
+  /* Styling for header drop targets when dragging rows*/
+  .oj-datagrid-header .oj-drop,
+  .oj-datagrid-end-header .oj-drop {
+    border: 1px solid var(--oj-core-drag-drop-color-1);
+    background-color: var(--oj-core-drag-drop-color-2);
+  }
+
+  /* Styling for the selection affordance icon on touch devices*/
+  .oj-datagrid-touch-selection-affordance,
+  .oj-datagrid-floodfill-affordance {
+    box-sizing: border-box;
+    width: 7px;
+    height: 7px;
+    z-index: 1;
+    //center the touch affordance inside the touch area
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border: 2px solid var(--oj-core-border-color-selected);
+    background-color: var(--oj-core-border-color-selected);
+  }
+
+  .oj-datagrid-touch-selection-affordance-top-corner-bounded {
+    border-end-end-radius: 1.5px;
+  }
+
+  .oj-datagrid-touch-selection-affordance-bottom-corner-bounded,
+  .oj-datagrid-floodfill-affordance {
+    border-start-start-radius: 1.5px;
+  }
+
+  .oj-datagrid-touch-selection-affordance-top-column {
+    border-start-end-radius: 1.5px;
+    border-end-end-radius: 1.5px;
+  }
+
+  .oj-datagrid-touch-selection-affordance-bottom-column {
+    border-start-start-radius: 1.5px;
+    border-end-start-radius: 1.5px;
+  }
+
+  .oj-datagrid-touch-selection-affordance-top-row {
+    border-end-start-radius: 1.5px;
+    border-end-end-radius: 1.5px;
+  }
+
+  .oj-datagrid-touch-selection-affordance-bottom-row {
+    border-start-start-radius: 1.5px;
+    border-start-end-radius: 1.5px;
+  }
+
+  /* Styling for the selection affordance touchable area on touch devices*/
+  .oj-datagrid-touch-area {
+    width: 24px;
+    height: 24px;
+    position: absolute;
+  }
+
+  .oj-datagrid-popup-header,
+  .oj-datagrid-popup-content {
+    align-self: flex-start;
+    padding: 5px;
+  }
+
+  .oj-datagrid-popup-footer {
+    align-self: flex-end;
+    padding: 5px;
+    text-align: end;
+  }
+
+  /* Redwood theme - on resize the header text should be clipped */
+  .oj-datagrid-column-header-cell > * {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  // Disclosure icon or the spacer
+	.oj-datagrid-tree-spacer {
+    height: var(--oj-collection-grid-row-height);
+		display: inline-block;
+		vertical-align: middle;
+    flex-shrink: 0;
+	}
+
+  .oj-datagrid-column-header-cell.oj-datagrid-hierarchical-group,
+  .oj-datagrid-column-header-cell.oj-datagrid-hierarchical-tree {
+    justify-content: flex-start;
+  }
+
+  .oj-datagrid-row-header-cell.oj-datagrid-hierarchical-group .oj-datagrid-icon-container.oj-datagrid-disclosure-icon {
+    margin-top: calc(-1* var(--oj-collection-grid-cell-padding));
+  } 
+}

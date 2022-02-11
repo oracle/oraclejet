@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -777,9 +777,7 @@ var __oj_tag_cloud_item_metadata =
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-tag-cloud
-   *   items='[{"id": "item1", "label": "the", "value": 20},
-   *           {"id": "item2", "label": "cat", "value": 17},
-   *           {"id": "item3", "label": "hat", "value": 13}]'>
+   *   data="[[dataProvider]]">
    * &lt;/oj-tag-cloud>
    * </code>
    * </pre>
@@ -1313,7 +1311,7 @@ var __oj_tag_cloud_item_metadata =
 
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
-        return ojtagcloudToolkit.TagCloud.newInstance(context, callback, callbackObj);
+        return new ojtagcloudToolkit.TagCloud(context, callback, callbackObj);
       },
 
 

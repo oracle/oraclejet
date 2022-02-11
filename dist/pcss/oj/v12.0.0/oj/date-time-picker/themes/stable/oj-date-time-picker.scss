@@ -1,0 +1,33 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../label/themes/stable/_oj-label.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../button/themes/stable/oj-button.scss";
+@import "../../../form-control/themes/stable/_oj-messaging.scss";
+@import "../../../popup/themes/stable/oj-popup.scss";
+@import "../../../label/themes/stable/oj-label.scss";
+@import "../../../form-control/themes/stable/_oj-form-control.scss";
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+@import "../../../animation/themes/stable/oj-animation.scss";
+
+//Need to look similar to listbox, so share the CSS
+@import "../../../list-box/themes/stable/_oj-list-box.scss";
+
+// ----- end dependencies ---------
+
+@import "_oj-date-time-picker.servervars.scss";
+@import "_oj-date-time-picker.cssvars.scss";
+// most of the styling for the field is in common file
+@import "../base/_oj-date-time-picker.scss";
+
+  @include module-include-once("stable.datetimepicker") {
+  
+  }

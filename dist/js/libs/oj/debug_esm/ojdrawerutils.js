@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -52,16 +52,27 @@ DrawerConstants.stringEnd = 'end';
 DrawerConstants.stringTop = 'top';
 DrawerConstants.stringBottom = 'bottom';
 DrawerConstants.stringMainContent = `layout-main-content`;
+DrawerConstants.stringStyleClassDisableOverflow = `oj-drawer-disable-body-overflow`;
 DrawerConstants.stringSurrogate = 'surrogate';
 DrawerConstants.stringOpened = 'opened';
+DrawerConstants.stringClosed = 'closed';
+DrawerConstants.stringClosedWithEsc = `ClosedWithEsc`;
+DrawerConstants.stringShouldChangeDisplayMode = `ShouldChangeDisplayMode`;
+DrawerConstants.stringStateToChangeTo = `StateToChangeTo`;
+DrawerConstants.stringPrevState = `PrevState`;
 DrawerConstants.stringReflow = 'reflow';
 DrawerConstants.stringOverlay = 'overlay';
 DrawerConstants.stringFullOverlay = 'full-overlay';
+DrawerConstants.stringDisplay = 'Display';
+DrawerConstants.stringResize = 'resize';
 DrawerConstants.stringLeft = 'left';
 DrawerConstants.stringRight = 'right';
-DrawerConstants.animationDuration = 300;
 DrawerConstants.stringOpen = 'open';
 DrawerConstants.stringClose = 'close';
+DrawerConstants.stringSlideIn = 'slideIn';
+DrawerConstants.stringSlideOut = 'slideOut';
+DrawerConstants.stringWidth = 'width';
+DrawerConstants.animationDuration = 300;
 DrawerConstants.keys = {
     ESC: 'Escape',
     TAB: 'Tab'
@@ -69,6 +80,12 @@ DrawerConstants.keys = {
 class DrawerUtils {
     static capitalizeFirstChar(s) {
         return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+    static disableBodyOverflow() {
+        document.body.classList.add(DrawerConstants.stringStyleClassDisableOverflow);
+    }
+    static enableBodyOverflow() {
+        document.body.classList.remove(DrawerConstants.stringStyleClassDisableOverflow);
     }
     static getElement(selector) {
         return document.querySelector(selector);
@@ -92,24 +109,32 @@ class DrawerUtils {
         let direction;
         switch (edge) {
             case DrawerConstants.stringStart:
-                if (actionType === 'open') {
+                if (actionType === DrawerConstants.stringSlideIn) {
                     direction = this.isRTL() ? DrawerConstants.stringLeft : DrawerConstants.stringRight;
                 }
-                else {
+                else if (actionType === DrawerConstants.stringSlideOut) {
                     direction = this.isRTL() ? DrawerConstants.stringRight : DrawerConstants.stringLeft;
+                }
+                else {
+                    direction = DrawerConstants.stringWidth;
                 }
                 break;
             case DrawerConstants.stringEnd:
-                if (actionType === 'open') {
+                if (actionType === DrawerConstants.stringSlideIn) {
                     direction = this.isRTL() ? DrawerConstants.stringRight : DrawerConstants.stringLeft;
                 }
-                else {
+                else if (actionType === DrawerConstants.stringSlideOut) {
                     direction = this.isRTL() ? DrawerConstants.stringLeft : DrawerConstants.stringRight;
+                }
+                else {
+                    direction = DrawerConstants.stringWidth;
                 }
                 break;
             case DrawerConstants.stringBottom:
                 direction =
-                    actionType === 'open' ? DrawerConstants.stringTop : DrawerConstants.stringBottom;
+                    actionType === DrawerConstants.stringSlideIn
+                        ? DrawerConstants.stringTop
+                        : DrawerConstants.stringBottom;
                 break;
         }
         return {
@@ -117,12 +142,11 @@ class DrawerUtils {
             duration: `${DrawerConstants.animationDuration}ms`
         };
     }
-    static getCommonStyleClasses(edge, isOpened) {
+    static getCommonStyleClasses(edge) {
         return {
             [DrawerConstants.styleStartDrawer]: edge === DrawerConstants.stringStart,
             [DrawerConstants.styleEndDrawer]: edge === DrawerConstants.stringEnd,
-            [DrawerConstants.styleBottomDrawer]: edge === DrawerConstants.stringBottom,
-            [DrawerConstants.styleOpened]: isOpened
+            [DrawerConstants.styleBottomDrawer]: edge === DrawerConstants.stringBottom
         };
     }
     static getStyleClassesMapAsString(styleClassMap) {
@@ -133,6 +157,9 @@ class DrawerUtils {
             }
         }
         return styleClassString;
+    }
+    static getViewportWidth() {
+        return window.innerWidth;
     }
 }
 

@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
+
+@include module-include-once("stable.variables.inputsearch.scoped") {
+    /* hero styling */
+    /* ---------------------------- */
+    .oj-input-search-hero {
+      --oj-text-field-font-size: 1.5rem;
+      --oj-button-sm-icon-size: 1.5rem;
+      --oj-text-field-height: 4.5rem;
+      --oj-text-field-text-to-edge-padding: 2.5rem;
+      --oj-text-field-icon-to-text-padding: 1rem;
+      --oj-text-field-icon-to-edge-padding: 1rem;
+    }
+}

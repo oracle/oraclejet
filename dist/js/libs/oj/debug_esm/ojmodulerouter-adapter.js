@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -74,7 +74,7 @@ import { observable } from 'knockout';
  *                  transitions between views. <br/>The function will get
  *                  <a href="oj.ModuleRouterAdapter.html#AnimationCallbackParameters">a context object</a> as a parameter.
  *                  A return value should be a string containing
- *                  <a href="oj.ModuleAnimations.html#Animations">an animation type</a> supported by ModuleAnimations
+ *                  <a href="ModuleAnimations.html#Animations">an animation type</a> supported by ModuleAnimations
  *                  or an object that implements <a href="oj.ModuleElementAnimation.html">ModuleElementAnimation</a> interface.
  * @ojsignature [
  *    {target: "Type", value: "class ModuleRouterAdapter<D extends {[key: string]: any} = {[key: string]: any}, P extends {[key: string]: any} = {[key: string]: any}>",

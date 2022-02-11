@@ -209,6 +209,26 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       value: false,
       writable: true
     });
+    Object.defineProperty(this, 'UNSENT', {
+      value: 0,
+      enumerable: true
+    });
+    Object.defineProperty(this, 'OPENED', {
+      value: 1,
+      enumerable: true
+    });
+    Object.defineProperty(this, 'HEADERS_RECEIVED', {
+      value: 2,
+      enumerable: true
+    });
+    Object.defineProperty(this, 'LOADING', {
+      value: 3,
+      enumerable: true
+    });
+    Object.defineProperty(this, 'DONE', {
+      value: 4,
+      enumerable: true
+    });
   };
   Object.defineProperty(PersistenceXMLHttpRequest, 'UNSENT', {
     value: 0,

@@ -1,0 +1,23 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.avatar.ignored.scoped") {
+  
+  /* Avatar                     */
+  /* -------------------------- */
+
+  .oj-private-scale-lg .oj-avatar-xs {
+    --oj-avatar-size : 44px;
+    --oj-avatar-border-radius : 4px;
+    --oj-avatar-initials-font-size : var(--oj-typography-body-md-font-size);
+    --oj-avatar-icon-font-size : 16px;
+   }
+
+   .oj-private-scale-lg .oj-avatar-lg {
+    --oj-avatar-size:                        96px;
+    --oj-avatar-border-radius:               6px;
+    --oj-avatar-initials-font-size:          40px;
+    --oj-avatar-icon-font-size:              36px;
+  }
+}

@@ -1,0 +1,635 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example list-view/themes/redwood/oj-list-view.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.listview") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-list-view:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  /* Styling for the listview widget container */
+  .oj-listview {
+    display: block;
+    position: relative;
+    border-width: 1px 0;
+    border-style: solid;
+    box-sizing: border-box;
+
+    user-select: none;
+    border-color: var(--oj-collection-border-color);
+    min-height: var(--oj-collection-list-row-height);
+  }
+
+  /* styling for the listview root element and group element */
+  .oj-listview-element,
+  .oj-listview-group {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  /* Styling to remove focus ring border on focusable elements */
+  .oj-listview:focus,
+  .oj-listview-element:focus,
+  .oj-listview-expand-icon:focus,
+  .oj-listview-expanding-icon:focus,
+  .oj-listview-collapse-icon:focus,
+  .oj-listview-group-item:focus,
+  .oj-listview-item-element:focus,
+  .oj-listview-cell-element:focus {
+    outline: none;
+  }
+
+  /* styling to hide the gridline */
+  .oj-listview.gridline-top-hidden {
+    border-top-width: 0;
+  }
+
+  /* styling to hide the gridline */
+  .oj-listview.gridline-bottom-hidden {
+    border-bottom-width: 0;
+  }
+
+  /* Styling for the component div container element. */
+  .oj-listview-container {
+    overflow: auto;
+  }
+
+  /* to enable momentum scrolling on touch devices */
+  .oj-listview-container-touch {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  /* remove border top for the first group to prevent double border */
+  .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+    border-top: 0;
+  }
+
+  /* remove border top for the first group or leaf item to prevent double border */
+  .oj-listview-element > .oj-listview-item:first-child,
+  .oj-listview:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
+  .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+    background-size: 0;
+  }
+
+  /* styling on each list item */
+  /* note that background image is used for border because we need to ability to position the border.
+           using linear-gradient allows us to customize the color of the border */
+  .oj-listview-item {
+    background-image: linear-gradient(var(--oj-core-divider-color), var(--oj-core-divider-color));
+    background-position: 0 0;
+
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    border-top: 1px solid transparent;
+  }
+
+  /* styling to hide the gridline */
+  .oj-listview-gridlines-hidden .oj-listview-item {
+    background-size: 0;
+  }
+
+  /* set on item before add or remove animation */
+  .oj-listview-item-add-remove-transition {
+    overflow: hidden;
+  }
+
+  /* styling on list item element */
+  .oj-listview-item-element {
+    line-height: normal;
+  }
+
+  /* Styling on list item hover */
+  .oj-listview-item.oj-hover,
+  .oj-listview-card.oj-hover,
+  .oj-listview-group-item.oj-hover {
+    background-color: var(--oj-core-bg-color-hover);
+  }
+
+  .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover,
+  .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
+    background-size: 0;
+  }
+
+  /* Styling on list item selection */
+  .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+  .oj-listview.oj-focus-ancestor .oj-listview-card.oj-selected,
+  .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-selected {
+    background-color: var(--oj-core-bg-color-selected);
+  }
+
+  /* Styling on list item inactive selection (when the root is not focus) */
+  .oj-listview-item.oj-selected,
+  .oj-listview-card.oj-selected,
+  .oj-listview-group-item.oj-selected {
+    background-color: var(--oj-core-bg-color-selected);
+  }
+
+  .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-selected,
+  .oj-listview:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
+    border-top: 1px solid var(--oj-core-border-color-selected);
+    background-size: 0;
+  }
+
+  /* Styling for the last selectd item */
+  ul[aria-multiselectable=false] .oj-listview-item.oj-selected:last-child {
+    box-shadow: inset 0 -1px 0 0 var(--oj-core-border-color-selected);    
+  }
+
+  /* Styling for the last selected item, with skeletons presents */
+  ul[aria-multiselectable=false] .oj-listview-item.oj-selected + li.oj-listview-skeleton-container {
+    box-shadow: 0 -1px 0 0 var(--oj-core-border-color-selected);
+  }
+
+  /* Styling for the last selected item, gridlines visible */
+  ul[aria-multiselectable=false] .oj-listview-item.oj-selected + .oj-listview-gridline-placeholder {
+    background-image: linear-gradient(var(--oj-core-border-color-selected), var(--oj-core-border-color-selected));
+  }    
+
+  /* Styling on focused list or group item */
+  .oj-listview-card.oj-focus-highlight,
+  .oj-listview-item.oj-focus-highlight,
+  .oj-listview-group-item.oj-focus-highlight {
+    position: relative;
+  }
+
+  .oj-listview-card.oj-focus-highlight::after,
+  .oj-listview-item.oj-focus-highlight::after,
+  .oj-listview-group-item.oj-focus-highlight::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    top: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    @include oj-ltr() {
+      left: 1px;
+    }
+    @include oj-rtl() {
+      right: 1px;
+    }
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+  /* Styling on expand/collapse icon when it has focus highlight */
+  .oj-listview-expanding-icon.oj-focus-highlight::before,
+  .oj-listview-expand-icon.oj-focus-highlight::before,
+  .oj-listview-collapse-icon.oj-focus-highlight::before {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  /* Styling on focused list item */
+  .oj-listview.oj-listview-gridlines-hidden oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
+  .oj-listview.oj-listview-gridlines-hidden oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
+    background-size: 0;
+  }
+
+  /* styling for list item selected */
+  .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-selected,
+  .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
+    border-top: 1px solid var(--oj-core-border-color-selected);
+    background-size: 0;
+  }
+
+  /* remove borders on multiselectable */
+  .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout) ul[aria-multiselectable="true"] .oj-listview-item.oj-selected,
+  .oj-listview.oj-focus-ancestor:not(.oj-listview-card-layout)
+    ul[aria-multiselectable="true"]
+    .oj-listview-item.oj-selected
+    + li.oj-listview-item {
+    border-top: 1px solid transparent;
+  }
+
+  /* remove borders on multiselectable unfocus */
+  .oj-listview:not(.oj-listview-card-layout) ul[aria-multiselectable="true"] .oj-listview-item.oj-selected,
+  .oj-listview:not(.oj-listview-card-layout) ul[aria-multiselectable="true"] .oj-listview-item.oj-selected + li.oj-listview-item {
+    border-top: 1px solid transparent;
+  }
+
+  /* Styling for the list item elements in selected state when listview is in high contrast mode. */
+  .oj-hicontrast .oj-listview-card.oj-selected,
+  .oj-hicontrast .oj-listview-item.oj-selected,
+  .oj-hicontrast .oj-listview-group-item.oj-selected {
+    border-width: 1px 2px 2px 1px;
+    border-style: solid;
+    border-color: initial;
+  }
+
+  /* Styling for the list item elements in focus state when listview is in high contrast mode. */
+  .oj-hicontrast .oj-listview-card.oj-focus-highlight,
+  .oj-hicontrast .oj-listview-item.oj-focus-highlight,
+  .oj-hicontrast .oj-listview-group-item.oj-focus-highlight {
+    outline-width: 2px;
+    outline-style: dotted;
+    border-width: 0 1px 1px 0;
+    border-style: dotted;
+  }
+
+  /* Styling addition for group items */
+  .oj-listview-group-item {
+    display: flex;
+    align-items: center;
+    min-height: var(--oj-collection-list-row-height);
+    font-size: var(--oj-list-view-group-header-font-size);
+    font-weight: var(--oj-list-view-group-header-font-weight);
+    line-height: var(--oj-list-view-group-header-line-height);
+    color: var(--oj-heading-text-color);
+    padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
+    border: 0 solid var(--oj-core-divider-color);
+    background-color: var(--oj-list-view-group-header-bg-color);
+    box-sizing: border-box;
+  }
+
+  /* Styling override for small group headers */
+  .oj-group-header-sm .oj-listview-group-item {
+    font-size: var(--oj-typography-body-xs-font-size);
+    color: var(--oj-core-text-color-secondary);
+  }
+
+  /* Styling override for large group headers */
+  .oj-group-header-lg .oj-listview-group-item {
+    font-size: var(--oj-typography-heading-xs-font-size);
+  }
+
+  .oj-listview-item-element.oj-expanded .oj-listview-group-item,
+  .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
+    padding: 0;
+  }
+
+  /* Styling for group items when it has no children or in collapsed state */
+  .oj-listview-item-element.oj-collapsed .oj-listview-group-item,
+  .oj-listview-group-item.oj-empty {
+    border-width: 0 0 1px;
+  }
+
+  /* Styling for group items when gridlines are visible on expanded and collapsed state */
+  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item,
+  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-expanded .oj-listview-group-item,
+  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
+    border-width: 1px 0 1px;
+  }
+
+  /* When the element is collapsed, remove the top border from the next item to avoid double border */
+  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-item-element.oj-collapsed + .oj-listview-item-element .oj-listview-group-item {
+    border-top-color: transparent;
+  }
+
+  /* Styling for group item element that has focus */
+  .oj-listview-group-item .oj-focus,
+  .oj-listview-group-item .oj-selected {
+    background-color: transparent;
+    background-image: none;
+  }
+
+  /* Styling for group item element that is sticky */
+  .oj-listview-group-item.oj-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  /* Styling for group item element that is pinned when scrolled (only applicable if position sticky is not supported) */
+  .oj-listview-group-item.oj-pinned {
+    position: absolute;
+    z-index: 1;
+  }
+
+  /* Styling for group item element that is stucked when scrolled */
+  .oj-listview-group-item.oj-stuck {
+    background-color: var(--oj-list-view-group-header-bg-color-sticky);
+    box-shadow: var(--oj-core-box-shadow-xs);
+  }
+
+  /* Remove borders on listview header when gridlines are visible in sticky mode */
+  .oj-listview:not(.oj-listview-gridlines-hidden) .oj-listview-group-item.oj-stuck {
+    border-width: 0;
+  }
+
+  /* expand and collapse animation */
+  .oj-listview-collapsible-transition {
+    overflow: hidden;
+  }
+
+  /* Styling on the status text, such as fetching data */
+  .oj-listview-status-message {
+    position: absolute;
+
+    padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
+
+    display: none;
+  }
+
+  /* Styling for the container of custom no data content */
+  .oj-listview-no-data-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Styling for the empty list text */
+  .oj-listview-no-data-message {
+    padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
+    background-color: var(--oj-collection-bg-color);
+    min-height: var(--oj-typography-body-md-font-size);
+  }
+
+  /* Alignment for the expand and collapse icons */
+  .oj-listview-expand-icon,
+  .oj-listview-collapse-icon {
+    width: var(--oj-button-height);
+    height: var(--oj-button-height);
+    border-radius: var(--oj-button-border-radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0.375rem;
+    text-decoration: none;
+  }
+
+  /* Overrides for expand/collapse icon in small group header */
+  .oj-group-header-sm .oj-listview-expand-icon,
+  .oj-group-header-sm .oj-listview-collapse-icon,
+  .oj-group-header-sm a:visited.oj-listview-expand-icon,
+  .oj-group-header-sm a:visited.oj-listview-collapse-icon {
+    width: var(--oj-button-sm-height);
+    height: var(--oj-button-sm-height);
+    font-size: 1rem;
+    color: var(--oj-core-text-color-secondary);
+  }  
+
+  /* Styling for item when display mode is card */
+  .oj-listview-card {
+    margin-top: var(--oj-panel-gutter);
+    margin-inline-end: var(--oj-panel-gutter);
+  }
+
+  /* Styling for group item when display mode is card */
+  .oj-listview-card-group {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0 0 var(--oj-panel-gutter) 0;
+  }
+
+  /* Styling for group content when listview is filling the entire width and display mode is card */
+  .oj-listview.oj-listview-full-width > .oj-listview-element > li > .oj-listview-card-group,
+  .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-card-group {
+    padding-inline-start: var(--oj-panel-gutter);
+    padding-inline-end: 0;
+  }
+
+  /* Styling for group item when card layout is used */
+  .oj-listview-card-layout .oj-listview-group {
+    display: flex;
+    flex-wrap: wrap;
+
+    margin-bottom: var(--oj-panel-gutter);
+  }
+
+  /* Styling for item when card layout is used */
+  .oj-listview-card-layout li.oj-listview-item {
+    width: 240px;
+    height: auto;
+    border: 1px solid var(--oj-panel-border-color);
+    border-radius: var(--oj-panel-border-radius);
+    margin-top: var(--oj-panel-gutter);
+    margin-bottom: 0;
+    margin-inline-start: 0;
+    margin-inline-end: var(--oj-panel-gutter);
+    background-size: 0;
+    box-sizing: border-box;
+    padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
+  }
+
+  /* Styling for group content when listview is filling the entire width and card layout is used */
+  /* for now, first level group header or no group headers only */
+  .oj-listview.oj-listview-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
+  .oj-listview.oj-full-width.oj-listview-card-layout > .oj-listview-element > li > .oj-listview-group,
+  .oj-listview.oj-listview-full-width > .oj-listview-card-layout > li > .oj-listview-group,
+  .oj-listview.oj-full-width > .oj-listview-card-layout > li > .oj-listview-group {
+    margin-inline-start: var(--oj-panel-gutter);
+    margin-inline-end: 0;
+  }
+
+  /* Styling for group header when listview is filling the entire width */
+  /* for now, first level group header only */
+  .oj-listview.oj-listview-full-width > .oj-listview-element > li > .oj-listview-group-item,
+  .oj-listview.oj-full-width > .oj-listview-element > li > .oj-listview-group-item {
+    border-left-style: none;
+    border-right-style: none;
+  }
+
+  /* Styling for the drill icon */
+  .oj-listview-drill-icon {
+    @extend .oj-fwk-icon;
+    display: flex; 
+    align-items: center;   
+    width: var(--oj-core-icon-size-lg); 
+    height: var(--oj-core-icon-size-lg);
+    color: var(--oj-private-icon-color-default);
+  }
+
+  /* Styling for the drill icon when item has focus */
+  .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon {
+    color: var(--oj-private-icon-color-active);
+  }
+
+  /* Styling for the drill icon when hover over an item */
+  .oj-listview-item.oj-hover .oj-listview-drill-icon {
+    color: var(--oj-private-icon-color-hover);
+  }
+
+  /* Styling for the container of the activity indicator for high watermark scrolling */
+  .oj-listview-card-layout li.oj-listview-loading-icon-container {
+    width: 100%;
+    border-style: none;
+  }
+
+  /* Styling for the affordance icon */
+  .oj-listview-drag-handle {
+    @extend .oj-fwk-icon;
+    cursor: grab;
+    min-width: var(--oj-core-touch-target-min-size);
+    min-height: var(--oj-core-touch-target-min-size);
+  }
+
+  /* Styling for the affordance icon when clicked on */
+  .oj-listview-drag-handle:active {
+    cursor: grabbing;
+    outline: none;
+  }
+
+  /* Styling for the affordance icon when card layout is used */
+  .oj-listview-card .oj-listview-drag-handle,
+  .oj-listview-card-layout .oj-listview-drag-handle {
+    @extend .oj-fwk-icon-drag;
+    background-image: none;
+    width: auto;
+    height: auto;
+    font-size: var(--oj-typography-body-md-font-size);
+  }
+
+  /* Styling for the pseudo class for drag handle */
+  .oj-listview-drag-handle:before {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--oj-core-touch-target-min-size);
+  }
+
+  /* Styling for the drag image */
+  .oj-listview-drag-image {
+    background-color: transparent;
+    position: absolute;
+    top: -10000px;
+    border: 1px solid transparent;
+  }
+
+  /* Styling for the drag image of an item */
+  .oj-listview-item-drag-image {
+    background-color: var(--oj-collection-bg-color);
+    opacity: 0.95;
+  }
+
+  /* Styling for hiding the original item being dragged */
+  .oj-listview-drag-item {
+    display: none;
+  }
+
+  /* Styling item that is draggable (no affordance) */
+  .oj-listview-item.oj-draggable {
+    cursor: grab;
+  }
+
+  /* Styling for the item that is being moved using drag */
+  .oj-listview-item.oj-drag {
+    box-shadow: var(--oj-core-box-shadow-lg);
+    border-top: 1px solid var(--oj-core-divider-color);
+    border-bottom: 1px solid var(--oj-core-divider-color);
+    border-radius: var(--oj-core-border-radius-lg);
+  }
+
+  /* Styling all drop targets in the list */
+  .oj-listview-item.oj-drop {
+    background-color: transparent;
+  }
+
+  /* Styling for group item and on empty list as a drop target */
+  .oj-listview-group-item.oj-drop,
+  .oj-listview-empty-text.oj-drop {
+    background-color: var(--oj-core-drag-drop-color-1);
+  }
+
+  /* Styling on drag source when dnd with another component */
+  .oj-listview-drag-source {
+    opacity: 0.3;
+  }
+
+  /* Styling on drop target when dnd with another component */
+  .oj-listview-drop-target {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  /* Styling on drop target above the first item */
+  .oj-listview-first-drop-target {
+    position: absolute;
+    width: 100%;
+    height: 10px;
+    background-color: transparent;
+  }
+
+  /* Styling for an item that is cut during a context menu cut operation */
+  .oj-listview-cut {
+    opacity: 0.8;
+  }
+
+  /* Styling for the placeholder item for the last item gridline */
+  .oj-listview-gridline-placeholder {
+    background-image: linear-gradient(var(--oj-core-divider-color), var(--oj-core-divider-color));
+    background-position: 0;
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    height: 1px;
+  }
+
+  /* Styling for item layout */
+  .oj-listview-item-layout {
+    display: flex;
+    align-items: center;
+    min-height: var(--oj-collection-list-row-height);
+    box-sizing: border-box;
+    padding: var(--oj-collection-list-cell-padding-vertical) var(--oj-list-view-item-padding-horizontal);
+  }
+
+  /* Styling for item content under item layout */
+  .oj-listview-item-layout > .oj-listview-cell-element {
+    flex-grow: 1;
+  }
+
+  /* Styling to suppress default padding */
+  .oj-listview-item-padding-off .oj-listview-item-layout {
+    padding: 0;
+  }
+
+  /* Styling for the items alignment on list header */
+  .oj-listview-group-item .oj-listview-cell-element {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Styling for single line skeleton */
+  .oj-listview-skeleton-line-height {
+    height: var(--oj-typography-body-md-font-size);
+  }
+
+  /* Styling for child skeleton container */
+  .oj-listview-child-skeleton {
+    padding-inline-start: var(--oj-core-spacing-5x);
+    padding-inline-end: 0;
+  }
+
+  /* Styling for skeleton card container */
+  .oj-listview-skeleton-card-group {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Styling for skeleton card */
+  .oj-listview-skeleton-card {
+    width: 330px;
+    height: 396px;
+    border: 1px solid var(--oj-panel-border-color);
+    border-radius: var(--oj-panel-border-radius);
+    margin-top: var(--oj-panel-gutter);
+    margin-bottom: 0;
+    margin-inline-start: 0;
+    margin-inline-end: var(--oj-panel-gutter);
+    box-sizing: border-box;
+    padding: var(--oj-core-spacing-4x);
+    background-color: var(--oj-core-bg-color-content);
+  }
+
+  /* Styling for skeleton card content */
+  .oj-listview-skeleton-card-content {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+}

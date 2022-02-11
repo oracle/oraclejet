@@ -1,0 +1,120 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example avatar/themes/redwood/oj-avatar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//--------------------------------------------------------
+// include dependencies
+@include module-include-once("common.avatar") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-avatar:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  oj-avatar {
+    display: inline-block;
+  }
+
+  // For some icons in rtl, display is set to inline-block, want to make sure display:flex takes precedence
+  .oj-avatar .oj-avatar-icon,
+  .oj-avatar-background-image {
+    background-size: cover;
+    background-position: center center;
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    height: var(--oj-avatar-size);
+    width: var(--oj-avatar-size);
+    grid-area: 1/1/2/2;
+  }
+
+  .oj-avatar-background {
+    display: var(--oj-avatar-pattern-display);
+  }
+
+  .oj-agent-browser-chrome .oj-avatar-background-image {
+    // Chrome bug Background-image upscaling creates artifact on top/right edges
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+  }
+  .oj-agent-browser-chrome .oj-avatar {
+    // Chrome bug Background-image upscaling creates artifact on top/right edges
+    position: relative;
+  }
+
+  .oj-avatar {
+    color: var(--oj-avatar-text-color);
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--oj-avatar-bg-color);
+    overflow: hidden;
+    height: var(--oj-avatar-size);
+    width: var(--oj-avatar-size);
+    font-size: var(--oj-avatar-initials-font-size);
+    font-weight: var(--oj-avatar-initials-font-weight);
+    // Using grid layout to center because of issues in safari of oj-avatar inside foreign object
+    display: grid;
+    grid-template-columns: var(--oj-avatar-size) 1fr;
+    grid-template-rows: var(--oj-avatar-size) 1fr;
+  }
+
+  .oj-avatar .oj-avatar-icon {
+    font-size: var(--oj-avatar-icon-font-size);
+  }
+  .oj-avatar-square,
+  .oj-avatar-square .oj-avatar-background-image {
+    border-radius: var(--oj-avatar-border-radius);
+  }
+
+  .oj-avatar-circle,
+  .oj-avatar-circle .oj-avatar-background-image {
+    border-radius: 50%;
+  }
+
+  //div selector present to give it priority over colored backgrounds below
+  div.oj-avatar.oj-avatar-image {
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  .oj-avatar-initials {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .oj-avatar-placeholder-icon {
+    color: var(--oj-avatar-text-color);
+    @extend .oj-fwk-icon;
+  }
+
+  .oj-avatar-group-image .oj-avatar-placeholder-icon {
+    @extend .oj-fwk-icon-users;
+  }
+
+  .oj-avatar-placeholder-icon {
+    font-size: var(--oj-avatar-icon-font-size);
+  }
+
+  /* red, forest, and mauve are hard-coded colors because they are deprecated */
+  .oj-avatar-bg-red.oj-avatar {
+    background-color: #9b5734;
+  }
+
+  .oj-avatar-bg-forest.oj-avatar {
+    background-color: #4c825c;
+  }
+
+  .oj-avatar-bg-mauve.oj-avatar {
+    background-color: #925865;
+  }
+
+}

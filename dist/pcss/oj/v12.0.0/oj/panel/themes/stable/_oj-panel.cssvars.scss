@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../tags/themes/stable/_oj-tags.cssvars.scss";
+
+// scoped cssvars override
+@import "../../../core/themes/stable/_oj-core-scoped.cssvars.scss";
+  @include module-include-once("stable.variables.panel") {
+
+:root {
+  --oj-panel-padding:                   var(--oj-core-spacing-2x); 
+  --oj-panel-border-radius:             var(--oj-core-border-radius-lg);
+  --oj-panel-gutter:                    var(--oj-core-spacing-4x);
+
+  // todo: I really think this should be white in stable, check again with UX
+  --oj-panel-bg-color:                  var(--oj-core-bg-color-content); 
+  --oj-panel-border-color:              var(--oj-core-divider-color); 
+   
+}
+
+}

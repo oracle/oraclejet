@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -164,6 +164,12 @@ var __oj_switch_metadata =
       })
   });
 }());
+
+const OJ_SWITCH_THUMB = 'oj-switch-thumb';
+const OJ_SWITCH_TRACK = 'oj-switch-track';
+const ARIA_LABEL = 'aria-label';
+const ARIA_DISABLED = 'aria-disabled';
+
 
 (function () {
   /*!
@@ -389,10 +395,14 @@ var __oj_switch_metadata =
   * CSS variables used by oj-switch when selected and hovered
   * @ojstylevariableset oj-switch-css-set4
   * @ojdisplayname Selected hovered
-  * @ojstylevariable oj-switch-track-bg-color-selected-hover {description: "Switch track background color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-track-border-color-selected-hover {description: "Switch track border color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-hover {description: "Switch thumb background color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-hover {description: "Switch thumb border color when selected and hovered", formats: ["color"], help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-track-bg-color-selected-hover {description: "Switch track background color when selected and hovered", formats: ["color"],
+  *  help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-track-border-color-selected-hover {description: "Switch track border color when selected and hovered", formats: ["color"],
+  *  help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-hover {description: "Switch thumb background color when selected and hovered", formats: ["color"],
+  *  help: "#oj-switch-css-set4"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-hover {description: "Switch thumb border color when selected and hovered", formats: ["color"],
+  *  help: "#oj-switch-css-set4"}
   * @ojstylevariable oj-switch-thumb-box-shadow-selected-hover {description: "Switch thumb box shadow when selected and hovered", help: "#oj-switch-css-set4"}
   * @memberof oj.ojSwitch
   */
@@ -412,10 +422,14 @@ var __oj_switch_metadata =
   * CSS variables used by oj-switch when selected and active
   * @ojstylevariableset oj-switch-css-set6
   * @ojdisplayname Selected active
-  * @ojstylevariable oj-switch-track-bg-color-selected-active {description: "Switch track background color when selected and active", formats: ["color"], help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-track-border-color-selected-active {description: "Switch track border color when selected and active ",formats: ["color"], help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-active {description: "Switch thumb background color when selected and active", formats: ["color"], help: "#oj-switch-css-set6"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-active {description: "Switch thumb border color when selected and active",formats: ["color"], help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-track-bg-color-selected-active {description: "Switch track background color when selected and active", formats: ["color"],
+  *  help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-track-border-color-selected-active {description: "Switch track border color when selected and active ",formats: ["color"],
+  *  help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-active {description: "Switch thumb background color when selected and active", formats: ["color"],
+  *  help: "#oj-switch-css-set6"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-active {description: "Switch thumb border color when selected and active",formats: ["color"],
+  *  help: "#oj-switch-css-set6"}
   * @ojstylevariable oj-switch-thumb-box-shadow-selected-active {description: "Switch thumb box shadow when selected and active", help: "#oj-switch-css-set6"}
   * @memberof oj.ojSwitch
   */
@@ -433,10 +447,14 @@ var __oj_switch_metadata =
   * CSS variables used by oj-switch when selected and disabled
   * @ojstylevariableset oj-switch-css-set8
   * @ojdisplayname Selected disabled
-  * @ojstylevariable oj-switch-track-bg-color-selected-disabled {description: "Switch track background color when selected and disabled", formats: ["color"], help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-track-border-color-selected-disabled {description: "Switch track border color when selected and disabled",formats: ["color"], help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-thumb-bg-color-selected-disabled {description: "Switch thumb background color when selected and disabled", formats: ["color"], help: "#oj-switch-css-set8"}
-  * @ojstylevariable oj-switch-thumb-border-color-selected-disabled {description: "Switch thumb border color when selected and disabled",formats: ["color"], help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-track-bg-color-selected-disabled {description: "Switch track background color when selected and disabled", formats: ["color"],
+  *  help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-track-border-color-selected-disabled {description: "Switch track border color when selected and disabled",formats: ["color"],
+  *  help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-thumb-bg-color-selected-disabled {description: "Switch thumb background color when selected and disabled", formats: ["color"],
+  *  help: "#oj-switch-css-set8"}
+  * @ojstylevariable oj-switch-thumb-border-color-selected-disabled {description: "Switch thumb border color when selected and disabled",formats: ["color"],
+  *  help: "#oj-switch-css-set8"}
   * @memberof oj.ojSwitch
   */
   // --------------------------------------------------- oj.ojSwitch Styling end -----------------------------------------------------------
@@ -606,9 +624,9 @@ var __oj_switch_metadata =
 
       if (!node) {
         node = (locator == null || locator.subId == null) ? rootElement : null;
-        if (!node) {
+        if (!node && locator) {
           subId = locator.subId;
-          if (subId === 'oj-switch-thumb' || subId === 'oj-switch-track') {
+          if (subId === OJ_SWITCH_THUMB || subId === OJ_SWITCH_TRACK) {
             return rootElement.find('.' + subId)[0];
           }
         }
@@ -640,14 +658,14 @@ var __oj_switch_metadata =
       var result = this._super(node);
 
       if (node != null) {
-        if ($(node).hasClass('oj-switch-track') || $(node).hasClass('oj-switch-thumb')) {
+        if ($(node).hasClass(OJ_SWITCH_TRACK) || $(node).hasClass(OJ_SWITCH_THUMB)) {
           nodeId = $(node).parents('div.oj-switch')
             .find('input.oj-component-initnode')
             .attr('id');
-          if (originalId === nodeId && $(node).hasClass('oj-switch-track')) {
-            result = { subId: 'oj-switch-track' };
-          } else if (originalId === nodeId && $(node).hasClass('oj-switch-thumb')) {
-            result = { subId: 'oj-switch-thumb' };
+          if (originalId === nodeId && $(node).hasClass(OJ_SWITCH_TRACK)) {
+            result = { subId: OJ_SWITCH_TRACK };
+          } else if (originalId === nodeId && $(node).hasClass(OJ_SWITCH_THUMB)) {
+            result = { subId: OJ_SWITCH_THUMB };
           }
         }
       }
@@ -829,12 +847,12 @@ var __oj_switch_metadata =
         target.attr('aria-labelledby', labelElementId);
       } else {
         // Check if the element has aria-label
-        var ariaLabelString = component.getAttribute('aria-label');
+        var ariaLabelString = component.getAttribute(ARIA_LABEL);
         if (ariaLabelString) {
           // Set the aria-label of the thumb to the returned string
-          target.attr('aria-label', ariaLabelString);
+          target.attr(ARIA_LABEL, ariaLabelString); // @HTMLUpdateOK
           // And remove it from the component
-          component.removeAttribute('aria-label');
+          component.removeAttribute(ARIA_LABEL);
         }
       }
     },
@@ -889,12 +907,12 @@ var __oj_switch_metadata =
       // Aria
       $(this.switchThumb).attr('aria-checked', this.option('value'));
 
-      $(this.switchThumb).removeAttr('aria-disabled');
+      $(this.switchThumb).removeAttr(ARIA_DISABLED);
       $(this.switchThumb).removeAttr('aria-readonly');
-      rootElement.removeAttr('aria-disabled');
+      rootElement.removeAttr(ARIA_DISABLED);
       if (!this._CanSetValue()) {
         if (this.option('disabled')) {
-          $(this.switchThumb).attr('aria-disabled', 'true');
+          $(this.switchThumb).attr(ARIA_DISABLED, 'true'); // @HTMLUpdateOK
         } else {
           $(this.switchThumb).attr('aria-readonly', 'true');
         }
@@ -1094,12 +1112,8 @@ var __oj_switch_metadata =
     // eslint-disable-next-line no-unused-vars
     _AfterSetOption: function (option, previous, flags) {
       this._superApply(arguments);
-      switch (option) {
-        case 'readOnly':
-          this._AfterSetOptionDisabledReadOnly(option, EditableValueUtils.readOnlyOptionOptions);
-          break;
-        default:
-          break;
+      if (option === 'readOnly') {
+        this._AfterSetOptionDisabledReadOnly(option, EditableValueUtils.readOnlyOptionOptions);
       }
     },
 
@@ -1154,12 +1168,8 @@ var __oj_switch_metadata =
       // need to coerceValues first
       this._super(key, coercedValue, flags);
 
-      switch (key) {
-        case 'labelledBy':
-          this._SetAriaInfo(this.switchThumb);
-          break;
-        default:
-          break;
+      if (key === 'labelledBy') {
+        this._SetAriaInfo(this.switchThumb);
       }
     },
 

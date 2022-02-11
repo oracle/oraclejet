@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -65,7 +65,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * Object type that defines a tick label for x-axis.
    * @ojtypedef oj.ojChart.XTickLabel
    * @ojimportmembers oj.ojChartAxisTickLabelProperties
-   * @ojsignature [{target: "Type", value: "?(oj.Converter<T>)", for: "converter", jsdocOverride: true},
+   * @ojsignature [{target: "Type", value: "?(Array.<oj.Converter<T>> | oj.Converter<T>)", for: "converter", jsdocOverride: true},
    *               {target: "Type", value: "<T extends number|string = number|string>", for: "genericTypeParameters"}]
    */
   /**
@@ -1025,7 +1025,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * Object type that defines a chart group.
    * @typedef {Object} oj.ojChart.Group
    * @ojimportmembers oj.ojChartGroupProperties
-   * @property {(string|number)=} id The id of the group. Defaults to the name if not specified. This is also used to specify the date for non mixed frequency time axes.
+   * @property {(string|number)=} id The id of the group. Defaults to the name if not specified. This is also used to specify the date for non mixed frequency time axes. The specified date for non mixed frequency time axes must be an ISO string.
    * @property {Array.<Object>=} groups An array of nested group objects.
    * @ojsignature {target: "Type", value: "Array<oj.ojChart.Group>=", for: "groups", jsdocOverride: true}
    */
@@ -1064,6 +1064,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {string} series The id of the series the hovered item belongs to.
    * @property {string|Array.<string>} group The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
    * @property {string} label The data label of the hovered item.
+   * @property {number} totalValue The total of all values in the chart. This will only be included for pie charts.
    * @property {number} value The value of the hovered item.
    * @property {number|string} x The x value of the hovered item.
    * @property {number} y The y value of the hovered item.
@@ -1097,6 +1098,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * @property {string} series The id of the series the hovered item belongs to.
    * @property {string|Array.<string>} group The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
    * @property {string} label The data label of the hovered item.
+   * @property {number} totalValue The total of all values in the chart. This will only be included for pie charts.
    * @property {number} value The value of the hovered item.
    * @property {number|string} x The x value of the hovered item.
    * @property {number} y The y value of the hovered item.
@@ -1643,6 +1645,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
          */
         /**
          * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the value is "enabled" or "skipGaps", the time values must be provided through the "group-id" attribute of the oj-chart-item element. In this case stacking is supported. If the value is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the value is "mixedFrequency", the time values must be provided through the "x" attribute of the oj-chart-item element. In this case stacking is not supported.
+         * The time values provided through "group-id" or "x" attribute of the oj-chart-item must be an ISO string.
          * @expose
          * @name timeAxisType
          * @memberof oj.ojChart
@@ -3307,6 +3310,7 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    */
    /**
    * The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids. This is also used to specify the date for non mixed frequency time axes.
+   * The specified date for non mixed frequency time axes must be an ISO string.
    * @expose
    * @ojrequired
    * @name groupId
@@ -3357,6 +3361,18 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-base', 'ojs/ojcomponentcore', 'jquery', 'o
    * &lt;/oj-chart>
    * </code>
    * </pre>
+   */
+
+  /**
+   * <h3 id="a11y-section">
+   *   Accessibility
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+   * </h3>
+   *
+   * <p>The application is responsible for populating the <i>title</i> attribute on the element with meaningful descriptors as the oj-spark-chart element does not provide a default descriptor.</p>
+   *
+   * @ojfragment a11y
+   * @memberof oj.ojSparkChart
    */
 
   /**
@@ -7074,8 +7090,7 @@ var __oj_spark_chart_item_metadata =
    * <code>
    * &lt;oj-chart
    *   type='bar'
-   *   series='[{"name": "Q1 Sales", "items": [50, 60, 20]}]'
-   *   groups='["Phone", "Tablets", "Laptops"]'
+   *   data='[[dataProvider]]'
    * >
    * &lt;/oj-chart>
    * </code>
@@ -7403,7 +7418,7 @@ var __oj_spark_chart_item_metadata =
       },
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
-        return ojchartToolkit.Chart.newInstance(context, callback, callbackObj);
+        return new ojchartToolkit.Chart(context, callback, callbackObj);
       },
 
 
@@ -7989,7 +8004,7 @@ var __oj_spark_chart_item_metadata =
        * @memberof oj.ojChart
        */
       getValuesAt: function (x, y) {
-        return this._component.getValuesAt(x, y);
+        return this._component.getValsAt(x, y);
       },
 
       /**
@@ -8014,6 +8029,42 @@ var __oj_spark_chart_item_metadata =
         return null;
       },
 
+      // @inheritdoc
+      _GetComponentNoClonePaths: function () {
+        var noClonePaths = this._super();
+
+        // Don't clone areas where app may pass in an instance of Converter
+        // If the instance is a class, class methods may not be cloned for some reason.
+        noClonePaths.pieCenter = { converter: true };
+        noClonePaths.xAxis = {
+          tickLabel: { converter: true }
+        };
+        noClonePaths.yAxis = {
+          tickLabel: { converter: true }
+        };
+        noClonePaths.y2Axis = {
+          tickLabel: { converter: true }
+        };
+        noClonePaths.valueFormats = {
+          close: { converter: true },
+          high: { converter: true },
+          label: { converter: true },
+          low: { converter: true },
+          open: { converter: true },
+          q1: { converter: true },
+          q2: { converter: true },
+          q3: { converter: true },
+          targetValue: { converter: true },
+          value: { converter: true },
+          volume: { converter: true },
+          x: { converter: true },
+          y: { converter: true },
+          y2: { converter: true },
+          z: { converter: true }
+        };
+
+        return noClonePaths;
+      },
 
       _GetComponentDeferredDataPaths: function () {
         return { root: ['groups', 'series', 'data'] };
@@ -8775,7 +8826,7 @@ var __oj_spark_chart_item_metadata =
 
       _CreateDvtComponent: function (context, callback, callbackObj) {
         this._focusable({ element: this.element, applyHighlight: true });
-        return ojchartToolkit.SparkChart.newInstance(context, callback, callbackObj);
+        return new ojchartToolkit.SparkChart(context, callback, callbackObj);
       },
 
 

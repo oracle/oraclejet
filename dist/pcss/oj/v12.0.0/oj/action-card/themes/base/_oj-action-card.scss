@@ -1,0 +1,52 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.waterfalllayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.actioncard") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-action-card:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-actioncard {
+    display: inline-flex;
+    cursor: pointer;
+    transform: scale(1);
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out);
+    box-shadow: none;
+    background-color: var(--oj-panel-bg-color);
+    border: 1px solid var(--oj-panel-border-color);
+    border-radius: var(--oj-panel-border-radius);
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .oj-actioncard:hover,
+  .oj-actioncard.oj-active {
+    transform: scale(var(--oj-action-card-scale-hover));
+  }
+
+  .oj-actioncard.oj-active {
+    box-shadow: var(--oj-core-box-shadow-xs);
+  }
+
+  .oj-actioncard:hover:not(.oj-active) {
+    box-shadow: var(--oj-core-box-shadow-sm);
+  }
+
+  .oj-actioncard:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  .oj-actioncard:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+}

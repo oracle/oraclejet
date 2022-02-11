@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../list-box/themes/redwood/_oj-list-box.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-combobox.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-combobox.scss";
+
+@include module-include-once("redwood.combobox") {
+
+}

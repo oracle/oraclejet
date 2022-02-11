@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../label/themes/stable/_oj-label.cssvars.scss";
+@import "../../../animation/themes/stable/oj-animation.scss";
+
+@import "_oj-selector.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-selector.scss";
+
+@include module-include-once("stable.selector") {
+}

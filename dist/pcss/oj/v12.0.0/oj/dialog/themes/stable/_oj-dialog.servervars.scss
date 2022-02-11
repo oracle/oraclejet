@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// DIALOG
+//-----------------------------------------------------------------------------
+// animation theme defaults
+$privateDialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
+$privateDialogCloseAnimation: ((effect: "zoomOut"), "fadeOut") !default;
+$privateDialogOpenAnimationSheet: ((effect: "slideIn", direction: "top"), "fadeIn") !default;
+$privateDialogCloseAnimationSheet: ((effect: "slideOut", direction: "bottom"), "fadeOut") !default;
+
+// ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
+// default to the programmatic settings.
+$privateDialogResizeBehaviorOptionDefault: none !default;
+$privateDialogCancelBehaviorOptionDefault: none !default;
+$privateDialogDragAffordanceOptionDefault: none !default;
+
+$ojprivateDialogFooterIntegrateButtons:                          false !default; 
+$ojprivateDialogHeaderTextAlign:                                 start !default; 
+$ojprivateFormLayoutLabelInlineAlign:                            end !default;

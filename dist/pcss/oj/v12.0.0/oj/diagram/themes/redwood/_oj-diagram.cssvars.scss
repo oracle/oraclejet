@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("redwood.variables.diagram") {
+:root {
+
+
+  // diagram
+  // ----------------------------
+  --oj-diagram-node-border-color-hover:              rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-diagram-link-color:                           rgb(var(--oj-palette-neutral-rgb-120));
+  --oj-diagram-node-bg-color:               rgb(var(--oj-palette-neutral-rgb-170));
+}
+
+}

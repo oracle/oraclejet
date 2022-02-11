@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../animation/themes/redwood/oj-animation.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../popup/themes/redwood/_oj-layer.scss"; // overlay class in this file
+
+@import "_oj-popup.cssvars.scss";
+@import "_oj-popup-ignore.scoped.cssvars.scss";
+@import "../base/_oj-popup-ignore.scoped.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-popup.scss"; 
+
+// ----- end dependencies ---------
+  @include module-include-once("redwood.popup") {
+    // try account for the wide tail and rounded corners with the min width and
+    // height so the popup is not smaller than the tail.
+    
+  }

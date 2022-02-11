@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// import dependencies
+@import "../../../palette/themes/stable/_oj-palette.cssvars.scss";
+@import "../../../panel/themes/stable/_oj-panel.cssvars.scss";
+
+@include module-include-once("stable.variables.actioncard") {
+  :root {
+    /* card                 */
+    /* -------------------------- */
+    --oj-action-card-scale-hover: 1;
+    
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -750,10 +750,7 @@ var __oj_n_box_node_metadata =
  * &lt;oj-n-box
  *   columns='[{"id":"low"}, {"id":"high"}]',
  *   rows='[{"id":"low"}, {"id":"high"}]',
- *   nodes='[{"column":"low", "row":"high", "label":"Employee 1"},
- *           {"column":"low", "row":"low", "label":"Employee 2"},
- *           {"column":"high", "row":"high", "label":"Employee 3"},
- *           {"column":"low", "row":"high", "label":"Employee 4"}]'>
+ *   data="[[dataProvider]]">
  * &lt;/oj-n-box>
  * </code>
  * </pre>
@@ -802,6 +799,16 @@ var __oj_n_box_node_metadata =
  *
  * {@ojinclude "name":"rtl"}
  */
+
+const OJ_NBOX_CELL = 'oj-nbox-cell';
+const OJ_NBOX_DIALOG = 'oj-nbox-dialog';
+const OJ_NBOX_DIALOG_CLOSE_BUTTON = 'oj-nbox-dialog-close-button';
+const OJ_NBOX_GROUP_NODE = 'oj-nbox-group-node';
+const OJ_NBOX_NODE = 'oj-nbox-node';
+const OJ_NBOX_OVERFLOW = 'oj-nbox-overflow';
+const OJ_NBOX_TOOLTIP = 'oj-nbox-tooltip';
+const BORDER_COLOR = 'border-color';
+
 oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
   {
     widgetEventPrefix: 'oj',
@@ -1862,7 +1869,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return NBox.newInstance(context, callback, callbackObj);
+      return new NBox(context, callback, callbackObj);
     },
 
 
@@ -1870,14 +1877,14 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       var subId = locator.subId;
 
       // Convert the supported locators
-      if (subId === 'oj-nbox-cell') {
+      if (subId === OJ_NBOX_CELL) {
         // cell[row,column]
         subId = 'cell[' + locator.row + ',' + locator.column + ']';
-      } else if (subId === 'oj-nbox-dialog') {
+      } else if (subId === OJ_NBOX_DIALOG) {
         subId = 'dialog';
-      } else if (subId === 'oj-nbox-dialog-close-button') {
+      } else if (subId === OJ_NBOX_DIALOG_CLOSE_BUTTON) {
         subId = 'dialog#closeButton';
-      } else if (subId === 'oj-nbox-group-node') {
+      } else if (subId === OJ_NBOX_GROUP_NODE) {
         // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
         if (locator.row && locator.column) {
           subId = 'cell[' + locator.row + ',' + locator.column + ']#groupNode[';
@@ -1886,7 +1893,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         }
 
         subId += locator.groupCategory + ']';
-      } else if (subId === 'oj-nbox-node') {
+      } else if (subId === OJ_NBOX_NODE) {
         var index;
         subId = '';
 
@@ -1894,10 +1901,10 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         var auto = this._component.getAutomation();
         index = auto.getNodeIndexFromId(id);
         subId += 'node[' + index + ']';
-      } else if (subId === 'oj-nbox-overflow') {
+      } else if (subId === OJ_NBOX_OVERFLOW) {
         // cell[row,col]#overflow
         subId = 'cell[' + locator.row + ',' + locator.column + ']#overflow';
-      } else if (subId === 'oj-nbox-tooltip') {
+      } else if (subId === OJ_NBOX_TOOLTIP) {
         subId = 'tooltip';
       }
 
@@ -1911,7 +1918,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       var locator = {};
 
       if (subId.indexOf('node') === 0) {
-        locator.subId = 'oj-nbox-node';
+        locator.subId = OJ_NBOX_NODE;
 
         var index = this._GetFirstIndex(subId);
         var auto = this._component.getAutomation();
@@ -1924,27 +1931,27 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         locator.column = cellIds.substring(commaIndex + 1);
 
         var poundIndex = subId.indexOf('#');
-        if (subId.indexOf('#groupNode') > 0) {
-          locator.subId = 'oj-nbox-group-node';
+        if (subId.indexOf('#groupNode') >= 0) {
+          locator.subId = OJ_NBOX_GROUP_NODE;
           locator.groupCategory = this._GetFirstBracketedString(subId.substring(poundIndex));
-        } else if (subId.indexOf('#overflow') > 0) {
-          locator.subId = 'oj-nbox-overflow';
+        } else if (subId.indexOf('#overflow') >= 0) {
+          locator.subId = OJ_NBOX_OVERFLOW;
         } else {
-          locator.subId = 'oj-nbox-cell';
+          locator.subId = OJ_NBOX_CELL;
         }
       } else if (subId.indexOf('dialog') === 0) {
-        if (subId.indexOf('#closeButton') > 0) {
+        if (subId.indexOf('#closeButton') >= 0) {
           // dialog#closeButton
-          locator.subId = 'oj-nbox-dialog-close-button';
+          locator.subId = OJ_NBOX_DIALOG_CLOSE_BUTTON;
         } else {
-          locator.subId = 'oj-nbox-dialog';
+          locator.subId = OJ_NBOX_DIALOG;
         }
       } else if (subId.indexOf('groupNode') === 0) {
         // groupNode[groupCategory] or cell[row,column]#groupNode[groupCategory]
-        locator.subId = 'oj-nbox-group-node';
+        locator.subId = OJ_NBOX_GROUP_NODE;
         locator.groupCategory = this._GetFirstBracketedString(subId);
       } else if (subId === 'tooltip') {
-        locator.subId = 'oj-nbox-tooltip';
+        locator.subId = OJ_NBOX_TOOLTIP;
       }
 
       return locator;
@@ -1985,7 +1992,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         property: 'TEXT'
       };
 
-      styleClasses['oj-nbox-cell'] = [{
+      styleClasses[OJ_NBOX_CELL] = [{
         path: 'styleDefaults/cellDefaults/_style',
         property: 'BACKGROUND'
       }, {
@@ -2034,7 +2041,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         path: 'styleDefaults/cellDefaults/_panelShadow',
         property: 'box-shadow'
       };
-      styleClasses['oj-nbox-node'] = [{
+      styleClasses[OJ_NBOX_NODE] = [{
         path: 'styleDefaults/nodeDefaults/color',
         property: 'background-color'
       }, {
@@ -2049,11 +2056,11 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       }];
       styleClasses['oj-nbox-node oj-hover'] = {
         path: 'styleDefaults/nodeDefaults/hoverColor',
-        property: 'border-color'
+        property: BORDER_COLOR
       };
       styleClasses['oj-nbox-node oj-selected'] = {
         path: 'styleDefaults/nodeDefaults/selectionColor',
-        property: 'border-color'
+        property: BORDER_COLOR
       };
       styleClasses['oj-nbox-node-no-label'] = {
         path: 'styleDefaults/nodeDefaults/iconDefaults/preferredSizeNoLabel',
@@ -2083,12 +2090,12 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
         path: 'styleDefaults/_categoryNodeDefaults/labelStyle',
         property: 'TEXT'
       };
-      styleClasses['oj-nbox-dialog'] = [
+      styleClasses[OJ_NBOX_DIALOG] = [
         { path: 'styleDefaults/_drawerDefaults/background',
           property: 'background-color'
         },
         { path: 'styleDefaults/_drawerDefaults/borderColor',
-          property: 'border-color'
+          property: BORDER_COLOR
         }
       ];
       styleClasses['oj-nbox-dialog-label'] = {
@@ -2191,6 +2198,12 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       };
     },
 
+    _GetComponentNoClonePaths: function () {
+      var noClonePaths = this._super();
+      noClonePaths.data = true;
+      noClonePaths.nodes = true;
+      return noClonePaths;
+    },
 
     getNodeBySubId: function (locator) {
       return this._super(locator);
@@ -2199,13 +2212,6 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
 
     getSubIdByNode: function (node) {
       return this._super(node);
-    },
-
-    _GetComponentNoClonePaths: function () {
-      var noClonePaths = this._super();
-      noClonePaths.data = true;
-      noClonePaths.nodes = true;
-      return noClonePaths;
     },
 
     /**
@@ -2450,9 +2456,9 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
     getContextByNode: function (node) {
       // context objects are documented with @ojnodecontext
       var context = this.getSubIdByNode(node);
-      if (context && context.subId !== 'oj-nbox-tooltip' &&
-          context.subId !== 'oj-nbox-dialog-close-button' &&
-          context.subId !== 'oj-nbox-overflow') {
+      if (context && context.subId !== OJ_NBOX_TOOLTIP &&
+          context.subId !== OJ_NBOX_DIALOG_CLOSE_BUTTON &&
+          context.subId !== OJ_NBOX_OVERFLOW) {
         return context;
       }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -83,8 +83,11 @@
 
     // setting background-color doesn't work, using box shadow is the only
     // known hack to override the browser's default autofill background color
+    // -webkit-text-fill-color is used to fix chrome overriding the text color
+    // on autocompleted inputs 
     .oj-form-control input:-webkit-autofill {
       box-shadow: 0 0 0px 1000px $formControlBgColor inset;
+      -webkit-text-fill-color: $formControlInputValueColor;
     }
     
     // suppress the native clear icons in IE

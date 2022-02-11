@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.message.scoped") {
+
+.oj-color-invert {
+  // Dark Message
+  // ---------------------------
+  --oj-private-message-category-text-color:                   var(--oj-core-text-color-primary);
+  --oj-private-message-summary-text-color:                    var(--oj-core-text-color-primary);
+  --oj-private-message-detail-text-color:                     var(--oj-core-text-color-primary);
+  --oj-private-message-notification-detail-text-color:  var(--oj-core-text-color-secondary);
+  --oj-private-message-notification-overlay-header-bg-color:  rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-private-message-notification-overlay-body-bg-color:    rgb(var(--oj-palette-neutral-rgb-170));
+  --oj-private-message-time-text-color:                       var(--oj-core-text-color-primary);
+  --oj-private-message-notification-overlay-box-shadow:       var(--oj-core-box-shadow-md);
+  --oj-private-message-general-inline-border-color:           var(--oj-core-divider-color);
+  --oj-private-message-general-overlay-border-color:          var(--oj-core-divider-color);
+}
+}

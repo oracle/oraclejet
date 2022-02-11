@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -188,6 +188,7 @@ var __oj_swipe_actions_metadata =
         var enterPressed = false;
         var defaultActionTriggered = false;
         var offcanvas;
+        var actionTarget;
 
         this._super();
 
@@ -220,12 +221,21 @@ var __oj_swipe_actions_metadata =
             }
             enterPressed = false;
           },
+          mousedown: function (event) {
+            actionTarget = self._handleMouseDownorTouchStart(event);
+          },
+
+          touchstart: function (event) {
+            actionTarget = self._handleMouseDownorTouchStart(event);
+          },
+
           click: function (event) {
             // if clicked on an action from the action bar, we would stop the event from bubbling so that its
             // host (ListView) will not try to process the click event (and select the item for example)
-            if (self._handleAction(event)) {
+            if (self._handleAction(event, actionTarget)) {
               event.stopPropagation();
             }
+            actionTarget = null;
           },
           ojdefaultaction: function (event, _offcanvas) {
             var ojOption = $(_offcanvas.selector).children('oj-option.oj-swipetoreveal-default');
@@ -290,19 +300,34 @@ var __oj_swipe_actions_metadata =
       },
 
       /**
+       * Handles when mousedown/touchstart occurs on an action/option
+       * @private
+       */
+      _handleMouseDownorTouchStart: function (event) {
+        return event.target.closest('oj-option');
+      },
+
+      /**
        * Handles when user click or enter on an action/option
        * @private
        */
-      _handleAction: function (event) {
-        var ojOption = $(event.target).parents('oj-option');
-        if (ojOption.length > 0) {
-          var theOption = ojOption[0];
+      _handleAction: function (event, actionTarget) {
+        var theOption;
+        if (actionTarget) {
+          theOption = actionTarget;
+        } else {
+          var ojOption = $(event.target).parents('oj-option');
+          if (ojOption.length > 0) {
+            theOption = ojOption[0];
+          }
+        }
+        if (theOption) {
           this._close({ selector: theOption.parentNode }).then(function () {
             this._fireActionEvent(theOption, event);
           }.bind(this));
           return true;
         }
-        return false;
+      return false;
       },
 
       /**
@@ -315,7 +340,9 @@ var __oj_swipe_actions_metadata =
       _SetupResources: function () {
         this._super();
         this._setupOrReleaseOffcanvas(tearDownSwipeActions);
-        this._setupOrReleaseOffcanvas(setupSwipeActions);
+        this._setupOrReleaseOffcanvas(setupSwipeActions, { callback: () => {
+          return this.busyStateResolve != null;
+        } });
       },
 
       /**
@@ -334,9 +361,9 @@ var __oj_swipe_actions_metadata =
       /**
        * @private
        */
-      _setupOrReleaseOffcanvas: function (func) {
-        this._applyOffcanvas('oj-offcanvas-start', func);
-        this._applyOffcanvas('oj-offcanvas-end', func);
+      _setupOrReleaseOffcanvas: function (func, options) {
+        this._applyOffcanvas('oj-offcanvas-start', func, options);
+        this._applyOffcanvas('oj-offcanvas-end', func, options);
       },
 
       /**
@@ -356,10 +383,10 @@ var __oj_swipe_actions_metadata =
       /**
        * @private
        */
-      _applyOffcanvas: function (selector, func) {
+      _applyOffcanvas: function (selector, func, options) {
         var offcanvas = this.element[0].querySelector('.' + selector);
         if (offcanvas) {
-          func(offcanvas);
+          func(offcanvas, options);
         }
       },
 
@@ -400,7 +427,9 @@ var __oj_swipe_actions_metadata =
         this._releaseBusyState();
         this._setupOrReleaseOffcanvas(tearDownSwipeActions);
         this._setup();
-        this._setupOrReleaseOffcanvas(setupSwipeActions);
+        this._setupOrReleaseOffcanvas(setupSwipeActions, { callback: () => {
+          return this.busyStateResolve != null;
+        } });
       },
 
       /**
@@ -661,6 +690,8 @@ var __oj_swipe_actions_metadata =
         }
 
         option.setAttribute('role', 'button');
+        // eslint-disable-next-line no-param-reassign
+        option.dataset.ojAction = option.value;
 
         // assign default action (by using SwipeToRevealUtils marker class)
         if (option.classList.contains('oj-swipeactions-default')) {
@@ -739,7 +770,7 @@ var __oj_swipe_actions_metadata =
        */
       _doAction: function (action) {
         return new Promise(function (resolve) {
-          var option = this.element[0].querySelector('oj-option[value="' + action + '"');
+          var option = this.element[0].querySelector('oj-option[data-oj-action="' + action + '"');
           if (option != null) {
             this._fireActionEvent(option, null);
             resolve();

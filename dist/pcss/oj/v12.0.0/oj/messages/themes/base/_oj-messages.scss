@@ -1,0 +1,261 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example messages/themes/redwood/oj-messages.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.messages") {
+  .oj-messages-layer {
+    @extend .oj-component-layer;
+
+    z-index: var(--oj-core-z-index-messages);
+  }
+
+  .oj-messages-layer.oj-focus-within {
+    z-index: calc(var(--oj-core-z-index-messages) + 1);
+  }
+
+  oj-messages:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // Hide the composite initially, in JS we unhide only when there is atleast one message shown
+  //  and hide when all messages close
+  oj-messages {
+    display: none;
+  }
+
+  .oj-messages-layer oj-messages {
+    @extend .oj-component-popup;
+  }
+
+  // JET-45333 - oj-messages: animation issue in inline messages
+  // Inline oj-messages need to be a flex/block (default: inline), so that they take
+  // up the height of the content. This is required to have the container animate
+  // smoothly and to have its height reduced when its content height decreases.
+  .oj-messages-inline oj-message {
+    display: flex;
+  }
+
+  .oj-messages-general {
+    width: var(--oj-private-messages-general-overlay-width);
+    max-width: var(--oj-private-messages-general-overlay-max-width);
+    min-width: var(--oj-private-messages-general-overlay-min-width);
+  }
+
+  .oj-messages-notification {
+    width: var(--oj-private-messages-notification-overlay-width);
+    max-width: var(--oj-private-messages-notification-overlay-max-width);
+    min-width: var(--oj-private-messages-notification-overlay-min-width);
+  }
+
+  .oj-messages-general .oj-messages-container {
+    border-width: var(--oj-private-messages-general-overlay-border-width);
+    border-color: var(--oj-private-messages-general-overlay-border-color);
+    border-style: solid;
+    border-radius: var(--oj-private-messages-general-overlay-border-radius);
+    box-shadow: var(--oj-private-messages-general-overlay-box-shadow);
+  }
+
+  .oj-messages-notification .oj-messages-container {
+    border-width: var(--oj-private-messages-notification-overlay-border-width);
+    border-color: var(--oj-private-messages-notification-overlay-border-color);
+    border-style: solid;
+    border-radius: var(--oj-private-messages-notification-overlay-border-radius);
+    box-shadow: var(--oj-private-messages-notification-overlay-box-shadow);
+  }
+
+  // Add a margin for non-inline case so that the messages do not collapse to viewport edge
+  .oj-messages-general .oj-messages-container,
+  .oj-messages-notification .oj-messages-container {
+    margin: 10px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  //INDIVIDUAL MESSAGE OVERRIDES
+  //////////////////////////////
+
+  .oj-messages-notification .oj-message-header {
+    background-color: var(--oj-private-message-notification-overlay-header-bg-color);
+  }
+
+  .oj-messages-notification .oj-message-body {
+    background-color: var(--oj-private-message-notification-overlay-body-bg-color);
+  }
+
+  // Apply border to the last oj-message child only if page author did not opt out of it
+  .oj-messages-inline oj-message:not(:last-child) .oj-message-container,
+  .oj-messages-inline:not(.oj-messages-inline-remove-bottom-border) oj-message:last-child .oj-message-container {
+    border-width: var(--oj-private-message-general-inline-border-width);
+    border-color: var(--oj-private-message-general-inline-border-color);
+    border-style: solid;
+  }
+
+  .oj-messages-general .oj-message-container {
+    border-width: var(--oj-private-message-general-overlay-border-width);
+    border-color: var(--oj-private-message-general-overlay-border-color);
+    border-style: solid;
+    border-radius: var(--oj-private-message-general-overlay-border-radius);
+    box-shadow: var(--oj-private-message-general-overlay-box-shadow);
+  }
+
+  .oj-messages-notification .oj-message-container {
+    border-width: var(--oj-private-message-notification-overlay-border-width);
+    border-color: var(--oj-private-message-notification-overlay-border-color);
+    border-style: solid;
+    border-radius: var(--oj-private-message-notification-overlay-border-radius);
+    box-shadow: var(--oj-private-message-notification-overlay-box-shadow);
+  }
+
+  // Need to set radius on header and body additionally, else the background color bleeds through
+  //  the container, which is very prominent at larger border radius (eg. 12px in iOS)
+  .oj-messages-general .oj-message-header {
+    border-top-left-radius: var(--oj-private-message-general-overlay-border-radius);
+    border-top-right-radius: var(--oj-private-message-general-overlay-border-radius);
+  }
+
+  .oj-messages-general .oj-message-body {
+    border-bottom-left-radius: var(--oj-private-message-general-overlay-border-radius);
+    border-bottom-right-radius: var(--oj-private-message-general-overlay-border-radius);
+  }
+  .oj-messages-notification .oj-message-header {
+    border-top-left-radius: var(--oj-private-message-notification-overlay-border-radius);
+    border-top-right-radius: var(--oj-private-message-notification-overlay-border-radius);
+  }
+
+  .oj-messages-general .oj-message-no-detail .oj-message-header,
+  .oj-messages-notification .oj-message-no-detail .oj-message-header {
+    border-radius: var(--oj-private-message-notification-overlay-border-radius);
+  }
+
+  .oj-messages-notification .oj-message-body {
+    border-bottom-left-radius: var(--oj-private-message-notification-overlay-border-radius);
+    border-bottom-right-radius: var(--oj-private-message-notification-overlay-border-radius);
+  }
+
+  .oj-messages-general oj-message:not(:last-child) .oj-message-container {
+    margin-bottom: var(--oj-private-message-general-overlay-separator-margin);
+  }
+
+  .oj-messages-notification oj-message:not(:last-child) .oj-message-container {
+    margin-bottom: var(--oj-private-message-notification-overlay-separator-margin);
+  }
+
+  // Small screen responsive overrides
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      // For mobile and tablet portrait, overlays and notification take almost full screen width
+      //  Set it at 100% and consider a 10px margin either side.
+      .oj-messages-general,
+      .oj-messages-notification {
+        width: calc(100% - 20px);
+        max-width: initial;
+        min-width: initial;
+      }
+    }
+  }
+
+  // oj-messages overrides for oj-message general animation defaults
+  //----------------------------------
+  $messagesGeneralDefaults: ();
+  $messagesGeneralAnimationDefaults: ();
+
+  @if ($privateMessageGeneralOverlayOpenAnimation) {
+    $messagesGeneralAnimationDefaults: map-merge(
+      $messagesGeneralAnimationDefaults,
+      (
+        open: $privateMessageGeneralOverlayOpenAnimation
+      )
+    );
+  }
+
+  @if ($privateMessageGeneralOverlayCloseAnimation) {
+    $messagesGeneralAnimationDefaults: map-merge(
+      $messagesGeneralAnimationDefaults,
+      (
+        close: $privateMessageGeneralOverlayCloseAnimation
+      )
+    );
+  }
+
+  $messagesGeneralDefaults: map-merge(
+    $messagesGeneralDefaults,
+    (
+      animation: $messagesGeneralAnimationDefaults
+    )
+  );
+
+  @if ($privateMessagesGeneralOverlayPositionOptionDefault) {
+    $messagesGeneralDefaults: map-merge(
+      $messagesGeneralDefaults,
+      (
+        position: $privateMessagesGeneralOverlayPositionOptionDefault
+      )
+    );
+  }
+
+  // oj-messages overrides for oj-message notification animation defaults
+  //----------------------------------
+  $messagesNotificationDefaults: ();
+  $messagesNotificationAnimationDefaults: ();
+
+  @if ($privateMessageNotificationOverlayOpenAnimation) {
+    $messagesNotificationAnimationDefaults: map-merge(
+      $messagesNotificationAnimationDefaults,
+      (
+        open: $privateMessageNotificationOverlayOpenAnimation
+      )
+    );
+  }
+
+  @if ($privateMessageNotificationOverlayCloseAnimation) {
+    $messagesNotificationAnimationDefaults: map-merge(
+      $messagesNotificationAnimationDefaults,
+      (
+        close: $privateMessageNotificationOverlayCloseAnimation
+      )
+    );
+  }
+
+  $messagesNotificationDefaults: map-merge(
+    $messagesNotificationDefaults,
+    (
+      animation: $messagesNotificationAnimationDefaults
+    )
+  );
+
+  @if ($privateMessagesNotificationOverlayPositionOptionDefault) {
+    $messagesNotificationDefaults: map-merge(
+      $messagesNotificationDefaults,
+      (
+        position: $privateMessagesNotificationOverlayPositionOptionDefault
+      )
+    );
+  }
+
+  // option defaults (future "component" display options will be added here)
+  //----------------------------------
+  $messagesDefaultOptions: (
+    general: $messagesGeneralDefaults,
+    notification: $messagesNotificationDefaults
+  );
+
+  // component default options selector
+  .oj-messages-option-defaults {
+    font-family: oj-json-from-map($messagesDefaultOptions) !important;
+  }
+
+  // outlined messages
+  .oj-messages-inline.oj-messages-outlined oj-message .oj-message-container,
+  .oj-messages-inline.oj-messages-outlined oj-message:last-child .oj-message-container {
+    border-width: 1px;
+    border-radius: var(--oj-core-border-radius-lg);
+    margin: 0 0 0.25rem 0;
+  }
+}

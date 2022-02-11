@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -33,7 +33,8 @@ var __oj_menu_button_metadata =
       "type": "string",
       "enumValues": [
         "all",
-        "icons"
+        "icons",
+        "label"
       ],
       "value": "all"
     },
@@ -62,7 +63,7 @@ var __oj_menu_button_metadata =
   (function () {
     __oj_menu_button_metadata.extension._WIDGET_NAME = 'ojButton';
     __oj_menu_button_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
-    __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby'];
+    __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby', 'aria-describedby'];
     oj.CustomElementBridge.register('oj-menu-button', {
       metadata: __oj_menu_button_metadata,
       innerDomFunction: function (element) {
@@ -95,7 +96,8 @@ var __oj_buttonset_one_metadata =
       "type": "string",
       "enumValues": [
         "all",
-        "icons"
+        "icons",
+        "label"
       ],
       "value": "all"
     },
@@ -162,7 +164,8 @@ var __oj_buttonset_many_metadata =
       "type": "string",
       "enumValues": [
         "all",
-        "icons"
+        "icons",
+        "label"
       ],
       "value": "all"
     },
@@ -241,7 +244,8 @@ var __oj_buttonset_many_metadata =
           "type": "string",
           "enumValues": [
             "all",
-            "icons"
+            "icons",
+            "label"
           ],
           "value": "all"
         },
@@ -267,7 +271,7 @@ var __oj_buttonset_many_metadata =
     (function () {
       __oj_button_legacy_metadata.extension._WIDGET_NAME = 'ojButton';
       __oj_button_legacy_metadata.extension._TRACK_CHILDREN = 'nearestCustomElement';
-      __oj_button_legacy_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby'];
+      __oj_button_legacy_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href', 'aria-label', 'aria-labelledby', 'aria-describedby'];
       oj.CustomElementBridge.register('oj-button', {
         metadata: __oj_button_legacy_metadata,
         innerDomFunction: function (element) {
@@ -318,7 +322,7 @@ var __oj_buttonset_many_metadata =
    *               }
    *              ]
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["label", "display", "chroming", "disabled"]}
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
@@ -383,6 +387,7 @@ var __oj_buttonset_many_metadata =
    * <p>For accessibility, it is not required to set an aria label on a JET button as it uses the text in the default slot to generate an aria label.
    * Therefore the default slot should be filled even if the button is <a href="#display">icon-only (display=icons)</a>. However,
    * you can override the default behavior by setting <code class="prettyprint">aria-label</code> or <code class="prettyprint">aria-labelledby</code>.
+   * For providing additional description, you can set <code class="prettyprint">aria-describedby</code> with id of span with custom description
    * {@ojinclude "name":"accessibilityCommon"}
    *
    *
@@ -796,6 +801,7 @@ var __oj_buttonset_many_metadata =
            * @type {string}
            * @ojvalue {string} "all" Display both the label and icons.
            * @ojvalue {string} "icons" Display only the icons.
+           * @ojvalue {string} "label" Display only the label.
            * @default "all"
            * @ojshortdesc Specifies whether the button displays label and icons, or just icons.
            *
@@ -821,6 +827,7 @@ var __oj_buttonset_many_metadata =
            * @type {string}
            * @ojvalue {string} "all" Display both the label and icons.
            * @ojvalue {string} "icons" Display only the icons.
+           * @ojvalue {string} "label" Display only the label.
            * @default "all"
            * @ojshortdesc Specifies whether the button displays label and icons, or just icons.
            *
@@ -837,6 +844,7 @@ var __oj_buttonset_many_metadata =
 
           /**
            * <p>Whether to display both the label and icons (<code class="prettyprint">"all"</code>)
+           * or just the label (<code class="prettyprint">"label"</code>)
            * or just the icons (<code class="prettyprint">"icons"</code>).  In the latter case, the label is displayed in a tooltip instead, unless a
            * tooltip was already supplied at create time.
            *
@@ -859,6 +867,7 @@ var __oj_buttonset_many_metadata =
            * @memberof oj.ojButton
            * @instance
            * @type {?string}
+           * @ojtranslatable
            */
           label: null,
 
@@ -941,8 +950,8 @@ var __oj_buttonset_many_metadata =
            *
            * <p>By default, menu buttons have a downward pointing "dropdown" arrow for their end icon.  See the <code class="prettyprint">icons</code> option for details.
            *
-           * <p>See [Menu's]{@link oj.ojMenu} Accessibility section for a discussion of how <code class="prettyprint">aria-label</code> and
-           * <code class="prettyprint">aria-labelledby</code> are handled for menu buttons and other menu launchers.
+           * <p>See [Menu's]{@link oj.ojMenu} Accessibility section for a discussion of how <code class="prettyprint">aria-label</code> ,
+           * <code class="prettyprint">aria-labelledby</code> and <code class="prettyprint">aria-descibedby</code> are handled for menu buttons and other menu launchers.
            *
            * @expose
            * @memberof oj.ojButton
@@ -1597,6 +1606,7 @@ var __oj_buttonset_many_metadata =
           var elem = this.element[0];
           elem.classList.remove('oj-helper-hidden-accessible');
           elem.removeAttribute('aria-labelledby');
+          elem.removeAttribute('aria-describedby');
           this.element.removeUniqueId();
 
           // If disabled, we want to run the "changing from disabled to enabled" part of callee, to restore original tabindex.
@@ -2043,7 +2053,15 @@ var __oj_buttonset_many_metadata =
           var atLeastOneIcon = hasStartIcon || hasEndIcon;
           var displayIsIcons = this.options.display === 'icons';
 
-          if (atLeastOneIcon && displayIsIcons) {
+          var displayIsLabel = this.options.display === 'label';
+          if (displayIsLabel) {
+           if (buttonLabelElem.children("[slot='startIcon']")) {
+             buttonLabelElem.children("[slot='startIcon']")[0].classList.add('oj-helper-hidden');
+            }
+           if (buttonLabelElem.children("[slot='endIcon']")) {
+              buttonLabelElem.children("[slot='endIcon']")[0].classList.add('oj-helper-hidden');
+             }
+          } else if (atLeastOneIcon && displayIsIcons) {
             if (textSpan[0]) {
               textSpan[0].classList.add('oj-helper-hidden-accessible');
             }
@@ -2067,6 +2085,10 @@ var __oj_buttonset_many_metadata =
           }
 
           var buttonClass;
+          // if display value is label and it contain some text,
+          if (displayIsLabel) {
+            buttonClass = 'oj-button-text-only';
+          }
           if (atLeastOneIcon) {
             if (displayIsIcons) {
               if (multipleIcons) {
@@ -2215,8 +2237,10 @@ var __oj_buttonset_many_metadata =
             var self = this;
             this.element
               .attr('aria-haspopup', true)
+              .attr('role', 'button')
               .on('keydown' + this.menuEventNamespace, function (event) {
-                if (event.which === $.ui.keyCode.DOWN) {
+                if (event.which === $.ui.keyCode.DOWN ||
+                  event.which === $.ui.keyCode.ENTER || event.which === $.ui.keyCode.SPACE) {
                   self._toggleMenu(event, 'firstItem');
                   event.preventDefault();
                   return true;
@@ -2236,7 +2260,7 @@ var __oj_buttonset_many_metadata =
                   // Ideally a click (Enter/Space) would toggle (open/close) the menu without moving focus to it, per WAI-ARIA.
                   // But on IE, JAWS is not recognizing the menu on click/Enter/Space.
                   // Workaround for this, cleared with A11y team, is to move focus to menu like DownArrow. Ref .
-                  self._toggleMenu(event, 'firstItem');
+                  self._toggleMenu(event, 'menu');
                 }
                 menu.__spaceEnterDownInMenu = false;
                 event.preventDefault();
@@ -2253,6 +2277,7 @@ var __oj_buttonset_many_metadata =
         _removeMenuBehavior: function (menuOption) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
           this.element
               .removeAttr('aria-haspopup')
+              .removeAttr('role')
               .off(this.menuEventNamespace);
 
           this._dismissMenu(menuOption);
@@ -2489,7 +2514,7 @@ var __oj_buttonset_many_metadata =
    * @ojshortdesc A menu button launches a menu when clicked.
    * @ojrole button
    *
-   * @ojpropertylayout {propertyGroup: "common", items: ["display", "chroming", "disabled"]}
+   * @ojpropertylayout {propertyGroup: "common", items: ["label", "display", "chroming", "disabled"]}
    * @ojvbdefaultcolumns 2
    * @ojvbmincolumns 1
    *
@@ -3375,6 +3400,7 @@ var __oj_buttonset_many_metadata =
            * @type {string}
            * @ojvalue {string} "all" Display both the label and icons.
            * @ojvalue {string} "icons" Display only the icons.
+           * @ojvalue {string} "label" Display only the label.
            * @default "all"
            * @ojshortdesc Specifies whether the buttonset displays label and icons, or just icons.
            *
@@ -3397,6 +3423,7 @@ var __oj_buttonset_many_metadata =
            * @type {string}
            * @ojvalue {string} "all" Display both the label and icons.
            * @ojvalue {string} "icons" Display only the icons.
+           * @ojvalue {string} "label" Display only the label.
            * @default "all"
            * @ojshortdesc Specifies whether the buttonset displays label and icons, or just icons.
            *
@@ -3412,6 +3439,7 @@ var __oj_buttonset_many_metadata =
            */
           /**
            * <p>Whether to display both the label and icons (<code class="prettyprint">"all"</code>)
+           * or just the label (<code class="prettyprint">"label"</code>)
            * or just the icons (<code class="prettyprint">"icons"</code>) of the buttons.  In the latter case, the label is displayed in a tooltip instead.
            *
            * <p>The <code class="prettyprint">display</code> attribute will be ignored if no icons exist in the button.
@@ -3663,7 +3691,7 @@ var __oj_buttonset_many_metadata =
 
           valid = this._setCheckedOnButtons(checked, $buttons, type, allCheckboxes);
 
-          valid = valid || checked === null;
+          valid = valid || checked === null || checked === undefined;
 
           if (!valid
               && (!this._IsCustomElement()

@@ -6,13 +6,12 @@ import 'ojs/ojlistdataproviderview';
 import * as CommonTypes from 'ojs/ojcommontypes';
 import { DataProvider, ItemMetadata } from 'ojs/ojdataprovider';
 import { Component, ComponentChild } from 'preact';
-import { ExtendGlobalProps, ObservedGlobalProps, Action, PropertyChanged, TemplateSlot, ElementReadOnly } from 'ojs/ojvcomponent';
+import { ExtendGlobalProps, ObservedGlobalProps, Action, PropertyChanged, ReadOnlyPropertyChanged, TemplateSlot } from 'ojs/ojvcomponent';
 declare type Props<Key, Data> = ObservedGlobalProps<'aria-label' | 'id'> & {
     suggestions?: DataProvider<Key, Data> | null;
     suggestionItemText?: keyof Data | ((itemContext: CommonTypes.ItemContext<Key, Data>) => string);
     placeholder?: string;
-    rawValue?: ElementReadOnly<string | null>;
-    onRawValueChanged?: PropertyChanged<string | null>;
+    onRawValueChanged?: ReadOnlyPropertyChanged<string | null>;
     value?: string | null;
     onValueChanged?: PropertyChanged<string | null>;
     onOjValueAction?: Action<ValueDetail<Key, Data>>;
@@ -65,7 +64,6 @@ export declare class InputSearch<K, D> extends Component<ExtendGlobalProps<Props
         suggestions: any;
         suggestionItemText: string;
         placeholder: string;
-        rawValue: any;
         value: any;
     };
     private _KEYS;
@@ -164,7 +162,7 @@ export interface InputSearchElement<K,D> extends JetElement<InputSearchElementSe
   /**
   * Read-only property used for retrieving the current value from the input field in string form.
   */
-  readonly rawValue?: Props<K, D>['rawValue'];
+  readonly rawValue?: Parameters<Required<Props<K, D>>['onRawValueChanged']>[0];
   addEventListener<T extends keyof InputSearchElementEventMap<K,D>>(type: T, listener: (this: HTMLElement, ev: InputSearchElementEventMap<K,D>[T]) => any, options?: (boolean|AddEventListenerOptions)): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean|AddEventListenerOptions)): void;
   getProperty<T extends keyof InputSearchElementSettableProperties<K, D>>(property: T): InputSearchElement<K,D>[T];

@@ -1,0 +1,57 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example menu-select-many/themes/redwood/oj-menu-select-many.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.menuselectmany") {
+  /* menu-select-many */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-menu-select-many:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // .oj-top marks the menu item when it is the logical first-child of the menu.  If there are menu items
+  // before the oj-menu-select-many, the oj-top pseudo style will not be applied.
+  .oj-menu-dropdown oj-menu-select-many > .oj-menu-item:first-child:not(.oj-top):not(.oj-menu-item-after-divider),
+  .oj-menu-dropdown oj-menu-select-many > .oj-menu-item:first-child:not(.oj-top):not(.oj-menu-item-after-divider) > a,
+  .oj-menu-sheet oj-menu-select-many > .oj-menu-item:first-child:not(.oj-top):not(.oj-menu-item-after-divider),
+  .oj-menu-sheet oj-menu-select-many > .oj-menu-item:first-child:not(.oj-top):not(.oj-menu-item-after-divider) > a {
+    border-top-left-radius: unset;
+    border-top-right-radius: unset;
+  }
+
+  // .oj-bottom marks the menu item when it is the logical last-child of the menu.  If there are menu items
+  // after the oj-menn-select-many, the oj-bottom pseudo style will not be applied.
+  oj-menu-select-many > .oj-menu-item:last-child:not(.oj-bottom):not(.oj-menu-item-before-divider),
+  oj-menu-select-many > .oj-menu-item:last-child:not(.oj-bottom):not(.oj-bottom):not(.oj-menu-item-before-divider) > a {
+    border-bottom-left-radius: unset;
+    border-bottom-right-radius: unset;
+  }
+
+  .oj-menucheckbox-icon {
+    @extend .oj-component-icon !optional;
+    width: var(--oj-menu-icon-size);
+    height: var(--oj-menu-icon-size);
+  }
+
+  .oj-menucheckbox-icon::after {
+    content: "";
+    display: inline-block;
+  }
+
+  // oj-menu-select-many checked icon states
+  .oj-menucheckbox-icon.oj-selected {
+    @extend .oj-fwk-icon-checkmark !optional;
+  }
+
+  .oj-menucheckbox-icon.oj-disabled {
+    opacity: 0.2;
+  }
+}

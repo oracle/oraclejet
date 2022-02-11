@@ -1,0 +1,59 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// These SASS variables cannot be replaced with CSS Variables.
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+// path to images
+//$imageDir: "images/" !default;
+
+// path to (icon) fonts
+//$fontDir: "fonts/" !default;
+
+
+// responsive screen sizes
+//----------------------------------
+// In some apps it may be preferable to change
+// these values to rems instead of pixels.
+//
+// For pixel values here is some helpful info on device sizes:
+// https://screensiz.es/
+
+//$screenSmallMinWidth:     0 !default;
+//$screenSmallMaxWidth:     599.9px !default;
+//$screenMediumMinWidth:    600px !default;
+//$screenMediumMaxWidth:    1023.9px !default;
+//$screenLargeMinWidth:     1024px !default;
+//$screenLargeMaxWidth:     1439.9px !default;
+//$screenXlargeMinWidth:    1440px !default;
+//$screenXlargeMaxWidth:    null !default;
+
+
+// responsive media queries
+//----------------------------------
+// You will see "print" on some media queries below.
+// By default printing portrait is treated as a medium screen and
+// printing landscape is treated as a large screen.
+
+// the $responsiveQueryXYZ variables can be set to 'none' if
+// you don't want to render a particular set of classes,
+// for example if you don't want xlarge classes you could set:
+//    $screenLargeMaxWidth:       1439.9px !default;
+//    $screenXlargeMinWidth:      none;
+//    $screenXlargeMaxWidth:      none;
+//    $responsiveQueryLargeOnly:  none;
+//    $responsiveQueryXlargeUp:   none;
+//$responsiveQuerySmallUp:    "print, screen" !default;
+//$responsiveQuerySmallOnly:  "screen and (max-width: #{$screenSmallMaxWidth})" !default;
+
+//$responsiveQueryMediumUp:   "print, screen and (min-width: #{$screenMediumMinWidth})" !default;
+//$responsiveQueryMediumOnly: "print and (orientation: portrait), screen and (min-width: #{$screenMediumMinWidth}) and (max-width: #{$screenMediumMaxWidth})" !default;
+//$responsiveQueryMediumDown: "print and (orientation: portrait), screen and (max-width: #{$screenMediumMaxWidth})" !default;
+
+//$responsiveQueryLargeUp:    "print and (orientation: landscape), screen and (min-width: #{$screenLargeMinWidth})" !default;
+//$responsiveQueryLargeOnly:  "print and (orientation: landscape), screen and (min-width: #{$screenLargeMinWidth}) and (max-width: #{$screenLargeMaxWidth})" !default;
+//$responsiveQueryLargeDown:  "print and (orientation: landscape), screen and (max-width: #{$screenLargeMaxWidth})" !default;
+
+//$responsiveQueryXlargeUp:   "screen and (min-width: #{$screenXlargeMinWidth})" !default;
+

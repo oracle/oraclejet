@@ -1,0 +1,494 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example slider/themes/redwood/oj-slider.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.slider") {
+  //
+  // The oj-slider class defines the dimensions of a the slider
+  // when embedded in a form control.
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-slider:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-slider {
+    // relative position needed for correct sizing.
+    display: inline-block;
+    position: relative;
+
+    @include oj-ltr() {
+      text-align: left;
+    }
+    @include oj-rtl() {
+      text-align: right;
+    }
+
+    box-sizing: border-box;
+
+    // disable the "copy" feature on iOS
+    -webkit-touch-callout: none;
+    // Prevent showing selection handles on press-hold for Mobile Safari and Android Chrome
+
+    user-select: none;
+
+    // Prevent flash on slider bar tap-hold on touch devices.
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .oj-slider.oj-slider-horizontal {
+    /* use a width of 100% and then max and min width so that when
+     there's less room for the form control it can automatically
+      get smaller instead of overflowing its boundaries */
+
+    max-width: 100%;
+
+    width: 100%;
+  }
+  // .oj-form-control-full-width is an override to set max-width to 100% if on the
+  // element or an ancestor element
+  .oj-form-control-full-width.oj-slider.oj-slider-horizontal,
+  .oj-form-control-full-width .oj-slider.oj-slider-horizontal {
+    max-width: 100%;
+  }
+
+  .oj-slider.oj-slider-horizontal .oj-slider-container {
+    /* This ensures that the slider bounding box will include
+   the thumb radius - important for form controls. */
+    margin: 0 calc(var(--oj-slider-thumb-width) / 2);
+  }
+
+  //
+  // set margins for vertical sliders on oj-slider-container
+  // in order to preserve space for messaging box.
+  //
+  .oj-slider-vertical > .oj-slider-container {
+    // Note - the height and width variables are swapped for vertical sliders.
+    margin: calc(var(--oj-slider-thumb-width) / 2) 0;
+  }
+
+  .oj-slider-horizontal.oj-form-control .oj-slider-container {
+    height: var(--oj-core-touch-target-min-size);
+  }
+
+  .oj-slider-vertical.oj-form-control .oj-slider-container {
+    height: 150px;
+    // Note - the height and width variables are swapped for vertical sliders.
+
+    min-height: calc(var(--oj-slider-thumb-width) * 2);
+    width: var(--oj-core-touch-target-min-size);
+  }
+
+  //
+  // oj-slider-container is the parent of the bar, barvalue, and the thumb.
+  // It is used to create the proper spacing around the thumbs.
+  //
+  .oj-slider-container {
+    position: relative;
+  }
+
+  //
+  // General properties for slider thumbs
+  // (applies to thumbs for both horizontal and vertical sliders)
+  //
+  .oj-slider-thumb {
+    position: absolute;
+    box-sizing: border-box;
+    touch-action: none;
+    background-color: var(--oj-slider-thumb-bg-color);
+    border-radius: var(--oj-slider-thumb-border-radius);
+    border: var(--oj-slider-thumb-border-width) solid var(--oj-slider-thumb-border-color);
+    box-shadow: var(--oj-slider-thumb-box-shadow);
+  }
+
+  // Thumb properties for disabled sliders.
+  .oj-disabled .oj-slider-thumb {
+    background-color: var(--oj-slider-thumb-bg-color-disabled);
+    border-color: var(--oj-slider-thumb-border-color-disabled);
+  }
+
+  .oj-slider-range {
+    position: absolute;
+    border: 0;
+    background-position: 0 0;
+  }
+
+  //
+  // The border-radius is set to the thickness of the bar.
+  // The bar thickness is defined using width for vertical orientations,
+  // and height for horizontal orientations. The bar thickness is applied
+  // to both the slider-bar (which is the background, gray bar) and the
+  // bar value (the foreground, blue part of the bar).
+  //
+  .oj-slider-bar {
+    border-radius: var(--oj-slider-track-thickness);
+    background-color: var(--oj-slider-track-bg-color);
+    box-sizing: border-box;
+    position: absolute;
+  }
+
+  // For vertical orientations, set the width of the slider-bar and the slider-bar-value
+  .oj-slider-vertical .oj-slider-bar,
+  .oj-slider-vertical .oj-slider-bar-value {
+    width: var(--oj-slider-track-thickness);
+  }
+
+  //
+  // When vertical, the bar background is full height.
+  //
+  .oj-slider-vertical .oj-slider-bar {
+    height: 100%;
+  }
+
+  // When horizontal, the bar background is full width.
+  //
+  .oj-slider-horizontal .oj-slider-bar {
+    width: 100%;
+  }
+
+  // For horizontal orientations, set the width of the slider-bar and the slider-bar-value
+  .oj-slider-horizontal .oj-slider-bar,
+  .oj-slider-horizontal .oj-slider-bar-value {
+    height: var(--oj-slider-track-thickness);
+    margin-top: calc(0px - var(--oj-slider-track-thickness) / 2);
+    top: 50%;
+  }
+
+  // For vertical orientations, set the width of the slider-bar and the slider-bar-value
+  .oj-slider-vertical .oj-slider-bar,
+  .oj-slider-vertical .oj-slider-bar-value {
+    width: var(--oj-slider-track-thickness);
+    margin-left: calc(0px - var(--oj-slider-track-thickness) / 2);
+
+    left: 50%;
+  }
+
+  //
+  // Add hit padding to the bar.
+  // This allows a click-reposition of the thumb
+  // when the click is on or near the bar.
+  //
+  .oj-slider-bar:after {
+    content: "";
+    position: absolute;
+    top: calc(0px - (36px / 2) + (var(--oj-slider-track-thickness) / 2));
+    bottom: calc(0px - (36px / 2) + (var(--oj-slider-track-thickness) / 2));
+    left: calc(0px - (36px / 2) + (var(--oj-slider-track-thickness) / 2));
+    right: calc(0px - (36px / 2) + (var(--oj-slider-track-thickness) / 2));
+  }
+
+  // oj-slider-bar-value represents the filled part of the slider bar
+  .oj-slider-bar-value {
+    border-radius: var(--oj-slider-track-thickness);
+    background: var(--oj-slider-value-bg-color);
+  }
+
+  // Add a border to the slider bar when in hi-contrast mode.
+  .oj-hicontrast .oj-slider-bar,
+  .oj-hicontrast .oj-slider-bar-value {
+    border: 1px solid;
+  }
+
+  // center align the slider bar value for high contrast (horizontal slider)
+  .oj-hicontrast .oj-slider-horizontal .oj-slider-bar-value {
+    margin-top: calc(0px - (var(--oj-slider-track-thickness) / 2 + 1px));
+  }
+
+  // Center align the slider bar value for high contrast (vertical slider)
+  .oj-hicontrast .oj-slider-vertical .oj-slider-bar-value {
+    margin-left: calc(0px - (var(--oj-slider-track-thickness) / 2 + 1px));
+  }
+
+  .oj-disabled .oj-slider-bar {
+    background: var(--oj-slider-track-bg-color-disabled);
+  }
+
+  .oj-disabled .oj-slider-bar-value {
+    background: var(--oj-slider-value-bg-color-disabled);
+  }
+
+  // Hi contrast disabled sliders have a dotted border on the bar
+  .oj-hicontrast .oj-disabled .oj-slider-bar,
+  .oj-hicontrast .oj-disabled .oj-slider-bar-value {
+    border-style: dotted;
+  }
+
+  //
+  // Define the dimensions of the thumb used in a horizontal slider.
+  // Ensure that the slider thumb is centered on the bar.
+  //
+  .oj-slider-horizontal .oj-slider-thumb {
+    top: 50%;
+    width: var(--oj-slider-thumb-width);
+    height: var(--oj-slider-thumb-height);
+    margin-top: calc(0px - (var(--oj-slider-thumb-height) / 2));
+    margin-left: calc(0px - (var(--oj-slider-thumb-width) / 2));
+    transition: transform 0.1s linear, box-shadow linear 0.1s;
+  }
+
+  //
+  // For horizontal sliders,
+  // set the position of the value bar based on its range.
+  // Flip the direction for RTL.
+  //
+  .oj-slider-horizontal .oj-slider-range-min {
+    @include oj-ltr() {
+      left: 0;
+    }
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+  .oj-slider-horizontal .oj-slider-range-max {
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  //
+  // Define the dimensions of the thumb used in a vertical slider.
+  // Ensure that the slider thumb is centered on the bar.
+  // Note - the height and width variables are swapped for vertical sliders.
+  // This effectively rotates the thumb by 90 degrees (important for asymmetrical thumbs)
+  //
+  .oj-slider-vertical .oj-slider-thumb {
+    width: var(--oj-slider-thumb-height);
+    height: var(--oj-slider-thumb-width);
+    transition: box-shadow linear 0.1s;
+    html:not([dir="rtl"]) & {
+      margin-left: calc(0px - var(--oj-slider-thumb-height) / 2);
+      left: 50%;
+    }
+    html[dir="rtl"] & {
+      margin-right: calc(0px - var(--oj-slider-thumb-height) / 2);
+      right: 50%;
+    }
+    margin-bottom: calc(0px - var(--oj-slider-thumb-width) / 2);
+    margin-top: calc(0px - var(--oj-slider-thumb-width) / 2);
+  }
+
+  //
+  // For vertical sliders,
+  // set the position of the value bar based on its range.
+  //
+  .oj-slider-vertical .oj-slider-range-min {
+    bottom: 0;
+  }
+  .oj-slider-vertical .oj-slider-range-max {
+    top: 0;
+  }
+
+  //
+  // Since the slider thumb gains focus, address high contrast focus/selected states for the thumb only.
+  //
+  .oj-hicontrast .oj-slider-thumb.oj-focus {
+    border: 3px solid;
+  }
+
+  .oj-hicontrast .oj-slider-thumb.oj-selected {
+    border: 3px double;
+  }
+
+  .oj-hicontrast .oj-disabled .oj-slider-thumb {
+    border: 1px dotted;
+  }
+
+  .oj-slider:not(.oj-disabled):not(.oj-slider-color-picker) .oj-slider-thumb:hover {
+    background-color: var(--oj-slider-thumb-bg-color-hover);
+    box-shadow: var(--oj-slider-thumb-box-shadow-hover);
+    cursor: var(--oj-core-cursor-clickable);
+  }
+
+  // active should trump hover
+  .oj-slider:not(.oj-disabled):not(.oj-slider-color-picker) .oj-slider-thumb.oj-active {
+    background-color: var(--oj-slider-thumb-bg-color-active);
+    border-color: var(--oj-slider-thumb-border-color-active);
+    box-shadow: var(--oj-slider-thumb-box-shadow-active);
+    cursor: var(--oj-core-cursor-clickable);
+    transform: scale(var(--oj-slider-thumb-scale-active));
+  }
+
+  //
+  // For some themes (iOS and Android), active thumbs are larger than
+  // enabled thumbs. The following code handles these cases.
+  // For example, when an active thumb is larger than an enabled thumb,
+  // we must ensure that the slider thumb is centered on the bar.
+  //
+
+  //
+  // Calculate the hit area, using the dimensions of the 'normal' thumb.
+  //
+
+  .oj-slider-horizontal .oj-slider-thumb:after {
+    content: "";
+    position: absolute;
+    top: calc(0px - (28px - var(--oj-slider-thumb-height)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-thumb-height)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-thumb-width)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-thumb-width)) / 2);
+  }
+
+  .oj-slider-vertical .oj-slider-thumb:after {
+    content: "";
+    position: absolute;
+    top: calc(0px - (28px - var(--oj-slider-thumb-width)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-thumb-width)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-thumb-height)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-thumb-height)) / 2);
+  }
+
+  //  The oj-focus-highlight class applies focus styling that may not be desirable
+  //  when the focus results from pointer interaction (touch or mouse), but which is
+  //  needed for accessibility when the focus occurs by a non-pointer mechanism, for
+  //  example keyboard or initial page load.
+  //  See also the $focusHighlightPolicy variable, which controls when this
+  //  class is set.
+  .oj-slider-thumb:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  .oj-slider-thumb:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  //// Color Picker ///
+
+  .oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
+    margin: 0.75rem 0;
+  }
+
+  .oj-slider.oj-slider-horizontal .oj-slider-container {
+    margin: 0 0.75rem;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {
+    // Note - the height and width variables are swapped for vertical sliders.
+    min-height: 2rem;
+  }
+
+  .oj-slider-color-picker .oj-slider-thumb,
+// Styling for warning/invalid state: let the color picker show the warning/invalid border
+.oj-warning .oj-slider-color-picker .oj-slider-thumb,
+.oj-invalid .oj-slider-color-picker .oj-slider-thumb {
+    background-color: transparent;
+    border-radius: 1.0625rem;
+    // border-color value is hardcoded white as the color-spectrum-thumb is always the same color
+    border: 2px solid #ffffff;
+    box-shadow: 1px 1px 5px 0 rgba(var(--oj-core-box-shadow-rgb), 0.4);
+  }
+
+  .oj-disabled .oj-slider-color-picker .oj-slider-thumb {
+    border: 2px solid var(--oj-slider-thumb-border-color-disabled);
+  }
+
+  .oj-slider-color-picker .oj-slider-bar {
+    border-radius: 1rem;
+  }
+
+  // For horizontal orientations, set the width of the slider-bar and the slider-bar-value
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar,
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar-value {
+    height: 1rem;
+    margin-top: -0.5rem;
+  }
+
+  // For vertical orientations, set the width of the slider-bar and the slider-bar-value
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-bar,
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-bar-value {
+    width: 1rem;
+    margin-left: -0.5rem;
+  }
+
+  .oj-slider-color-picker .oj-slider-bar:after {
+    top: -10px;
+    bottom: -10px;
+    left: -10px;
+    right: -10px;
+  }
+
+  // oj-slider-bar-value represents the filled part of the slider bar
+  .oj-slider-color-picker .oj-slider-bar-value {
+    border-radius: 1rem;
+  }
+
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb {
+    width: 1rem;
+    height: 1rem;
+    margin-top: -0.5rem;
+    margin-left: -0.5rem;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb {
+    width: 1rem;
+    height: 1rem;
+    html:not([dir="rtl"]) & {
+      margin-left: -0.5rem;
+    }
+    html[dir="rtl"] & {
+      margin-right: -0.5rem;
+    }
+    margin-bottom: -0.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after {
+    top: -6px;
+    bottom: -6px;
+    left: -6px;
+    right: -6px;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after {
+    // Note - the height and width variables are swapped for vertical sliders.
+    top: -6px;
+    bottom: -6px;
+    left: -6px;
+    right: -6px;
+  }
+
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb,
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb {
+    transition: transform 0.1s linear;
+  }
+
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active,
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
+    transform: scale(1.5);
+  }
+
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
+    // Note - the height and width variables are swapped for vertical sliders.
+    html:not([dir="rtl"]) & {
+      margin-left: -0.5rem;
+    }
+    html[dir="rtl"] & {
+      margin-right: -0.5rem;
+    }
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
+    // Note - the height and width variables are swapped for vertical sliders.
+    margin-bottom: -0.5rem;
+    margin-top: -0.5rem;
+  }
+
+  .oj-slider-color-picker .oj-slider-bar-value {
+    display: none;
+  }
+}

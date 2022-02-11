@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1313,6 +1313,22 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
    * For user-defined headers, the title div is identified by the div that has the <code class="prettyprint">oj-dialog-title</code> class.
    * Note that user-defined headers must have a title div (in order to meet accesibility requirements).
    *
+   * <h4> aria-describedby </h4>
+   *
+   * If the dialog contains additional descriptive text besides the dialog title, this text can be associated
+   * with the dialog using the <code class="prettyprint">aria-describedby</code> attribute. Unlike the
+   * <code class="prettyprint">aria-labelledby</code> association, the <code class="prettyprint">aria-describedby</code>
+   * attribute is not generated and set automatically. It is up to the user to specify the attribute
+   * on <code class="prettyprint">oj-dialog</code> and link it to the element containing the additional description:
+   *
+   * <pre class="prettyprint">
+   * <code>
+   * &lt;oj-dialog id="dialog" title="Accessible Title" aria-describedby="desc"&gt;
+   *    &lt;div slot="body"&gt;
+   *       &lt;p id="desc"&gt; This is a dialog with accessible description.
+   *    &lt;/div&gt;
+   * &lt;/oj-dialog&gt;
+   * </code></pre>
    *
    * <h3 id="reparenting-section">
    *   Reparenting
@@ -2139,6 +2155,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
          *
          * @expose
          * @memberof oj.ojDialog
+         * @ojtranslatable
          * @instance
          * @type {string|null}
          *
@@ -2559,6 +2576,7 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
       subtreeAttached(this._contentDiv);
 
       this._bodySlot = document.createElement('div');
+      this._bodySlot.classList.add('oj-dialog-body-wrapper');
 
       this._contentDiv.appendChild(this._bodySlot); // @HTMLUpdateOK
       this._uiDialogContent = $(this._contentDiv);

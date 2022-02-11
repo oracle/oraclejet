@@ -1,0 +1,40 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "../../../label/themes/stable/_oj-label.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../button/themes/stable/oj-button.scss";
+@import "../../../form-control/themes/stable/_oj-messaging.scss";
+@import "../../../popup/themes/stable/oj-popup.scss";
+@import "../../../label/themes/stable/oj-label.scss";
+@import "../../../form-control/themes/stable/_oj-form-control.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-input-number.cssvars.scss";
+
+// most of the styling in common file
+@import "../base/_oj-input-number.scss";
+
+  @include module-include-once("stable.inputnumber") {
+
+    // icons
+    //------------------------------------------
+
+    .oj-inputnumber-up-icon {
+      @extend .oj-fwk-icon-caret-n;
+    }
+
+    .oj-inputnumber-down-icon {
+      @extend .oj-fwk-icon-caret-s;
+    }
+  }

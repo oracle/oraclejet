@@ -49,6 +49,8 @@ export interface ojTreeView<K, D> extends baseComponent<ojTreeViewSettableProper
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
     translations: {
+        receivedDataAria?: string;
+        retrievingDataAria?: string;
         treeViewSelectorAria?: string;
     };
     addEventListener<T extends keyof ojTreeViewEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTreeViewEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
@@ -143,14 +145,15 @@ export namespace ojTreeView {
         position: 'inside' | 'before' | 'after' | 'first';
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         depth: number;
         index: number;
-        key: any;
+        key: K;
         leaf: boolean;
-        parentkey: any;
+        metadata: ItemMetadata<K>;
+        parentkey: K;
     };
 }
 export interface ojTreeViewEventMap<K, D> extends baseComponentEventMap<ojTreeViewSettableProperties<K, D>> {
@@ -216,6 +219,8 @@ export interface ojTreeViewSettableProperties<K, D> extends baseComponentSettabl
     selection: K[];
     selectionMode: 'none' | 'single' | 'multiple' | 'leafOnly';
     translations: {
+        receivedDataAria?: string;
+        retrievingDataAria?: string;
         treeViewSelectorAria?: string;
     };
 }
@@ -301,14 +306,15 @@ export namespace TreeViewElement {
         parentKey?: K;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ItemTemplateContext = {
+    type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: object;
+        data: D;
         depth: number;
         index: number;
-        key: any;
+        key: K;
         leaf: boolean;
-        parentkey: any;
+        metadata: ItemMetadata<K>;
+        parentkey: K;
     };
 }
 export interface TreeViewIntrinsicProps extends Partial<Readonly<ojTreeViewSettableProperties<any, any>>>, GlobalProps, Pick<preact.JSX.HTMLAttributes, 'ref' | 'key'> {

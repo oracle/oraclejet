@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -766,9 +766,7 @@ var __oj_thematic_map_marker_metadata =
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-thematic-map mapProvider='[[mapProviderObj]]'
-   *   areas='[{"color":"#003366", "location":"FL"},
-  *            {"color":"#CC3300", "location":"TX"},
-  *            {"color":"#99CC33", "location":"CA"}]'>
+   *   area-data="[[dataProvider]]">
    * &lt;/oj-thematic-map>
    * </code>
    * </pre>
@@ -2112,7 +2110,7 @@ var __oj_thematic_map_marker_metadata =
 
       // @inheritdoc
       _CreateDvtComponent: function (context, callback, callbackObj) {
-        return ojthematicmapToolkit.ThematicMap.newInstance(context, callback, callbackObj);
+        return new ojthematicmapToolkit.ThematicMap(context, callback, callbackObj);
       },
 
       // @inheritdoc
@@ -2144,21 +2142,21 @@ var __oj_thematic_map_marker_metadata =
       _ConvertSubIdToLocator: function (subId) {
         var locator = {};
 
-        if (subId.indexOf(':area') > 0) {
+        if (subId.indexOf(':area') >= 0) {
           // dataLayerId:area[index]
           locator.subId = 'oj-thematicmap-area';
           if (!this._IsCustomElement()) {
             locator.dataLayer = subId.substring(0, subId.indexOf(':'));
           }
           locator.index = this._GetFirstIndex(subId);
-        } else if (subId.indexOf(':marker') > 0) {
+        } else if (subId.indexOf(':marker') >= 0) {
           // dataLayerId:marker[index]
           locator.subId = 'oj-thematicmap-marker';
           if (!this._IsCustomElement()) {
             locator.dataLayer = subId.substring(0, subId.indexOf(':'));
           }
           locator.index = this._GetFirstIndex(subId);
-        } else if (subId.indexOf(':link') > 0) {
+        } else if (subId.indexOf(':link') >= 0) {
           // dataLayerId:link[index]
           locator.subId = 'oj-thematicmap-link';
           if (!this._IsCustomElement()) {

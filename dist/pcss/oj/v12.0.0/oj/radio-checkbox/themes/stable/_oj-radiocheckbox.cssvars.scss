@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+  @include module-include-once("stable.variables.radiocheckbox") {
+ 
+:root {
+ 
+  // radioset and checkboxset
+  // --------------------------
+ 
+  --oj-radio-checkbox-width:                     auto;
+  --oj-radio-checkbox-row-height:                2.25rem;
+
+  --oj-radio-checkbox-input-size:                1rem;
+  --oj-radio-checkbox-input-color-unselected:    rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-radio-checkbox-input-color-selected:      rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-radio-checkbox-input-transform-active:    scale(0.75);
+ 
+  --oj-radio-checkbox-label-to-edge-padding:     0;
+  --oj-radio-checkbox-input-to-label-padding:    0.5rem;
+  --oj-radio-checkbox-input-to-edge-padding:     0;
+ 
+ 
+  --oj-radio-checkbox-item-divider-color:        transparent;
+ 
+  --oj-radio-checkbox-item-bg-color-active:      transparent;
+ 
+}
+}

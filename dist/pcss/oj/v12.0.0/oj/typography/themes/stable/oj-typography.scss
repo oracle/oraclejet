@@ -1,0 +1,9 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "_oj-typography.cssvars.scss";
+@import "../base/oj-typography";
+// scoped cssvars override
+@import "_oj-typography-scoped.cssvars.scss";

@@ -1,0 +1,221 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// import avatar
+@import "../../../avatar/themes/redwood/oj-avatar.scss"; 
+
+// ----- end dependencies ---------
+
+
+@import "_oj-icon-circle.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-icon-circle.scss";
+
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+@import "_oj-icon-circle-ignore.scoped.cssvars.scss"; 
+
+.oj-icon-circle-inner::before {
+  content: '';
+  display: var(--oj-avatar-pattern-display);
+  background-size: 200px 200px;
+  mix-blend-mode: overlay;
+  filter: opacity(.5);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border-radius: 50%;
+  background-image: url('#{$imageDir}avatar-pattern1.png');
+}
+
+.oj-icon-circle-xxs .oj-icon-circle-inner::before,
+.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-forest .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-red .oj-icon-circle-inner::before {
+  background-size: 125px 125px;
+}
+
+.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-red .oj-icon-circle-inner::before,
+.oj-icon-circle-lg.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-lg.oj-icon-circle-forest .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-forest .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-forest .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-forest .oj-icon-circle-inner::before {
+  background-size: 150px 150px;
+}
+
+.oj-icon-circle-xs .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-red .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-red .oj-icon-circle-inner::before {
+  background-size: 175px 175px;
+}
+
+.oj-icon-circle-xxs.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-red .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-forest .oj-icon-circle-inner::before {
+  background-size: 200px 200px;
+}
+
+.oj-icon-circle-xxl .oj-icon-circle-inner::before,
+.oj-icon-circle-xl .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-forest .oj-icon-circle-inner::before  {
+  background-size: 250px 250px;
+}
+
+.oj-icon-circle-xs.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-purple .oj-icon-circle-inner::before  {
+  background-size: 275px 275px;
+}
+
+.oj-icon-circle-gray .oj-icon-circle-inner::before,
+.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-teal .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-lilac .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-lilac .oj-icon-circle-inner::before {
+  background-size: 300px 300px;
+}
+
+.oj-icon-circle-xxs.oj-icon-circle-slate .oj-icon-circle-inner::before {
+  background-size: 320px 320px;
+}
+
+.oj-icon-circle-lg.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-lg.oj-icon-circle-lilac .oj-icon-circle-inner::before {
+  background-size: 325px 325px;
+}
+
+.oj-icon-circle-xxl.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-lilac .oj-icon-circle-inner::before {
+  background-size: 350px 350px;
+}
+
+.oj-icon-circle-xs.oj-icon-circle-lilac .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-lilac .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-slate .oj-icon-circle-inner::before {
+  background-size: 400px 400px;
+}
+
+.oj-icon-circle-slate .oj-icon-circle-inner::before {
+  background-size: 480px 480px;
+}
+
+.oj-icon-circle-xxl.oj-icon-circle-slate .oj-icon-circle-inner::before {
+  background-size: 560px 560px;
+}
+
+.oj-icon-circle-lg.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-teal .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-gray .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-gray .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-gray .oj-icon-circle-inner::before {
+  filter: opacity(.2);
+}
+
+.oj-icon-circle-xs.oj-icon-circle-lilac .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-lilac .oj-icon-circle-inner::before {
+  filter: opacity(.25);
+}
+
+.oj-icon-circle-blue .oj-icon-circle-inner::before,
+.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-forest .oj-icon-circle-inner::before,
+.oj-icon-circle-purple .oj-icon-circle-inner::before,
+.oj-icon-circle-lilac .oj-icon-circle-inner::before, 
+.oj-icon-circle-gray .oj-icon-circle-inner::before,
+.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-sm.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-slate .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-red .oj-icon-circle-inner::before {
+  filter: opacity(.3);
+}
+
+
+.oj-icon-circle-xxl.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-mauve .oj-icon-circle-inner::before,
+.oj-icon-circle-xxl.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-xl.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-xs.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-xxs.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-orange .oj-icon-circle-inner::before,
+.oj-icon-circle-red .oj-icon-circle-inner::before {
+  filter: opacity(.4);
+}
+
+
+.oj-icon-circle-red .oj-icon-circle-inner::before,
+.oj-icon-circle-orange .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern2.png');
+}
+
+
+.oj-icon-circle-green .oj-icon-circle-inner::before,
+.oj-icon-circle-forest .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern3.png');
+}
+
+.oj-icon-circle-teal .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern4.png');
+}
+
+.oj-icon-circle-blue .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern5.png');
+}
+
+.oj-icon-circle-slate .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern6.png');
+}
+
+.oj-icon-circle-pink .oj-icon-circle-inner::before,
+.oj-icon-circle-mauve .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern7.png');
+}
+
+
+.oj-icon-circle-purple .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern8.png');
+}
+
+.oj-icon-circle-lilac .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern9.png');
+}
+
+.oj-icon-circle-gray .oj-icon-circle-inner::before {
+  background-image: url('#{$imageDir}avatar-pattern10.png');
+}

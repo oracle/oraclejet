@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -9,7 +9,7 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
 
   /**
    * @license
-   * Copyright (c) 2019 2021, Oracle and/or its affiliates.
+   * Copyright (c) 2019 2022, Oracle and/or its affiliates.
    * Licensed under The Universal Permissive License (UPL), Version 1.0
    * as shown at https://oss.oracle.com/licenses/upl/
    *
@@ -42,8 +42,8 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
    * </code>
    * </pre>
    *
-   * <h2 id="lifecycle">Expressions supported by the JET CspExpressionEvaluator
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+   * <h2 id="validExpressions">Expressions supported by the JET CspExpressionEvaluator
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#validExpressions"></a>
    * </h2>
    * <p>
    * <ul>
@@ -62,16 +62,22 @@ define(['ojs/ojexpparser', 'ojs/ojkoshared'], function (ojexpparser, ojkoshared)
    *  <li>'new' operator such as <code>'new Object()'</code></li>
    *  <li>Regular expressions in the form of explicit RegExp objects such as <code>[[testString.match(new RegExp('abc', 'i'))]]</code></li>
    *</ul>
-   * <h2 id="lifecycle">Expression limitations:
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#lifecycle"></a>
+   * <h2 id="invalidExpressions">Expression limitations:
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#invalidExpressions"></a>
    * </h2>
    * <p> The following code is not supported in expressions:
    * <ul>
-   *  <li>JavaScript operations such as <code>'var a=b;'</code></li>
+   *  <li>Arrow functions such as <code>'[1, 2, 3].map(item => item + 1)'</code></li>
+   *  <li>Assignment operators of any types such as <code>'='</code> or <code>'+='</code> or <code>'|='</code></li>
    *  <li>Blocks of code such as <code>'if (...){}'</code></li>
+   *  <li>Comma operator (,) such as <code>'(expr1, expr2)'</code></li>
+   *  <li>Exponentiation (**) such as <code>' 3 ** 4'</code></li>
+   *  <li>in operator such as <code>'prop in testObject'</code></li>
    *  <li>Increment/decrement operators such as <code>'x++'</code> or <code>'x--'</code></li>
-   *  <li>Assignment operators such as <code>'='</code></li>
    *  <li>Inline regular expressions such as <code>'testString.match(/abc/i)'</code></li>
+   *  <li>Instanceof or typeof operators such as <code>'date instanceof Date'</code></li>
+   *  <li>Nullish coalescing operator (??) such as <code>'value ?? "default value"'</code></li>
+   *  <li>Spread operator (...) such as <code>'sum(...arrayValue)'</code></li>
    * <ul>
    * </h2>
    *

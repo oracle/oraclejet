@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.scrollbar.scoped") {
+
+  
+  /* scrollbar                  */
+  /* -------------------------- */
+  .oj-color-invert {
+    // hover
+    --oj-scrollbar-thumb-color-hover:   rgba(var(--oj-palette-neutral-rgb-0), .3);
+
+    // colors when you need to force a scrollbar
+    --oj-scrollbar-track-color-force:   rgba(var(--oj-palette-neutral-rgb-0), .3);
+  }
+}

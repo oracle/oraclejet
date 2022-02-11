@@ -1,5 +1,5 @@
-import * as Metadata from "ojs/ojmetadata";
-import * as ts from "typescript";
+import * as Metadata from 'ojs/ojmetadata';
+import * as ts from 'typescript';
 export declare const SLOT_TYPE: string;
 export declare const TEMPLATE_SLOT_TYPE: string;
 export declare const DYNAMIC_SLOT_TYPE: string;
@@ -8,11 +8,17 @@ export declare const CHILDREN_TYPE: string;
 export declare const ACTION: string;
 export declare const CANCELABLE_ACTION: string;
 export declare const PROPERTY_CHANGED: string;
+export declare const READ_ONLY_PROPERTY_CHANGED: string;
 export declare const DEFAULT_SLOT_PROP: string;
-export declare type DecoratorAliases = {
+export declare const GETMD_FLAGS_NONE = 0;
+export declare const GETMD_FLAGS_RO_WRITEBACK = 1;
+export declare type ImportAliases = {
     Component?: string;
     PureComponent?: string;
+    forwardRef?: string;
+    memo?: string;
     customElement?: string;
+    registerCustomElement?: string;
     method?: string;
     ElementReadOnly?: string;
     ExtendGlobalProps?: string;
@@ -72,9 +78,16 @@ export declare type GenericsTypes = {
     genericsTypeParamsAny?: string;
 };
 export declare type HasTypeParameters = ts.ClassLikeDeclarationBase | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
+export declare type DefaultPropsElement = ts.ObjectLiteralElementLike | ts.BindingElement;
+export declare type VCompFunctionalNode = ts.VariableStatement | ts.ExpressionStatement;
+export declare enum VCompType {
+    FUNCTION = 0,
+    CLASS = 1
+}
 export declare type PropsInfo = {
     propsName: string;
     propsType: ts.Type;
+    propsNode: ts.TypeNode;
     propsMappedTypes: Array<MappedTypeItem>;
     propsExtendGlobalPropsRef: ts.TypeReferenceType | null;
     propsTypeParams?: string;
@@ -96,20 +109,46 @@ export declare type IntersectionTypeNodeInfo = {
     propsName?: string;
 };
 export declare type VCompClassInfo = {
+    elementName: string;
     className: string;
-    propsInfo?: PropsInfo;
+    classNode: ts.ClassDeclaration;
+    propsInfo: PropsInfo | null;
+};
+export declare type VCompFunctionInfo = {
+    compRegisterCall: ts.CallExpression;
+    elementName: string;
+    componentNode: ts.HasJSDoc;
+    propsInfo: PropsInfo | null;
+    componentName?: string;
+    functionName?: string;
+    defaultProps?: ts.NodeArray<DefaultPropsElement>;
+};
+export declare type VCompInfo = VCompClassInfo | VCompFunctionInfo;
+export declare function isClassInfo(info: VCompInfo): info is VCompClassInfo;
+export declare function isFunctionInfo(info: VCompInfo): info is VCompFunctionInfo;
+export declare type NameNodePair = {
+    name: string;
+    node: ts.Node;
+};
+export declare type WritebackPropInfo = {
+    propName?: string;
+    isReadOnly?: boolean;
 };
 export declare type MetaUtilObj = {
-    componentClassName: string;
+    componentName: string;
     typeChecker: ts.TypeChecker;
     rtMetadata: RuntimeMetadata;
     fullMetadata: Metadata.ComponentMetadata;
     namedExportToAlias: Record<string, string>;
     aliasToNamedExport: Record<string, string>;
     dynamicSlotsInUse: number;
-    reservedGlobalProps?: Array<string>;
+    dynamicSlotNameNodes: Array<NameNodePair>;
+    propsName?: string;
+    reservedGlobalProps?: Set<string>;
+    defaultProps?: Record<string, any>;
     excludedTypes?: Set<string>;
     excludedTypeAliases?: Set<string>;
+    classPropsAliasTypeArgs?: readonly ts.Type[];
     classConsumedBindingsDecorator?: ts.Decorator;
     classProvidedBindingsDecorator?: ts.Decorator;
 };

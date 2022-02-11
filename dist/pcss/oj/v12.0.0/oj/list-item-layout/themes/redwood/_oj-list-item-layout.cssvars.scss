@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../collection/themes/redwood/_oj-collection.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection-scoped.cssvars.scss";
+@import "../../../collection/themes/redwood/_oj-collection-ignore.scoped.cssvars.scss";
+@import "../../../list-view/themes/redwood/_oj-list-view.cssvars.scss";
+// ----- end dependencies ---------
+
+@include module-include-once("redwood.variables.listitemlayout") {
+
+}

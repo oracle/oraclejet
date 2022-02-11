@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -284,7 +284,7 @@ import { EventTargetMixin } from 'ojs/ojeventtarget';
  *               value: "?DataFilter.Filter<D>"}
  * @ojtsexample <caption>set the filter criterion for fetching</caption>
  * let filterDef = {op: '$or', criteria: [{op: '$eq', value: {name: 'Bob'}}, {op: '$gt', value: {level: 'Low'}}]};
- * dataprovider.filterCriterion = FilterFactory.getFilter(filterDef); // create a standard filter using the filterFactory.
+ * dataprovider.filterCriterion = FilterFactory.getFilter({filterDef}); // create a standard filter using the filterFactory.
  */
 
 /**
@@ -333,14 +333,18 @@ class ListDataProviderView {
             }
         };
         this.FetchListResult = class {
-            constructor(_parent, fetchParameters, data, metadata) {
+            constructor(_parent, fetchParameters, data, metadata, totalFilteredRowCount) {
                 this._parent = _parent;
                 this.fetchParameters = fetchParameters;
                 this.data = data;
                 this.metadata = metadata;
+                this.totalFilteredRowCount = totalFilteredRowCount;
                 this[ListDataProviderView._FETCHPARAMETERS] = fetchParameters;
                 this[ListDataProviderView._DATA] = data;
                 this[ListDataProviderView._METADATA] = metadata;
+                if (totalFilteredRowCount >= -1) {
+                    this.totalFilteredRowCount = totalFilteredRowCount;
+                }
             }
         };
         this.Item = class {
@@ -563,6 +567,7 @@ class ListDataProviderView {
         cachedData[ListDataProviderView._ITEMS] = [];
         cachedData[ListDataProviderView._DONE] = false;
         cachedData[ListDataProviderView._STARTINDEX] = 0;
+        cachedData[ListDataProviderView._LASTDONEHASDATA] = false;
         const size = params != null ? params[ListDataProviderView._SIZE] : null;
         let sortCriteria = params != null ? params[ListDataProviderView._SORTCRITERIA] : null;
         if (sortCriteria == null) {
@@ -615,9 +620,18 @@ class ListDataProviderView {
             const cachedAsyncIterator = this.dataProvider[ListDataProviderView._FETCHFIRST](updatedParams)[Symbol.asyncIterator]();
             return new this.AsyncIterable(this, new this.AsyncIterator(this, ((cachedData, cachedAsyncIterator) => {
                 return () => {
+                    if (cachedData[ListDataProviderView._LASTDONEHASDATA]) {
+                        cachedData[ListDataProviderView._LASTDONEHASDATA] = false;
+                        return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, [], [], 0)));
+                    }
                     return cachedAsyncIterator.next().then((result) => {
-                        const data = result[ListDataProviderView._VALUE][ListDataProviderView._DATA];
-                        const metadata = result[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
+                        let resultValue = result[ListDataProviderView._VALUE];
+                        if (!resultValue) {
+                            resultValue = { data: [], metadata: [], fetchParameters: null };
+                        }
+                        const data = resultValue[ListDataProviderView._DATA];
+                        const totalFilteredRowCount = resultValue.totalFilteredRowCount;
+                        const metadata = resultValue[ListDataProviderView._METADATA];
                         const items = data.map((value, index) => {
                             return new this.Item(this, metadata[index], data[index]);
                         });
@@ -629,7 +643,7 @@ class ListDataProviderView {
                         cachedData[ListDataProviderView._DONE] = result[ListDataProviderView._DONE];
                         const size = params != null ? params[ListDataProviderView._SIZE] : null;
                         const offset = params != null ? params[ListDataProviderView._OFFSET] : null;
-                        const resultFetchParams = result[ListDataProviderView._VALUE][ListDataProviderView._FETCHPARAMETERS];
+                        const resultFetchParams = resultValue[ListDataProviderView._FETCHPARAMETERS];
                         const resultSortCriteria = resultFetchParams != null
                             ? resultFetchParams[ListDataProviderView._SORTCRITERIA]
                             : null;
@@ -641,7 +655,7 @@ class ListDataProviderView {
                         const resultParams = new this.FetchListParameters(this, params, size, unmappedResultSortCriteria, unmappedResultFilterCriterion);
                         return this._fetchUntilKey(resultParams, this[ListDataProviderView._FROM], cachedData, cachedAsyncIterator).then(() => {
                             return this._fetchUntilOffset(resultParams, this[ListDataProviderView._OFFSET] +
-                                cachedData[ListDataProviderView._STARTINDEX], data.length, cachedData, cachedAsyncIterator);
+                                cachedData[ListDataProviderView._STARTINDEX], data.length, cachedData, cachedAsyncIterator, totalFilteredRowCount);
                         });
                     });
                 };
@@ -659,7 +673,10 @@ class ListDataProviderView {
     }
     _fetchNextSet(params, dataProviderAsyncIterator, resultMap) {
         return dataProviderAsyncIterator.next().then((result) => {
-            const value = result[ListDataProviderView._VALUE];
+            let value = result[ListDataProviderView._VALUE];
+            if (!value) {
+                value = { data: [], metadata: [], fetchParameters: null };
+            }
             const data = value[ListDataProviderView._DATA];
             const metadata = value[ListDataProviderView._METADATA];
             const keys = metadata.map((metadata) => {
@@ -699,8 +716,12 @@ class ListDataProviderView {
             }
             else if (!cachedData[ListDataProviderView._DONE]) {
                 return cachedAsyncIterator.next().then((nextResult) => {
-                    const data = nextResult[ListDataProviderView._VALUE][ListDataProviderView._DATA];
-                    const metadata = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
+                    let value = nextResult[ListDataProviderView._VALUE];
+                    if (!value) {
+                        value = { data: [], metadata: [], fetchParameters: null };
+                    }
+                    const data = value[ListDataProviderView._DATA];
+                    const metadata = value[ListDataProviderView._METADATA];
                     const items = data.map((value, index) => {
                         return new this.Item(this, metadata[index], data[index]);
                     });
@@ -716,7 +737,7 @@ class ListDataProviderView {
         }
         return Promise.resolve(null);
     }
-    _fetchUntilOffset(params, offset, resultSize, cachedData, cachedAsyncIterator) {
+    _fetchUntilOffset(params, offset, resultSize, cachedData, cachedAsyncIterator, totalFilteredRowCount) {
         const fetchSize = params != null
             ? params[ListDataProviderView._SIZE] > 0
                 ? params[ListDataProviderView._SIZE]
@@ -728,10 +749,17 @@ class ListDataProviderView {
             const mappedFilterCriterion = this._getMappedFilterCriterion(params[ListDataProviderView._FILTERCRITERION]);
             this._filterResult(mappedFilterCriterion, cachedItems);
         }
-        if (cachedItems.length < fetchSize && !cachedData[ListDataProviderView._DONE]) {
+        if (params &&
+            params[ListDataProviderView._SIZE] > 0 &&
+            cachedItems.length < fetchSize &&
+            !cachedData[ListDataProviderView._DONE]) {
             return cachedAsyncIterator.next().then((nextResult) => {
-                const data = nextResult[ListDataProviderView._VALUE][ListDataProviderView._DATA];
-                const metadata = nextResult[ListDataProviderView._VALUE][ListDataProviderView._METADATA];
+                let value = nextResult[ListDataProviderView._VALUE];
+                if (!value) {
+                    value = { data: [], metadata: [], fetchParameters: null };
+                }
+                const data = value[ListDataProviderView._DATA];
+                const metadata = value[ListDataProviderView._METADATA];
                 const items = data.map((value, index) => {
                     return new this.Item(this, metadata[index], data[index]);
                 });
@@ -742,15 +770,12 @@ class ListDataProviderView {
                 const mappedResult = this._getMappedItems(items);
                 this._cacheResult(cachedData, mappedResult);
                 cachedData[ListDataProviderView._DONE] = nextResult[ListDataProviderView._DONE];
-                if (data.length === 0) {
-                    return this._createResultPromise(params, cachedData, cachedItems);
-                }
-                return this._fetchUntilOffset(nextResult[ListDataProviderView._VALUE][ListDataProviderView._FETCHPARAMETERS], offset, data.length, cachedData, cachedAsyncIterator);
+                return this._fetchUntilOffset(params, offset, data.length, cachedData, cachedAsyncIterator, totalFilteredRowCount);
             });
         }
-        return this._createResultPromise(params, cachedData, cachedItems);
+        return this._createResultPromise(params, cachedData, cachedItems, totalFilteredRowCount);
     }
-    _createResultPromise(params, cachedData, cachedItems) {
+    _createResultPromise(params, cachedData, cachedItems, totalFilteredRowCount) {
         cachedData[ListDataProviderView._STARTINDEX] =
             cachedData[ListDataProviderView._STARTINDEX] + cachedItems.length;
         const data = cachedItems.map((item) => {
@@ -759,10 +784,19 @@ class ListDataProviderView {
         const metadata = cachedItems.map((item) => {
             return item[ListDataProviderView._METADATA];
         });
-        if (data.length === 0) {
-            return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, data, metadata)));
+        let isDone = false;
+        if (cachedData[ListDataProviderView._DONE]) {
+            if (data.length === 0) {
+                isDone = true;
+            }
+            else {
+                cachedData[ListDataProviderView._LASTDONEHASDATA] = true;
+            }
         }
-        return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, params, data, metadata)));
+        if (isDone) {
+            return Promise.resolve(new this.AsyncIteratorReturnResult(this, new this.FetchListResult(this, params, data, metadata, totalFilteredRowCount)));
+        }
+        return Promise.resolve(new this.AsyncIteratorYieldResult(this, new this.FetchListResult(this, params, data, metadata, totalFilteredRowCount)));
     }
     _cacheResult(cachedData, items) {
         items.forEach((value) => {
@@ -879,6 +913,7 @@ ListDataProviderView._SIZE = 'size';
 ListDataProviderView._FETCHPARAMETERS = 'fetchParameters';
 ListDataProviderView._VALUE = 'value';
 ListDataProviderView._DONE = 'done';
+ListDataProviderView._LASTDONEHASDATA = 'lastDoneHasData';
 ListDataProviderView._DATAMAPPING = 'dataMapping';
 ListDataProviderView._MAPFIELDS = 'mapFields';
 ListDataProviderView._MAPSORTCRITERIA = 'mapSortCriteria';

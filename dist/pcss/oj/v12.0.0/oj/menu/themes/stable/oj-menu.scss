@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/stable/oj-helpers.scss"; 
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+@import "../../../icons/themes/stable/oj-icons.scss";
+@import "../../../popup/themes/stable/_oj-layer.scss";
+
+@import "_oj-menu.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-menu.scss"; 
+
+// ----- end dependencies ---------
+
+  @include module-include-once("stable.menu") {
+
+    .oj-menu-submenu-icon { 
+        @extend .oj-fwk-icon-caret03-end; 
+    }
+
+  }

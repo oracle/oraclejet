@@ -1,11 +1,12 @@
-import * as ts from "typescript";
-import * as MetaTypes from "./MetadataTypes";
-import * as Metadata from "ojs/ojmetadata";
+import * as ts from 'typescript';
+import * as MetaTypes from './MetadataTypes';
+import * as Metadata from 'ojs/ojmetadata';
 export declare function getGenericsAndTypeParameters(node: MetaTypes.HasTypeParameters, isPropsClass?: boolean): MetaTypes.GenericsTypes | undefined;
-export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type): MetaTypes.GenericsTypes | undefined;
+export declare function getGenericsAndTypeParametersFromType(typeObj: ts.Type, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.GenericsTypes | undefined;
 export declare function getUnionTypeNodeSignature(unionNode: ts.UnionTypeNode, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getTypeReferenceNodeSignature(node: ts.TypeNode, isPropSignature: boolean, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getIndexedAccessTypeNodeSignature(indexedAccessNode: ts.IndexedAccessTypeNode, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
+export declare function getSignatureFromType(type: ts.Type, isPropSignatureType: boolean, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ALL_TYPES;
 export declare function getTypeNameFromTypeReference(node: ts.TypeReferenceType): string | undefined;
 export declare function getTypeNameFromType(type: ts.Type): string;
 export declare function getTypeNameFromIntersectionTypes(types: Array<ts.Type>): string;
@@ -17,7 +18,7 @@ export declare function getPropertyType(typeRef: ts.TypeNode, propName?: string)
 export declare function getPropertyTypes(propDeclaration: ts.PropertyDeclaration): Record<string, ts.TypeNode>;
 export declare function getComplexPropertyMetadata(memberSymbol: ts.Symbol, type: string, outerType: string, scope: MetaTypes.MetadataScope, stack: string[], metaUtilObj: MetaTypes.MetaUtilObj): Record<string, Metadata.ComponentMetadataProperties>;
 export declare function getSubstituteTypeForCircularReference(metaObj: MetaTypes.ALL_TYPES): string;
-export declare function getAllMetadataForDeclaration(declarationWithType: ts.HasType, scope: MetaTypes.MetadataScope, metaUtilObj: MetaTypes.MetaUtilObj): MetaTypes.ExtendedPropertiesMetadata | MetaTypes.ExtendedEventDetailsMetadata | MetaTypes.ExtendedSlotDataMetadata;
+export declare function getAllMetadataForDeclaration(declarationWithType: ts.HasType, scope: MetaTypes.MetadataScope, metaUtilObj: MetaTypes.MetaUtilObj, flags?: number, declSymbol?: ts.Symbol): MetaTypes.ExtendedPropertiesMetadata | MetaTypes.ExtendedEventDetailsMetadata | MetaTypes.ExtendedSlotDataMetadata;
 export declare function possibleComplexProperty(symbolType: ts.Type, type: string, scope: MetaTypes.MetadataScope): boolean;
 export declare function isClassDeclaration(symbolType: ts.Type): boolean;
 export declare function getEnumStringsFromUnion(union: ts.UnionTypeNode): string[] | null;

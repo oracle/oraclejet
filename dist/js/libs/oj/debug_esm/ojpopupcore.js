@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1439,6 +1439,7 @@ ZOrderUtils.removeFromAncestorLayer = function (popup) {
 
   ZOrderUtils.preOrderVisit(layer, ZOrderUtils._closeDescendantPopupsCallback);
 
+  ZOrderUtils._restoreBodyOverflow();
   ZOrderUtils._removeOverlayFromAncestorLayer(layer);
 
   layer.removeData(ZOrderUtils._EVENTS_DATA);
@@ -1484,6 +1485,19 @@ ZOrderUtils._closeDescendantPopupsCallback = function (layer, context) {
   return ZOrderUtils.VISIT_RESULT.ACCEPT;
 };
 
+ZOrderUtils._disableBodyOverflow = function (layer) {
+  const body = document.body;
+  const popup = layer.children()[0];
+  if ($(popup).width() <= window.innerWidth && $(popup).height() <= window.innerHeight) {
+    body.classList.add('oj-component-modal-open');
+  }
+};
+
+ZOrderUtils._restoreBodyOverflow = function () {
+  const body = document.body;
+  body.classList.remove('oj-component-modal-open');
+};
+
 /**
  * Handles adding or removing a sibling overlay blocking pane before the dialog
  * based on the modality option.  The overlay pane is associated with the dialog
@@ -1502,12 +1516,14 @@ ZOrderUtils.applyModality = function (layer, modality) {
   if (oj.StringUtils.isEmptyOrUndefined(currModality)) {
     if (PopupService.MODALITY.MODAL === modality) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
+      ZOrderUtils._disableBodyOverflow(layer);
     } else {
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
     }
   } else if (currModality !== modality) {
     if (modality !== currModality && modality === PopupService.MODALITY.MODAL) {
       ZOrderUtils._addOverlayToAncestorLayer(layer);
+      ZOrderUtils._disableBodyOverflow(layer);
     } else {
       ZOrderUtils._removeOverlayFromAncestorLayer(layer);
     }
@@ -2999,6 +3015,10 @@ PositionUtils.calcAvailablePopupSize = function (pos, feedback, withinElem) {
     return parseInt($.css(element, property), 10) || 0;
   }
 
+  function isWindow(obj) {
+    return obj != null && obj === obj.window;
+  }
+
   function getDimensions(elem) {
     var raw = elem[0];
     if (raw.nodeType === 9) {
@@ -3008,7 +3028,7 @@ PositionUtils.calcAvailablePopupSize = function (pos, feedback, withinElem) {
         offset: { top: 0, left: 0 }
       };
     }
-    if ($.isWindow(raw)) {
+    if (isWindow(raw)) {
       // JET-41302: jQuery's $(window).height() does not reflect changing window height
       // for dynamic browser adress bar and toolbar behavior while scrolling.
       // Need to use window.innerHeight on mobile.
@@ -3110,7 +3130,12 @@ PositionUtils.calcAvailablePopupSize = function (pos, feedback, withinElem) {
     var targetOffset;
     var basePosition;
     var dimensions;
-    var target = $(options.of);
+
+    // Make sure string options are treated as CSS selectors
+    var target = typeof options.of === 'string' ?
+      $(document).find(options.of) :
+      $(options.of);
+
     var within = $.position.getWithinInfo(options.within);
     var scrollInfo = $.position.getScrollInfo(within);
     var collision = (options.collision || 'flip').split(' ');

@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+// ----- start dependencies ---------
+// set up include variables before importing dependencie
+// import dependencies
+@import "../../../icons/themes/stable/oj-icons.scss";
+// ----- end dependencies ---------
+
+@import "_oj-message.servervars.scss";
+@import "_oj-message.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-message.scss";
+// scoped cssvars override
+@import "_oj-message-ignore.scoped.cssvars.scss";
+
+  @include module-include-once("stable.message") {
+    
+    .oj-message-body .oj-message-summary {
+      padding-bottom: 4px;
+    }
+
+    .oj-message-header .oj-message-status-icon {
+      @include oj-ltr() {
+        padding: 0 0.5rem 0 0;
+      }
+      @include oj-rtl() {
+        padding: 0 0 0 0.5rem;
+      }
+    }
+    
+  }

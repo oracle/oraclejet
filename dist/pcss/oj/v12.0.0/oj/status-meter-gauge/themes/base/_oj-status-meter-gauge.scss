@@ -1,0 +1,84 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.status-meter-gauge") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    oj-status-meter-gauge:not(.oj-complete) {
+        visibility: hidden;
+    }
+
+    oj-status-meter-gauge {
+        display: block;
+    }
+
+    .oj-statusmetergauge-horizontal-fit {
+        width: 13.75rem;
+        height: 1.5625rem;
+    }
+
+    .oj-statusmetergauge-vertical-fit {
+        width: 1.5625rem;
+        height: 13.75rem;
+    }
+
+    .oj-statusmetergauge-circular-fit {
+        width: var(--oj-statusmeter-gauge-circular-md-size);
+        height: var(--oj-statusmeter-gauge-circular-md-size);
+    }
+
+    .oj-statusmetergauge.oj-focus-highlight {
+        outline: dotted 1px var(--oj-core-focus-border-color);
+    }
+
+    .oj-statusmetergauge-horizontal-sm {
+        width: 100%;
+        height: var(--oj-statusmeter-gauge-bar-sm-size) !important;
+    }
+
+    .oj-statusmetergauge-horizontal-md {
+        width: 100%;
+        height: var(--oj-statusmeter-gauge-bar-md-size) !important;
+    }
+
+    .oj-statusmetergauge-horizontal-lg {
+        width: 100%;
+        height: var(--oj-statusmeter-gauge-bar-lg-size) !important;
+    }
+
+    .oj-statusmetergauge-vertical-sm {
+        height: 100%;
+        width: var(--oj-statusmeter-gauge-bar-sm-size) !important;
+    }
+
+    .oj-statusmetergauge-vertical-md {
+        height: 100%;
+        width: var(--oj-statusmeter-gauge-bar-md-size) !important;
+    }
+
+    .oj-statusmetergauge-vertical-lg {
+        height: 100%;
+        width: var(--oj-statusmeter-gauge-bar-lg-size) !important;
+    }
+
+    .oj-statusmetergauge-circular-sm {
+        width: var(--oj-statusmeter-gauge-circular-sm-size) !important;
+        height: var(--oj-statusmeter-gauge-circular-sm-size) !important;
+    }
+
+    .oj-statusmetergauge-circular-md {
+        width: var(--oj-statusmeter-gauge-circular-md-size) !important;
+        height: var(--oj-statusmeter-gauge-circular-md-size) !important;
+    }
+
+    .oj-statusmetergauge-circular-lg {
+        width: var(--oj-statusmeter-gauge-circular-lg-size) !important;
+        height: var(--oj-statusmeter-gauge-circular-lg-size) !important;
+    }
+
+    .oj-statusmeter-gauge-plotarea {
+        border-color: var(--oj-statusmeter-gauge-bar-plotarea-border-color);
+        color: var(--oj-statusmeter-gauge-bar-plotarea-color);
+    }
+}

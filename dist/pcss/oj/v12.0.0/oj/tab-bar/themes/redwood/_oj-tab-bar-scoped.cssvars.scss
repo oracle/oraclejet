@@ -1,0 +1,51 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.tabbar.scoped") {
+  /* tab bar                    */
+  /* -------------------------- */
+  
+  .oj-tabbar-vertical {
+    --oj-private-tab-bar-item-border-width-bottom:       0px;
+    --oj-private-tab-bar-item-border-width-left:         0.1875rem;
+    --oj-tab-bar-item-padding:                           0 1.3125rem;
+    --oj-tab-bar-item-margin:                            0;
+  }
+
+  .oj-tabbar-vertical.oj-tabbar-icon-only {
+    --oj-tab-bar-item-padding:                           0;
+    --oj-private-tab-bar-item-border-width-bottom:       0;
+    --oj-private-tab-bar-item-border-width-left:         0.1875rem;
+    --oj-tab-bar-item-margin:                            0;
+    --oj-tab-bar-icon-margin:                            0 1.5rem;
+  }
+
+  .oj-tabbar-stack-icon-label {
+    --oj-tab-bar-icon-to-text-padding:                 0.5rem;
+    --oj-tab-bar-item-min-height:                      5rem;
+    --oj-tab-bar-item-padding:                         1rem 1rem 0;
+  }
+
+  .oj-tabbar-horizontal.oj-tabbar-icon-only {
+    --oj-tab-bar-icon-margin:                          0rem 0.375rem;
+  }
+
+  // please do not change this classes grouping order
+  .oj-contrast-marker,
+  .oj-color-invert {
+    // selected
+    --oj-tab-bar-item-label-color-selected:             var(--oj-core-text-color-primary);
+    --oj-tab-bar-item-border-color-selected:            var(--oj-core-text-color-primary);
+    
+    // default
+    --oj-tab-bar-item-label-color:                      var(--oj-core-text-color-secondary);
+    
+    // hover
+    --oj-tab-bar-item-label-color-hover:                var(--oj-core-text-color-primary);
+    
+    // active
+    --oj-tab-bar-item-border-color-active:              rgb(var(--oj-palette-brand-rgb-50));
+  }
+} 

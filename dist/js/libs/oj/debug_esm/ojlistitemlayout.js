@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21,21 +21,39 @@ let ListItemLayout = class ListItemLayout extends Component {
         super(...arguments);
         this._hasContent = (slotContent) => (Array.isArray(slotContent) && slotContent.length > 0) || slotContent;
     }
-    _getWrappedSlotContent(slotContent, wrapperClasses) {
+    _getWrappedSlotContent(slotContent, wrapperClasses, isAdditionalTabIndexNeeded) {
         if (this._hasContent(slotContent)) {
-            if (wrapperClasses && wrapperClasses.length > 0)
+            let defaultTabIndex = 0;
+            if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
+                return (h("div", { class: wrapperClasses, tabIndex: defaultTabIndex }, slotContent));
+            }
+            else if (wrapperClasses && wrapperClasses.length > 0) {
                 return h("div", { class: wrapperClasses }, slotContent);
-            else
+            }
+            else if (isAdditionalTabIndexNeeded) {
+                return h("div", { tabIndex: defaultTabIndex }, slotContent);
+            }
+            else {
                 return h("div", null, slotContent);
+            }
         }
         return null;
     }
-    _getWrappedSlotContentWithClickThroughDisabled(slotContent, wrapperClasses) {
+    _getWrappedSlotContentWithClickThroughDisabled(slotContent, wrapperClasses, isAdditionalTabIndexNeeded) {
         if (this._hasContent(slotContent)) {
-            if (wrapperClasses && wrapperClasses.length > 0)
+            let defaultTabIndex = 0;
+            if (wrapperClasses && wrapperClasses.length > 0 && isAdditionalTabIndexNeeded) {
+                return (h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses, tabIndex: defaultTabIndex }, slotContent));
+            }
+            else if (wrapperClasses && wrapperClasses.length > 0) {
                 return (h("div", { "data-oj-clickthrough": 'disabled', class: wrapperClasses }, slotContent));
-            else
+            }
+            else if (isAdditionalTabIndexNeeded) {
+                return (h("div", { "data-oj-clickthrough": 'disabled', tabIndex: defaultTabIndex }, slotContent));
+            }
+            else {
                 return h("div", { "data-oj-clickthrough": 'disabled' }, slotContent);
+            }
         }
         return null;
     }
@@ -44,8 +62,9 @@ let ListItemLayout = class ListItemLayout extends Component {
             this._hasContent(props.action) ||
             this._hasContent(props.trailing);
         let tertiaryClass = '';
-        if (this._hasContent(props.secondary) && this._hasContent(props.tertiary))
+        if (this._hasContent(props.secondary) && this._hasContent(props.tertiary)) {
             tertiaryClass = 'oj-listitemlayout-tertiary';
+        }
         let leadingClass = 'oj-listitemlayout-leading';
         if (this._hasContent(props.selector) && this._hasContent(props.leading)) {
             leadingClass = leadingClass + ' oj-listitemlayout-start-padding';
@@ -57,19 +76,19 @@ let ListItemLayout = class ListItemLayout extends Component {
             quaternaryClass = quaternaryClass + ' oj-listitemlayout-start-padding';
         }
         return (h("div", { class: 'oj-listitemlayout-grid' },
-            this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector'),
-            this._getWrappedSlotContent(props.leading, leadingClass),
+            this._getWrappedSlotContent(props.selector, 'oj-listitemlayout-selector', false),
+            this._getWrappedSlotContent(props.leading, leadingClass, true),
             h("div", { class: textSlotClass },
-                this._getWrappedSlotContent(props.overline),
-                this._getWrappedSlotContent(props.children),
-                this._getWrappedSlotContent(props.secondary),
-                this._getWrappedSlotContent(props.tertiary, tertiaryClass)),
+                this._getWrappedSlotContent(props.overline, null, true),
+                this._getWrappedSlotContent(props.children, null, true),
+                this._getWrappedSlotContent(props.secondary, null, true),
+                this._getWrappedSlotContent(props.tertiary, tertiaryClass, true)),
             hasExtra ? (h("div", { class: 'oj-listitemlayout-extra' },
-                this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding'),
-                this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding'),
-                this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding'))) : null,
-            this._getWrappedSlotContent(props.quaternary, quaternaryClass),
-            this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation')));
+                this._getWrappedSlotContent(props.metadata, 'oj-listitemlayout-metadata oj-listitemlayout-start-padding', true),
+                this._getWrappedSlotContent(props.trailing, 'oj-listitemlayout-trailing oj-listitemlayout-image oj-listitemlayout-start-padding', true),
+                this._getWrappedSlotContentWithClickThroughDisabled(props.action, 'oj-listitemlayout-action oj-listitemlayout-start-padding', false))) : null,
+            this._getWrappedSlotContent(props.quaternary, quaternaryClass, true),
+            this._getWrappedSlotContentWithClickThroughDisabled(props.navigation, 'oj-listitemlayout-navigation', false)));
     }
 };
 ListItemLayout.metadata = { "slots": { "": {}, "overline": {}, "selector": {}, "leading": {}, "secondary": {}, "tertiary": {}, "metadata": {}, "trailing": {}, "action": {}, "quaternary": {}, "navigation": {} } };

@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../animation/themes/redwood/_oj-animation.servervars.scss";
+
+// MASONRY LAYOUT
+//-----------------------------------------------------------------------------
+// duration of a masonryLayout animation
+$privateMasonryLayoutAnimationDuration:      $privateAnimationDurationShort !default;
+// duration of a faster masonryLayout animation
+$privateMasonryLayoutAnimationDurationFast:  $privateMasonryLayoutAnimationDuration * 0.8 !default;
+
+// animation theme variables
+$privateMasonryLayoutInsertAnimation: ((effect: "zoomIn", duration: $privateMasonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeIn") !default;
+$privateMasonryLayoutRemoveAnimation: ((effect: "zoomOut", duration: $privateMasonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeOut") !default;
+$privateMasonryLayoutMoveAnimation: (effect: "addTransition", duration: $privateMasonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+$privateMasonryLayoutResizeAnimation: (effect: "addTransition", duration: $privateMasonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+$privateMasonryLayoutReorderAnimation: (effect: "addTransition", duration: $privateMasonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;

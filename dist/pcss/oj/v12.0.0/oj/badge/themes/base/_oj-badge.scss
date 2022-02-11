@@ -1,0 +1,124 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example badge/themes/redwood/oj-badge.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//--------------------------------------------------------
+
+@include module-include-once("common.badge") {
+  .oj-badge {
+    background-color: var(--oj-badge-bg-color);
+    color: var(--oj-badge-text-color);
+    padding: 0 var(--oj-core-spacing-2x);
+    display: inline-block;
+    box-sizing: border-box;
+    border-radius: var(--oj-badge-border-radius);
+    height: var(--oj-badge-height);
+    line-height: var(--oj-badge-height);
+    min-width: var(--oj-badge-height);
+    font-size: var(--oj-badge-font-size);
+    font-weight: var(--oj-badge-font-weight);
+    font-stretch: var(--oj-badge-font-stretch);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .oj-badge-sm {
+    padding: 0 0.25rem;
+  }
+
+  .oj-badge-end {
+    @include oj-rtl() {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    @include oj-ltr() {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  .oj-badge-subtle {
+    background-color: var(--oj-core-neutral-secondary-1);
+    color: var(--oj-core-neutral-secondary-contrast);
+  }
+
+  .oj-badge-danger {
+    background-color: var(--oj-core-danger-1);
+    color: var(--oj-core-danger-contrast);
+  }
+
+  .oj-badge-danger.oj-badge-subtle {
+    background-color: var(--oj-core-danger-secondary-1);
+    color: var(--oj-core-danger-secondary-contrast);
+  }
+
+  .oj-badge-warning {
+    background-color: var(--oj-core-warning-1);
+    color: var(--oj-core-warning-contrast);
+  }
+
+  .oj-badge-warning.oj-badge-subtle {
+    background-color: var(--oj-core-warning-secondary-1);
+    color: var(--oj-core-warning-secondary-contrast);
+  }
+
+  .oj-badge-success {
+    background-color: var(--oj-core-success-1);
+    color: var(--oj-core-success-contrast);
+  }
+
+  .oj-badge-success.oj-badge-subtle {
+    background-color: var(--oj-core-success-secondary-1);
+    color: var(--oj-core-success-secondary-contrast);
+  }
+
+  .oj-badge-info {
+    background-color: var(--oj-core-info-1);
+    color: var(--oj-core-info-contrast);
+  }
+
+  .oj-badge-info.oj-badge-subtle {
+    background-color: var(--oj-core-info-secondary-1);
+    color: var(--oj-core-info-secondary-contrast);
+  }
+
+  .oj-badge-status::before {
+    content: "";
+    width: 0.625rem;
+    height: 0.625rem;
+    background-color: var(--oj-core-neutral-1);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .oj-badge-status.oj-badge-sm::before {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  .oj-badge-status {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .oj-badge-status.oj-badge-danger::before {
+    background-color: var(--oj-core-danger-1);
+  }
+
+  .oj-badge-status.oj-badge-warning::before {
+    background-color: var(--oj-core-warning-1);
+  }
+
+  .oj-badge-status.oj-badge-success::before {
+    background-color: var(--oj-core-success-1);
+  }
+
+  .oj-badge-status.oj-badge-info::before {
+    background-color: var(--oj-core-info-1);
+  }
+}

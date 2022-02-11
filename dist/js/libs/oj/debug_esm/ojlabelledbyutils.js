@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -61,7 +61,7 @@ LabelledByUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
  * ---------------------------------------------------------------------------------------
  * Note: input form components are linked to the label via for/id. In that case, oj-label
  * finds the form component with document.getElementById(for), writes labelled-by on the form
- * component which in turn writes oj-data-input-id on the label to let the oj-label know what to
+ * component which in turn writes data-oj-input-id on the label to let the oj-label know what to
  * write for 'for' on its internal label element.
  * this does not happen here. It happens in EditableValueUtils.
  * @param {string} componentId id of the form component.

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -13,6 +13,7 @@ import 'ojs/ojkeyset';
 import { Timeline } from 'ojs/ojtimeline-toolkit';
 import { IntlDateTimeConverter } from 'ojs/ojconverter-datetime';
 import 'ojs/ojdvttimecomponentscale';
+import { enableAllFocusableElements, disableAllFocusableElements } from 'ojs/ojkeyboardfocus-utils';
 
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
@@ -52,9 +53,48 @@ var __oj_timeline_metadata =
         }
       }
     },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "move": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "string",
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "value": "disabled"
+            }
+          }
+        }
+      }
+    },
     "end": {
       "type": "string",
       "value": ""
+    },
+    "itemDefaults": {
+      "type": "object",
+      "properties": {
+        "feelers": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
+        "resizable": {
+          "type": "string",
+          "enumValues": [
+            "disabled",
+            "enabled"
+          ],
+          "value": "disabled"
+        }
+      }
     },
     "majorAxis": {
       "type": "object",
@@ -376,6 +416,45 @@ var __oj_timeline_metadata =
         "componentName": {
           "type": "string"
         },
+        "itemMoveCancelled": {
+          "type": "string"
+        },
+        "itemMoveFinalized": {
+          "type": "string"
+        },
+        "itemMoveInitiated": {
+          "type": "string"
+        },
+        "itemMoveInitiatedInstruction": {
+          "type": "string"
+        },
+        "itemMoveSelectionInfo": {
+          "type": "string"
+        },
+        "itemResizeCancelled": {
+          "type": "string"
+        },
+        "itemResizeEndHandle": {
+          "type": "string"
+        },
+        "itemResizeEndInitiated": {
+          "type": "string"
+        },
+        "itemResizeFinalized": {
+          "type": "string"
+        },
+        "itemResizeInitiatedInstruction": {
+          "type": "string"
+        },
+        "itemResizeSelectionInfo": {
+          "type": "string"
+        },
+        "itemResizeStartHandle": {
+          "type": "string"
+        },
+        "itemResizeStartInitiated": {
+          "type": "string"
+        },
         "labelAccNavNextPage": {
           "type": "string"
         },
@@ -406,7 +485,13 @@ var __oj_timeline_metadata =
         "labelInvalidData": {
           "type": "string"
         },
+        "labelMoveBy": {
+          "type": "string"
+        },
         "labelNoData": {
+          "type": "string"
+        },
+        "labelResizeBy": {
           "type": "string"
         },
         "labelSeries": {
@@ -602,6 +687,8 @@ var __oj_timeline_metadata =
     "getSubIdByNode": {}
   },
   "events": {
+    "ojMove": {},
+    "ojResize": {},
     "ojViewportChange": {}
   },
   "extension": {}
@@ -767,11 +854,15 @@ var __oj_timeline_series_metadata =
  *   <tbody>
  *     <tr>
  *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next element. If discrete viewport-navigation-mode is enabled, the initial focus item is the previous Nav Arrow Button.</td>
+ *       <td>Move focus to next element.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + Tab</kbd></td>
  *       <td>Move focus to previous element.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>F2</kbd></td>
+ *       <td>Enter Actionable mode.  This enables keyboard action on elements inside the item bubble, including navigating between focusable elements inside the item bubble.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
@@ -782,11 +873,33 @@ var __oj_timeline_series_metadata =
  *     </tr>
  *     <tr>
  *       <td><kbd>LeftArrow</kbd></td>
- *       <td>Move focus and selection to previous data item (on left). If discrete viewport-navigation-mode is enabled, Timeline will navigate to the next Nav Arrow from the first series item, and the previous Nav Arrow from the next Nav Arrow.</td>
+ *       <td>
+ *          <ul>
+ *              <li>Move focus and selection to previous data item (on left).
+ *                  If discrete viewport-navigation-mode is enabled, Timeline will navigate to the next Nav Arrow from the first series item, and the previous Nav Arrow from the next Nav Arrow.
+ *              </li>
+ *              <li>If currently in move (or resize) mode (see <kbd>Ctrl + m</kbd>, <kbd>Alt + s</kbd>, <kbd>Alt + e</kbd>),
+ *                  move the candidate position to the left by some amount of time. Upon entering move (or resize) mode,
+ *                  the amount of time is set to the scale of the minor axis.
+ *                  See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.
+ *             </li>
+ *          </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>Move focus and selection to next data item (on right). If discrete viewport-navigation-mode is enabled, Timeline will navigate between the previous Nav Arrow and the next Nav Arrow before going to the first item.</td>
+ *       <td>
+ *          <ul>
+ *              <li>Move focus and selection to next data item (on right).
+ *                  If discrete viewport-navigation-mode is enabled, Timeline will navigate between the previous Nav Arrow and the next Nav Arrow before going to the first item.
+ *              </li>
+ *              <li>If currently in move (or resize) mode (see <kbd>Ctrl + m</kbd>, <kbd>Alt + s</kbd>, <kbd>Alt + e</kbd>),
+ *                  move the candidate position to the right by some amount of time.
+ *                  Upon entering move (or resize) mode, the amount of time is set to the scale of the minor axis.
+ *                  See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.
+ *              </li>
+ *          </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + UpArrow</kbd></td>
@@ -833,12 +946,19 @@ var __oj_timeline_series_metadata =
  *       <td>Zoom out one level if zooming is enabled. In discrete viewport-navigation-mode, this is disabled.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>PageUp</kbd></td>
- *       <td>Pan up if scrolling is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>PageDown</kbd></td>
- *       <td>Pan down if scrolling is enabled.</td>
+ *       <td><kbd>PageUp or PageDown</kbd></td>
+ *       <td>
+ *          <ul>
+ *              <li> Pan up / down if scrolling is enabled.
+ *              </li>
+ *              <li>If currently in move (or resize) mode (see <kbd>Ctrl + m</kbd>, <kbd>Alt + s</kbd>, <kbd>Alt + e</kbd>),
+ *                  select the amount of time greater / less than the current move by amount in the following
+ *                  ramp: years, quarters, months, weeks, days, hours, minutes, seconds, milliseconds.
+ *                  For example, if the current move by amount is weeks,
+ *                  <kbd>PageUp</kbd> or <kbd>PageDown</kbd> would change the amount to months or days respectively.
+ *              </li>
+ *          </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + PageUp</kbd></td>
@@ -847,6 +967,38 @@ var __oj_timeline_series_metadata =
  *     <tr>
  *       <td><kbd>Shift + PageDown</kbd></td>
  *       <td>Pan right in left-to-right locales. Pan left in right-to-left locales. In discrete viewport-navigation-mode, this changes the viewport to the previous time frame.</td>
+ *     </tr>
+ *  *     <tr>
+ *       <td><kbd>Ctrl + m</kbd></td>
+ *       <td>When focus is on a task and <code class="prettyprint">dnd.move.tasks</code> is enabled, enter move mode.
+ *          See also the <kbd>UpArrow</kbd>, <kbd>DownArrow</kbd>, <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>,
+ *          <kbd>PageUp or PageDown</kbd>, <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Alt + s</kbd></td>
+ *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+ *          enter resize (start) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
+ *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Alt + e</kbd></td>
+ *       <td>When focus is on a task and <code class="prettyprint">task-defaults.resizable</code> is enabled,
+ *          enter resize (end) mode. See also the <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>,
+ *          <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Cancel drag, or exit move or resize mode, if currently dragging,
+ *          or in move mode (see <kbd>Ctrl + m</kbd>) or resize mode (see <kbd>Alt + s</kbd> and <kbd>Alt + e</kbd>).
+ *          Cancels actionable mode if currently in actionable mode.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Finalize move or resize, if currently in move mode (see <kbd>Ctrl + m</kbd>) or resize mode (see <kbd>Alt + s</kbd> and <kbd>Alt + e</kbd>) respectively.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -934,6 +1086,7 @@ var __oj_timeline_series_metadata =
  * @typedef {Object} oj.ojTimeline.ReferenceObject
  * @property {string=} value The time value of this reference object. If not specified, no reference object will be shown.
  *          See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {string=} label The label value of this reference object. If not specified, no reference object label will be shown.
  */
 /**
  * @typedef {Object} oj.ojTimeline.Series
@@ -948,6 +1101,8 @@ var __oj_timeline_series_metadata =
  * @ojimportmembers oj.ojTimelineItemProperties
  * @property {any} id The identifier for the timeline item. This must be unique across all items in the timeline, and is required in order for the timeline to properly render.
  * @property {string=} title The title text displayed on the timeline item. If not specified, no title will be shown.
+ * @property {string=} itemType The item type of the item if specified. If not specified, will default to event (if only start-date provided),
+ *                              or duration-bar (if start and end provided)
  * @ojsignature [{target: "Type", value: "K", for: "id"},
  *               {target: "Type", value: "?(string | ((context: oj.ojTimeline.ItemShortDescContext<K,D>) => string))", jsdocOverride: true, for: "shortDesc"},
  *               {target: "Type", value: "<K,D=any>", for:"genericTypeParameters"}]
@@ -1016,6 +1171,8 @@ var __oj_timeline_series_metadata =
  * @property {boolean}  previousState.hovered True if the item was previously hovered.
  * @property {boolean}  previousState.selected True if the item was previously selected.
  * @property {boolean}  previousState.focused True if the item was previously focused.
+ * @property {Number}  durationWidth width of the duration-event bubble or null if not duration-event
+ *
  * @ojsignature [{target: "Type", value: "oj.ojTimeline.SeriesItem<K>", for: "data"},
  *               {target: "Type", value: "oj.ojTimeline.Series<K>", for: "seriesData"},
  *               {target: "Type", value: "D", for: "itemData"},
@@ -1501,6 +1658,134 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      * myTimeline.animationOnDisplay = 'auto';
      */
       animationOnDisplay: 'none',
+    /**
+     * Enables drag and drop functionality.
+     * @expose
+     * @name dnd
+     * @ojshortdesc Enables drag and drop functionality.
+     * @memberof oj.ojTimeline
+     * @instance
+     * @type {Object}
+     *
+     * @example <caption>Initialize the Timeline with some <code class="prettyprint">dnd</code> functionality:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-timeline dnd.move.items='enabled'>&lt;/oj-timeline>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-timeline dnd='{"move": {"items": "enabled"}}'>&lt;/oj-timeline>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">dnd</code> property after initialization:</caption>
+     * // Get one
+     * var value = myTimeline.dnd.move.items;
+     *
+     * // Set one, leaving the others intact.
+     * myTimeline.setProperty('dnd.move.items', "enabled");
+     *
+     * // Get all
+     * var values = myTimeline.dnd;
+     *
+     * // Set all.
+     * myTimeline.dnd = {
+     *     "move": {
+     *        "items": "enabled"
+     *      }
+     * };
+     */
+      dnd: {
+      /**
+       * Defines a subset of high level configurations for moving events in the timeline.
+       * <br></br>See the <a href="#dnd">dnd</a> attribute for usage examples.
+       * @expose
+       * @name dnd.move
+       * @ojshortdesc Defines a subset of high level configurations for moving elements to another location within the timeline.
+       * @memberof! oj.ojTimeline
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       */
+        move: {
+        /**
+         * Enable or disable moving items to a different location within the same timeline series
+         * Currently only duration-event item type is supported
+         * (See <a href="#keyboard-section">Keyboard End User Information</a>).
+         * See also <a href="#event:move">ojMove</a>.
+         * <br></br>See the <a href="#dnd">dnd</a> attribute for usage examples.
+         * @expose
+         * @name dnd.move.items
+         * @ojshortdesc Enable or disable moving items to a different location within the same timeline series.
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "disabled" Disable moving items
+         * @ojvalue {string} "enabled" Enable moving items
+         * @default "disabled"
+         */
+          items: 'disabled'
+        }
+      },
+    /**
+     * An object with the following properties, used to define default properties for items in the timeline.
+     * @expose
+     * @name itemDefaults
+     * @ojshortdesc Specifies default properties for items in the Timeline.
+     * @memberof oj.ojTimeline
+     * @instance
+     * @type {Object}
+     *
+     * @example <caption>Initialize the Timeline with the <code class="prettyprint">item-defaults</code> attribute specified:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-timeline item-defaults.resizable = "enabled">&lt;/oj-timeline>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-timeline item-defaults='{"resizable": "enabled"}'>&lt;/oj-timeline>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">itemDefaults</code> property after initialization:</caption>
+     * // Get one
+     * var value = myTimeline.itemDefaults.resizable;
+     *
+     * // Get all
+     * var values = myTimeline.itemDefaults;
+     *
+     * // Set one, leaving the others intact.
+     * myTimeline.setProperty('itemDefaults.resizable', "enabled");
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myTimeline.itemDefaults = {
+     *   "resizable": "enabled"
+     * };
+     */
+      itemDefaults: {
+      /**
+       * Enable or disable resizing items (currently only supported on item-type: duration-event)
+       * See also <a href="#event:resize">ojResize</a>.
+       * @expose
+       * @name itemDefaults.resizable
+       * @ojshortdesc Enable or disable resizing of items
+       * @memberof! oj.ojTimeline
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "disabled" Disable resize items
+       * @ojvalue {string} "enabled" Enable resize items
+       * @default "disabled"
+       */
+        resizable: 'disabled',
+      /**
+       * Turn item feelers on or off
+       * @expose
+       * @name itemDefaults.feelers
+       * @ojshortdesc Hide or show item feelers
+       * @memberof! oj.ojTimeline
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "off" Hide feelers
+       * @ojvalue {string} "on" Show feelers
+       * @default "off"
+       */
+        feelers: 'off'
+      },
     /**
      * The DataProvider for the items of the timeline. It should provide data rows where each row maps data for a single timeline item.
      * The row key will be used as the id for timeline items.
@@ -3006,12 +3291,80 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
      * @instance
      * @ojbubbles
      */
-      viewportChange: null
+      viewportChange: null,
+    /**
+     * Triggered after events are moved to a different location within
+     * the timeline via drag and drop or equivalent keyboard actions
+     * (See <a href="#keyboard-section">Keyboard End User Information</a>).
+     * See also the <a href="#dnd.move">dnd.move</a> attribute.
+     *
+     * @property {Object[]} itemContexts An array of dataContexts of the moved event.
+     *    The first dataContext of the array corresponds to the source event where the move was initiated
+     *    (e.g. the event directly under the mouse when drag started).
+     * @property {Object} itemContexts.data The data object of the source event.
+     * @property {Object} itemContexts.seriesData The data for the series the source event belongs to.
+     * @property {Object|null} itemContexts.itemData The data provider data object for the source event.
+     *    This will only be set if a DataProvider is being used.
+     * @property {string} itemContexts.color The color of the source event.
+     * @property {string} value The value at the target position the source event is moved to.
+     *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} start The start value of the event, if the source event were to move to the target position.
+     *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} end The end value of the event, if the source event were to move to the target position.
+     *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @ojsignature [{target: "Type", value: "Array<{itemType: string, data: ojTimeline.SeriesItem<K>, seriesData: ojTimeline.Series<K>, itemData: D|null, color: string}>", for: "itemContexts"},
+     *               {target: "Type", value: "ojTimeline.SeriesItem<K>", for: "itemContexts.data", jsdocOverride:true},
+     *               {target: "Type", value: "ojTimeline.Series<K>", for: "itemContexts.seriesData", jsdocOverride:true},
+     *               {target: "Type", value: "D", for: "itemContexts.itemData", jsdocOverride:true},
+     *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
+     * @expose
+     * @event
+     * @memberof oj.ojTimeline
+     * @ojshortdesc Triggered after events are moved to a different location
+     *    within the Timeline via a drag and drop operation or an equivalent keyboard action.
+     *    See the Help documentation for more information.
+     * @instance
+     * @ojbubbles
+     */
+      move: null,
+    /**
+     * Triggered after events are resized.
+     * See also the <a href="#dnd.resize">dnd.resize</a> attribute.
+     *
+     * @property {Object[]} itemContexts An array of dataContexts of the resized events.
+     *    The first dataContext of the array corresponds to the source event where the resize was initiated
+     *    (e.g. the event directly under the mouse when drag started).
+     * @property {Object} itemContexts.data The data object of the source event.
+     * @property {Object} itemContexts.seriesData The data for the row the source event belongs to.
+     * @property {Object|null} itemContexts.itemData The data provider row data object for the source event.
+     *    This will only be set if a DataProvider is being used.
+     * @property {string} itemContexts.color The color of the source event.
+     * @property {string} typeDetail The type of resize, either 'start' or 'end'.
+     * @property {string} value The value at the target position.
+     *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} start The start value of the event (always chronologically before, or equivalent to, the end value), if the resize happened.
+     *    See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} end The end value of the event (always chronologically after, or equivalent to, the start value), if the resize happened.
+     * See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @ojsignature [{target: "Type", value: "Array<{itemType: string, data: ojTimeline.SeriesItem<K>, seriesData: ojTimeline.Series<K>, itemData: D|null, color: string}>", for: "itemContexts"},
+     *               {target: "Type", value: "ojTimeline.SeriesItem<K>", for: "itemContexts.data", jsdocOverride:true},
+     *               {target: "Type", value: "ojTimeline.Series<K>", for: "itemContexts.seriesData", jsdocOverride:true},
+     *               {target: "Type", value: "D", for: "itemContexts.itemData", jsdocOverride:true},
+     *               {target: "Type", value: "<K, D>", for: "genericTypeParameters"}]
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojTimeline
+     * @ojshortdesc Triggered after events are resized.
+     * @instance
+     * @ojbubbles
+     */
+      resize: null
     },
 
   // @inheritdoc
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return Timeline.newInstance(context, callback, callbackObj);
+      return new Timeline(context, callback, callbackObj);
     },
 
   /**
@@ -3059,14 +3412,23 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       return locator;
     },
 
-  // @inheritdoc
+    // @inheritdoc
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-timeline');
       return styleClasses;
     },
 
-  // @inheritdoc
+    // @inheritdoc
+    _IsDraggable: function () {
+      var dndMoveEnabled = this.options.dnd && this.options.dnd.move &&
+        this.options.dnd.move.items && this.options.dnd.move.items === 'enabled';
+      var taskResizeEnabled = this.options.itemDefaults && this.options.itemDefaults.resizable &&
+        this.options.itemDefaults.resizable === 'enabled';
+      return dndMoveEnabled || taskResizeEnabled;
+    },
+
+    // @inheritdoc
     _GetChildStyleClasses: function () {
       // border-color temporarily replaced with border-top-color due to
       // JET-44647: Border-color css styles not being picked up through style bridge in Firefox
@@ -3176,15 +3538,29 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       // Nav arrows
       resources.prev = 'oj-fwk-icon oj-fwk-icon-caret-start';
       resources.next = 'oj-fwk-icon oj-fwk-icon-caret-end';
+
+      // Add these enable/disable all focusable functions to enable actionable mode
+      this.options._keyboardUtils = { enableAllFocusable: enableAllFocusableElements,
+                                      disableAllFocusable: disableAllFocusableElements };
     },
 
     // @inheritdoc
     _GetComponentNoClonePaths: function () {
       var noClonePaths = this._super();
-      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales
+      // Don't clone areas where app may pass in an instance of DvtTimeComponentScales/Converter
       // If the instance is a class, class methods may not be cloned for some reason.
-      noClonePaths.majorAxis = { scale: true };
-      noClonePaths.minorAxis = { scale: true, zoomOrder: true };
+      noClonePaths.majorAxis = { converter: true, scale: true };
+      noClonePaths.minorAxis = { converter: true, scale: true, zoomOrder: true };
+
+      // Don't clone areas where app may pass in an instance of Converter
+      // If the instance is a class, class methods may not be cloned for some reason.
+      noClonePaths.valueFormats = {
+         date: { converter: true },
+         end: { converter: true },
+         start: { converter: true }
+      };
+      noClonePaths._resources.converterVert = true;
+
       return noClonePaths;
     },
 
@@ -3214,6 +3590,47 @@ oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
       };
     },
 
+// @inheritdoc
+_HandleEvent: function (event) {
+  var type = event.type;
+  if (type === 'viewportChange') {
+    var viewportStart = new Date(event.viewportStart).toISOString();
+    var viewportEnd = new Date(event.viewportEnd).toISOString();
+    var majorAxisScale = event.majorAxisScale;
+    var minorAxisScale = event.minorAxisScale;
+    var viewportChangePayload = {
+      viewportStart: viewportStart,
+      viewportEnd: viewportEnd,
+      majorAxisScale: majorAxisScale,
+      minorAxisScale: minorAxisScale
+    };
+
+    this._UserOptionChange('viewportStart', viewportStart);
+    this._UserOptionChange('viewportEnd', viewportEnd);
+    this._UserOptionChange('majorAxis.scale', majorAxisScale);
+    this._UserOptionChange('minorAxis.scale', minorAxisScale);
+    this._trigger('viewportChange', null, viewportChangePayload);
+  } else if (type === 'move') {
+    var movePayload = {
+      itemContexts: event.itemContexts,
+      value: event.value,
+      start: event.start,
+      end: event.end
+    };
+    this._trigger('move', null, movePayload);
+  } else if (type === 'resize') {
+    var resizePayload = {
+      itemContexts: event.itemContexts,
+      value: event.value,
+      start: event.start,
+      end: event.end,
+      typeDetail: event.typeDetail
+    };
+    this._trigger('resize', null, resizePayload);
+  } else {
+    this._super(event);
+  }
+},
 
     _GetComponentRendererOptions: function () {
       return [{ path: 'itemBubbleContentRenderer', slot: 'itemBubbleContentTemplate' },

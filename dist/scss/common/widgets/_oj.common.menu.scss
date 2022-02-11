@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -177,38 +177,19 @@
 
     // > and (space) select the same anchors
     .oj-menu-item > a {
-      @if ($themeTargetPlatform == web or $themeTargetPlatform == null) {
+        @if ($themeTargetPlatform == ios) {
+            padding: 0 calc(16px + (2 * #{$menuSubmenuIconPadding})) 0 calc(16px + (4 * #{$menuSubmenuIconPadding}));
+        } @else {
+        padding: 0 $menuTextToEdgePadding;
+        }
 
-          @include oj-ltr() {
-            padding-right: $menuTextToEdgePadding; 
-          }
-          @include oj-rtl() {
-            padding-left: $menuTextToEdgePadding;
-          }
 
-      } @else {
-        // $themeTargetPlatform in (android, ios, windows)
-
-          // leave space for submenu icon (16px) plus spacing before/after it
-          @include oj-ltr() {
-              padding-right: calc(16px + (2 * #{$menuSubmenuIconPadding}));
-          }
-          @include oj-rtl() {
-              padding-left: calc(16px + (2 * #{$menuSubmenuIconPadding}));
-          }
-
-      }
       // relative positioning so that the absolutely positioned submenu icons are
       // positioned relative to the <a>
       position: relative;
       text-decoration: none;
-
-      // WebKit bug 151657, an a11y platform bug with Apple's VoiceOver in iOS 8 and iOS 9, affects
-      // JET Menu, as noted in JET Bug 21164454.  To workaround the Apple platform bug, we can't use
-      // flex display for menu items when the menu parent container is absolutely positioned.
-      // Use display block instead until Apple fixes this bug:
-      // display: flex;
-      display: block;
+      display: flex;
+      align-items: center;
 
       font-weight: normal;
     }
@@ -258,9 +239,7 @@
        for each menu/submenu independently. */
 
     // need > rather than (space) to avoid matching the items of a submenu without icons whose ancestor menu has icons
-    .oj-menu-icons > .oj-menu-item > a,
-    .oj-menu-icons > oj-menu-select-many > .oj-menu-item > a,
-    .oj-menu-icons > oj-defer > .oj-menu-item > a {
+    a.oj-menu-option-start-icon  {
 
         // leave space at start of item for icon plus spacing before/after it.  
         @include oj-ltr() {
@@ -272,9 +251,7 @@
 
     }
     
-    .oj-menu-end-icons > .oj-menu-item > a,
-    .oj-menu-end-icons > oj-menu-select-many > .oj-menu-item > a,
-    .oj-menu-end-icons > oj-defer > .oj-menu-item > a {
+    a.oj-menu-option-end-icon {
 
         // leave space at start of item for icon plus spacing before/after it.
         @include oj-ltr() {
@@ -287,9 +264,7 @@
     }
 
     // need > rather than (space) to avoid matching the items of a submenu with icons whose ancestor menu lacks icons
-    .oj-menu-text-only > .oj-menu-item > a,
-    .oj-menu-text-only > oj-menu-select-many > .oj-menu-item > a,
-    .oj-menu-text-only > oj-defer > .oj-menu-item > a {
+    a.oj-menu-option-text-only  {
         // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector
         // .oj-menu-item > a (see above), so we also can't use justify-content.
         // Use text-align instead to horizontally align text until Apple fixes their VoiceOver bug.
@@ -323,11 +298,11 @@
     // its icon span, depending on whether at least one other item in the menu has an icon.
     // Cancel items and their icons only appear in sheet menus, which never have submenus,
     // so can use space operator rather than a long chain of > operators.
-    .oj-menu-icons .oj-menu-cancel-icon {
+    .oj-menu-option-start-icon .oj-menu-cancel-icon {
         @extend .oj-fwk-icon-cross02;
     }
 
-    .oj-menu-text-only .oj-menu-cancel-icon {
+    .oj-menu-option-text-only .oj-menu-cancel-icon {
         display:none;
     }
 
@@ -455,8 +430,6 @@
         // Use transform instead to vertically center icon until Apple fixes their VoiceOver bug.
         // align-self: center;
         position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
         // END of replacement for align-self
     }
 
@@ -517,7 +490,6 @@
     .oj-menu-submenu-icon {
       @extend .oj-fwk-icon-arrow03-end;
 
-        padding-top: calc((#{$menuItemLineHeight} / 2) - (28px / 2)); // To center.  28px is icon height.
         @include oj-ltr() {
             right: $menuSubmenuIconPadding;
         }

@@ -1,0 +1,156 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//*****************************************************************************
+// On iphone safari if zooming is not disabled then
+// form controls auto zoom when you click on them if their
+// text size is not 16px. This mixin attempts to avoid that behavior by
+// setting -webkit-text-size-adjust to a percentage where the font size
+// is a minimum of 16px.
+//
+// @param {Number} $formControlFontSize - font size of form control,
+//               only rem or px values are valid, value otherwise ignored
+//*****************************************************************************
+@mixin oj-text-field-text-size-adjust($formControlFontSize) {
+  @if ($formControlTextSizeAdjust) {
+    @if ($formControlFontSize != null and unit($formControlFontSize) == "rem") {
+      $formControlFontSize: oj-rem-to-px($formControlFontSize, $rootFontSize);
+    }
+
+    @if ($formControlFontSize != null and unit($formControlFontSize) == "px") {
+      @if ($formControlFontSize < 16px) {
+        @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+          @media #{$responsiveQuerySmallOnly} {
+            & {
+              -webkit-text-size-adjust: ceil(16px / $formControlFontSize * 100) * 1%;
+            }
+          }
+        }
+      } @else {
+        // This is here for sass/precss diffs
+        @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+          @media #{$responsiveQuerySmallOnly} {
+            & {
+              -webkit-text-size-adjust: 100%;
+            }
+          }
+        }
+      }
+    } @else {
+      @warn $formControlFontSize ' was passed to oj-text-field-text-size-adjust(), only px and rem units allowed, therefore no text-size-adjust value applied';
+    }
+  }
+}
+
+@mixin oj-text-field-text-size-adjust-css-vars() {
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      & {
+        -webkit-text-size-adjust: var(--oj-private-text-field-font-size-adjust);
+      }
+    }
+  }
+}
+
+@mixin oj-text-field-content($valueColor: $formControlInputValueColor, $textAlign: $formControlTextAlign) {
+  @include oj-bidi-property($property: "text-align", $startOrEnd: $textAlign);
+  color: $valueColor;
+  background-color: $formControlBgColor;
+  @include oj-text-field-border;
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  @include oj-placeholder() {
+    color: $formControlPlaceholderColor;
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: $formControlPlaceholderFontStyle;
+  }
+}
+
+@mixin oj-text-field-content-css-vars($valueColor: "--oj-text-field-text-color", $textAlign: "--oj-text-field-text-align") {
+  text-align: var(#{$textAlign});
+
+  color: var(#{$valueColor});
+
+  // All bg colors should come from the text-field-container
+  background-color: transparent;
+  @include oj-text-field-border();
+  // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+  &:-ms-input-placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+  &::placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+}
+
+// this doesn't add borders
+@mixin oj-text-field-input($valueColor: $formControlInputValueColor, $textAlign: $formControlTextAlign) {
+  @include oj-bidi-property($property: "text-align", $startOrEnd: $textAlign);
+  color: $valueColor;
+  background-color: $formControlBgColor;
+
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  @include oj-placeholder() {
+    color: $formControlPlaceholderColor;
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: $formControlPlaceholderFontStyle;
+  }
+}
+
+@mixin oj-text-field-input-css-vars($valueColor: "--oj-text-field-text-color", $textAlign: "--oj-text-field-text-align") {
+  // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+  -webkit-appearance: none;
+  // remove ios background-color on tap since we tend to put our own background-color on tap
+  -webkit-tap-highlight-color: transparent;
+
+  &::placeholder {
+    color: var(--oj-text-field-placeholder-color);
+    // in Firefox the default opacity is not 1 for placeholder
+    opacity: 1;
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+}
+
+@mixin oj-text-field-border() {
+  border-style: solid;
+  border-color: var(--oj-text-field-border-color);
+  border-width: var(--oj-text-field-border-width);
+  border-radius: var(--oj-text-field-border-radius);
+
+}
+
+@mixin oj-text-field-content-disabled() {
+  color: var(--oj-text-field-text-color-disabled);
+  border-color: var(--oj-text-field-border-color-disabled);
+}
+
+@mixin oj-text-field-content-readonly() {
+  background-color: transparent;
+  border-color: transparent;
+  // Remove the border on the left/right so that the
+  //       input value is flush with the label gutter
+  border-left-width: 0;
+  border-right-width: 0;
+  color: var(--oj-core-text-color-primary); 
+}

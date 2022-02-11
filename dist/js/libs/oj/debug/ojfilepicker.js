@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation', 'ojs/ojfilepickerutils', 'ojs/ojfocusutils'], function (exports, oj, DomUtils, ojvcomponent, preact, Translations, ojfilepickerutils, FocusUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'preact', 'ojs/ojtranslation', 'ojs/ojfilepickerutils', 'ojs/ojfocusutils', 'jqueryui-amd/tabbable'], function (exports, oj, DomUtils, ojvcomponent, preact, Translations, ojfilepickerutils, FocusUtils, tabbable) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
@@ -126,13 +126,19 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'pre
                     this._handleDragLeave(event, mimeTypeDropFail);
                 }
             };
-            this._handleFocusIn = () => {
+            this._handleFocusIn = (event) => {
+                if (event.target === event.currentTarget) {
+                    this._handleFocus(event);
+                }
                 if (this.selecting) {
                     return;
                 }
                 this.setState({ focus: !DomUtils.recentPointer() });
             };
-            this._handleFocusOut = () => {
+            this._handleFocusOut = (event) => {
+                if (event.target === event.currentTarget) {
+                    this._handleBlur(event);
+                }
                 if (this.selecting) {
                     return;
                 }
@@ -192,25 +198,25 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'pre
         _renderDisabled(props, triggerSlot) {
             const rootClasses = triggerSlot ? 'oj-filepicker' : 'oj-filepicker oj-filepicker-no-trigger';
             return (preact.h(ojvcomponent.Root, { class: rootClasses },
-                preact.h("div", { class: 'oj-filepicker-disabled oj-filepicker-container' }, triggerSlot || this._renderDefaultTriggerContent(props))));
+                preact.h("div", { class: "oj-filepicker-disabled oj-filepicker-container" }, triggerSlot || this._renderDefaultTriggerContent(props))));
         }
         _renderWithCustomTrigger(props, triggerSlot, clickHandler) {
             const dndHandlers = this._getDndHandlers(props);
-            return (preact.h(ojvcomponent.Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onFocus: this._handleFocus, onBlur: this._handleBlur, role: this._getRole(props, clickHandler), "aria-label": this._getAriaLabel(props, clickHandler) },
-                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: 'oj-filepicker-container' }, triggerSlot)));
+            return (preact.h(ojvcomponent.Root, { class: `oj-filepicker ${this._getFocusClass()}`, ref: this.rootRef, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut },
+                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, class: "oj-filepicker-container", "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) }, triggerSlot)));
         }
         _renderWithDefaultTrigger(props, clickHandler) {
             const validity = this.state.validity;
             const validityState = validity === 'valid' ? 'oj-valid-drop' : validity === 'invalid' ? 'oj-invalid-drop' : '';
             const dndHandlers = this._getDndHandlers(props);
-            return (preact.h(ojvcomponent.Root, { class: 'oj-filepicker oj-filepicker-no-trigger', ref: this.rootRef, role: this._getRole(props, clickHandler), "aria-label": this._getAriaLabel(props, clickHandler) },
-                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container' },
-                    preact.h("div", { tabIndex: 0, class: `oj-filepicker-dropzone ${validityState} ${this._getFocusClass()}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, onFocus: this._handleFocus, onBlur: this._handleBlur }, this._renderDefaultTriggerContent(props)))));
+            return (preact.h(ojvcomponent.Root, { class: `oj-filepicker oj-filepicker-no-trigger ${this._getFocusClass()}`, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut, ref: this.rootRef },
+                preact.h("div", { onClick: clickHandler, onKeyPress: this._handleSelectingFiles, class: 'oj-filepicker-container', tabIndex: 0, "aria-label": this._getAriaLabel(props, clickHandler), role: this._getRole(props, clickHandler) },
+                    preact.h("div", { class: `oj-filepicker-dropzone ${validityState}`, onDragEnter: dndHandlers.handleDragEnter, onDragOver: dndHandlers.handleDragOver, onDragLeave: dndHandlers.handleDragLeave, onDragEnd: dndHandlers.handleDragLeave, onDrop: dndHandlers.handleFileDrop }, this._renderDefaultTriggerContent(props)))));
         }
         _renderDefaultTriggerContent(props) {
             return [
-                preact.h("div", { class: 'oj-filepicker-text' }, this._getPrimaryText(props)),
-                preact.h("div", { class: 'oj-filepicker-secondary-text' }, this._getSecondaryText(props))
+                preact.h("div", { class: "oj-filepicker-text" }, this._getPrimaryText(props)),
+                preact.h("div", { class: "oj-filepicker-secondary-text" }, this._getSecondaryText(props))
             ];
         }
         _getRole(props, clickHandler) {
@@ -337,7 +343,7 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojvcomponent', 'pre
                     return true;
                 }
                 else if (accept.startsWith('.', 0)) {
-                    if (!file.name || (file.name && file.name.endsWith(accept))) {
+                    if (!file.name || (file.name && file.name.toLowerCase().endsWith(accept.toLowerCase()))) {
                         return true;
                     }
                 }

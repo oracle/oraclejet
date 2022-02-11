@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+@include module-include-once("common.variables.drawerlayout.ignored.scoped") {
+  .oj-drawer-reflow-wrapper {
+    --oj-current-bg-color:              var(--oj-drawer-overlay-bg-color);
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-overlay {
+    --oj-current-bg-color:              var(--oj-drawer-overlay-bg-color);
+  }
+}

@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  * @ignore
  */
@@ -376,6 +376,9 @@ function _replaceOjModuleViewModelPromise(range, options, parser) {
       }
       return vmP.then(function (viewModelValue) {
         var viewModel = viewModelValue;
+        if (viewModel.__esModule) {
+          viewModel = viewModel.default || viewModel;
+        }
         if (viewModel && (options.initialize === 'always' ||
           (options.params != null && options.initialize !== 'never'))) {
           if (typeof viewModel === 'function') {

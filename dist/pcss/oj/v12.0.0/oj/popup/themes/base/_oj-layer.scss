@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example popup/themes/redwood/oj-popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("core.layer") {
+  /* component */
+  /* --------------------------------------------------------------- */
+
+  .oj-component-popup {
+    z-index: 1;
+
+    position: absolute;
+  }
+
+  // alternate layer configuration
+  //     position: absolute;
+  //     top: 0;
+  //     left: 0;
+  //     height: 0;
+  //     width:100%;
+  .oj-component-layer {
+    position: relative;
+  }
+
+  /* overlay used to hide non-modal content */
+  .oj-component-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: var(--oj-core-scrim-color);
+    user-select: none;
+
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* disable body scroll for modal popups */
+  .oj-component-modal-open {
+        overflow: hidden !important;
+  }      
+}

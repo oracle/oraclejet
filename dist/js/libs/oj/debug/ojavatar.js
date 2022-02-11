@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -15,7 +15,7 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (
     };
     exports.Avatar = class Avatar extends preact.Component {
         render(props) {
-            return (preact.h("div", { class: this._getClasses(props), "aria-hidden": 'true' },
+            return (preact.h("div", { class: this._getClasses(props), "aria-hidden": "true" },
                 this._getInnerContent(props),
                 this._getSecondaryInnerContent(props)));
         }
@@ -36,24 +36,24 @@ define(['exports', 'ojs/ojvcomponent', 'ojs/ojthemeutils', 'preact'], function (
         }
         _getInnerContent(props) {
             if (props.src && !props.iconClass) {
-                return (preact.h("div", { class: 'oj-avatar-background-image', style: { backgroundImage: `url("${props.src}")` } }));
+                return (preact.h("div", { class: "oj-avatar-background-image", style: { backgroundImage: `url("${props.src}")` } }));
             }
             else {
-                return preact.h("div", { class: 'oj-avatar-background oj-avatar-background-image' });
+                return preact.h("div", { class: "oj-avatar-background oj-avatar-background-image" });
             }
         }
         _getSecondaryInnerContent(props) {
             if (props.iconClass) {
-                return preact.h("div", { class: `oj-avatar-background-image oj-avatar-icon ${props.iconClass}` });
+                return preact.h("div", { class: `oj-avatar-icon ${props.iconClass}` });
             }
             else if (props.src) {
                 return;
             }
             else if (props.initials) {
-                return preact.h("div", { class: 'oj-avatar-initials oj-avatar-background-image' }, props.initials);
+                return preact.h("div", { class: "oj-avatar-initials oj-avatar-background-image" }, props.initials);
             }
             else {
-                return preact.h("div", { class: 'oj-avatar-background-image oj-avatar-placeholder-icon' });
+                return preact.h("div", { class: "oj-avatar-background-image oj-avatar-placeholder-icon" });
             }
         }
     };

@@ -1,0 +1,11 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+
+@include module-include-once("common.variables.drawerpopup.ignored.scoped") {
+  .oj-drawer-popup-surrogate oj-drawer-popup {
+    --oj-current-bg-color:              var(--oj-drawer-overlay-bg-color);
+  }
+}

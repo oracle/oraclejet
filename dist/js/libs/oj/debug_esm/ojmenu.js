@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -277,7 +277,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
    * <p>Menu items currently support the rendering of start and end icons. Submenu icons are inserted automatically. To replace the default
    * submenu icon with a custom icon, the <code class="prettyprint">endIcon</code> slot should be specified. To render additional start
    * or end icons for a menu item, the <code class="prettyprint">startIcon</code> or <code class="prettyprint">endIcon</code> slot of the
-   * <code class="prettyprint">oj-option</code> should be specified. See the <code class="prettyprint">oj-option</code> doc for details about
+   * <code class="prettyprint">oj-option</code> should be specified. Icon only menus are not supported, providing menu item label using oj-option is required.
+   * See the <code class="prettyprint">oj-option</code> doc for details about
    * accepted children and slots.</p>
    *
    *
@@ -1711,7 +1712,8 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       ojOption.children('span[ojmenu="opt"]').remove();
 
       // test to see if this is a divider
-      if (!/[^\-\u2014\u2013\s]/.test(ojOption.text())) { // hyphen, em dash, en dash
+      if (!/[^\-\u2014\u2013\s]/.test(ojOption.text()) &&
+        (ojOption.children().length === 0)) {
         this._initDividers(ojOption);
         initDividerNeighbors(optionDom);
       } else {
@@ -1859,16 +1861,24 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
     // Helper method to handle menu item padding updates
     _updateMenuPadding: function ($menu) {
       var anchors = $(_findImmediateMenuItems($menu)).children();
-      var iconCount = anchors.children('.oj-menu-item-icon:not(.oj-menu-cancel-icon)').length; // icons other than cancel item's icon
-      $menu.toggleClass('oj-menu-icons', !!iconCount)
-        .toggleClass('oj-menu-text-only', !iconCount);
+      anchors.each(function () {
+        let startIconCount = $(this).children('.oj-menu-item-icon:not(.oj-menu-cancel-icon)').length;
+        let endIconCount = ($(this).children('.oj-menu-item-end-icon').length || $(this).children('.oj-menu-submenu-icon').length);
+        if (startIconCount === 0 && endIconCount === 0) {
+          $(this).addClass('oj-menu-option-text-only');
+        } else {
+          if (startIconCount > 0) {
+            $(this).addClass('oj-menu-option-start-icon');
+          }
+          if (endIconCount > 0) {
+            $(this).addClass('oj-menu-option-end-icon');
+          }
+        }
+      });
 
       if (this._maxStartIconCount && this._maxStartIconCount > 1) {
         this._applyAnchorIconPadding(anchors, this._startIconWidth, this._maxStartIconCount, true);
       }
-
-      var endIconCount = anchors.children('.oj-menu-item-end-icon').length;
-      $menu.toggleClass('oj-menu-end-icons', !!endIconCount);
 
       if (this._maxEndIconCount && this._maxEndIconCount > 1) {
         this._applyAnchorIconPadding(anchors, this._endIconWidth, this._maxEndIconCount, false);
@@ -2374,16 +2384,20 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var isIconAdded = item[0].querySelectorAll('.oj-menu-submenu-icon.oj-component-icon').length !== 0;
       item
         .attr('aria-haspopup', 'true')
+        .attr('role', 'menuitem')
         .attr(_ARIA_EXPANDED, 'false'); // @HTMLUpdateOK // per a11y team, live on <a>, not <ul> like JQUI
       if (addIcon && !isIconAdded) {
         var submenuIcon = $('<span>');
         submenuIcon // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
           .addClass('oj-menu-submenu-icon oj-component-icon')
           .data('oj-ojMenu-submenu-icon', true); // TODO: can't we just look for the class at destroy time rather than adding this data?
-
         item.append(submenuIcon); // @HTMLUpdateOK append trusted new DOM to menu item
       }
-
+      // if the oj-option (launcher of submenu) is disabled, disable every menu item of submenu
+      // so they can not be selected
+      if (item[0].parentElement.disabled) {
+        submenu.find('oj-option').attr('disabled', true);
+      }
       submenu.attr('aria-labelledby', item.attr('id'));
     },
 
@@ -2516,7 +2530,7 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
       var nested = this._IsCustomElement() ? item.children('oj-menu') : item.children('.oj-menu'); // immediately nested submenu.  length 0 or 1.
       var previousFocusInSubmenu = nested.length > 0 && previousItem.length > 0 &&
         $.contains(nested[0], previousItem[0]);
-      if (nested.length && event && (/^mouse|click/.test(event.type) && !this.active.hasClass(_OJ_DISABLED)) &&
+      if (nested.length && event && (/^mouse|click/.test(event.type)) &&
           !previousFocusInSubmenu) {
         this._startOpening(event, nested);
       }
@@ -3003,6 +3017,10 @@ import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
         menuOpenOptions = $.extend({}, this.options.openOptions, menuOpenOptions);
         // eslint-disable-next-line no-param-reassign
         menuOpenOptions.position = $.extend({}, menuOpenOptions.position);
+        if (menuEvent && menuEvent.type === 'keydown' && menuEvent.which === 121) {
+        // eslint-disable-next-line no-param-reassign
+        menuOpenOptions.initialFocus = 'firstItem';
+        }
         if (this._IsCustomElement()) {
           this._setPosition(menuOpenOptions.position);
         }

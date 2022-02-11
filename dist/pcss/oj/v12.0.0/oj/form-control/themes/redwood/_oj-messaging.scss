@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+// todo: it seems a bit weird this is being imported
+@import "_oj-messaging.servervars.scss";
+@import "../../../message/themes/redwood/_oj-message.servervars.scss";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the base directory
+@import "../base/_oj-messaging.scss"; 
+
+@include module-include-once("redwood.messaging") {
+
+}

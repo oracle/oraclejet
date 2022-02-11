@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojtrace-event', 'ojs/ojmetadatautils', 'ojs/ojbootstrap', 'ojs/ojcore-base'], function (oj, Logger, ojcustomelementUtils, ojtraceEvent, MetadataUtils, Bootstrap, oj$1) { 'use strict';
+define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojmetadatautils', 'ojs/ojbootstrap', 'ojs/ojcore-base'], function (oj, Logger, ojcustomelementUtils, MetadataUtils, Bootstrap, oj$1) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
@@ -27,8 +27,6 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojtrace-
     getClass: function (descriptor) {
       var proto = Object.create(HTMLElement.prototype);
       this.InitializePrototype(proto);
-
-      proto.dispatchEvent = ojtraceEvent.traceDispatchEvent(HTMLElement.prototype.dispatchEvent);
 
       var metadata = this.GetMetadata(descriptor);
       // Enumerate metadata to define the prototype properties, methods, and events
@@ -297,7 +295,7 @@ define(['ojs/ojcore', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'ojs/ojtrace-
         while (this._earlySets.length) {
           const setObj = this._earlySets.shift();
           const updatedValue =
-            ojcustomelementUtils.CustomElementUtils.convertEmptyStringToUndefined(
+            ojcustomelementUtils.transformPreactValue(
               element,
               propertyMeta.properties[setObj.property],
               setObj.value);

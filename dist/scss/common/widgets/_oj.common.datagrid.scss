@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 @import "oj.common.formcontrol.mixins";
@@ -628,8 +628,8 @@
             }
         }
 
-        /* Styling for the sort area around the icon */
-        .oj-datagrid-sort-icon-container {
+        /* Styling for the area around the icon */
+        .oj-datagrid-icon-container {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -637,10 +637,10 @@
             height: 2.5em;
             width: 2em;
             min-width: 2em;
-            border-radius: var(--oj-button-border-radius);
+            border-radius: 4px;
         }
         /* Styling for the gradient for sort icons in the header */
-        .oj-datagrid-sort-icon-container.oj-enabled {
+        .oj-datagrid-icon-container.oj-enabled {
 
               background-image: linear-gradient(to right, rgba($collectionHeaderBgColor, 0), $collectionHeaderBgColor 40%);
               @include oj-rtl() {
@@ -651,7 +651,7 @@
 
 
         /* Styling for the gradient for sort icons on hover in the header */
-        .oj-datagrid-header-cell.oj-hover .oj-datagrid-sort-icon-container {
+        .oj-datagrid-header-cell.oj-hover .oj-datagrid-icon-container {
 
               background-image: linear-gradient(to right, rgba($collectionHeaderBgColorHover, 0), $collectionHeaderBgColorHover 40%);
               @include oj-rtl() {
@@ -715,11 +715,10 @@
         }
 
         /* Styling for the selection affordance icon on touch devices*/
-        .oj-datagrid-touch-selection-affordance-top,
-        .oj-datagrid-touch-selection-affordance-bottom {
+        .oj-datagrid-touch-selection-affordance {
             box-sizing: border-box;
-            width: 11px;
-            height: 11px;
+            width: 7px;
+            height: 7px;
             z-index: 1;
             //center the touch affordance inside the touch area
             position: absolute;
@@ -728,11 +727,36 @@
             right: 0;
             top: 0;
             bottom: 0;
-
-            @include oj-border-radius(50%);
             border: 2px solid $collectionSelectionAffordanceBorderColor;
-            background-color: $iconColorHover;
+            background-color: $collectionSelectionAffordanceBorderColor;
+        }
 
+        .oj-datagrid-touch-selection-affordance-top-corner-bounded {
+            border-end-end-radius: 1.5px;
+        }
+
+        .oj-datagrid-touch-selection-affordance-bottom-corner-bounded {
+            border-start-start-radius: 1.5px;
+        }
+
+        .oj-datagrid-touch-selection-affordance-top-column {
+            border-start-end-radius: 1.5px;
+            border-end-end-radius: 1.5px;
+        }
+
+        .oj-datagrid-touch-selection-affordance-bottom-column {
+            border-start-start-radius: 1.5px;
+            border-end-start-radius: 1.5px;
+        }
+
+        .oj-datagrid-touch-selection-affordance-top-row {
+            border-end-start-radius: 1.5px;
+            border-end-end-radius: 1.5px;
+        }
+
+        .oj-datagrid-touch-selection-affordance-bottom-row {
+            border-start-start-radius: 1.5px;
+            border-start-end-radius: 1.5px;
         }
 
         /* Styling for the selection affordance touchable area on touch devices*/

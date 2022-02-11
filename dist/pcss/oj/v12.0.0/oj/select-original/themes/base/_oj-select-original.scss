@@ -1,0 +1,662 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example select-original/themes/redwood/oj-select.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+
+@include module-include-once("common.select.original") {
+  /* select */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-select:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-select {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    // font size needs to be on the root, because max/min width is in em.
+    font-size: var(--oj-text-field-font-size);
+    @include oj-text-field-text-size-adjust-css-vars();
+    width: 100%;
+    box-sizing: border-box;
+  }
+  // .oj-form-control-full-width is an override to set max-width to 100% if on the
+  // element or an ancestor element
+  .oj-form-control-full-width.oj-select,
+  .oj-form-control-full-width .oj-select {
+    max-width: 100%;
+  }
+
+  /* 
+     * Suppress focus ring since the border is changing when enabled
+     */
+  .oj-select .oj-select-accessible-container:focus {
+    outline: none;
+  }
+
+  // Show focus ring when readonly and focus is on the field by keyboard.
+  // because the overflow is hidden, we put the outline on the ::after
+  // pseudo element
+    .oj-select.oj-read-only .oj-select-accessible-container:focus::after {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  // because we are putting the outline on the pseudo element, we need to disable
+  // the outline on the default element
+  // we make the focus element position: relative so that the outline pseudo element
+  // is positioned absolute to this element
+    .oj-select.oj-read-only .oj-select-accessible-container:focus {
+    outline: none;
+    position: relative;
+  }
+
+  /**
+   * Styling for loading state
+   */
+  .oj-select.oj-loading .oj-select-arrow {
+    display: none;
+  }
+
+  /* 
+     * Applied to the select box which includes the selected text and the dropdown open icon
+     */
+  .oj-select-choice {
+    @include oj-text-field-content-css-vars($valueColor: "--oj-text-field-text-color");
+    // Default to no border for common due to generic changes for quiet forms
+    border-width: 0;
+    padding-inline-start: var(--oj-text-field-text-to-edge-padding);
+    padding-inline-end: 0;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    background-clip: padding-box;
+    text-overflow: ellipsis;
+    // height needs to be 100% as the border and height is set on an ancestor element
+    height: 100%;
+  }
+
+  /* Applied to the text field inside the select box */
+  .oj-select .oj-text-field-middle {
+    // TODO: Clean this up to use end slot when it is available (JET-15324)
+    // JET-37393 - regression for oj-select-one in ojet 9.0.0 rc2 release
+    // when having text element inside a flex box and if that text is styled for truncating
+    // text when it overflows, by default it causes the flex-box to grow beyond the
+    // available width. So we need this to allow the flex-box to shrink.
+    min-width: 0;
+  }
+
+  .oj-select:not(.oj-text-field-label-inside) .oj-text-field-middle {
+    // since text-field-container has 100% height, this has to be auto to
+    // have the content center aligned
+    // However, for label-edge=inside the chosen value and the label is positioned relative to the
+    // text field container, so we need to have height 100% instead of auto
+    height: auto;
+  }
+
+  /* Styling for readonly mode */
+  .oj-select.oj-read-only .oj-select-choice,
+  .oj-select.oj-read-only .oj-select-choices {
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0;
+    min-height: calc(var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size));
+  }
+
+  // in mixed mode, put horizontal padding back
+  .oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-choices {
+    padding: 0 var(--oj-text-field-text-to-edge-padding) 5px;
+  }
+
+  /* apply to the selected entries */
+  .oj-select.oj-read-only .oj-select-chosen,
+  .oj-select.oj-read-only .oj-select-selected-choice {
+    outline: none;
+    @include oj-text-field-content-readonly();
+  }
+
+  // Do not apply these for read only select-one in mixed mode, as they have different stylings
+  .oj-select.oj-read-only:not(.oj-text-field-label-inside) .oj-select-chosen,
+  .oj-select.oj-read-only .oj-select-selected-choice {
+    padding-left: 0;
+    padding-right: 0;
+    line-height: var(--oj-typography-body-md-line-height);
+  }
+
+  // For select-many the pills have margin and border that should be
+  // set to zero in read-only mode
+  // Do not set margin-right to zero as they provide spacings between two
+  // selected value (this may not be needed once JET-36395 - selectmany and comboboxmany
+  // need commas between items in readonly is addressed)
+  .oj-select.oj-read-only .oj-select-selected-choice {
+    display: inherit;
+    margin-top: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+  }
+
+  /* apply to the first selected entry in readonly mode */
+  .oj-select.oj-read-only li.oj-select-selected-choice:first-child {
+   
+      padding-inline-start: 0;
+    
+  }
+
+  /* don't show dropdown trigger */
+  .oj-select.oj-read-only .oj-select-arrow {
+    display: none;
+  }
+
+  /* don't show clear entry trigger */
+  .oj-select.oj-read-only .oj-select-clear-entry {
+    display: none;
+  }
+
+  /* Styling for text-align */
+  .oj-form-control-text-align-right.oj-select .oj-select-choice {
+    text-align: right;
+  }
+  .oj-form-control-text-align-start.oj-select .oj-select-choice {
+    text-align: start;
+  }
+  .oj-form-control-text-align-end.oj-select .oj-select-choice {
+    text-align: end;
+  }
+
+  /* Styling for native render mode text-align */
+  .oj-form-control-text-align-right.oj-select .oj-select-select {
+    text-align: right;
+    direction: rtl;
+    padding-inline-end:16px;
+    
+  }
+  .oj-form-control-text-align-start.oj-select .oj-select-select {
+    text-align: start;
+   
+    @include oj-ltr() {
+      direction: ltr;
+    }
+
+    @include oj-rtl() {
+      direction: rtl;
+    }
+  }
+  .oj-form-control-text-align-end.oj-select .oj-select-select {
+    text-align: end;
+    padding-inline-end:16px;
+    @include oj-ltr() {
+      direction: rtl;
+    }
+    @include oj-rtl() {
+      direction: ltr;
+    }
+  }
+  .oj-form-control-text-align-right.oj-select .oj-select-choices li {
+    float: right;
+  }
+  .oj-form-control-text-align-start.oj-select .oj-select-choices li {
+    float: left;
+    html[dir="rtl"] & {
+      float: right;
+    }
+  }
+  .oj-form-control-text-align-end.oj-select .oj-select-choices li {
+    float: right;
+    html[dir="rtl"] & {
+      float: left;
+    }
+  }
+  
+  .oj-form-control-text-align-right .oj-select-selected-choice,
+  .oj-form-control-text-align-end .oj-select-selected-choice {
+    margin-top:5px;
+    margin-inline-end:0;
+    margin-bottom:0;
+    margin-inline-start:6px;
+  }
+  
+  
+
+  /* multi-select */
+
+  /* 
+     * Applied to the multi-select box which includes the input field and the selected choices
+     */
+  .oj-select-choices {
+    box-sizing: border-box;
+    height: auto;
+    min-height: var(--oj-text-field-height);
+    padding: 0 var(--oj-text-field-text-to-edge-padding) 5px;
+    @include oj-text-field-content-css-vars;
+    // Default to no border for common due to generic changes for quiet forms
+    border-width: 0;
+    margin: 0;
+
+    position: relative;
+    cursor: text;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  // For oj-select-many .oj-select-choices is different from .oj-select-accessible-container
+  // so we need to apply separate stylings for it.
+  .oj-select-multi .oj-select-accessible-container {
+    width: 100%;
+  }
+
+  /* 
+     * Applied to the multi-select box list items which include the search field and the selected choices
+     */
+  .oj-select-choices li {
+    list-style: none;
+    @include oj-ltr() {
+      float: left;
+    }
+    @include oj-rtl() {
+      float: right;
+    }
+  }
+
+  /* 
+     * Applied to the multi-select placeholder
+     */
+  .oj-select-multi .oj-select-default {
+    margin-top: 5px;
+    padding: 0;
+    line-height: calc(var(--oj-text-field-height) * 0.8);
+    color: var(--oj-text-field-placeholder-color);
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+
+  /* 
+     * Applied to the input field. Override default .oj-listbox-input
+     */
+  .oj-select-multi .oj-listbox-input {
+    background-color: var(--oj-text-field-bg-color);
+    color: var(--oj-text-field-text-color);
+    font-size: var(--oj-text-field-font-size);
+    @include oj-text-field-text-size-adjust-css-vars();
+
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-inline-end:0;
+    padding-inline-start:0;
+   
+  }
+
+  /* 
+     * Applied to the multi-select selected choice
+     */
+  .oj-select-selected-choice {
+    line-height: 1.9rem;
+    display: flex;
+    align-items: center;
+    cursor: default;
+    border-radius: var(--oj-button-border-radius);
+    border: 1px solid var(--oj-button-outlined-chrome-border-color);
+    color: var(--oj-button-outlined-chrome-text-color);
+    background-clip: padding-box;
+    padding-top:0;
+    padding-inline-end:4px;
+    padding-bottom:0;
+    padding-inline-start:6px;
+    margin-top:5px;
+    margin-inline-end:6px;
+    margin-bottom:0;
+    margin-inline-start:0;
+  }
+
+  /* 
+     * Applied to the multi-select selected choice when getting focus
+     */
+  .oj-select-selected-choice.oj-focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  /*
+     * Applied to the multi-select selected choice when disabled
+     */
+  .oj-select.oj-disabled .oj-select-selected-choice {
+    padding: 0 .375rem 0 .375rem;
+  }
+
+  /* 
+     * Applied to the label of the selected choice
+     */
+  .oj-select-selected-choice-label,
+  .oj-select-selected-choice-separator {
+    display: inline-block;
+    vertical-align: middle;
+    word-break: break-word;
+  }
+
+  /*
+     * Applied to the clear entry field of the selected choice
+     */
+  .oj-select-clear-entry {
+    display: inline-block;
+    outline: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100%;
+    margin-inline-start: 3px;
+  }
+
+  /* end multiselect */
+
+  /* Invalid styling for the widget */
+  /* The borders are no longer on this element */
+  .oj-select.oj-invalid .oj-select-choice,
+  .oj-select-native.oj-invalid .oj-select-select,
+  .oj-select-multi.oj-invalid .oj-select-choices,
+  .oj-select.oj-warning .oj-select-choice,
+  .oj-select-native.oj-warning .oj-select-select,
+  .oj-select-multi.oj-warning .oj-select-choices {
+    border-width: 0;
+  }
+
+  /* disabled styles  for single-select */
+  .oj-select.oj-disabled .oj-select-choice {
+    @include oj-text-field-content-disabled();
+  }
+
+  /* 
+     * Disabled styles for multi-select 
+     */
+  .oj-select-multi.oj-disabled .oj-select-choices,
+  .oj-select-multi.oj-disabled .oj-select-selected-choice,
+  .oj-select-multi.oj-disabled .oj-select-selected-choice.oj-focus,
+  .oj-select-multi.oj-disabled input {
+    @include oj-text-field-content-disabled();
+    outline: 0;
+  }
+
+  .oj-select-multi.oj-disabled .oj-select-clear-entry {
+    display: none;
+    background: none;
+  }
+
+  /* 
+     * Applied to the place holder text
+     */
+  .oj-select-chosen.oj-select-default {
+    color: var(--oj-text-field-placeholder-color);
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+
+  /* 
+     * Applied to the selected text
+     */
+  .oj-select-chosen {
+    border: 0;
+    outline: 0;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    box-shadow: none;
+    padding-inline-end: var(--oj-text-field-text-to-edge-padding);
+    // height needs to be 100% as the border and height is set on an ancestor element
+    height: 100%;
+  }
+
+  // High Contrast
+  //--------------------------------------------
+
+  // a disabled select will have a less prominent border
+  .oj-hicontrast .oj-select.oj-disabled {
+    border-style: dotted;
+  }
+
+  /* 
+     * Applied to the dropdown open icon
+     */
+  .oj-select-open-icon {
+    @extend .oj-fwk-icon-arrow02-s;
+  }
+
+  .oj-select-open-icon,
+  .oj-select-open-icon:hover,
+  .oj-select-open-icon:focus {
+    text-decoration: none;
+  }
+
+  /* clear entry icon */
+  .oj-select-clear-entry-icon {
+    @extend .oj-fwk-icon-cross;
+  }
+
+  /* Default options*/
+  $selectDefaultOptions: (
+    renderMode: jet
+  );
+
+  @if ($privateLoadingIndicatorDelayDuration) {
+    $selectDefaultOptions: map-merge(
+      $selectDefaultOptions,
+      (
+        loadingIndicatorDelay: $privateLoadingIndicatorDelayDuration
+      )
+    );
+  }
+  .oj-select-option-defaults {
+    font-family: oj-json-from-map($selectDefaultOptions) !important;
+  }
+
+  //native select tag
+  .oj-select-select {
+    @include oj-text-field-content-css-vars($valueColor: "--oj-text-field-text-color");
+    // Default to no border for common due to generic changes for quiet forms
+    border-width: 0;
+    height: var(--oj-text-field-height);
+    padding: 0 var(--oj-text-field-text-to-edge-padding);
+    box-sizing: border-box;
+    width: 100%;
+    white-space: nowrap;
+    background-clip: padding-box;
+  }
+
+  select.oj-select-select.oj-select-default:not([multiple]) {
+    color: var(--oj-text-field-placeholder-color);
+    font-style: var(--oj-text-field-placeholder-font-style);
+  }
+
+  .oj-select-select[disabled] {
+    @include oj-text-field-content-disabled();
+  }
+
+  .oj-select-select option {
+    background-color: var(--oj-text-field-bg-color);
+  }
+
+  /* 
+     * Applied to focus ring around the select box 
+     */
+  .oj-select-select:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+  // editable datagrid cells and editable table cells
+  // -----------------------------------------------------------------------------------------
+
+  // remove borders, inherit colors and stretch the height
+  // need extra specificity since base selector has direction selectors
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choice,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select .oj-select-choices {
+    @include oj-form-control-inherit();
+    border-width: 0;
+  }
+
+  // only override the background when not disabled
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select:not(.oj-disabled) .oj-select-choice,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select:not(.oj-disabled) .oj-select-choices {
+    
+// use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+
+  }
+
+  // Styling on form control dom which doesn't require text-align, padding, or color
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-chosen {
+    background-color: inherit;
+    border-width: 0;
+  }
+
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-select-select {
+    height: 100%;
+  }
+
+  // TODO: single select when height is large, it doesn't vertically center align
+  // TODO: multi select's color inherit does not work. the color does not get inherited. (same with combobox)
+
+  // For quiet Forms
+  .oj-text-field-label-inside .oj-select-choice {
+    background-color: transparent;
+    width: 100%;
+    border-width: 0;
+    min-height: var(--oj-text-field-inside-edge-height);
+    padding: 0;
+    
+  }
+
+  .oj-text-field-label-inside .oj-select-choices {
+    background-color: transparent;
+    border-width: 0;
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 5px;
+  }
+
+  // Applied to the multi-select placeholder in non-read-only mode.
+  // The min-height needs to be set on the placeholder element when using in label-edge inside
+  // as the height is different from other configurations.
+  // For the other configurations the min-height is specified on the .oj-select-choices div.
+  .oj-text-field-label-inside.oj-select-multi:not(.oj-read-only) .oj-select-default {
+    // Need to set min-height here, because when there is no placeholder is set,
+    // the height should not become zero
+    min-height: calc(var(--oj-text-field-height) * 0.85);
+  }
+
+  .oj-text-field-label-inside.oj-read-only .oj-select-choices {
+    padding: 0;
+  }
+
+  // inside an enabled form, readonly form components have padding
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-choices {
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 5px;
+  }
+
+  // The padding and the vertical alignment of the text should be added for read only
+  // component in an enabled form and non-read only component
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-select-chosen,
+  .oj-text-field-label-inside:not(.oj-read-only) .oj-select-chosen {
+    padding-top: var(--oj-text-field-inside-edge-padding-top);
+    // Set line-height equal to the height of the container which is
+    // equal to the input-height minus the padding to center align the
+    // text
+    line-height: calc(var(--oj-text-field-inside-edge-height) - var(--oj-text-field-inside-edge-padding-top));
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-select.oj-read-only .oj-select-chosen,
+  .oj-text-field-label-inside:not(.oj-read-only) .oj-select-chosen {
+    padding-left: var(--oj-text-field-text-to-edge-padding);
+    padding-right: var(--oj-text-field-text-to-edge-padding);
+  }
+
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-chosen {
+    min-height: var(--oj-text-field-inside-edge-height);
+  }
+
+  .oj-text-field-label-inside .oj-select-choice.oj-hover,
+  .oj-text-field-label-inside .oj-select-choices.oj-hover {
+    background-color: transparent;
+  }
+
+  .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-choice {
+    padding: 0;
+  }
+
+  .oj-text-field.oj-select.oj-disabled .oj-text-field-container {
+    background-color: var(--oj-text-field-bg-color-disabled);
+  }
+
+  .oj-text-field.oj-select-multi .oj-text-field-container {
+    height: auto;
+  }
+
+  .oj-text-field.oj-select-multi:not(.oj-read-only) .oj-text-field-container {
+    // The min height needs to be applied to the oj-text-field-container for .oj-select-many
+    // since the border is on the .oj-text-field-container div.
+    // We do not want to apply this for read-only container as it does not have border and min-height
+    // is being set on the oj-select-choices and we want this container to be of the same height.
+    min-height: var(--oj-text-field-height);
+  }
+
+  .oj-text-field-label-inside .oj-select-selected-choice {
+    margin-top:10px;
+    margin-inline-end:6px;
+    margin-bottom:0px;
+    margin-inline-start:0px;
+  }
+  .oj-text-field-label-inside.oj-select.oj-read-only .oj-select-selected-choice {
+    margin-top: 0px;
+    margin-inline-end:6px;
+    margin-bottom:0px;
+    margin-inline-start :0px;
+  }
+
+  // The warning, error and confirmation messages on the select are added to the select container rather than the text-field container. So adding the below css to make sure labels reflect the correct warning and error colors.
+  .oj-text-field-label-inside.oj-select.oj-invalid .oj-text-field-container .oj-label,
+  .oj-text-field-label-inside.oj-select-many.oj-invalid .oj-text-field-container .oj-label {
+    color: var(--oj-text-field-inside-edge-label-color-error);
+  }
+
+  // TODO: Add warning, error and focus borders to the container rather than the input element
+  // TODO: remove sass nesting syntax
+  
+  .oj-text-field-label-inside.oj-select {
+    max-width: 100%;
+  }
+
+  .oj-text-field-label-inside .oj-select-label {
+    align-self: flex-start;
+  }
+
+  // in enabled mode, make this flex
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-select .oj-text-field-container {
+    display: flex;
+  }
+
+  // in full readonly mode, make this block.
+  // TODO: Would be easier if select-many and combobox-many had the oj-text-field-middle
+  // all the other components have
+  .oj-text-field.oj-read-only.oj-select-multi .oj-text-field-container {
+    display: block;
+  }
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 @import "../../utilities/oj.utilities";
 
@@ -9,9 +9,6 @@ $includeFormControlCommonClasses:  $includeFormControlClasses !default;
 
 @if $includeFormControlCommonClasses != false  {
   @include module-include-once("alta.android.formcontrolcommon") {
-    .oj-text-field-container .oj-text-field-end .oj-component-icon.oj-clickable-icon-nocontext:focus {
-      outline-offset: -1px;
-    }      
   }
 }
 

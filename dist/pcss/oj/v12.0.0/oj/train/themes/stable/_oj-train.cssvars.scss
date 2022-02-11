@@ -1,0 +1,70 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../animation/themes/stable/_oj-animation.cssvars.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+ 
+  @include module-include-once("stable.variables.train") {
+ 
+:root {
+  --oj-train-step-width:                       7rem;
+  --oj-train-padding:                          0.75rem 0 0.75rem 0;
+  --oj-train-label-font-size:                  var(--oj-typography-body-sm-font-size);
+  --oj-train-label-font-weight:                bold;
+  --oj-train-label-padding-top:                0.75rem;
+  --oj-train-button-diameter:                  1.5rem;
+  --oj-train-button-font-size:                 var(--oj-typography-body-xs-font-size);
+  --oj-train-connector-height:                 2px;
+ 
+  // default
+  --oj-train-button-bg-color:                  rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-button-border-color:              rgba(var(--oj-palette-neutral-rgb-190),.6);
+  --oj-train-button-text-color:                var(--oj-core-text-color-secondary);
+  --oj-train-label-color:                      var(--oj-core-text-color-secondary);
+  --oj-train-connector-color:                  rgba(var(--oj-palette-neutral-rgb-190),.3);
+ 
+  --oj-train-connector-padding:                0.625rem;
+ 
+  // visited
+  --oj-train-button-bg-color-visited:          rgb(var(--oj-palette-success-rgb-110));
+  --oj-train-button-border-color-visited:      transparent;
+  --oj-train-button-text-color-visited:        var(--oj-core-neutral-contrast);
+  --oj-train-label-color-visited:              var(--oj-core-text-color-primary);
+ 
+  // hover
+  --oj-train-button-bg-color-hover:            rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-button-border-color-hover:        rgba(var(--oj-palette-brand-rgb-160),.6);
+  --oj-train-button-text-color-hover:          rgba(var(--oj-palette-brand-rgb-160),.6);
+  --oj-train-step-bg-color-hover:              var(--oj-core-bg-color-hover);
+  --oj-train-step-border-radius:               var(--oj-core-border-radius-xl);
+ 
+  // active
+  --oj-train-button-bg-color-active:           rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-train-button-border-color-active:       transparent;
+  --oj-train-button-text-color-active:         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-label-font-weight-active:         bold;
+  --oj-train-step-bg-color-active:             var(--oj-core-bg-color-active);
+ 
+  // selected
+  --oj-train-button-bg-color-selected:         rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-train-button-border-color-selected:     transparent;
+  --oj-train-button-text-color-selected:       rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-label-font-weight-selected:       bold;
+  --oj-train-label-color-selected:             var(--oj-core-text-color-primary);
+  --oj-train-connector-color-selected:         rgba(var(--oj-palette-neutral-rgb-190),.3);
+  --oj-train-connector-padding-selected:       0px;
+ 
+  // disabled
+  --oj-train-button-bg-color-disabled:         rgb(var(--oj-palette-neutral-rgb-0));
+  --oj-train-button-border-color-disabled:     var(--oj-core-text-color-disabled);
+  --oj-train-button-text-color-disabled:       var(--oj-core-text-color-disabled);
+  --oj-train-button-opacity-disabled:          1;
+  --oj-train-label-color-disabled:             var(--oj-core-text-color-disabled);
+ 
+ 
+ 
+ 
+}
+ 
+}

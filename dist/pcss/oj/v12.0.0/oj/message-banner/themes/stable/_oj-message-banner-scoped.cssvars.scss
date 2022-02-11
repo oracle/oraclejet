@@ -1,0 +1,31 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.messagebanner.scoped") {
+  // Severity specific styles
+  .oj-messagebanner-error {
+    --oj-private-message-banner-background-color:   var(--oj-core-danger-secondary-3);
+    --oj-private-message-banner-start-icon-color:   var(--oj-core-danger-3);
+    --oj-private-message-banner-summary-text-color: var(--oj-core-danger-3);
+  }
+
+  .oj-messagebanner-warning {
+    --oj-private-message-banner-background-color:   var(--oj-core-warning-secondary-3);
+    --oj-private-message-banner-start-icon-color:   var(--oj-core-warning-3);
+    --oj-private-message-banner-summary-text-color: var(--oj-core-warning-3);
+  }
+
+  .oj-messagebanner-confirmation {
+    --oj-private-message-banner-background-color:   var(--oj-core-success-secondary-3);
+    --oj-private-message-banner-start-icon-color:   var(--oj-core-success-3);
+    --oj-private-message-banner-summary-text-color: var(--oj-core-success-3);
+  }
+
+  .oj-messagebanner-info {
+    --oj-private-message-banner-background-color:   var(--oj-core-info-secondary-3);
+    --oj-private-message-banner-start-icon-color:   var(--oj-core-info-3);
+    --oj-private-message-banner-summary-text-color: var(--oj-core-info-3);
+  }
+
+}

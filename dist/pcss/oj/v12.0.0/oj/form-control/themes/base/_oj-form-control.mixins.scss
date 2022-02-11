@@ -1,0 +1,162 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// todo: get rid of this file
+
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its padding, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+//     @include oj-form-control-padding-override(
+//        $padding: "0 5px");
+//   }
+//
+@mixin oj-form-control-padding-override($padding: null) {
+  @if ($padding != null) {
+    & .oj-inputtext-input,
+    & .oj-inputtext-nocomp,
+    & .oj-inputpassword-input,
+    & .oj-inputpassword-nocomp,
+    & .oj-textarea-input,
+    & .oj-textarea-nocomp,
+    & .oj-inputnumber-input,
+    & .oj-select-select,
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-searchselect-input,
+    & .oj-inputdatetime .oj-inputdatetime-input {
+      padding: #{$padding};
+    }
+  }
+}
+
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its font-size, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+//    @include oj-form-control-font-size-override(
+//      $fontSize: 16px);
+//   }
+//
+@mixin oj-form-control-font-size-override($fontSize: null) {
+  @if ($fontSize != null) {
+    & .oj-inputtext-input,
+    & .oj-inputpassword-input,
+    & .oj-textarea-input,
+    & .oj-inputnumber-input,
+    & .oj-select-select,
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-combobox .oj-combobox-input,
+    & .oj-searchselect-input,
+    & .oj-inputdatetime .oj-inputdatetime-input {
+      font-size: #{$fontSize};
+    }
+  }
+}
+
+// This allows the form control to inherit styles from the container.
+// Usage Example:
+//  .oj-form-control-inherit:not(.oj-form-control-default) .oj-inputnumber-input { @include oj-form-control-inherit();}
+@mixin oj-form-control-inherit() {
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  @include oj-ltr() {
+    text-align: inherit;
+  }
+
+  @include oj-rtl() {
+    text-align: inherit;
+  }
+}
+
+// returns the difference between the bottom border width on focus and the bottom border width
+// when not in focus.
+@function value-bottom-difference($borderWidthFocus, $borderWidth, $paddingBottom) {
+  @return calc(
+    #{oj-shorthand-property-value-bottom($borderWidthFocus)} - #{oj-shorthand-property-value-bottom($borderWidth)} + #{$paddingBottom}
+  );
+}
+
+// returns the difference between the top border width on focus and the top border width
+// when not in focus.
+// @function value-top-difference ($borderWidthFocus, $borderWidth, $paddingTop) {
+//   @return calc(#{oj-shorthand-property-value-top($borderWidthFocus)}
+//                   - #{oj-shorthand-property-value-top($borderWidth)} + #{$paddingTop});
+// }
+
+// returns the difference between the top and bottom border widths.
+// returns null if they are the same or there is no border.
+@function focus-top-bottom-border-difference($borderWidthFocus) {
+  @if ($borderWidthFocus != null) {
+    $difference: (oj-shorthand-property-value-bottom($borderWidthFocus) - oj-shorthand-property-value-top($borderWidthFocus));
+    @return if(($difference/1px) != 0, $difference, null);
+  } @else {
+    @return null;
+  }
+}
+
+// returns the border-width for when there is a message (e.g., error) on the form control.
+// we calculate this because in some cases, we want only a bottom-border, in other cases we
+// want a border on all four sides.
+@function oj-form-control-border-message-width-func(
+  $backgroundColor: $formControlBgColor,
+  $borderWidth: $privateFormControlBorderWidth,
+  $messageBorderWidth: $privateFormControlMessagingBorderWidth
+) {
+  // if there is a visible background color, then use the error border width as is. This may
+  // be on all four sides if $privateFormControlMessagingBorderWidth is set to that.
+  @if ($backgroundColor != null and $backgroundColor != transparent) {
+    @return $messageBorderWidth;
+  }
+
+  $top: oj-shorthand-property-value-top($borderWidth);
+  $right: oj-shorthand-property-value-right($borderWidth);
+  $bottom: oj-shorthand-property-value-bottom($borderWidth);
+  $left: oj-shorthand-property-value-left($borderWidth);
+
+  // if no form control background color or form control borders, then use the bottom only
+  // border
+  @if ($top == 0 and $right == 0 and $bottom == 0 and $left == 0) {
+    @return 0 0 oj-shorthand-property-value-bottom($messageBorderWidth) 0;
+  }
+
+  $errortop: oj-shorthand-property-value-top($messageBorderWidth);
+  $errorright: oj-shorthand-property-value-right($messageBorderWidth);
+  $errorbottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $errorleft: oj-shorthand-property-value-left($messageBorderWidth);
+
+  $returntop: if(($top != null and $top != 0), $errortop, 0);
+  $returnright: if(($right != null and $right != 0), $errorright, 0);
+  $returnbottom: if(($bottom != null and $bottom != 0), $errorbottom, 0);
+  $returnleft: if(($left != null and $left != 0), $errorleft, 0);
+
+  @return $returntop $returnright $returnbottom $returnleft;
+}
+
+// returns true if the message border width has four sides
+@function oj-form-control-message-border-four-sides($messageBorderWidth) {
+  $top: oj-shorthand-property-value-top($messageBorderWidth);
+  $right: oj-shorthand-property-value-right($messageBorderWidth);
+  $bottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $left: oj-shorthand-property-value-left($messageBorderWidth);
+
+  // count form control borders. If all four are set, return true
+  @if ($top != 0 and $right != 0 and $bottom != 0 and $left != 0) {
+    @return true;
+  } @else {
+    @return false;
+  }
+}

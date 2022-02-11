@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -218,18 +218,9 @@ ListViewDndContext.prototype.itemRenderComplete = function (elem, context) {
   }
 
   var dragHandle = $(elem).find('.' + this.GetDragAffordanceClass());
-  if (dragHandle != null && dragHandle.length > 0) {
-    var ariaLabelledBy = dragHandle.attr('aria-labelledby');
-    if (ariaLabelledBy == null) {
-      dragHandle.attr('aria-labelledby', this.listview._createSubId('instr'));
-    } else {
-      dragHandle.attr('aria-labelledby', ariaLabelledBy + ' ' + this.listview._createSubId('instr'));
-    }
-
-    // for touch draggable needs to be set prior to touch interaction
-    if (this.listview._isTouchSupport()) {
-      dragHandle.attr('draggable', 'true');
-    }
+  // for touch draggable needs to be set prior to touch interaction
+  if (dragHandle != null && dragHandle.length > 0 && this.listview._isTouchSupport()) {
+    dragHandle.attr('draggable', 'true');
   }
 };
 /** ****************************** Mouse down/up, touch start/end helpers ***********************************************/
@@ -712,6 +703,11 @@ ListViewDndContext.prototype._destroyDragImage = function () {
  * @private
  */
 ListViewDndContext.prototype._handleDragEnd = function (event) {
+  if (this.m_dragEndCallCheck) {
+    window.cancelAnimationFrame(this.m_dragEndCallCheck);
+    this.m_dragEndCallCheck = null;
+  }
+
   // remove css class and make sure it's visible again
   if (this.m_currentDragItem != null && this.m_dragItems != null) {
     // for drag affordance case
@@ -1308,6 +1304,14 @@ ListViewDndContext.prototype._handleDrop = function (event) {
 
     // the drop should be complete regardless the value of callback
     event.preventDefault();
+
+    // this is to ensure the handleDragEnd is invoked.  On Chrome, the dragEnd event handler
+    // is not called if the scroll position of the source has changed.
+    this.m_dragEndCallCheck = window.requestAnimationFrame(() => {
+      if (this.m_currentDragItem) {
+        this._handleDragEnd(event);
+      }
+    });
   }
 
   // reset drop variables

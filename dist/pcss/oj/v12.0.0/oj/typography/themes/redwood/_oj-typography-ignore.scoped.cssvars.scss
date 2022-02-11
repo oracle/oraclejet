@@ -1,0 +1,31 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.variables.typography.ignored.scoped") {
+
+.oj-private-scale-lg {
+
+    --oj-typography-heading-2xl-font-size:    40px;
+    --oj-typography-heading-xl-font-size:     36px;
+    --oj-typography-heading-lg-font-size:     32px;
+    --oj-typography-heading-md-font-size:     28px;
+    --oj-typography-heading-sm-font-size:     24px;
+    --oj-typography-heading-xs-font-size:     20px;
+
+    --oj-typography-subheading-2xl-font-size: 36px;
+    --oj-typography-subheading-xl-font-size:  32px;
+    --oj-typography-subheading-lg-font-size:  28px;
+    --oj-typography-subheading-md-font-size:  24px;
+    --oj-typography-subheading-sm-font-size:  20px;
+    --oj-typography-subheading-xs-font-size:  16px;
+
+    --oj-typography-body-xl-font-size:        20px;
+    --oj-typography-body-lg-font-size:        18px;
+    --oj-typography-body-md-font-size:        16px;
+    --oj-typography-body-sm-font-size:        13.744px;
+    --oj-typography-body-xs-font-size:        12px;
+    --oj-typography-body-2xs-font-size:       10px;
+
+   }
+}   

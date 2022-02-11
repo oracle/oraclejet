@@ -1,4 +1,4 @@
-import * as ts from "typescript";
+import * as ts from 'typescript';
 export declare function getDecorator(node: ts.Node, name: string): ts.Decorator;
 export declare function getDecorators(node: ts.Node, aliasToExport: Record<string, string>): Record<string, ts.Decorator>;
 export declare function getDecoratorName(decorator: ts.Decorator): string;

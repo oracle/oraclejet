@@ -1,0 +1,60 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example time-axis/themes/redwood/oj-time-axis.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.timeaxis") {
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-time-axis:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  /* Styling for the timeaxis widget */
+  .oj-timeaxis {
+    background-color: transparent;
+    border: 1px solid var(--oj-collection-border-color);
+    user-select: none;
+
+    outline: none;
+  }
+
+  /* Styling for the timeaxis labels */
+  .oj-timeaxis-label {
+    font-size: var(--oj-collection-header-font-size);
+    fill: var(--oj-collection-header-text-color);
+  }
+
+  /* Styling for the timeaxis separators */
+  .oj-timeaxis-separator {
+    stroke: var(--oj-collection-border-color);
+  }
+
+  .oj-table-header-row .oj-timeaxis-separator {
+    stroke: var(--oj-collection-border-color);
+  }
+
+  .oj-datagrid-column-header-cell .oj-timeaxis-separator {
+    stroke: var(--oj-collection-border-color);
+  }
+
+  /* Styling border for stamping onto ojTable header case:
+    All timeaxes does not have bottom border */
+  .oj-table-header-row .oj-timeaxis {
+    border-bottom: none;
+  }
+
+  /* Styling border for stamping onto ojDataGrid header case:
+    First timeaxis does not have border, all other timeaxes have top border */
+  .oj-datagrid-column-header-cell .oj-timeaxis {
+    border: none;
+  }
+
+  .oj-datagrid-column-header-cell .oj-timeaxis ~ .oj-timeaxis {
+    border-top: 1px solid var(--oj-collection-border-color);
+  }
+}

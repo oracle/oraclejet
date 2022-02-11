@@ -1,0 +1,50 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-collapsible.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-collapsible.scss";
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+  @include module-include-once("redwood.collapsible") {
+
+    .oj-collapsible-header .oj-collapsible-header-icon {
+      /*
+       * For a basic collapsible (not in an accordion)
+       * the closed font icon has some whitespace on the left side,
+       * use a negative margin to move over the icon
+       */
+      @include oj-ltr() {
+        margin: 0 0 0 -8px;
+      }
+      @include oj-rtl() {
+        margin: 0 -8px 0 0;
+      }
+    }
+
+    .oj-collapsible-close-icon {
+      @extend .oj-fwk-icon-caret-end;
+    }
+
+    .oj-collapsible-open-icon {
+      @extend  .oj-fwk-icon-caret-s;
+    }
+  }

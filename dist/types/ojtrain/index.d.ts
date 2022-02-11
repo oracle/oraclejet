@@ -25,26 +25,26 @@ export interface ojTrain extends baseComponent<ojTrainSettableProperties> {
 }
 export namespace ojTrain {
     interface ojBeforeDeselect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: Step;
+        toStep: Step;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeSelect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: Step;
+        toStep: Step;
         [propName: string]: any;
     }> {
     }
     interface ojDeselect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: Step;
+        toStep: Step;
         [propName: string]: any;
     }> {
     }
     interface ojSelect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: Step;
+        toStep: Step;
         [propName: string]: any;
     }> {
     }
@@ -79,26 +79,26 @@ export interface ojTrainSettablePropertiesLenient extends Partial<ojTrainSettabl
 export type TrainElement = ojTrain;
 export namespace TrainElement {
     interface ojBeforeDeselect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: ojTrain.Step;
+        toStep: ojTrain.Step;
         [propName: string]: any;
     }> {
     }
     interface ojBeforeSelect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: ojTrain.Step;
+        toStep: ojTrain.Step;
         [propName: string]: any;
     }> {
     }
     interface ojDeselect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: ojTrain.Step;
+        toStep: ojTrain.Step;
         [propName: string]: any;
     }> {
     }
     interface ojSelect extends CustomEvent<{
-        fromStep: string;
-        toStep: string;
+        fromStep: ojTrain.Step;
+        toStep: ojTrain.Step;
         [propName: string]: any;
     }> {
     }

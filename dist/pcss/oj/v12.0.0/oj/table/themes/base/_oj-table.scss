@@ -1,0 +1,1195 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example table/themes/redwood/oj-table.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.table") {
+  /* table */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-table:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+
+  /* Styling for the root component element. */
+  .oj-table {
+    position: relative;
+    z-index: 0;
+    line-height: normal;
+    font-size: inherit;
+    min-width: 240px;
+
+    min-height: calc(2 * var(--oj-collection-grid-row-height));
+
+    // prevent graying on iOS safari
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  /* Grid display styling for the root component element. */
+  .oj-table.oj-table-grid-display {
+    border: 1px solid var(--oj-collection-border-color);
+  }
+
+  /* Styling for the root component element with warning. */
+  .oj-table.oj-warning {
+    border: 1px solid var(--oj-core-warning-1);
+  }
+
+  /* Styling for the component div container element. */
+  .oj-table-container {
+    background-color: var(--oj-current-bg-color, var(--oj-collection-bg-color));
+    display: inline-block;
+    vertical-align: top;
+    clear: both;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .oj-table-scroller {
+    background-color: inherit;
+    overflow: auto;
+    // enable momentum based scrolling for touch devices
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .oj-table-external-scroll.oj-table-container,
+  .oj-table-external-scroll .oj-table-scroller {
+    overflow: visible;
+  }
+
+  .oj-table-stretch .oj-table-scroller {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+
+  .oj-table-scroll-vertical.oj-table-hide-vertical-scrollbar .oj-table-scroller,
+  .oj-table-hide-vertical-scrollbar .oj-table-scroller {
+    overflow-y: hidden;
+  }
+
+  .oj-table-width-container {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    visibility: hidden;
+  }
+
+  /* Styling for HTML table element. */
+  table.oj-table-element {
+    background-color: inherit;
+    box-sizing: border-box;
+    width: 100%;
+    outline: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: inherit;
+  }
+
+  .oj-table-sticky table.oj-table-element {
+    border-collapse: separate;
+  }
+
+  /* Styling for no data container. */
+  .oj-table-no-data-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Styling for HTML table element when column resizing. */
+  table.oj-table-element.oj-table-column-header-resizing {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+
+  /* Styling for the header element. */
+  .oj-table-header {
+    background-color: inherit;
+    color: var(--oj-collection-header-text-color);
+    border-bottom: 1px solid var(--oj-collection-border-color);
+
+    font-size: inherit;
+    overflow: hidden;
+  }
+
+  /* Styling for the header element when table has vertical or horizontal scrollbars. */
+  .oj-table-legacy-scroll .oj-table-header {
+    display: block;
+    position: relative;
+  }
+
+  /* Grid display styling for the header element. */
+  .oj-table-grid-display .oj-table-header {
+    background-color: var(--oj-collection-header-bg-color);
+    border-bottom: 1px solid var(--oj-collection-border-color);
+  }
+
+  .oj-table-sticky .oj-table-header,
+  .oj-table-grid-display .oj-table-sticky .oj-table-header {
+    border-bottom: none;
+  }
+
+  /* remove left and right borders on hover for grid display header */
+  .oj-table-grid-display .oj-table-column-header-cell.oj-hover {
+    box-shadow: none;
+  }
+
+  /* Styling for the header row element. */
+  .oj-table-header-row {
+    background-color: inherit;
+    height: var(--oj-collection-list-row-height);
+
+    font-size: inherit;
+    vertical-align: middle;
+  }
+
+  /* Grid display table styling for the header and footer row elements. */
+  .oj-table-grid-display .oj-table-header-row,
+  .oj-table-grid-display .oj-table-column-header-cell,
+  .oj-table-grid-display .oj-table-column-header-selector-cell,
+  .oj-table-grid-display .oj-table-footer-row,
+  .oj-table-grid-display .oj-table-footer-cell,
+  .oj-table-grid-display .oj-table-footer-selector-cell {
+    height: var(--oj-collection-grid-header-height);
+  }
+
+  /* Styling for the header row element when table is scrollable. */
+  .oj-table-legacy-scroll .oj-table-header-row {
+    min-height: var(--oj-collection-list-row-height);
+    height: auto;
+    display: block;
+    position: relative;
+  }
+
+  /* Grid display table styling for the header row element when table is scrollable. */
+  .oj-table-legacy-scroll.oj-table-grid-display .oj-table-header-row,
+  .oj-table-legacy-scroll.oj-table-grid-display .oj-table-footer-row {
+    min-height: var(--oj-collection-grid-header-height);
+  }
+
+  /* Styling for the column header elements. */
+  .oj-table-column-header-cell {
+    background-color: inherit;
+    font-size: var(--oj-collection-header-font-size);
+
+    font-weight: var(--oj-collection-header-font-weight);
+    padding-top: var(--oj-collection-grid-cell-padding);
+    padding-bottom: var(--oj-collection-grid-cell-padding);
+    height: var(--oj-collection-list-row-height);
+    vertical-align: middle;
+    float: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: start;
+    box-sizing: border-box;
+  }
+
+  .oj-table-column-header-cell,
+  .oj-table-data-cell,
+  .oj-table-footer-cell {
+    padding-inline-start: calc(var(--oj-table-cell-padding-horizontal) + 1px);
+    padding-inline-end: var(--oj-table-cell-padding-horizontal);
+  }
+
+  .oj-table-column-header-cell:first-child,
+  .oj-table-data-cell:first-child,
+  .oj-table-footer-cell:first-child {
+    padding-inline-start: var(--oj-table-cell-padding-horizontal);
+  }
+
+  .oj-table-grid-display .oj-table-column-header-cell,
+  .oj-table-grid-display .oj-table-data-cell,
+  .oj-table-grid-display .oj-table-footer-cell {
+    padding-inline-start: calc(var(--oj-collection-grid-cell-padding) + 1px);
+    padding-inline-end: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-grid-display .oj-table-column-header-cell:first-child,
+  .oj-table-grid-display .oj-table-data-cell:first-child,
+  .oj-table-grid-display .oj-table-footer-cell:first-child {
+    padding-inline-start: var(--oj-collection-grid-cell-padding);
+  }
+
+  /* Styling for the vertical grid lines for header, data, and footer cells. */
+  .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(:first-child):not(.oj-helper-hidden-accessible),
+  .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(:first-child):not(.oj-helper-hidden-accessible),
+  .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge):not(:first-child):not(.oj-helper-hidden-accessible) {
+    border-inline-start-style: solid;
+    border-inline-start-color: var(--oj-core-divider-color);
+    border-inline-start-width: 1px;
+  }
+
+  /* selection borders for column selection */
+  .oj-table-column-header-cell.oj-selected:not(:first-child),
+  .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell,
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child),
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell,
+  .oj-table-add-row-placeholder > td.oj-selected:not(:first-child),
+  .oj-table-add-row-placeholder > td.oj-selected + td,
+  .oj-table-footer-cell.oj-selected:not(:first-child),
+  .oj-table-footer-cell.oj-selected + .oj-table-footer-cell {
+    border-inline-start-style: solid;
+    border-inline-start-color: var(--oj-core-border-color-selected);
+    border-inline-start-width: 1px;
+  }
+
+  .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-column-header-cell.oj-selected:not(:first-child),
+  .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell,
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child),
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell,
+  .oj-table-footer-cell.oj-selected:not(:first-child),
+  .oj-table-footer-cell.oj-selected + .oj-table-footer-cell {
+    padding-inline-start: var(--oj-table-cell-padding-horizontal);
+  }
+
+  .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-grid-display .oj-table-data-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-grid-display .oj-table-footer-cell.oj-table-vgrid-lines:not(.oj-table-frozen-end.oj-table-frozen-edge),
+  .oj-table-grid-display .oj-table-column-header-cell.oj-selected:not(:first-child),
+  .oj-table-grid-display .oj-table-column-header-cell.oj-selected + .oj-table-column-header-cell,
+  .oj-table-grid-display .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child),
+  .oj-table-grid-display .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell,
+  .oj-table-grid-display .oj-table-footer-cell.oj-selected:not(:first-child),
+  .oj-table-grid-display .oj-table-footer-cell.oj-selected + .oj-table-footer-cell {
+    padding-inline-start: var(--oj-collection-grid-cell-padding);
+  }
+
+  /* Edit row styling for data cell elements. */
+  /* A helper class oj-table-data-cell-padding should be applied to editable components that should maintain padding in edit mode*/
+  .oj-table-body-row-edit .oj-table-data-cell:not(.oj-read-only):not(.oj-table-data-cell-padding),
+  /* A helper class oj-table-data-cell-no-padding should have padding 0*/
+  .oj-table-data-cell.oj-table-data-cell-no-padding {
+    padding: 0 !important;
+  }
+
+  .oj-table-data-cell {
+    padding-top: calc(var(--oj-collection-list-cell-padding-vertical) + 1px);
+    padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+  }
+
+  .oj-table-sticky:not(.oj-table-horizontal-grid) .oj-table-body-row:last-child > .oj-table-data-cell {
+    padding-bottom: calc(var(--oj-collection-list-cell-padding-vertical) + 1px);
+  }
+
+  .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
+    padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+  }
+
+  .oj-table-grid-display .oj-table-data-cell {
+    padding-top: calc(var(--oj-collection-grid-cell-padding) + 1px);
+    padding-bottom: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-sticky.oj-table-grid-display:not(.oj-table-horizontal-grid) .oj-table-body-row:last-child > .oj-table-data-cell {
+    padding-bottom: calc(var(--oj-collection-grid-cell-padding) + 1px);
+  }
+
+  .oj-table-sticky.oj-table-grid-display:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
+    padding-bottom: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-horizontal-grid:not(.oj-table-sticky) .oj-table-body-row:not(:first-child),
+  .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-data-cell,
+  .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-selector-cell,
+  .oj-table-sticky.oj-table-horizontal-grid:not(.oj-table-add-row) .oj-table-body-row:not(:first-child) > .oj-table-skeleton-cell,
+  .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-data-cell,
+  .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-selector-cell,
+  .oj-table-sticky.oj-table-horizontal-grid.oj-table-add-row .oj-table-body-row:not(:nth-child(2)) > .oj-table-skeleton-cell,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-fetch-skeleton-row:not(:first-child) > .oj-table-skeleton-cell {
+    border-top: 1px solid var(--oj-core-divider-color);
+  }
+
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-data-cell,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-body-row:last-child > .oj-table-selector-cell {
+    border-bottom: 1px solid var(--oj-core-divider-color);
+  }
+
+  /* selection borders for row selection */
+  .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child) > .oj-table-data-cell.oj-selected,
+  .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row > .oj-table-data-cell {
+    border-top: 1px solid var(--oj-core-border-color-selected);
+  }
+
+  .oj-table-sticky.oj-table-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:nth-child(2) > .oj-table-data-cell.oj-selected {
+    border-top: none;
+  }
+
+  .oj-table-sticky:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:last-child > .oj-table-data-cell.oj-selected {
+    border-bottom: 1px solid var(--oj-core-border-color-selected);
+  }
+
+  .oj-table-horizontal-grid .oj-table-data-cell,
+  .oj-table:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child) > .oj-table-data-cell.oj-selected,
+  .oj-table:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row > .oj-table-data-cell,
+  .oj-table-body-row:first-child > .oj-table-data-cell,
+  .oj-table-add-row .oj-table-body-row:nth-child(2) > .oj-table-data-cell,
+  .oj-table.oj-table-add-row:not(.oj-table-multiple-selection) .oj-table-body-row.oj-selected:not(:nth-child(2)) > .oj-table-data-cell.oj-selected {
+    padding-top: var(--oj-collection-list-cell-padding-vertical);
+  }
+
+  .oj-table-grid-display.oj-table-horizontal-grid .oj-table-data-cell,
+  .oj-table.oj-table-grid-display:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:first-child) > .oj-table-data-cell.oj-selected,
+  .oj-table.oj-table-grid-display:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected + .oj-table-body-row > .oj-table-data-cell,
+  .oj-table-grid-display .oj-table-body-row:first-child > .oj-table-data-cell,
+  .oj-table-grid-display.oj-table-add-row .oj-table-body-row:nth-child(2) > .oj-table-data-cell,
+  .oj-table.oj-table-grid-display.ojtable-add-row:not(.oj-table-multiple-row-selection) .oj-table-body-row.oj-selected:not(:nth-child(2)) > .oj-table-data-cell.oj-selected {
+    padding-top: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-sticky .oj-table-column-header-cell:not(.oj-helper-hidden-accessible),
+  .oj-table-sticky .oj-table-column-header-selector-cell:not(.oj-helper-hidden-accessible) {
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid var(--oj-collection-border-color);
+  }
+
+  /* padding end for the column header cell that has an icon */
+  .oj-table-column-header-cell.oj-table-sort {  
+    padding-inline-end: 0.5rem;
+  }
+
+  /* Styling for the table default selector cell */
+  .oj-table-column-header-selector-cell,
+  .oj-table-selector-cell {
+    background-color: inherit;
+    width: 2.75rem;
+    text-align: center;
+    padding: 0px;
+  }
+
+  .oj-table-data-cell.oj-table-frozen-start,
+  .oj-table-frozen-start {
+    position: sticky;
+    @include oj-ltr() {
+      left: 0;
+    }
+    @include oj-rtl() {
+      right: 0;
+    }
+  }
+
+  // placeholder for when the final UX design is known
+  .oj-table-frozen-start.oj-table-frozen-edge {
+    @include oj-ltr() {
+      box-shadow: 2px 0px 0px var(--oj-collection-border-color);
+    }
+    @include oj-rtl() {
+      box-shadow: -2px 0px 0px var(--oj-collection-border-color);
+    }
+  }
+
+  .oj-table-data-cell.oj-table-frozen-end,
+  .oj-table-frozen-end {
+    position: sticky;
+    @include oj-ltr() {
+      right: 0;
+    }
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  // placeholder for when the final UX design is known
+  .oj-table-frozen-end.oj-table-frozen-edge {
+    @include oj-ltr() {
+      box-shadow: -2px 0px 0px var(--oj-collection-border-color);
+    }
+    @include oj-rtl() {
+      box-shadow: 2px 0px 0px var(--oj-collection-border-color);
+    }
+  }
+
+  .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-start,
+  .oj-table-sticky .oj-table-column-header-selector-cell.oj-table-frozen-start {
+    z-index: 10;
+  }
+
+  .oj-table-sticky .oj-table-column-header-cell {
+    z-index: 9;
+  }
+
+  .oj-table-sticky .oj-table-column-header-cell.oj-table-frozen-end {
+    z-index: 11;
+  }
+
+  .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-start{
+    z-index: 4;
+  }
+
+  .oj-table-sticky .oj-table-add-row-placeholder td {
+    z-index: 3;
+  }
+
+  .oj-table-sticky .oj-table-add-row-placeholder td.oj-table-frozen-end {
+    z-index: 5;
+  }
+
+  .oj-table-sticky .oj-table-data-cell.oj-table-frozen-start,
+  .oj-table-sticky .oj-table-selector-cell.oj-table-frozen-start {
+    z-index: 1;
+  }
+
+  .oj-table-sticky .oj-table-data-cell.oj-table-frozen-end {
+    z-index: 2;
+  }
+
+  .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-start,
+  .oj-table-sticky .oj-table-footer-selector-cell.oj-table-frozen-start {
+    z-index: 7;
+  }
+
+  .oj-table-sticky .oj-table-footer-cell {
+    z-index: 6;
+  }
+
+  .oj-table-sticky .oj-table-footer-cell.oj-table-frozen-end {
+    z-index: 8;
+  }
+
+  // cap height of selector to row-height
+  .oj-table-body-row .oj-selector,
+  .oj-table-body-row .oj-selector .oj-selector-wrapper .oj-selectorbox {
+    max-height: var(--oj-collection-list-row-height);
+  }
+
+  // cap height of selector to row-height
+  .oj-table-grid-display .oj-table-body-row .oj-selector,
+  .oj-table-grid-display .oj-table-body-row .oj-selector .oj-selector-wrapper .oj-selectorbox {
+    max-height: calc(var(--oj-collection-grid-row-height) - 1px);
+  }
+
+  /* Style selector header padding to match the other cells heightwise */
+  .oj-table-column-header-selector-cell {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  /* Styling for the column header elements in selected state when table focused. */
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-selected,
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-selected,
+  /* Styling for the column header elements in selected state when table not focused. */
+  .oj-table:not(.oj-focus) .oj-table-column-header-cell.oj-selected,
+  .oj-table:not(.oj-focus) .oj-table-footer-cell.oj-selected {
+    background-image: linear-gradient(var(--oj-collection-header-bg-color-selected), var(--oj-collection-header-bg-color-selected));
+  }
+
+  /* Styling for the column header element in hover state. */
+  .oj-table-column-header-cell.oj-hover {
+    background-image: linear-gradient(var(--oj-collection-header-bg-color-hover), var(--oj-collection-header-bg-color-hover));
+    box-shadow: var(--oj-collection-border-color) 1px 0px 0px inset, var(--oj-collection-border-color) -1px 0px 0px inset;
+  }
+
+  /* Styling for the column header element in focused state. */
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-cell.oj-focus-highlight,
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-column-header-selector-cell.oj-focus-highlight,
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-cell.oj-focus-highlight,
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-footer-selector-cell.oj-focus-highlight {
+    outline-offset: -1px;
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+  /* Styling header that is draggable. */
+  .oj-table-column-header-cell.oj-draggable {
+    cursor: grab;
+  }
+
+  .oj-table-column-header-cell.oj-draggable:active {
+    cursor: grabbing;
+  }
+
+  /* Styling for the column header drag image. */
+  .oj-table-column-header-cell-drag-image {
+    opacity: 0.95;
+    background-color: var(--oj-collection-header-bg-color);
+    border: 1px solid var(--oj-core-divider-color);
+    box-shadow: var(--oj-core-box-shadow-lg);
+    border-radius: 6px;
+    cursor: grabbing;
+  }
+
+  /* Styling for the column header drag indicator after a column. */
+  .oj-table-column-header-cell.oj-table-column-header-drag-indicator-after,
+  .oj-table-data-cell.oj-table-column-header-drag-indicator-after,
+  .oj-table-footer-cell.oj-table-column-header-drag-indicator-after,
+  .oj-table-add-row-placeholder td.oj-table-column-header-drag-indicator-after,
+  .oj-table-column-header-cell.oj-table-column-resize-indicator,
+  .oj-table-data-cell.oj-table-column-resize-indicator {
+    border-inline-end-style: solid;
+    border-inline-end-color: var(--oj-core-drag-drop-line-color);
+    border-inline-end-width: 2px;
+  }
+
+  /* Styling for the column header drag indicator before a column. */
+  .oj-table-column-header-cell.oj-table-column-header-drag-indicator-before,
+  .oj-table-data-cell.oj-table-column-header-drag-indicator-before,
+  .oj-table-footer-cell.oj-table-column-header-drag-indicator-before,
+  .oj-table-add-row-placeholder td.oj-table-column-header-drag-indicator-before {
+    border-inline-start-style: solid;
+    border-inline-start-color: var(--oj-core-drag-drop-line-color);
+    border-inline-start-width: 2px;
+  }
+
+  /* Styling for the column header element. */
+  .oj-table-column-header {
+    position: relative;
+    float: none;
+    text-overflow: inherit;
+    overflow: inherit;
+    white-space: normal;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Styling for the column header text. */
+  .oj-table-column-header-text {
+    display: -webkit-box;
+    height: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+    vertical-align: middle;
+    -webkit-line-clamp: 3;
+    /* autoprefixer: off */
+    -webkit-box-orient: vertical;
+    /* autoprefixer: on */
+  }
+
+  .oj-table-show-required .oj-table-column-header-text {
+    margin-inline-end: 1.125rem;
+  }
+
+  /* Styling for the sort area around the icon */
+  .oj-table-sort-icon-container {
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--oj-core-touch-target-min-size);
+    width: var(--oj-core-touch-target-min-size);
+    min-width: var(--oj-core-touch-target-min-size);
+    vertical-align: middle;
+    border-radius: var(--oj-button-border-radius);
+    position: relative;
+    top: 0;
+    -webkit-user-select: none;
+    margin-inline-start: 4px;
+    @include oj-ltr() {
+      right: 0;
+    }
+
+    @include oj-rtl() {
+      left: 0;
+    }
+  }
+
+  /* Styling for both the sort icons and click area */
+  .oj-table-sort-icon-container .oj-table-column-header-asc-icon,
+  .oj-table-sort-icon-container .oj-table-column-header-dsc-icon,
+  .oj-table-sort-icon-container .oj-table-column-header-default-sort-icon {
+    flex: 0 1 auto;
+    font-size: inherit;
+  }
+
+  /* Styling for the sort icon container in hover state*/
+  .oj-table-sort-icon-container.oj-hover {
+    color: var(--oj-private-icon-color-hover);
+    background-color: var(--oj-private-icon-bg-color-hover);
+    border-color: var(--oj-private-icon-border-color-hover);
+  }
+
+  /* Styling for the sort icon container in active state*/
+  .oj-table-sort-icon-container.oj-active {
+    color: var(--oj-private-icon-color-active);
+    background-color: var(--oj-private-icon-bg-color-active);
+    border-color: var(--oj-private-icon-border-color-active);
+  }
+
+  /* Styling for disabled sort icons */
+  .oj-table-column-header-default-sort-icon.oj-disabled {
+    display: var(--oj-collection-default-sort-icon-display);
+  }
+
+  .oj-table-sort-icon-container .oj-table-column-header-default-sort-icon.oj-disabled {
+    color: inherit;
+  }
+
+  /* Styling for the column header resize indicator. */
+  .oj-table-column-header-resize-indicator {
+    position: absolute;
+    top: 0;
+    width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-style: solid;
+
+    border-color: var(--oj-collection-header-bg-color-selected);
+
+    pointer-events: none;
+  }
+
+  /* Styling for the data body element. */
+  .oj-table-body {
+    background-color: inherit;
+    font-size: inherit;
+    overflow: hidden;
+  }
+
+  /* Styling for the table body element when table is scrollable. */
+  .oj-table-legacy-scroll .oj-table-body {
+    display: block;
+    position: relative;
+    // enable momentum based scrolling for touch devices
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Styling for the table body element when table has vertical scrollbars. */
+  /* Firefox does not work correctly with overflow:auto, so we need to set scroll explicitly */
+  .oj-table-scroll-vertical:not(.oj-table-sticky) .oj-table-body,
+  .oj-table-scroll-vertical .oj-table-scroller {
+    overflow-y: scroll;
+  }
+
+  /* Styling for the table body element when table has horizontal scrollbars. */
+  /* Firefox does not work correctly with overflow:auto, so we need to set scroll explicitly */
+  .oj-table-scroll-horizontal:not(.oj-table-sticky) .oj-table-body,
+  .oj-table-scroll-horizontal .oj-table-scroller {
+    overflow-x: scroll;
+  }
+
+  /* Grid display styling for the data body element. */
+  .oj-table-grid-display .oj-table-body {
+    background-color: var(--oj-collection-bg-color);
+  }
+
+  /* Styling for the table body row elements. */
+  .oj-table-body-row,
+  .oj-table-add-row-placeholder {
+    background-color: inherit;
+    height: var(--oj-collection-list-row-height);
+    font-size: inherit;
+  }
+
+  .oj-table-add-row-placeholder td {
+    padding: 0px;
+    background-color: inherit;
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid var(--oj-collection-border-color);
+  }
+
+  .oj-table-body-scroll-buffer {
+    background-color: inherit;
+    height: 0px;
+  }
+
+  .oj-table-legacy-width-buffer {
+    visibility: collapse;
+    height: 0px;
+  }
+
+  .oj-table-legacy-width-buffer-cell {
+    height: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  .oj-table-legacy-sizer {
+    visibility: hidden;
+    position: relative;
+    top: 0px;
+    left: 0px;
+    height: 0px;
+    width: 0px;
+  }
+
+  .oj-table:not(.oj-table-add-row) .oj-table-body-row:first-child,
+  .oj-table.oj-table-add-row .oj-table-body-row:nth-child(2) {
+    height: calc(var(--oj-collection-list-row-height) - 1px);
+  }
+
+  .oj-table-sticky .oj-table-body-row:last-child,
+  .oj-table-sticky .oj-table-body-row:last-child > .oj-table-data-cell {
+    height: calc(var(--oj-collection-list-row-height) + 1px);
+  }
+
+  /* Grid display table styling for the data row elements. */
+  .oj-table-grid-display .oj-table-body-row,
+  .oj-table-grid-display .oj-table-add-row-placeholder {
+    height: var(--oj-collection-grid-row-height);
+  }
+
+  .oj-table-grid-display:not(.oj-table-add-row) .oj-table-body-row:first-child,
+  .oj-table-grid-display.oj-table-add-row .oj-table-body-row:nth-child(2) {
+    height: calc(var(--oj-collection-grid-row-height) - 1px);
+  }
+
+  .oj-table-sticky.oj-table-grid-display .oj-table-body-row:last-child,
+  .oj-table-sticky.oj-table-grid-display .oj-table-body-row:last-child > .oj-table-data-cell {
+    height: calc(var(--oj-collection-grid-row-height) + 1px);
+  }
+
+  /* Styling for the data row elements in focus state. */
+  .oj-table:not(.oj-table-sticky) .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit),
+  .oj-table:not(.oj-table-sticky) .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight,
+  .oj-table:not(.oj-table-sticky) .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight {
+    outline-offset: -1px;
+    outline: dotted 1px var(--oj-core-focus-border-color);
+  }
+
+  /* Styling for the data row elements in focus state. */
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
+    position: absolute;
+    box-sizing: border-box;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    content: "";
+    pointer-events: none;
+    border-top: 1px dotted var(--oj-core-focus-border-color);
+    border-bottom: 1px dotted var(--oj-core-focus-border-color);
+  }
+
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell::after,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell::after,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td::after,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td::after,
+  .oj-table-sticky.oj-table-horizontal-grid .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td::after {
+    bottom: 1px;
+  }
+
+  /* Styling for the data row elements in focus state. */
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:first-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:first-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:first-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:first-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:first-child::after {
+    border-inline-start-style: dotted;
+    border-inline-start-color: var(--oj-core-focus-border-color);
+    border-inline-start-width: 1px;
+  }
+
+  /* Styling for the data row elements in focus state. */
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-data-cell:last-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) .oj-table-selector-cell:last-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-add-row-placeholder.oj-focus-highlight:not(.oj-table-placeholder-row-edit) td:last-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight td:last-child::after,
+  .oj-table-sticky .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight td:last-child::after {
+    border-inline-end-style: dotted;
+    border-inline-end-color: var(--oj-core-focus-border-color);
+    border-inline-end-width: 1px;
+  }
+
+  /* Styling row that is draggable. */
+  .oj-table-body-row.oj-draggable {
+    cursor: grab;
+  }
+
+  .oj-table-body-row.oj-draggable:active {
+    cursor: grabbing;
+  }
+  
+  .oj-table-container-drag-image {
+    // When redwood bg color class is added to table, drag image dosen't have
+    // transparent background in Mac. Added !important to override this behaviour.
+    background-color: transparent !important;
+    border-color: transparent !important;
+    position: absolute;
+    top: -10000px;
+  }
+
+  /* Styling for drag image of row. */
+  .oj-table-body-row-drag-image {
+    opacity: 0.95;
+    background-color: var(--oj-collection-bg-color);
+    border: 1px solid var(--oj-core-divider-color);
+    box-shadow: var(--oj-core-box-shadow-md);
+    border-radius: 6px;
+    cursor: grabbing;
+  }
+
+  .oj-table-body-row-drag-image td:first-child {
+    @include oj-ltr() {
+      border-radius: 6px 0 0 6px;
+    }
+    @include oj-rtl() {
+      border-radius: 0 6px 6px 0;
+    }
+  }
+
+  .oj-table-body-row-drag-image td:last-child {
+    @include oj-ltr() {
+      border-radius: 0 6px 6px 0;
+    }
+    @include oj-rtl() {
+      border-radius: 6px 0 0 6px;
+    }
+  }
+
+  /* Styling for drag source when dnd with other component */
+  .oj-table-drag-source-opaque {
+    opacity: 0.3;
+  }
+
+  /* Styling for drag source when dnd within component */
+  .oj-table-row-drag-source-hide {
+    display: none;
+  }
+
+  /* Styling for drop target when target table is empty. */
+  .oj-table-drop-target-empty .oj-table-body-row-drag-indicator {
+    background-color: var(--oj-core-drag-drop-color-1);
+  }
+
+  /* Styling for the data row drag indicator. */
+  .oj-table-body-row-drag-indicator {
+    height: var(--oj-collection-grid-row-height);
+  }
+
+  /* Styling for drop target when dnd with other component */
+  .oj-table-body-row-drop-target {
+    width: 100%;
+    height: 2px;
+    background-color: var(--oj-core-drag-drop-line-color);
+  }
+
+  .oj-table-column-drop-indicator {
+    position: absolute;
+    top: 0;
+    width: 0;
+    border-inline-start-style: solid;
+    border-inline-start-color: var(--oj-core-drag-drop-line-color);
+    border-inline-start-width: 2px;
+    z-index: 12;
+  }
+
+  /* Styling for the data cell elements. */
+  .oj-table-data-cell {
+    background-color: inherit;
+    font-size: inherit;
+    font-weight: normal;
+    min-width: var(--oj-typography-body-md-font-size);
+    min-height: var(--oj-typography-body-md-font-size);
+    height: var(--oj-collection-list-row-height);
+    float: none;
+    text-align: start;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .oj-table:not(.oj-table-add-row) .oj-table-body-row:first-child > .oj-table-data-cell,
+  .oj-table.oj-table-add-row .oj-table-body-row:nth-child(2) > .oj-table-data-cell {
+    height: calc(var(--oj-collection-list-row-height) - 1px);
+  }
+
+  /* Grid display table styling for the data cell elements. */
+  .oj-table-grid-display .oj-table-data-cell {
+    height: var(--oj-collection-grid-row-height);
+  }
+
+  .oj-table-grid-display:not(.oj-table-add-row) .oj-table-body-row:first-child > .oj-table-data-cell,
+  .oj-table-grid-display.oj-table-add-row .oj-table-body-row:nth-child(2) > .oj-table-data-cell {
+    height: calc(var(--oj-collection-grid-row-height) - 1px);
+  }
+
+  /* Edit row styling for data cell elements. */
+  .oj-table-data-cell.oj-table-data-cell-edit {
+    outline: 1px solid var(--oj-collection-editable-cell-border-color-focus);
+    outline-offset: -1px;
+  }
+
+  /* Styling on read only table cells, oj-readOnly must be applied by the application */
+  .oj-table-data-cell.oj-read-only {
+    background-image: linear-gradient(var(--oj-collection-editable-cell-bg-color-read-only), var(--oj-collection-editable-cell-bg-color-read-only));
+  }
+
+  /* Styling for the data cell elements in selected state when table focused. */
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-data-cell.oj-selected,
+  .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-selector-cell.oj-selected,
+  /* Styling for the data cell elements in selected state when table not focused. */
+  .oj-table:not(.oj-focus) .oj-table-data-cell.oj-selected,
+  .oj-table:not(.oj-focus) .oj-table-selector-cell.oj-selected {
+    background-image: linear-gradient(var(--oj-core-bg-color-selected), var(--oj-core-bg-color-selected));
+  }
+
+  /* Styling for the data cell elements in selected state when table in high contrast mode. */
+  .oj-hicontrast .oj-table-data-cell.oj-selected,
+  .oj-hicontrast .oj-table-selector-cell.oj-selected {
+    border: 3px double;
+  }
+
+  /* Styling for the data cell elements in hover state. */
+  .oj-table-data-cell.oj-hover,
+  .oj-table-selector-cell.oj-hover {
+    background-image: linear-gradient(var(--oj-core-bg-color-hover), var(--oj-core-bg-color-hover));
+  }
+
+  /* Styling on form controls stamped inside a table */
+  .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+    @include oj-ltr() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-table-cell-padding-horizontal) + " 0 " + calc(var(--oj-table-cell-padding-horizontal) + 1px));
+    }
+    @include oj-rtl() {
+      @include oj-form-control-padding-override($padding: "0 " + calc(var(--oj-table-cell-padding-horizontal) + 1px) + " 0 " + var(--oj-table-cell-padding-horizontal));
+    }
+  }
+
+  /* Styling on form controls stamped inside a table */
+  .oj-table-data-cell.oj-table-vgrid-lines.oj-form-control-inherit:not(.oj-form-control-default),
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child).oj-form-control-inherit:not(.oj-form-control-default),
+  .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+    @include oj-ltr() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-table-cell-padding-horizontal) + " 0 " + var(--oj-table-cell-padding-horizontal));
+    }
+    @include oj-rtl() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-table-cell-padding-horizontal) + " 0 " + var(--oj-table-cell-padding-horizontal));
+    }
+  }
+
+  /* Styling on form controls stamped inside a table */
+  .oj-table-grid-display .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+    @include oj-ltr() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-collection-grid-cell-padding) + " 0 " + calc(var(--oj-collection-grid-cell-padding) + 1px));
+    }
+    @include oj-rtl() {
+      @include oj-form-control-padding-override($padding: "0 " + calc(var(--oj-collection-grid-cell-padding) + 1px) + " 0 " + var(--oj-collection-grid-cell-padding));
+    }
+  }
+
+  /* Styling on form controls stamped inside a table */
+  .oj-table-grid-display .oj-table-data-cell.oj-table-vgrid-lines.oj-form-control-inherit:not(.oj-form-control-default),
+  .oj-table-grid-display .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected:not(:first-child).oj-form-control-inherit:not(.oj-form-control-default),
+  .oj-table-grid-display .oj-table-body-row:not(.oj-selected) > .oj-table-data-cell.oj-selected + .oj-table-data-cell.oj-form-control-inherit:not(.oj-form-control-default) {
+    @include oj-ltr() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-collection-grid-cell-padding) + " 0 " + var(--oj-collection-grid-cell-padding));
+    }
+    @include oj-rtl() {
+      @include oj-form-control-padding-override($padding: "0 " + var(--oj-collection-grid-cell-padding) + " 0 " + var(--oj-collection-grid-cell-padding));
+    }
+  }
+
+  .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {
+    justify-content: flex-end;
+  }
+
+  /* Styling for the footer. */
+  .oj-table-footer {
+    background-color: inherit;
+    font-size: inherit;
+    overflow: hidden;
+  }
+
+  /* Styling for the footer when table has vertical or horizontal scrollbars. */
+  .oj-table-legacy-scroll .oj-table-footer {
+    display: block;
+    position: relative;
+  }
+
+  /* Grid display styling for the footer. */
+  .oj-table-grid-display .oj-table-footer {
+    background-color: var(--oj-collection-header-bg-color);
+    border-top: 1px solid var(--oj-collection-border-color);
+  }
+
+  /* Styling for the footer row. */
+  .oj-table-footer-row {
+    background-color: inherit;
+    height: var(--oj-collection-list-row-height);
+
+    font-size: inherit;
+  }
+
+  /* Styling for the footer row when table is scrollable. */
+  .oj-table-legacy-scroll .oj-table-footer-row {
+    min-height: var(--oj-collection-list-row-height);
+    height: auto;
+    display: block;
+    position: relative;
+  }
+
+  /* Styling for the footer cells. */
+  .oj-table-footer-cell,
+  .oj-table-footer-selector-cell {
+    background-color: inherit;
+    float: none;
+    height: var(--oj-collection-list-row-height);
+
+    padding-top: var(--oj-collection-list-cell-padding-vertical);
+    padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+
+    font-size: inherit;
+    box-sizing: border-box;
+  }
+
+  .oj-table-sticky .oj-table-footer-cell,
+  .oj-table-sticky .oj-table-footer-selector-cell {
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid var(--oj-collection-border-color);
+  }
+
+  /* Styling for the inline message. */
+  .oj-table-inline-message {
+    padding: 10px;
+    position: absolute;
+  }
+
+  /* Styling for the inline message with warning. */
+  .oj-table-inline-message.oj-warning {
+    background-color: var(--oj-private-message-component-inline-bg-color-warning);
+    border: 1px solid var(--oj-private-message-component-inline-border-color-warning);
+
+    border-top-width: 0;
+  }
+
+  /* Styling for the status message. */
+  .oj-table-status-message {
+    position: absolute;
+  }
+
+  /* Styling for the status message text. */
+  // InfoBackground & InfoText are CSS2 system colors
+  .oj-table-status-message-text {
+    background-color: InfoBackground;
+    color: InfoText;
+
+    border: 1px var(--oj-core-divider-color) solid;
+    padding: var(--oj-collection-grid-cell-padding);
+
+    display: inline-block;
+  }
+
+  .oj-table-skeleton-cell {
+    padding: 0px;
+  }
+
+  /* Styling for skeleton */
+  .oj-table-skeleton-container {
+    display: flex;
+    align-items: center;
+    height: var(--oj-collection-list-row-height);
+    padding-top: var(--oj-collection-list-cell-padding-vertical);
+    padding-bottom: var(--oj-collection-list-cell-padding-vertical);
+    padding-left: var(--oj-table-cell-padding-horizontal);
+    padding-right: var(--oj-table-cell-padding-horizontal);
+    box-sizing: border-box;
+  }
+
+  .oj-table-skeleton {
+    height: 1rem;
+    width: 100%;
+    background-color: var(--oj-animation-skeleton-bg-end-color);
+  }
+
+  /* Grid display styling for skeleton. */
+  .oj-table-grid-display .oj-table-skeleton-container {
+    height: var(--oj-collection-grid-row-height);
+    padding-left: var(--oj-collection-grid-cell-padding);
+    padding-right: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-horizontal-grid:not(.oj-table-grid-display) .oj-table-skeleton-container {
+    height: calc(var(--oj-collection-list-row-height) - 1px);
+  }
+
+  .oj-table-horizontal-grid:not(.oj-table-grid-display) .oj-table-status-message .oj-table-skeleton-container,
+  .oj-table-horizontal-grid:not(.oj-table-grid-display) .oj-table-progressive-skeleton-row .oj-table-skeleton-container {
+    height: var(--oj-collection-list-row-height);
+  }
+
+  /* Styling for the body message. */
+  .oj-table-body-message {
+    color: var(--oj-core-text-color-primary);
+    padding: var(--oj-collection-grid-cell-padding);
+  }
+
+  .oj-table-body-message-row,
+  .oj-table-no-data-row {
+    position: relative;
+  }
+
+  /* Styling for a panel that can attach to the bottom of the table
+       and match the table colors. An app developer can put a paging control
+       in a div with this class, for example. */
+  .oj-table-panel-bottom {
+    background-color: inherit;
+  }
+
+  /* Styling for a panel that can attach to the bottom of the table
+       and match the table colors when table is in grid display. An app developer
+       can put a paging control in a div with this class, for example. */
+  .oj-table-panel-bottom-grid-display {
+    border-style: solid;
+
+    border-color: var(--oj-collection-border-color);
+    background-color: var(--oj-collection-free-space-bg-color);
+
+    border-width: 0 1px 1px;
+  }
+
+  /* Styling for the resize dialog in mobile device. */
+  .oj-table-resize-dialog-mobile {
+    width: 100vw;
+    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
+    border-radius: 0px;
+  }
+
+  /* Styling for the show required header icon. */
+  .oj-table-column-header-show-required-icon {
+    position: absolute;
+    font-family: inherit;
+    color: var(--oj-collection-header-text-color);
+    font-size: var(--oj-collection-header-font-size);
+    font-weight: var(--oj-collection-header-font-weight);
+    top: 0px;
+    padding-inline-start: 0.25rem;
+    padding-inline-end: 0.25rem;
+    @include oj-ltr() {
+      right: 0px;
+    }
+    @include oj-rtl() {
+      left: 0px;
+    }
+  }
+
+  .oj-table-sort .oj-table-column-header-show-required-icon {
+    @include oj-ltr() {
+      right: var(--oj-core-touch-target-min-size);
+    }
+    @include oj-rtl() {
+      left: var(--oj-core-touch-target-min-size);
+    }
+  }
+
+  .oj-table-column-header-show-required-icon:before {
+    content: "*";
+  }
+
+  .oj-table-hidden-cell {
+    display: none;
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -19,6 +19,7 @@ import { getPropagationMetadataViaCache } from 'ojs/ojbindpropagation';
 import KeySetImpl from 'ojs/ojkeysetimpl';
 import Context from 'ojs/ojcontext';
 import templateEngine from 'ojs/ojtemplateengine';
+import oj$2 from 'ojs/ojcore-base';
 import * as KnockoutTemplateUtils from 'ojs/ojknockouttemplateutils';
 import * as ResponsiveKnockoutUtils from 'ojs/ojresponsiveknockoututils';
 
@@ -1121,7 +1122,7 @@ ComponentBinding._OPTION_MAP = '_ojOptions';
 /**
  * @private
  */
-ComponentBinding._INSTANCE = ComponentBinding.create(['ojComponent', 'jqueryUI']);
+ComponentBinding._INSTANCE = ComponentBinding.create(['__ojComponentPrivate', 'jqueryUI']);
 
 /**
  * @ignore
@@ -3292,7 +3293,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
 
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  *
@@ -3420,6 +3421,29 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     // eslint-disable-next-line no-param-reassign
     elem._noDataTemplateNode = noDataTemplate;
   }
+
+  var insertAfterAndInvokeAttached = function (container, nodeOrNodeArray, insertAfterNode) {
+    if (Array.isArray(nodeOrNodeArray)) {
+      var frag = document.createDocumentFragment();
+
+      for (let i = 0, len = nodeOrNodeArray.length; i !== len; ++i) {
+        frag.appendChild(nodeOrNodeArray[i]);
+      }
+
+      virtualElements.insertAfter(container, frag, insertAfterNode); // @HTMLUpdateOK
+
+      if (oj$2.Components) {
+        for (let i = 0, len = nodeOrNodeArray.length; i !== len; ++i) {
+          oj$2.Components.subtreeAttached(nodeOrNodeArray[i]);
+        }
+      }
+    } else {
+      virtualElements.insertAfter(container, nodeOrNodeArray, insertAfterNode); // @HTMLUpdateOK
+      if (oj$2.Components) {
+        oj$2.Components.subtreeAttached(nodeOrNodeArray);
+      }
+    }
+  };
 
   // store a symbol for caching the pending delete info index in the data item objects
   var PENDING_DELETE_INDEX_KEY = createSymbolOrString('_ko_ffe_pending_delete_index');
@@ -4049,19 +4073,13 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
   };
 
   OjForEach.prototype.insertAllAfter = function (nodeOrNodeArrayToInsert, insertAfterNode) {
-    var len;
     var i;
     var containerNode = this.element;
 
     if (nodeOrNodeArrayToInsert.length === 1) {
-      virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode); // @HTMLUpdateOK
+      insertAfterAndInvokeAttached(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode);
     } else if (supportsDocumentFragment) {
-      var frag = document.createDocumentFragment();
-
-      for (i = 0, len = nodeOrNodeArrayToInsert.length; i !== len; ++i) {
-        frag.appendChild(nodeOrNodeArrayToInsert[i]);
-      }
-      virtualElements.insertAfter(containerNode, frag, insertAfterNode); // @HTMLUpdateOK
+      insertAfterAndInvokeAttached(containerNode, nodeOrNodeArrayToInsert, insertAfterNode);
     } else {
       // Nodes are inserted in reverse order - pushed down immediately after
       // the last node for the previous item or as the first node of element.
@@ -4070,7 +4088,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
         if (!child) {
           break;
         }
-        virtualElements.insertAfter(containerNode, child, insertAfterNode); // @HTMLUpdateOK
+        insertAfterAndInvokeAttached(containerNode, child, insertAfterNode);
       }
     }
     return nodeOrNodeArrayToInsert;
@@ -4471,8 +4489,10 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * <p>Note that the &lt;oj-bind-for-each&gt; element will be removed from the DOM after binding is applied.
  * For slotting, applications need to wrap the oj-bind-for-each element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
  * The oj-bind-for-each element does not support the slot attribute.</p>
- * <p>Also note that if the &lt;oj-bind-for-each&gt; element is being used to programmatically build an HTML table,
- * it must be placed in the view of an oj-module and loaded via ModuleElementUtils.</p>
+ * <p>Also note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
+ * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+ * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
+ * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.</p>
  *
  * @example <caption>Initialize the oj-bind-for-each - access data using <code>$current</code>:</caption>
  *  &lt;oj-bind-for-each data='[{"type":"Apple"},{"type":"Orange"}]'>
@@ -4547,6 +4567,7 @@ oj$1._registerLegacyNamespaceProp('KnockoutTemplateUtils', KnockoutTemplateUtils
  * @ojshortdesc The noData slot is used to specify the content to render when the data is empty.
  * @ojmaxitems 1
  * @memberof oj.ojBindForEach
+ * @ojtemplateslotprops {}
  *
  * @ojtsexample <caption>Initialize the oj-bind-for-each with a noData slot specified:</caption>
  * &lt;oj-bind-for-each>

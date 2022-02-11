@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -11,7 +11,7 @@ import { info, warn } from 'ojs/ojlogger';
 import { getDefaultValue } from 'ojs/ojmetadatautils';
 import 'ojs/ojcomposite-knockout';
 import 'ojs/ojcustomelement';
-import { ElementState, CustomElementUtils, ElementUtils, CHILD_BINDING_PROVIDER, JetElementError } from 'ojs/ojcustomelement-utils';
+import { ElementState, CustomElementUtils, ElementUtils, CHILD_BINDING_PROVIDER, transformPreactValue, JetElementError } from 'ojs/ojcustomelement-utils';
 
 const CompositeInternal = {};
 
@@ -238,8 +238,7 @@ oj.CollectionUtils.copyInto(CompositeElementBridge.proto,
         if (!this._BRIDGE.SaveEarlyPropertySet(this._ELEMENT, property, value)) {
           if (bOuterSet) {
             // eslint-disable-next-line no-param-reassign
-            value =
-            CustomElementUtils.convertEmptyStringToUndefined(this._ELEMENT, propertyMeta, value);
+            value = transformPreactValue(this._ELEMENT, propertyMeta, value);
           }
           // Property trackers are observables are referenced when the property is set or retrieved,
           // which allows us to automatically update the View when the property is mutated.
@@ -1628,7 +1627,7 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * The View can also contain slots where application provided DOM can go.
  * Complex composite components which can contain additional composites and/or content for child facets defined in its
  * associated View can be constructed via slotting. There are two ways to define a composite's slots, using either an
- * <a href="oj.ojBindSlot.html">oj-bind-slot</a> element or an <a href="oj.ojBindSlot.html">oj-bind-template-slot</a>
+ * <a href="oj.ojBindSlot.html">oj-bind-slot</a> element or an <a href="oj.ojBindTemplateSlot.html">oj-bind-template-slot</a>
  * element to indicate that that slot's content will be stamped using an application provided template. See the relevant
  * slot API docs for more information.
  * </p>
@@ -2302,6 +2301,11 @@ Composite.__COMPOSITE_PROP = '__oj_composite';
  * </pre>
  *
  * <h4>View</h4>
+ * Note that if you want to build an HTML table using &lt;oj-bind-for-each&gt; element the html content must be parsed
+ * by <a href="HtmlUtils.html#stringToNodeArray">HtmlUtils.stringToNodeArray()</a> method. Keep in mind that the composite
+ * views and the oj-module views that are loaded via ModuleElementUtils are already using that method. Thus to create
+ * a table you can either place the content into a view or call HtmlUtils.stringToNodeArray() explicitly to process the content.
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;table>

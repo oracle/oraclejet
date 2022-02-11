@@ -625,6 +625,7 @@ export interface ojInputDateTime<SP extends ojInputDateTimeSettableProperties = 
             messageDetail?: string;
             messageSummary?: string;
         };
+        time?: string;
         tooltipCalendar?: string;
         tooltipCalendarDisabled?: string;
         tooltipCalendarTime?: string;
@@ -807,6 +808,7 @@ export interface ojInputDateTimeSettableProperties extends ojInputDateSettablePr
             messageDetail?: string;
             messageSummary?: string;
         };
+        time?: string;
         tooltipCalendar?: string;
         tooltipCalendarDisabled?: string;
         tooltipCalendarTime?: string;

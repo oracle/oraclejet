@@ -1,0 +1,136 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+//------------------------------------------------------------
+// do not move anything below this line to the common directory,
+// all the variables you see here are either deprecated or not yet public
+
+
+
+// ideally we will use css generated tails in future, so
+// hiding these vars for now.
+
+$privateThemeName:                                             redwood !default;
+$privateThemeTargetPlatform:                                   all !default;
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+// path to images
+$imageDir: "images/" !default;
+
+// path to (icon) fonts
+$fontDir: "fonts/" !default;
+
+// focus
+//----------------------------------
+// This variable is applicable to components and patterns that use the oj-focus-highlight class
+// and do not have a component- or pattern-specific mechanism for controlling when it is applied.
+//
+// The oj-focus-highlight class applies focus styling that may not be desirable
+// when the focus results from pointer interaction (touch or mouse), but which is
+// needed for accessibility when the focus occurs by a non-pointer mechanism, for
+// example keyboard or initial page load.
+//
+// The 3 valid values of this variable indicate for which focuses the class should be applied:
+//
+// - "nonPointer": the class is applied only for focuses not resulting from pointer
+//   (mouse or touch) interaction.
+// - "all": the class is applied for all focuses.
+// - "none": the class is never applied. This value is not accessible by itself, and is
+//   intended for use when the application wishes to use its own event listener to precisely
+//   control when the class is applied.  The application must ensure the accessibility of the result.
+$privateFocusHighlightPolicy: nonPointer !default;
+
+// responsive screen sizes
+//----------------------------------
+// In some apps it may be preferable to change
+// these values to rems instead of pixels.
+//
+// For pixel values here is some helpful info on device sizes:
+// http://www.mydevice.io/devices/
+// $screenSmallRange:  0, 767px !default;
+// $screenMediumRange: 768px, 1023px !default;
+// $screenLargeRange:  1024px, 1280px !default;
+// $screenXlargeRange: 1281px, null !default;
+
+$screenSmallMinWidth:     0 !default;
+$screenSmallMaxWidth:     599.9px !default;
+$screenMediumMinWidth:    600px !default;
+$screenMediumMaxWidth:    1023.9px !default;
+$screenLargeMinWidth:     1024px !default;
+$screenLargeMaxWidth:     1439.9px !default;
+$screenXlargeMinWidth:    1440px !default;
+$screenXlargeMaxWidth:    null !default;
+
+
+// responsive media queries
+//----------------------------------
+// You will see "print" on some media queries below.
+// By default printing portrait is treated as a medium screen and
+// printing landscape is treated as a large screen.
+
+// the $responsiveQueryXYZ variables can be set to 'none' if
+// you don't want to render a particular set of classes,
+// for example if you don't want xlarge classes you could set:
+//    $screenLargeRange:          1024px, null !default;
+//    $screenXlargeRange:         none;
+//    $responsiveQueryLargeOnly:  none;
+//    $responsiveQueryXlargeUp:   none;
+$responsiveQuerySmallUp:    "print, screen" !default;
+$responsiveQuerySmallOnly:  "screen and (max-width: #{$screenSmallMaxWidth})" !default;
+
+$responsiveQueryMediumUp:   "print, screen and (min-width: #{$screenMediumMinWidth})" !default;
+$responsiveQueryMediumOnly: "print and (orientation: portrait), screen and (min-width: #{$screenMediumMinWidth}) and (max-width: #{$screenMediumMaxWidth})" !default;
+$responsiveQueryMediumDown: "print and (orientation: portrait), screen and (max-width: #{$screenMediumMaxWidth})" !default;
+
+$responsiveQueryLargeUp:    "print and (orientation: landscape), screen and (min-width: #{$screenLargeMinWidth})" !default;
+$responsiveQueryLargeOnly:  "print and (orientation: landscape), screen and (min-width: #{$screenLargeMinWidth}) and (max-width: #{$screenLargeMaxWidth})" !default;
+$responsiveQueryLargeDown:  "print and (orientation: landscape), screen and (max-width: #{$screenLargeMaxWidth})" !default;
+
+$responsiveQueryXlargeUp:   "screen and (min-width: #{$screenXlargeMinWidth})" !default;
+// by default there is no xxl screen range variable.
+// to add support for an xxl range you can do something like
+// the following in your settings file :
+//
+//     $screenXlargeMaxWidth:     1799.9px;
+//     $screenXXlargeMinWidth:    1800px !default;
+//     $responsiveQueryXlargeOnly:  "screen and (min-width: #{$screenXlargeMinWidth}) and (max-width: #{$screenXlargeMaxWidth})" !default;
+//     $responsiveQueryXLargeDown:  "screen and (max-width: #{$screenXlargeMaxWidth})" !default;
+//     $responsiveQueryXXlargeUp:   "screen and (min-width: #{$screenXXlargeMinWidth})" !default;
+$privateResponsiveQueryXlargeOnly: null !default;
+$privateResponsiveQueryXlargeDown: null !default;
+$privateResponsiveQueryXXlargeUp:  null !default;
+
+// by default the print query is set to null,
+// to generate print classes change the value to "print"
+$privateResponsiveQueryPrint:      null !default;
+
+// the default point at which we consider a screen a high resolution
+// (or retina) display.
+//
+// The value is set to 1.5 because as of 2014 there's a lot
+// of Android devices out there that are half-way between the
+// legacy screen resolutions and retina (aka "xhdpi" in Google's terminology)
+// they use a 1.5 factor so the default device pixel ratio is 1.5
+//
+// NOTE: in order to allow stand alone use of these utility mixins
+// this variable is also defined in _oj.utilities.icons.scss.
+// Because of the !default, the actual value will be the value
+// in the file loaded first.
+$privateHighResolutionDevicePixelRatio: 1.5 !default;
+
+// loading indicator
+//------------------------------------
+// Duration in ms before showing load indicator
+// Currently this is used by collection components such as datagrid, table, listview
+// but is generally applicable in places where loading indicator is used
+$privateLoadingIndicatorDelayDuration: "50" !default;
+
+// todo: why are these here? they should be in css vars
+$privateFormControlBorderWidth: 1px 1px 1px 1px !default;
+$privateFormControlMessagingBorderWidth: 2px 2px 2px 2px !default;
+$privateFormControlInputBorderWidthFocus: $privateFormControlBorderWidth !default;
+$privateFormControlLabelEdgeDefault: inside !default;
+// todo: why do I get a compile error if I don't have this here?
+$privateInputFormControlReadonlyDefault: div !default;
+$privateFormControlUseUserAssistanceOptionDefault: use !default;

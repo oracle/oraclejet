@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../button/themes/redwood/_oj-button.cssvars.scss";
+
+@include module-include-once("redwood.variables.buttonset") {
+
+:root {
+
+  // buttonset
+  // --------------------------
+  --oj-private-buttonset-solid-chrome-internal-border-color:                     rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-active:              rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-selected:            rgb(var(--oj-palette-neutral-rgb-100));
+  --oj-private-buttonset-solid-chrome-internal-border-color-selected-disabled:   var(--oj-button-solid-chrome-bg-color-disabled);
+
+  --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-button-outlined-chrome-border-color);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-core-color-disabled-1);
+
+  --oj-private-buttonset-global-chroming-default: outlined;
+}
+}

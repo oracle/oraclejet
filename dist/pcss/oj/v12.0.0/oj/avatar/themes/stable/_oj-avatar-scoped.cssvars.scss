@@ -1,0 +1,84 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.avatar.color.size") {
+.oj-avatar-bg-purple {
+  --oj-avatar-bg-color:                       #846a92;
+}
+
+.oj-avatar-bg-orange {
+  --oj-avatar-bg-color:                       #9b5734;
+}
+
+.oj-avatar-bg-teal {
+  --oj-avatar-bg-color:                       #4f7d7b;
+}
+
+.oj-avatar-bg-green {
+  --oj-avatar-bg-color:                       #4c825c;
+}
+
+.oj-avatar-bg-pink {
+  --oj-avatar-bg-color:                       #925865;
+}
+
+.oj-avatar-bg-slate {
+  --oj-avatar-bg-color:                       #798b8a;
+}
+
+.oj-avatar-bg-blue {
+  --oj-avatar-bg-color:                       #437c94;
+}
+
+.oj-avatar-bg-lilac {
+  --oj-avatar-bg-color:                       #6b7494;
+}
+
+.oj-avatar-bg-gray {
+  --oj-avatar-bg-color:                       #6f757e;
+}
+.oj-avatar-xxs {
+  --oj-avatar-size:                       1.75rem;
+  --oj-avatar-border-radius:             var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size:         var(--oj-typography-body-xs-font-size); 
+  --oj-avatar-initials-font-weight:       600; 
+  --oj-avatar-icon-font-size:             0.75rem;
+}
+
+.oj-avatar-xs {
+  --oj-avatar-size:                        2.75rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size:          var(--oj-typography-body-md-font-size);
+  --oj-avatar-initials-font-weight:        400;
+  --oj-avatar-icon-font-size:              1rem;
+}
+.oj-avatar-sm {
+  --oj-avatar-size:                        3.5rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-md);
+  --oj-avatar-initials-font-size:          var(--oj-typography-heading-xs-font-size);
+  --oj-avatar-initials-font-weight:        normal;
+  --oj-avatar-icon-font-size:              1.5rem;
+}
+
+.oj-avatar-lg {
+  --oj-avatar-size:                        6rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-lg);
+  --oj-avatar-initials-font-size:          2.5rem;
+  --oj-avatar-icon-font-size:              2.25rem;
+}
+
+.oj-avatar-xl {
+  --oj-avatar-size:                        9rem;
+  --oj-avatar-border-radius:               var(--oj-core-border-radius-xl);
+  --oj-avatar-initials-font-size:          3rem;
+  --oj-avatar-icon-font-size:              3.3125rem;
+}
+
+.oj-avatar-xxl {
+  --oj-avatar-size:                       12.25rem;
+  --oj-avatar-border-radius:              var(--oj-core-border-radius-xl);
+  --oj-avatar-initials-font-size:         4.5rem;
+  --oj-avatar-icon-font-size:             4.5rem;
+}
+}

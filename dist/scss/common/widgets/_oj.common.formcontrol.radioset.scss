@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
@@ -374,6 +374,13 @@ $labelPosition: $radioCheckboxLabelPosition) {
         min-height: $radioCheckboxRowHeight;
 
      
+    }
+
+    // JET-47350 - oj-checkboxset does not inherit height when using oj-form-control-inherit in alta
+    // Setting min-height above is causing issues when the oj-form-control-inherit is used
+    // Remove min-height when inside oj-form-control-inherit
+    .oj-form-control-inherit:not(.oj-form-control-default) .oj-choice-item::before {
+      min-height: 100%;
     }
 
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should

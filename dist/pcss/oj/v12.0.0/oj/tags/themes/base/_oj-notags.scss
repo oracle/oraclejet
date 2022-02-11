@@ -1,0 +1,204 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example tags/themes/redwood/oj-notags.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.notags") {
+  /* html */
+  /* --------------------------------------------------------------- */
+  // we want to allow for using rems, which requires the base
+  // font size is set on the html element.
+
+  .oj-html {
+    -webkit-text-size-adjust: 100%;
+    font-family: var(--oj-html-font-family);
+    font-size: var(--oj-html-font-size);
+  }
+
+  /* body */
+  /* --------------------------------------------------------------- */
+
+  .oj-body {
+    margin: 0;
+    background-repeat: repeat;
+    background-position: top left;
+    color: var(--oj-core-text-color-primary);
+    background-color: var(--oj-body-bg-color);
+    touch-action: manipulation;
+    line-height: var(--oj-typography-body-md-line-height);
+  }
+  
+
+  a.oj-link {
+    color: var(--oj-link-text-color);
+    line-height: inherit;
+    text-decoration: var(--oj-link-text-decoration);
+  }
+
+  a.oj-link:not(.oj-disabled) {
+    cursor: var(--oj-core-cursor-clickable);
+  }
+
+  a.oj-link:visited {
+    color: var(--oj-link-text-color-visited);
+  }
+
+  a.oj-link:active {
+    color: var(--oj-link-text-color-active);
+  }
+
+  a.oj-link:hover {
+    text-decoration: var(--oj-link-text-decoration-hover);
+    transition: text-decoration var(--oj-animation-duration-long);
+  }
+
+  a.oj-link-embedded:not(.oj-disabled),
+  a.oj-link-embedded:visited:not(.oj-disabled) {
+    text-decoration: var(--oj-link-embedded-text-decoration);
+    box-shadow: 0px calc(0px - var(--oj-link-embedded-border-bottom-width)) 0px 0px inset;
+    transition: text-decoration var(--oj-animation-duration-long), box-shadow var(--oj-animation-duration-long);
+  }
+
+  a.oj-link-embedded:hover:not(.oj-disabled),
+  a.oj-link-embedded:active:not(.oj-disabled) {
+    text-decoration: var(--oj-link-embedded-text-decoration-hover);
+    box-shadow: 0px calc(0px - var(--oj-link-embedded-border-bottom-width-hover)) 0px 0px inset;
+    transition: text-decoration var(--oj-animation-duration-long), box-shadow var(--oj-animation-duration-long);
+  }
+
+  //standalone
+  a.oj-link-standalone:not(.oj-disabled),
+  a.oj-link-standalone:visited:not(.oj-disabled) {
+    text-decoration: none;
+  }
+
+  a.oj-link-standalone:hover:not(.oj-disabled),
+  a.oj-link-standalone:active:not(.oj-disabled) {
+    box-shadow: 0px 1px 0px 0px;
+    transition: box-shadow var(--oj-animation-duration-long);
+  }
+
+  //subtle primary
+  a.oj-link-subtle-primary,
+  a.oj-link-subtle-primary:visited {
+    color: var(--oj-core-text-color-primary);
+  }
+
+  //subtle secondary
+  a.oj-link-subtle-secondary,
+  a.oj-link-subtle-secondary:visited {
+    color: var(--oj-core-text-color-secondary);
+  }
+
+  a.oj-disabled,
+  a.oj-disabled:visited {
+    color: var(--oj-core-text-color-disabled);
+    text-decoration: none;
+  }
+
+  /* header */
+  /* --------------------------------------------------------------- */
+  .oj-header {
+    color: var(--oj-heading-text-color);
+    font-family: inherit;
+    font-style: normal;
+    margin: 8px 0;
+    padding: 0 0 2px;
+  }
+
+  h1.oj-header {
+    font-size: var(--oj-typography-heading-2xl-font-size);
+    font-weight: var(--oj-typography-heading-2xl-font-weight);
+    line-height: var(--oj-typography-heading-2xl-line-height);
+  }
+
+  h2.oj-header {
+    font-size: var(--oj-typography-heading-xl-font-size);
+    font-weight: var(--oj-typography-heading-xl-font-weight);
+    line-height: var(--oj-typography-heading-xl-line-height);
+  }
+
+  h3.oj-header {
+    font-size: var(--oj-typography-heading-lg-font-size);
+    font-weight: var(--oj-typography-heading-lg-font-weight);
+    line-height: var(--oj-typography-heading-lg-line-height);
+  }
+
+  h4.oj-header {
+    font-size: var(--oj-typography-heading-md-font-size);
+    font-weight: var(--oj-typography-heading-md-font-weight);
+    line-height: var(--oj-typography-heading-md-line-height);
+  }
+
+  h5.oj-header {
+    font-size: var(--oj-typography-heading-sm-font-size);
+    font-weight: var(--oj-typography-heading-sm-font-weight);
+    line-height: var(--oj-typography-heading-sm-line-height);
+  }
+
+  h6.oj-header {
+    font-size: var(--oj-typography-heading-xs-font-size);
+    font-weight: var(--oj-typography-heading-xs-font-weight);
+    line-height: var(--oj-typography-heading-xs-line-height);
+  }
+
+  /* hr */
+  /* --------------------------------------------------------------- */
+  .oj-hr {
+    border: solid var(--oj-core-divider-color);
+    border-width: 1px 0 0;
+    margin: var(--oj-core-divider-margin) 0;
+
+    // Add the correct box sizing and height in Firefox.
+    box-sizing: content-box;
+    height: 0;
+
+    // Show the overflow in Edge and IE 11.
+    overflow: visible;
+  }
+
+  /* p */
+  /* --------------------------------------------------------------- */
+  .oj-p {
+    margin: 0 0 var(--oj-paragraph-margin-bottom) 0;
+  }
+
+  .oj-header-border {
+    border: solid var(--oj-core-divider-color);
+
+    border-width: 0 0 1px;
+    padding: 0 0 7px;
+  }
+
+  /* lists */
+  /* --------------------------------------------------------------- */
+
+  .oj-ul,
+  .oj-ol {
+    margin: var(--oj-list-margin-top) 0;
+    padding: 0 40px;
+  }
+
+  .oj-ul {
+    list-style: var(--oj-list-unordered-style-type);
+  }
+
+  .oj-ul .oj-ul,
+  .oj-ul .oj-ol,
+  .oj-ol .oj-ul,
+  .oj-ol .oj-ol {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 0 var(--oj-list-nested-padding-start);
+  }
+
+  .oj-ul li,
+  .oj-ol li {
+    line-height: var(--oj-list-item-line-height);
+  }
+}

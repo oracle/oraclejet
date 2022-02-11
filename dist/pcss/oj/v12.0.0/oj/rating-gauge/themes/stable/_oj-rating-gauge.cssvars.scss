@@ -1,0 +1,36 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+@include module-include-once("stable.variables.rating-gauge") {
+
+:root {
+   
+    --oj-rating-gauge-border-color-selected:       rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-rating-gauge-color-selected:              rgb(var(--oj-palette-neutral-rgb-190));
+  
+    --oj-rating-gauge-border-color-unselected:     rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-rating-gauge-color-unselected:            transparent;
+  
+    --oj-rating-gauge-border-color-changed:        rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-rating-gauge-color-changed:               rgb(var(--oj-palette-neutral-rgb-190));
+
+    --oj-rating-gauge-border-color-hover:          rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-rating-gauge-color-hover:                 rgb(var(--oj-palette-neutral-rgb-190));
+
+    --oj-rating-gauge-color-selected-disabled:              var(--oj-core-text-color-disabled);
+    --oj-rating-gauge-color-unselected-disabled:            var(--oj-core-color-disabled-2);
+
+    --oj-rating-gauge-color-selected-readonly:              rgb(var(--oj-palette-neutral-rgb-190));
+    --oj-rating-gauge-border-color-selected-readonly:       rgb(var(--oj-palette-neutral-rgb-190));
+
+    --oj-rating-gauge-color-unselected-readonly:            transparent;
+    --oj-rating-gauge-border-color-unselected-readonly:     rgb(var(--oj-palette-neutral-rgb-190));
+    
+    --oj-rating-gauge-sm-size:                           1rem;
+    --oj-rating-gauge-md-size:                           1.25rem;
+    --oj-rating-gauge-lg-size:                           2.25rem; 
+  
+    }
+}

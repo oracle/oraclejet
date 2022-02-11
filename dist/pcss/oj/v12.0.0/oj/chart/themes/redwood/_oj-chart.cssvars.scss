@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../dvt/themes/redwood/_oj-dvt.cssvars.scss";
+
+@include module-include-once("redwood.variables.chart") {
+
+:root {
+    // chart
+    // ----------------------------
+    --oj-chart-axis-title-text-color:         var(--oj-core-text-color-secondary);
+    --oj-chart-axis-tick-label-text-color:    var(--oj-core-text-color-secondary);
+    --oj-chart-stock-falling-bg-color:        var(--oj-dvt-danger-color);
+    --oj-chart-stock-range-bg-color:          rgb(var(--oj-palette-neutral-rgb-100));
+    --oj-chart-stock-rising-bg-color:         var(--oj-dvt-success-color);
+    --oj-chart-animation-rising-icon-color:   rgb(var(--oj-palette-info-rgb-90));
+    --oj-chart-animation-falling-icon-color:  rgb(var(--oj-palette-danger-rgb-90));
+    --oj-chart-animation-marker-color:        rgb(var(--oj-palette-neutral-rgb-20));
+    --oj-chart-polar-axis-tick-label-outside-bg-color:    rgb(var(--oj-palette-neutral-rgb-0));
+    --oj-chart-polar-axis-tick-label-inside-bg-color: rgba(var(--oj-palette-neutral-rgb-0), .6);
+    --oj-chart-data-cursor-line-color: rgba(var(--oj-palette-neutral-rgb-190), 0.8);
+    }
+}

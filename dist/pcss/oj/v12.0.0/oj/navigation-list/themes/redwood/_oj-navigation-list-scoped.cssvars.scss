@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.navigationlist.scoped") {
+  
+  /* navigation list            */
+  /* -------------------------- */
+
+  .oj-navigationlist-vertical {
+    --oj-navigation-list-item-padding:                           1.5rem;
+    --oj-navigation-list-item-bg-color-hover:                    var(--oj-core-bg-color-hover);
+    --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active); 
+    --oj-navigation-list-icon-margin:                            0;
+    --oj-navigation-list-icon-to-text-padding:                   0.5rem;
+    --oj-navigation-list-item-min-height:                        3rem;
+    --oj-navigation-list-item-margin:                            0;
+  }
+
+  .oj-navigationlist-vertical.oj-navigationlist-icon-only {
+    --oj-navigation-list-item-margin:                            0;
+    --oj-navigation-list-item-padding:                           1.6875rem;
+    --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active); 
+    --oj-navigation-list-icon-margin:                            0;
+    --oj-navigation-list-item-min-height:                        3rem;
+  }
+
+  .oj-navigationlist-horizontal.oj-navigationlist-icon-only {
+    --oj-navigation-list-item-margin:                            2rem;
+    --oj-navigation-list-item-bg-color-selected:                 transparent;
+    --oj-navigation-list-icon-margin:                            0;
+    --oj-navigation-list-item-min-height:                        3rem;
+    --oj-navigation-list-item-padding:                           0;
+  }
+
+  .oj-navigationlist-stack-icon-label {
+    --oj-navigation-list-item-min-height:                        2.75rem;
+    --oj-navigation-list-icon-margin:                            0;
+    --oj-navigation-list-icon-to-text-padding:                   0;
+    --oj-navigation-list-item-margin:                            2rem;
+    --oj-navigation-list-item-padding:                           0;
+  }
+
+  // please do not change this classes grouping order
+  .oj-contrast-marker,
+  .oj-color-invert {
+
+  // default
+  --oj-navigation-list-item-label-color:                       var(--oj-core-text-color-secondary);
+
+  // hover
+  --oj-navigation-list-item-label-color-hover:                 var(--oj-core-text-color-primary);
+  --oj-navigation-list-item-bg-color-hover:                    var(--oj-core-bg-color-hover);
+
+    // selected
+    --oj-navigation-list-item-border-color-selected:             rgb(var(--oj-palette-brand-rgb-50));
+    --oj-navigation-list-item-label-color-selected:              var(--oj-core-text-color-primary);
+  }
+
+  .oj-contrast-marker .oj-navigationlist-vertical,
+  .oj-contrast-marker.oj-navigationlist-vertical,
+  .oj-color-invert .oj-navigationlist-vertical,
+  .oj-color-invert.oj-navigationlist-vertical {
+    --oj-navigation-list-item-bg-color-selected:                 var(--oj-core-bg-color-active);
+  }
+
+  .oj-contrast-marker .oj-navigationlist-icon-only,
+  .oj-contrast-marker.oj-navigationlist-icon-only,
+  .oj-color-invert .oj-navigationlist-icon-only,
+  .oj-color-invert.oj-navigationlist-icon-only {
+    --oj-navigation-list-item-bg-color-hover:                   var(--oj-core-bg-color-hover);
+  }
+}

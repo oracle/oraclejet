@@ -1,0 +1,574 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example combobox/themes/redwood/oj-combobox.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+@import "../../../text-field/themes/base/oj-text-field.cssvars";
+
+@include module-include-once("common.combobox") {
+  /* combobox */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-combobox:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-combobox {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    max-width: 100%;
+    // font size needs to be on the root, because max/min width is in em.
+    font-size: var(--oj-text-field-font-size);
+    @include oj-text-field-text-size-adjust-css-vars();
+    width: 100%;
+  }
+  // .oj-form-control-full-width is an override to set max-width to 100% if on the
+  // element or an ancestor element
+  .oj-form-control-full-width.oj-combobox,
+  .oj-form-control-full-width .oj-combobox {
+    max-width: 100%;
+  }
+  
+  /**
+   * Styling for loading state
+   */
+  .oj-combobox.oj-loading .oj-combobox-arrow,
+  .oj-combobox.oj-loading .oj-combobox-divider {
+    display: none;
+  }
+
+  /* single-select */
+  /*
+     * Applied to the single-select box which includes the input field and the dropdown open icon
+     */
+  .oj-combobox-choice {
+    
+    @include oj-text-field-input-css-vars();
+    padding-inline-start: var(--oj-text-field-text-to-edge-padding);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    outline: 0;
+    white-space: nowrap;
+    background-clip: padding-box;
+    // height needs to be 100% as the border and height is set on an ancestor element
+    height: 100%;
+  }
+  .oj-text-field.oj-combobox-multi .oj-text-field-container {
+    height: auto;
+  }
+
+  // in enabled mode, make this flex
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field.oj-combobox-multi .oj-text-field-container {
+    display: flex;
+  }
+
+  // in full readonly mode, make this block.
+  // TODO: Would be easier if select-many and combobox-many had the oj-text-field-middle
+  // all the other components have
+  .oj-text-field.oj-read-only.oj-combobox-multi .oj-text-field-container {
+    display: block;
+  }
+
+  /*
+     * Applied to the input field
+     */
+  .oj-combobox-input {
+    flex: 1;
+    // needed for the input to be able to shrink smaller than the browser
+    // default width.  Because this has flex-grow of 1, it will always grow
+    // to the available space of the parent container, which is what we want.
+    width: 1em;
+    // needed or else the input could overflow the container
+    min-width: 1em;
+    border: 0;
+    outline: 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+
+    // All bg colors should come from the text-field-container
+    background-color: transparent;
+    color: var(--oj-text-field-text-color);
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    font-weight: inherit;
+    box-shadow: none;
+    @include oj-text-field-text-size-adjust-css-vars();
+    // Prefix hardcoded because of caniuse-lite issue, should be removed once resolved
+    &:-ms-input-placeholder {
+      color: var(--oj-text-field-placeholder-color);
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: var(--oj-text-field-placeholder-font-style);
+    }
+    &::placeholder {
+      color: var(--oj-text-field-placeholder-color);
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: var(--oj-text-field-placeholder-font-style);
+    }
+  }
+
+  /* Styling for readonly mode */
+  .oj-combobox.oj-read-only .oj-combobox-choice,
+  .oj-combobox.oj-read-only .oj-combobox-choices {
+    background-color: transparent;
+    padding-left: 0;
+    padding-right: 0;
+    min-height: calc(var(--oj-typography-body-md-line-height) * var(--oj-typography-body-md-font-size));
+  }
+
+  // when in 'mixed' mode, then readonly does need padding since readonly will have a border.
+  .oj-form-layout .oj-form.oj-enabled .oj-combobox.oj-read-only .oj-combobox-choices {
+    padding-left: var(--oj-text-field-text-to-edge-padding);
+    padding-right: var(--oj-text-field-text-to-edge-padding);
+  }
+
+  /* apply to the selected entries */
+  .oj-combobox.oj-read-only .oj-combobox-input,
+  .oj-combobox.oj-read-only .oj-combobox-selected-choice {
+    outline: none;
+    @include oj-text-field-content-readonly();
+    padding-left: 0;
+    padding-right: 0;
+    line-height: var(--oj-typography-body-md-line-height);
+  }
+
+  // For combobox-many the pills have margin and border that should be
+  // set to zero in read-only mode
+  // Do not set margin-right to zero as they provide spacings between two
+  // selected value (this may not be needed once JET-36395 - selectmany and comboboxmany
+  // need commas between items in readonly is addressed)
+  .oj-combobox.oj-read-only .oj-combobox-selected-choice {
+    display: inherit;
+    margin-top: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+  }
+
+  // show an outline on focus for accessibility.
+  // usually we would suppress this focus ring on mouse click using
+  // :not(.oj-focus-highlight), but it would be unlikely a user clicks
+  // on a readonly field with his mouse so for coding simplicity sake,
+  // we are not suppressing the focus ring on mouse click.
+  // because the overflow is hidden, we put the outline on the ::after
+  // pseudo element
+  .oj-combobox.oj-read-only .oj-combobox-choices:focus::after {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: -1px;
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  // because we are putting the outline on the pseudo element, we need to disable
+  // the outline on the default element
+  .oj-combobox.oj-read-only .oj-combobox-choices:focus {
+    outline: none;
+  }
+
+  /* apply to the first selected entry in readonly mode */
+  .oj-combobox.oj-read-only li.oj-combobox-selected-choice:first-child {
+    padding-inline-start: 0;
+  }
+
+  /* don't show dropdown trigger */
+  .oj-combobox.oj-read-only .oj-combobox-arrow,
+  .oj-combobox.oj-read-only .oj-combobox-divider {
+    display: none;
+  }
+
+  /* don't show clear entry trigger and search field button */
+  .oj-combobox.oj-read-only .oj-combobox-clear-entry,
+  .oj-combobox.oj-read-only .oj-combobox-search-field {
+    display: none;
+  }
+
+  /* Default options*/
+  $comboboxDefaultOptions: ();
+
+  @if ($privateLoadingIndicatorDelayDuration) {
+    $comboboxDefaultOptions: map-merge(
+      $comboboxDefaultOptions,
+      (
+        loadingIndicatorDelay: $privateLoadingIndicatorDelayDuration
+      )
+    );
+  }
+  .oj-combobox-option-defaults {
+    font-family: oj-json-from-map($comboboxDefaultOptions) !important;
+  }
+
+  /* Styling for text-align */
+  .oj-form-control-text-align-right.oj-combobox .oj-combobox-input {
+    text-align: right;
+  }
+  .oj-form-control-text-align-start.oj-combobox .oj-combobox-input {
+    text-align: start;
+  }
+  .oj-form-control-text-align-end.oj-combobox .oj-combobox-input {
+    text-align: end;
+  }
+  .oj-form-control-text-align-right.oj-combobox .oj-combobox-choices li {
+    float: right;
+  }
+  .oj-form-control-text-align-start.oj-combobox .oj-combobox-choices li {
+    float: left;
+    html[dir="rtl"] & {
+      float: right;
+    }
+  }
+  .oj-form-control-text-align-end.oj-combobox .oj-combobox-choices li {
+    float: right;
+    html[dir="rtl"] & {
+      float: left;
+    }
+  }
+  .oj-form-control-text-align-right .oj-combobox-selected-choice,
+  .oj-form-control-text-align-end .oj-combobox-selected-choice {
+    margin-top : 5px;
+    margin-inline-end: 0;
+    margin-bottom: 0;
+    margin-inline-start: 6px;
+
+ }
+
+  /*
+     * Applied to the single-select drop down arrow
+     */
+  .oj-combobox-arrow:hover,
+  .oj-combobox-arrow:focus {
+    text-decoration: none;
+  }
+
+  /*
+     * Applied to the divider between the input and drop down arrow
+     */
+  .oj-combobox-divider {
+    box-sizing: border-box;
+    display: inline-flex;
+    border-left: solid 1px var(--oj-text-field-border-color);
+    margin-inline-start: var(--oj-text-field-text-to-edge-padding);
+    height: 80%;
+    vertical-align: middle;
+  }
+
+  /* multi-select */
+
+  /*
+     * Applied to the multi-select box which includes the input field and the selected choices
+     */
+  .oj-combobox-choices {
+    box-sizing: border-box;
+    @include oj-text-field-input-css-vars();
+    min-height: var(--oj-text-field-height);
+    padding-left: var(--oj-text-field-text-to-edge-padding);
+    padding-right: var(--oj-text-field-text-to-edge-padding);
+    padding-bottom: 5px;
+    height: auto;
+    margin: 0;
+    position: relative;
+    cursor: text;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  /*
+     * Applied to the multi-select box list items which include the search field and the selected choices
+     */
+  .oj-combobox-choices li {
+    list-style: none;
+    @include oj-ltr() {
+      float: left;
+    }
+    @include oj-rtl() {
+      float: right;
+    }
+  }
+
+  /*
+     * Applied to the multi-select search field which is an li to wrap the input
+     */
+  .oj-combobox-search-field {
+    margin-top: 5px;
+    padding: 0;
+    white-space: nowrap;
+    line-height: calc(var(--oj-text-field-height) * 0.8);
+  }
+
+  /*
+     * Applied to the multi-select selected choice
+     */
+  .oj-combobox-selected-choice {
+    line-height: 1.9rem;
+    display: flex;
+    align-items: center;
+    cursor: default;
+    border-radius: var(--oj-button-border-radius);
+    border: 1px solid var(--oj-button-outlined-chrome-border-color);
+    color: var(--oj-button-outlined-chrome-text-color);
+    background-clip: padding-box;
+    padding-top: 0;
+    padding-inline-end: 4px;
+    padding-bottom: 0;
+    padding-inline-start: 6px;
+    margin-top: 5px;
+    margin-inline-end: 6px;
+    margin-bottom : 0;
+    margin-inline-start : 0;
+  }
+
+  /*
+     * Applied to the multi-select selected choice when getting focus
+     */
+  .oj-combobox-selected-choice.oj-focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  /*
+     * Applied to the multi-select selected choice when disabled
+     */
+  .oj-combobox.oj-disabled .oj-combobox-selected-choice {
+    padding: 0 .375rem 0 .375rem;
+  }
+
+  /*
+     * Applied to the label of the selected choice
+     */
+  .oj-combobox-selected-choice-label,
+  .oj-combobox-selected-choice-separator {
+    display: inline-block;
+    vertical-align: middle;
+    word-break: break-word;
+  }
+
+  /*
+     * Applied to the clear entry field of the selected choice
+     */
+  .oj-combobox-clear-entry {
+    display: inline-block;
+    outline: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100%;
+    margin-inline-start: 3px;
+  }
+
+  /* end multiselect */
+
+  /*
+     * Invalid styling for the widget
+     */
+  // TODO we are actually clearing these here. We should instead clean it up
+  // to not set these in the first place.
+  .oj-combobox.oj-invalid .oj-combobox-choice,
+  .oj-combobox-multi.oj-invalid .oj-combobox-choices,
+  .oj-combobox.oj-warning .oj-combobox-choice,
+  .oj-combobox-multi.oj-warning .oj-combobox-choices {
+    border: 0;
+    border-width: 0;
+    border-style: none;
+  }
+
+  /*
+     * Disabled styles for single-select
+     */
+  .oj-combobox.oj-disabled .oj-combobox-choice,
+  .oj-combobox.oj-disabled input {
+    @include oj-text-field-content-disabled();
+  }
+
+  .oj-combobox.oj-disabled input {
+    border: 0;
+  }
+
+  .oj-combobox.oj-disabled .oj-combobox-arrow {
+    cursor: default;
+  }
+
+  .oj-combobox.oj-disabled .oj-combobox-divider {
+    border-color: var(--oj-text-field-border-color-disabled);
+  }
+
+  /*
+     * Disabled styles for multi-select
+     */
+  .oj-combobox-multi.oj-disabled .oj-combobox-choices,
+  .oj-combobox-multi.oj-disabled .oj-combobox-selected-choice,
+  .oj-combobox-multi.oj-disabled .oj-combobox-selected-choice.oj-focus,
+  .oj-combobox-multi.oj-disabled input {
+    @include oj-text-field-content-disabled();
+    outline: 0;
+  }
+
+  .oj-combobox-multi.oj-disabled input {
+    border: 0;
+  }
+
+  .oj-combobox-multi.oj-disabled .oj-combobox-clear-entry {
+    display: none;
+    background: none;
+  }
+
+  /*
+     * Styling for focus state
+     */
+  .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choice,
+  .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choices {
+    border-color: var(--oj-text-field-border-color-focus);
+  }
+  .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choice {
+    padding-bottom: 0;
+  }
+  .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choices {
+    padding-bottom: 5px;
+  }
+
+  /* icon */
+  /* -----------------------------*/
+
+  /*
+     * Applied to the clear entry icon
+     */
+  .oj-combobox-clear-entry-icon {
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  /* icon */
+  /* -----------------------------*/
+
+  /*
+     * Applied to the single-select drop down open icon
+     */
+  .oj-combobox-open-icon {
+    @extend .oj-fwk-icon-arrow02-s;
+  }
+
+  /* clear entry icon for combobox */
+  .oj-combobox-clear-entry-icon {
+    @extend .oj-fwk-icon-cross;
+  }
+
+  // .oj-button adds margin-bottom, we need to remove it if it's used in the end slot
+  .oj-combobox .oj-button {
+    margin-bottom: 0;
+  }
+
+  // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+  // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+  // editable datagrid cells and editable table cells
+  // -----------------------------------------------------------------------------------------
+
+  // remove borders, inherit colors and stretch the height
+  // need extra specificity since base selector has direction selectors
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choice,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox .oj-combobox-choices,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    @include oj-form-control-inherit();
+    border-width: 0;
+  }
+
+  // only override the background when not disabled
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox:not(.oj-disabled) .oj-combobox-choice,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox:not(.oj-disabled) .oj-combobox-choices,
+  .oj-form-control-inherit:not(.oj-form-control-default) .oj-combobox-input {
+    
+// use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
+
+  }
+
+  // TODO: multi combobox's color inherit does not work. the color does not get inherited. (same with select))
+  // TODO: multi combobox when it is in a narrow box, and multiple items are selected, it doesn't
+  // show all the items.
+  // TODO: single combobox's text-align: right makes the text overlap the icon
+  // TODO: single combobox's height stretches for choice, but the icon no longer lines up
+
+  // For quiet Forms
+  .oj-text-field-label-inside .oj-combobox-choice {
+    background-color: transparent;
+    width: 100%;
+    border-width: 0;
+    min-height: var(--oj-text-field-inside-edge-height);
+    padding: 0;
+    
+  }
+
+  // padding for oj-combobox-one.
+  .oj-text-field-label-inside .oj-combobox-input {
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 0;
+  }
+
+  .oj-text-field-label-inside:not(.oj-read-only) .oj-combobox-choices {
+    border-width: 0;
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 5px;
+  }
+
+  // inside an enabled form, readonly form components have padding
+  .oj-form-layout .oj-form.oj-enabled .oj-text-field-label-inside.oj-read-only .oj-combobox-choices {
+    padding: var(--oj-text-field-inside-edge-padding-top) var(--oj-text-field-text-to-edge-padding) 5px;
+  }
+
+  // for regular readonly, it has no padding-horizontal
+  .oj-text-field-label-inside.oj-read-only .oj-combobox-choices {
+    padding: 0;
+  }
+
+  // padding for oj-combobox-many
+  .oj-text-field-label-inside .oj-combobox-choices .oj-combobox-input {
+    padding: 0 5px;
+  }
+
+  .oj-text-field-label-inside .oj-combobox-choice.oj-hover,
+  .oj-text-field-label-inside .oj-combobox-choices.oj-hover {
+    background-color: transparent;
+  }
+
+  .oj-text-field-label-inside.oj-combobox.oj-disabled .oj-form-control-container {
+    background-color: var(--oj-text-field-bg-color-disabled);
+  }
+
+  .oj-text-field-label-inside .oj-combobox-selected-choice {
+      margin-top:10px;
+      margin-inline-end:6px;
+      margin-bottom:0;
+      margin-inline-start:0;
+    }
+
+  .oj-text-field-label-inside.oj-read-only .oj-combobox-selected-choice {
+      margin-top: 0;
+      margin-inline-end:6px;
+      margin-bottom:0;
+      margin-inline-start :0;
+  }
+
+  // The warning, error and confirmation messages on the combobox are added to the combobox container rather than the text-field container. So adding the below css to make sure labels reflect the correct warning and error colors
+  .oj-text-field-label-inside.oj-combobox.oj-invalid .oj-form-control-container .oj-label,
+  .oj-text-field-label-inside.oj-combobox-many.oj-invalid .oj-form-control-container .oj-label {
+    color: var(--oj-text-field-inside-edge-label-color-error);
+  }
+
+  .oj-text-field-label-inside .oj-combobox-label {
+    align-self: flex-start;
+  }
+
+  .oj-combobox-selected-choice > .oj-component-icon {
+    font-size:1rem;
+  }
+}

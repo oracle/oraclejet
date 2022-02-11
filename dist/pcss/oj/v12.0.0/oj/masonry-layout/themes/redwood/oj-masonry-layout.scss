@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../core/themes/redwood/_oj-core.cssvars.scss";
+@import "../../../panel/themes/redwood/_oj-panel.cssvars.scss";
+
+@import "_oj-masonry-layout.servervars.scss";
+@import "_oj-masonry-layout.cssvars.scss";
+
+// import classes defined in the base directory
+@import "../base/_oj-masonry-layout.scss"; 
+// scoped cssvars override
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";

@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// import dependencies
+@import "../../../panel/themes/stable/_oj-panel.cssvars.scss";
+
+  @include module-include-once("stable.variables.nbox") {
+
+:root {
+  
+    // nbox
+    // ----------------------------
+    --oj-n-box-cell-bg-color:            rgb(var(--oj-palette-neutral-rgb-0));         
+    --oj-n-box-cell-bg-color-maximized:  rgb(var(--oj-palette-neutral-rgb-10));           
+    --oj-n-box-node-bg-color:            rgb(var(--oj-palette-neutral-rgb-30));          
+
+
+
+}
+
+}

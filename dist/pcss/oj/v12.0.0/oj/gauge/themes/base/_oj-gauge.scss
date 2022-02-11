@@ -1,0 +1,33 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example gauge/themes/redwood/oj-gauge.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("common.gauge") {
+
+
+  .oj-gauge-metric-label {
+    font-weight: var(--oj-gauge-metric-label-font-weight);
+  }
+
+  // color for the first threshold on a gauge, typically represents a low value
+  .oj-gauge-threshold1 {
+    color: var(--oj-dvt-danger-color);
+  }
+
+  // color for the second threshold on a gauge, typically represents a medium value
+  .oj-gauge-threshold2 {
+    color: var(--oj-dvt-warning-color);
+  }
+
+  // color for the third threshold on a gauge, typically represents a high value
+  .oj-gauge-threshold3 {
+    color: var(--oj-dvt-success-color);
+  }
+
+}

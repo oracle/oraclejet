@@ -1,0 +1,260 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example switch/themes/redwood/oj-switch.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../form-control/themes/base/_oj-form-control.mixins.scss";
+
+@include module-include-once("common.switch") {
+  /* switch */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-switch:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  .oj-switch {
+    display: inline-block;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .oj-switch .oj-switch-container {
+    position: relative;
+    min-height: var(--oj-core-touch-target-min-size);
+    min-width: var(--oj-core-touch-target-min-size);
+  }
+
+  .oj-switch:not(.oj-read-only) .oj-switch-container {
+    width: var(--oj-switch-track-width);
+  } 
+
+  .oj-switch .oj-switch-thumb {
+    box-sizing: content-box;
+    @include oj-ltr() {
+      left: var(--oj-switch-thumb-to-track-horizontal-margin);
+      right: auto;
+    }
+    @include oj-rtl() {
+      left: auto;
+      right: var(--oj-switch-thumb-to-track-horizontal-margin);
+    }
+  }
+
+  .oj-switch.oj-selected .oj-switch-thumb {
+    @include oj-ltr() {
+      left: auto;
+      right: var(--oj-switch-thumb-to-track-horizontal-margin);
+    }
+    @include oj-rtl() {
+      left: var(--oj-switch-thumb-to-track-horizontal-margin);
+      right: auto;
+    }
+  }
+
+  .oj-switch .oj-switch-track {
+    position: absolute;
+    top: 50%;
+    border-style: solid;
+    border-width: 1px;
+    height: var(--oj-switch-track-height);
+    width: var(--oj-switch-track-width);
+    box-sizing: border-box;
+    transform: translate3d(0, -50%, 0);
+    border-radius: var(--oj-switch-track-border-radius);
+    transition: background-color 0.2s linear 0.1s, opacity 0.2s linear 0.1s, border-color 0.2s linear 0.1s;
+  }
+
+  .oj-switch.oj-read-only .oj-switch-container {
+    min-height: var(--oj-switch-track-height);
+  }
+
+  .oj-switch.oj-read-only .oj-switch-track {
+    position: absolute;
+    top: 50%;
+    border-style: solid;
+    border-width: 0;
+    height: var(--oj-switch-track-height);
+    width: var(--oj-switch-track-width);
+    box-sizing: border-box;
+    transform: translate3d(0, -50%, 0);
+    border-radius: var(--oj-switch-track-border-radius);
+  }
+
+  // ENABLED OFF
+  .oj-switch .oj-switch-track,
+  .oj-switch.oj-default .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color);
+    border-color: var(--oj-switch-track-border-color);
+  }
+
+  .oj-switch .oj-switch-thumb,
+  .oj-switch.oj-default .oj-switch-thumb {
+      position: absolute;
+      top: 50%;
+      border-style: solid;
+      border-width: 1px;
+      height: var(--oj-switch-thumb-height);
+      width: var(--oj-switch-thumb-width);
+      box-sizing: border-box;
+      transform: translate3d(0, -50%, 0);
+      border-radius: var(--oj-switch-thumb-border-radius);
+      box-shadow: var(--oj-switch-thumb-box-shadow);
+      background-color: var(--oj-switch-thumb-bg-color);
+      border-color: var(--oj-switch-thumb-border-color);
+      transition: height var(--oj-animation-duration-medium) var(--oj-animation-ease-out),
+        width var(--oj-animation-duration-medium) var(--oj-animation-ease-out),
+        left var(--oj-animation-duration-medium) var(--oj-animation-ease-out);
+  }
+
+  // ENABLED ON
+  .oj-switch.oj-selected .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color-selected);
+    border-color: var(--oj-switch-track-border-color-selected);
+  }
+
+  .oj-switch.oj-selected .oj-switch-thumb {
+    box-shadow: var(--oj-switch-thumb-box-shadow-selected);
+    background-color: var(--oj-switch-thumb-bg-color-selected);
+    border-color: var(--oj-switch-thumb-border-color-selected);
+    transition: height var(--oj-animation-duration-long) var(--oj-animation-ease-out),
+      width var(--oj-animation-duration-long) var(--oj-animation-ease-out),
+      right var(--oj-animation-duration-long) var(--oj-animation-ease-out);
+  }
+
+  // HOVER OFF
+  .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-track {
+    cursor: var(--oj-core-cursor-clickable);
+    background-color: var(--oj-switch-track-bg-color-hover);
+    border-color: var(--oj-switch-track-border-color-hover);
+  }
+
+  .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-thumb {
+    border-width: 1px;
+    border-radius: var(--oj-switch-thumb-border-radius);
+    box-shadow: var(--oj-switch-thumb-box-shadow-hover);
+    background-color: var(--oj-switch-thumb-bg-color-hover);
+    border-color: var(--oj-switch-thumb-border-color-hover);
+  }
+
+  // HOVER ON
+  .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color-selected-hover);
+    border-color: var(--oj-switch-track-border-color-selected-hover);
+  }
+
+  .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only) .oj-switch-thumb {
+    border-radius: var(--oj-switch-thumb-border-radius);
+    box-shadow: var(--oj-switch-thumb-box-shadow-selected-hover);
+    background-color: var(--oj-switch-thumb-bg-color-selected-hover);
+    border-color: var(--oj-switch-thumb-border-color-selected-hover);
+  }
+
+  // ACTIVE OFF
+  .oj-switch.oj-active .oj-switch-track,
+  .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-track {
+      background-color: var(--oj-switch-track-bg-color-active);
+      border-color: var(--oj-switch-track-border-color-active);
+  }
+
+  .oj-switch.oj-active .oj-switch-thumb,
+  .oj-switch.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-thumb {
+    width: var(--oj-switch-thumb-width-active);
+    box-shadow: var(--oj-switch-thumb-box-shadow-active);
+    background-color: var(--oj-switch-thumb-bg-color-active);
+    border-color: var(--oj-switch-thumb-border-color-active);
+    transform: translate3d(0, -50%, 0);
+    transition: height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out),
+      width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out);
+  }
+
+  // ACTIVE ON
+  .oj-switch.oj-selected.oj-active .oj-switch-track,
+  .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color-selected-active);
+    border-color: var(--oj-switch-track-border-color-selected-active);
+  }
+
+  .oj-switch.oj-selected.oj-active .oj-switch-thumb,
+  .oj-switch.oj-selected.oj-hover:not(.oj-disabled):not(.oj-read-only).oj-active .oj-switch-thumb {
+    box-shadow: var(--oj-switch-thumb-box-shadow-selected-active);
+    background-color: var(--oj-switch-thumb-bg-color-selected-active);
+    border-color: var(--oj-switch-thumb-border-color-selected-active);
+    transform: translate3d(0, -50%, 0);
+    transition: height var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out),
+      width var(--oj-animation-duration-xshort) var(--oj-animation-ease-in-out);
+  }
+
+  // READONLY OFF
+  .oj-switch.oj-read-only .oj-switch-track {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  // We want to allow readonly text styling to be overridden from the root dom.
+  .oj-switch.oj-read-only {
+    font-weight: var(--oj-form-control-font-weight-read-only);
+  }
+
+  .oj-switch.oj-read-only .oj-switch-thumb {
+    border-width: 0;
+    box-shadow: none;
+    background-color: transparent;
+    color: var(--oj-core-text-color-primary);
+    @include oj-ltr() {
+      left: 0;
+      right: auto;
+    }
+    @include oj-rtl() {
+      left: auto;
+      right: 0;
+    }
+  }
+
+  // READONLY ON
+  .oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
+    @include oj-ltr() {
+      left: 0;
+      right: auto;
+    }
+    @include oj-rtl() {
+      left: auto;
+      right: 0;
+    }
+  }
+
+  // DISABLED OFF
+  .oj-switch.oj-disabled .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color-disabled);
+    border-color: var(--oj-switch-track-border-color-disabled);
+  }
+
+  .oj-switch.oj-disabled .oj-switch-thumb {
+    box-shadow: none;
+    background-color: var(--oj-switch-thumb-bg-color-disabled);
+    border-color: var(--oj-switch-thumb-border-color-disabled);
+  }
+
+  // DISABLED ON
+  .oj-switch.oj-disabled.oj-selected .oj-switch-track {
+    background-color: var(--oj-switch-track-bg-color-selected-disabled);
+    border-color: var(--oj-switch-track-border-color-selected-disabled);
+  }
+
+  .oj-switch.oj-disabled.oj-selected .oj-switch-thumb {
+    background-color: var(--oj-switch-thumb-bg-color-selected-disabled);
+    border-color: var(--oj-switch-thumb-border-color-selected-disabled);
+  }
+
+  .oj-switch-thumb:not(.oj-focus-highlight):focus {
+    outline: none;
+  }
+  .oj-switch-thumb:focus {
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+}

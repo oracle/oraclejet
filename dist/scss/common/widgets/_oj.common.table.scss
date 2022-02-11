@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2021, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
@@ -82,8 +82,8 @@
 
     .oj-table-scroll-vertical.oj-table-hide-vertical-scrollbar .oj-table-scroller,
     .oj-table-hide-vertical-scrollbar .oj-table-scroller {
-    overflow-y: hidden;
-  }
+      overflow-y: hidden;
+    }
 
     .oj-table-width-container {
       position: absolute;
@@ -201,7 +201,7 @@
       position: sticky;
       top: 0;
       z-index: 1;
-      border-bottom: 1px solid var(--oj-collection-border-color);
+      border-bottom: 1px solid $collectionBorderColor;
     }
 
     /* Grid display table styling for the column header elements. */
@@ -574,7 +574,9 @@
     }
 
     /* Styling for the data row elements in focus state. */
-    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit) {
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-row.oj-focus-highlight:not(.oj-table-body-row-edit),
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-body-message-row.oj-focus-highlight,
+    .oj-table-element:not(.oj-table-column-header-resizing) .oj-table-no-data-row.oj-focus-highlight {
        outline-offset: -1px;
 
          @include oj-browser-focus-outline-approximation($primaryTextColor);
@@ -925,6 +927,11 @@
         color: $textColor;
         padding: $collectionCellPadding;
 
+    }
+
+    .oj-table-body-message-row,
+    .oj-table-no-data-row {
+      position: relative;
     }
 
     /* Styling for a panel that can attach to the bottom of the table

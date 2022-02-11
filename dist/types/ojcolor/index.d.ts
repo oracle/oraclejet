@@ -152,7 +152,10 @@ declare class Color {
     getAlpha(): number;
     getBlue(doNotRound?: boolean): number;
     getGreen(doNotRound?: boolean): number;
+    getHSLA(): Color.HSLA;
+    getHSVA(): Color.HSVA;
     getRed(doNotRound?: boolean): number;
+    getRGBA(): Color.RGBA;
     isEqual(color: Color): boolean;
     toString(): string;
 }

@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+// ----- start dependencies ---------
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../tags/themes/redwood/_oj-tags.cssvars.scss";
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../flex/themes/redwood/oj-flex.scss";
+@import "../../../app-layout/themes/redwood/_oj-app-layout.scss";
+@import "../base/_oj-app-layout-hybrid-ignore.scoped.cssvars.scss";
+// ----- end dependencies ---------
+
+@import "_oj-app-layout-hybrid.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-app-layout-hybrid.scss";
+
+  @include module-include-once("redwood.applayout.hybrid") {
+
+    .oj-hybrid-applayout-bar-title {
+      @extend .oj-flex-bar-middle;
+    }
+
+  }

@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/redwood/_oj-core-scoped.cssvars.scss";
+
+@include module-include-once("redwood.variables.label.scoped") {
+    
+  /* label                      */
+  /* -------------------------- */
+.oj-color-invert {
+    --oj-label-color:         var(--oj-core-text-color-primary); 
+    --oj-label-color-disabled:var(--oj-core-text-color-disabled);
+    --oj-label-inside-edge-color: var(--oj-core-text-color-secondary);
+}
+:root.oj-scale-sm {
+   // Overrides for form control font sizes, which normally uses --oj-typography-body-sm-font-size
+   --oj-label-font-size: var(--oj-typography-body-md-font-size);
+}
+:root.oj-scale-md {
+  --oj-label-font-size: var(--oj-typography-body-md-font-size);
+}
+}

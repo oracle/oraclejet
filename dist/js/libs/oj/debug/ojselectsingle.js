@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['ojs/ojselectbase', 'ojs/ojcore-base', 'ojs/ojkeyset', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojlogger'], function (ojselectbase, oj$1, ojkeyset, $, Components, ThemeUtils, Logger) { 'use strict';
+define(['ojs/ojselectbase', 'ojs/ojcore-base', 'ojs/ojkeyset', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojthemeutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils'], function (ojselectbase, oj$1, ojkeyset, $, Components, ThemeUtils, Logger, ojcustomelementUtils) { 'use strict';
 
   oj$1 = oj$1 && Object.prototype.hasOwnProperty.call(oj$1, 'default') ? oj$1['default'] : oj$1;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -727,6 +727,13 @@ var __oj_select_single_metadata =
      */
     _ComponentCreate: function () {
       this._super();
+
+      // JET-44210 - throw an error when a value-item is set externally that contains the key
+      // but not the data
+      var valueItem = this.options.valueItem;
+      if (!this._IsValueItemForPlaceholder(valueItem) && valueItem.data == null) {
+        throw new Error('Select Single: value-item contains key but no data');
+      }
 
       this._cssOptionDefaults =
         ThemeUtils.parseJSONFromFontFamily('oj-searchselect-option-defaults') || {};
@@ -1596,12 +1603,24 @@ var __oj_select_single_metadata =
         if (event.shiftKey) {
           var filterInputText = this._filterInputText;
           var parentElem = filterInputText.parentNode;
-          // move all the siblings before the filterInputText to the end, so that focus won't go
-          // to the main input field and will instead go to the previous tabbable elem on the page
-          // (can't just move the filterInputText because it's involved in the focus change and
-          // the browser throws an error)
-          while (parentElem.firstChild !== filterInputText) {
-            parentElem.appendChild(parentElem.firstChild);
+
+          // As discussed in JET-49016, the appendChild calls below end up being
+          // short-circuited by our Preact slot management workarounds.  As a
+          // result, the appendChild calls are treated as no-ops and we end up in an
+          // infinite while loop.  To avoid this fate, we temporarily disable the slot
+          // management workarounds.
+          ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(true);
+
+          try {
+            // move all the siblings before the filterInputText to the end, so that focus won't go
+            // to the main input field and will instead go to the previous tabbable elem on the page
+            // (can't just move the filterInputText because it's involved in the focus change and
+            // the browser throws an error)
+            while (parentElem.firstChild !== filterInputText) {
+              parentElem.appendChild(parentElem.firstChild);
+            }
+          } finally {
+            ojcustomelementUtils.CustomElementUtils.allowSlotRelocation(false);
           }
         }
         // JET-44700 - <OJ-SELECT-SINGLE> AND <OJ-INPUT-NUMBER/DATE/TEXT> ARE NOT BEHAVING

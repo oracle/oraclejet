@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("redwood.variables.progress-bar") {
+
+:root {
+  // progress
+  // ----------------------------
+  --oj-progress-bar-value-bg-color:                rgb(var(--oj-palette-neutral-rgb-190));
+  --oj-progress-bar-height:                        6px;
+  --oj-progress-bar-track-bg-color:                rgba(var(--oj-palette-neutral-rgb-170), .15);
+  --oj-progress-bar-border-radius:                 3px;
+
+}
+
+}

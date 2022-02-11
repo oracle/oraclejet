@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+// ----- start dependencies ---------
+
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+
+// import dependencies
+@import "../../../icons/themes/redwood/oj-icons.scss";
+@import "../../../form-control/themes/redwood/_oj-messaging.scss";
+@import "../../../popup/themes/redwood/oj-popup.scss";
+@import "../../../label/themes/redwood/oj-label.scss";
+@import "../../../form-control/themes/redwood/_oj-form-control.scss";
+@import "../../../highlight-text/themes/redwood/oj-highlight-text.scss";
+
+// ----- end dependencies ---------
+
+
+// most of the styling in common file
+@import "../base/_oj-list-box.scss";
+
+  @include module-include-once("redwood.listbox") {
+
+    
+  }

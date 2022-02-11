@@ -1,0 +1,235 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example tree-view/themes/redwood/oj-tree-view.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss";
+@include module-include-once("common.treeview") {
+	// Prevents the flash of unstyled content before the HTML becomes JET components.
+	oj-tree-view:not(.oj-complete) {
+		visibility: hidden;
+	}
+	// Prevents the grey background that appears on tap on iOS
+	oj-tree-view {
+		display: block;
+		overflow: auto;
+		-webkit-tap-highlight-color: transparent;
+		// Padding-bottom so container does not expand when dropline is rendered at bottom of treeview
+		padding-bottom: .25rem;
+		position: relative;
+	}
+	// Remove focus ring
+	oj-tree-view:focus {
+		outline: none;
+	}
+	// Remove focus ring
+	.oj-treeview-list:focus {
+		outline: none;
+	}
+	// Base style for treeview and items
+	.oj-treeview-list,
+	.oj-treeview-item {
+		display: block;
+		margin: 0;
+		padding: 0;
+		list-style-type: none;
+		user-select: none;
+		min-width: fit-content;
+		min-width: -moz-fit-content;
+	}
+	// [role='tree'] is used to apply 1px padding only for parent ul in treeview
+	// to show focus outline around the tree row
+	.oj-treeview-list[role="tree"] {
+		padding: 1px;
+	}
+	// adds border for selectionMode single 
+	.oj-treeview-select-single .oj-treeview-item-content.oj-selected {
+		box-shadow: 0 0 0 1px var(--oj-core-border-color-selected);
+		border-radius: var(--oj-core-border-radius-md);
+	}
+	// Basic item
+	.oj-treeview-item {
+		white-space: nowrap;
+		vertical-align: middle;
+	}
+	.oj-treeview-list.oj-treeview-drag-image>.oj-treeview-item {
+		margin-inline-start: 0.5rem;
+	}
+	// Treeview icon (item, disclosure)
+	.oj-treeview-icon {
+		display: inline-block;
+		text-decoration: none;
+		vertical-align: middle;
+		text-align: end;
+	}
+	// Item text
+	.oj-treeview-item-text {
+		color: var(--oj-tree-view-text-color);
+		vertical-align: middle;
+	}
+	.oj-treeview-item-content-icon {
+		vertical-align: middle;
+		font-size: var(--oj-core-icon-size-lg);
+		margin-inline-end: 0.5rem;
+		display: inline-block;
+	}
+	.oj-treeview-item-content {
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		width: 100%;
+		box-sizing: border-box;
+		padding-inline-start: 0.5rem;
+		padding-inline-end: 0.5rem;
+	}
+	.oj-selected-item-content-top {
+		border-top-left-radius: var(--oj-core-border-radius-md);
+		border-top-right-radius: var(--oj-core-border-radius-md);
+	}
+	.oj-selected-item-content-bottom {
+		border-bottom-left-radius: var(--oj-core-border-radius-md);
+		border-bottom-right-radius: var(--oj-core-border-radius-md);
+	}
+	.oj-treeview-selector {
+		display: inline-block;
+		vertical-align: middle;
+		cursor: default;
+	}
+	.oj-treeview-selector .oj-selector,
+	.oj-treeview-selector .oj-selector .oj-selector-wrapper .oj-selectorbox {
+		height: var(--oj-tree-view-row-height);
+		width: var(--oj-tree-view-indent-width);
+	}
+	// Hovered item content
+	.oj-treeview-item-content.oj-hover {
+		background-color: var(--oj-core-bg-color-hover);
+	}
+	// Selected item content when the root is focused
+	.oj-treeview-list:focus .oj-treeview-item-content.oj-selected {
+		background-color: var(--oj-core-bg-color-selected);
+	}
+	// Selected item content when the root is NOT focused
+	.oj-treeview-item-content.oj-selected {
+		background-color: var(--oj-core-bg-color-selected);
+	}
+	// Styling for the list item elements in selected state when treeview is in high contrast mode.
+	.oj-hicontrast .oj-treeview-item-content.oj-selected {
+		border-width: 1px 2px 2px 1px;
+		border-style: solid;
+		border-color: initial;
+	}
+	// Styling for the list item elements in focus state when treeview is in high contrast mode.
+	.oj-hicontrast .oj-treeview-item-content.oj-focus-highlight {
+		outline-width: 2px;
+		outline-style: dotted;
+		border-width: 0 1px 1px 0;
+		border-style: dotted;
+	}
+	// Focused item content
+	.oj-treeview-item-content.oj-focus-highlight {
+		outline: dotted 1px var(--oj-core-focus-border-color);
+		outline-offset: -1px;
+	}
+	// Disclosure icon or the spacer
+	.oj-treeview-spacer {
+		height: var(--oj-tree-view-row-height);
+		display: inline-block;
+		vertical-align: middle;
+	}
+	.oj-treeview-item.oj-draggable {
+		cursor: grab;
+	}
+	.oj-treeview-item.oj-draggable:active {
+		cursor: grabbing;
+	}
+	.oj-treeview-drag-image {
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+		background-color: var(--oj-collection-bg-color);
+		opacity: 0.95;
+		box-shadow: var(--oj-core-box-shadow-lg);
+		border-radius: var(--oj-core-border-radius-lg);
+		cursor: grabbing;
+	}
+	.oj-treeview-drag-image-item {
+		border-top: 1px solid var(--oj-core-divider-color);
+		border-bottom: 1px solid var(--oj-core-divider-color);
+	}
+	.oj-treeview-drag-source {
+		opacity: 0.3;
+	}
+	// DnD reorder insert position pointer line when dropping between items
+	.oj-treeview-drop-line {
+		height: 2px;
+		width: 100px;
+		position: absolute;
+		background-color: var(--oj-core-drag-drop-line-color);
+		pointer-events: none;
+	}
+	.oj-treeview-drop-zone {
+		background-color: var(--oj-core-drag-drop-color-1);
+		border-radius: var(--oj-core-border-radius-md);
+	}
+	.oj-treeview-drag-image {
+		position: fixed;
+		top: 10000px;
+		overflow: visible;
+	}
+	.oj-treeview-drag-image .oj-treeview-item {
+		position: absolute;
+	}
+	// skeleton
+	.oj-treeview-skeleton-content {
+		height: var(--oj-tree-view-row-height);
+		align-items: center;
+		display: flex;
+	}
+	.oj-treeview-skeleton-carrot {
+		width: var(--oj-typography-body-md-font-size);
+		height: var(--oj-typography-body-md-font-size);
+		border-radius: var(--oj-core-border-radius-md);
+		margin-right: 0.75rem;
+		margin-left: 0.5rem;
+	}
+	.oj-treeview-skeleton-item {
+		height: var(--oj-typography-body-md-font-size);
+		flex-grow: 1;
+	}
+	.oj-treeview-skeleton-leaf {
+		height: var(--oj-typography-body-md-font-size);
+		flex-grow: 1;
+		margin-inline-start: 5rem;
+	}
+	.oj-treeview-skeleton-child {
+		margin-left: 2rem;
+	}
+	.oj-treeview-selector,
+	.oj-treeview-icon {
+		margin-inline-end: 0.5rem;
+	}
+	.oj-treeview-disclosure-icon {
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-end;
+	}
+	.oj-treeview-disclosure-icon,
+	.oj-treeview-disclosure-icon.oj-treeview-icon {
+		margin: 0;
+		padding-inline-end: 0.5rem;
+	}
+	// Default expanded parent image
+	.oj-expanded>.oj-treeview-item-content>.oj-treeview-item-icon {
+		@extend .oj-fwk-icon-tree-folder-open;
+	}
+	// Default collapsed parent image
+	.oj-collapsed>.oj-treeview-item-content>.oj-treeview-item-icon {
+		@extend .oj-fwk-icon-tree-folder-collapsed;
+	}
+	// Default leaf item image
+	.oj-treeview-leaf>.oj-treeview-item-content>.oj-treeview-item-icon {
+		@extend .oj-fwk-icon-tree-document;
+	}
+}

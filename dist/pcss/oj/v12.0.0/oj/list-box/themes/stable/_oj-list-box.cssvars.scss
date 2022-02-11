@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+@import "../../../collection/themes/stable/_oj-collection.cssvars.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+
+  @include module-include-once("stable.variables.listbox") {
+
+:root {
+
+  // listbox
+  // --------------------------
+  // listbox values used in drop down for
+  // inputTime, select, combobox
+  --oj-listbox-item-padding-horizontal:  var(--oj-text-field-text-to-edge-padding);
+
+}
+
+}

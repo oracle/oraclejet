@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -422,7 +422,7 @@ var __oj_tab_bar_metadata =
       },
       _ITEM_BADGE_STYLE_CLASS: {
         navlist: 'oj-navigationlist-item-end',
-        tabbar: 'oj-tabbar-item-badge'
+        tabbar: 'oj-tabbar-item-end'
       },
       _HORIZONTAL_NAVLIST_STYLE_CLASS: {
         navlist: 'oj-navigationlist-horizontal',
@@ -1339,6 +1339,7 @@ var __oj_tab_bar_metadata =
        */
       HandleMouseClick: function (event) {
         var $target = $(event.target);
+        var parentNode = $target[0].parentNode;
         var item = this.FindItem($target);
         if (item == null || item.length === 0) {
           // can't find item or if item cannot be focus
@@ -1351,6 +1352,11 @@ var __oj_tab_bar_metadata =
         if (this.SkipFocus(item)) {
           event.preventDefault();
           return;
+        }
+
+        // For Mobile mode only: if the target is a div of animation check it's parent contains the expand/collapse icon and reset target
+        if (parentNode.classList.contains('oj-animate-pointerUp')) {
+          $target = $(parentNode);
         }
 
         // TODO , once it is fixd in listview probably don't need to override HandleMouseClick
@@ -1681,7 +1687,7 @@ var __oj_tab_bar_metadata =
       GetOption: function (key) {
         var optionValue = this.ojContext.option(key);
         if (key === 'selection') { // selection Data type is different for listview and navlist
-          if (optionValue) {
+          if (optionValue != null) { // in navlist & tabbar item with index 0 is not getting selected
             return [optionValue];
           }
           return [];
@@ -1854,7 +1860,8 @@ var __oj_tab_bar_metadata =
         var self = this;
         var selector = 'a, input, select, textarea, button';
         var childElements = item.children(selector).filter(function () {
-          return !$(this).hasClass(self.getNavListRemoveIcon());
+          return !($(this).hasClass(self.getNavListRemoveIcon()) ||
+                   $(this).hasClass(self.getExpandIconStyleClass()));
         });
 
         if (childElements.length === 1 && // check for only one focusbale child
@@ -1972,16 +1979,26 @@ var __oj_tab_bar_metadata =
 
         if (itemContent.length > 0) {
           itemContent.addClass(this.getItemContentStyleClass());
+          var itemLabelClass = this.getItemLabelStyleClass();
+          var itemLabelElement = itemContent[0].querySelector('.' + itemLabelClass);
           var icon = itemContent.find('.' + itemIconClass);
-          var badge = itemContent.find('.' + itemBadgeClass);
-          var itemLabelElement = document.createElement('span');
-          itemLabelElement.classList.add(this.getItemLabelStyleClass());
-          this._wrapInner(itemContent[0], itemLabelElement);
-          if (badge.length > 0) {
-            badge.insertAfter(itemLabelElement); // @HTMLUpdateOK
+          // if element with label style class already exists, no need to create wrapper
+          // or rearrange the icon/badge
+          if (itemLabelElement == null) {
+            itemLabelElement = document.createElement('span');
+            itemLabelElement.classList.add(itemLabelClass);
+            this._wrapInner(itemContent[0], itemLabelElement);
+
+            var badge = itemContent.find('.' + itemBadgeClass);
+            if (badge.length > 0) {
+              badge.insertAfter(itemLabelElement); // @HTMLUpdateOK
+            }
+
+            if (icon.length > 0) {
+              icon.insertBefore(itemLabelElement); // @HTMLUpdateOK
+            }
           }
           if (icon.length > 0) {
-            icon.insertBefore(itemLabelElement); // @HTMLUpdateOK
             if (icon.attr('title')) { // preserve the title to restore it after destroy.
               icon.data(this._NAVLIST_ITEM_ICON_HAS_TITLE, icon.attr('title'));
             }
@@ -3041,6 +3058,31 @@ var __oj_tab_bar_metadata =
     *   &lt;/ul>
     * &lt;/oj-navigation-list>
     */
+    // ---------------- oj-navigationlist-item-label --------------
+    /**
+    * Use this class to specify the element with the label.  This will eliminate the need for NavigationList to automatically
+    * wrap any child element that is not an icon or a badge with this class.  Note the content must have the correct
+    * order (icon element first, then the label element, then the badge element) as NavigationList in this case will not attempt
+    * to reorder the content.
+    * @ojstyleclass oj-navigationlist-item-label
+    * @ojdisplayname Label
+    * @ojstyleselector "oj-navigation-list span"
+    * @memberof oj.ojNavigationList
+    * @ojtsexample
+    * &lt;oj-navigation-list class="oj-navigationlist-stack-icon-label" >
+    *   &lt;ul>
+    *     &lt;li id="foo">
+    *       &lt;a href="#">
+    *         &lt;span class="oj-navigationlist-item-icon demo-icon-font-24 demo-palette-icon-24">
+    *         &lt;/span>
+    *         &lt;span class="oj-navigationlist-item-label">
+    *         Foo
+    *         &lt;/span>
+    *       &lt;/a>
+    *     &lt;/li>
+    *   &lt;/ul>
+    * &lt;/oj-navigation-list>
+    */
     // ---------------- oj-focus-highlight --------------
     /**
     * Under normal circumstances this class is applied automatically.
@@ -3086,6 +3128,7 @@ var __oj_tab_bar_metadata =
     * @ojstylevariable oj-navigation-list-font-weight {description: "Navigation list font weight", formats: ["font_weight"], help: "#css-variables"}
     * @ojstylevariable oj-navigation-list-icon-margin {description: "Navigation list icon margin", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-navigation-list-icon-to-text-padding {description: "Padding between icon and text", formats: ["length"], help: "#css-variables"}
+    * @ojstylevariable oj-navigation-list-icon-size {description: "Navigation list icon size", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-navigation-list-item-min-height {description: "Navigation list item minimum height", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-navigation-list-item-margin {description: "Navigation list item margin", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-navigation-list-item-padding {description: "Navigation list item padding", formats: ["length"], help: "#css-variables"}
@@ -4462,6 +4505,31 @@ var __oj_tab_bar_metadata =
     *   &lt;/ul>
     * &lt;/oj-tab-bar>
     */
+     // ---------------- oj-tabbar-item-label --------------
+    /**
+    * Use this class to specify the element with the label.  This will eliminate the need for Tabbar to automatically
+    * wrap any child element that is not an icon or a badge with this class.  Note the content must have the correct
+    * order (icon element first, then the label element, then the badge element) as Tabbar in this case will not attempt
+    * to reorder the content.
+    * @ojstyleclass oj-tabbar-item-label
+    * @ojdisplayname Label
+    * @ojstyleselector "oj-tabbar span"
+    * @memberof oj.ojTabBar
+    * @ojtsexample
+    * &lt;oj-tab-bar class="oj-tabbar-stack-icon-label" >
+    *   &lt;ul>
+    *     &lt;li id="foo">
+    *       &lt;a href="#">
+    *         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+    *         &lt;/span>
+    *         &lt;span class="oj-tabbar-item-label">
+    *         Foo
+    *         &lt;/span>
+    *       &lt;/a>
+    *     &lt;/li>
+    *   &lt;/ul>
+    * &lt;/oj-tab-bar>
+    */
      // ---------------- oj-removable --------------
     /**
     * Use this class to make an item removable.
@@ -4494,6 +4562,27 @@ var __oj_tab_bar_metadata =
     *     &lt;li id="foo">
     *       &lt;a href="#">
     *         &lt;span class="oj-tabbar-item-icon demo-icon-font-24 demo-palette-icon-24">
+    *         &lt;/span>
+    *         Foo
+    *       &lt;/a>
+    *     &lt;/li>
+    *   &lt;/ul>
+    * &lt;/oj-tab-bar>
+    */
+     // ---------------- oj-tabbar-item-end --------------
+    /**
+    * Use this class to add an badge/metadata/icon to a list item.
+    * @ojstyleclass oj-tabbar-item-end
+    * @ojdisplayname Icon
+    * @memberof oj.ojTabBar
+    * @ojunsupportedthemes ['Alta']
+    * @ojtsexample
+    * &lt;oj-tab-bar class="oj-tabbar-item-end" >
+    *   &lt;ul>
+    *     &lt;li id="foo">
+    *       &lt;a href="#">
+    *         &lt;span class="oj-tabbar-item-end>
+    *            &lt;span class="oj-badge oj-badge-subtle">3
     *         &lt;/span>
     *         Foo
     *       &lt;/a>
@@ -4544,6 +4633,7 @@ var __oj_tab_bar_metadata =
     * @ojstylevariableset oj-tab-bar-css-set1
     * @ojstylevariable oj-tab-bar-icon-to-text-padding {description: "Padding between icon and text", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-tab-bar-icon-margin {description: "Tab bar icon margin", formats: ["length"], help: "#css-variables"}
+    * @ojstylevariable oj-tab-bar-icon-size {description: "Tab bar icon size", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-tab-bar-item-margin {description: "Tab bar item margin", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-tab-bar-item-padding {description: "Tab bar item padding", formats: ["length"], help: "#css-variables"}
     * @ojstylevariable oj-tab-bar-item-min-height {description: "Tab bar item minimum height", formats: ["length"], help: "#css-variables"}
@@ -4779,7 +4869,8 @@ var __oj_tab_bar_metadata =
     /**
      * Whether to display both the label and icons (<code class="prettyprint">"all"</code>) or just the icons (<code class="prettyprint">"icons"</code>).
      * In the latter case, the label is displayed in a tooltip instead, unless a tooltip was already supplied at create time.
-     * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and tab bar is a flat list.
+     * Note: <code class="prettyprint">display="icons"</code> is valid only when <code class="prettyprint">drillMode=none</code> and tab bar is a flat list,
+     * <code class="prettyprint">display="stacked"</code> is not supported in vertical tabbar layout where the edge is end or start.
      * It is also mandatory to provide icons for each item as stated in <a href="#icons-section">icons section</a>.
      *
      * @expose
@@ -6900,6 +6991,13 @@ var __oj_tab_bar_metadata =
     // Slider items don't have Aria-selected tag, overrding selction for slider navlist
 
     var itemSelectionMarkerAttr = 'aria-selected';
+    var prevAnchorTag;
+    var anchor = this.m_widget.getFocusItem($(item))[0];
+    var collapseClass = this.m_widget.getCollapseIconStyleClass();
+    prevAnchorTag = anchor.previousElementSibling;
+   if (prevAnchorTag && prevAnchorTag.classList.contains(collapseClass)) {
+      return false;
+   }
     return (this.m_widget.getFocusItem($(item))[0].getAttribute('role') === 'menuitem' &&
      !this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr));
   };

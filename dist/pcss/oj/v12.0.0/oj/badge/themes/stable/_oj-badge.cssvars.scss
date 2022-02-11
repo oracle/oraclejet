@@ -1,0 +1,23 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../core/themes/stable/_oj-core.cssvars.scss";
+@import "../../../typography/themes/stable/_oj-typography.cssvars.scss";
+
+@include module-include-once("stable.variables.badge") {
+
+:root {
+
+  --oj-badge-bg-color: var(--oj-core-neutral-1);
+  --oj-badge-text-color: var(--oj-core-neutral-contrast);
+
+  --oj-badge-font-size: 0.75rem;
+  --oj-badge-font-weight: 700;
+  --oj-badge-font-stretch: condensed;
+
+  --oj-badge-height: 1.5rem;
+  --oj-badge-border-radius: var(--oj-core-border-radius-lg);
+
+}
+
+}

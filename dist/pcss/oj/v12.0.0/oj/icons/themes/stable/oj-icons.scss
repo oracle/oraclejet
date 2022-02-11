@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@import "../../../helpers/themes/stable/oj-helpers.scss";
+@import "_oj-icons.cssvars.scss";
+// todo: rethink how icons should work
+@import "_oj-icon-font.scss";
+@import "../base/_oj-icons.scss";
+@import "_oj-icons-ignore.scoped.cssvars.scss";
+
+  @include module-include-once("stable.icons") {
+
+    .oj-fwk-icon-back {
+        @extend .oj-fwk-icon-arrowtail-start;
+    }
+
+    .oj-fwk-icon-next {
+        @extend .oj-fwk-icon-arrowtail-end;
+    }
+
+  }

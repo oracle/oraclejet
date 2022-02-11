@@ -1,0 +1,31 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss"; 
+@import "../../../icons/themes/redwood/oj-icons.scss";
+
+// ----- end dependencies ---------
+
+
+@import "_oj-row-expander.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-row-expander.scss";
+
+  @include module-include-once("redwood.rowexpander") {
+    /* Styling for the expand icon */
+    .oj-rowexpander-expand-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
+
+    /* Styling for the collapse icon */
+    .oj-rowexpander-collapse-icon {
+      @extend .oj-fwk-icon-arrow03-s;
+    }
+  }

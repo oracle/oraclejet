@@ -19,9 +19,17 @@ for (let prop of props) {
     let optional = properties[prop]['optional'] ? '?' : '';
     let strProp = properties[prop]['readOnly']? `readonly ${prop}`: `${prop}`;
     strProp = `${strProp}${optional}`;
+    if (propsToInclude === 'readOnly') {
+      // Uppercase the property name
+      uppercaseProp = prop.charAt(0).toUpperCase() + prop.slice(1);
+    ?>
+  <?js= `${strProp}: Parameters<Required<${propsName}${typeParams}>['on${uppercaseProp}Changed']>[0];` ?>
+    <?js
+    } else {
     ?>
   <?js= `${strProp}: ${propsName}${typeParams}['${prop}'];` ?>
-  <?js
+    <?js
+    }
   }
 }
 ?>

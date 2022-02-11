@@ -1,0 +1,975 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example button/themes/redwood/oj-button.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+@mixin oj-button-padding(
+  $selector: null,
+  $buttonTextToEdgePadding: $buttonTextToEdgePadding,
+  $buttonIconToEdgePadding: $buttonIconToEdgePadding,
+  $buttonIconToTextPadding: $buttonIconToTextPadding
+) {
+  /* The element containing the text of buttons without icons.  This is the Button (input element)
+     * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span
+     * for other types of Buttons.
+     */
+    input#{$selector}.oj-button[type="button"], // doesn't support icons
+    input#{$selector}.oj-button[type="submit"], // doesn't support icons
+    input#{$selector}.oj-button[type="reset"], // doesn't support icons
+   #{$selector}.oj-buttonset .oj-button-text-only .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-only .oj-button-text {
+    // button types that do support icons but don't have any
+    padding: 0 $buttonTextToEdgePadding;
+  }
+
+  /* The text span of buttons with text, a left icon, but no right icon */
+  #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-icon-start .oj-button-text {
+    @include oj-ltr() {
+      padding: 0 $buttonTextToEdgePadding 0 0;
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-icon-end .oj-button-text {
+    @include oj-rtl() {
+      padding: 0 $buttonTextToEdgePadding 0 0;
+    }
+  }
+
+  /* The text span of buttons with text, a right icon, but no left icon */
+  #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-icon-end .oj-button-text {
+    @include oj-ltr() {
+      padding: 0 0 0 $buttonTextToEdgePadding;
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-icon-start .oj-button-text {
+    @include oj-rtl() {
+      padding: 0 0 0 $buttonTextToEdgePadding;
+    }
+  }
+
+  /* The text span of buttons with text and both icons */
+  #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-text, // toggle button custom element case
+    #{$selector}.oj-button-text-icons .oj-button-text {
+    padding: 0;
+  }
+
+  /* The left icon of buttons with text and a left icon, with or without a right icon */
+  #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-icon.oj-start, // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-start,      // toggle button custom element case
+    #{$selector}.oj-button-text-icon-start .oj-button-icon.oj-start,
+    #{$selector}.oj-button-text-icons .oj-button-icon.oj-start {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-ltr() {
+      display: inline-flex;
+      margin-right: $buttonIconToTextPadding;
+      margin-left: $buttonIconToEdgePadding;
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-end,      // toggle button custom element case
+    #{$selector}.oj-button-text-icon-end .oj-button-icon.oj-end,
+    #{$selector}.oj-button-text-icons .oj-button-icon.oj-end {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-rtl() {
+      display: inline-flex;
+      margin-right: $buttonIconToTextPadding;
+      margin-left: $buttonIconToEdgePadding;
+    }
+  }
+
+  /* The left icon of buttons with 2 icons and no text */
+  #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-start,   // toggle button custom element case
+    #{$selector}.oj-button-icons-only .oj-button-icon.oj-start {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-ltr() {
+      display: inline-flex;
+      margin-left: $buttonIconToEdgePadding; // between-icon padding lives on right icon
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-button-icons-only .oj-button-icon.oj-end {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-rtl() {
+      display: inline-flex;
+      margin: 0 0.375rem;
+    }
+  }
+
+  /* The right icon of buttons with text and a right icon, with or without a left icon */
+  #{$selector}.oj-buttonset .oj-button-text-icon-end .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-end,      // toggle button custom element case
+    #{$selector}.oj-button-text-icon-end .oj-button-icon.oj-end,
+    #{$selector}.oj-button-text-icons .oj-button-icon.oj-end {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-ltr() {
+      display: inline-flex;
+      margin-right: $buttonIconToEdgePadding;
+      margin-left: $buttonIconToTextPadding;
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-text-icon-start .oj-button-icon.oj-start,   // toggle button custom element case
+    #{$selector}.oj-buttonset .oj-button-text-icons .oj-button-icon.oj-start,        // toggle button custom element case
+    #{$selector}.oj-button-text-icon-start .oj-button-icon.oj-start,
+    #{$selector}.oj-button-text-icons .oj-button-icon.oj-start {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-rtl() {
+      display: inline-flex;
+      margin-right: $buttonIconToEdgePadding;
+      margin-left: $buttonIconToTextPadding;
+    }
+  }
+
+  /* The right icon of buttons with 2 icons and no text */
+  #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-end,   // toggle button custom element case
+    #{$selector}.oj-button-icons-only .oj-button-icon.oj-end {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-ltr() {
+      display: inline-flex;
+      // between-icon padding lives on left icon, not this right icon
+      margin: 0 0.375rem;
+    }
+  }
+  #{$selector}.oj-buttonset .oj-button-icons-only .oj-button-icon.oj-start,    // toggle button custom element case
+    #{$selector}.oj-button-icons-only .oj-button-icon.oj-start {
+    // because this is a contextual selector it has a higher specificity,
+    // so using margin-right: and margin-left: instead of margin: so that
+    // it's easy for people to add some margins at the top/bottom
+    // to center images
+    @include oj-rtl() {
+      display: inline-flex;
+      // between-icon padding lives on left icon, not this right icon
+      margin-right: $buttonIconToEdgePadding;
+    }
+  }
+  #{$selector}.oj-button-icon-only .oj-button-icon {
+    display: inline-flex;
+  }
+}
+
+@mixin oj-button-padding-css-vars(
+  $selector: null,
+  $buttonTextToEdgePadding: var(--oj-button-text-to-edge-padding),
+  $buttonIconToEdgePadding: var(--oj-button-icon-to-edge-padding),
+  $buttonIconToTextPadding: var(--oj-button-icon-to-text-padding)
+) {
+  @include oj-button-padding($selector, $buttonTextToEdgePadding, $buttonIconToEdgePadding, $buttonIconToTextPadding);
+}
+
+
+
+@include module-include-once("common.button") {
+  /* button */
+  /* --------------------------------------------------------------- */
+
+  // This is to prevent the flash of unstyled content before the html becomes JET components.
+  oj-button:not(.oj-complete) {
+    visibility: hidden;
+  }
+
+  // do not overwrite hidden display properties
+  [hidden].oj-button {
+    display: none;
+  }
+
+  .oj-button {
+    height: var(--oj-button-height);
+    margin-bottom: var(--oj-private-core-wrappable-margin-bottom);
+    font-size: var(--oj-button-font-size);
+
+    // set inline-flex on root node
+    display: inline-flex;
+
+    vertical-align: top;
+  }
+
+  // fill container height and width from container if set, cannot inherit because doesn't work with percentage values
+  .oj-button-button {
+    
+    width: 100%;
+    height: 100%;
+  }
+
+  .oj-button-toggle,     
+  .oj-button-button {
+    
+    justify-content: center;
+    min-width: 0; // By default, flex items won't shrink below their minimum content size unless min-width specified
+
+    // vertically center containing items
+    align-items: center;
+
+    padding: 0;
+    border: 1px solid;
+    border-radius: var(--oj-button-border-radius);
+
+    white-space: nowrap;
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+    // font-size and font-family are needed for the
+    // case where you use a button tag to create
+    // the button, the font family and size aren't
+    // inherited on a button tag.
+    font-family: inherit;
+    font-size: 100%;
+
+    // Prevent flash as button clicks 300ms after the tap on touch devices.
+    // iOS is inconsistent as to whether :active is applied during that click,
+    // so mysteriously starts and stops working if use .oj-button:active for this rule.
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .oj-button-icon-only,
+  .oj-buttonset .oj-button-icon-only {
+    min-width: var(--oj-button-height);
+  }
+
+  // Buttons with icons need to have their icons sized appropriately
+  .oj-button-icon {
+    font-size: var(--oj-button-icon-size);
+  }
+
+  .oj-button-sm .oj-button-icon {
+    font-size: var(--oj-button-sm-icon-size);
+  }
+
+  .oj-button-lg .oj-button-icon {
+    font-size: var(--oj-button-lg-icon-size);
+  }
+
+  .oj-button-toggle,                
+  .oj-button-button {
+    
+    cursor: var(--oj-core-cursor-clickable);
+  }
+
+  // display inline-flex doesn't seem to quite work in IE 11 for input based buttons; they do not behave inline unless they're display inline-block
+  // luckily having flex display for these is not essential because labels are automatically vertically aligned properly.
+  input.oj-button[type="button"],
+  input.oj-button[type="submit"],
+  input.oj-button[type="reset"] {
+    display: inline-block;
+  }
+
+  /* The root element of toggle (radio and checkbox) buttons */
+  .oj-button-toggle {
+    position: relative; // See comments for bug 20867328 below
+  }
+
+  /* The <label> of toggle (radio and checkbox) buttons or <div> of <button> type buttons*/
+  .oj-button-label,
+  .oj-button-label oj-option {
+    cursor: inherit; // follow oj-button's lead
+
+    // very important: make <label> fill up the containing oj-button <span> so all clicks, hovers, etc. are received by the <label>
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The <input> of toggle (radio and checkbox) buttons */
+  .oj-button-input {
+    // VoiceOver bug 20867328: VO taps go to wrong toggle button unless input positioned underneath its own label.
+    left: 0;
+    top: 0;
+  }
+
+  /* "oj-button-icon oj-start" is applied to the button's start icon, if any.
+       "oj-button-icon oj-end" is applied to the button's end icon, if any.  */
+  .oj-button .oj-button-icon {
+    font-weight: normal;
+  }
+
+  // Since buttons can have variable widths ensure button text truncates with ellipsis if button gets too small
+  .oj-button .oj-button-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Alternate button sizes
+  //----------------------------------
+
+  .oj-button.oj-button-sm,
+  .oj-buttonset.oj-button-sm .oj-button-toggle {
+    // custom element buttonset
+    height: var(--oj-button-sm-height);
+    font-size: var(--oj-button-sm-font-size);
+  }
+
+  .oj-button-icon-only.oj-button-sm, // LVC TODO?
+    .oj-buttonset.oj-button-sm .oj-button-icon-only {
+    min-width: var(--oj-button-sm-height);
+  }
+
+  .oj-button.oj-button-lg,
+ .oj-buttonset.oj-button-lg .oj-button-toggle {
+    // custom element buttonset
+    height: var(--oj-button-lg-height);
+    font-size: var(--oj-button-lg-font-size);
+  }
+
+  .oj-button-icon-only.oj-button-lg,
+  .oj-buttonset.oj-button-lg .oj-button-icon-only {
+    min-width: var(--oj-button-lg-height);
+  }
+  .oj-button.oj-button-full-width {
+    width: 100%;
+  }
+  .oj-button.oj-button-full-width .oj-button-button {
+    border-radius: 0;
+  }
+  // Button states
+  //----------------------------------
+
+    .oj-button-toggle,            
+    .oj-button-button,          
+    .oj-button-toggle:link,       
+    .oj-button-button:link,     
+    .oj-button-toggle:visited,    
+    .oj-button-button:visited,  
+    .oj-button-toggle:hover,      
+    .oj-button-button:hover,    
+    .oj-button-toggle:active,     
+    .oj-button-button:active {  
+     
+      text-decoration: none;
+  }
+
+  .oj-button-toggle:not(.oj-focus-highlight):focus,                
+  .oj-button:not(.oj-focus-highlight) .oj-button-button:focus {
+    
+    outline: none;
+  }
+
+  // The oj-focus-highlight class applies focus styling that may not be desirable
+  // when the focus results from pointer interaction (touch or mouse), but which is
+  // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+  // example keyboard or initial page load.
+  // See also the $privateFocusHighlightPolicy variable, which controls when this
+  // class is set.  That variable affects multiple components, not just Button.
+  .oj-button-toggle.oj-focus-highlight,                
+  .oj-button.oj-focus-highlight .oj-button-button {
+    
+    outline: dotted 1px var(--oj-core-focus-border-color);
+    outline-offset: 1px;
+  }
+
+  .oj-button-toggle.oj-disabled,                
+  .oj-button.oj-disabled .oj-button-button {
+    
+    cursor: default; // in case a themer sets clickable "hand" cursor on buttons, override it if disabled
+  }
+
+  // Solid-chrome buttons
+  //----------------------------------
+
+  /* Solid-chrome buttons have chrome (background and border) in all states (default,
+     * focus-only, disabled, hover, active, selected, ...).
+     */
+
+  .oj-button-toggle.oj-button-full-chrome,                       
+    .oj-button-toggle.oj-button-full-chrome:link,                  
+    .oj-button-toggle.oj-button-full-chrome:visited,               
+    .oj-button-toggle.oj-button-full-chrome:hover,                 
+    .oj-button-toggle.oj-button-full-chrome:active,                
+    .oj-button.oj-button-full-chrome .oj-button-button,          
+    .oj-button.oj-button-full-chrome .oj-button-button:link,     
+    .oj-button.oj-button-full-chrome .oj-button-button:visited,  
+    .oj-button.oj-button-full-chrome .oj-button-button:hover,    
+    .oj-button.oj-button-full-chrome .oj-button-button:active {
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  .oj-button.oj-button-full-chrome.oj-button-sm .oj-button-button,
+  .oj-button.oj-button-full-chrome.oj-button-sm .oj-button-button:active,
+  .oj-button.oj-button-full-chrome.oj-button-sm .oj-button-button:hover,
+  .oj-button.oj-button-full-chrome.oj-button-sm .oj-button-button:link,
+  .oj-button.oj-button-full-chrome.oj-button-sm .oj-button-button:visited,
+  .oj-buttonset.oj-button-full-chrome.oj-button-sm .oj-button,
+  .oj-buttonset.oj-button-full-chrome.oj-button-sm .oj-button:active,
+  .oj-buttonset.oj-button-full-chrome.oj-button-sm .oj-button:hover,
+  .oj-buttonset.oj-button-full-chrome.oj-button-sm .oj-button:link,
+  .oj-buttonset.oj-button-full-chrome.oj-button-sm .oj-button:visited {
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  /* oj-default is applied iff the button is not in any of the other states,
+       namely oj-active, oj-disabled, oj-selected, oj-hover, or oj-focus.
+       oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
+    .oj-button-toggle.oj-default.oj-button-full-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-full-chrome,                
+    .oj-button.oj-default.oj-button-full-chrome .oj-button-button,      
+    .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-solid-chrome-bg-color);
+    border-color: var(--oj-button-solid-chrome-border-color);
+    color: var(--oj-button-solid-chrome-text-color);
+  }
+
+  .oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
+  .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color);
+  }
+
+  .oj-button-toggle.oj-hover.oj-button-full-chrome,                
+  .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-solid-chrome-bg-color-hover);
+    border-color: var(--oj-button-solid-chrome-border-color-hover);
+    color: var(--oj-button-solid-chrome-text-color-hover);
+  }
+
+  .oj-button.oj-hover.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-hover);
+  }
+
+  // active should trump hover
+  /* oj-active is applied to a push button when it is actively being held down
+       by the mouse button or Enter or Spacebar. */
+  .oj-button-toggle.oj-active.oj-button-full-chrome,                
+  .oj-button.oj-active.oj-button-full-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-solid-chrome-bg-color-active);
+    border-color: var(--oj-button-solid-chrome-border-color-active);
+    color: var(--oj-button-solid-chrome-text-color-active);
+  }
+
+  // active should trump hover
+  .oj-button.oj-active.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-active);
+  }
+
+  // selected mostly trumps hover (like active), but unlike active, the text/icon
+  // colors are a 3rd color different than the selected color and hover color
+  .oj-button-toggle.oj-selected.oj-button-full-chrome,                
+    .oj-button.oj-selected.oj-button-full-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-solid-chrome-bg-color-selected);
+    border-color: var(--oj-button-solid-chrome-border-color-selected);
+    color: var(--oj-button-solid-chrome-text-color-selected);
+  }
+
+  .oj-button-toggle.oj-selected.oj-hover.oj-button-full-chrome,                
+    .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-button {
+    
+    color: var(--oj-button-solid-chrome-text-color-selected-hover);
+    background-color: var(--oj-button-solid-chrome-bg-color-selected-hover);
+    border-color: var(--oj-button-solid-chrome-border-color-selected-hover);
+  }
+
+  .oj-button.oj-selected.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-selected);
+  }
+
+  .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-selected-hover);
+  }
+
+  .oj-button-toggle.oj-disabled.oj-button-full-chrome,                
+  .oj-button.oj-disabled.oj-button-full-chrome .oj-button-button,
+  .oj-button-toggle.oj-disabled.oj-button-cta-chrome,                
+  .oj-button.oj-disabled.oj-button-cta-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-solid-chrome-bg-color-disabled);
+    border-color: var(--oj-button-solid-chrome-border-color-disabled);
+    color: var(--oj-button-solid-chrome-text-color-disabled);
+    background-image: none;
+  }
+
+  .oj-button.oj-disabled.oj-button-full-chrome .oj-button-icon,
+  .oj-button.oj-disabled.oj-button-cta-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-disabled);
+  }
+
+  // Unlike other occurrences of .oj-selected, these "disabled selected" rules have no corresponding "disabled active"
+  // rules, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
+
+  .oj-button-toggle.oj-disabled.oj-selected.oj-button-full-chrome,                
+  .oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-button {
+    
+    color: var(--oj-button-solid-chrome-text-color-selected-disabled);
+    background-color: var(--oj-button-solid-chrome-bg-color-selected-disabled);
+    border-color: var(--oj-button-solid-chrome-border-color-selected-disabled);
+  }
+
+  .oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-icon {
+    color: var(--oj-button-solid-chrome-text-color-selected-disabled);
+  }
+
+  // Borderless-chrome buttons
+  //----------------------------------
+
+  /* Borderless-chrome buttons have no chrome (background or border) in their default,
+     * focus-only, and disabled-not-selected states, but acquire chrome in their
+     * hover, active, and selected states.
+     *
+     * Borderless-chroming is recommended for buttons in a toolbar, and anytime the
+     * borderless-chrome look is desired.
+     *
+     * To set button chroming, use the "chroming" option on the Button, Buttonset, and Toolbar
+     * components, per the JSDoc.  Do not apply the oj-button-XXX-chrome classes manually.
+     */
+
+  // borderless-chrome and (default or focus-only or disabled)
+  .oj-button-toggle.oj-default.oj-button-half-chrome,                 
+    .oj-button-toggle.oj-focus-only.oj-button-half-chrome,              
+    .oj-button-toggle.oj-disabled.oj-button-half-chrome,                
+    .oj-button.oj-default.oj-button-half-chrome .oj-button-button,    
+    .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button, 
+    .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {
+    
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+  }
+
+  // borderless-chrome and (default or focus-only)
+  .oj-button-toggle.oj-default.oj-button-half-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-half-chrome,                
+    .oj-button.oj-default.oj-button-half-chrome .oj-button-button,      
+    .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color);
+  }
+
+  // borderless-chrome hover
+  .oj-button-toggle.oj-hover.oj-button-half-chrome,                
+  .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-hover);
+    background-color: var(--oj-button-borderless-chrome-bg-color-hover);
+    border-color: var(--oj-button-borderless-chrome-border-color-hover);
+  }
+
+  // borderless-chrome active: should trump borderless-chrome hover
+  .oj-button-toggle.oj-active.oj-button-half-chrome,                
+  .oj-button.oj-active.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-active);
+    background-color: var(--oj-button-borderless-chrome-bg-color-active);
+    border-color: var(--oj-button-borderless-chrome-border-color-active);
+  }
+
+  // borderless-chrome selected
+  .oj-button-toggle.oj-selected.oj-button-half-chrome,                
+    .oj-button.oj-selected.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-selected);
+    background-color: var(--oj-button-borderless-chrome-bg-color-selected);
+    border-color: var(--oj-button-borderless-chrome-border-color-selected);
+  }
+
+  // borderless-chrome selected hover
+  .oj-button-toggle.oj-selected.oj-hover.oj-button-half-chrome,                
+    .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-selected-hover);
+    background-color: var(--oj-button-borderless-chrome-bg-color-selected-hover);
+    border-color: var(--oj-button-borderless-chrome-border-color-selected-hover);
+  }
+
+  // borderless-chrome disabled
+  .oj-button-toggle.oj-disabled.oj-button-half-chrome,                
+  .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-disabled);
+   
+  }
+
+  // borderless-chrome disabled selected
+  // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
+  // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
+  // 6/2014:  still need this line for specificity
+  .oj-button-toggle.oj-disabled.oj-selected.oj-button-half-chrome,                
+  .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-button {
+    
+    color: var(--oj-button-borderless-chrome-text-color-selected-disabled);
+    background-color: var(--oj-button-borderless-chrome-bg-color-selected-disabled);
+    border-color: var(--oj-button-borderless-chrome-border-color-selected-disabled);
+  }
+
+  // borderless-chrome
+  .oj-button-toggle.oj-button-half-chrome,                       
+    .oj-button-toggle.oj-button-half-chrome:link,                  
+    .oj-button-toggle.oj-button-half-chrome:visited,               
+    .oj-button-toggle.oj-button-half-chrome:hover,                 
+    .oj-button-toggle.oj-button-half-chrome:active,                
+    .oj-button.oj-button-half-chrome .oj-button-button,          
+    .oj-button.oj-button-half-chrome .oj-button-button:link,     
+    .oj-button.oj-button-half-chrome .oj-button-button:visited,  
+    .oj-button.oj-button-half-chrome .oj-button-button:hover,    
+    .oj-button.oj-button-half-chrome .oj-button-button:active {
+    
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  .oj-button.oj-button-half-chrome.oj-button-sm .oj-button-button,
+  .oj-button.oj-button-half-chrome.oj-button-sm .oj-button-button:active,
+  .oj-button.oj-button-half-chrome.oj-button-sm .oj-button-button:hover,
+  .oj-button.oj-button-half-chrome.oj-button-sm .oj-button-button:link,
+  .oj-button.oj-button-half-chrome.oj-button-sm .oj-button-button:visited,
+  .oj-buttonset.oj-button-half-chrome.oj-button-sm .oj-button,
+  .oj-buttonset.oj-button-half-chrome.oj-button-sm .oj-button:active,
+  .oj-buttonset.oj-button-half-chrome.oj-button-sm .oj-button:hover,
+  .oj-buttonset.oj-button-half-chrome.oj-button-sm .oj-button:link,
+  .oj-buttonset.oj-button-half-chrome.oj-button-sm .oj-button:visited {
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  // borderless-chrome and (default or focus-only) icons
+  .oj-button.oj-default.oj-button-half-chrome .oj-button-icon,
+  .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color);
+  }
+
+  // borderless-chrome hover icons
+  .oj-button.oj-hover.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color-hover);
+  }
+
+  // borderless-chrome active icons
+  .oj-button.oj-active.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color-active);
+  }
+
+  // borderless-chrome selected icons
+  .oj-button.oj-selected.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color-selected);
+  }
+
+  // borderless-chrome selected and hover icons
+  .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color-selected-hover);
+  }
+
+  // borderless-chrome disabled icons
+  .oj-button.oj-disabled.oj-button-half-chrome .oj-button-icon {
+    color: var(--oj-button-borderless-chrome-text-color-disabled);
+  }
+
+  // borderless-chrome disabled selected icons
+  // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
+  // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
+  .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-icon {
+    // 7/2014:  need this line for specificity
+    color: var(--oj-button-borderless-chrome-text-color-selected-disabled);
+  }
+
+  // Outlined buttons
+  //----------------------------------
+
+  /* Outlined buttons are similar to borderless-chrome buttons, but have a border in the default state. */
+
+  // outlined and (default or focus-only or disabled)
+    .oj-button-toggle.oj-default.oj-button-outlined-chrome,                 
+    .oj-button-toggle.oj-focus-only.oj-button-outlined-chrome,              
+    .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,                
+    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,    
+    .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button, 
+    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {
+    
+    border-color: var(--oj-button-outlined-chrome-border-color);
+    background-image: none;
+    background-color: var(--oj-button-outlined-chrome-bg-color);
+  }
+
+  // outlined and (default or focus-only)
+    .oj-button-toggle.oj-default.oj-button-outlined-chrome,                   
+    .oj-button-toggle.oj-focus-only.oj-button-outlined-chrome,                
+    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,      
+    .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color);
+  }
+
+  // outlined hover
+    .oj-button-toggle.oj-hover.oj-button-outlined-chrome,                
+    .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-hover);
+    background-color: var(--oj-button-outlined-chrome-bg-color-hover);
+    border-color: var(--oj-button-outlined-chrome-border-color-hover);
+  }
+
+  // outlined active: should trump outlined hover
+  .oj-button-toggle.oj-active.oj-button-outlined-chrome,                
+  .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-active);
+    background-color: var(--oj-button-outlined-chrome-bg-color-active);
+    border-color: var(--oj-button-outlined-chrome-border-color-active);
+  }
+
+  // outlined selected
+    .oj-button-toggle.oj-selected.oj-button-outlined-chrome,                
+    .oj-button.oj-selected.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-selected);
+    background-color: var(--oj-button-outlined-chrome-bg-color-selected);
+    border-color: var(--oj-button-outlined-chrome-border-color-selected);
+  }
+
+  // outlined selected hover
+    .oj-button-toggle.oj-selected.oj-hover.oj-button-outlined-chrome,                
+    .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-selected-hover);
+    background-color: var(--oj-button-outlined-chrome-bg-color-selected-hover);
+    border-color: var(--oj-button-outlined-chrome-border-color-selected-hover);
+  }
+
+  // outlined disabled
+    .oj-button-toggle.oj-disabled.oj-button-outlined-chrome,                
+    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-disabled);
+    border-color: var(--oj-button-outlined-chrome-border-color-disabled);
+    background-color: var(--oj-button-outlined-chrome-bg-color-disabled);
+  }
+
+  // outlined disabled selected
+  // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
+  // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
+  // 6/2014:  still need this line for specificity
+    .oj-button-toggle.oj-disabled.oj-selected.oj-button-outlined-chrome,                
+    .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-button {
+    
+    color: var(--oj-button-outlined-chrome-text-color-selected-disabled);
+    background-color: var(--oj-button-outlined-chrome-bg-color-selected-disabled);
+    border-color: var(--oj-button-outlined-chrome-border-color-selected-disabled);
+  }
+
+  // outlined
+  .oj-button-toggle.oj-button-outlined-chrome,                       
+    .oj-button-toggle.oj-button-outlined-chrome:link,                  
+    .oj-button-toggle.oj-button-outlined-chrome:visited,               
+    .oj-button-toggle.oj-button-outlined-chrome:hover,                 
+    .oj-button-toggle.oj-button-outlined-chrome:active,                
+    .oj-button.oj-button-outlined-chrome .oj-button-button,          
+    .oj-button.oj-button-outlined-chrome .oj-button-button:link,     
+    .oj-button.oj-button-outlined-chrome .oj-button-button:visited,  
+    .oj-button.oj-button-outlined-chrome .oj-button-button:hover,    
+    .oj-button.oj-button-outlined-chrome .oj-button-button:active {
+    
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  .oj-button.oj-button-outlined-chrome.oj-button-sm .oj-button-button,
+  .oj-button.oj-button-outlined-chrome.oj-button-sm .oj-button-button:active,
+  .oj-button.oj-button-outlined-chrome.oj-button-sm .oj-button-button:hover,
+  .oj-button.oj-button-outlined-chrome.oj-button-sm .oj-button-button:link,
+  .oj-button.oj-button-outlined-chrome.oj-button-sm .oj-button-button:visited,
+  .oj-buttonset.oj-button-outlined-chrome.oj-button-sm .oj-button,
+  .oj-buttonset.oj-button-outlined-chrome.oj-button-sm .oj-button:active,
+  .oj-buttonset.oj-button-outlined-chrome.oj-button-sm .oj-button:hover,
+  .oj-buttonset.oj-button-outlined-chrome.oj-button-sm .oj-button:link,
+  .oj-buttonset.oj-button-outlined-chrome.oj-button-sm .oj-button:visited {
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  // outlined and (default or focus-only) icons
+  .oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
+  .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color);
+  }
+
+  // outlined hover icons
+  .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color-hover);
+  }
+
+  // outlined active icons
+  .oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color-active);
+  }
+
+  // outlined selected icons
+  .oj-button.oj-selected.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color-selected);
+  }
+
+  // outlined selected and hover icons
+  .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color-selected-hover);
+  }
+
+  // outlined disabled icons
+  .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-icon {
+    color: var(--oj-button-outlined-chrome-text-color-disabled);
+  }
+
+  // outlined disabled selected icons
+  // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
+  // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
+  .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon {
+    // 7/2014:  need this line for specificity
+    color: var(--oj-button-outlined-chrome-text-color-selected-disabled);
+  }
+
+  // CTA-chrome button
+  //----------------------------------
+
+  /* Call To Action (CTA) chrome button guides the user to take or complete the action that is the main goal of the page or page section.
+     * There should only be one CTA button on a page at any given time.
+     * cta-chrome buttons have chrome (background and border) in all states (default,
+     * focus-only, disabled, hover, active ...).
+     * selected states do not apply since CTA buttons are Push Buttons only
+     */
+
+  .oj-button-toggle.oj-button-cta-chrome,                       
+     .oj-button-toggle.oj-button-cta-chrome:link,                  
+     .oj-button-toggle.oj-button-cta-chrome:visited,               
+     .oj-button-toggle.oj-button-cta-chrome:hover,                 
+     .oj-button-toggle.oj-button-cta-chrome:active,                
+     .oj-button.oj-button-cta-chrome .oj-button-button,          
+     .oj-button.oj-button-cta-chrome .oj-button-button:link,     
+     .oj-button.oj-button-cta-chrome .oj-button-button:visited,  
+     .oj-button.oj-button-cta-chrome .oj-button-button:hover,    
+     .oj-button.oj-button-cta-chrome .oj-button-button:active {
+    
+    font-weight: var(--oj-button-font-weight);
+  }
+
+  /* oj-default is applied iff the button is not in any of the other states,
+        namely oj-active, oj-disabled, oj-hover, or oj-focus.
+        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
+     .oj-button-toggle.oj-default.oj-button-cta-chrome,                   
+     .oj-button-toggle.oj-focus-only.oj-button-cta-chrome,                
+     .oj-button.oj-default.oj-button-cta-chrome .oj-button-button,      
+     .oj-button.oj-focus-only.oj-button-cta-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-call-to-action-chrome-bg-color);
+    border-color: var(--oj-button-call-to-action-chrome-border-color);
+    color: var(--oj-button-call-to-action-chrome-text-color);
+  }
+
+  .oj-button.oj-default.oj-button-cta-chrome .oj-button-icon,
+  .oj-button.oj-focus-only.oj-button-cta-chrome .oj-button-icon {
+    color: var(--oj-button-call-to-action-chrome-text-color);
+  }
+
+     .oj-button-toggle.oj-hover.oj-button-cta-chrome,                
+     .oj-button.oj-hover.oj-button-cta-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-call-to-action-chrome-bg-color-hover);
+    border-color: var(--oj-button-call-to-action-chrome-border-color-hover);
+    color: var(--oj-button-call-to-action-chrome-text-color-hover);
+  }
+
+  .oj-button.oj-hover.oj-button-cta-chrome .oj-button-icon {
+    color: var(--oj-button-call-to-action-chrome-text-color-hover);
+  }
+
+  // active should trump hover
+  /* oj-active is applied to a push button when it is actively being held down
+        by the mouse button or Enter or Spacebar. */
+  .oj-button-toggle.oj-active.oj-button-cta-chrome,                
+  .oj-button.oj-active.oj-button-cta-chrome .oj-button-button {
+    
+    background-color: var(--oj-button-call-to-action-chrome-bg-color-active);
+    border-color: var(--oj-button-call-to-action-chrome-border-color-active);
+    color: var(--oj-button-call-to-action-chrome-text-color-active);
+    
+  }
+
+  // active should trump hover
+  .oj-button.oj-active.oj-button-cta-chrome .oj-button-icon {
+    color: var(--oj-button-call-to-action-chrome-text-color-active);
+  }
+  
+  
+  // Button padding and alignment
+  //----------------------------------
+  @include oj-button-padding-css-vars();
+  @include oj-button-padding-css-vars(
+    ".oj-button-sm",
+    var(--oj-button-sm-text-to-edge-padding),
+    var(--oj-button-sm-icon-to-edge-padding),
+    var(--oj-button-sm-icon-to-text-padding)
+  );
+  @include oj-button-padding-css-vars(
+    ".oj-button-lg",
+    var(--oj-button-lg-text-to-edge-padding),
+    var(--oj-button-lg-icon-to-edge-padding),
+    var(--oj-button-lg-icon-to-text-padding)
+  );
+
+  // Workarounds
+  //----------------------------------
+
+  /* reset extra padding in Firefox, see h5bp.com/1 */
+  input.oj-button::-moz-focus-inner,
+  button.oj-button::-moz-focus-inner,
+  .oj-button button::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+  }
+
+  // High Contrast
+  //------------------------------------
+
+  // in high contrast mode bump up the focus outline size to
+  // make it easier to see
+  .oj-hicontrast .oj-button-toggle.oj-focus,                
+    .oj-hicontrast .oj-button.oj-focus .oj-button-button {
+    
+    outline-width: 3px;
+  }
+
+  // a selected button will have a more prominent border
+  .oj-hicontrast .oj-button-toggle.oj-selected,                
+    .oj-hicontrast .oj-button.oj-selected .oj-button-button {
+    
+    border-style: double;
+    border-width: 3px;
+  }
+
+  // a disabled button will have a less prominent border
+  .oj-hicontrast .oj-button-toggle.oj-disabled,                
+    .oj-hicontrast .oj-button.oj-disabled .oj-button-button {
+    
+    border-style: dotted;
+  }
+
+  .oj-hicontrast .oj-button-toggle.oj-disabled.oj-selected,                
+    .oj-hicontrast .oj-button.oj-disabled.oj-selected .oj-button-button {
+    
+    border-width: 2px;
+  }
+
+  /* menu buttons */
+}

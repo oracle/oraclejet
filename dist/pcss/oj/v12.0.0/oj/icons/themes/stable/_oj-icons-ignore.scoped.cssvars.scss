@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("stable.variables.icons.scoped") {
+
+.oj-color-invert {
+  // static icons
+  --oj-private-icon-color:              var(--oj-core-text-color-primary);
+  // clickable icons
+  --oj-private-icon-color-default:      var(--oj-button-borderless-chrome-text-color);
+  --oj-private-icon-color-hover:        var(--oj-button-borderless-chrome-text-color-hover);
+  --oj-private-icon-bg-color-hover:     var(--oj-button-borderless-chrome-bg-color-hover);
+  --oj-private-icon-border-color-hover: var(--oj-button-borderless-chrome-border-color-hover);
+  --oj-private-icon-color-active:       var(--oj-button-borderless-chrome-text-color-active);
+  --oj-private-icon-bg-color-active:    var(--oj-button-borderless-chrome-bg-color-active);
+  --oj-private-icon-border-color-active:var(--oj-button-borderless-chrome-border-color-active);
+  --oj-private-icon-color-disabled:     var(--oj-button-borderless-chrome-text-color-disabled);
+}
+}

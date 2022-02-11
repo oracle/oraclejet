@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+// import dependencies
+@import "../../../helpers/themes/redwood/oj-helpers.scss";
+@import "../../../dvt/themes/redwood/_oj-dvt.scss";
+@import "../../../animation/themes/redwood/_oj-animation.cssvars.scss";
+// ----- end dependencies ---------
+
+
+@import "_oj-picto-chart.cssvars.scss";
+// import classes defined in the base directory
+@import "../base/_oj-picto-chart.scss";

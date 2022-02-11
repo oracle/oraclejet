@@ -1,0 +1,6 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+
+// Variable to override the default position of oj-messages container
+$privateMessagesGeneralOverlayPositionOptionDefault:           (my:(horizontal: "center", vertical: "top"), at:(horizontal: "center", vertical: "top"), of: "window", collision: "none") !default;
+$privateMessagesNotificationOverlayPositionOptionDefault:      (my:(horizontal: "center", vertical: "bottom"), at:(horizontal: "center", vertical: "bottom"), of: "window", collision: "none") !default;

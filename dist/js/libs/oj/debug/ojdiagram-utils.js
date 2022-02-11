@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -139,7 +139,7 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
    * @memberof DiagramUtils
    */
   DiagramUtils.getLayout = function (obj) {
-    var layoutFunc = function (layoutContext) {
+    return function (layoutContext) {
       // position nodes and node labels
       var defaultLabelLayout;
       if (obj.nodes && layoutContext.getNodeCount() > 0) {
@@ -192,7 +192,6 @@ define(['exports', 'ojs/ojmap', 'ojs/ojcore-base'], function (exports, ojMap, oj
         }
       }
     };
-    return layoutFunc;
   };
 
   /**

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+@include module-include-once("redwood.progress.circle.scoped") {
+
+  
+  /* progress circle            */
+  /* -------------------------- */
+.oj-color-invert {
+  --oj-progress-circle-determinate-track-bg-color:   rgba(var(--oj-palette-neutral-rgb-10), .15);
+  --oj-progress-circle-value-bg-color:   rgb(var(--oj-palette-neutral-rgb-0));
+}
+}

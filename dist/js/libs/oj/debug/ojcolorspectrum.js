@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -440,7 +440,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           /**
            * The value of the element representing the current color.
            * @member
-           * @type {Object}
+           * @type {Object|string}
            * @ojsignature {target:"Type", value:"oj.Color", jsdocOverride:true}
            * @ojformat color
            * @default null
@@ -795,7 +795,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
             // Check if value has changed
             if (!this._compareColorValues(this._value, color)) {
               // Color is different from current
-              this._setColorVals(color); // note the new color
+              this._setColorVals(color, true); // note the new color
               this._setSliderValue(this._hueVal, true);
               this._setSliderValue(this._alphaVal, false);
               this._setSpectrumHue(this._hueVal, this._satVal, this._lumVal, this._alphaVal, true);
@@ -850,7 +850,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
 
           if (isHueSlider) {
             hue = ui.value;
-
+            this._hueVal = hue;
             //  Update alpha slider gradient
             this._updateAlphaBG(hue, sat, lum);
 
@@ -1109,6 +1109,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @private
          */
         _keyDown: function (e) {
+          if (this._disabled) {
+            return false;
+          }
           var key;
           var xDelta;
           var yDelta;
@@ -1170,6 +1173,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @private
          */
         _keyUp: function (e) {
+          if (this._disabled) {
+            return false;
+          }
           this._keyStart = -1; // end of elapsed time/keystroke counting period
 
           // aria-valuetext was not set during the key down's to avoid repetitive
@@ -1180,6 +1186,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
           //  Fire the completing "value" event
           var newVal = this.options[this._transientValueName];
           this._SetValue(newVal, e);
+          return false;
         },
 
 
@@ -1410,15 +1417,17 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @instance
          * @private
          */
-        _setColorVals: function (color) {
-          if (color) {
-            this._value = color;
-            var hsl = _getHslFromRgb(color);
-            this._hueVal = hsl[0];
-            this._satVal = hsl[1];
-            this._lumVal = hsl[2];
-            this._alphaVal = hsl[3];
+        _setColorVals: function (color, setNewColor = false) {
+          this._value = color;
+          // if color is null, undefined or an empty string, we set it to Color.BLACK
+          if (!color) {
+            this._value = Color.BLACK;
           }
+          var hsl = _getHslFromRgb(this._value);
+          this._hueVal = setNewColor ? hsl[0] : this._hueVal;
+          this._satVal = hsl[1];
+          this._lumVal = hsl[2];
+          this._alphaVal = hsl[3];
         },
 
         /**
@@ -1652,9 +1661,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
 
           opt = opts.value;
           if (!(opt instanceof Color)) {
-            opt = null;
+            opt = Color.BLACK;
           }
-          this._value = (opt || Color.BLACK);
+          this._value = opt;
           opts[this._transientValueName] = this._value;
           opt = opts.disabled;
           this._disabled = (typeof opt === 'boolean') ? opt : false;
@@ -1700,7 +1709,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
             }
             bg = this._$alphaBarBack.css('background');
             if (bg && bg.length > 0) {
-              this._disabledAlphaBG = bg;
+              this._updateAlphaBG(this._hueVal, this._satVal, this._lumVal);
             }
 
             // remove the inline  style background override
@@ -1855,7 +1864,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojslider', 'jqueryui-amd/widge
          * @override
          */
         _SetDisplayValue: function (displayValue) {
-          if (typeof displayValue === 'string') {
+          // if displayValue is null, undefined or an empty string, we set it to Color.BLACK
+          if (!displayValue) {
+            this._value = Color.BLACK;
+          } else if (typeof displayValue === 'string') {
             this._value = new Color(displayValue);
           } else {
             this._value = displayValue;
@@ -2022,7 +2034,7 @@ var __oj_color_spectrum_metadata =
       "readOnly": true
     },
     "value": {
-      "type": "object",
+      "type": "object|string",
       "writeback": true
     }
   },

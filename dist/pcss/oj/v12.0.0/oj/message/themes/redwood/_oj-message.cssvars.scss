@@ -1,0 +1,69 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+@import "../../../typography/themes/redwood/_oj-typography.cssvars.scss";
+
+  @include module-include-once("redwood.variables.message") {
+
+    :root {
+      // Message
+      // ---------------------------
+
+      --oj-private-message-header-height:                   1.5rem;
+      --oj-private-message-header-margin-end:               1rem;
+      --oj-private-message-category-text-color:             var(--oj-core-text-color-primary);
+      --oj-private-message-summary-font-weight:             var(--oj-typography-subheading-xl-font-weight);
+      --oj-private-message-summary-text-color:              var(--oj-core-text-color-primary);
+      --oj-private-message-summary-font-size:               var(--oj-typography-body-lg-font-size);
+      --oj-private-message-summary-line-height:             var(--oj-typography-body-lg-line-height);
+      --oj-private-message-detail-text-color:               var(--oj-core-text-color-primary);
+      --oj-private-message-detail-font-size:                var(--oj-typography-body-sm-font-size);
+      --oj-private-message-detail-line-height:              var(--oj-typography-body-sm-line-height);
+      --oj-private-message-time-text-color:                 var(--oj-core-text-color-secondary);
+      --oj-private-message-time-font-size:                  var(--oj-typography-body-xs-font-size);
+      --oj-private-message-time-margin-end:                 0.25rem;
+      --oj-private-message-close-icon-display:              block;
+      --oj-private-message-auto-timeout-close-icon-display: block;
+
+      --oj-private-message-general-inline-border-width: 0 0 1px 0;
+      --oj-private-message-general-inline-border-color: var(--oj-core-divider-color);
+
+      --oj-private-message-component-inline-font-size:                 var(--oj-typography-subheading-xs-font-size);
+      --oj-private-message-component-inline-font-weight:               600;
+      --oj-private-message-component-inline-bg-color-error:            transparent;
+      --oj-private-message-component-inline-border-color-error:        transparent;
+      --oj-private-message-component-inline-bg-color-warning:          transparent;
+      --oj-private-message-component-inline-border-color-warning:      transparent;
+      --oj-private-message-component-inline-bg-color-info:             transparent;
+      --oj-private-message-component-inline-border-color-info:         transparent;
+      --oj-private-message-component-inline-bg-color-confirmation:     transparent;
+      --oj-private-message-component-inline-border-color-confirmation: transparent;
+      --oj-private-message-component-inline-margin-top:                0;
+      --oj-private-message-component-inline-border-width:              0;
+      --oj-private-message-component-inline-border-radius:             0;
+      --oj-private-message-component-inline-padding:                   0;
+      --oj-private-message-radiocheckbox-inline-margin-top:            0;
+      --oj-private-message-radiocheckbox-inline-border-top-width:      0;
+      
+      --oj-private-message-general-overlay-border-width:        1px;
+      --oj-private-message-general-overlay-border-color:        var(--oj-core-divider-color);
+      --oj-private-message-general-overlay-border-radius:       var(--oj-core-border-radius-lg);
+      --oj-private-message-general-overlay-box-shadow:          var(--oj-core-box-shadow-md);
+      --oj-private-message-general-overlay-separator-margin:    0.5rem;
+
+      --oj-private-message-notification-overlay-font-size:        var(--oj-typography-body-md-font-size);
+      --oj-private-message-notification-overlay-font-weight:      400;
+      --oj-private-message-notification-overlay-header-bg-color:  var(--oj-core-info-secondary-3);
+      --oj-private-message-notification-overlay-body-bg-color:    var(--oj-core-info-secondary-3);
+      --oj-private-message-notification-overlay-border-width:     0;
+      --oj-private-message-notification-overlay-border-color:     initial;
+      --oj-private-message-notification-overlay-border-radius:    var(--oj-core-border-radius-lg);
+      --oj-private-message-notification-overlay-box-shadow:       var(--oj-core-box-shadow-md);
+      --oj-private-message-notification-overlay-separator-margin: 0.25rem;
+      
+      --oj-private-message-notification-detail-text-color:  var(--oj-core-text-color-primary);
+
+      //Variables needed for theming the padding for various messaging areas
+      --oj-private-message-component-icon-to-text-padding:  0.25rem;
+    }
+  }

@@ -35,7 +35,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
                 drop?: ((param0: Event, param1: ojListView.ItemsDropContext) => void);
             };
         };
-        reorder: {
+        reorder?: {
             items: 'enabled' | 'disabled';
         };
     };
@@ -248,13 +248,13 @@ export namespace ojListView {
     // tslint:disable-next-line interface-over-type-literal
     type ItemTemplateContext<K = any, D = any> = {
         componentElement: Element;
-        data: any;
+        data: D;
         depth: number;
         index: number;
         item: Item<K, D>;
-        key: any;
+        key: K;
         leaf: boolean;
-        parentkey: any;
+        parentkey: K;
     };
 }
 export interface ojListViewEventMap<K, D> extends baseComponentEventMap<ojListViewSettableProperties<K, D>> {
@@ -321,7 +321,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
                 drop?: ((param0: Event, param1: ojListView.ItemsDropContext) => void);
             };
         };
-        reorder: {
+        reorder?: {
             items: 'enabled' | 'disabled';
         };
     };

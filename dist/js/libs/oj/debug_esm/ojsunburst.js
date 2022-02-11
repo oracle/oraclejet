@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -1154,10 +1154,7 @@ var __oj_sunburst_node_metadata =
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-sunburst
- *    nodes='[{"value": 100, "color": "#FFFF00", "label": "Total Sales",
- *             "nodes": [{"value": 75, "color": "#00FF00", "label": "Candy"},
- *                       {"value": 20, "color": "#FFFF00", "label": "Fruit"},
- *                       {"value": 15, "color": "#FF0000", "label": "Vegetables"}]}]'>
+ *    data='[[treeDataProvider]]'>
  * &lt;/oj-sunburst>
  * </code>
  * </pre>
@@ -1910,7 +1907,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
 
 
     _CreateDvtComponent: function (context, callback, callbackObj) {
-      return Sunburst.newInstance(context, callback, callbackObj);
+      return new Sunburst(context, callback, callbackObj);
     },
 
 

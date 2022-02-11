@@ -8,6 +8,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     accessibility: {
         rowHeader: string | string[];
     };
+    addRowDisplay: 'top' | 'hidden';
     as: string;
     columns: Array<ojTable.Column<K, D>> | null;
     columnsDefault: ojTable.ColumnDefault<K, D> | null;
@@ -15,23 +16,23 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     data: DataProvider<K, D> | null;
     display: 'list' | 'grid';
     dnd: {
-        drag: {
-            rows: {
+        drag?: {
+            rows?: {
                 dataTypes?: string | string[];
                 drag?: ((param0: DragEvent) => void);
                 dragEnd?: ((param0: DragEvent) => void);
                 dragStart?: ((param0: DragEvent, param1: ojTable.DragRowContext<K, D>) => void);
             };
         };
-        drop: {
-            columns: {
+        drop?: {
+            columns?: {
                 dataTypes: string | string[];
                 dragEnter?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 dragOver?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 drop: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
             };
-            rows: {
+            rows?: {
                 dataTypes: string | string[];
                 dragEnter?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
@@ -39,7 +40,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
                 drop: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
             };
         };
-        reorder: {
+        reorder?: {
             columns: 'enabled' | 'disabled';
         };
     };
@@ -51,8 +52,8 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
-        fetchSize: number;
-        maxCount: number;
+        fetchSize?: number;
+        maxCount?: number;
         scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
@@ -70,14 +71,15 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         y?: number;
     };
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
+    selectAllControl: 'visible' | 'hidden';
     selected: {
-        row: KeySet<K>;
-        column: KeySet<K>;
+        row?: KeySet<K>;
+        column?: KeySet<K>;
     };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'none' | 'single' | 'multiple';
-        row: 'none' | 'single' | 'multiple';
+        column?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
@@ -90,6 +92,8 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleSortDescending?: string;
         accessibleSortable?: string;
         accessibleStateSelected?: string;
+        accessibleSummaryEstimate?: string;
+        accessibleSummaryExact?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -103,6 +107,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         labelResizePopupCancel?: string;
         labelResizePopupSpinner?: string;
         labelResizePopupSubmit?: string;
+        labelSelectAllRows?: string;
         labelSelectAndEditRow?: string;
         labelSelectColum?: string;
         labelSelectRow?: string;
@@ -117,6 +122,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         msgScrollPolicyMaxCountSummary?: string;
         msgStatusSortAscending?: string;
         msgStatusSortDescending?: string;
+        tooltipRequired?: string;
     };
     addEventListener<T extends keyof ojTableEventMap<K, D>>(type: T, listener: (this: HTMLElement, ev: ojTableEventMap<K, D>[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
@@ -162,7 +168,14 @@ export namespace ojTable {
         [propName: string]: any;
     }> {
     }
+    interface ojBeforeRowAddEnd extends CustomEvent<{
+        accept: Function;
+        cancelAdd: boolean;
+        [propName: string]: any;
+    }> {
+    }
     interface ojBeforeRowEdit<K, D> extends CustomEvent<{
+        accept: (acceptPromise: Promise<void>) => void;
         rowContext: {
             componentElement: Element;
             datasource: DataProvider<K, D> | null;
@@ -175,6 +188,7 @@ export namespace ojTable {
     }> {
     }
     interface ojBeforeRowEditEnd<K, D> extends CustomEvent<{
+        accept: (acceptPromise: Promise<void>) => void;
         cancelEdit: boolean;
         rowContext: {
             componentElement: Element;
@@ -201,6 +215,8 @@ export namespace ojTable {
     }
     // tslint:disable-next-line interface-over-type-literal
     type accessibilityChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type addRowDisplayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["addRowDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -236,6 +252,8 @@ export namespace ojTable {
     // tslint:disable-next-line interface-over-type-literal
     type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollToKey"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type selectAllControlChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectAllControl"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type selectedChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selected"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selection"]>;
@@ -245,6 +263,18 @@ export namespace ojTable {
     type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>;
     // tslint:disable-next-line interface-over-type-literal
     type verticalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type AddRowCellTemplateContext<K, D> = {
+        columnIndex: number;
+        columnKey: keyof D;
+        datasource: DataProvider<K, D> | null;
+        submitAddRow?: ((param0: boolean) => void);
+    };
+    // tslint:disable-next-line interface-over-type-literal
+    type AddRowTemplateContext<K, D> = {
+        datasource: DataProvider<K, D> | null;
+        submitAddRow?: ((param0: boolean) => void);
+    };
     // tslint:disable-next-line interface-over-type-literal
     type CellTemplateContext<K, D> = {
         columnIndex: number;
@@ -283,6 +313,7 @@ export namespace ojTable {
             insert: HTMLElement | string;
         } | void) | null;
         resizable?: 'enabled' | 'disabled';
+        showRequired?: boolean;
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
@@ -313,6 +344,7 @@ export namespace ojTable {
             insert: HTMLElement | string;
         } | void) | null;
         resizable?: 'enabled' | 'disabled';
+        showRequired?: boolean;
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
@@ -497,11 +529,13 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'ojAnimateEnd': ojTable.ojAnimateEnd;
     'ojAnimateStart': ojTable.ojAnimateStart;
     'ojBeforeCurrentRow': ojTable.ojBeforeCurrentRow<K>;
+    'ojBeforeRowAddEnd': ojTable.ojBeforeRowAddEnd;
     'ojBeforeRowEdit': ojTable.ojBeforeRowEdit<K, D>;
     'ojBeforeRowEditEnd': ojTable.ojBeforeRowEditEnd<K, D>;
     'ojRowAction': ojTable.ojRowAction<K, D>;
     'ojSort': ojTable.ojSort;
     'accessibilityChanged': JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
+    'addRowDisplayChanged': JetElementCustomEvent<ojTable<K, D>["addRowDisplay"]>;
     'asChanged': JetElementCustomEvent<ojTable<K, D>["as"]>;
     'columnsChanged': JetElementCustomEvent<ojTable<K, D>["columns"]>;
     'columnsDefaultChanged': JetElementCustomEvent<ojTable<K, D>["columnsDefault"]>;
@@ -519,6 +553,7 @@ export interface ojTableEventMap<K, D> extends baseComponentEventMap<ojTableSett
     'scrollPolicyOptionsChanged': JetElementCustomEvent<ojTable<K, D>["scrollPolicyOptions"]>;
     'scrollPositionChanged': JetElementCustomEvent<ojTable<K, D>["scrollPosition"]>;
     'scrollToKeyChanged': JetElementCustomEvent<ojTable<K, D>["scrollToKey"]>;
+    'selectAllControlChanged': JetElementCustomEvent<ojTable<K, D>["selectAllControl"]>;
     'selectedChanged': JetElementCustomEvent<ojTable<K, D>["selected"]>;
     'selectionChanged': JetElementCustomEvent<ojTable<K, D>["selection"]>;
     'selectionModeChanged': JetElementCustomEvent<ojTable<K, D>["selectionMode"]>;
@@ -529,6 +564,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     accessibility: {
         rowHeader: string | string[];
     };
+    addRowDisplay: 'top' | 'hidden';
     as: string;
     columns: Array<ojTable.Column<K, D>> | null;
     columnsDefault: ojTable.ColumnDefault<K, D> | null;
@@ -536,23 +572,23 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     data: DataProvider<K, D> | null;
     display: 'list' | 'grid';
     dnd: {
-        drag: {
-            rows: {
+        drag?: {
+            rows?: {
                 dataTypes?: string | string[];
                 drag?: ((param0: DragEvent) => void);
                 dragEnd?: ((param0: DragEvent) => void);
                 dragStart?: ((param0: DragEvent, param1: ojTable.DragRowContext<K, D>) => void);
             };
         };
-        drop: {
-            columns: {
+        drop?: {
+            columns?: {
                 dataTypes: string | string[];
                 dragEnter?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 dragOver?: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
                 drop: ((param0: DragEvent, param1: ojTable.DropColumnContext) => void);
             };
-            rows: {
+            rows?: {
                 dataTypes: string | string[];
                 dragEnter?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
                 dragLeave?: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
@@ -560,7 +596,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
                 drop: ((param0: DragEvent, param1: ojTable.DropRowContext) => void);
             };
         };
-        reorder: {
+        reorder?: {
             columns: 'enabled' | 'disabled';
         };
     };
@@ -572,8 +608,8 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
     rowRenderer: ((context: ojTable.RowRendererContext<K, D>) => string | HTMLElement | void) | null;
     scrollPolicy: 'auto' | 'loadAll' | 'loadMoreOnScroll';
     scrollPolicyOptions: {
-        fetchSize: number;
-        maxCount: number;
+        fetchSize?: number;
+        maxCount?: number;
         scroller?: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap | string;
         scrollerOffsetBottom?: number | null;
         scrollerOffsetEnd?: number | null;
@@ -591,14 +627,15 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         y?: number;
     };
     scrollToKey: 'auto' | 'capability' | 'always' | 'never';
+    selectAllControl: 'visible' | 'hidden';
     selected: {
-        row: KeySet<K>;
-        column: KeySet<K>;
+        row?: KeySet<K>;
+        column?: KeySet<K>;
     };
     selection: Array<ojTable.RowSelectionStart<K> & ojTable.RowSelectionEnd<K>> | Array<ojTable.ColumnSelectionStart<K> & ojTable.ColumnSelectionEnd<K>>;
     selectionMode: {
-        column: 'none' | 'single' | 'multiple';
-        row: 'none' | 'single' | 'multiple';
+        column?: 'none' | 'single' | 'multiple';
+        row?: 'none' | 'single' | 'multiple';
     };
     selectionRequired: boolean;
     verticalGridVisible: 'auto' | 'enabled' | 'disabled';
@@ -611,6 +648,8 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleSortDescending?: string;
         accessibleSortable?: string;
         accessibleStateSelected?: string;
+        accessibleSummaryEstimate?: string;
+        accessibleSummaryExact?: string;
         labelAccSelectionAffordanceBottom?: string;
         labelAccSelectionAffordanceTop?: string;
         labelColumnWidth?: string;
@@ -624,6 +663,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         labelResizePopupCancel?: string;
         labelResizePopupSpinner?: string;
         labelResizePopupSubmit?: string;
+        labelSelectAllRows?: string;
         labelSelectAndEditRow?: string;
         labelSelectColum?: string;
         labelSelectRow?: string;
@@ -638,6 +678,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         msgScrollPolicyMaxCountSummary?: string;
         msgStatusSortAscending?: string;
         msgStatusSortDescending?: string;
+        tooltipRequired?: string;
     };
 }
 export interface ojTableSettablePropertiesLenient<K, D> extends Partial<ojTableSettableProperties<K, D>> {
@@ -664,7 +705,14 @@ export namespace TableElement {
         [propName: string]: any;
     }> {
     }
+    interface ojBeforeRowAddEnd extends CustomEvent<{
+        accept: Function;
+        cancelAdd: boolean;
+        [propName: string]: any;
+    }> {
+    }
     interface ojBeforeRowEdit<K, D> extends CustomEvent<{
+        accept: (acceptPromise: Promise<void>) => void;
         rowContext: {
             componentElement: Element;
             datasource: DataProvider<K, D> | null;
@@ -677,6 +725,7 @@ export namespace TableElement {
     }> {
     }
     interface ojBeforeRowEditEnd<K, D> extends CustomEvent<{
+        accept: (acceptPromise: Promise<void>) => void;
         cancelEdit: boolean;
         rowContext: {
             componentElement: Element;
@@ -703,6 +752,8 @@ export namespace TableElement {
     }
     // tslint:disable-next-line interface-over-type-literal
     type accessibilityChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["accessibility"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type addRowDisplayChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["addRowDisplay"]>;
     // tslint:disable-next-line interface-over-type-literal
     type asChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["as"]>;
     // tslint:disable-next-line interface-over-type-literal
@@ -738,6 +789,8 @@ export namespace TableElement {
     // tslint:disable-next-line interface-over-type-literal
     type scrollToKeyChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["scrollToKey"]>;
     // tslint:disable-next-line interface-over-type-literal
+    type selectAllControlChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectAllControl"]>;
+    // tslint:disable-next-line interface-over-type-literal
     type selectedChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selected"]>;
     // tslint:disable-next-line interface-over-type-literal
     type selectionChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selection"]>;
@@ -747,6 +800,13 @@ export namespace TableElement {
     type selectionRequiredChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["selectionRequired"]>;
     // tslint:disable-next-line interface-over-type-literal
     type verticalGridVisibleChanged<K, D> = JetElementCustomEvent<ojTable<K, D>["verticalGridVisible"]>;
+    // tslint:disable-next-line interface-over-type-literal
+    type AddRowCellTemplateContext<K, D> = {
+        columnIndex: number;
+        columnKey: keyof D;
+        datasource: DataProvider<K, D> | null;
+        submitAddRow?: ((param0: boolean) => void);
+    };
     // tslint:disable-next-line interface-over-type-literal
     type CellTemplateContext<K, D> = {
         columnIndex: number;
@@ -783,6 +843,7 @@ export namespace TableElement {
             insert: HTMLElement | string;
         } | void) | null;
         resizable?: 'enabled' | 'disabled';
+        showRequired?: boolean;
         sortProperty?: string | null;
         sortable?: 'auto' | 'enabled' | 'disabled';
         style?: string | null;
@@ -877,11 +938,13 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onojAnimateEnd?: (value: ojTableEventMap<any, any>['ojAnimateEnd']) => void;
     onojAnimateStart?: (value: ojTableEventMap<any, any>['ojAnimateStart']) => void;
     onojBeforeCurrentRow?: (value: ojTableEventMap<any, any>['ojBeforeCurrentRow']) => void;
+    onojBeforeRowAddEnd?: (value: ojTableEventMap<any, any>['ojBeforeRowAddEnd']) => void;
     onojBeforeRowEdit?: (value: ojTableEventMap<any, any>['ojBeforeRowEdit']) => void;
     onojBeforeRowEditEnd?: (value: ojTableEventMap<any, any>['ojBeforeRowEditEnd']) => void;
     onojRowAction?: (value: ojTableEventMap<any, any>['ojRowAction']) => void;
     onojSort?: (value: ojTableEventMap<any, any>['ojSort']) => void;
     onaccessibilityChanged?: (value: ojTableEventMap<any, any>['accessibilityChanged']) => void;
+    onaddRowDisplayChanged?: (value: ojTableEventMap<any, any>['addRowDisplayChanged']) => void;
     onasChanged?: (value: ojTableEventMap<any, any>['asChanged']) => void;
     oncolumnsChanged?: (value: ojTableEventMap<any, any>['columnsChanged']) => void;
     oncolumnsDefaultChanged?: (value: ojTableEventMap<any, any>['columnsDefaultChanged']) => void;
@@ -899,6 +962,7 @@ export interface TableIntrinsicProps extends Partial<Readonly<ojTableSettablePro
     onscrollPolicyOptionsChanged?: (value: ojTableEventMap<any, any>['scrollPolicyOptionsChanged']) => void;
     onscrollPositionChanged?: (value: ojTableEventMap<any, any>['scrollPositionChanged']) => void;
     onscrollToKeyChanged?: (value: ojTableEventMap<any, any>['scrollToKeyChanged']) => void;
+    onselectAllControlChanged?: (value: ojTableEventMap<any, any>['selectAllControlChanged']) => void;
     onselectedChanged?: (value: ojTableEventMap<any, any>['selectedChanged']) => void;
     onselectionChanged?: (value: ojTableEventMap<any, any>['selectionChanged']) => void;
     onselectionModeChanged?: (value: ojTableEventMap<any, any>['selectionModeChanged']) => void;

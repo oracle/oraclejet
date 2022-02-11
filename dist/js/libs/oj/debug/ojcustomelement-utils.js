@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -395,18 +395,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
             }
             return EMPTY_SET;
         }
-        static convertEmptyStringToUndefined(element, propertyMeta, value) {
-            if (value === '') {
-                const elementState = CustomElementUtils.getElementState(element);
-                if (elementState.getBindingProviderType() === 'preact') {
-                    const types = ElementUtils.getSupportedTypes(propertyMeta.type);
-                    if (!types.string || propertyMeta.enumValues) {
-                        return undefined;
-                    }
-                }
-            }
-            return value;
-        }
     }
     CustomElementUtils._CUSTOM_ELEMENT_REGISTRY = {};
     CustomElementUtils._ELEMENT_STATE_KEY = '_ojElementState';
@@ -794,6 +782,44 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
         ComponentState[ComponentState["BindingsDisposed"] = 8] = "BindingsDisposed";
     })(ComponentState || (ComponentState = {}));
 
+    const NULL_SYMBOL = Symbol('custom element null');
+    const EMPTY_STRING_SYMBOL = Symbol('custom element empty string');
+    const toSymbolizedValue = (value) => {
+        if (value === null) {
+            return NULL_SYMBOL;
+        }
+        if (value === '') {
+            return EMPTY_STRING_SYMBOL;
+        }
+        return value;
+    };
+    const fromSymbolizedValue = (value) => {
+        if (value === NULL_SYMBOL) {
+            return null;
+        }
+        if (value === EMPTY_STRING_SYMBOL) {
+            return '';
+        }
+        return value;
+    };
+    const convertEmptyStringToUndefined = (element, propertyMeta, value) => {
+        const elementState = CustomElementUtils.getElementState(element);
+        if (elementState.getBindingProviderType() === 'preact') {
+            const types = ElementUtils.getSupportedTypes(propertyMeta.type);
+            if (!types.string || propertyMeta.enumValues) {
+                return undefined;
+            }
+        }
+        return value;
+    };
+    const transformPreactValue = (element, propertyMeta, originalValue) => {
+        let value = fromSymbolizedValue(originalValue);
+        if (value === '' && originalValue !== EMPTY_STRING_SYMBOL) {
+            value = convertEmptyStringToUndefined(element, propertyMeta, value);
+        }
+        return value;
+    };
+
     exports.AttributeUtils = AttributeUtils;
     exports.CACHED_BINDING_PROVIDER = CACHED_BINDING_PROVIDER;
     exports.CHILD_BINDING_PROVIDER = CHILD_BINDING_PROVIDER;
@@ -801,6 +827,8 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojth
     exports.ElementState = ElementState;
     exports.ElementUtils = ElementUtils;
     exports.JetElementError = JetElementError;
+    exports.toSymbolizedValue = toSymbolizedValue;
+    exports.transformPreactValue = transformPreactValue;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

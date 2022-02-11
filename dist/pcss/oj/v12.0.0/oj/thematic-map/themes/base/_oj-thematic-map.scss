@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example thematic-map/themes/redwood/oj-thematic-map.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../../utilities/_oj.utilities.modules.scss"; 
+
+  @include module-include-once("common.thematicmap") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+      oj-thematic-map:not(.oj-complete) {
+        visibility: hidden;
+      }
+
+    oj-thematic-map {
+      display: block;
+    }
+
+    .oj-thematicmap{
+      user-select: none;
+      width:100%;
+      height:560px;
+    }
+
+    .oj-thematicmap-arealayer {
+      background-color: var(--oj-thematic-map-bg-color);
+      border-color: var(--oj-thematic-map-border-color);
+      font-size: var(--oj-dvt-label-font-size-sm);
+    }
+
+    .oj-thematicmap-area {
+      border-color: var(--oj-thematic-map-border-color);
+    }
+
+    .oj-thematicmap-area.oj-hover {
+      border-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    .oj-thematicmap-area.oj-selected {
+      border-top-color: var(--oj-dvt-item-contrast-color);
+      border-bottom-color: var(--oj-dvt-item-border-color-selected);
+    }
+
+    .oj-thematicmap-marker {
+      border-color: var(--oj-thematic-map-marker-border-color);
+      color: var(--oj-core-text-color-primary);
+      font-size: var(--oj-dvt-label-font-size-sm);
+      background-color: var(--oj-thematic-map-marker-bg-color);
+    }
+
+    .oj-thematicmap-marker.oj-hover {
+      border-color: var(--oj-dvt-item-contrast-color);
+    }
+
+    .oj-thematicmap-marker.oj-selected {
+      border-color: var(--oj-dvt-item-border-color-selected);
+    }
+
+    .oj-thematicmap-link {
+      color: var(--oj-thematic-map-link-color);
+    }
+
+    // Link inner hover color
+    .oj-thematicmap-link.oj-hover {
+      color: var(--oj-dvt-item-contrast-color);
+    }
+
+    // Link outer selection color
+    .oj-thematicmap-link.oj-selected {
+      border-color: var(--oj-dvt-item-border-color-selected);
+    }
+  }

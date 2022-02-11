@@ -1,0 +1,236 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example flex/themes/redwood/oj-flex.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+//-------------------------------------------------------------------------------------------------
+// generate flex classes that belong inside of media queries
+//-------------------------------------------------------------------------------------------------
+@mixin oj-flex-responsive(
+  $selectorPrefix,
+  $generateJustify: true,
+  $generateAlign: true,
+  $generateOrdering: true,
+  $generateVertical: true,
+  $generateChildFlex: true,
+  $generateFlexWrap: true
+) {
+  @if ($generateChildFlex) {
+    .#{$selectorPrefix}-flex-items-0 > .oj-flex-item {
+      flex: 0;
+    }
+
+    .#{$selectorPrefix}-flex-items-1 > .oj-flex-item {
+      flex: 1;
+    }
+
+    .#{$selectorPrefix}-flex-items-initial > .oj-flex-item {
+      flex: 0 1 auto;
+    }
+
+    .#{$selectorPrefix}-flex-0 {
+      flex: 0 !important;
+    }
+
+    .#{$selectorPrefix}-flex-1 {
+      flex: 1 !important;
+    }
+
+    .#{$selectorPrefix}-flex-initial {
+      flex: 0 1 auto !important;
+    }
+  }
+
+  @if ($generateOrdering) {
+    @for $i from 0 through 5 {
+      .#{$selectorPrefix}-order-#{$i} {
+        order: $i !important;
+      }
+    }
+  }
+
+  @if ($generateJustify) {
+    .#{$selectorPrefix}-justify-content-flex-start {
+      justify-content: flex-start !important;
+    }
+
+    .#{$selectorPrefix}-justify-content-flex-end {
+      justify-content: flex-end !important;
+    }
+
+    .#{$selectorPrefix}-justify-content-center {
+      justify-content: center !important;
+    }
+
+    .#{$selectorPrefix}-justify-content-space-between {
+      justify-content: space-between !important;
+    }
+
+    .#{$selectorPrefix}-justify-content-space-around {
+      justify-content: space-around !important;
+    }
+  }
+
+  @if ($generateAlign) {
+    //can be placed on flex container
+    .#{$selectorPrefix}-align-items-center {
+      align-items: center !important;
+    }
+
+    .#{$selectorPrefix}-align-items-baseline {
+      align-items: baseline !important;
+    }
+
+    .#{$selectorPrefix}-align-items-flex-start {
+      align-items: flex-start !important;
+    }
+
+    .#{$selectorPrefix}-align-items-flex-end {
+      align-items: flex-end !important;
+    }
+
+    // can be placed on flex items
+    .#{$selectorPrefix}-align-self-center {
+      align-self: center !important;
+    }
+
+    .#{$selectorPrefix}-align-self-flex-start {
+      align-self: flex-start !important;
+    }
+
+    .#{$selectorPrefix}-align-self-flex-end {
+      align-self: flex-end !important;
+    }
+  }
+
+  @if ($generateVertical) {
+    .#{$selectorPrefix}-flex-direction-column {
+      flex-direction: column !important;
+    }
+  }
+
+  @if ($generateFlexWrap) {
+    .#{$selectorPrefix}-flex-wrap-nowrap {
+      flex-wrap: nowrap !important;
+    }
+  }
+}
+
+@include module-include-once("common.flex") {
+  /* Grid HTML Classes */
+  .oj-flex {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .oj-flex-item {
+    flex: auto;
+    box-sizing: border-box;
+  }
+
+  %oj-flex-bar-base {
+    position: relative;
+  }
+
+  %oj-flex-bar-base,
+  .oj-flex-bar-start,
+  .oj-flex-bar-middle,
+  .oj-flex-bar-end,
+  .oj-flex-bar-center-absolute {
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .oj-flex-bar {
+    @extend %oj-flex-bar-base;
+  }
+
+  .oj-flex-bar-middle {
+    flex: auto;
+  }
+
+  .oj-flex-bar-end {
+    margin-inline-start: auto;
+  }
+
+  .oj-flex-bar-center-absolute {
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    top: 0;
+  }
+
+  @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+    @media #{$responsiveQuerySmallUp} {
+      // generateOrdering is false because we're mobile first, so
+      // in theory the ordering matches small dom order and then you move
+      // things around on bigger screens
+      @include oj-flex-responsive($selectorPrefix: "oj-sm", $generateOrdering: false);
+    }
+  }
+
+  @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+    @media #{$responsiveQueryMediumUp} {
+      @include oj-flex-responsive($selectorPrefix: "oj-md");
+    }
+  }
+
+  @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+    @media #{$responsiveQueryLargeUp} {
+      @include oj-flex-responsive($selectorPrefix: "oj-lg");
+    }
+  }
+
+  @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+    @media #{$responsiveQueryXlargeUp} {
+      @include oj-flex-responsive($selectorPrefix: "oj-xl");
+    }
+  }
+
+  @if $privateResponsiveQueryXXlargeUp and $privateResponsiveQueryXXlargeUp != none {
+    @media #{$privateResponsiveQueryXXlargeUp} {
+      @include oj-flex-responsive($selectorPrefix: "oj-xxl");
+    }
+  }
+
+  @if $privateResponsiveQueryPrint and $privateResponsiveQueryPrint != none {
+    @media #{$privateResponsiveQueryPrint} {
+      @include oj-flex-responsive($selectorPrefix: "oj-print");
+    }
+  }
+
+  //ONLY
+  @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+    @media #{$responsiveQuerySmallOnly} {
+      @include oj-flex-responsive($selectorPrefix: "oj-sm-only", $generateOrdering: false);
+    }
+  }
+
+  @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+    @media #{$responsiveQueryMediumOnly} {
+      // only generate centering classes
+      @include oj-flex-responsive($selectorPrefix: "oj-md-only", $generateOrdering: false);
+    }
+  }
+
+  @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+    @media #{$responsiveQueryLargeOnly} {
+      @include oj-flex-responsive($selectorPrefix: "oj-lg-only", $generateOrdering: false);
+    }
+  }
+
+  @if $privateResponsiveQueryXlargeOnly and $privateResponsiveQueryXlargeOnly != none {
+    @media #{$privateResponsiveQueryXlargeOnly} {
+      @include oj-flex-responsive($selectorPrefix: "oj-xl-only", $generateOrdering: false);
+    }
+  }
+}

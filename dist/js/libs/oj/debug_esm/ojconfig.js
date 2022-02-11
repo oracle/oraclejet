@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -69,7 +69,15 @@ Config.getLocale = function () {
 };
 
 /**
- * Changes the current locale
+ * Changes the current locale dynamically.
+ * Dynamically changing the UI locale often ends up with the UI in mixed languages
+ * or locales because the application may have cached data that are locale sensitive.
+ * <p>
+ * The preferred method to change the locale is to reload the page
+ * and either set the 'lang' attribute on the html element of the page
+ * generated on the server, or set the 'locale' option for the
+ * ojL10n plugin on the client when requireJS is configured.
+ * </p>
  * @method setLocale
  * @param {string} locale (language code and subtags separated by dash)
  * @param {function(): void} [callback] this optional callback will be invoked when the framework is done loading

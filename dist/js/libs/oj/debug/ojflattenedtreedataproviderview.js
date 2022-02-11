@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -393,16 +393,18 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojkeyset', 'oj
                 }
             };
             this.DataProviderOperationEventDetail = class {
-                constructor(_parent, keys, metadata, data, indexes) {
+                constructor(_parent, keys, metadata, data, indexes, transient) {
                     this._parent = _parent;
                     this.keys = keys;
                     this.metadata = metadata;
                     this.data = data;
                     this.indexes = indexes;
+                    this.transient = transient;
                     this.keys = keys;
                     this.metadata = metadata;
                     this.data = data;
                     this.indexes = indexes;
+                    this.transient = transient;
                 }
             };
             this.DataProviderAddOperationEventDetail = class {
@@ -541,9 +543,27 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojkeyset', 'oj
             const finalMutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             this.dispatchEvent(new oj.DataProviderMutationEvent(finalMutationEventDetail));
         }
-        _handleUnderlyingRefresh() {
-            this._clearCache();
-            this.dispatchEvent(new oj.DataProviderRefreshEvent());
+        _handleUnderlyingRefresh(event) {
+            var _a;
+            if ((_a = event === null || event === void 0 ? void 0 : event.detail) === null || _a === void 0 ? void 0 : _a.keys) {
+                const keys = event.detail.keys;
+                for (let i = 0; i < this._cache.length; i++) {
+                    const item = this._cache[i];
+                    if (keys.has(item.metadata.key)) {
+                        const refreshEvent = new oj.DataProviderRefreshEvent(new this.DataProviderRefreshEventDetail(item.metadata.key));
+                        const removedItems = this._cache.splice(i, this._cache.length);
+                        removedItems.forEach(() => {
+                            this._decrementIteratorOffset(i + 1);
+                        });
+                        this.dispatchEvent(refreshEvent);
+                        break;
+                    }
+                }
+            }
+            else {
+                this._clearCache();
+                this.dispatchEvent(new oj.DataProviderRefreshEvent());
+            }
         }
         _getExpandedObservableValue(expanded, completionPromise) {
             return {
@@ -830,7 +850,8 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojkeyset', 'oj
                 this.getExpandedObservable().next(this._getExpandedObservableValue(this.options.expanded, Promise.resolve()));
                 return;
             }
-            const expandPromise = this._expand(toExpand);
+            const keysInCache = this._removeKeysNotInCache(toExpand);
+            const expandPromise = this._expand(keysInCache);
             const operationRemoveEventDetail = this._collapse(toCollapse);
             const completionPromise = new Promise((resolve) => {
                 expandPromise.then((expandReturnObject) => {
@@ -882,6 +903,16 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojkeyset', 'oj
         }
         _spliceItemToCache(item, index) {
             this._cache.splice(index + 1, 0, item);
+        }
+        _removeKeysNotInCache(keysToExpand) {
+            const keysInCache = new Set();
+            keysToExpand.forEach((key) => {
+                const item = this._getItemByKey(key);
+                if (item) {
+                    keysInCache.add(key);
+                }
+            });
+            return keysInCache;
         }
         _updateItemMetadata(item, parentKey, indexFromParent) {
             let treeDepth = 0;
@@ -1023,7 +1054,7 @@ define(['ojs/ojcore-base', 'ojs/ojset', 'ojs/ojeventtarget', 'ojs/ojkeyset', 'oj
                     });
                 }
             });
-            return new this.DataProviderOperationEventDetail(this, keySet, metadataArray, dataArray, indexArray);
+            return new this.DataProviderOperationEventDetail(this, keySet, metadataArray, dataArray, indexArray, true);
         }
         _decrementIteratorOffset(index) {
             this._iterators.forEach((offset, iterator) => {

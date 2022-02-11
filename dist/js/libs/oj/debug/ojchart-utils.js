@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -21,8 +21,8 @@ define(['exports', 'ojs/ojdvt-axis'], function (exports, ojdvtAxis) { 'use stric
             axisOptions.dataMax = options.range.max;
             axisOptions.dataMin = options.range.min;
         }
-        let mixin = new ojdvtAxis.DataAxisInfoMixin();
-        mixin.MixinInit(axisOptions);
+        let mixin = new (ojdvtAxis.DataAxisInfoMixin(class {
+        }))(null, axisOptions);
         let obj = mixin.getAxisData();
         let formatter;
         let minimumFractionDigits = 20;

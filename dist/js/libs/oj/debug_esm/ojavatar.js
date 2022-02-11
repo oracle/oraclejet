@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -17,7 +17,7 @@ var __decorate = (null && null.__decorate) || function (decorators, target, key,
 };
 let Avatar = class Avatar extends Component {
     render(props) {
-        return (h("div", { class: this._getClasses(props), "aria-hidden": 'true' },
+        return (h("div", { class: this._getClasses(props), "aria-hidden": "true" },
             this._getInnerContent(props),
             this._getSecondaryInnerContent(props)));
     }
@@ -38,24 +38,24 @@ let Avatar = class Avatar extends Component {
     }
     _getInnerContent(props) {
         if (props.src && !props.iconClass) {
-            return (h("div", { class: 'oj-avatar-background-image', style: { backgroundImage: `url("${props.src}")` } }));
+            return (h("div", { class: "oj-avatar-background-image", style: { backgroundImage: `url("${props.src}")` } }));
         }
         else {
-            return h("div", { class: 'oj-avatar-background oj-avatar-background-image' });
+            return h("div", { class: "oj-avatar-background oj-avatar-background-image" });
         }
     }
     _getSecondaryInnerContent(props) {
         if (props.iconClass) {
-            return h("div", { class: `oj-avatar-background-image oj-avatar-icon ${props.iconClass}` });
+            return h("div", { class: `oj-avatar-icon ${props.iconClass}` });
         }
         else if (props.src) {
             return;
         }
         else if (props.initials) {
-            return h("div", { class: 'oj-avatar-initials oj-avatar-background-image' }, props.initials);
+            return h("div", { class: "oj-avatar-initials oj-avatar-background-image" }, props.initials);
         }
         else {
-            return h("div", { class: 'oj-avatar-background-image oj-avatar-placeholder-icon' });
+            return h("div", { class: "oj-avatar-background-image oj-avatar-placeholder-icon" });
         }
     }
 };

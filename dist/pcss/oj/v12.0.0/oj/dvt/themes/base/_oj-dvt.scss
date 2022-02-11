@@ -1,0 +1,354 @@
+// Copyright (c) 2014, 2022, Oracle and/or its affiliates.  Licensed under The Universal Permissive License (UPL), Version 1.0 as shown at https://oss.oracle.com/licenses/upl/
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+// version in your the theme specific directory,
+// for example dvt/themes/redwood/oj-dvt.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../../utilities/_oj.utilities.modules.scss";
+
+  @include module-include-once("common.dvtbase") {
+
+    // Common data visualization styles
+    .oj-dvtbase {
+      display:block;
+      position:relative;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      animation-duration: var(--oj-animation-duration-xlong);
+      
+    }
+
+    .oj-dvtbase svg {
+      overflow: hidden;
+    }
+
+    .oj-dvtbase:focus {
+      outline:none;
+    }
+
+    .oj-dvt-default-border-width {
+      stroke-width: 1px;
+    }
+      
+    .oj-dvt-default-border-color:not(.oj-hover) {
+      stroke: var(--oj-dvt-item-contrast-color);
+    }
+      
+    .oj-dvt-bubble-marker {
+      fill-opacity: 0.6;
+    }
+      
+    .oj-dvt-selectable.oj-hover {
+      stroke-width: 3px;
+    }
+      
+    .oj-dvt-selectable.oj-selected {
+      stroke-width: 3px;
+      stroke: var(--oj-dvt-item-border-color-selected);
+    }
+      
+    .oj-dvt-selectable-marker.oj-hover {
+      stroke-width: 3px;
+      stroke: var(--oj-dvt-item-contrast-color);
+    }
+    
+    .oj-dvt-selectable-marker.oj-selected {
+      stroke-width: 3px;
+      stroke: var(--oj-dvt-item-border-color-selected);
+    }
+      
+    .oj-dvt-selectable-inner-shape,
+    .oj-dvt-selectable-marker-inner-shape {
+      stroke-width: 1px;
+      fill-opacity: 1;
+    }
+      
+    .oj-dvt-selectable-inner-shape {
+      stroke: var(--oj-dvt-item-contrast-color);
+    }
+      
+    .oj-dvt-selectable-marker-inner-shape.oj-hover:not(.oj-selected) {
+      fill: var(--oj-dvt-item-contrast-color);
+    }
+      
+    .oj-dvt-selectable-marker-inner-shape.oj-selected {
+        stroke: var(--oj-dvt-item-contrast-color);
+    }
+    
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category1 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-1));
+     
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category2 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-2));
+     
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category3 {
+      
+          color:  RGB(var(--oj-palette-dvt-rgb-3));
+      
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category4 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-4));
+     
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category5 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-5));
+      
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category6 {
+    
+          color:  RGB(var(--oj-palette-dvt-rgb-6));
+      
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category7 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-7));
+      
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category8 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-8));
+     
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category9 {
+     
+          color:  RGB(var(--oj-palette-dvt-rgb-9));
+      
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category10 {
+    
+          color:  RGB(var(--oj-palette-dvt-rgb-10));
+    
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category11 {
+    
+          color:  RGB(var(--oj-palette-dvt-rgb-11));
+     
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category12 {
+    
+          color:  RGB(var(--oj-palette-dvt-rgb-12));
+     
+    }
+
+    // tooltip styles shared by data visualizations
+    .oj-dvt-tooltip {
+      border-style: solid;
+      border-width: 1px;
+      padding: var(--oj-tooltip-padding);
+      background-color: var(--oj-tooltip-bg-color);
+      color: var(--oj-tooltip-text-color);
+      border-color: var(--oj-tooltip-border-color);
+      font-size: var(--oj-tooltip-font-size);
+      line-height: var(--oj-tooltip-line-height);
+      border-radius: var(--oj-tooltip-border-radius);
+     
+    }
+
+    // datatip styles shared by data visualizations
+    .oj-dvt-datatip {
+      color: var(--oj-core-text-color-primary);
+      border-style: solid;
+      border-width: 1px;
+      padding: 0.5rem;
+      border-radius:var(--oj-core-border-radius-sm);
+      background-color: var(--oj-popup-bg-color);
+      border-color: var(--oj-popup-border-color);
+      font-size: var(--oj-tooltip-font-size);
+      line-height: var(--oj-tooltip-line-height);
+    }
+
+    .oj-dvt-datatip-table {
+      border-collapse: separate;
+      border-spacing: 0px;
+      overflow: hidden;
+      display: block;
+    }
+
+    .oj-dvt-datatip-label {
+      color: var(--oj-core-text-color-secondary);
+      padding: 0px 2px;
+      white-space: nowrap;
+
+      @include oj-ltr() {
+        text-align: right;
+      }
+      @include oj-rtl() {
+        text-align: left;
+      }
+    }
+
+    .oj-dvt-datatip-value {
+      color:var(--oj-core-text-color-primary);
+      padding: 0px 2px;
+
+      @include oj-ltr() {
+        text-align: left;
+      }
+      @include oj-rtl() {
+        text-align: right;
+      }
+    }
+    
+
+    .oj-dvt-no-data-message {
+      color: var(--oj-core-text-color-secondary);
+      font-size: var(--oj-dvt-label-font-size-md);
+    }
+
+    .oj-dvt-marquee {
+      fill: var(--oj-dvt-marquee-color);
+      stroke: var(--oj-dvt-marquee-border-color);
+    }
+
+    .oj-dvt-marquee-inner-area {
+      fill: var(--oj-dvt-marquee-color);
+      stroke: var(--oj-dvt-contrast-line-color);
+    }
+
+    .oj-dvt-icon {
+      stroke: none;
+    }
+
+    .oj-dvt-button-borderless .oj-dvt-button-background {
+      stroke: none;
+      fill: transparent;
+    }
+
+    .oj-dvt-button-borderless {
+      stroke: none;
+      fill: none;
+    }
+
+    .oj-dvt-button-borderless.oj-hover {
+      stroke: var(--oj-button-borderless-chrome-border-color-hover);
+      fill: var(--oj-button-borderless-chrome-bg-color-hover);
+    }
+
+    .oj-dvt-button-borderless.oj-active {
+      stroke: var(--oj-button-borderless-chrome-border-color-active);
+      fill: var(--oj-button-borderless-chrome-bg-color-active);
+    }
+
+    .oj-dvt-button-borderless .oj-dvt-icon {
+      fill: var(--oj-button-borderless-chrome-text-color);
+    }
+
+    .oj-dvt-button-borderless.oj-hover .oj-dvt-icon {
+      fill: var(--oj-button-borderless-chrome-text-color-hover);
+    }
+
+    .oj-dvt-button-borderless.oj-active .oj-dvt-icon {
+      fill: var(--oj-button-borderless-chrome-text-color-active);
+    }
+
+    .oj-dvt-button-borderless.oj-disabled .oj-dvt-icon {
+      fill: var(--oj-button-borderless-chrome-text-color-disabled);
+    }
+
+    .oj-dvt-button-outlined .oj-dvt-button-background {
+      stroke: none;
+      fill: var(--oj-core-bg-color-content);
+    }
+
+    .oj-dvt-button-outlined {
+      stroke: var(--oj-button-outlined-chrome-border-color);
+      fill: none;
+    }
+
+    .oj-dvt-button-outlined.oj-hover {
+      stroke: var(--oj-button-outlined-chrome-border-color-hover);
+      fill: var(--oj-button-outlined-chrome-bg-color-hover);
+    }
+
+    .oj-dvt-button-outlined.oj-active {
+      stroke: var(--oj-button-outlined-chrome-border-color-active);
+      fill: var(--oj-button-outlined-chrome-bg-color-active);
+    }
+
+    .oj-dvt-button-outlined.oj-disabled {
+      stroke: var(--oj-button-outlined-chrome-border-color-disabled);
+    }
+
+    .oj-dvt-button-outlined.oj-unselected {
+      stroke: var(--oj-button-outlined-chrome-border-color-selected);
+      fill: var(--oj-button-outlined-chrome-bg-color-hover);
+    }
+
+    .oj-dvt-button-outlined.oj-unselected.oj-hover {
+      stroke: var(--oj-button-outlined-chrome-border-color-hover);
+      fill: var(--oj-button-outlined-chrome-bg-color-hover);
+    }
+
+    .oj-dvt-button-outlined.oj-selected {
+      stroke: var(--oj-button-outlined-chrome-border-color-selected);
+      fill: var(--oj-button-outlined-chrome-bg-color-selected);
+    }
+
+    .oj-dvt-button-outlined.oj-selected.oj-hover {
+      stroke: var(--oj-button-outlined-chrome-border-color-selected-hover);
+      fill: var(--oj-button-outlined-chrome-bg-color-selected-hover);
+    }
+
+    .oj-dvt-button-outlined .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color);
+    }
+
+    .oj-dvt-button-outlined.oj-hover .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-hover);
+    }
+
+    .oj-dvt-button-outlined.oj-active .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-active);
+    }
+
+    .oj-dvt-button-outlined.oj-disabled .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-disabled);
+    }
+
+    .oj-dvt-button-outlined.oj-unselected .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color);
+    }
+
+    .oj-dvt-button-outlined.oj-unselected.oj-hover .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-hover);
+    }
+
+    .oj-dvt-button-outlined.oj-selected .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-selected);
+    }
+
+    .oj-dvt-button-outlined.oj-selected.oj-hover .oj-dvt-icon {
+      fill: var(--oj-button-outlined-chrome-text-color-selected-hover);
+    }
+  }

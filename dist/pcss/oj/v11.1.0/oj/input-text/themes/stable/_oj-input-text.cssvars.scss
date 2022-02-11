@@ -1,8 +1,0 @@
-@import "../../../utilities/_oj.utilities.modules.scss";
-// import dependencies
-@import "../../../text-field/themes/stable/_oj-text-field.cssvars.scss";
-@import "../../../messages/themes/stable/_oj-messages.cssvars.scss";
-
-@include module-include-once("stable.variables.inputtext") {
-
-}

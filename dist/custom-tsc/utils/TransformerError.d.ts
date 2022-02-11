@@ -1,3 +1,5 @@
+import ts from 'typescript';
 export declare class TransformerError extends Error {
-    constructor(className: string, message: string);
+    constructor(vcompName: string, message: string, errNode?: ts.Node);
+    static getMsgHeader(vcompName: string, errNode?: ts.Node): string;
 }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2022, Oracle and/or its affiliates.
  * Licensed under The Universal Permissive License (UPL), Version 1.0
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
@@ -25,7 +25,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             maxWidth: valueWrapperWidth
         };
         if (!Array.isArray(props.children)) {
-            props.children.props['label-edge'] = 'provided';
+            props.children.props['labelEdge'] = 'provided';
         }
         return (preact.h(preact.Fragment, null,
             preact.h("div", { class: 'oj-formlayout-inline-label', style: labelWrapperStyle },
@@ -69,7 +69,7 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
 
     function VTopLabeler(props) {
         if (!Array.isArray(props.children)) {
-            props.children.props['label-edge'] = 'provided';
+            props.children.props['labelEdge'] = 'provided';
         }
         return (preact.h(preact.Fragment, null,
             preact.h("oj-label", { for: props.forid }, props.labelText),
@@ -111,11 +111,11 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
             else {
                 if (hasSingleChild) {
                     if (props.labelEdge === 'inside') {
-                        props.children.props['label-edge'] = props.labelEdge;
-                        props.children.props['label-hint'] = props.labelText;
+                        props.children.props['labelEdge'] = props.labelEdge;
+                        props.children.props['labelHint'] = props.labelText;
                     }
                     else {
-                        props.children.props['label-edge'] = 'none';
+                        props.children.props['labelEdge'] = 'none';
                     }
                 }
                 return preact.h(preact.Fragment, null, props.children);
@@ -242,67 +242,49 @@ define(['exports', 'preact', 'ojs/ojthemeutils', 'ojs/ojlabel', 'ojs/ojcustomele
     class VRowFormGenerator extends preact.Component {
         constructor() {
             super(...arguments);
-            this.formDivRef = preact.createRef();
-            this._resizeListener = this._resizeHandler.bind(this);
+            this.setFormDivRef = (dom) => {
+                this.formDivRef = dom;
+            };
             this.state = {
                 availableColumns: 0
+            };
+            this._updateAvailableColumns = () => {
+                const hasVariableColumns = this._calculateColumns(0) === 0;
+                if (hasVariableColumns) {
+                    const form = this.formDivRef;
+                    const rootClassNames = form.class;
+                    form.class = INITIAL_ROOTCLASSNAMES;
+                    const availCols = this._calculateAvailableColumns(form);
+                    form.class = rootClassNames;
+                    if (this.state.availableColumns !== availCols) {
+                        this.setState({
+                            availableColumns: availCols
+                        });
+                    }
+                }
             };
         }
         render(props) {
             const cssColumnClasses = props.columns > 0 ? props.columns + NO_MIN_COLUMN_WIDTH : props.maxColumns;
             const rootClassNames = ROOTCLASSNAMES + cssColumnClasses;
             const formContent = this._getRowFormContent(this.props.formControls);
-            return (preact.h("div", { class: rootClassNames, ref: this.formDivRef }, formContent));
+            return (preact.h("div", { class: rootClassNames, ref: this.setFormDivRef }, formContent));
         }
         componentDidMount() {
-            if (this._calculateColumns(0) === 0) {
-                this.setState({
-                    availableColumns: this._calculateAvailableColumns(this.formDivRef.current)
-                });
-            }
-            DomUtils.addResizeListener(this.formDivRef.current, this._resizeListener, 25);
+            this._updateAvailableColumns();
+            DomUtils.addResizeListener(this.formDivRef, this._updateAvailableColumns, 25);
         }
         componentDidUpdate() {
-            if (this.state.availableColumns === 0 && this._calculateColumns(0) === 0) {
-                const form = this.formDivRef.current;
-                const rootClassNames = form.class;
-                form.class = INITIAL_ROOTCLASSNAMES;
-                const availCols = this._calculateAvailableColumns(form);
-                form.class = rootClassNames;
-                this.setState({
-                    availableColumns: availCols
-                });
-            }
+            this._updateAvailableColumns();
         }
         componentWillUnmount() {
-            DomUtils.removeResizeListener(this.formDivRef.current, this._resizeListener);
-        }
-        _resizeHandler() {
-            if (this._calculateColumns(0) > 0) {
-                if (this.state.availableColumns > 0) {
-                    this.setState({
-                        availableColumns: 0
-                    });
-                }
-            }
-            else {
-                const form = this.formDivRef.current;
-                const rootClassNames = form.class;
-                form.class = INITIAL_ROOTCLASSNAMES;
-                const availCols = this._calculateAvailableColumns(form);
-                form.class = rootClassNames;
-                if (this.state.availableColumns !== availCols) {
-                    this.setState({
-                        availableColumns: availCols
-                    });
-                }
-            }
+            DomUtils.removeResizeListener(this.formDivRef, this._updateAvailableColumns);
         }
         _calculateAvailableColumns(form) {
             let availableCols = Math.max(this.props.maxColumns, 1);
             let colWidth = parseFloat(window.getComputedStyle(form.querySelector('.oj-form')).columnWidth);
             if (!isNaN(colWidth)) {
-                let totalWidth = this.formDivRef.current.getBoundingClientRect().width;
+                let totalWidth = this.formDivRef.getBoundingClientRect().width;
                 availableCols = Math.max(Math.floor(totalWidth / colWidth), 1);
             }
             return availableCols;
