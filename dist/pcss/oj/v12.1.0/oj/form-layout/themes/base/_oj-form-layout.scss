@@ -6,9 +6,9 @@
 // for example form-layout/themes/redwood/oj-form-layout.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-@import "../../../utilities/_oj.utilities.modules.scss";
+@import '../../../utilities/_oj.utilities.modules.scss';
 
-@include module-include-once("common.formlayout.element") {
+@include module-include-once('common.formlayout.element') {
   // default custom element to block
   oj-form-layout {
     display: block;
@@ -59,12 +59,15 @@
   // other browsers. See JET-42692
   // I'm limiting this to direction="column" and column="1" to minimize any
   // potential regression, but I think it is very unlikely to cause any issues.
-  .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
+  // Due to a change in Chrome 98 (see bug JET-49143), we need to make these specific only to
+  // the affected browsers.  Firefox needs both work arounds, Safari just needs this one.
+  .oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
+  .oj-agent-browser-firefox .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
     display: inline;
   }
   // Unfortunately, the safari work around does nothing to help Firefox and this fix
   // can't be limited to one column but is limited to direction="column". See JET-42692
-  .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
+  .oj-agent-browser-firefox .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
     display: inline;
   }
 
@@ -94,7 +97,7 @@
   // text-align property will be inherited
   .oj-form > .oj-flex > .oj-flex-item > .oj-form {
     text-align: left;
-    html[dir="rtl"] & {
+    html[dir='rtl'] & {
       text-align: right;
     }
   }
@@ -112,8 +115,11 @@
   //
   // See the form layout demo titled "inline responsive across"
   // before checking in any changes to where the margin is placed.
-  .oj-form > .oj-flex > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
-    margin: 0 0 calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0;
+  .oj-form
+    > .oj-flex
+    > .oj-flex-item:not(.oj-formlayout-nested-formlayout):not(.oj-formlayout-nested-labelvalue) {
+    margin: 0 0
+      calc(var(--oj-form-layout-margin-bottom) - var(--oj-private-core-wrappable-margin-bottom)) 0;
   }
 
   // oj-label-value still has an oj-label in its own div, which should never have a margin bottom
@@ -135,7 +141,7 @@
     padding: var(--oj-form-layout-divider-margin) 0 0;
   }
 
-  .oj-form-layout > .oj-form[class*="oj-form-cols-"] > .oj-flex:last-child {
+  .oj-form-layout > .oj-form[class*='oj-form-cols-'] > .oj-flex:last-child {
     border-width: 0 0 var(--oj-form-layout-divider-width) 0;
   }
 
@@ -148,7 +154,12 @@
   .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label,
   .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label,
   .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-label-value .oj-label,
-  .oj-formlayout-labels-nowrap > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label-value .oj-label {
+  .oj-formlayout-labels-nowrap
+    > .oj-flex
+    > .oj-flex-item
+    > .oj-formlayout-inline-label
+    > .oj-label-value
+    .oj-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -163,7 +174,7 @@
     // before checking the values in here
 
     width: 100%;
-    box-sizing: border-box; 
+    box-sizing: border-box;
     text-align: var(--oj-form-layout-start-edge-label-text-align);
   }
 
@@ -188,11 +199,11 @@
   // when labels are inline we don't float so we need to add spacing.
   .oj-formlayout-inline-label .oj-label-required-icon,
   .oj-formlayout-inline-label .oj-label-help-icon {
-    html:not([dir="rtl"]) & {
+    html:not([dir='rtl']) & {
       margin-left: 0;
       margin-right: 6px;
     }
-    html[dir="rtl"] & {
+    html[dir='rtl'] & {
       margin-right: 0;
       margin-left: 6px;
     }
@@ -205,16 +216,24 @@
     display: inline-flex;
     align-items: center;
 
-    html:not([dir="rtl"]) & {
+    html:not([dir='rtl']) & {
       padding-right: var(--oj-form-layout-start-edge-label-to-value-padding);
     }
-    html[dir="rtl"] & {
+    html[dir='rtl'] & {
       padding-left: var(--oj-form-layout-start-edge-label-to-value-padding);
     }
   }
 
-  .oj-form-layout > .oj-form.oj-enabled > .oj-flex > .oj-flex-item > .oj-formlayout-inline-label > .oj-label,
-  oj-label-value.oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-label:not(.oj-read-only) {
+  .oj-form-layout
+    > .oj-form.oj-enabled
+    > .oj-flex
+    > .oj-flex-item
+    > .oj-formlayout-inline-label
+    > .oj-label,
+  oj-label-value.oj-formlayout-labels-inline
+    > .oj-flex
+    > .oj-flex-item
+    > .oj-label:not(.oj-read-only) {
     &.oj-inputtext-label,
     &.oj-inputpassword-label,
     &.oj-inputnumber-label,
@@ -255,13 +274,21 @@
   .oj-formlayout-inline-label > .oj-radioset-label:not(.oj-read-only),
   .oj-formlayout-inline-label > .oj-checkboxset-label:not(.oj-read-only),
   .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label:not(.oj-read-only),
-  .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label:not(.oj-read-only) {
+  .oj-formlayout-labels-inline
+    > .oj-flex
+    > .oj-flex-item
+    > .oj-checkboxset-label:not(.oj-read-only) {
     margin-top: calc(
-      (var(--oj-radio-checkbox-row-height) - (var(--oj-typography-body-md-font-size) * var(--oj-typography-body-md-line-height) + 1px)) / 2 +
-        var(--oj-typography-body-md-font-size) - var(--oj-label-font-size)
+      (
+          var(--oj-radio-checkbox-row-height) -
+            (
+              var(--oj-typography-body-md-font-size) * var(--oj-typography-body-md-line-height) +
+                1px
+            )
+        ) / 2 + var(--oj-typography-body-md-font-size) - var(--oj-label-font-size)
     );
   }
-  
+
   // This is for cases where there are label modifiers (required, etc), in which case
   // the properties below need to be inherited by oj-label-group
   // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
@@ -386,25 +413,25 @@
       )
     );
   }
-    $formLayoutDefaultOptions: map-merge(
-      $formLayoutDefaultOptions,
-      (
-        colspanWrap: 'wrap'
-      )
-    );
-  
-    $formLayoutDefaultOptions: map-merge(
-      $formLayoutDefaultOptions,
-      (
-        "direction": 'row'
-      )
-    );
+  $formLayoutDefaultOptions: map-merge(
+    $formLayoutDefaultOptions,
+    (
+      colspanWrap: 'wrap'
+    )
+  );
+
+  $formLayoutDefaultOptions: map-merge(
+    $formLayoutDefaultOptions,
+    (
+      'direction': 'row'
+    )
+  );
 
   // using the oj-form-layout-option-defaults to pass the column gap even though it's not really a default
   $formLayoutDefaultOptions: map-merge(
     $formLayoutDefaultOptions,
     (
-      "columnGap": var(--oj-form-layout-column-gutter)
+      'columnGap': var(--oj-form-layout-column-gutter)
     )
   );
 

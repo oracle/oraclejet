@@ -337,7 +337,7 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
         return hooks.useMemo(() => new Array(length).fill(undefined).map(() => preact.createRef()), [length]);
     }
 
-    const offScreenStyle = "oj-live-region-offScreenStyle-o1xwg2xa";
+    const offScreenStyle = "oj-live-region-offScreenStyle-14cpbki";
     /**
      * A helper component that renders an aria-live region
      *
@@ -874,34 +874,34 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
       xxl: '2.5rem'
     };
     const directionStyles = {
-      row: "oj-flex-row-r151dc5k",
-      column: "oj-flex-column-cddvbr0"
+      row: "oj-flex-row-1r2r04x",
+      column: "oj-flex-column-jvysn7"
     };
     const alignStyles = {
-      baseline: "oj-flex-baseline-b1ym8cgx",
-      center: "oj-flex-center-cr3firy",
-      end: "oj-flex-end-e1hcihnh",
-      start: "oj-flex-start-stv38ab",
-      inherit: "oj-flex-inherit-ibuadas",
-      initial: "oj-flex-initial-i1katjsf",
-      stretch: "oj-flex-stretch-s1xclxyq"
+      baseline: "oj-flex-baseline-sn7vdu",
+      center: "oj-flex-center-rpq1co",
+      end: "oj-flex-end-1gkv0nk",
+      start: "oj-flex-start-19zmlgk",
+      inherit: "oj-flex-inherit-6cg1j7",
+      initial: "oj-flex-initial-e73gk1",
+      stretch: "oj-flex-stretch-pkf80b"
     };
     const justifyStyles = {
-      center: "oj-flex-center-c1k7idmt",
-      end: "oj-flex-end-erzuzq6",
-      start: "oj-flex-start-s1ampyci",
-      inherit: "oj-flex-inherit-ikwzjla",
-      initial: "oj-flex-initial-i1ee5clk",
-      around: "oj-flex-around-a3eykku",
-      between: "oj-flex-between-bdy9zkz",
-      evenly: "oj-flex-evenly-ebf40gc"
+      center: "oj-flex-center-cz2ys",
+      end: "oj-flex-end-vydaj5",
+      start: "oj-flex-start-1bfjt7u",
+      inherit: "oj-flex-inherit-1vx2ckm",
+      initial: "oj-flex-initial-1kcnwum",
+      around: "oj-flex-around-9r1l2k",
+      between: "oj-flex-between-mpocno",
+      evenly: "oj-flex-evenly-1iqacd2"
     };
     const wrapStyles = {
-      nowrap: "oj-flex-nowrap-nf2xa2o",
-      wrap: "oj-flex-wrap-w1rqjeh6",
-      reverse: "oj-flex-reverse-rgdkw82",
-      inherit: "oj-flex-inherit-id777hd",
-      initial: "oj-flex-initial-i1152ami"
+      nowrap: "oj-flex-nowrap-y59k8t",
+      wrap: "oj-flex-wrap-fmpvou",
+      reverse: "oj-flex-reverse-1b0qr8v",
+      inherit: "oj-flex-inherit-1ij7eal",
+      initial: "oj-flex-initial-3nzaji"
     };
     const styles = {
       direction: directionStyles,
@@ -954,7 +954,7 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
       }
     };
 
-    const baseStyles = "oj-flex-baseStyles-b12c3cqv";
+    const baseStyles = "oj-flex-baseStyles-1fjajdl";
     const interpolations$1 = [...Object.values(interpolations), ...Object.values(flexboxInterpolations)];
     const styleInterpolations = mergeInterpolations(interpolations$1);
     const Flex = _a => {
@@ -1663,7 +1663,7 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
      * @ignore
      */
     const messageCloseButtonStyles = {
-      banner: "oj-message-banner-b10cag1l"
+      banner: "oj-message-banner-2rbena"
     };
     /**
      * A Component for rendering the message close button
@@ -1811,8 +1811,8 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
      */
     const messageDetailStyles = {
       // TODO: Reevaluate once the TEXT component is available (JET-46891)
-      base: "oj-message-base-bbznd28",
-      banner: "oj-message-banner-b39ctpn"
+      base: "oj-message-base-14kwy8x",
+      banner: "oj-message-banner-takd8k"
     };
     /**
      * Default renderer for rendering the detail content.
@@ -1879,7 +1879,7 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
     // tracked by JET-47348 - set images in a component
 
 
-    const svgStyles = "oj-message-svgStyles-s15seud3";
+    const svgStyles = "oj-message-svgStyles-8z03w3";
 
     const Svg = ({
       class: className,
@@ -1972,9 +1972,9 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
      * as shown at https://oss.oracle.com/licenses/upl/
      * @ignore
      */
-    const messageStartIconStyles = "oj-message-messageStartIconStyles-mmmpf1e";
+    const messageStartIconStyles = "oj-message-messageStartIconStyles-iuvtfp";
     const severityIconStyles = {
-      banner: "oj-message-banner-b1mv77e8"
+      banner: "oj-message-banner-zjhpfj"
     };
     const severityIcons = {
       confirmation: ConfirmationIcon,
@@ -2010,8 +2010,8 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
      */
     const messageSummaryStyles = {
       // TODO: Reevaluate once the TEXT component is available (JET-46891)
-      base: "oj-message-base-bczmanu",
-      banner: "oj-message-banner-bonzci6"
+      base: "oj-message-base-bowowq",
+      banner: "oj-message-banner-vxm2jp"
     };
     /**
      * Summary Component for rendering the summary text of the Message
@@ -2036,7 +2036,7 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
      * @ignore
      */
     const messageTimestampStyles = {
-      banner: "oj-message-banner-b1i0o3vp"
+      banner: "oj-message-banner-18frmp1"
     };
     /**
      * Timestamp Component for rendering timestamp in Message
@@ -2172,11 +2172,11 @@ define(['exports', 'preact/hooks', 'preact', 'ojs/ojanimation', 'ojs/ojtranslati
 
 
     const messageStyles = {
-      base: "oj-message-base-bb5rzqk",
-      section: "oj-message-section-s1c5gur5",
-      header: "oj-message-header-h1k6g34i",
+      base: "oj-message-base-ph7f1",
+      section: "oj-message-section-y709vw",
+      header: "oj-message-header-13ytxxv",
       // TODO: Replace with Flex and View components to handle padding and flex
-      content: "oj-message-content-cy2ssrz"
+      content: "oj-message-content-1cvp4im"
     };
     /**
      * A component that styles the header for the message component

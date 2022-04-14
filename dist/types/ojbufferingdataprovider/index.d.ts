@@ -1,7 +1,7 @@
 import { DataProvider, SortCriterion, FetchByKeysParameters, ContainsKeysResults, FetchByKeysResults, FetchByOffsetParameters, FetchByOffsetResults, DataMapping, FetchListResult, FetchListParameters,
    FetchAttribute, DataFilter, Item, ItemWithOptionalData, ItemMessage } from '../ojdataprovider';
 declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
-    constructor(dataProvider: DataProvider<K, D>, options?: object);
+    constructor(dataProvider: DataProvider<K, D>, options?: BufferingDataProvider.Options<K, D>);
     addEventListener(eventType: string, listener: EventListener): void;
     addItem(item: Item<K, D>): void;
     containsKeys(parameters: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>;
@@ -19,13 +19,17 @@ declare class BufferingDataProvider<K, D> implements DataProvider<K, D> {
     removeItem(item: ItemWithOptionalData<K, D>): void;
     resetAllUnsubmittedItems(): any;
     resetUnsubmittedItem(key: K): void;
-    setItemStatus(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage): void;
+    setItemStatus(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, mewKey?: K): void;
     updateItem(item: Item<K, D>): void;
 }
-export = BufferingDataProvider;
 declare namespace BufferingDataProvider {
+    // tslint:disable-next-line interface-over-type-literal
+    type Options<K, D> = {
+        keyGenerator?: (value: Partial<D>) => K;
+    };
     interface EditItem<K, D> {
         readonly item: ItemWithOptionalData<K, D>;
         readonly operation: 'add' | 'remove' | 'update';
     }
 }
+export = BufferingDataProvider;

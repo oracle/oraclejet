@@ -55,10 +55,25 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   /**
    * @export
    */
+  const getActionableElementsInNode = function (element) {
+    var actionableElems = [];
+    let nodes = element.querySelectorAll(_ACTIONABLE_ELEMENTS_QUERY);
+    for (var i = 0; i < nodes.length; i++) {
+      var elem = nodes[i];
+      if (!elem.disabled && elem.style.display !== 'none') {
+        actionableElems.push(elem);
+      }
+    }
+    return actionableElems;
+  };
+
+  /**
+   * @export
+   */
   const isActionableElement = function (node) {
     var parentNode = node.parentNode;
     if (parentNode != null) {
-      var nodes = parentNode.querySelectorAll(_ACTIONABLE_ELEMENTS_QUERY);
+      var nodes = getActionableElementsInNode(parentNode);
       for (var i = 0; i < nodes.length; i++) {
         if (nodes[0] === node) {
           return true;
@@ -212,6 +227,7 @@ define(['exports', 'jquery', 'ojs/ojcore-base', 'ojs/ojpopupcore', 'ojs/ojdomuti
   exports.disableAllFocusableElements = disableAllFocusableElements;
   exports.disableElement = disableElement;
   exports.enableAllFocusableElements = enableAllFocusableElements;
+  exports.getActionableElementsInNode = getActionableElementsInNode;
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
   exports.getLogicalChildPopup = getLogicalChildPopup;
   exports.isActionableElement = isActionableElement;

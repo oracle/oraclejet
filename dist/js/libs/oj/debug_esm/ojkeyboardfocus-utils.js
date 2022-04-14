@@ -55,10 +55,25 @@ const checkVisibility = function (element) {
 /**
  * @export
  */
+const getActionableElementsInNode = function (element) {
+  var actionableElems = [];
+  let nodes = element.querySelectorAll(_ACTIONABLE_ELEMENTS_QUERY);
+  for (var i = 0; i < nodes.length; i++) {
+    var elem = nodes[i];
+    if (!elem.disabled && elem.style.display !== 'none') {
+      actionableElems.push(elem);
+    }
+  }
+  return actionableElems;
+};
+
+/**
+ * @export
+ */
 const isActionableElement = function (node) {
   var parentNode = node.parentNode;
   if (parentNode != null) {
-    var nodes = parentNode.querySelectorAll(_ACTIONABLE_ELEMENTS_QUERY);
+    var nodes = getActionableElementsInNode(parentNode);
     for (var i = 0; i < nodes.length; i++) {
       if (nodes[0] === node) {
         return true;
@@ -208,4 +223,4 @@ const getLogicalChildPopup = function (componentElement) {
   return null;
 };
 
-export { checkVisibility, disableAllFocusableElements, disableElement, enableAllFocusableElements, getFocusableElementsInNode, getLogicalChildPopup, isActionableElement };
+export { checkVisibility, disableAllFocusableElements, disableElement, enableAllFocusableElements, getActionableElementsInNode, getFocusableElementsInNode, getLogicalChildPopup, isActionableElement };

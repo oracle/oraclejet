@@ -8,7 +8,7 @@
 import { Component, h } from 'preact';
 import { Root, customElement } from 'ojs/ojvcomponent';
 import { getTranslatedString } from 'ojs/ojtranslation';
-import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getFocusableElementsIncludingDisabled, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
+import { KEYBOARD_KEYS, handleActionablePrevTab, handleActionableTab, getNoJQFocusHandlers, getActionableElementsInNode, disableAllFocusableElements, enableAllFocusableElements } from 'ojs/ojdatacollection-common';
 import Context from 'ojs/ojcontext';
 import { IteratingDataProviderContentHandler, IteratingTreeDataProviderContentHandler } from 'ojs/ojvcollection';
 import oj from 'ojs/ojcore-base';
@@ -522,11 +522,11 @@ let StreamList = StreamList_1 = class StreamList extends Component {
         }
         if (data == null) {
             return (h(Root, { ref: this.setRootElement },
-                h("div", { role: 'list', "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+                h("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
         }
         else {
             return (h(Root, { ref: this.setRootElement },
-                h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+                h("div", { role: "list", "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
         }
     }
     _doBlur() {
@@ -577,7 +577,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
             className += ' oj-stream-list-child-skeleton';
         }
         return (h("div", { class: className, key: key },
-            h("div", { class: 'oj-stream-list-skeleton-content oj-animation-skeleton' })));
+            h("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" })));
     }
     _applySkeletonExitAnimation(skeletons) {
         const resolveFunc = this.addBusyState('apply skeleton exit animations');
@@ -1077,7 +1077,7 @@ let StreamList = StreamList_1 = class StreamList extends Component {
     }
     _isInFocusableElementsList(target, item) {
         let found = false;
-        const nodes = getFocusableElementsIncludingDisabled(item);
+        const nodes = getActionableElementsInNode(item);
         nodes.forEach(function (node) {
             if (node === target) {
                 found = true;

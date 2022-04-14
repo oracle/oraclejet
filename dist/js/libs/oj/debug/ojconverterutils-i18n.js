@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconverterutils', 'ojs/ojvalidation-error', 'ojs/ojlogger'], function (exports, oj, Translations, $, ConverterUtils, ojvalidationError, Logger) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconverterutils', 'ojs/ojvalidation-error'], function (exports, oj, Translations, $, ConverterUtils, ojvalidationError) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
@@ -1212,44 +1212,10 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     return OraI18nUtils.getISOStrFormatType(isoStr);
   };
 
-  /**
-   * Will issue a warning if the ISO string value has a time portion specified.  For input date, we only
-   * want the date portion of the ISO string specified.  We pass in a logger function so that this function
-   * can be tested by providing an alternate function.  See pattern library for useControlledVariantWarning
-   * @param {string} name The name is used for logging purposes only
-   * @param {string} value The iSO string value to be tested
-   * @param {function} logger The method used to log the warning
-   * @memberof oj.IntlConverterUtils
-   * @method _warnIfISOFormatHasTime
-   * @private
-   */
-  IntlConverterUtils._warnIfISOFormatHasTime = function (name, value, logger = Logger.warn) {
-    if (value && value.indexOf('T') !== -1) {
-      logger(`${name} iso string value should not include a time value for oj-input-date component.`);
-    }
-  };
 
   /**
-   * This method will verify that the value, min, and max iso strings
-   * contain no time component, and issue warnings if they do, and then
-   * call _verifyValueMinMax to verify the time portion if the iso string.
-   * @param {string} value iso string value for the component value
-   * @param {string} min iso string value for the min property
-   * @param {string} max iso string value for the max property
-   */
-  IntlConverterUtils._verifyValueMinMaxNoTime = function (value, min, max) {
-    // call _warnIfISOFormatHasTime for each parameter
-    Object.entries({ value, min, max }).forEach(
-      ([k, v]) => IntlConverterUtils._warnIfISOFormatHasTime(k, v));
-
-    IntlConverterUtils._verifyValueMinMax(value, min, max);
-  };
-
-  /**
-   * Checks that min and max are parseable isoStrings, and that they
-   * are the same type as each other and as the value option.
-   * Logs a warning if value, min, max are not all iso strings, or are not of the same type.
-   * In a future release this will throw an error.
+   * Checks that min and max and value are parseable isoStrings,
+   * Logs a warning if value, min, max are not all iso strings.
    *
    * @throws {Error} if value, min, max are not all iso strings, or are not of the same type.
    * @param {string} value
@@ -1263,10 +1229,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
    * @private
    */
    IntlConverterUtils._verifyValueMinMax = function (value, min, max) {
-    let valueIsoFormat;
-    let minIsoFormat;
-    let maxIsoFormat;
-
     // If value or min or max is not an iso string (say 'abc' or '2021/03/03'),
     // the datepicker renders, but you see an inline converter error meant only for an application
     // developer under the field, 'Please provide valid ISO 8601 string'.
@@ -1274,54 +1236,18 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojtranslation', 'jquery', 'ojs/ojconv
     // ** e.g., set oj-input-number value='abc' and an error is thrown in the console.
     // In v11 we logged the warning and monitored FA tests for this warning. After six months or so
     // we saw no warnings and so now in v12 we will throw an error.
-    if (value) {
-      try {
-        valueIsoFormat = IntlConverterUtils._getISOStrFormatType(value);
-      } catch (e) {
-        // We weren't checking this in pre-v11.
-        throw new Error('value must be an iso string: ' + e);
-      }
-    }
 
-    if (min) {
-      try {
-        minIsoFormat = IntlConverterUtils._getISOStrFormatType(min);
-      } catch (e) {
-        throw new Error('min must be an iso string: ' + e);
-      }
-    }
-
-    if (max) {
-      try {
-        maxIsoFormat = IntlConverterUtils._getISOStrFormatType(max);
-      } catch (e) {
-        throw new Error('max must be an iso string: ' + e);
-      }
-    }
-
-    // Issue two is.
-    // If value and min and max are not of the same iso string type: zulu, offset, or local,
-    // we coerced to the same type so that we could easily compare them,
-    // like min <= value <= max. In v11, we warned. In v12 we throw an error
-    // if they are not of the same type,
-
-    if (value && min && max &&
-      !(valueIsoFormat === minIsoFormat && valueIsoFormat === maxIsoFormat)) {
-      throw new Error(`min and max must be in the same iso string format as value.
-    value is in ${valueIsoFormat} format.`);
-    }
-    if (value && min && !(valueIsoFormat === minIsoFormat)) {
-      throw new Error(`min must be in the same iso string format as value.
-    value is in ${valueIsoFormat} format.`);
-    }
-    if (value && max && !(valueIsoFormat === maxIsoFormat)) {
-      throw new Error(`max must be in the same iso string format as value.
-      value is in ${valueIsoFormat} format.`);
-    }
-    if (min && max && !(minIsoFormat === maxIsoFormat)) {
-      throw new Error(`min and max must be in the same iso string format.
-      min is in ${minIsoFormat} format and max is in ${maxIsoFormat} format.`);
-    }
+    Object.entries({ value, min, max }).forEach(
+      ([k, v]) => {
+        if (v) {
+          try {
+            IntlConverterUtils._getISOStrFormatType(v);
+          } catch (e) {
+            // We weren't checking this in pre-v11.
+            throw new Error(`${k} must be an iso string: ${e}`);
+          }
+        }
+      });
   };
 
   /**

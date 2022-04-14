@@ -3434,6 +3434,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
          *               {target:"Type", value:"K1", for:"nodeId"}]
+         * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
          */
         beforeExpand: null,
         /**
@@ -3447,6 +3448,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
          *               {target:"Type", value:"K1", for:"nodeId"}]
+         * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
          */
         expand: null,
         /**
@@ -3461,6 +3463,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
          *               {target:"Type", value:"K1", for:"nodeId"}]
+         * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
          */
         beforeCollapse: null,
         /**
@@ -3474,6 +3477,7 @@ var __oj_diagram_link_metadata =
          * @instance
          * @ojsignature [{target:"Type", value:"<K1>", for:"genericTypeParameters"},
          *               {target:"Type", value:"K1", for:"nodeId"}]
+         * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
          */
         collapse: null
       },

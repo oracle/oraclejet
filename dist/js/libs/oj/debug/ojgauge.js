@@ -1198,6 +1198,7 @@ var __oj_status_meter_gauge_metadata =
          * @name label
          * @memberof oj.ojLedGauge
          * @instance
+         * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
          * @type {Object=}
          */
         label: {
@@ -1496,6 +1497,7 @@ var __oj_status_meter_gauge_metadata =
          * @name visualEffects
          * @memberof oj.ojLedGauge
          * @instance
+         * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
          * @type {string=}
          * @ojvalue {string} "none"
          * @ojvalue {string} "auto"
@@ -2226,6 +2228,7 @@ var __oj_status_meter_gauge_metadata =
          * @name visualEffects
          * @memberof oj.ojRatingGauge
          * @instance
+         * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
          * @type {string=}
          * @ojvalue {string} "none"
          * @ojvalue {string} "auto"
@@ -2579,6 +2582,7 @@ var __oj_status_meter_gauge_metadata =
          * @name label
          * @memberof oj.ojStatusMeterGauge
          * @instance
+         * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
          * @type {Object=}
          */
         label: {
@@ -3099,6 +3103,7 @@ var __oj_status_meter_gauge_metadata =
          * @name visualEffects
          * @memberof oj.ojStatusMeterGauge
          * @instance
+         * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
          * @type {string=}
          * @ojvalue {string} "none"
          * @ojvalue {string} "auto"

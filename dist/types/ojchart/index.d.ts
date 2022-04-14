@@ -6,8 +6,8 @@ import { dvtBaseComponent, dvtBaseComponentEventMap, dvtBaseComponentSettablePro
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojChart<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponent<ojChartSettableProperties<K, D, I, C>> {
-    animationOnDataChange?: 'auto' | 'slideToLeft' | 'slideToRight' | 'none';
-    animationOnDisplay?: 'auto' | 'alphaFade' | 'zoom' | 'none';
+    animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
+    animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
     as?: string;
     coordinateSystem?: 'polar' | 'cartesian';
     data: DataProvider<K, D> | null;
@@ -438,7 +438,7 @@ export namespace ojChart {
         tooltipLabel?: string;
     };
     // tslint:disable-next-line interface-over-type-literal
-    type ChartType = 'line' | 'area' | 'lineWithArea' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid' | 'bar';
+    type ChartType = 'line' | 'area' | 'lineWithArea' | 'bar' | 'stock' | 'boxPlot' | 'combo' | 'pie' | 'scatter' | 'bubble' | 'funnel' | 'pyramid';
     // tslint:disable-next-line interface-over-type-literal
     type DataCursorDefaults = {
         lineColor?: string;
@@ -867,7 +867,7 @@ export namespace ojChart {
         id?: string | number;
         items?: (Array<Item<K, Array<Item<any, null>> | number[] | null>> | number[]);
         lineStyle?: LineStyle;
-        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+        lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'straight' | 'auto';
         lineWidth?: number;
         markerColor?: string;
         markerDisplayed?: 'on' | 'off' | 'auto';
@@ -887,7 +887,7 @@ export namespace ojChart {
         stackCategory?: string;
         svgClassName?: string;
         svgStyle?: Partial<CSSStyleDeclaration>;
-        type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
+        type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
     };
     // tslint:disable-next-line interface-over-type-literal
     type SeriesContext = {
@@ -1202,8 +1202,8 @@ export interface ojChartEventMap<K, D extends ojChart.DataItem<I> | any, I exten
 }
 export interface ojChartSettableProperties<K, D extends ojChart.DataItem<I> | any, I extends Array<ojChart.Item<any, null>> | number[] | null, C extends ojChart<K, D, I, null> |
    null> extends dvtBaseComponentSettableProperties {
-    animationOnDataChange?: 'auto' | 'slideToLeft' | 'slideToRight' | 'none';
-    animationOnDisplay?: 'auto' | 'alphaFade' | 'zoom' | 'none';
+    animationOnDataChange?: 'slideToLeft' | 'slideToRight' | 'auto' | 'none';
+    animationOnDisplay?: 'alphaFade' | 'zoom' | 'auto' | 'none';
     as?: string;
     coordinateSystem?: 'polar' | 'cartesian';
     data: DataProvider<K, D> | null;
@@ -1586,7 +1586,7 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     displayInLegend?: 'on' | 'off' | 'auto';
     drilling?: 'on' | 'off' | 'inherit';
     lineStyle?: ojChart.LineStyle;
-    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'straight' | 'auto';
     lineWidth?: number;
     markerColor?: string;
     markerDisplayed?: 'on' | 'off' | 'auto';
@@ -1606,7 +1606,7 @@ export interface ojChartSeries extends JetElement<ojChartSeriesSettablePropertie
     stackCategory?: string;
     svgClassName?: string;
     svgStyle?: Partial<CSSStyleDeclaration>;
-    type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
+    type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
     addEventListener<T extends keyof ojChartSeriesEventMap>(type: T, listener: (this: HTMLElement, ev: ojChartSeriesEventMap[T]) => any, options?: (boolean | AddEventListenerOptions)): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: (boolean | AddEventListenerOptions)): void;
     getProperty<T extends keyof ojChartSeriesSettableProperties>(property: T): ojChartSeries[T];
@@ -1728,7 +1728,7 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     displayInLegend?: 'on' | 'off' | 'auto';
     drilling?: 'on' | 'off' | 'inherit';
     lineStyle?: ojChart.LineStyle;
-    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'straight' | 'none' | 'auto';
+    lineType?: 'curved' | 'stepped' | 'centeredStepped' | 'segmented' | 'centeredSegmented' | 'none' | 'straight' | 'auto';
     lineWidth?: number;
     markerColor?: string;
     markerDisplayed?: 'on' | 'off' | 'auto';
@@ -1748,7 +1748,7 @@ export interface ojChartSeriesSettableProperties extends JetSettableProperties {
     stackCategory?: string;
     svgClassName?: string;
     svgStyle?: Partial<CSSStyleDeclaration>;
-    type?: 'bar' | 'line' | 'area' | 'lineWithArea' | 'candlestick' | 'boxPlot' | 'auto';
+    type?: 'line' | 'area' | 'lineWithArea' | 'bar' | 'candlestick' | 'boxPlot' | 'auto';
 }
 export interface ojChartSeriesSettablePropertiesLenient extends Partial<ojChartSeriesSettableProperties> {
     [key: string]: any;

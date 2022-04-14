@@ -1925,19 +1925,22 @@ define(['ojs/ojcore-base', 'ojs/ojdvt-toolkit', 'ojs/ojcontext', 'ojs/ojconfig',
         // Option change fired in response to user gesture. Already reflected in UI, so no render needed.
         return;
       }
-
+      // If there are pending renders do not use the optimized option, it is going to be rewritten by
+      // the pending renderer with the old value.
+      var bRenderNeeded = this._numDeferredObjs > 0;
+      if (!bRenderNeeded) {
         // Event listeners don't require rendering.  Iterate through options to check for non-event options.
         // Also no render is needed if the component has exposed a method to update the option without rerendering.
-      var bRenderNeeded = false;
-      var eventTypes = this._GetEventTypes();
-      var optimizedOptions = ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
-      $.each(options, function (key) {
-        if (eventTypes.indexOf(key) < 0 && optimizedOptions.indexOf(key) < 0) {
-          bRenderNeeded = true;
-          return false;
-        }
-        return undefined;
-      });
+        var eventTypes = this._GetEventTypes();
+        var optimizedOptions = ['highlightedCategories', 'selection', 'dataCursorPosition', 'scrollPosition'];
+        $.each(options, function (key) {
+          if (eventTypes.indexOf(key) < 0 && optimizedOptions.indexOf(key) < 0) {
+            bRenderNeeded = true;
+            return false;
+          }
+          return undefined;
+        });
+      }
 
       if (bRenderNeeded) {
         this._Render();

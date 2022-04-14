@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-import { CSSStyle, BaseComponent, Agent, JsonUtils, Container, ClipPath, ToolkitUtils, TransientButton, EventManager, Rectangle, Rect, SvgDocumentUtils, MouseEvent, Point, KeyboardHandler, KeyboardEvent } from 'ojs/ojdvt-toolkit';
+import { CSSStyle, BaseComponent, Agent, Container, ClipPath, ToolkitUtils, TransientButton, EventManager, Rectangle, Rect, SvgDocumentUtils, MouseEvent, Point, KeyboardHandler, KeyboardEvent } from 'ojs/ojdvt-toolkit';
 import { TimeAxisUtils } from 'ojs/ojtimeaxis-toolkit';
 
 /**
@@ -179,38 +179,41 @@ class TimeComponent extends BaseComponent {
    * @param {string} type The raw data object type. Must be either 'series', 'item', 'row', or 'task'
    * @return {object} The sanitized data
    */
-  static sanitizeData(data, type) {
-    var seriesCopy;
-    var itemCopy;
-    var isSeriesData = type === 'series' || type === 'row';
-    if (isSeriesData) {
-      var itemProp = type === 'series' ? 'items' : 'tasks';
-      if (data[itemProp].length > 0) {
-        if (data[itemProp][0]._noTemplate) {
-          seriesCopy = JsonUtils.clone(data, null, {itemProp: true});
-          seriesCopy[itemProp] = seriesCopy[itemProp].map((item) => {
-            return item._itemData;
-          });
-          return seriesCopy;
-        } else if (data[itemProp][0]._itemData) {
-          seriesCopy = JsonUtils.clone(data, null, {itemProp: true});
-          seriesCopy[itemProp] = seriesCopy[itemProp].map((item) => {
-            itemCopy = JsonUtils.clone(item);
-            delete itemCopy._itemData;
-            return itemCopy;
-          });
-          return seriesCopy;
-        }
-        return data;
-      }
-    }
-    else {
-      if (data._noTemplate) {
-        return data._itemData;
-      } else if (data._itemData) {
-        itemCopy = JsonUtils.clone(data);
-        delete itemCopy._itemData;
+   static sanitizeData(data, type) {
+    const sanitizeNoTemplateItemData = (item) => {
+      if (item._itemData.taskId) {
+        // Specifically for Gantt with row data supplied and no task template,
+        // _itemData does not have the task's id prop (it has the taskId prop)
+        const itemCopy = Object.assign({}, item._itemData);
+        itemCopy.id = itemCopy.taskId;
+        delete itemCopy.taskId;
         return itemCopy;
+      }
+      return item._itemData;
+    };
+    const sanitizeItemData = (item) => {
+      const itemCopy = Object.assign({}, item);
+      delete itemCopy._itemData;
+      return itemCopy;
+    };
+    const isSeriesData = type === 'series' || type === 'row';
+    if (isSeriesData) {
+      const itemProp = type === 'series' ? 'items' : 'tasks';
+      const items = data[itemProp];
+      if (items.length > 0) {
+        const seriesCopy = Object.assign({}, data._noTemplate ? data._itemData : data);
+        if (items[0]._noTemplate) {
+          seriesCopy[itemProp] = data[itemProp].map(sanitizeNoTemplateItemData);
+        } else if (items[0]._itemData) {
+          seriesCopy[itemProp] = data[itemProp].map(sanitizeItemData);
+        }
+        return seriesCopy;
+      }
+    } else {
+      if (data._noTemplate) {
+        return sanitizeNoTemplateItemData(data);
+      } else if (data._itemData) {
+        return sanitizeItemData(data);
       }
     }
     return data;
@@ -481,7 +484,7 @@ class TimeComponent extends BaseComponent {
           event.wheelDeltaX = -wheelEvent.deltaX / TimeComponent.SCROLL_LINE_HEIGHT; // number of lines scrolled per mouse wheel click
       }
 
-      if (wheelDelta) { // if vertical mouse wheel amount is defined, non null, non zero 
+      if (wheelDelta) { // if vertical mouse wheel amount is defined, non null, non zero
         var compPagePos = this.getCtx().getStageAbsolutePosition();
         if (this._isVertical)
           var compLoc = event.pageY - compPagePos.y - this.getStartYOffset();

@@ -1287,10 +1287,11 @@ function coerceIsoString(value) {
 
 /**
  * Placed here to avoid duplicate code for ojdatepicker + ojtimepicker
- *
+ * @static
  * @ignore
  */
-function getImplicitDateTimeRangeValidator(options, converter, defaultStyleClass) {
+function getImplicitDateTimeRangeValidator(options, converter,
+  defaultStyleClass) {
   var translationKeys = {
     'oj-inputdatetime': 'datetime',
     'oj-inputtime': 'time',
@@ -1302,6 +1303,7 @@ function getImplicitDateTimeRangeValidator(options, converter, defaultStyleClass
     { category: 'messageDetail', entries: ['rangeUnderflow', 'rangeOverflow'] },
     { category: 'messageSummary', entries: ['rangeUnderflow', 'rangeOverflow'] }
   ];
+
   var dateTimeRangeOptions = {
     min: options.min,
     max: options.max,
@@ -1396,6 +1398,33 @@ function _getMetaData(dayMetaData, position, params) {
     return new IntlDateTimeConverter({ formatType: 'date', dateFormat: 'short' });
   }
   return new IntlDateTimeConverter({ day: '2-digit', month: '2-digit', year: _yearFormat });
+}
+
+/**
+ * @static
+ * @private
+ */
+  function _getConverterTimezone(converter) {
+  const converterOptions =
+    converter && converter.resolvedOptions ? converter.resolvedOptions() : null;
+  return converterOptions && converterOptions.timeZone ? converterOptions.timeZone : null;
+}
+
+/**
+ * This takes an isoDate and returns the iso date that is local to the place of the timezone,
+ * but without the timezone.
+ * This is useful when you want to show a date of the place in the timezone, like right now
+ * in Hong Kong it may be 1/12/2021 2AM.
+ * @static
+ * @private
+ */
+  function _convertIsoStrFormatLocalWithTimezone(isoDate, converterTimeZone) {
+  // Set up a temporary converter to return an ISO string in converterOptions.timeZone timezone
+    const _localTZConverter = new IntlDateTimeConverter({
+      timeZone: converterTimeZone,
+      isoStrFormat: 'local'
+    });
+  return _localTZConverter.parse(isoDate);
 }
 
 /**
@@ -2183,10 +2212,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * @ojextension {_COPY_TO_INNER_ELEM: true}
      */
     /**
-     * The maximum selectable date, in ISO string format. For ojDatePicker, this should not contain
-     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
-     * is no maximum. min and max must be in the same ISO string format as value (local,
-     * zulu, or offset).
+     * The maximum selectable date, in ISO string format.
+     * <p>
+     * For ojDatePicker, this should be a local
+     * date and not contain a time portion in the ISO string so it can be compared with the value
+     * the user selects. value becomes a local date once the user interacts with the component.
+     * When set to null, there is no minimum.
+     * </p>
      *
      * @expose
      * @instance
@@ -2207,11 +2239,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * myInputDate.max = '2018-09-25';
      */
     /**
-     * The maximum selectable date, in ISO string format. For ojInputDate, this should not contain
-     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
-     * is no maximum. min and max must be in the same ISO string format as value (local,
-
-     * zulu, or offset).
+     * The maximum selectable date, in ISO string format. When set to null, there
+     * is no maximum. Since the value becomes a local date with no time once the
+     * user interacts with the component, min/max should be a local date with no time
+     * so they can be compared.
      *
      * @expose
      * @instance
@@ -2233,10 +2264,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     max: undefined,
 
     /**
-     * The minium selectable date, in ISO string format. For ojDatePicker, this should not contain
-     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
-     * is no minimum. min and max must be in the same ISO string format as value (local,
-     * zulu, or offset).
+     * The minimum selectable date, in ISO string format.
+     * <p> For ojDatePicker, this should be a local
+     * date and not contain a time portion in the ISO string so it can be compared with the value
+     * the user selects. value becomes a local date once the user interacts with the component.
+     * When set to null, there is no minimum.
+     * </p>
      *
      * @expose
      * @instance
@@ -2257,10 +2290,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * myInputDate.min = '2014-08-25';
      */
     /**
-     * The minimum selectable date, in ISO string format. For ojInputDate, this should not contain
-     * a time portion in the ISO string.  If it does, a warning is issued. When set to null, there
-     * is no minimum. min and max must be in the same ISO string format as value (local,
-     * zulu, or offset).
+     * The minimum selectable date, in ISO string format.
+     * <p>
+     * For oj-input-date, this should be a local
+     * date and not contain a time portion in the ISO string so it can be compared with the value
+     * the user selects. value becomes a local date once the user interacts with the component.
+     * When set to null, there is no minimum.
+     * </p>
      *
      * @expose
      * @instance
@@ -2627,8 +2663,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
      * If needed, use IntlConverterUtils.dateToLocalIsoDateString to convert a Date to
      * a local iso string that contains only the date to set as the initial value.
      * IntlConverterUtils.dateToLocalIsoDateString(new Date(2014, 1, 1)));
-
-     * If a time is provided in the ISOString value, a warning will be issued.
      * </p>
      *
      *
@@ -2825,9 +2859,9 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
   _ComponentCreate: function () {
     // verify that the options are set correctly. If they are not an error is thrown
     // and the component will not render.
-    IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
-                                                this.options.min,
-                                                this.options.max);
+    IntlConverterUtils._verifyValueMinMax(this.options.value,
+                                          this.options.min,
+                                          this.options.max);
 
     // Create all the default converters we need first
     this._CreateConverters();
@@ -2885,11 +2919,21 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     // passing in true to indicate that we want to show the popup of showOn is set
     // to 'focus'. If this isn't a custom element, we don't want to override the
     // focus functions.
+    // Also, when readonly is true, we just want to focus on the readonly element,
+    // as the popup isn't an issue.
     if (this._IsCustomElement()) {
       let comp = this._getRootElement();
-      let inputElem = this.GetFocusElement();
-      comp.focus = function () {
-        inputElem.focus(true);
+      // We need the input element here regardless of readonly state.
+      let inputElem = this._GetContentElement()[0];
+      comp.focus = () => {
+        const focusElem = this.GetFocusElement();
+        // we only want to call .focus(true) if it's the input elem that we added
+        // the custom focus callback on.
+        if (focusElem === inputElem) {
+          inputElem.focus(true);
+        } else {
+          focusElem.focus();
+        }
       };
 
       let proto = Object.getPrototypeOf(inputElem);
@@ -3034,9 +3078,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         // eslint-disable-next-line no-param-reassign
         value = null;
       }
-      IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
-                                                  this.options.min,
-                                                  this.options.max);
 
       retVal = this._super(key, value, flags);
       this._setCurrentDate(value);
@@ -3068,9 +3109,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (key === 'disabled') {
       this._disableEnable(value);
     } else if (key === 'max' || key === 'min') {
-      IntlConverterUtils._verifyValueMinMaxNoTime(this.options.value,
-                                                  this.options.min,
-                                                  this.options.max);
       // since validators are immutable, they will contain min + max as local values. B/c of this will need to recreate
       this._setValidatorOption('dateTimeRange',
         this._createDateTimeRangeValidator(this._GetConverter()));
@@ -4019,37 +4057,20 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _getCurrentDate: function (converter = this._GetConverter()) {
-    let date = new Date();
-
-    const converterOptions =
-      converter && converter.resolvedOptions ? converter.resolvedOptions() : null;
-    if (converterOptions && converterOptions.timeZone) {
+    const date = new Date();
+    const timeZone = _getConverterTimezone(converter);
+    if (timeZone) {
       // toISOString,
       // A string representing the given date in the ISO 8601 format according to universal time
       // so this will always end in a Z.
       const isoZuluOfCurrentDate = date.toISOString();
-      const localToTheTimezonePlaceWithNoTimezone =
-        this._convertIsoStrFormatLocalWithTimezone(isoZuluOfCurrentDate, converterOptions.timeZone);
-      date = IntlConverterUtils.isoToLocalDate(localToTheTimezonePlaceWithNoTimezone);
+      const localToTheTimezonePlaceWithNoTimezone = _convertIsoStrFormatLocalWithTimezone(
+        isoZuluOfCurrentDate,
+        timeZone
+      );
+      return IntlConverterUtils.isoToLocalDate(localToTheTimezonePlaceWithNoTimezone);
     }
     return date;
-  },
-
-  /**
-   * This takes an isoDate and returns the iso date that is local to the place of the timezone,
-   * but without the timezone.
-   * This is useful when you want to show a date of the place in the timezone, like right now
-   * in Hong Kong it may be 1/12/2021 2AM.
-   *
-   * @private
-   */
-  _convertIsoStrFormatLocalWithTimezone(isoDate, converterTimeZone) {
-    // Set up a temporary converter to return an ISO string in converterOptions.timeZone timezone
-    if (this._localTZConverter == null) {
-      this._localTZConverter =
-        new IntlDateTimeConverter({ timeZone: converterTimeZone, isoStrFormat: 'local' });
-    }
-    return this._localTZConverter.parse(isoDate);
   },
 
   /**
@@ -4060,20 +4081,12 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _calculateValueDateIso: function (converter) {
-    let valueDateIso;
     // dateIso: this.options.value if it exists
-    // or currentDate from the perspective of the timezone but with no timezone info, if any,
+    // or currentDate from the perspective of the local system's timezone but with no timezone info, if any,
     // with no time portion filtered back through IntlConverterUtils.dateToLocalIso()
     const dateIso = this._getDateIso();
-    const converterOptions =
-    converter && converter.resolvedOptions ? converter.resolvedOptions() : null;
-    if (converterOptions && converterOptions.timeZone) {
-      valueDateIso =
-      this._convertIsoStrFormatLocalWithTimezone(dateIso, converterOptions.timeZone);
-    } else {
-      valueDateIso = dateIso;
-    }
-    return valueDateIso;
+    const timeZone = _getConverterTimezone(converter);
+    return timeZone ? _convertIsoStrFormatLocalWithTimezone(dateIso, timeZone) : dateIso;
   },
 
   /**
@@ -4622,7 +4635,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       if (!(converter instanceof Promise)) {
         // TODO: need to fix this for when converters return Promises.
         // All this does is check that the parsed minDateIso is an isoString.
-        // I'm not sure this is necessary
+        // I'm not sure this is necessary. It is necessary to get it in the
+        // same format as the value.
         minDateIso = converter.parse(minDateIso);
         minDateParams = this._validateDatetime(minDateIso, dateParams, true);
       }
@@ -5679,7 +5693,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     if (this.options.min != null || this.options.max != null) {
       var rangeValidator = getImplicitDateTimeRangeValidator(this.options, this._GetConverter(),
-        this._GetDefaultStyleClass());
+      this._GetDefaultStyleClass());
       this._datePickerDefaultValidators.dateTimeRange = rangeValidator;
     }
 
@@ -9057,11 +9071,18 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       // passing in true to indicate that we want to show the popup of showOn is set
       // to 'focus'.  If this isn't a custom element, we don't want to override the
       // focus functions.
+      // Also, when readonly is true, we just want to focus on the readonly element,
+      // as the popup isn't an issue.
       if (this._IsCustomElement()) {
         let comp = this._getRootElement();
-        let inputElem = this.GetFocusElement();
-        comp.focus = function () {
-          inputElem.focus(true);
+        // We need the input element here regardless of readonly state.
+        let inputElem = this._GetContentElement()[0];
+        comp.focus = () => {
+          if (this.options.readOnly === true) {
+            this.GetFocusElement().focus(); // This should be the readonly focus element.
+          } else {
+            inputElem.focus(true);
+          }
         };
 
         let proto = Object.getPrototypeOf(inputElem);
@@ -11522,6 +11543,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     /**
      * The maximum selectable datetime, in ISO string format. When set to null, there is no maximum.
+     * <p>So it can be properly compared with the value the user selects, this should be in the same format
+     * as the converter's isoStrFormat since the value the user selects is parsed with the converter. By default, value is a local isostring for oj-date-time-picker.
+     * </p>
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">max</code> attribute:</caption>
      * &lt;oj-date-time-picker max='2014-09-25T13:30:00.000-08:00'&gt;&lt;/oj-date-time-picker&gt;
@@ -11536,7 +11560,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      */
     /**
      * The maximum selectable datetime, in ISO string format. When set to null, there is no maximum.
-     *
+     * <p>So it can be properly compared with the value the user selects, this should be in the same format
+     * as the converter's isoStrFormat. By default, value is a local isostring for oj-input-date-time.
+     * </p>
      * @example <caption>Initialize the element with the <code class="prettyprint">max</code> attribute:</caption>
      * &lt;oj-input-date-time max='2014-09-25T13:30:00.000-08:00'&gt;&lt;/oj-input-date-time&gt;
      *
@@ -11551,6 +11577,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     /**
      * The minimum selectable datetime, in ISO string format. When set to null, there is no minimum.
+     * <p>So it can be properly compared with the value the user selects, this should be in the same format
+     * as the converter's isoStrFormat. By default, value is a local isostring for oj-date-time-picker.
+     * </p>
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">min</code> attribute:</caption>
      * &lt;oj-date-time-picker min='2014-08-25T08:00:00.000-08:00'&gt;&lt;/oj-date-time-picker&gt;
@@ -11565,6 +11594,9 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
      */
     /**
      * The minimum selectable datetime, in ISO string format. When set to null, there is no minimum.
+     * <p>So it can be properly compared with the value the user selects, this should be in the same format
+     * as the converter's isoStrFormat since the value the user selects is parsed with the converter. By default, value is a local isostring for oj-input-date-time.
+     * </p>
      *
      * @example <caption>Initialize the element with the <code class="prettyprint">min</code> attribute:</caption>
      * &lt;oj-input-date-time min='2014-08-25T08:00:00.000-08:00'&gt;&lt;/oj-input-date-time&gt;

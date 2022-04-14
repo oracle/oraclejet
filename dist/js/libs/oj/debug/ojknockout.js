@@ -3549,6 +3549,7 @@ define(['jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojcore', 'ojs/ojlogger', '
       this.indexesToDelete = [];
       this.rendering_queued = false;
       this.pendingDeletes = [];
+      this._noDataNodes = null;
       ko.virtualElements.emptyNode(this.element);
       if (changedData.fetchFirst) {
         // refetch data and recreate the child nodes

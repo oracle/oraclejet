@@ -1848,6 +1848,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered immediately before any node in the sunburst is expanded.
        * @memberof oj.ojSunburst
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-expand event has been deprecated.  Lazy loading of data can be done through the data provider.'}
        */
         beforeExpand: null,
       /**
@@ -1865,6 +1866,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered when a node has been expanded.
        * @memberof oj.ojSunburst
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'The oj-expand event has been deprecated.  Use on-expanded-changed instead.'}
        */
         expand: null,
       /**
@@ -1882,6 +1884,7 @@ var __oj_sunburst_node_metadata =
        * @ojshortdesc Triggered immediately before any container node in the sunburst is collapsed.
        * @memberof oj.ojSunburst
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'The oj-before-collapse event has been deprecated.  Lazy loading of data can be done through the data provider.'}
        */
         beforeCollapse: null,
       /**
@@ -1898,6 +1901,7 @@ var __oj_sunburst_node_metadata =
        * @event
        * @memberof oj.ojSunburst
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'The oj-collapse event has been deprecated.  Use on-expanded-changed instead.'}
        */
         collapse: null
       },

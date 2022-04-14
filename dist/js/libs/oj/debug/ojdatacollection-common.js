@@ -28,11 +28,6 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   /**
    * @private
    */
-  DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY = "input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex='-1'])";
-
-  /**
-   * @private
-   */
   DataCollectionUtils._FOCUSABLE_ELEMENTS_TAG = ['input', 'select', 'button', 'a', 'textarea', 'object'];
 
   /**
@@ -107,21 +102,13 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   };
 
   /**
-   * Finds all the focusable elements in a node including ones with tabmod on them (disabled by us)
+   * Finds all the actionable elements in a node including ones with tabmod on them (disabled by us)
    * @param {Element} element
    * @return {Element[]} An array of the enabled elements
    * @private
    */
-  DataCollectionUtils.getFocusableElementsIncludingDisabled = function (element) {
-    var inputElems = [];
-    let nodes = element.querySelectorAll(DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY + ',[' + DataCollectionUtils._DATA_OJ_TABMOD + ']');
-    for (var i = 0; i < nodes.length; i++) {
-      var elem = nodes[i];
-      if (!elem.disabled && elem.style.display !== 'none') {
-        inputElems.push(elem);
-      }
-    }
-    return inputElems;
+  DataCollectionUtils.getActionableElementsInNode = function (element) {
+    return ojkeyboardfocusUtils.getActionableElementsInNode(element);
   };
 
   /**
@@ -780,9 +767,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   const disableAllFocusableElements = DataCollectionUtils.disableAllFocusableElements;
   const disableDefaultBrowserStyling = DataCollectionUtils.disableDefaultBrowserStyling;
   const enableAllFocusableElements = DataCollectionUtils.enableAllFocusableElements;
+  const getActionableElementsInNode = DataCollectionUtils.getActionableElementsInNode;
   const getAddEventKeysResult = DataCollectionUtils.getAddEventKeysResult;
   const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
-  const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
   const isElementOrAncestorFocusable = DataCollectionUtils.isElementOrAncestorFocusable;
   const isIterateAfterDoneNotAllowed = DataCollectionUtils.isIterateAfterDoneNotAllowed;
   const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
@@ -826,11 +813,11 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojdomutils', 'ojs/ojlogger', 'ojs/ojk
   exports.disableDefaultBrowserStyling = disableDefaultBrowserStyling;
   exports.disableElement = disableElement;
   exports.enableAllFocusableElements = enableAllFocusableElements;
+  exports.getActionableElementsInNode = getActionableElementsInNode;
   exports.getAddEventKeysResult = getAddEventKeysResult;
   exports.getDefaultScrollBarWidth = getDefaultScrollBarWidth;
   exports.getEventDetail = getEventDetail;
   exports.getFocusableElementsInNode = getFocusableElementsInNode;
-  exports.getFocusableElementsIncludingDisabled = getFocusableElementsIncludingDisabled;
   exports.getLogicalChildPopup = getLogicalChildPopup;
   exports.getNoJQFocusHandlers = getNoJQFocusHandlers;
   exports.handleActionablePrevTab = handleActionablePrevTab;

@@ -13,6 +13,7 @@ export namespace oj {
     let disableElement: any;
     let enableAllFocusableElements: any;
     let fromCollapsible: any;
+    let getActionableElementsInNode: any;
     let getFocusableElementsInNode: any;
     let getLogicalChildPopup: any;
     let isActionableElement: any;

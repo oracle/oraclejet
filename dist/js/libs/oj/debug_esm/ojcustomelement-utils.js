@@ -803,8 +803,8 @@ const fromSymbolizedValue = (value) => {
     return value;
 };
 const convertEmptyStringToUndefined = (element, propertyMeta, value) => {
-    const elementState = CustomElementUtils.getElementState(element);
-    if (elementState.getBindingProviderType() === 'preact') {
+    if (!element ||
+        CustomElementUtils.getElementState(element).getBindingProviderType() === 'preact') {
         const types = ElementUtils.getSupportedTypes(propertyMeta.type);
         if (!types.string || propertyMeta.enumValues) {
             return undefined;

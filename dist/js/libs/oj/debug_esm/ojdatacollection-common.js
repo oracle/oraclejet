@@ -8,7 +8,7 @@
 import oj from 'ojs/ojcore-base';
 import { getNoJQFocusHandlers as getNoJQFocusHandlers$1 } from 'ojs/ojdomutils';
 import { error } from 'ojs/ojlogger';
-import { getFocusableElementsInNode as getFocusableElementsInNode$1, checkVisibility, disableElement as disableElement$1, disableAllFocusableElements as disableAllFocusableElements$1, enableAllFocusableElements as enableAllFocusableElements$1, getLogicalChildPopup as getLogicalChildPopup$1 } from 'ojs/ojkeyboardfocus-utils';
+import { getFocusableElementsInNode as getFocusableElementsInNode$1, checkVisibility, disableElement as disableElement$1, disableAllFocusableElements as disableAllFocusableElements$1, enableAllFocusableElements as enableAllFocusableElements$1, getActionableElementsInNode as getActionableElementsInNode$1, getLogicalChildPopup as getLogicalChildPopup$1 } from 'ojs/ojkeyboardfocus-utils';
 
 /**
  * This class contains utility methods used by the data collection components (DataGrid, Listview, and Table).
@@ -25,11 +25,6 @@ DataCollectionUtils._TAB_INDEX = 'tabIndex';
  * @private
  */
 DataCollectionUtils._DATA_OJ_TABMOD = 'data-oj-tabmod';
-
-/**
- * @private
- */
-DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY = "input, select, button, a[href], textarea, object, [tabIndex]:not([tabIndex='-1'])";
 
 /**
  * @private
@@ -108,21 +103,13 @@ DataCollectionUtils.isFromDefaultSelector = function (event) {
 };
 
 /**
- * Finds all the focusable elements in a node including ones with tabmod on them (disabled by us)
+ * Finds all the actionable elements in a node including ones with tabmod on them (disabled by us)
  * @param {Element} element
  * @return {Element[]} An array of the enabled elements
  * @private
  */
-DataCollectionUtils.getFocusableElementsIncludingDisabled = function (element) {
-  var inputElems = [];
-  let nodes = element.querySelectorAll(DataCollectionUtils._FOCUSABLE_ELEMENTS_QUERY + ',[' + DataCollectionUtils._DATA_OJ_TABMOD + ']');
-  for (var i = 0; i < nodes.length; i++) {
-    var elem = nodes[i];
-    if (!elem.disabled && elem.style.display !== 'none') {
-      inputElems.push(elem);
-    }
-  }
-  return inputElems;
+DataCollectionUtils.getActionableElementsInNode = function (element) {
+  return getActionableElementsInNode$1(element);
 };
 
 /**
@@ -781,9 +768,9 @@ const disableElement = DataCollectionUtils.disableElement;
 const disableAllFocusableElements = DataCollectionUtils.disableAllFocusableElements;
 const disableDefaultBrowserStyling = DataCollectionUtils.disableDefaultBrowserStyling;
 const enableAllFocusableElements = DataCollectionUtils.enableAllFocusableElements;
+const getActionableElementsInNode = DataCollectionUtils.getActionableElementsInNode;
 const getAddEventKeysResult = DataCollectionUtils.getAddEventKeysResult;
 const getDefaultScrollBarWidth = DataCollectionUtils.getDefaultScrollBarWidth;
-const getFocusableElementsIncludingDisabled = DataCollectionUtils.getFocusableElementsIncludingDisabled;
 const isElementOrAncestorFocusable = DataCollectionUtils.isElementOrAncestorFocusable;
 const isIterateAfterDoneNotAllowed = DataCollectionUtils.isIterateAfterDoneNotAllowed;
 const getFocusableElementsInNode = DataCollectionUtils.getFocusableElementsInNode;
@@ -815,4 +802,4 @@ const isElementInScrollerBounds = DataCollectionUtils.isElementInScrollerBounds;
 const getEventDetail = DataCollectionUtils.getEventDetail;
 const isRequestIdleCallbackSupported = DataCollectionUtils.isRequestIdleCallbackSupported;
 
-export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getAddEventKeysResult, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isElementInScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFromDefaultSelector, isHomeKeyEvent, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSpaceBarKeyEvent, isTabKeyEvent };
+export { CHECKVIEWPORT_THRESHOLD, KEYBOARD_KEYS, applyMergedInlineStyles, applyStyleObj, areKeySetsEqual, calculateOffsetTop, containsKey, convertStringToStyleObj, disableAllFocusableElements, disableDefaultBrowserStyling, disableElement, enableAllFocusableElements, getActionableElementsInNode, getAddEventKeysResult, getDefaultScrollBarWidth, getEventDetail, getFocusableElementsInNode, getLogicalChildPopup, getNoJQFocusHandlers, handleActionablePrevTab, handleActionableTab, isArrowDownKeyEvent, isArrowLeftKeyEvent, isArrowRightKeyEvent, isArrowUpKeyEvent, isClickthroughDisabled, isElementInScrollerBounds, isElementOrAncestorFocusable, isEndKeyEvent, isEnterKeyEvent, isEscapeKeyEvent, isEventClickthroughDisabled, isF2KeyEvent, isFromDefaultSelector, isHomeKeyEvent, isIterateAfterDoneNotAllowed, isLetterAKeyEvent, isMobileTouchDevice, isNumberFiveKeyEvent, isRequestIdleCallbackSupported, isSpaceBarKeyEvent, isTabKeyEvent };

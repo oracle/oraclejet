@@ -5,16 +5,16 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojlabel', 'ojs/ojthemeutils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvalidator-required', 'ojs/ojlabelledbyutils', 'ojs/ojtranslation', 'ojs/ojmessaging', 'ojs/ojconverterutils', 'ojs/ojvalidation-error', 'ojs/ojpopup', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojdomutils', 'ojs/ojanimation', 'ojs/ojfocusutils'], function (exports, oj, Components, $, ojlabel, ojthemeutils, Context, Logger, RequiredValidator, LabelledByUtils, Translations, Message, ConverterUtils, ojvalidationError, ojpopup, Hammer, ojjqueryHammer, DomUtils, AnimationUtils, FocusUtils) { 'use strict';
+define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojlabel', 'ojs/ojthemeutils', 'ojs/ojfocusutils', 'ojs/ojcontext', 'ojs/ojlogger', 'ojs/ojvalidator-required', 'ojs/ojlabelledbyutils', 'ojs/ojtranslation', 'ojs/ojmessaging', 'ojs/ojconverterutils', 'ojs/ojvalidation-error', 'ojs/ojpopup', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojdomutils', 'ojs/ojanimation'], function (exports, oj, Components, $, ojlabel, ojthemeutils, FocusUtils, Context, Logger, RequiredValidator, LabelledByUtils, Translations, Message, ConverterUtils, ojvalidationError, ojpopup, Hammer, ojjqueryHammer, DomUtils, AnimationUtils) { 'use strict';
 
   oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
   $ = $ && Object.prototype.hasOwnProperty.call($, 'default') ? $['default'] : $;
+  FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
   Context = Context && Object.prototype.hasOwnProperty.call(Context, 'default') ? Context['default'] : Context;
   RequiredValidator = RequiredValidator && Object.prototype.hasOwnProperty.call(RequiredValidator, 'default') ? RequiredValidator['default'] : RequiredValidator;
   LabelledByUtils = LabelledByUtils && Object.prototype.hasOwnProperty.call(LabelledByUtils, 'default') ? LabelledByUtils['default'] : LabelledByUtils;
   Message = Message && Object.prototype.hasOwnProperty.call(Message, 'default') ? Message['default'] : Message;
   ConverterUtils = ConverterUtils && Object.prototype.hasOwnProperty.call(ConverterUtils, 'default') ? ConverterUtils['default'] : ConverterUtils;
-  FocusUtils = FocusUtils && Object.prototype.hasOwnProperty.call(FocusUtils, 'default') ? FocusUtils['default'] : FocusUtils;
 
   /**
    * Base class for rendering the 'inside' labels. This is so InsideLabelStrategy
@@ -3069,6 +3069,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             this._placeholderOptionChanged(flags);
             break;
 
+          case 'readOnly':
+            if (this._retainFocusOnReadonlyChange) {
+              // This setTimeout call is needed to allow the dom to update before we
+              // get the focus element (or the element will still be hidden).
+              setTimeout(() => {
+                this.GetFocusElement().focus();
+                if (this._resolveBusyStateFocusRestore) {
+                  this._resolveBusyStateFocusRestore();
+                  delete this._resolveBusyStateFocusRestore;
+                }
+              }, 0);
+            }
+            break;
+
           case 'title':
             // Ignore title attribute for custom element components.
             if (!this._IsCustomElement()) {
@@ -3228,6 +3242,9 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
       },
 
       /**
+       * JET-48463 - If we are in readonly mode, we call _GetReadonlyFocusElement, and fall back to
+       * _GetContentElement()[0] if _GetReadonlyFocusElement happens to return null.
+       * If not readonly, we just return _GetContentElement()[0]
        * @memberof oj.editableValue
        * @instance
        * @override
@@ -3235,7 +3252,20 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
        * @since 5.0.0
        */
       GetFocusElement: function () {
-        return this._GetContentElement()[0];
+        return this.options.readOnly === true ?
+          this._GetReadonlyFocusElement() || this._GetContentElement()[0] :
+          this._GetContentElement()[0];
+      },
+
+      /**
+       * Returns the readonly focus element if there is a readonly specific element, otherwise null
+       * @memberof oj.editableValue
+       * @instance
+       * @protected
+       * @return {Element|null}
+       */
+      _GetReadonlyFocusElement: function () {
+        return this._getReadonlyDiv();
       },
 
       /**
@@ -3289,6 +3319,21 @@ define(['exports', 'ojs/ojcore-base', 'ojs/ojcomponentcore', 'jquery', 'ojs/ojla
             }
             break;
           case 'readOnly':
+            this._retainFocusOnReadonlyChange = FocusUtils.containsFocus(this.widget()[0]);
+            if (this._retainFocusOnReadonlyChange) {
+              if (!this._resolveBusyStateFocusRestore) {
+                var domElem = this.element[0];
+                var busyContext = Context.getContext(domElem).getBusyContext();
+                var description = 'Waiting for focus on the component ';
+
+                if (domElem && domElem.id) {
+                  description += `with id="${domElem.id}" `;
+                }
+                description += 'to be restored.';
+                this._resolveBusyStateFocusRestore =
+                  busyContext.addBusyState({ description: description });
+              }
+            }
             this._addRemoveOjReadOnlyClassOnLabel(document.getElementById(this.options.labelledBy),
               value);
             break;

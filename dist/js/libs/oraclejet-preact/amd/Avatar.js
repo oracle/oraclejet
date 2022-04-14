@@ -28,8 +28,8 @@ define(['exports', 'preact', '@oracle/oraclejet-preact/utils/classNames'], (func
     }
 
     const styles = {
-      base: "oj-avatar-base-bbeff63",
-      circle: "oj-avatar-circle-cahla5w"
+      base: "oj-avatar-base-h7wazt",
+      circle: "oj-avatar-circle-10ze69p"
     };
 
     const StyledAvatar = ({
@@ -45,7 +45,7 @@ define(['exports', 'preact', '@oracle/oraclejet-preact/utils/classNames'], (func
     };
 
     const patternStyles = {
-      base: "oj-avatar-base-bqeg596"
+      base: "oj-avatar-base-q328hp"
     };
 
     const StyledAvatarPattern = () => preact.h("div", {
@@ -53,7 +53,7 @@ define(['exports', 'preact', '@oracle/oraclejet-preact/utils/classNames'], (func
     });
 
     const contentStyles = {
-      base: "oj-avatar-base-b7kwii"
+      base: "oj-avatar-base-ehtq2q"
     };
 
     const StyledAvatarContent = ({

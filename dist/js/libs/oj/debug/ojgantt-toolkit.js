@@ -2975,20 +2975,37 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   };
 
   /**
+   * @override
+   */
+  DvtGanttTaskShape.prototype.setClassName = function(className) {
+    DvtGanttTaskShape.superclass.setClassName.call(this, className);
+    // If the task is highlighted, it would have the associated highlight CSS class applied.
+    // However, calls to setClassName blows away the highlight class.
+    // Add the highlight class if that's the case:
+    if (this._isHighlighted) {
+      this.highlight();
+    }
+  };
+
+  /**
    * "Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
    */
   DvtGanttTaskShape.prototype.highlight = function()
   {
-    dvt.ToolkitUtils.addClassName(this.getElem(), this._task.getGantt().GetStyleClass('taskHighlight'));
+    // Note this._elem needs to be used instead of this.getElem()
+    // to reference the Path shape element--in touch device, this.getElem() returns
+    // a <g> child group element rather than the shape element.
+    dvt.ToolkitUtils.addClassName(this._elem, this._task.getGantt().GetStyleClass('taskHighlight'));
     this._isHighlighted = true;
   };
 
   /**
-   * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
-   */
+  * "Un-Highights" the task, i.e. for when selection-behavior is "highlightDependencies".
+  */
   DvtGanttTaskShape.prototype.unhighlight = function()
   {
-    dvt.ToolkitUtils.removeClassName(this.getElem(), this._task.getGantt().GetStyleClass('taskHighlight'));
+    // See note in hightlight() method regarding this._elem vs this.getElem()
+    dvt.ToolkitUtils.removeClassName(this._elem, this._task.getGantt().GetStyleClass('taskHighlight'));
     this._isHighlighted = false;
   };
 
@@ -5194,22 +5211,6 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
         }]);
         timeCursor.show();
       }
-    }
-  };
-
-  /**
-   * override
-   */
-  DvtGanttEventManager.prototype.ProcessSelectionEventHelper = function (logicalObj, isMultiSelect) {
-    DvtGanttEventManager.superclass.ProcessSelectionEventHelper.call(this, logicalObj, isMultiSelect);
-
-    // Note that this is handled here because selectionHandler.getSelection() is up-to-date at this point.
-    if (this._gantt.getOptions().selectionBehavior === 'highlightDependencies') {
-      // 'highlightDependencies' behavior: highlight selected tasks and its dependencies,
-      // and dim out all other tasks.
-      var viewport = this._gantt.getViewPort();
-      var dataLayoutManager = this._gantt.getDataLayoutManager();
-      dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate');
     }
   };
 
@@ -9764,9 +9765,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    * Sets selection state
    * @param {boolean} selected
    * @param {boolean=} enforceDOMLayering Whether to re-layer the DOM, which can be expensive. Defaults to true.
+   * @param {boolean=} isInitial (optional) True if it is an initial selection.
    * @private
    */
-  DvtGanttTaskNode.prototype._setSelected = function(selected, enforceDOMLayering)
+  DvtGanttTaskNode.prototype._setSelected = function(selected, enforceDOMLayering, isInitial)
   {
     this._selected = selected;
 
@@ -9783,10 +9785,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
     this._gantt.setCurrentRow(this.getRowNode().getId());
 
+    const options = this._gantt.getOptions();
     // Update linear dependency line rendering, because the marker styling depends on task selection state
-    // Note selectionBehavior === 'highlightDependencies' is handled in DvtGanttEventManager.ProcessSelectionEventHelper
-    // because the selectionHandler.getSelection() is not updated yet at this point.
-    if (this._gantt.getOptions().dependencyLineShape === 'straight' && this._gantt.getOptions().selectionBehavior === 'normal') {
+    if (options.dependencyLineShape === 'straight') {
       var dependenciesContainer = this._gantt.getDependenciesContainer();
       var predecessorLines = this.getPredecessorDependencies();
       predecessorLines.forEach(function (line) {
@@ -9796,6 +9797,14 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
       successorLines.forEach(function (line) {
         line.render(dependenciesContainer, false);
       });
+    }
+
+    // When selection is triggered by user gesture, highlight the relevant dependencies
+    // See also Bug JIRA JET-49382
+    if (!isInitial && options.selectionBehavior === 'highlightDependencies') {
+      var viewport = this._gantt.getViewPort();
+      var dataLayoutManager = this._gantt.getDataLayoutManager();
+      dataLayoutManager.renderViewportDependencyLines(viewport, 'vpc_translate', selected ? this.getLayoutObject() : null);
     }
   };
 
@@ -9847,10 +9856,10 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
   /**
    * @override
    */
-  DvtGanttTaskNode.prototype.setSelected = function(selected)
+  DvtGanttTaskNode.prototype.setSelected = function(selected, isInitial)
   {
     // Set selection and ensure proper DOM layering
-    this._setSelected(selected, true);
+    this._setSelected(selected, true, isInitial);
   };
 
   /**
@@ -12584,20 +12593,27 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
 
   /**
    * Based on current task selection, return a set of tasks connected to them
-   * via dependencies.
+   * via dependencies. If targetTaskObj is specified, then that task is ensured to be included in the selection.
    * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+   * @param {Object=} targetTaskObj The target selected task. This should only be specified if the target task
+   *    is not in the selectionHandler's current selection (yet), i.e. this rendering is triggered by a task selection gesture
    * @returns {Object} { taskObjs: Array(taskObjs), dependencyObjs: Set(depObjs) }
    * @private
    */
-  DvtGanttDataLayoutManager.prototype._getSelectionDependencies = function (action) {
+  DvtGanttDataLayoutManager.prototype._getSelectionDependencies = function (action, targetTaskObj) {
     var idTaskObjMap = this._createIdObjMap(this._rowObjs, 'taskObjs');
-    var taskObjsSelected = [];
+    var taskObjsSelected;
     if (action === DvtGanttDataLayoutManager.VPC_REFRESH) {
       // If due to (re)-render, selectionHandler.getSelection() is not up to date at this point
       var selection = this._gantt.getOptions()['selection'];
       taskObjsSelected = selection.map(id => idTaskObjMap.get(id)).filter(taskObj => taskObj !== undefined);
     } else {
       taskObjsSelected = this._gantt.getSelectionHandler().getSelection().map(taskNode => taskNode.getLayoutObject());
+    }
+    if (targetTaskObj) {
+      // targetTaskObj is specified if this rendering is triggered by a task selection gesture
+      // and so it's not in the selectionHandler's current selection (yet)
+      taskObjsSelected.push(targetTaskObj);
     }
 
     var visitedTaskObjs = new Set();
@@ -12671,8 +12687,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
    * Renders viewport related dependency lines
    * @param {Object} viewport Object describing the viewport, of shape {minRowInd: number, maxRowInd: number, viewStartTime: number, viewEndTime: number}
    * @param {string} action The action that triggered the viewport change. One of the DvtGanttDataLayoutManager.VPC_X strings.
+   * @param {Object=} targetTaskObj The task that got selected by the user that triggered this call (optional)
    */
-   DvtGanttDataLayoutManager.prototype.renderViewportDependencyLines = function (viewport, action) {
+  DvtGanttDataLayoutManager.prototype.renderViewportDependencyLines = function (viewport, action, targetTaskObj) {
     var dependenciesContainer = this._gantt.getDependenciesContainer();
     if (dependenciesContainer) {
       dependenciesContainer.removeChildren();
@@ -12682,7 +12699,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-timecomponent', 'ojs/ojtimeax
     if (this._gantt.getOptions()['selectionBehavior'] === 'highlightDependencies') {
       // "highlightDependencies" selection behavior: only dependencies related to the selected tasks are shown
       // and dim all other tasks
-      var selectionDeps = this._getSelectionDependencies(action);
+      var selectionDeps = this._getSelectionDependencies(action, targetTaskObj);
       this.highlightTasks(selectionDeps.taskObjs);
       dependencyObjs = selectionDeps.dependencyObjs;
     } else {

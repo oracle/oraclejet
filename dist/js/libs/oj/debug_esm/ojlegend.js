@@ -801,8 +801,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" Legend items will be drillable.
+       * @ojvalue {string} "off" Legend items will not be drillable.
        * @default "off"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">drilling</code> attribute specified:</caption>
@@ -838,9 +838,9 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "center"
-       * @ojvalue {string} "end"
-       * @ojvalue {string} "start"
+       * @ojvalue {string} "center" Legend contents will be center aligned.
+       * @ojvalue {string} "end" Legend contents will be end aligned.
+       * @ojvalue {string} "start" Legend contents will be start aligned.
        * @default "start"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">halign</code> attribute specified:</caption>
@@ -888,8 +888,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" Legend can be used to initiate hide and show behavior on referenced data items.
+       * @ojvalue {string} "off" legend cannot be used to initiate hide and show behavior on referenced data items
        * @default "off"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">hide-and-show-behavior</code> attribute specified:</caption>
@@ -936,8 +936,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "dim"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "dim" Dimming hover behavior is applied.
+       * @ojvalue {string} "none" No hover behavior will be applied.
        * @default "none"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">hover-behavior</code> attribute specified:</caption>
@@ -983,8 +983,8 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "horizontal"
-       * @ojvalue {string} "vertical"
+       * @ojvalue {string} "horizontal" Legend items will be horizontally placed in available space.
+       * @ojvalue {string} "vertical" Legend items will be vertically stacked.
        * @default "vertical"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">orientation</code> attribute specified:</caption>
@@ -1006,9 +1006,10 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "off"
-       * @ojvalue {string} "asNeeded"
+       * @ojvalue {string} "off" The legend will not be scrollable.
+       * @ojvalue {string} "asNeeded" The legend will be scrollable if legend items cannot fit in the available space.
        * @default "asNeeded"
+       * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in Redwood theme and it is not recommended. As such, this attribute is deprecated.'}
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">scrolling</code> attribute specified:</caption>
        * &lt;oj-legend scrolling="off">&lt;/oj-legend>
@@ -1142,9 +1143,9 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
        * @memberof oj.ojLegend
        * @instance
        * @type {string=}
-       * @ojvalue {string} "middle"
-       * @ojvalue {string} "bottom"
-       * @ojvalue {string} "top"
+       * @ojvalue {string} "middle" The legend items will be middle aligned.
+       * @ojvalue {string} "bottom" The legend items will be bottom aligned.
+       * @ojvalue {string} "top" The legend items will be top aligned.
        * @default "top"
        *
        * @example <caption>Initialize the Legend with the <code class="prettyprint">valign</code> attribute specified:</caption>
@@ -1577,10 +1578,10 @@ setDefaultOptions({
  * @memberof! oj.ojLegendItem
  * @instance
  * @type {string=}
- * @ojvalue {string} "line"
- * @ojvalue {string} "lineWithMarker"
- * @ojvalue {string} "image"
- * @ojvalue {string} "marker"
+ * @ojvalue {string} "line" The legend symbol will be a line.
+ * @ojvalue {string} "lineWithMarker" The legend symbol will be a line and a marker.
+ * @ojvalue {string} "image" The legend symbol will be an image.
+ * @ojvalue {string} "marker" The legend symbol will be a marker.
  * @default "marker"
  */
 /**
@@ -1618,19 +1619,19 @@ setDefaultOptions({
  * @memberof! oj.ojLegendItem
  * @instance
  * @type {string=}
- * @ojvalue {string} "smallChecker"
- * @ojvalue {string} "smallCrosshatch"
- * @ojvalue {string} "smallDiagonalLeft"
- * @ojvalue {string} "smallDiagonalRight"
- * @ojvalue {string} "smallDiamond"
- * @ojvalue {string} "smallTriangle"
- * @ojvalue {string} "largeChecker"
- * @ojvalue {string} "largeCrosshatch"
- * @ojvalue {string} "largeDiagonalLeft"
- * @ojvalue {string} "largeDiagonalRight"
- * @ojvalue {string} "largeDiamond"
- * @ojvalue {string} "largeTriangle"
- * @ojvalue {string} "none"
+ * @ojvalue {string} "smallChecker" Small checker pattern is applied to the data item.
+ * @ojvalue {string} "smallCrosshatch" Small cross hatch pattern is applied to the data item.
+ * @ojvalue {string} "smallDiagonalLeft" Small diagonal left pattern is applied to the data item.
+ * @ojvalue {string} "smallDiagonalRight" Small diagonal right pattern is applied to the data item.
+ * @ojvalue {string} "smallDiamond" Small diamond pattern is applied to the data item.
+ * @ojvalue {string} "smallTriangle" Small triangle pattern is applied to the data item.
+ * @ojvalue {string} "largeChecker" Large checker pattern is applied to the data item.
+ * @ojvalue {string} "largeCrosshatch" Large cross hatch pattern is applied to the data item.
+ * @ojvalue {string} "largeDiagonalLeft" Large diagonal left pattern is applied to the data item.
+ * @ojvalue {string} "largeDiagonalRight" Large diagonal right pattern is applied to the data item.
+ * @ojvalue {string} "largeDiamond" Large diamond pattern is applied to the data item.
+ * @ojvalue {string} "largeTriangle" Large triangle pattern is applied to the data item.
+ * @ojvalue {string} "none" No pattern is applied to data item fill.
  * @default "none"
  */
 /**
@@ -1640,9 +1641,9 @@ setDefaultOptions({
  * @memberof! oj.ojLegendItem
  * @instance
  * @type {string=}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
+ * @ojvalue {string} "dotted" Line will have dotted strokes.
+ * @ojvalue {string} "dashed" Line will have dashed strokes.
+ * @ojvalue {string} "solid" Line will have a solid stroke.
  * @default "solid"
  */
 /**
@@ -1723,8 +1724,8 @@ setDefaultOptions({
  * @memberof! oj.ojLegendItem
  * @instance
  * @type {string=}
- * @ojvalue {string} "hidden"
- * @ojvalue {string} "visible"
+ * @ojvalue {string} "hidden" Legend item will have a hollow symbol.
+ * @ojvalue {string} "visible" Legend item will be filled.
  * @default "visible"
  */
 /**
@@ -1735,9 +1736,9 @@ setDefaultOptions({
  * @ojshortdesc Specifies whether drilling is enabled on the legend item. See the Help documentation for more information.
  * @instance
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "inherit"
+ * @ojvalue {string} "on" The legend item will be drillable.
+ * @ojvalue {string} "off" The legend item will not be drillable.
+ * @ojvalue {string} "inherit" The drilling behavior is inherited from legend.
  * @default "inherit"
  */
 /**
@@ -1799,9 +1800,9 @@ setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {string=}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
+ * @ojvalue {string} "center" The section title will be center aligned.
+ * @ojvalue {string} "end" The section title will be end aligned.
+ * @ojvalue {string} "start" The section title will be start aligned.
  * @default "start"
  */
 /**
@@ -1822,7 +1823,7 @@ setDefaultOptions({
  * @memberof! oj.ojLegendSection
  * @instance
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
+ * @ojvalue {string} "on" The legend section will be collapsible.
+ * @ojvalue {string} "off" The legend section will not be collapsible.
  * @default "off"
  */

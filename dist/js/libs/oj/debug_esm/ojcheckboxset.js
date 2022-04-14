@@ -1177,11 +1177,7 @@ var __oj_checkboxset_metadata =
         }
 
         // if readonly, set tabindex on the wrapper
-        if (this.options.readOnly) {
-          let domElem = this.element[0];
-          let wrapperDom = domElem.querySelector('.oj-checkboxset-wrapper');
-          wrapperDom.setAttribute('tabindex', this._externalTabIndex);
-        }
+        this._updateReadonlyState();
         this._on(this._events);
         this._setup();
       },
@@ -1232,10 +1228,32 @@ var __oj_checkboxset_metadata =
    * @since 5.0.0
    */
       GetFocusElement: function () {
+        // JET-48463 - oj-table issue where focus is lost
+        // GetFocusElement() needs to return the correct readonly element
+        // If _GetReadonlyFocusElement() returns null, fallback to the
+        // enabled element logic.
+        if (this.options.readOnly === true) {
+          const readonlyFocusElement = this._GetReadonlyFocusElement();
+          if (readonlyFocusElement) {
+            return readonlyFocusElement;
+          }
+        }
         // We need :disabled here so that we don't try to focus on an element that isn't focusable.
         // :focusable doesn't work because this is called before the custom element is fully upgraded
         // and is still hidden in the DOM.
         return this._GetContentElement().not(':disabled').first()[0];
+      },
+      /**
+       * oj-checkboxset doesn't use .oj-text-field-readonly for the focusable readonly content,
+       * so we need to use a different selector.
+       * @memberof oj.ojCheckboxset
+       * @instance
+       * @override
+       * @protected
+       * @return {Element|null}
+       */
+      _GetReadonlyFocusElement: function () {
+        return this.widget()[0].querySelector('.oj-form-control-container');
       },
   /**
    * Sets the disabled option onto the dom.
@@ -2062,6 +2080,43 @@ var __oj_checkboxset_metadata =
 
         this.$checkboxes._ojRadioCheckbox('refreshDisabled'); // re-render disabled
       },
+
+      /**
+       * Updates the component's state based on whether or not it is in the readonly
+       * state.
+       * @private
+       * @memberof! oj.ojCheckboxSet
+       */
+       _updateReadonlyState: function () {
+        const wrapperDom = this.element[0].querySelector('.oj-checkboxset-wrapper');
+        if (this.options.readOnly) {
+          wrapperDom.setAttribute('tabindex', this._externalTabIndex);
+          this.element.addClass('oj-read-only');
+
+          // JET-49297 - reassess accessibility implementation of 'readonly' checkboxset
+          // In readonly mode, we will not have any checkbox input in the visible DOM. Thus,
+          // in this state it will just be showing generic text based on the value selected.
+          // So, we need to clean up the role along with the aria-labelledby attributes we added
+          // for that role to make things accessible.
+          this.element.removeAttr('role').removeAttr('aria-labelledby');
+          return;
+        }
+
+        // remove tabindex and role
+        wrapperDom.removeAttribute('tabindex');
+        this.element.removeClass('oj-read-only');
+
+        // JET-49297 - reassess accessibility implementation of 'readonly' checkboxset
+        // add back the role and aria attributes removed before
+        this.element.attr('role', 'group');
+        this._labelledByUpdatedForSet(
+          this.widget()[0].id,
+          null,
+          this.options.labelledBy,
+          this.widget()
+        );
+      },
+
   /**
    * @override
    * @private
@@ -2077,17 +2132,8 @@ var __oj_checkboxset_metadata =
             break;
           case 'readOnly':
             this.options.readOnly = !!value;
-            var wrapperDom = this.element[0].querySelector('.oj-checkboxset-wrapper');
             var val = this.options.value;
-            if (this.options.readOnly) {
-              wrapperDom.setAttribute('tabindex', this._externalTabIndex);
-              this.element.addClass('oj-read-only');
-            } else {
-              // remove tabindex and role
-              wrapperDom.removeAttribute('tabindex');
-              // remove oj-read-only class
-              this.element.removeClass('oj-read-only');
-            }
+            this._updateReadonlyState();
             this._ResetComponentState();
             // when toggle readonly to false, we need to check the initial set values.
             if (val != null) {

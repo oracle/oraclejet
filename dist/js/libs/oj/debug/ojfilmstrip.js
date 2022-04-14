@@ -1302,10 +1302,10 @@ var __oj_film_strip_metadata =
             Logger.warn(_WARNING_FILMSTRIP_EMPTY);
           }
 
-          if (isInit) {
-            DomUtils.addResizeListener(elem[0], this._handleResizeFunc,
-                _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
-          }
+          // register resize handler, note it has been previously unregistered
+          // in _destroyInternal() if isInit==false (JET-49032)
+          DomUtils.addResizeListener(elem[0], this._handleResizeFunc,
+              _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
         },
 
         /**

@@ -2728,9 +2728,9 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
      */
     _releaseResources: function () {
       this.component.element[0].removeEventListener('keydown', this.handleKeyDownCallback, true);
-      this.toucharea.removeEventListener('touchend', this._touchEndListener);
-      this.toucharea.removeEventListener('click', this._clickListener);
-      this.element[0].removeEventListener('keypress', this._keyPressListener);
+      this.toucharea.removeEventListener('touchend', this.handleTouchEndCallback);
+      this.toucharea.removeEventListener('click', this.handleClickCallback);
+      this.element[0].removeEventListener('keypress', this.handleKeyPressCallback);
 
       if (this.component._IsCustomElement()) {
         $(this.component.element).off('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
@@ -2779,9 +2779,14 @@ oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
       this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
       this.component.element[0].addEventListener('keydown', this.handleKeyDownCallback, true);
       if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
-        this.toucharea.addEventListener('touchend', this._touchEndListener.bind(this));
-        this.toucharea.addEventListener('click', this._clickListener.bind(this));
-        this.element[0].addEventListener('keypress', this._keyPressListener.bind(this));
+        this.handleTouchEndCallback = this._touchEndListener.bind(this);
+        this.toucharea.addEventListener('touchend', this.handleTouchEndCallback);
+
+        this.handleClickCallback = this._clickListener.bind(this);
+        this.toucharea.addEventListener('click', this.handleClickCallback);
+
+        this.handleKeyPressCallback = this._keyPressListener.bind(this);
+        this.element[0].addEventListener('keypress', this.handleKeyPressCallback);
 
         // listens for expand and collapse event from flattened datasource
         // this could be due to user clicks, keyboard shortcuts or programmatically

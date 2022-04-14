@@ -10,6 +10,7 @@ import { __GetWidgetConstructor, setDefaultOptions, createDynamicPropertyGetter,
 import $ from 'jquery';
 import 'ojs/ojlabel';
 import { parseJSONFromFontFamily } from 'ojs/ojthemeutils';
+import FocusUtils from 'ojs/ojfocusutils';
 import Context from 'ojs/ojcontext';
 import { error, info, warn } from 'ojs/ojlogger';
 import RequiredValidator from 'ojs/ojvalidator-required';
@@ -23,7 +24,6 @@ import { Press } from 'hammerjs';
 import 'ojs/ojjquery-hammer';
 import { isTouchSupported, isHTMLContent, cleanHtml, validateURL, makeFocusable } from 'ojs/ojdomutils';
 import { startAnimation } from 'ojs/ojanimation';
-import FocusUtils from 'ojs/ojfocusutils';
 
 /**
  * Base class for rendering the 'inside' labels. This is so InsideLabelStrategy
@@ -3078,6 +3078,20 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           this._placeholderOptionChanged(flags);
           break;
 
+        case 'readOnly':
+          if (this._retainFocusOnReadonlyChange) {
+            // This setTimeout call is needed to allow the dom to update before we
+            // get the focus element (or the element will still be hidden).
+            setTimeout(() => {
+              this.GetFocusElement().focus();
+              if (this._resolveBusyStateFocusRestore) {
+                this._resolveBusyStateFocusRestore();
+                delete this._resolveBusyStateFocusRestore;
+              }
+            }, 0);
+          }
+          break;
+
         case 'title':
           // Ignore title attribute for custom element components.
           if (!this._IsCustomElement()) {
@@ -3237,6 +3251,9 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
     },
 
     /**
+     * JET-48463 - If we are in readonly mode, we call _GetReadonlyFocusElement, and fall back to
+     * _GetContentElement()[0] if _GetReadonlyFocusElement happens to return null.
+     * If not readonly, we just return _GetContentElement()[0]
      * @memberof oj.editableValue
      * @instance
      * @override
@@ -3244,7 +3261,20 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @since 5.0.0
      */
     GetFocusElement: function () {
-      return this._GetContentElement()[0];
+      return this.options.readOnly === true ?
+        this._GetReadonlyFocusElement() || this._GetContentElement()[0] :
+        this._GetContentElement()[0];
+    },
+
+    /**
+     * Returns the readonly focus element if there is a readonly specific element, otherwise null
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {Element|null}
+     */
+    _GetReadonlyFocusElement: function () {
+      return this._getReadonlyDiv();
     },
 
     /**
@@ -3298,6 +3328,21 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           }
           break;
         case 'readOnly':
+          this._retainFocusOnReadonlyChange = FocusUtils.containsFocus(this.widget()[0]);
+          if (this._retainFocusOnReadonlyChange) {
+            if (!this._resolveBusyStateFocusRestore) {
+              var domElem = this.element[0];
+              var busyContext = Context.getContext(domElem).getBusyContext();
+              var description = 'Waiting for focus on the component ';
+
+              if (domElem && domElem.id) {
+                description += `with id="${domElem.id}" `;
+              }
+              description += 'to be restored.';
+              this._resolveBusyStateFocusRestore =
+                busyContext.addBusyState({ description: description });
+            }
+          }
           this._addRemoveOjReadOnlyClassOnLabel(document.getElementById(this.options.labelledBy),
             value);
           break;

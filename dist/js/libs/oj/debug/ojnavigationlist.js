@@ -5759,7 +5759,6 @@ var __oj_tab_bar_metadata =
     };
 
   const _ARIA_SELECTED = 'aria-selected';
-  const _ARIA_PRESSED = 'aria-pressed';
   const _OJ_DEFAULT$1 = 'oj-default';
 
   /**
@@ -5802,7 +5801,7 @@ var __oj_tab_bar_metadata =
 
   HorizontalNavListHandler.prototype.UpdateAriaPropertiesOnSelectedItem =
     function (elem, highlight) {
-      elem.attr(this._isTabBar() ? _ARIA_SELECTED : _ARIA_PRESSED, // @HTMLUpdateOK
+      elem.attr(_ARIA_SELECTED, // @HTMLUpdateOK
                 highlight ? 'true' : 'false');
     };
 
@@ -5851,21 +5850,12 @@ var __oj_tab_bar_metadata =
   // eslint-disable-next-line no-unused-vars
   HorizontalNavListHandler.prototype.ModifyListItem = function ($item, itemContent) {
     var focusableElement = this.m_widget.getSingleFocusableElement($item);
-    focusableElement.attr('role', this._isTabBar() ? 'tab' : 'button');
-    if (!this._isTabBar() && focusableElement[0].hasAttribute(_ARIA_SELECTED)) {
-      focusableElement.attr(_ARIA_PRESSED, 'false'); // @HTMLUpdateOK
-      focusableElement.removeAttr(_ARIA_SELECTED);
-    }
+    focusableElement.attr('role', 'tab');
   };
 
   HorizontalNavListHandler.prototype.BeforeRenderComplete = function () {
     var self = this;
-
-    if (this._isTabBar()) {
-      this.m_root.attr('role', 'tablist');
-    } else {
-      this.m_root.attr('role', 'toolbar');
-    }
+    this.m_root.attr('role', 'tablist');
     this.m_widget.element.attr('role', 'presentation');
 
     if (this.m_widget.GetOption('layout') === 'condense') {
@@ -5929,10 +5919,6 @@ var __oj_tab_bar_metadata =
 
   HorizontalNavListHandler.prototype.IsSelectable = function (item) {
     var itemSelectionMarkerAttr = _ARIA_SELECTED;
-
-    if (!this._isTabBar()) {
-      itemSelectionMarkerAttr = _ARIA_PRESSED;
-    }
     return (!(this.m_overflowMenuItem && this.m_overflowMenuItem[0] === $(item)[0]) &&
               this.m_widget.getFocusItem($(item))[0].hasAttribute(itemSelectionMarkerAttr));
   };
@@ -6310,7 +6296,7 @@ var __oj_tab_bar_metadata =
         .addClass(this.m_widget.getItemContentStyleClass());
       anchorElement.attr('role', 'button')
         .attr('aria-haspopup', 'true')
-        .attr(_ARIA_PRESSED, 'false') // @HTMLUpdateOK
+        .attr(_ARIA_SELECTED, 'false') // @HTMLUpdateOK
         .attr('tabindex', '-1')
         .attr('href', '#')
         .append(iconElement)// @HTMLUpdateOK constructed by component and not using string passed through any API

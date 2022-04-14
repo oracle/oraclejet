@@ -3293,22 +3293,13 @@ import { getDeviceRenderMode } from 'ojs/ojconfig';
     },
 
     _disableBodyOverflow: function () {
-      var body = $(document.body);
-      this._origBodyOverflow = {
-        x: body.css('overflow-x'),
-        y: body.css('overflow-y')
-      };
-      body.css('overflow-x', 'hidden');
-      body.css('overflow-y', 'hidden');
+      var body = document.body;
+      body.classList.add('oj-dialog-sheet-animating');
     },
 
     _restoreBodyOverflow: function () {
-      if (this._origBodyOverflow) {
-        var body = $(document.body);
-        body.css('overflow-x', this._origBodyOverflow.x);
-        body.css('overflow-y', this._origBodyOverflow.y);
-        this._origBodyOverflow = null;
-      }
+      var body = document.body;
+      body.classList.remove('oj-dialog-sheet-animating');
     },
 
     _destroyCloseButton: function () {

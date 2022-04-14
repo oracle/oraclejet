@@ -27,20 +27,29 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             this.startRef = preact.createRef();
             this.endWrapperRef = preact.createRef();
             this.endRef = preact.createRef();
+            this.bottomWrapperRef = preact.createRef();
+            this.bottomRef = preact.createRef();
+            this.middleSectionRef = preact.createRef();
             this.mainSectionRef = preact.createRef();
             this.startClosedWithEsc = false;
             this.endClosedWithEsc = false;
-            this.drawerResizeHandler = null;
+            this.bottomClosedWithEsc = false;
+            this.overlayDrawerResizeListener = null;
+            this.reflowDrawerResizeListener = null;
             this.handleResize = true;
             this.state = {
                 startOpened: this.props.startOpened,
                 endOpened: this.props.endOpened,
+                bottomOpened: this.props.bottomOpened,
                 startDisplay: this.props.startDisplay,
                 endDisplay: this.props.endDisplay,
+                bottomDisplay: this.props.bottomDisplay,
                 startShouldChangeDisplayMode: false,
                 endShouldChangeDisplayMode: false,
+                bottomShouldChangeDisplayMode: false,
                 startStateToChangeTo: null,
                 endStateToChangeTo: null,
+                bottomStateToChangeTo: null,
                 viewportResolvedDisplayMode: this.getViewportResolvedDisplayMode(),
                 lastlyOpenedDrawer: ojdrawerutils.DrawerConstants.stringStart
             };
@@ -57,6 +66,15 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                 return this.getDrawerResolvedDisplayMode(edge) === ojdrawerutils.DrawerConstants.stringReflow
                     ? this.getDrawerWrapperRef(edge)
                     : this.getDrawerRef(edge);
+            };
+            this.overlayDrawerResizeCallback = (edge) => {
+                const $drawerElement = $(this.getDrawerRef(edge).current);
+                $drawerElement.position(this.getDrawerPosition(edge));
+            };
+            this.reflowDrawerResizeCallback = (edge) => {
+                if ([ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].indexOf(edge) > -1) {
+                    this.setBottomOverlayDrawerWidth();
+                }
             };
             this.lockResizeListener = () => {
                 if (this.handleResize) {
@@ -81,11 +99,16 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                 if (this.handleResize) {
                     const prevViewportResolvedDisplayMode = this.state.viewportResolvedDisplayMode;
                     const nextViewportResolvedDisplayMode = this.getViewportResolvedDisplayMode();
+                    this.setBottomOverlayDrawerWidth();
                     let atLeastOneOverlayDrawerNeedsToClose = false;
                     const updatedState = {};
                     if (prevViewportResolvedDisplayMode !== nextViewportResolvedDisplayMode) {
                         this.lockResizeListener();
-                        [ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].forEach((edge) => {
+                        [
+                            ojdrawerutils.DrawerConstants.stringStart,
+                            ojdrawerutils.DrawerConstants.stringEnd,
+                            ojdrawerutils.DrawerConstants.stringBottom
+                        ].forEach((edge) => {
                             if (this.isDrawerOpened(edge) && this.state[this.edgeToDisplayName(edge)] === 'auto') {
                                 atLeastOneOverlayDrawerNeedsToClose = true;
                                 updatedState[this.edgeToShouldChangeDisplayMode(edge)] = true;
@@ -100,6 +123,20 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                     }
                 }
             };
+            this.getDrawerPosition = (edge) => {
+                const horizontal = edge === ojdrawerutils.DrawerConstants.stringBottom ? ojdrawerutils.DrawerConstants.stringStart : edge;
+                const vertical = edge === ojdrawerutils.DrawerConstants.stringBottom
+                    ? ojdrawerutils.DrawerConstants.stringBottom
+                    : ojdrawerutils.DrawerConstants.stringTop;
+                const pos = `${horizontal} ${vertical}`;
+                let position = {
+                    my: pos,
+                    at: pos,
+                    of: this.mainSectionRef.current,
+                    collision: 'none'
+                };
+                return oj.PositionUtils.normalizeHorizontalAlignment(position, ojdrawerutils.DrawerUtils.isRTL());
+            };
         }
         static getDerivedStateFromProps(props, state) {
             const derivedState = {};
@@ -111,10 +148,19 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                     return derivedState;
                 }
             }
-            const endStateToChangeTo = `${ojdrawerutils.DrawerConstants.stringEnd}${ojdrawerutils.DrawerConstants.stringStateToChangeTo}`;
-            if (state.endOpened && state[endStateToChangeTo] === null) {
+            if (state.endOpened) {
                 if (props.endDisplay !== state.endDisplay) {
-                    derivedState[endStateToChangeTo] = { endDisplay: props.endDisplay };
+                    derivedState[`${ojdrawerutils.DrawerConstants.stringEnd}${ojdrawerutils.DrawerConstants.stringStateToChangeTo}`] = {
+                        endDisplay: props.endDisplay
+                    };
+                    return derivedState;
+                }
+            }
+            if (state.bottomOpened) {
+                if (props.bottomDisplay !== state.bottomDisplay) {
+                    derivedState[`${ojdrawerutils.DrawerConstants.stringBottom}${ojdrawerutils.DrawerConstants.stringStateToChangeTo}`] = {
+                        bottomDisplay: props.bottomDisplay
+                    };
                     return derivedState;
                 }
             }
@@ -130,20 +176,32 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                     derivedState.lastlyOpenedDrawer = ojdrawerutils.DrawerConstants.stringEnd;
                 }
             }
+            if (props.bottomOpened !== state.bottomOpened) {
+                derivedState.bottomOpened = props.bottomOpened;
+                if (props.bottomOpened) {
+                    derivedState.lastlyOpenedDrawer = ojdrawerutils.DrawerConstants.stringBottom;
+                }
+            }
             if (props.startDisplay !== state.startDisplay) {
                 derivedState.startDisplay = props.startDisplay;
             }
             if (props.endDisplay !== state.endDisplay) {
                 derivedState.endDisplay = props.endDisplay;
             }
+            if (props.bottomDisplay !== state.bottomDisplay) {
+                derivedState.bottomDisplay = props.bottomDisplay;
+            }
             return Object.keys(derivedState).length === 0 ? null : derivedState;
         }
         render(props) {
             let startDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringStart);
             let endDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringEnd);
+            let bottomDrawer = this.getDrawer(ojdrawerutils.DrawerConstants.stringBottom);
             return (preact.h(ojvcomponent.Root, { ref: this.rootRef },
                 startDrawer,
-                preact.h("div", { ref: this.mainSectionRef, class: ojdrawerutils.DrawerConstants.mainContentSelector }, props.children),
+                preact.h("div", { ref: this.middleSectionRef, class: ojdrawerutils.DrawerConstants.middleSectionSelector },
+                    preact.h("div", { ref: this.mainSectionRef, class: ojdrawerutils.DrawerConstants.mainContentSelector }, props.children),
+                    bottomDrawer),
                 endDrawer));
         }
         getDrawer(edge) {
@@ -170,13 +228,34 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             return this[this.edgeToClosedWithEsc(edge)];
         }
         getDrawerWrapperRef(edge) {
-            return edge === ojdrawerutils.DrawerConstants.stringStart ? this.startWrapperRef : this.endWrapperRef;
+            switch (edge) {
+                case ojdrawerutils.DrawerConstants.stringStart:
+                    return this.startWrapperRef;
+                case ojdrawerutils.DrawerConstants.stringEnd:
+                    return this.endWrapperRef;
+                case ojdrawerutils.DrawerConstants.stringBottom:
+                    return this.bottomWrapperRef;
+            }
         }
         getDrawerRef(edge) {
-            return edge === ojdrawerutils.DrawerConstants.stringStart ? this.startRef : this.endRef;
+            switch (edge) {
+                case ojdrawerutils.DrawerConstants.stringStart:
+                    return this.startRef;
+                case ojdrawerutils.DrawerConstants.stringEnd:
+                    return this.endRef;
+                case ojdrawerutils.DrawerConstants.stringBottom:
+                    return this.bottomRef;
+            }
         }
         getDrawerContent(edge) {
-            return edge === ojdrawerutils.DrawerConstants.stringStart ? this.props.start : this.props.end;
+            switch (edge) {
+                case ojdrawerutils.DrawerConstants.stringStart:
+                    return this.props.start;
+                case ojdrawerutils.DrawerConstants.stringEnd:
+                    return this.props.end;
+                case ojdrawerutils.DrawerConstants.stringBottom:
+                    return this.props.bottom;
+            }
         }
         getDrawerWrapperStyleClasses(edge) {
             return (`${ojdrawerutils.DrawerConstants.stringOjDrawer}${ojdrawerutils.DrawerConstants.charDash}${ojdrawerutils.DrawerConstants.stringReflow}-wrapper` +
@@ -235,12 +314,15 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             return ojdrawerutils.DrawerConstants.stringFullOverlay;
         }
         selfClose(edge) {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e, _f;
             if (edge === ojdrawerutils.DrawerConstants.stringStart) {
                 (_b = (_a = this.props).onStartOpenedChanged) === null || _b === void 0 ? void 0 : _b.call(_a, false);
             }
             if (edge === ojdrawerutils.DrawerConstants.stringEnd) {
                 (_d = (_c = this.props).onEndOpenedChanged) === null || _d === void 0 ? void 0 : _d.call(_c, false);
+            }
+            if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
+                (_f = (_e = this.props).onBottomOpenedChanged) === null || _f === void 0 ? void 0 : _f.call(_e, false);
             }
         }
         setDrawerFocus(edge) {
@@ -269,14 +351,17 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
         componentDidMount() {
             this.startOpenedPrevState = this.props.startOpened;
             this.endOpenedPrevState = this.props.endOpened;
+            this.bottomOpenedPrevState = this.props.bottomOpened;
             window.addEventListener(ojdrawerutils.DrawerConstants.stringResize, () => {
                 this.resizeHandler();
             });
             if (DrawerLayout_1.defaultProps.startOpened != this.props.startOpened ||
-                DrawerLayout_1.defaultProps.endOpened != this.props.endOpened) {
+                DrawerLayout_1.defaultProps.endOpened != this.props.endOpened ||
+                DrawerLayout_1.defaultProps.bottomOpened != this.props.bottomOpened) {
                 const stateCopy = Object.assign({}, this.state);
                 stateCopy.startOpened = false;
                 stateCopy.endOpened = false;
+                stateCopy.bottomOpened = false;
                 this.handleComponentUpdate(stateCopy);
             }
         }
@@ -286,10 +371,14 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             });
         }
         handleComponentUpdate(prevState) {
-            const firstDrawerToOpen = this.state.lastlyOpenedDrawer === ojdrawerutils.DrawerConstants.stringStart
-                ? ojdrawerutils.DrawerConstants.stringEnd
-                : ojdrawerutils.DrawerConstants.stringStart;
-            this.openOrCloseDrawer(firstDrawerToOpen, prevState);
+            let sides = [
+                ojdrawerutils.DrawerConstants.stringStart,
+                ojdrawerutils.DrawerConstants.stringEnd,
+                ojdrawerutils.DrawerConstants.stringBottom
+            ];
+            sides = sides.filter((side) => side != this.state.lastlyOpenedDrawer);
+            this.openOrCloseDrawer(sides[0], prevState);
+            this.openOrCloseDrawer(sides[1], prevState);
             this.openOrCloseDrawer(this.state.lastlyOpenedDrawer, prevState);
         }
         openOrCloseDrawer(edge, prevState) {
@@ -313,7 +402,10 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             if (this.isDrawerOpened(edge) === false ||
                 this.shouldDrawerChangeDisplayMode(edge) ||
                 this.getStateToChangeTo(edge)) {
-                this.animateClose(edge).then(() => {
+                this.animateClose(edge)
+                    .then(() => {
+                    DomUtils.removeResizeListener(this.rootRef.current, this.reflowDrawerResizeListener);
+                    this.reflowDrawerResizeListener === null;
                     if (this.getStateToChangeTo(edge)) {
                         const updatedState = {};
                         const resetStateToChangeTo = {};
@@ -330,8 +422,14 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                     else {
                         if (!this.wasDrawerOpenedInPrevState(edge)) {
                             this.forceUpdate();
+                            setTimeout(() => {
+                                this.setBottomOverlayDrawerWidth();
+                            }, 0);
                         }
                     }
+                })
+                    .then(() => {
+                    this.setBottomOverlayDrawerWidth();
                 });
             }
             else {
@@ -339,7 +437,13 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                     if (prevState[this.edgeToStateOpenedName(edge)] === false ||
                         prevState[this.edgeToShouldChangeDisplayMode(edge)] ||
                         prevState[this.edgeToDisplayName(edge)] != this.state[this.edgeToDisplayName(edge)]) {
-                        this.animateOpen(edge);
+                        this.animateOpen(edge).then(() => {
+                            this.setBottomOverlayDrawerWidth();
+                            if (this.reflowDrawerResizeListener === null) {
+                                this.reflowDrawerResizeListener = this.reflowDrawerResizeCallback.bind(this, edge);
+                            }
+                            DomUtils.addResizeListener(this.getDrawerRef(edge).current, this.reflowDrawerResizeListener, 50, true);
+                        });
                     }
                 }
             }
@@ -418,7 +522,10 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                 [PSEvent.POPUP_AFTER_CLOSE]: () => this.afterCloseHandler(edge, prevState),
                 [PSEvent.POPUP_REFRESH]: () => {
                     $drawerElement.position(this.getDrawerPosition(edge));
-                    this.setOverlayDrawersHeight();
+                    if ([ojdrawerutils.DrawerConstants.stringStart, ojdrawerutils.DrawerConstants.stringEnd].indexOf(edge) > -1) {
+                        this.setStartEndOverlayDrawersHeight();
+                    }
+                    this.setBottomOverlayDrawerWidth();
                 }
             };
             return PSOptions;
@@ -427,28 +534,36 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
             const $drawerElement = PSOptions[PopupService.OPTION.POPUP];
             const position = PSOptions[PopupService.OPTION.POSITION];
+            if (edge === ojdrawerutils.DrawerConstants.stringBottom) {
+                this.setBottomOverlayDrawerWidth();
+            }
             $drawerElement.show();
             $drawerElement.position(position);
-            this.setOverlayDrawersHeight();
+            this.setStartEndOverlayDrawersHeight();
             return this.animateOpen(edge);
+        }
+        setBottomOverlayDrawerWidth() {
+            if (this.isDrawerOpened(ojdrawerutils.DrawerConstants.stringBottom) &&
+                this.getDrawerResolvedDisplayMode(ojdrawerutils.DrawerConstants.stringBottom) !=
+                    ojdrawerutils.DrawerConstants.stringReflow) {
+                const width = this.middleSectionRef.current.getBoundingClientRect().width;
+                this.bottomRef.current.style.width = `${width}px`;
+            }
         }
         afterOpenHandler(edge, prevState) {
             ojdrawerutils.DrawerUtils.enableBodyOverflow();
             this.handleFocus(prevState);
             const $drawerElement = $(this.getDrawerRef(edge).current);
             const status = ZOrderUtils.getStatus($drawerElement);
-            if (this.drawerResizeHandler === null) {
-                this.drawerResizeHandler = this.drawerResizeCallback.bind(this, $drawerElement, edge);
+            if (this.overlayDrawerResizeListener === null) {
+                this.overlayDrawerResizeListener = this.overlayDrawerResizeCallback.bind(this, edge);
             }
-            DomUtils.addResizeListener(this.getDrawerRef(edge).current, this.drawerResizeHandler, 0, true);
+            DomUtils.addResizeListener(this.getDrawerRef(edge).current, this.overlayDrawerResizeListener, 50, true);
             if (status === ZOrderUtils.STATUS.OPEN && !this.isDrawerOpened(edge)) {
                 const popupServiceInstance = PopupService.getInstance();
                 const popupServiceOptions = this.getPopupServiceOptions(edge, prevState);
                 popupServiceInstance.close(popupServiceOptions);
             }
-        }
-        drawerResizeCallback($drawerElement, edge) {
-            $drawerElement.position(this.getDrawerPosition(edge));
         }
         handleFocus(prevState) {
             if (this.state.startOpened && prevState.startOpened !== this.state.startOpened) {
@@ -457,10 +572,14 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
             if (this.state.endOpened && prevState.endOpened !== this.state.endOpened) {
                 this.setDrawerFocus(ojdrawerutils.DrawerConstants.stringEnd);
             }
+            if (this.state.bottomOpened && prevState.bottomOpened !== this.state.bottomOpened) {
+                this.setDrawerFocus(ojdrawerutils.DrawerConstants.stringBottom);
+            }
         }
         beforeCloseHandler(edge) {
             ojdrawerutils.DrawerUtils.disableBodyOverflow();
-            DomUtils.removeResizeListener(this.rootRef.current, this.drawerResizeHandler);
+            DomUtils.removeResizeListener(this.rootRef.current, this.overlayDrawerResizeListener);
+            this.overlayDrawerResizeListener === null;
             return this.animateClose(edge);
         }
         afterCloseHandler(edge, prevState) {
@@ -495,35 +614,27 @@ define(['exports', 'ojs/ojvcomponent', 'preact', 'jquery', 'ojs/ojanimation', 'o
                 this.forceUpdate();
             }
         }
-        getDrawerPosition(edge) {
-            const pos = `${edge} top`;
-            let position = {
-                my: pos,
-                at: pos,
-                of: this.rootRef.current,
-                collision: 'none'
-            };
-            return oj.PositionUtils.normalizeHorizontalAlignment(position, ojdrawerutils.DrawerUtils.isRTL());
-        }
-        setOverlayDrawersHeight() {
-            const mainContentHeight = ojdrawerutils.DrawerUtils.getElementHeight(this.mainSectionRef.current) + 'px';
+        setStartEndOverlayDrawersHeight() {
+            const middleSectionHeight = ojdrawerutils.DrawerUtils.getElementHeight(this.middleSectionRef.current) + 'px';
             const startDrawerElement = this.startRef.current;
             if (startDrawerElement) {
-                startDrawerElement.style.height = mainContentHeight;
+                startDrawerElement.style.height = middleSectionHeight;
             }
             const endDrawerElement = this.endRef.current;
             if (endDrawerElement) {
-                endDrawerElement.style.height = mainContentHeight;
+                endDrawerElement.style.height = middleSectionHeight;
             }
         }
     };
     exports.DrawerLayout.defaultProps = {
         startOpened: false,
         endOpened: false,
+        bottomOpened: false,
         startDisplay: 'auto',
-        endDisplay: 'auto'
+        endDisplay: 'auto',
+        bottomDisplay: 'auto'
     };
-    exports.DrawerLayout.metadata = { "slots": { "": {}, "start": {}, "end": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "endDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
+    exports.DrawerLayout.metadata = { "slots": { "": {}, "start": {}, "end": {}, "bottom": {} }, "properties": { "startOpened": { "type": "boolean", "writeback": true }, "endOpened": { "type": "boolean", "writeback": true }, "bottomOpened": { "type": "boolean", "writeback": true }, "startDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "endDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] }, "bottomDisplay": { "type": "string", "enumValues": ["reflow", "overlay", "auto"] } }, "extension": { "_WRITEBACK_PROPS": ["startOpened", "endOpened", "bottomOpened"], "_READ_ONLY_PROPS": [], "_OBSERVED_GLOBAL_PROPS": ["role"] } };
     exports.DrawerLayout = DrawerLayout_1 = __decorate([
         ojvcomponent.customElement('oj-drawer-layout')
     ], exports.DrawerLayout);

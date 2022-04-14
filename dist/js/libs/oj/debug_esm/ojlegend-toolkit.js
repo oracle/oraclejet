@@ -95,7 +95,7 @@ class DvtLegendObjPeer {
       for (var i = 0; i < this._displayables.length; i++) {
         this._displayables[i].setCursor(SelectionEffectUtils.getSelectingCursor());
       }
-    } 
+    }
   }
 
 
@@ -240,7 +240,7 @@ class DvtLegendObjPeer {
       return this;
 
     var navigables = this._legend.__getKeyboardObjects();
-    return KeyboardHandler.getNextNavigable(this, event, navigables, true, this._legend);
+    return KeyboardHandler.getNextNavigable(this, event, navigables, true, this._legend, true);
   };
 
 

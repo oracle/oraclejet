@@ -3557,6 +3557,7 @@ ComponentBinding.getDefaultInstance().setupManagedAttributes({
     this.indexesToDelete = [];
     this.rendering_queued = false;
     this.pendingDeletes = [];
+    this._noDataNodes = null;
     virtualElements.emptyNode(this.element);
     if (changedData.fetchFirst) {
       // refetch data and recreate the child nodes

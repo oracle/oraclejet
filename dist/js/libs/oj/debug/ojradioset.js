@@ -1150,12 +1150,7 @@ var __oj_radioset_metadata =
           }
 
           // if readonly, set tabindex and aria-readonly on the wrapper
-          if (this.options.readOnly) {
-            let domElem = this.element[0];
-            let wrapperDom = domElem.querySelector('.oj-radioset-wrapper');
-            wrapperDom.setAttribute('tabindex', this._externalTabIndex);
-            wrapperDom.setAttribute('aria-readonly', 'true');
-          }
+          this._updateReadonlyState();
           this._on(this._events);
           this._setup();
         },
@@ -1202,6 +1197,16 @@ var __oj_radioset_metadata =
          * @since 5.0.0
          */
         GetFocusElement: function () {
+          // JET-48463 - oj-table issue where focus is lost
+          // GetFocusElement() needs to return the correct readonly element
+          // If _GetReadonlyFocusElement() returns null, fallback to the
+          // enabled element logic.
+          if (this.options.readOnly === true) {
+            const readonlyFocusElement = this._GetReadonlyFocusElement();
+            if (readonlyFocusElement) {
+              return readonlyFocusElement;
+            }
+          }
           // JET-43430 - dynamic form focus issue for radio buttonset
           // When tabbing through, the input element that is currently checked will be focused if
           // one is available. Otherwise the first input element will be given focus. We need to
@@ -1216,6 +1221,18 @@ var __oj_radioset_metadata =
 
           // If there is no checked inputs, simply return the first enabled input
           return this._GetContentElement().not(':disabled').first()[0];
+        },
+        /**
+         * oj-radioset doesn't use .oj-text-field-readonly for the focusable readonly content,
+         * so we need to use a different selector.
+         * @memberof oj.ojRadioset
+         * @instance
+         * @override
+         * @protected
+         * @return {Element|null}
+         */
+        _GetReadonlyFocusElement: function () {
+          return this.widget()[0].querySelector('.oj-form-control-container');
         },
         /**
          * Whether the component is required.
@@ -1854,6 +1871,45 @@ var __oj_radioset_metadata =
 
           this.$radios._ojRadioCheckbox('refreshDisabled');
         },
+
+        /**
+         * Updates the component's state based on whether or not it is in the readonly
+         * state.
+         * @private
+         * @memberof! oj.ojRadioset
+         */
+        _updateReadonlyState: function () {
+          const wrapperDom = this.element[0].querySelector('.oj-radioset-wrapper');
+          if (this.options.readOnly) {
+            wrapperDom.setAttribute('tabindex', this._externalTabIndex);
+            wrapperDom.setAttribute('aria-readonly', 'true');
+            this.element.addClass('oj-read-only');
+
+            // JET-49107 - reassess accessibility implementation of 'readonly' radioset
+            // In readonly mode, we will not have any radio input in the visible DOM. Thus,
+            // in this state it will just be showing generic text based on the value selected.
+            // So, we need to clean up the role along with the aria-labelledby attributes we added
+            // for that role to make things accessible.
+            this.element.removeAttr('role').removeAttr('aria-labelledby');
+            return;
+          }
+
+          // remove tabindex and role
+          wrapperDom.removeAttribute('tabindex');
+          wrapperDom.removeAttribute('aria-readonly');
+          this.element.removeClass('oj-read-only');
+
+          // JET-49107 - reassess accessibility implementation of 'readonly' radioset
+          // add back the role and aria attributes removed before
+          this.element.attr('role', 'radiogroup');
+          this._labelledByUpdatedForSet(
+            this.widget()[0].id,
+            null,
+            this.options.labelledBy,
+            this.widget()
+          );
+        },
+
         /**
          * Note that _setOption does not get called during create in the super class.
          * It only gets called when the component has already been created.
@@ -1870,18 +1926,8 @@ var __oj_radioset_metadata =
               this._propagateDisabled(value);
               break;
             case 'readOnly':
-              var wrapperDom = this.element[0].querySelector('.oj-radioset-wrapper');
               var val = this.options.value;
-              if (value) {
-                wrapperDom.setAttribute('tabindex', this._externalTabIndex);
-                wrapperDom.setAttribute('aria-readonly', 'true');
-                this.element.addClass('oj-read-only');
-              } else {
-                // remove tabindex and role
-                wrapperDom.removeAttribute('tabindex');
-                wrapperDom.removeAttribute('aria-readonly');
-                this.element.removeClass('oj-read-only');
-              }
+              this._updateReadonlyState();
               this._ResetComponentState();
               // when toggle readonly to false, we need to check the initial set values.
               if (val != null) {

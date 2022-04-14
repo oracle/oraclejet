@@ -7189,7 +7189,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
           var group = axisInfo.getGroup(index);
 
           // Associate with logical object to support automation and tooltips
-          var params = DvtAxisEventManager.getUIParams('tickLabel', label.getTextString(), index);
+          var params = DvtAxisEventManager.getUIParams('tickLabel', label.getTextString(), index, null);
           axis.getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, drillable, tooltip, datatip, params));
 
           label.setTranslateX(availSpace.x + availSpace.w / 2);
@@ -8724,7 +8724,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         if (logicalObj.getParams().type === 'title') // return chart axis title subId
           return 'title';
         else if (this._options.groups) { // return group axis label subId
-          var level = logicalObj.getParams().level;
+          var level = logicalObj.getParams().level || 0;
           var labelIndex = this._axisInfo.getStartIdx(logicalObj.getParams().index, level);
           var indexList = '';
           // Loop from outermost level to desired level
@@ -23327,7 +23327,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
       // If value is number, treat is as the group index for group axis
       if (!isNaN(value))
         return axis.getUnboundedCoordAt(value);
-
+      
       return null;
     }
   };
@@ -29483,11 +29483,18 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis', 'ojs/ojlegend-toolkit'
         var refObjs = DvtChartDataUtils.getRefObjs(chart);
         for (var i = 0; i < refObjs.length; i++) {
           var items = refObjs[i]['items'];
-          if (!items)
+          if (!items) {
+            if (refObjs[i]['value'] && refObjs[i]['value'] != null) {
+              refObjs[i]['value'] = DvtChartDataObjectUtils._sanitizeDateTime(context, refObjs[i]['value']);
+            }
             continue;
+          }
+
           for (var j = 0; j < items.length; j++) {
             if (items[j] && items[j]['x'] != null)
               items[j]['x'] = DvtChartDataObjectUtils._sanitizeDateTime(context, items[j]['x']);
+            if (items[j] && items[j]['value'] != null)
+              items[j]['value'] = DvtChartDataObjectUtils._sanitizeDateTime(context, items[j]['value']);
           }
         }
       }

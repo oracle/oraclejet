@@ -10,10 +10,11 @@ import oj$1 from 'ojs/ojcore';
 import BindingProviderImpl from 'ojs/ojkoshared';
 import { getTemplateContent } from 'ojs/ojhtmlutils';
 import { info } from 'ojs/ojlogger';
-import { CACHED_BINDING_PROVIDER, AttributeUtils } from 'ojs/ojcustomelement-utils';
+import { CACHED_BINDING_PROVIDER, CustomElementUtils, transformPreactValue, AttributeUtils } from 'ojs/ojcustomelement-utils';
 import { render } from 'preact';
 import oj from 'ojs/ojcore-base';
 import Context from 'ojs/ojcontext';
+import { getPropertyMetadata } from 'ojs/ojmetadatautils';
 
 const ROW = Symbol('row');
 class PreactTemplate {
@@ -60,7 +61,9 @@ class PreactTemplate {
         templateElement._cachedRows.push(cachedRow);
         computedVNode.subscribe((newVNode) => {
             const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
-            PreactTemplate._renderNodes(newVNode, currRow);
+            if (currRow) {
+                PreactTemplate._renderNodes(newVNode, currRow);
+            }
         });
         return cachedRow.nodes;
     }
@@ -119,17 +122,18 @@ class PreactTemplate {
         };
     }
     static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
+        const metadata = CustomElementUtils.getPropertiesForElementTag(elementTagName);
         const [cache, deleteEntry] = PreactTemplate._extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
             for (const observable of cache) {
                 observable.recalculateValue(recalc);
             }
         });
-        const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, propertySet, data, propertyValidator);
+        const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, metadata, propertySet, data, propertyValidator);
         const item = new ObservableProperty(calcValue, renderer, defaultValues, deleteEntry);
         cache.add(item);
         return item;
     }
-    static _computeProps(renderer, elementTagName, propertySet, data, propertyValidator) {
+    static _computeProps(renderer, elementTagName, metadata, propertySet, data, propertyValidator) {
         const result = renderer(data);
         const vnodes = Array.isArray(result) ? result : [result];
         const targetNode = vnodes.find((n) => n.type === elementTagName);
@@ -140,7 +144,7 @@ class PreactTemplate {
         const vprops = targetNode.props;
         Object.keys(vprops).forEach((prop) => {
             if (propertySet.has(prop)) {
-                props[prop] = targetNode.props[prop];
+                props[prop] = transformPreactValue(null, getPropertyMetadata(prop, metadata), targetNode.props[prop]);
             }
         });
         return props;

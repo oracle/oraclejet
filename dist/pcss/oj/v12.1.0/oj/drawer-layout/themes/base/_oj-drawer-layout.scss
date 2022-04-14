@@ -25,11 +25,14 @@
     display: flex;
   };
 
-  .oj-drawer-reflow-wrapper {
-    display: block;
+  // Middle section should use all available space (width)
+  .oj-drawer-layout-middle-section {
+    flex-grow: 1;
+    display: flex; // Has flex column layout inside
+    flex-direction: column;
   }
 
-  // Main section should eat all available space (width)
+  // Main content should use all available space (height)
   .oj-drawer-layout-main-content {
     flex-grow: 1;
     overflow-y: auto;
@@ -37,6 +40,7 @@
 
   // Reflow mode
   .oj-drawer-reflow-wrapper {
+    display: block;
     flex: 0 0 auto;
     background: var(--oj-drawer-overlay-bg-color);
   };
@@ -64,6 +68,9 @@
       border-right: 1px solid var(--oj-drawer-reflow-divider-color);
     }
   }
+  .oj-drawer-reflow-wrapper.oj-drawer-reflow.oj-drawer-bottom {
+    border-top: 1px solid var(--oj-drawer-reflow-divider-color);
+  }
 
   // Common for Reflow and Overlay mode
   .oj-drawer-reflow-wrapper.oj-drawer-reflow,
@@ -81,11 +88,20 @@
   .oj-drawer-layout-surrogate .oj-drawer-overlay {
     position: absolute;
     background: var(--oj-drawer-overlay-bg-color);
-    min-width: 320px;
-    max-width: 90%;
   }
 
-  .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-full-overlay {
+  .oj-drawer-layout-surrogate .oj-drawer-start,
+  .oj-drawer-layout-surrogate .oj-drawer-end {
+    min-width: 320px;
+    max-width: 90vw;
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-bottom {
+    max-height: 100vh;
+  }
+
+  .oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-start,
+  .oj-drawer-layout-surrogate .oj-drawer-full-overlay.oj-drawer-end {
     width: 100%;
     max-width: 100%;
   }
@@ -105,5 +121,8 @@
     @include oj-rtl() {
       box-shadow: 8px 0 15px rgba(var(--oj-core-box-shadow-rgb),0.05);
     }
+  }
+  .oj-drawer-layout-surrogate .oj-drawer-overlay.oj-drawer-bottom {
+    box-shadow: 0 -8px 15px rgba(var(--oj-core-box-shadow-rgb), 0.05);
   }
 }

@@ -454,12 +454,15 @@
     // other browsers. See JET-42692
     // I'm limiting this to direction="column" and column="1" to minimize any
     // potential regression, but I think it is very unlikely to cause any issues.
-    .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
+    // Due to a change in Chrome 98 (see bug JET-49143), we need to make these specific only to
+    // the affected browsers.  Firefox needs both work arounds, Safari just needs this one.
+    .oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
+    .oj-agent-browser-firefox .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
       display: inline;
     }
     // Unfortunately, the safari work around does nothing to help Firefox and this fix
     // can't be limited to one column but is limited to direction="column". See JET-42692
-    .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
+    .oj-agent-browser-firefox .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
       display: inline;
     }
 

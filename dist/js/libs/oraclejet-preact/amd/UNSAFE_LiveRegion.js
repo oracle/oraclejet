@@ -1,6 +1,6 @@
 define(['exports', 'preact', 'preact/hooks'], (function (exports, preact, hooks) { 'use strict';
 
-  const offScreenStyle = "oj-live-region-offScreenStyle-o1xwg2xa";
+  const offScreenStyle = "oj-live-region-offScreenStyle-14cpbki";
   /**
    * A helper component that renders an aria-live region
    *

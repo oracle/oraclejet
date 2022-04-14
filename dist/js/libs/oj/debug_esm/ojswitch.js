@@ -676,6 +676,19 @@ const ARIA_DISABLED = 'aria-disabled';
     // P R O T E C T E D    C O N S T A N T S   A N D   M E T H O D S
 
     /**
+     * oj-switch doesn't use .oj-text-field-readonly for the focusable readonly content,
+     * so we need to use a different selector.
+     * @memberof oj.ojSwitch
+     * @instance
+     * @override
+     * @protected
+     * @return {Element|null}
+     */
+    _GetReadonlyFocusElement: function () {
+      return this.widget()[0].querySelector('.oj-switch-thumb');
+    },
+
+    /**
      * @private
      * @const
      */

@@ -27,6 +27,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
 
     /**
      * Allow user to set an opentelemetry-compatible TracerProvider object
+     * Please see the {@link https://opentelemetry.io opentelemetry documentation}
      *
      * @ojexports
      * @memberof ojtracer
@@ -37,7 +38,7 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
 
     /**
      * Return the user-set opentelemetry-compatible TracerProvider object, or an internal no-op version if nothing has been set
-     *
+     * Please see the {@link https://opentelemetry.io opentelemetry documentation}
      * @ojexports
      * @memberof ojtracer
      * @returns {unknown} opentelemetry-compatible TracerProvider
@@ -80,7 +81,20 @@ define(['exports', 'ojs/ojcustomelement-utils'], function (exports, ojcustomelem
         startSpan(name, options, context) {
             return new NoOpSpan();
         }
-        startActiveSpan(name, fn) {
+        startActiveSpan(name, optOrFunc, contextOrFunc, func) {
+            let fn;
+            if (arguments.length < 2) {
+                return;
+            }
+            else if (arguments.length === 2) {
+                fn = optOrFunc;
+            }
+            else if (arguments.length === 3) {
+                fn = contextOrFunc;
+            }
+            else {
+                fn = func;
+            }
             return fn(new NoOpSpan());
         }
     }

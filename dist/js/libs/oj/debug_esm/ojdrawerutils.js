@@ -32,6 +32,9 @@ class DrawerConstants {
     static get styleBottomDrawer() {
         return `${this.stringOjDrawer}${this.charDash}${this.stringBottom}`;
     }
+    static get middleSectionSelector() {
+        return `${this.stringOjDrawer}${this.charDash}${this.stringMiddleSection}`;
+    }
     static get mainContentSelector() {
         return `${this.stringOjDrawer}${this.charDash}${this.stringMainContent}`;
     }
@@ -51,6 +54,7 @@ DrawerConstants.stringStart = 'start';
 DrawerConstants.stringEnd = 'end';
 DrawerConstants.stringTop = 'top';
 DrawerConstants.stringBottom = 'bottom';
+DrawerConstants.stringMiddleSection = `layout-middle-section`;
 DrawerConstants.stringMainContent = `layout-main-content`;
 DrawerConstants.stringStyleClassDisableOverflow = `oj-drawer-disable-body-overflow`;
 DrawerConstants.stringSurrogate = 'surrogate';
@@ -72,6 +76,7 @@ DrawerConstants.stringClose = 'close';
 DrawerConstants.stringSlideIn = 'slideIn';
 DrawerConstants.stringSlideOut = 'slideOut';
 DrawerConstants.stringWidth = 'width';
+DrawerConstants.stringHeight = 'height';
 DrawerConstants.animationDuration = 300;
 DrawerConstants.keys = {
     ESC: 'Escape',
@@ -131,11 +136,15 @@ class DrawerUtils {
                 }
                 break;
             case DrawerConstants.stringBottom:
-                direction =
-                    actionType === DrawerConstants.stringSlideIn
-                        ? DrawerConstants.stringTop
-                        : DrawerConstants.stringBottom;
-                break;
+                if (actionType === DrawerConstants.stringSlideIn) {
+                    direction = DrawerConstants.stringTop;
+                }
+                else if (actionType === DrawerConstants.stringSlideOut) {
+                    direction = DrawerConstants.stringBottom;
+                }
+                else {
+                    direction = DrawerConstants.stringHeight;
+                }
         }
         return {
             direction,

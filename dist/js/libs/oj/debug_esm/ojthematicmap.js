@@ -795,11 +795,12 @@ var __oj_thematic_map_marker_metadata =
  * <p>
  *   Thematic map supports rendering of GeoJSON formatted geographic data. An application can specify the GeoJSON along with keys
  *   used for determining area IDs and labels by setting the the [mapProvider]{@link oj.ojThematicMap#mapProvider} attribute.
- *   Currently only GeoJSON objects of "type" Feature or FeatureCollection are supported. Each Feature object contains
+ *   Currently GeoJSON objects of "type" Feature, FeatureCollection and GeometryCollection are supported. Each Feature object contains
  *   the information to render a map area including the area id, coordinates, and optional short and long labels. Only Feature
- *   "geometry" objects of "type" Polygon and MutliPolgyon will be used for defining area boundaries.  All other "type" values
+ *   "geometry" objects of "type" Polygon and MutliPolygon will be used for defining area boundaries.  All other "type" values
  *   will be skipped.  The Feature "properties" object is where the thematic map will look up area info like id, short
  *   label, and long label using the key mappings provided in the [propertiesKeys]{@link oj.ojThematicMap#mapProvider.propertiesKeys} property.
+ *   GeometryCollection is an array of geometry objects. Each geometry object has a type and coordinate of which only "types" Polygon and MultiPolygon are supported.
  *   See the thematic map Map Provider Demo for an example.
  * </p>
  * <p>

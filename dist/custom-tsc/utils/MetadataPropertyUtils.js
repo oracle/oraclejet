@@ -249,7 +249,8 @@ function updateDefaultsFromDefaultProps(defaultProps, metaUtilObj) {
     var _a;
     const fullPropsMeta = (_a = metaUtilObj.fullMetadata) === null || _a === void 0 ? void 0 : _a.properties;
     defaultProps.forEach((prop) => {
-        if (ts.isPropertyAssignment(prop) || (ts.isBindingElement(prop) && !prop.dotDotDotToken)) {
+        if (ts.isPropertyAssignment(prop) ||
+            (ts.isBindingElement(prop) && prop.initializer && !prop.dotDotDotToken)) {
             const propName = prop.name.getText();
             const propMetadata = fullPropsMeta === null || fullPropsMeta === void 0 ? void 0 : fullPropsMeta[propName];
             if (propMetadata) {

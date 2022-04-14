@@ -904,6 +904,7 @@ class DvtGauge extends BaseComponent {
       container.setAriaProperty('valuemax', this.Options['max']);
       var value = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
       container.setAriaProperty('valuenow', value);
+      container.setAriaProperty('valuetext', value);
       var tooltip = DvtGaugeRenderer.getTooltipString(this);
 
       if (Agent.isTouchDevice()) {
@@ -1091,6 +1092,7 @@ class DvtGauge extends BaseComponent {
   UpdateAriaLiveValue(container, value) {
     value = DvtGaugeRenderer.getFormattedMetricLabel(value ? value : this.Options['value'], this);
     container.setAriaProperty('valuenow', value);
+    container.setAriaProperty('valuetext', value);
 
     if (Agent.isTouchDevice())
       container.setAriaProperty('label', value);

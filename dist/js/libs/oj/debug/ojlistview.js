@@ -314,6 +314,9 @@ var __oj_list_view_metadata =
         "labelPasteBefore": {
           "type": "string"
         },
+        "msgFetchCompleted": {
+          "type": "string"
+        },
         "msgFetchingData": {
           "type": "string"
         },
@@ -454,7 +457,8 @@ var __oj_list_view_metadata =
 
   // eslint-disable-next-line no-unused-vars
   StaticContentHandler.prototype.Collapse = function (item) {
-    // nothing to do
+    var groupItem = item.get(0);
+    groupItem.style.display = 'none';
   };
 
   StaticContentHandler.prototype.IsHierarchical = function () {
@@ -3253,7 +3257,12 @@ var __oj_list_view_metadata =
      * @private
      */
     updateStatusFetchEnd: function (count) {
-      var msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
+      var msg;
+      if (count === 0) {
+        msg = this.ojContext.getTranslatedString('msgFetchCompleted');
+      } else {
+        msg = this.ojContext.getTranslatedString('msgItemsAppended', { count: count });
+      }
       this._setAccInfoText(msg);
     },
 
@@ -5301,6 +5310,11 @@ var __oj_list_view_metadata =
           y: event.originalEvent.changedTouches[0].pageY
         };
       }
+
+      // mouse down on input element inside item should trigger actionable mode
+      if (this._isInputElement(target.get(0))) {
+        this._enterActionableMode(item);
+      }
     },
 
     /**
@@ -5335,16 +5349,18 @@ var __oj_list_view_metadata =
           // don't apply ripple effect on the item when target is one of these controls
           var target = event.target;
           var nodes = elem.querySelectorAll(
-            "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1'])");
+            "input, select, button, a, textarea, object, [tabIndex]:not([tabIndex='-1']), [data-oj-tabmod]");
           for (var i = 0; i < nodes.length; i++) {
             if (nodes[i].contains(target)) {
-              elem = target;
+              elem = null;
               break;
             }
           }
 
           // we don't really care when animation ends
-          this.StartAnimation(elem, action, effect);
+          if (elem != null) {
+            this.StartAnimation(elem, action, effect);
+          }
 
           this.m_touchPos = null;
         }
@@ -5359,19 +5375,21 @@ var __oj_list_view_metadata =
      * Enters actionable mode
      * @private
      */
-    _enterActionableMode: function () {
-      var current = this.m_active.elem;
+    _enterActionableMode: function (item) {
+      var current = (item === undefined) ? this.m_active.elem : item;
 
-      // in case content has been updated under the cover
-      this.disableAllTabbableElements(current);
+      if (current) {
+        // in case content has been updated under the cover
+        this.disableAllTabbableElements(current);
 
-      // re-enable all tabbable elements
-      this._enableAllTabbableElements(current);
+        // re-enable all tabbable elements
+        this._enableAllTabbableElements(current);
 
-      // only go into actionable mode if there is something to focus
-      var first = current.find('[data-first]');
-      if (first.length > 0) {
-        this._setActionableMode(true);
+        // only go into actionable mode if there is something to focus
+        var first = current.find('[data-first]');
+        if (first.length > 0) {
+          this._setActionableMode(true);
+        }
       }
     },
 
@@ -5383,7 +5401,9 @@ var __oj_list_view_metadata =
       this._setActionableMode(false);
 
       // disable all tabbable elements in the item again
-      this.disableAllTabbableElements(this.m_active.elem);
+      if (this.m_active) {
+        this.disableAllTabbableElements(this.m_active.elem);
+      }
     },
 
     /**
@@ -5424,7 +5444,7 @@ var __oj_list_view_metadata =
           }
 
           if (this._isActionableMode() && this.m_active != null &&
-            this.m_active.elem.get(0) !== item.get(0)) {
+            this.m_active.elem.get(0) !== item.get(0) && !this._isInputElement(target.get(0))) {
             // click on item other than current focus item should exit actionable mode
             this._exitActionableMode();
           }
@@ -5472,12 +5492,6 @@ var __oj_list_view_metadata =
           // triger action event
           if (!clickthroughDisabled) {
             this._fireActionEvent(item.get(0), event);
-          }
-
-          // click on input element inside item should trigger actionable mode
-          if (this._isInputElement(target.get(0))) {
-            this._enterActionableMode();
-            return;
           }
 
           // clicking on header will expand/collapse item
@@ -7240,7 +7254,8 @@ var __oj_list_view_metadata =
           }
           current.removeClass('oj-focus-highlight');
         }
-      } else if ((key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY) && this._isSelectionEnabled()) {
+      } else if ((key === ' ' || key === 'Spacebar' || key === this.SPACE_KEY)
+        && this._isSelectionEnabled() && !this._isInputElement(event.target)) {
         ctrlKey = this._ctrlEquivalent(event);
         shiftKey = event.shiftKey;
         if (shiftKey && !ctrlKey && this.m_selectionFrontier != null &&

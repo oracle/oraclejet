@@ -903,6 +903,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
         container.setAriaProperty('valuemax', this.Options['max']);
         var value = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
         container.setAriaProperty('valuenow', value);
+        container.setAriaProperty('valuetext', value);
         var tooltip = DvtGaugeRenderer.getTooltipString(this);
 
         if (dvt.Agent.isTouchDevice()) {
@@ -1090,6 +1091,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-axis'], function (exports, dv
     UpdateAriaLiveValue(container, value) {
       value = DvtGaugeRenderer.getFormattedMetricLabel(value ? value : this.Options['value'], this);
       container.setAriaProperty('valuenow', value);
+      container.setAriaProperty('valuetext', value);
 
       if (dvt.Agent.isTouchDevice())
         container.setAriaProperty('label', value);

@@ -107,7 +107,10 @@ function getVCompFunctionInfo(functionalCompNode, vexportToAlias, checker) {
                     }
                     else if (ts.isVariableDeclaration(symDecl)) {
                         const varDeclInitializer = symDecl.initializer;
-                        if (varDeclInitializer && ts.isCallExpression(varDeclInitializer)) {
+                        if (varDeclInitializer &&
+                            (ts.isCallExpression(varDeclInitializer) ||
+                                ts.isFunctionExpression(varDeclInitializer) ||
+                                ts.isArrowFunction(varDeclInitializer))) {
                             findFunctionalComp(varDeclInitializer);
                         }
                     }

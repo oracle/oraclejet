@@ -85,6 +85,11 @@
     }
   }
 
+  /* disable body scroll while animating a sheet dialog */
+  .oj-dialog-sheet-animating {
+    overflow: hidden !important;
+  }    
+
   // resizable oj-dialog should have absolute position
   .oj-dialog.oj-resizable {
     position: absolute;

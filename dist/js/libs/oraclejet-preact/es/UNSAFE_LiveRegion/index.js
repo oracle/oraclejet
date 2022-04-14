@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useState, useCallback, useEffect } from 'preact/hooks';
 
-const offScreenStyle = "oj-live-region-offScreenStyle-o1xwg2xa";
+const offScreenStyle = "oj-live-region-offScreenStyle-14cpbki";
 /**
  * A helper component that renders an aria-live region
  *

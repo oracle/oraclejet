@@ -11292,18 +11292,9 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
         width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
       } else {
         // Properties that are supported in <canvas> elements by browser
-        // Chrome supports letterSpacing, wordSpacing, and fontVariantNumeric
-        // Safari supports only supports fontVariantNumeric
+        // Chrome and Safari supports only supports fontVariantNumeric
         // Firefox supports none
-        if (Agent.browser === 'chrome') {
-          if (TextUtils._letterSpacing != letterSpacing || (TextUtils._wordSpacing != wordSpacing) || (TextUtils._fontVariantNumeric != fontVariantNumeric)) {
-            TextUtils._clearCanvasContext();
-            TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
-          }
-          TextUtils._storeCanvasContext();
-          TextUtils._attachCanvas(context);
-          width = TextUtils._getCanvasTextWidth(context, textString, cssStyle);
-        } else if (Agent.browser === 'safari' && isLetterSpacingNormal && isWordSpacingNormal) {
+       if ((Agent.browser === 'safari' || Agent.browser === 'chrome') && isLetterSpacingNormal && isWordSpacingNormal) {
           if (TextUtils._fontVariantNumeric != fontVariantNumeric) {
             TextUtils._clearCanvasContext();
             TextUtils._setSpacing(wordSpacing, letterSpacing, fontVariantNumeric);
@@ -16981,7 +16972,11 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
     else {
       if (target && target.isSelectable && target.isSelectable()) {
         // 3. Single select of selectable target
-        bChanged = this._addToSelection(target, false);
+        if (addToExisting && target.isSelected()) {
+          bChanged = this._removeFromSelection(target);
+        } else {
+          bChanged = this._addToSelection(target, false);
+        }
       } else {
         // 4. Single select of non-selectable target
         bChanged = this.clearSelection();
@@ -29505,25 +29500,31 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
    * @param {Array} navigableItems An array of items that could receive focus next
    * @param {Boolean=} ignoreBounds Ignore the _isInBounds check when finding the next navigable
    * @param {dvt.Displayable=} targetCoordinateSpace The displayable defining the target coordinate space
+   * @param {Boolean=} use2d Whether or not to use perpendicular direction when comparing distance between logical objects
    * @return {DvtKeyboardNavigable} The next navigable
    */
-  KeyboardHandler.getNextNavigable = function (
+   KeyboardHandler.getNextNavigable = function (
     currentNavigable,
     event,
     navigableItems,
     ignoreBounds,
-    targetCoordinateSpace
+    targetCoordinateSpace,
+    use2d
   ) {
-    var nextNavigable = null;
-    var nextNavigableDelta = 0;
-    var delta = 0;
-
-    var direction = event.keyCode;
-
     if (!currentNavigable) {
       if (!navigableItems || navigableItems.length < 1) return null;
       else return navigableItems[0];
     }
+
+    var nextNavigable = null;
+    var nextNavigableDelta = 0;
+    var nextNavigableDelta2 = 0;
+    var delta = 0;
+    var delta2 = 0;
+
+    var direction = event.keyCode;
+    var direction2 = use2d && KeyboardHandler.getPerpendicularDirection(event.keyCode);
+
 
     // get the bounds of the current navigable
     var currentBounds = currentNavigable.getKeyboardBoundingBox(targetCoordinateSpace);
@@ -29538,6 +29539,8 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
 
       if (ignoreBounds || KeyboardHandler._isInBounds(currentBounds, candidateBounds, direction)) {
         delta = KeyboardHandler._computeDelta(currentBounds, candidateBounds, direction);
+        // using Math.abs in order to equally favor equidistance items in either positive or negative dir2
+        delta2 = use2d && Math.abs(KeyboardHandler._computeDelta(currentBounds, candidateBounds, direction2));
 
         if (
           ((direction == KeyboardEvent.UP_ARROW || direction == KeyboardEvent.LEFT_ARROW) &&
@@ -29545,14 +29548,35 @@ define(['exports', 'ojs/ojthemeutils'], function (exports, ThemeUtils) { 'use st
             (!nextNavigable || delta > nextNavigableDelta)) ||
           ((direction == KeyboardEvent.DOWN_ARROW || direction == KeyboardEvent.RIGHT_ARROW) &&
             delta > 0 &&
-            (!nextNavigable || delta < nextNavigableDelta))
+            (!nextNavigable || delta < nextNavigableDelta)) ||
+          (use2d && (delta === nextNavigableDelta) && (delta2 < nextNavigableDelta2) && delta !== 0)
         ) {
           nextNavigable = navigable;
           nextNavigableDelta = delta;
+          nextNavigableDelta2 = delta2;
         }
       }
     }
     return nextNavigable ? nextNavigable : currentNavigable;
+  };
+
+  /**
+   * Returns the key code of the arrow key perpendicular to that of the passed arrow key code. Follows right hand
+   * screw rule to determine the perpendicular direction. i.e curl 4 fingers of right hand to point to direction
+   * and thumb points to perpendicular direction.
+   * @param {number} direction Integer key code of either up, down left or right arrow key.
+   * @returns {number} Integer key code.
+   */
+  KeyboardHandler.getPerpendicularDirection = function (direction) {
+    if (direction === KeyboardEvent.UP_ARROW) {
+      return KeyboardEvent.RIGHT_ARROW;
+    } else if (direction === KeyboardEvent.RIGHT_ARROW) {
+      return KeyboardEvent.DOWN_ARROW;
+    } else if (direction === KeyboardEvent.DOWN_ARROW) {
+      return KeyboardEvent.LEFT_ARROW;
+    } else if (direction === KeyboardEvent.LEFT_ARROW) {
+      return KeyboardEvent.UP_ARROW;
+    }
   };
 
   /**

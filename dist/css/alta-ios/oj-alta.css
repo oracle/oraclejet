@@ -270,7 +270,7 @@ template {
   visibility: hidden; }
 
 .oj-theme-json {
-  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v12.0.0"}'; }
+  font-family: '{"name":"alta","targetPlatform":"ios","behavior":"alta","jetReleaseVersion":"v12.1.0"}'; }
 
 .oj-helper-hidden-accessible {
   border: 0;
@@ -9942,6 +9942,7 @@ html[dir="rtl"] .oj-treeview-list.oj-treeview-drag-image > .oj-treeview-item {
   width: 100%;
   display: inline-block;
   vertical-align: middle;
+  box-sizing: border-box;
   padding-inline-start: 0.5rem;
   padding-inline-end: 0.5rem; }
 
@@ -13837,10 +13838,11 @@ oj-form-layout {
   break-inside: avoid;
   page-break-inside: avoid; }
 
-.oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
+.oj-agent-browser-safari .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across),
+.oj-agent-browser-firefox .oj-formlayout-max-cols-1 > .oj-form:not(.oj-formlayout-form-across) {
   display: inline; }
 
-.oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
+.oj-agent-browser-firefox .oj-form-layout > .oj-form:not(.oj-formlayout-form-across) > .oj-flex {
   display: inline; }
 
 .oj-form > hr,

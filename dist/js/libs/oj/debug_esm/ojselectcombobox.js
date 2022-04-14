@@ -12754,6 +12754,25 @@ oj$1.__registerWidget('oj.ojCombobox', $.oj.editableValue,
       }
     },
 
+    /**
+     * combobox-many doesn't use .oj-text-field-readonly for the focusable readonly content,
+     * so we need to use a different selector.  Combobox-one doesn't need this override,
+     * so we just return the default readonly element.
+     * @memberof! _OjMultiCombobox
+     * @instance
+     * @override
+     * @protected
+     * @return {Element|null}
+     */
+    _GetReadonlyFocusElement: function () {
+      if (this.multiple) {
+        return this.widget()[0].querySelector('.oj-combobox-accessible-container');
+      }
+
+      // For oj-combobox-one return the default element
+      return this._super();
+    },
+
     // 19670748, dropdown popup should be closed on subtreeDetached notification.
     _NotifyDetached: function () {
       this._superApply(arguments);

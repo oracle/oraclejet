@@ -1,6 +1,6 @@
 {
   "name": "@oracle/oraclejet-preact",
-  "version": "0.0.1",
+  "version": "12.1.0",
   "description": "Oracle JET preact based components",
   "scripts": {
     "build": "npm run rollup && npm run build:index && npm run build:types && npm run build:copy",
@@ -56,6 +56,7 @@
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
     "@types/ramda": "^0.27.46",
+    "@types/react": "^16.14.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-react-docgen": "^4.2.1",
     "chai": "^4.2.0",
@@ -88,6 +89,7 @@
     "rollup-plugin-typescript": "^1.0.1",
     "sinon": "^7.4.2",
     "typescript": "~4.2.0",
+    "@types/react": "17.0.39",
     "webpack": "^4.27.0"
   },
   "files": [

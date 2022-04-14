@@ -4131,7 +4131,9 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
      */
     _isSupportedGeometry: (geom) => {
       var type = geom['type'];
-      if (type === 'Polygon' || type === 'MultiPolygon')
+      if (type === 'Polygon' 
+          || type === 'MultiPolygon'
+          || type === 'GeometryCollection')
         return true;
       return false;
     },
@@ -4146,7 +4148,7 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
     _geomToPath: (geom) => {
       var path = '';
       var type = geom['type'];
-      var coords = geom['coordinates'];
+      var coords = geom['coordinates'] || geom.geometries;
       if (type === 'Polygon') {
         path = DvtMapProviderUtils._polygonToPath(coords);
       }
@@ -4154,6 +4156,13 @@ define(['exports', 'ojs/ojdvt-toolkit', 'ojs/ojdvt-panzoomcanvas'], function (ex
         // The coordinates of a MultiPolygon are an array of Polygon coordinate arrays.
         for (var i = 0; i < coords.length; i++) {
           path += DvtMapProviderUtils._polygonToPath(coords[i]);
+        }
+      }
+      else if (type === 'GeometryCollection') {
+        // The GeometryCollection is an array of geometry objects. Each geometry object has coordinates of Polygon or MultiPolygon
+        for (var gIdx = 0; gIdx < coords.length; gIdx++) {
+          // each geometry has a type and coordinate
+          path += DvtMapProviderUtils._geomToPath(coords[gIdx]);
         }
       }
       return path;

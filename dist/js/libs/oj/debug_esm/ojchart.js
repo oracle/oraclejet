@@ -38,8 +38,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.MajorTick
  * @type {string=}
- * @ojvalue {string=} "inherit"
- * @ojvalue {string=} "auto"
+ * @ojvalue {string=} "inherit" Axis baseline color will be same as lineColor.
+ * @ojvalue {string=} "auto" Default value according to theme is used.
  * @default "auto"
  */
 /**
@@ -78,8 +78,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.XTickLabel
  * @type {string=}
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "none" Labels will not be rotated in order to fit more labels on the axis.
+ * @ojvalue {string} "auto" Labels will automatically rotate by 90 degree in order to fit more labels on the axis if needed.
  * @default "auto"
  */
 
@@ -96,8 +96,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.YTickLabel
  * @type {string=}
- * @ojvalue {string} "inside"
- * @ojvalue {string} "outside"
+ * @ojvalue {string} "inside" Tick labels will be rendered inside the plot area.
+ * @ojvalue {string} "outside" Tick labels will be rendered outside the plot area.
  * @default "outside"
  */
 
@@ -332,11 +332,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.YAxis
  * @type {string=}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "top"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "start" The axis will be placed at start of the chart. Only applies to vertical charts.
+ * @ojvalue {string} "end" The axis will be placed at end of the chart. Only applies to vertical charts.
+ * @ojvalue {string} "top" The axis will be placed at the top of the chart. Only applies to horizontal charts.
+ * @ojvalue {string} "bottom" The axis will be placed at the bottom of the chart. Only applies to horizontal charts.
+ * @ojvalue {string} "auto" The axis position will be based on the chart's orientation.
  * @default "auto"
  */
 /**
@@ -390,11 +390,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Y2Axis
  * @type {string=}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "top"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "start" The axis will be placed at start of the chart. Only applies to vertical charts.
+ * @ojvalue {string} "end" The axis will be placed at end of the chart. Only applies to vertical charts.
+ * @ojvalue {string} "top" The axis will be placed at the top of the chart. Only applies to horizontal charts.
+ * @ojvalue {string} "bottom" The axis will be placed at the bottom of the chart. Only applies to horizontal charts.
+ * @ojvalue {string} "auto" The axis position will be based on the chart's orientation.
  * @default "auto"
  */
 /**
@@ -422,8 +422,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Y2Axis
  * @type {string=}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
+ * @ojvalue {string} "off" Tick marks of y1 and y2 axes may not be aligned.
+ * @ojvalue {string} "on" Tick marks of y1 and y2 axes will be aligned.
  * @default "on"
  */
 
@@ -785,21 +785,21 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @export
  * @typedef {string} LineStyle
  * @memberof oj.ojChart
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
+ * @ojvalue {string} "dotted" Line will have dotted strokes.
+ * @ojvalue {string} "dashed" Line will have dashed strokes.
+ * @ojvalue {string} "solid" Line will have a solid stroke.
  */
 /**
  * Enum type that defines a line type.
  * @export
  * @typedef {string} LineType
  * @memberof oj.ojChart
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "straight"
+ * @ojvalue {string} "curved" Data points will be connected with a curved line.
+ * @ojvalue {string} "stepped" Data points will be connected with a stepped line.
+ * @ojvalue {string} "centeredStepped" Data points will be connected with a centered stepped line.
+ * @ojvalue {string} "segmented" Data points will be connected with a segmented line.
+ * @ojvalue {string} "centeredSegmented" Data points will be connected with a centered segmented line.
+ * @ojvalue {string} "straight" Data points will be connected with a straight line.
  */
 /**
  * Enum type that defines the chart type. By default, the first three series of "combo" chart are assigned '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> type respectively and then the type repeats, i.e sucessive series will be of types '<i>bar'</i>, <i>'line'</i>, and <i>'area'</i> and so on. To customize individual series, see <a href="oj.ojChartSeries.html#type"> oj-chart-series </a> for more details.
@@ -807,18 +807,18 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @typedef {string} ChartType
  * @memberof oj.ojChart
  * @ojshortdesc Specifies the chart type. See the Help documentation for more information.
- * @ojvalue {string} "line"
- * @ojvalue {string} "area"
- * @ojvalue {string} "lineWithArea"
- * @ojvalue {string} "stock"
- * @ojvalue {string} "boxPlot"
- * @ojvalue {string} "combo"
- * @ojvalue {string} "pie"
- * @ojvalue {string} "scatter"
- * @ojvalue {string} "bubble"
- * @ojvalue {string} "funnel"
- * @ojvalue {string} "pyramid"
- * @ojvalue {string} "bar"
+ * @ojvalue {string} "line" Series will be represented by a line.
+ * @ojvalue {string} "area" Series will be represented by an area. Use lineWithArea to prevent values from being obscured.
+ * @ojvalue {string} "lineWithArea" Series will be presented by a line and area.
+ * @ojvalue {string} "bar"  Data items will be represented by bars.
+ * @ojvalue {string} "stock" Series will be represented by candlestick markers. There are other representations available like area, bar, line and line with area.
+ * @ojvalue {string} "boxPlot" Series will be represented by box plot markers.
+ * @ojvalue {string} "combo" Multiple series can be represented with multiple types of markers:  bar, line and area.
+ * @ojvalue {string} "pie" Data items are represented as pie slices.
+ * @ojvalue {string} "scatter" Data items will be represented as markers with x and y values.
+ * @ojvalue {string} "bubble" Data items will be represented as bubble markers with x, y, and z values. z value defines the relative size of the bubbles.
+ * @ojvalue {string} "funnel" Data items are represented as funnel slices.
+ * @ojvalue {string} "pyramid" Data items are represented as pyramid slices.
  */
 
 /**
@@ -867,8 +867,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Overview
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
+ * @ojvalue {string} "on" Overview scrollbar will be rendered.
+ * @ojvalue {string} "off" Overview scrollbar will not be rendered.
  * @default "off"
  */
 /**
@@ -914,13 +914,13 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.PieCenter
  * @type {string=}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "none" Values will not be scaled with any suffix.
+ * @ojvalue {string} "thousand" Values will be scaled with suffix corresponding to thousand based on locale.
+ * @ojvalue {string} "million" Values will be scaled with suffix corresponding to million based on locale.
+ * @ojvalue {string} "billion" Values will be scaled with suffix corresponding to billion based on locale.
+ * @ojvalue {string} "trillion" Values will be scaled with suffix corresponding to trillion based on locale.
+ * @ojvalue {string} "quadrillion" Values will be scaled with suffix corresponding to quadrillion based on locale.
+ * @ojvalue {string} "auto" Chart chooses the scaling based on the data.
  * @default "auto"
  */
 /**
@@ -1008,8 +1008,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.PlotArea
  * @type {string=}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
+ * @ojvalue {string} "off" The chart's plot area will not be rendered.
+ * @ojvalue {string} "on" The chart's plot area will be rendered.
  * @default "on"
  */
 
@@ -1619,8 +1619,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" Drill action for Other slice and legend item in pie chart will be enabled.
+       * @ojvalue {string} "off" Drill action for Other slice and legend item in pie chart will be disabled.
        * @default 'off'
        */
       /**
@@ -1630,9 +1630,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "on" Plot area will be split into two sections corresponding to datasets assigned to the different Y-axes.
+       * @ojvalue {string} "off" Plot area will not be split into two sections.
+       * @ojvalue {string} "auto" Plot area will not be split into two sections except for the stock charts.
        * @default "auto"
        */
       /**
@@ -1655,11 +1655,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @ojshortdesc The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "enabled"
-       * @ojvalue {string} "mixedFrequency"
-       * @ojvalue {string} "skipGaps"
-       * @ojvalue {string} "disabled"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "enabled" The time value for each data item is passed using the group-id attribute of oj-chart-item. The time intervals do not have to be uniform. Data items from the same group should have the same time value.
+       * @ojvalue {string} "mixedFrequency" The time value for each data item is passed using the x attribute of oj-chart-item. The time intervals do not have to be uniform. Data item from the same group can have different time values.
+       * @ojvalue {string} "skipGaps" The time value for each data item is passed using the group-id attribute of oj-chart-item. The times will always be drawn uniformly ignoring gaps. Data items from the same group should have the same time value.
+       * @ojvalue {string} "disabled" Time axis is disabled.
+       * @ojvalue {string} "auto" Time axis is disabled unless it is a stock chart, for which the timeAxisType is mixedFrequency.
        * @default "auto"
        */
       /**
@@ -1689,11 +1689,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @ojshortdesc The action that is performed when a drag occurs on the chart. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "pan"
-       * @ojvalue {string} "zoom"
-       * @ojvalue {string} "select"
-       * @ojvalue {string} "off"
-       * @ojvalue {string} "user"
+       * @ojvalue {string} "pan" Pan action is performed when a drag occurs on the chart.
+       * @ojvalue {string} "zoom" Zoom action is performed when a drag occurs on the chart.
+       * @ojvalue {string} "select" Marquee selection is performed when a drag occurs on the chart.
+       * @ojvalue {string} "off" Drag is disabled.
+       * @ojvalue {string} "user" User can switch between different mode. Buttons will be displayed on the plot area to let users switch between modes.
        * @default "user"
        */
       /**
@@ -1714,8 +1714,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" Data items belonging to same group will be stacked.
+       * @ojvalue {string} "off" Data items will not be stacked.
        * @default "off"
        */
       /**
@@ -1726,8 +1726,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" The total value of the stacked data items will be displayed.
+       * @ojvalue {string} "off" The total value of the stacked data items will not be displayed.
        * @default "off"
        */
       /**
@@ -1737,8 +1737,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "horizontal"
-       * @ojvalue {string} "vertical"
+       * @ojvalue {string} "horizontal" Chart will be horizontally oriented.
+       * @ojvalue {string} "vertical" Chart will be vertically oriented.
        * @default "vertical"
        */
       /**
@@ -1748,8 +1748,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "polygon"
-       * @ojvalue {string} "circle"
+       * @ojvalue {string} "polygon" The grid shape of polar chart will be a polygonal with number of side of the polygon equal to number of groups in chart.
+       * @ojvalue {string} "circle" The grid shape of polar chart will be circular.
        * @default "circle"
        */
       /**
@@ -1759,8 +1759,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "polar"
-       * @ojvalue {string} "cartesian"
+       * @ojvalue {string} "polar" Polar coordinate system is used to plot the chart.
+       * @ojvalue {string} "cartesian" Cartesian coordinate system is used to plot the chart.
        * @default "cartesian"
        */
       /**
@@ -1770,9 +1770,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "withRescale"
-       * @ojvalue {string} "withoutRescale"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "withRescale" Y axes rescales when data items are hidden or showed by clicking on a legend item.
+       * @ojvalue {string} "withoutRescale" Y axes does not rescale when data items are hidden or showed by clicking on a legend item.
+       * @ojvalue {string} "none" Hide and show behavior is disabled.
        * @default "none"
        */
       /**
@@ -1792,8 +1792,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "dim"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "dim" Dimming hover behavior is applied.
+       * @ojvalue {string} "none" No hover behavior will be applied.
        * @default "none"
        */
       /**
@@ -1814,8 +1814,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @ojshortdesc The matching condition for the highlightedCategories property. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "any"
-       * @ojvalue {string} "all"
+       * @ojvalue {string} "any" Only data items that match at least one of the highlightedCategories values will be highlighted.
+       * @ojvalue {string} "all" Only data items that match all of the highlightedCategories values will be highlighted.
        * @default "all"
        */
       /**
@@ -1825,10 +1825,10 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "slideToLeft"
-       * @ojvalue {string} "slideToRight"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "slideToLeft" Data changes will have a sliding animation to the left.
+       * @ojvalue {string} "slideToRight" Data changes will have a sliding animation to the right.
+       * @ojvalue {string} "auto" Default non-sliding animation.
+       * @ojvalue {string} "none" No animation is applied on data change.
        * @default "none"
        */
       /**
@@ -1838,10 +1838,10 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "auto"
-       * @ojvalue {string} "alphaFade"
-       * @ojvalue {string} "zoom"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "alphaFade" Chart uses an alpha fade animation on initial display.
+       * @ojvalue {string} "zoom" Chart zooms into view on initial display.
+       * @ojvalue {string} "auto" Default animation on initial display.
+       * @ojvalue {string} "none" No animation is applied on initial display.
        * @default "none"
        */
       /**
@@ -1887,15 +1887,15 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        */
       /**
        * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.
-       * @ojvalue {string} "off"
        * @expose
        * @name dataCursor
        * @memberof oj.ojChart
        * @ojshortdesc Defines whether the data cursor is enabled. The data cursor is not supported for polar charts. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "off" Data cursor is disabled.
+       * @ojvalue {string} "on" Data cursor is enabled. Not supported by polar charts.
+       * @ojvalue {string} "auto" The data cursor is shown only for line or area charts on touch devices.
        * @default "auto"
        */
       /**
@@ -1905,9 +1905,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "smooth"
-       * @ojvalue {string} "snap"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "smooth" Data cursor follows the mouse cursor smoothly between data items.
+       * @ojvalue {string} "snap" Data cursor snaps between data items.
+       * @ojvalue {string} "auto" The data cursor exhibits the snap behavior except for line and area chart which exhibit the smooth behavior.
        * @default "auto"
        */
       /**
@@ -1927,9 +1927,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "ascending"
-       * @ojvalue {string} "descending"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "ascending" Data items are sorted in ascending order.
+       * @ojvalue {string} "descending" Data items are sorted in descending order.
+       * @ojvalue {string} "off" Groups are sorted in the order they are discovered in the data.
        * @default "off"
        */
       /**
@@ -2125,11 +2125,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @ojshortdesc Specifies the zoom and scroll behavior of the chart. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "delayedScrollOnly"
-       * @ojvalue {string} "liveScrollOnly"
-       * @ojvalue {string} "delayed"
-       * @ojvalue {string} "live"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "delayedScrollOnly" Zooming is disabled and chart will wait to update until scroll action is done.
+       * @ojvalue {string} "liveScrollOnly" Zooming is disabled and chart is updated continuously when scrolled.
+       * @ojvalue {string} "delayed" When zooming or scrolling, chart will wait to update until the zoom/scroll action is done.
+       * @ojvalue {string} "live" When zooming or scrolling, chart will be updated continuously as it is being manipulated.
+       * @ojvalue {string} "off" Zoom and scroll will be disabled.
        * @default "off"
        */
       /**
@@ -2139,9 +2139,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @memberof oj.ojChart
        * @instance
        * @type {string=}
-       * @ojvalue {string} "x"
-       * @ojvalue {string} "y"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "x" Chart will only zoom in x direction.
+       * @ojvalue {string} "y" Chart will only zoom in y direction.
+       * @ojvalue {string} "auto" Chart will zoom in both x and y direction.
        * @default "auto"
        */
       /**
@@ -2152,35 +2152,39 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
        * @ojshortdesc Specifies whether automatic initial zooming is enabled. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "first"
-       * @ojvalue {string} "last"
-       * @ojvalue {string} "none"
+       * @ojvalue {string} "first" Zoom to first data points (after the viewportMin) that can fit in the plot area on initial render.
+       * @ojvalue {string} "last" Zoom to last data points (before the viewportMax) that can fit in the plot area on initial render.
+       * @ojvalue {string} "none" No initial zooming.
        * @default "none"
        */
       /**
        * Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item.
+       * See multiSeriesDrilling documentation for details on drilling on the legend item for Other.
        * @expose
        * @name drilling
        * @memberof oj.ojChart
        * @ojshortdesc Specifies whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "seriesOnly"
-       * @ojvalue {string} "groupsOnly"
-       * @ojvalue {string} "off"
+       * @ojvalue {string} "on" Drilling is enabled on data items, axis labels and legend items.
+       * @ojvalue {string} "seriesOnly" Drilling is enabled only on legend items. Use multiSeriesDrilling attribute to enable drilling on the legend item for Other.
+       * @ojvalue {string} "groupsOnly" Drilling is enabled only on axis labels.
+       * @ojvalue {string} "off" Drilling is not enabled.
        * @default "off"
        */
       /**
-       * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+       * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive.For a better user experience,
+       * the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and
+       * consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content
+       * and if panning is not available for those elements that support the feature.
        * @expose
        * @name touchResponse
        * @memberof oj.ojChart
        * @ojshortdesc Specifies configuration options for touch and hold delays on mobile devices. See the Help documentation for more information.
        * @instance
        * @type {string=}
-       * @ojvalue {string} "touchStart"
-       * @ojvalue {string} "auto"
+       * @ojvalue {string} "touchStart"  Chart will instantly trigger the touch gesture and consume the page pan events if it does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated.
+       * @ojvalue {string} "auto" Chart will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
        * @default "auto"
        */
       /**
@@ -2368,11 +2372,11 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Legend
  * @type {string=}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "top"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "start" The legend will be placed at the start of the chart.
+ * @ojvalue {string} "end" The legend will be placed at the end of the chart.
+ * @ojvalue {string} "bottom" The legend will be placed at the bottom of the chart..
+ * @ojvalue {string} "top" The legend will be placed at the top of the chart.
+ * @ojvalue {string} "auto" The legend will be placed on the side or bottom, based on the size of the chart and the legend contents.
  * @default "auto"
  */
 /**
@@ -2383,9 +2387,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.Legend
  * @ojshortdesc Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. See the Help documentation for more information.
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "on" Legend will be displayed in the chart.
+ * @ojvalue {string} "off" Legend will not be displayed in the chart.
+ * @ojvalue {string} "auto" Legend will be hidden for charts with a large number of series.
  * @default "auto"
  */
 /**
@@ -2465,9 +2469,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Legend
  * @type {string=}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
+ * @ojvalue {string} "center" The title will be center-aligned within the legend.
+ * @ojvalue {string} "end" The title will be end-aligned within the legend.
+ * @ojvalue {string} "start" The title will be start-aligned within the legend.
  * @default "start"
  */
 /**
@@ -2489,6 +2493,7 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.Legend
  * @type {string=}
+ * @ojdeprecated {since: '12.1.0', description: 'Setting scrolling to off is not supported in Redwood theme and it is not recommended. As such, this attribute is deprecated.'}
  * @ojvalue {string} "off"
  * @ojvalue {string} "asNeeded"
  * @default "asNeeded"
@@ -2556,8 +2561,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.DataCursorDefaults
  * @type {string=}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
+ * @ojvalue {string} "off"  Data cursor marker will not be displayed.
+ * @ojvalue {string} "on" Data cursor marker will be displayed.
  * @default "on"
  */
 
@@ -2572,8 +2577,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.GroupSeparatorDefaults
  * @type {string=}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "off" Group separators in hierarchical axis will not be displayed.
+ * @ojvalue {string} "auto" Group separators in hierarchical axis will be displayed.
  * @default "auto"
  */
 /**
@@ -2674,9 +2679,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "color"
- * @ojvalue {string} "pattern"
- * @ojvalue {string} "gradient"
+ * @ojvalue {string} "color" Data items will be filled with solid colors.
+ * @ojvalue {string} "pattern" Data items will be filled with colored patterns.
+ * @ojvalue {string} "gradient" Data items will have a gradient.
  * @default "color"
  */
 /**
@@ -2753,8 +2758,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
+ * @ojvalue {string} "on" Chart will be displayed with a 3D effect.
+ * @ojvalue {string} "off" Chart will not be displayed with a 3D effect.
  * @default "off"
  */
 /**
@@ -2764,9 +2769,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "explode"
- * @ojvalue {string} "highlightAndExplode"
- * @ojvalue {string} "highlight"
+ * @ojvalue {string} "explode" Selected data items will have an explode effect.
+ * @ojvalue {string} "highlightAndExplode" Selected data items will have both the highligt and explode effect.
+ * @ojvalue {string} "highlight" Selected data items will be highlighted.
  * @default "highlight"
  */
 /**
@@ -2787,8 +2792,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "none"
- * @ojvalue {string} "all"
+ * @ojvalue {string} "none" Data change indicators will be disabled.
+ * @ojvalue {string} "all" Data change indicators will be enabled.
  * @default "all"
  */
 /**
@@ -2861,15 +2866,16 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojshortdesc The line type of the data line or area. Only applies to line, area, scatter, and bubble series. See the Help documentation for more information.
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "straight"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "curved" Data points will be connected with a curved line.
+ * @ojvalue {string} "stepped" Data points will be connected with a stepped line.
+ * @ojvalue {string} "centeredStepped" Data points will be connected with a centered stepped line.
+ * @ojvalue {string} "segmented" Data points will be connected with a segmented line.
+ * @ojvalue {string} "centeredSegmented" Data points will be connected with a centered segmented line.
+ * @ojvalue {string} "straight" Data points will be connected with a straight line.
+ * @ojvalue {string} "none" Data points will not be connected.
+ * @ojvalue {string} "auto" Defaults to none for scatter and bubble charts otherwise line type is straight.
  * @default "auto"
+
  */
 /**
  * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
@@ -2898,9 +2904,9 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @type {string=}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "on" Data markers will be displayed.
+ * @ojvalue {string} "off" Data markers will not be displayed.
+ * @ojvalue {string} "auto" Data markers will be displayed whenever the data points are not connected by a line.
  * @default "auto"
  */
 /**
@@ -2911,15 +2917,15 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.StyleDefaults
  * @ojshortdesc The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. See the Help documentation for more information.
  * @type {string=}
- * @ojvalue {string=} "circle"
- * @ojvalue {string=} "diamond"
- * @ojvalue {string=} "human"
- * @ojvalue {string=} "plus"
- * @ojvalue {string=} "square"
- * @ojvalue {string=} "star"
- * @ojvalue {string=} "triangleDown"
- * @ojvalue {string=} "triangleUp"
- * @ojvalue {string=} "auto"
+ * @ojvalue {string=} "circle" Data markers will be circular in shape.
+ * @ojvalue {string=} "diamond" Data markers will be diamond in shape.
+ * @ojvalue {string=} "human" Data markers will be human in shape.
+ * @ojvalue {string=} "plus" Data markers will be plus in shape.
+ * @ojvalue {string=} "square" Data markers will be square in shape.
+ * @ojvalue {string=} "star" Data markers will be star in shape.
+ * @ojvalue {string=} "triangleDown"  Data markers will be of a triangular shape facing down.
+ * @ojvalue {string=} "triangleUp"  Data markers will be of a triangular shape facing up.
+ * @ojvalue {string=} "auto" Data marker shape will be based on chart type.
  * @default "auto"
  */
 /**
@@ -2992,23 +2998,25 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @default null
  */
 /**
- * The position of the data label. For range series, if an array of two values is provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
+ * The position of the data label. For range series, if an array of two values is provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts.
+ * The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'.
+ * The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
  * @expose
  * @name dataLabelPosition
  * @ojtypedefmember
  * @memberof! oj.ojChart.StyleDefaults
  * @ojshortdesc The position of the data label. For range series, if an array of two values is provided, the first and second value will apply to the low and high point respectively. See the Help documentation for more information.
  * @type {(string|Array.<string>)=}
- * @ojvalue {string} "center"
- * @ojvalue {string} "outsideSlice"
- * @ojvalue {string} "aboveMarker"
- * @ojvalue {string} "belowMarker"
- * @ojvalue {string} "beforeMarker"
- * @ojvalue {string} "afterMarker"
- * @ojvalue {string} "insideBarEdge"
- * @ojvalue {string} "outsideBarEdge"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "center" Label will be placed in the center of the data marker.
+ * @ojvalue {string} "outsideSlice" Label will be placed outside the chart. Only applies to pie chart.
+ * @ojvalue {string} "aboveMarker" Label will be placed above the data marker. Only applies to line, area, scatter, and bubble series.
+ * @ojvalue {string} "belowMarker" Label will be placed below the data marker. Only applies to line, area, scatter, and bubble series.
+ * @ojvalue {string} "beforeMarker" Label will be placed before the data marker. Only applies to line, area, scatter, and bubble series.
+ * @ojvalue {string} "afterMarker" Label will be placed after the data marker. Only applies to line, area, scatter, and bubble series.
+ * @ojvalue {string} "insideBarEdge" Label will be placed inside the bar edge. Only applies to non polar bar series.
+ * @ojvalue {string} "outsideBarEdge" Label will be placed outside the bar edge. Only applies to non polar bar series.
+ * @ojvalue {string} "none" No data label is shown.
+ * @ojvalue {string} "auto" For un-stacked bar charts, 'auto' will act as 'insideBarEdge'. For other chart types, 'auto' will act as 'center'.
  * @default "auto"
  */
 /**
@@ -3031,8 +3039,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @memberof! oj.ojChart.StyleDefaults
  * @ojshortdesc Rule for adjusting data label layout. See the Help documentation for more information.
  * @type {string=}
- * @ojvalue {string} "fitInBounds"
- * @ojvalue {string} "none"
+ * @ojvalue {string} "fitInBounds" Data label positions will be adjusted in order to fit in the plot area.
+ * @ojvalue {string} "none" No data label positions will be adjusted to fit in the plot area. Labels may flow outside the plot area.
  * @default "none"
  */
 /**
@@ -3157,8 +3165,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @ojtypedefmember
  * @memberof! oj.ojChart.GroupValueFormat
  * @type {string=}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
+ * @ojvalue {string} "off"  Value will not be displayed in the tooltip.
+ * @ojvalue {string} "auto" Value will be displayed in the tooltip.
  * @default "auto"
  */
 /**
@@ -3634,8 +3642,8 @@ import { Chart, SparkChart } from 'ojs/ojchart-toolkit';
  * @type {string=}
  * @memberof! oj.ojSparkChartItem
  * @instance
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
+ * @ojvalue {string} "off" Marker will not be displayed.
+ * @ojvalue {string} "on" Marker will be displayed.
  * @default "off"
  *
  * @example <caption>Initialize the spark chart item with the
@@ -8327,10 +8335,10 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "area"
-     * @ojvalue {string} "lineWithArea"
-     * @ojvalue {string} "bar"
-     * @ojvalue {string} "line"
+     * @ojvalue {string} "area" Series will be represented by an area. Use lineWithArea to prevent values from being obscured.
+     * @ojvalue {string} "lineWithArea" Series will be presented by a line and area.
+     * @ojvalue {string} "bar"  Data items will be represented by bars.
+     * @ojvalue {string} "line" Series will be represented by a line.
      * @default "line"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">type</code> attribute specified:</caption>
@@ -8600,8 +8608,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "none"
+     * @ojvalue {string} "auto" Animation on data change will be enabled.
+     * @ojvalue {string} "none" Animation on data change will be disabled.
      * @default "none"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">animation-on-data-change</code> attribute specified:</caption>
@@ -8623,8 +8631,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "none"
+     * @ojvalue {string} "auto" Animation on display will be enabled.
+     * @ojvalue {string} "none" Animation on display will be disabled.
      * @default "none"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">animation-on-display</code> attribute specified:</caption>
@@ -8646,8 +8654,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "auto"
+     * @ojvalue {string} "none" No overlays are applied to the spark chart.
+     * @ojvalue {string} "auto" Overlays and gradients could be applied to the spark chart.
      * @default "auto"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">visual-effects</code> attribute specified:</caption>
@@ -8669,8 +8677,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "zero"
-     * @ojvalue {string} "min"
+     * @ojvalue {string} "zero" Axis baseline will start at zero.
+     * @ojvalue {string} "min" Axis baseline will start at the minimum value of the data.
      * @default "min"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">baseline-scaling</code> attribute specified:</caption>
@@ -8714,9 +8722,9 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "dotted"
-     * @ojvalue {string} "dashed"
-     * @ojvalue {string} "solid"
+     * @ojvalue {string} "dotted" Line will have dotted strokes.
+     * @ojvalue {string} "dashed" Line will have dashed strokes.
+     * @ojvalue {string} "solid" Line will have a solid stroke.
      * @default "solid"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">line-style</code> attribute specified:</caption>
@@ -8738,13 +8746,13 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {string=}
-     * @ojvalue {string} "curved"
-     * @ojvalue {string} "stepped"
-     * @ojvalue {string} "centeredStepped"
-     * @ojvalue {string} "segmented"
-     * @ojvalue {string} "centeredSegmented"
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "straight"
+     * @ojvalue {string} "curved" Data points will be connected with a curved line.
+     * @ojvalue {string} "stepped" Data points will be connected with a stepped line.
+     * @ojvalue {string} "centeredStepped" Data points will be connected with a centered stepped line.
+     * @ojvalue {string} "segmented" Data points will be connected with a segmented line.
+     * @ojvalue {string} "centeredSegmented" Data points will be connected with a centered segmented line.
+     * @ojvalue {string} "none" Data points will not be connected.
+     * @ojvalue {string} "straight" Data points will be connected with a straight line.
      * @default "straight"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">line-type</code> attribute specified:</caption>

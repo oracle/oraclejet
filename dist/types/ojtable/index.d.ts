@@ -87,6 +87,7 @@ export interface ojTable<K, D> extends baseComponent<ojTableSettableProperties<K
         accessibleColumnContext?: string;
         accessibleColumnFooterContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleContainsControls?: string;
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;
@@ -643,6 +644,7 @@ export interface ojTableSettableProperties<K, D> extends baseComponentSettablePr
         accessibleColumnContext?: string;
         accessibleColumnFooterContext?: string;
         accessibleColumnHeaderContext?: string;
+        accessibleContainsControls?: string;
         accessibleRowContext?: string;
         accessibleSortAscending?: string;
         accessibleSortDescending?: string;

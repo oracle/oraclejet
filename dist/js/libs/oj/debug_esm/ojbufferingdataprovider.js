@@ -118,16 +118,28 @@ import 'ojs/ojcomponentcore';
  * </code></pre>
  *
  * @param {DataProvider} dataProvider The underlying DataProvider that provides the original data.
- * @param {Object=} options Options for the underlying DataProvider.
+ * @param {BufferingDataProvider.Options=} options Options for the BufferingDataProvider
  * @ojsignature [{target: "Type",
  *               value: "class BufferingDataProvider<K, D> implements DataProvider<K, D>",
  *               genericParameters: [{"name": "K", "description": "Type of key"}, {"name": "D", "description": "Type of data"}]},
  *               {target: "Type",
  *               value: "DataProvider<K, D>",
- *               for: "dataProvider"}]
+ *               for: "dataProvider"},
+ *               {target: "Type",
+ *               value: "BufferingDataProvider.Options<K, D>",
+ *               for: "options"}]
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
  *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults", "DataMapping",
  *   "FetchListResult","FetchListParameters", "FetchAttribute", "DataFilter", "Item", "ItemWithOptionalData", "ItemMessage"]}
+ */
+
+/**
+ * @typedef {Object} BufferingDataProvider.Options
+ * @property {Function=} keyGenerator - Optional keyGenerator to use when a null key is passed in for addItem(). By default, BufferingDataProvider will
+ * generate a v4 UUID string. Please use this option to supply your own key generator. The key generator function takes value as parameter and returns a key.
+ * @ojsignature [{target: "Type", value: "<K, D>", for: "genericTypeParameters"},
+ *               {target: "Type",
+ *               value: "{ keyGenerator?: (value: Partial<D>) => K }"}]
  */
 
 /**
@@ -275,6 +287,15 @@ import 'ojs/ojcomponentcore';
  * There can be at most one entry in 'unsubmitted' status and one entry in 'submitting' status with the same key.  This
  * allows application to keep track of additional changes to a row while submitting previous changes.
  * </p>
+ * <p>
+ * Note: Starting in 12.0.1, addItem supports passing in an item which has null key. If the key is null then
+ * a string typed v4 UUID key is generated for the key. It is expected that the application will later call
+ * setItemStatus with the newKey parameter to pass in the real key once it becomes available after commit. The
+ * newKey will then be stored in an internal map with the generated key and then when the underyling DataProvider
+ * subsequently dispatches an add mutation event which contains the new key then the BufferingDataProvider will
+ * include a remove mutation which will remove the row with the generated key. If a non-string typed or
+ * non-v4 UUID generated key is desired then please use the constructor option: keyGenerator.
+ *
  *
  * @since 9.0.0
  * @export
@@ -410,8 +431,11 @@ import 'ojs/ojcomponentcore';
  * @param {'unsubmitted' | 'submitting' | 'submitted'} newStatus - the new status of the edit item.
  *   If an edit item is marked as "submitted", it will be removed at the DataProvider's discretion.
  * @param {ItemMessage?} error - an optional error message.
+ * @param {K?} newKey - an optional new key for the item. This is used in cases where addItem was called with a null key which will cause BufferingDataProvider
+ * to generate a key. Passing in the real key when it becomes available will enable BufferingDataProvider to map the real and generated keys so that a subsequent
+ * add mutation event for the real key will result in BufferingDataProvider also including a remove for the generated key.
  * @ojsignature {target: "Type",
- *               value: "(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage): void"}
+ *               value: "(editItem: BufferingDataProvider.EditItem<K, D>, newStatus: 'unsubmitted' | 'submitting' | 'submitted', error?: ItemMessage, mewKey?: K): void"}
  */
 
 
@@ -598,6 +622,19 @@ class BufferingDataProvider {
     constructor(dataProvider, options) {
         this.dataProvider = dataProvider;
         this.options = options;
+        this._generateKey = (value) => {
+            if (this.customKeyGenerator) {
+                return this.customKeyGenerator(value);
+            }
+            else {
+                if (crypto.randomUUID) {
+                    return crypto.randomUUID();
+                }
+                else {
+                    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
+                }
+            }
+        };
         this.AsyncIterable = class {
             constructor(_parent, _asyncIterator) {
                 this._parent = _parent;
@@ -675,6 +712,8 @@ class BufferingDataProvider {
         this.editBuffer = new EditBuffer();
         this.lastSortCriteria = null;
         this.lastIterator = null;
+        this.customKeyGenerator = options === null || options === void 0 ? void 0 : options.keyGenerator;
+        this.generatedKeyMap = new Map();
     }
     _fetchByKeysFromBuffer(params) {
         const results = new ojMap();
@@ -968,13 +1007,18 @@ class BufferingDataProvider {
         return nextKey;
     }
     addItem(item) {
-        this.editBuffer.addItem(item);
-        const addBeforeKey = this._addToMergedArrays(item, false);
+        const addItem = Object.assign({}, item);
+        if (item.metadata.key === null) {
+            addItem.metadata = Object.assign({}, item.metadata);
+            addItem.metadata.key = this._generateKey(item.data);
+        }
+        this.editBuffer.addItem(addItem);
+        const addBeforeKey = this._addToMergedArrays(addItem, false);
         const detail = {
             add: {
-                data: [item.data],
-                keys: new Set().add(item.metadata.key),
-                metadata: [item.metadata],
+                data: [addItem.data],
+                keys: new Set().add(addItem.metadata.key),
+                metadata: [addItem.metadata],
                 addBeforeKeys: [addBeforeKey]
             }
         };
@@ -1125,8 +1169,11 @@ class BufferingDataProvider {
             this.dispatchEvent(new DataProviderMutationEvent(detail));
         });
     }
-    setItemStatus(editItem, newStatus, error) {
+    setItemStatus(editItem, newStatus, error, newKey) {
         if (editItem) {
+            if (newKey) {
+                this.generatedKeyMap.set(newKey, editItem.item.metadata.key);
+            }
             this.editBuffer.setItemStatus(editItem, newStatus, error);
             this._dispatchSubmittableChangeEvent();
         }
@@ -1412,7 +1459,39 @@ class BufferingDataProvider {
             });
         }
         const newDetails = this._getOperationDetails(event.detail, addBeforeKeys, sortFldUpdateds);
+        this._checkGeneratedKeys(newDetails);
         this.dispatchEvent(new DataProviderMutationEvent(newDetails));
+    }
+    _checkGeneratedKeys(eventDetail) {
+        var _a;
+        const checkKeyMap = (key, eventAddDetail, index) => {
+            var _a, _b, _c, _d, _e;
+            if (this.generatedKeyMap.has(key)) {
+                const transientKey = this.generatedKeyMap.get(key);
+                if (!eventDetail.remove || !((_a = eventDetail.remove.keys) === null || _a === void 0 ? void 0 : _a.has(key))) {
+                    if (!eventDetail.remove) {
+                        eventDetail.remove = { keys: new Set() };
+                    }
+                    eventDetail.remove.keys.add(transientKey);
+                    if (eventAddDetail) {
+                        const firstKey = (_e = (_d = (_c = (_b = this.lastIterator) === null || _b === void 0 ? void 0 : _b.mergedItemArray) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.metadata) === null || _e === void 0 ? void 0 : _e.key;
+                        if (firstKey !== null) {
+                            if (!eventAddDetail.addBeforeKeys) {
+                                eventAddDetail.addBeforeKeys = [];
+                            }
+                            eventAddDetail.addBeforeKeys[index] = firstKey;
+                        }
+                    }
+                }
+            }
+        };
+        if ((_a = eventDetail.add) === null || _a === void 0 ? void 0 : _a.keys) {
+            let i = 0;
+            eventDetail.add.keys.forEach((key) => {
+                checkKeyMap(key, eventDetail.add, i);
+                i++;
+            });
+        }
     }
     _addEventListeners(dataprovider) {
         dataprovider[BufferingDataProvider._ADDEVENTLISTENER](BufferingDataProvider._REFRESH, this._handleRefreshEvent.bind(this));

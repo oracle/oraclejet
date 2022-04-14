@@ -5,8 +5,8 @@ import { classNames } from '@oracle/oraclejet-preact/utils/classNames';
 import { Flex } from '@oracle/oraclejet-preact/UNSAFE_Flex';
 
 const styles$2 = {
-  base: "oj-collapsible-base-b1gp27yz",
-  disabled: "oj-collapsible-disabled-d1mpodss"
+  base: "oj-collapsible-base-1glatks",
+  disabled: "oj-collapsible-disabled-oaykyi"
 };
 /**
  * Header icon subcomponent
@@ -47,8 +47,8 @@ const CollapsibleHeaderIcon = ({
 };
 
 const styles$1 = {
-  base: "oj-collapsible-base-bchzlky",
-  disabled: "oj-collapsible-disabled-dxflc5a"
+  base: "oj-collapsible-base-1pf2uk6",
+  disabled: "oj-collapsible-disabled-n3j7vy"
 };
 /**
  * Header subcomponent
@@ -78,7 +78,7 @@ const CollapsibleHeader = ({
 };
 
 const styles = {
-  content: "oj-collapsible-content-cm1ia35"
+  content: "oj-collapsible-content-hho2zv"
 };
 /**
  * Content subcomponent - expand/collapse animation is implemented using a CSS

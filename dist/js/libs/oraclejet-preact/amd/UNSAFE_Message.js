@@ -8,7 +8,7 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
    * @ignore
    */
   const messageCloseButtonStyles = {
-    banner: "oj-message-banner-b10cag1l"
+    banner: "oj-message-banner-2rbena"
   };
   /**
    * A Component for rendering the message close button
@@ -156,8 +156,8 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
    */
   const messageDetailStyles = {
     // TODO: Reevaluate once the TEXT component is available (JET-46891)
-    base: "oj-message-base-bbznd28",
-    banner: "oj-message-banner-b39ctpn"
+    base: "oj-message-base-14kwy8x",
+    banner: "oj-message-banner-takd8k"
   };
   /**
    * Default renderer for rendering the detail content.
@@ -224,7 +224,7 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
   // tracked by JET-47348 - set images in a component
 
 
-  const svgStyles = "oj-message-svgStyles-s15seud3";
+  const svgStyles = "oj-message-svgStyles-8z03w3";
 
   const Svg = ({
     class: className,
@@ -317,9 +317,9 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
    * as shown at https://oss.oracle.com/licenses/upl/
    * @ignore
    */
-  const messageStartIconStyles = "oj-message-messageStartIconStyles-mmmpf1e";
+  const messageStartIconStyles = "oj-message-messageStartIconStyles-iuvtfp";
   const severityIconStyles = {
-    banner: "oj-message-banner-b1mv77e8"
+    banner: "oj-message-banner-zjhpfj"
   };
   const severityIcons = {
     confirmation: ConfirmationIcon,
@@ -355,8 +355,8 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
    */
   const messageSummaryStyles = {
     // TODO: Reevaluate once the TEXT component is available (JET-46891)
-    base: "oj-message-base-bczmanu",
-    banner: "oj-message-banner-bonzci6"
+    base: "oj-message-base-bowowq",
+    banner: "oj-message-banner-vxm2jp"
   };
   /**
    * Summary Component for rendering the summary text of the Message
@@ -381,7 +381,7 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
    * @ignore
    */
   const messageTimestampStyles = {
-    banner: "oj-message-banner-b1i0o3vp"
+    banner: "oj-message-banner-18frmp1"
   };
   /**
    * Timestamp Component for rendering timestamp in Message
@@ -517,11 +517,11 @@ define(['exports', '@oracle/oraclejet-preact/UNSAFE_Flex', '@oracle/oraclejet-pr
 
 
   const messageStyles = {
-    base: "oj-message-base-bb5rzqk",
-    section: "oj-message-section-s1c5gur5",
-    header: "oj-message-header-h1k6g34i",
+    base: "oj-message-base-ph7f1",
+    section: "oj-message-section-y709vw",
+    header: "oj-message-header-13ytxxv",
     // TODO: Replace with Flex and View components to handle padding and flex
-    content: "oj-message-content-cy2ssrz"
+    content: "oj-message-content-1cvp4im"
   };
   /**
    * A component that styles the header for the message component

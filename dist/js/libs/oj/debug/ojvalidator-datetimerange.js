@@ -186,9 +186,6 @@ define(['ojs/ojcore', 'ojs/ojtranslation', 'ojs/ojvalidator', 'ojs/ojvalidation-
     }
 
     var processValidation = function (converter) {
-      // verify value, min, and max are of the same type and not mixed with date/time and time only.
-      // throws an error if they are not
-      converterUtils._verifyValueMinMax(value, min, max);
       if (min) {
         min = converterUtils._minMaxIsoString(min, value);
         minStr = converter ? converter.format(min) : min;

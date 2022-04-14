@@ -1201,6 +1201,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name label
        * @memberof oj.ojLedGauge
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
        * @type {Object=}
        */
       label: {
@@ -1499,6 +1500,7 @@ oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojLedGauge
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
@@ -2229,6 +2231,7 @@ oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojRatingGauge
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"
@@ -2582,6 +2585,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name label
        * @memberof oj.ojStatusMeterGauge
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'This attribute is deprecated. Use metric-label instead.'}
        * @type {Object=}
        */
       label: {
@@ -3102,6 +3106,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
        * @name visualEffects
        * @memberof oj.ojStatusMeterGauge
        * @instance
+       * @ojdeprecated {since: '12.1.0', description: 'Overlays and gradients are not supported in Redwood theme and are not recommended. As such, this attribute is deprecated.'}
        * @type {string=}
        * @ojvalue {string} "none"
        * @ojvalue {string} "auto"

@@ -168,34 +168,34 @@ const spaceStyles = {
   xxl: '2.5rem'
 };
 const directionStyles = {
-  row: "oj-flex-row-r151dc5k",
-  column: "oj-flex-column-cddvbr0"
+  row: "oj-flex-row-1r2r04x",
+  column: "oj-flex-column-jvysn7"
 };
 const alignStyles = {
-  baseline: "oj-flex-baseline-b1ym8cgx",
-  center: "oj-flex-center-cr3firy",
-  end: "oj-flex-end-e1hcihnh",
-  start: "oj-flex-start-stv38ab",
-  inherit: "oj-flex-inherit-ibuadas",
-  initial: "oj-flex-initial-i1katjsf",
-  stretch: "oj-flex-stretch-s1xclxyq"
+  baseline: "oj-flex-baseline-sn7vdu",
+  center: "oj-flex-center-rpq1co",
+  end: "oj-flex-end-1gkv0nk",
+  start: "oj-flex-start-19zmlgk",
+  inherit: "oj-flex-inherit-6cg1j7",
+  initial: "oj-flex-initial-e73gk1",
+  stretch: "oj-flex-stretch-pkf80b"
 };
 const justifyStyles = {
-  center: "oj-flex-center-c1k7idmt",
-  end: "oj-flex-end-erzuzq6",
-  start: "oj-flex-start-s1ampyci",
-  inherit: "oj-flex-inherit-ikwzjla",
-  initial: "oj-flex-initial-i1ee5clk",
-  around: "oj-flex-around-a3eykku",
-  between: "oj-flex-between-bdy9zkz",
-  evenly: "oj-flex-evenly-ebf40gc"
+  center: "oj-flex-center-cz2ys",
+  end: "oj-flex-end-vydaj5",
+  start: "oj-flex-start-1bfjt7u",
+  inherit: "oj-flex-inherit-1vx2ckm",
+  initial: "oj-flex-initial-1kcnwum",
+  around: "oj-flex-around-9r1l2k",
+  between: "oj-flex-between-mpocno",
+  evenly: "oj-flex-evenly-1iqacd2"
 };
 const wrapStyles = {
-  nowrap: "oj-flex-nowrap-nf2xa2o",
-  wrap: "oj-flex-wrap-w1rqjeh6",
-  reverse: "oj-flex-reverse-rgdkw82",
-  inherit: "oj-flex-inherit-id777hd",
-  initial: "oj-flex-initial-i1152ami"
+  nowrap: "oj-flex-nowrap-y59k8t",
+  wrap: "oj-flex-wrap-fmpvou",
+  reverse: "oj-flex-reverse-1b0qr8v",
+  inherit: "oj-flex-inherit-1ij7eal",
+  initial: "oj-flex-initial-3nzaji"
 };
 const styles = {
   direction: directionStyles,
@@ -248,7 +248,7 @@ const flexboxInterpolations = {
   }
 };
 
-const baseStyles = "oj-flex-baseStyles-b12c3cqv";
+const baseStyles = "oj-flex-baseStyles-1fjajdl";
 const interpolations = [...Object.values(dimensionInterpolations), ...Object.values(flexboxInterpolations)];
 const styleInterpolations = mergeInterpolations(interpolations);
 const Flex = _a => {

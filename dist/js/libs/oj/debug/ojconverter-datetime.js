@@ -501,7 +501,8 @@ define(['exports', 'ojs/ojconverterutils-i18n', 'ojs/ojconverter', 'ojs/ojlocale
           'year';
       }
       var intlRelativeCnv = new Intl.RelativeTimeFormat(ojconfig.getLocale(), { numeric: style });
-      var format = intlRelativeCnv.format(units[field], field);
+      var val = diff >= 0 ? units[field] : -units[field];
+      var format = intlRelativeCnv.format(val, field);
       return format;
     }
 

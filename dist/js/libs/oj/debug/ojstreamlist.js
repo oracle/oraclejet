@@ -514,11 +514,11 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
             }
             if (data == null) {
                 return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
-                    preact.h("div", { role: 'list', "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
+                    preact.h("div", { role: "list", "data-oj-context": true, tabIndex: 0, "aria-label": Translations.getTranslatedString('oj-ojStreamList.msgFetchingData') }, content)));
             }
             else {
                 return (preact.h(ojvcomponent.Root, { ref: this.setRootElement },
-                    preact.h("div", { role: 'list', "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
+                    preact.h("div", { role: "list", "data-oj-context": true, onClick: this._handleClick, onKeyDown: this._handleKeyDown, onfocusin: this._handleFocusIn, onfocusout: this._handleFocusOut }, content)));
             }
         }
         _doBlur() {
@@ -569,7 +569,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
                 className += ' oj-stream-list-child-skeleton';
             }
             return (preact.h("div", { class: className, key: key },
-                preact.h("div", { class: 'oj-stream-list-skeleton-content oj-animation-skeleton' })));
+                preact.h("div", { class: "oj-stream-list-skeleton-content oj-animation-skeleton" })));
         }
         _applySkeletonExitAnimation(skeletons) {
             const resolveFunc = this.addBusyState('apply skeleton exit animations');
@@ -1069,7 +1069,7 @@ define(['exports', 'preact', 'ojs/ojvcomponent', 'ojs/ojtranslation', 'ojs/ojdat
         }
         _isInFocusableElementsList(target, item) {
             let found = false;
-            const nodes = DataCollectionUtils.getFocusableElementsIncludingDisabled(item);
+            const nodes = DataCollectionUtils.getActionableElementsInNode(item);
             nodes.forEach(function (node) {
                 if (node === target) {
                     found = true;

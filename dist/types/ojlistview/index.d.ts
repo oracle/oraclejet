@@ -85,6 +85,7 @@ export interface ojListView<K, D> extends baseComponent<ojListViewSettableProper
         labelPaste?: string;
         labelPasteAfter?: string;
         labelPasteBefore?: string;
+        msgFetchCompleted?: string;
         msgFetchingData?: string;
         msgItemsAppended?: string;
         msgNoData?: string;
@@ -371,6 +372,7 @@ export interface ojListViewSettableProperties<K, D> extends baseComponentSettabl
         labelPaste?: string;
         labelPasteAfter?: string;
         labelPasteBefore?: string;
+        msgFetchCompleted?: string;
         msgFetchingData?: string;
         msgItemsAppended?: string;
         msgNoData?: string;

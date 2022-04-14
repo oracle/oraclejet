@@ -95,7 +95,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         for (var i = 0; i < this._displayables.length; i++) {
           this._displayables[i].setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
         }
-      } 
+      }
     }
 
 
@@ -240,7 +240,7 @@ define(['exports', 'ojs/ojdvt-toolkit'], function (exports, dvt) { 'use strict';
         return this;
 
       var navigables = this._legend.__getKeyboardObjects();
-      return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, true, this._legend);
+      return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, true, this._legend, true);
     };
 
 

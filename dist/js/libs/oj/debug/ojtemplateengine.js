@@ -5,7 +5,7 @@
  * as shown at https://oss.oracle.com/licenses/upl/
  * @ignore
  */
-define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojcore-base', 'ojs/ojcontext'], function (ko, oj, BindingProviderImpl, HtmlUtils, Logger, ojcustomelementUtils, preact, oj$1, Context) { 'use strict';
+define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger', 'ojs/ojcustomelement-utils', 'preact', 'ojs/ojcore-base', 'ojs/ojcontext', 'ojs/ojmetadatautils'], function (ko, oj, BindingProviderImpl, HtmlUtils, Logger, ojcustomelementUtils, preact, oj$1, Context, ojmetadatautils) { 'use strict';
 
     oj = oj && Object.prototype.hasOwnProperty.call(oj, 'default') ? oj['default'] : oj;
     BindingProviderImpl = BindingProviderImpl && Object.prototype.hasOwnProperty.call(BindingProviderImpl, 'default') ? BindingProviderImpl['default'] : BindingProviderImpl;
@@ -57,7 +57,9 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
             templateElement._cachedRows.push(cachedRow);
             computedVNode.subscribe((newVNode) => {
                 const currRow = templateElement._cachedRows.find((row) => row.computedVNode === computedVNode);
-                PreactTemplate._renderNodes(newVNode, currRow);
+                if (currRow) {
+                    PreactTemplate._renderNodes(newVNode, currRow);
+                }
             });
             return cachedRow.nodes;
         }
@@ -116,17 +118,18 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
             };
         }
         static resolveVDomTemplateProps(template, renderer, elementTagName, propertySet, data, defaultValues, propertyValidator) {
+            const metadata = ojcustomelementUtils.CustomElementUtils.getPropertiesForElementTag(elementTagName);
             const [cache, deleteEntry] = PreactTemplate._extendTemplate(template, PreactTemplate._COMPUTED_PROPS_CACHE_FACTORY, (recalc) => {
                 for (const observable of cache) {
                     observable.recalculateValue(recalc);
                 }
             });
-            const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, propertySet, data, propertyValidator);
+            const calcValue = (render) => PreactTemplate._computeProps(render, elementTagName, metadata, propertySet, data, propertyValidator);
             const item = new ObservableProperty(calcValue, renderer, defaultValues, deleteEntry);
             cache.add(item);
             return item;
         }
-        static _computeProps(renderer, elementTagName, propertySet, data, propertyValidator) {
+        static _computeProps(renderer, elementTagName, metadata, propertySet, data, propertyValidator) {
             const result = renderer(data);
             const vnodes = Array.isArray(result) ? result : [result];
             const targetNode = vnodes.find((n) => n.type === elementTagName);
@@ -137,7 +140,7 @@ define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlo
             const vprops = targetNode.props;
             Object.keys(vprops).forEach((prop) => {
                 if (propertySet.has(prop)) {
-                    props[prop] = targetNode.props[prop];
+                    props[prop] = ojcustomelementUtils.transformPreactValue(null, ojmetadatautils.getPropertyMetadata(prop, metadata), targetNode.props[prop]);
                 }
             });
             return props;

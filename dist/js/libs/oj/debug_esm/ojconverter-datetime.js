@@ -504,7 +504,8 @@ const RelativeDateTimeFormatter = (function () {
         'year';
     }
     var intlRelativeCnv = new Intl.RelativeTimeFormat(getLocale(), { numeric: style });
-    var format = intlRelativeCnv.format(units[field], field);
+    var val = diff >= 0 ? units[field] : -units[field];
+    var format = intlRelativeCnv.format(val, field);
     return format;
   }
 

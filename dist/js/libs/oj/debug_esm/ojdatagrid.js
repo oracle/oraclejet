@@ -16,7 +16,7 @@ import 'ojs/ojbutton';
 import oj$1 from 'ojs/ojcore-base';
 import { _OJ_CONTAINER_ATTR, subtreeAttached, __GetWidgetConstructor } from 'ojs/ojcomponentcore';
 import Context from 'ojs/ojcontext';
-import { isMobileTouchDevice, applyMergedInlineStyles, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, getFocusableElementsIncludingDisabled, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
+import { isMobileTouchDevice, applyMergedInlineStyles, disableAllFocusableElements, enableAllFocusableElements, getFocusableElementsInNode, getActionableElementsInNode, handleActionableTab, handleActionablePrevTab, disableDefaultBrowserStyling } from 'ojs/ojdatacollection-common';
 import { setScrollLeft, getCSSTimeUnitAsMillis, isTouchSupported, removeResizeListener, addResizeListener } from 'ojs/ojdomutils';
 import { __getTemplateEngine } from 'ojs/ojconfig';
 import { CustomElementUtils } from 'ojs/ojcustomelement-utils';
@@ -16035,7 +16035,7 @@ DvtDataGrid.prototype.getLabelledBy = function (activeObject, prevActiveObject, 
     }
   }
 
-  let focusableElems = getFocusableElementsIncludingDisabled(element);
+  let focusableElems = getActionableElementsInNode(element);
   if (focusableElems && focusableElems.length > 0) {
     statesArray.push({ key: 'accessibleContainsControls' });
   }
@@ -20617,7 +20617,8 @@ DvtDataGrid.prototype._resizeSelectedHeaders = function (event, oldWidth, oldHei
     allowResizeWithinSelection = true;
   }
   let selectedHeaders;
-  if (this.m_selection && this.m_selection.length && allowResizeWithinSelection) {
+  if (this.m_selection && this.m_selection.length && allowResizeWithinSelection &&
+      !this.m_discontiguousSelection) {
     selectedHeaders = this._getHeadersWithinSelection(this.m_selection[0],
                                   resizingElementIndex, resizingElementAxis);
   }
@@ -20630,10 +20631,9 @@ DvtDataGrid.prototype._resizeSelectedHeaders = function (event, oldWidth, oldHei
         } else {
           this.resizeRowHeight(this.getElementDir(selectedHeaders[i], 'height'), newHeight);
         }
-        // set the information we want to callback with in the resize event and callback
-
-        this._fireResizeEvent(event, oldWidth, oldHeight, newWidth, newHeight, size);
       }
+      // set the information we want to callback with in the resize event and callback
+      this._fireResizeEvent(event, oldWidth, oldHeight, newWidth, newHeight, size);
     }
   } else {
     if (resizeHeaderMode === 'column') {
@@ -20682,10 +20682,7 @@ DvtDataGrid.prototype.handleResizeMouseUp = function (event) {
     if (newWidth !== this.m_orginalResizeDimensions.width ||
         newHeight !== this.m_orginalResizeDimensions.height) {
       if (this.m_cursor === 'col-resize' || this.m_cursor === 'row-resize') {
-        if (this._isSelectionEnabled() && this.isMultipleSelection() &&
-          this.m_selection.length && !this.m_discontiguousSelection) {
-          this._resizeSelectedHeaders(event, oldWidth, oldHeight, newWidth, newHeight, size);
-        }
+        this._resizeSelectedHeaders(event, oldWidth, oldHeight, newWidth, newHeight, size);
       }
     }
 
@@ -22234,6 +22231,11 @@ DvtDataGrid.prototype.handleContextMenuResize = function (event, id, val, target
       if (this._getResizeHeaderMode(this.m_resizingElement) === 'column') {
         if (this._isDOMElementResizable(this.m_resizingElement)) {
           if (isHeaderLabel) {
+            if (this.m_utils.containsCSSClassName(this.m_resizingElement,
+              this.getMappedStyle('columnendheaderlabel'))) {
+                // as resizing width on colEndHeaderLabel essentially changes rowHeader width and not rowEndHeader.
+                end = false;
+            }
             this.resizeRowWidth(value, value - initialWidth, end, isHeaderLabel);
             this._fireResizeEvent(event, initialWidth, initialHeight, value, initialHeight, value);
           } else {
@@ -22257,6 +22259,11 @@ DvtDataGrid.prototype.handleContextMenuResize = function (event, id, val, target
       } else if (this._isDOMElementResizable(this.m_resizingElement)) {
         let newElementHeight = this.getNewElementHeight('row', initialHeight, end, deltaHeight, isHeaderLabel);
         if (isHeaderLabel) {
+          if (this.m_utils.containsCSSClassName(this.m_resizingElement,
+            this.getMappedStyle('rowendheaderlabel'))) {
+              // as resizing height on rowEndHeaderLabel essentially changes columnHeader height and not columnEndHeader.
+              end = false;
+          }
           this.resizeColHeight(newElementHeight, newElementHeight - initialHeight, end);
           this._fireResizeEvent(event, initialWidth, initialHeight, initialWidth, value, value);
         } else {
@@ -22817,14 +22824,18 @@ DvtDataGrid.prototype._isHeaderSelected = function (context, axis) {
 };
 
 /**
- * Clear all header highlight
- */
- DvtDataGrid.prototype._clearHeaderHighLight = function () {
-  const someSelectedHeaders = this.m_root.querySelectorAll('.' + this.getMappedStyle('headerPartialSelected'));
+* Clear all header highlight
+*/
+DvtDataGrid.prototype._clearHeaderHighLight = function () {
+  const someSelectedSelector = '.' + this.getMappedStyle('headerPartialSelected')
+  + '.' + this.getMappedStyle('headercell');
+  const someSelectedHeaders = this.m_root.querySelectorAll(someSelectedSelector);
   for (let i = 0; i < someSelectedHeaders.length; i++) {
     someSelectedHeaders[i].classList.remove(this.getMappedStyle('headerPartialSelected'));
   }
-  const allSelectedHeaders = this.m_root.querySelectorAll('.' + this.getMappedStyle('headerAllSelected'));
+  const allSelectedSelector = '.' + this.getMappedStyle('headerAllSelected')
+    + '.' + this.getMappedStyle('headercell');
+  const allSelectedHeaders = this.m_root.querySelectorAll(allSelectedSelector);
   for (let i = 0; i < allSelectedHeaders.length; i++) {
     allSelectedHeaders[i].classList.remove(this.getMappedStyle('headerAllSelected'));
   }

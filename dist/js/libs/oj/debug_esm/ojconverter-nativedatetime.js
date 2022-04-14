@@ -578,10 +578,10 @@ NativeDateTimeConstants._dateTimeFormats = {
         short: { year: 'y', month_s: 'M', month_m: 'MMM', day: 'd' }
     },
     timeStyle: {
-        full: { hour: 'h', minute: 'm', second: 's', timeZoneName: 'zzzz' },
-        long: { hour: 'h', minute: 'm', second: 's', timeZoneName: 'z' },
-        medium: { hour: 'h', minute: 'm', second: 's' },
-        short: { hour: 'h', minute: 'm' }
+        full: { hour: 'h', minute: 'mm', second: 'ss', timeZoneName: 'zzzz' },
+        long: { hour: 'h', minute: 'mm', second: 'ss', timeZoneName: 'z' },
+        medium: { hour: 'h', minute: 'mm', second: 'ss' },
+        short: { hour: 'h', minute: 'mm' }
     }
 };
 NativeDateTimeConstants._ALPHA_REGEXP = /([a-zA-Z]+)/;
